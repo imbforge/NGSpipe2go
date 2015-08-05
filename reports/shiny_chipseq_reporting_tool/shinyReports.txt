@@ -1,0 +1,14 @@
+SHINYREPS_PROJECT=/fsimb/groups/imb-bioinfocf/projects/cfb_internal/imbforge-code/test/chipseq
+SHINYREPS_LOG=/fsimb/groups/imb-bioinfocf/projects/cfb_internal/imbforge-code/test/chipseq/logs
+SHINYREPS_QC=/fsimb/groups/imb-bioinfocf/projects/cfb_internal/imbforge-code/test/chipseq/qc
+SHINYREPS_RES=/fsimb/groups/imb-bioinfocf/projects/cfb_internal/imbforge-code/test/chipseq/results
+SHINYREPS_TARGETS=targets.txt
+SHINYREPS_BOWTIE_LOG=/fsimb/groups/imb-bioinfocf/projects/cfb_internal/imbforge-code/test/chipseq/logs/bowtie_se
+SHINYREPS_MARKDUPS_LOG=/fsimb/groups/imb-bioinfocf/projects/cfb_internal/imbforge-code/test/chipseq/logs/MarkDups
+SHINYREPS_FASTQC=/fsimb/groups/imb-bioinfocf/projects/cfb_internal/imbforge-code/test/chipseq/qc/fastqc
+SHINYREPS_IPSTRENGTH=/fsimb/groups/imb-bioinfocf/projects/cfb_internal/imbforge-code/test/chipseq/qc/ipstrength
+SHINYREPS_PBC=/fsimb/groups/imb-bioinfocf/projects/cfb_internal/imbforge-code/test/chipseq/qc/pbc
+SHINYREPS_PHANTOMPEAK=/fsimb/groups/imb-bioinfocf/projects/cfb_internal/imbforge-code/test/chipseq/qc/phantompeak
+SHINYREPS_BUSTARD=/fsimb/groups/imb-bioinfocf/projects/cfb_internal/imbforge-code/test/chipseq/qc/DemultiplexedBustardSummary.xml
+SHINYREPS_MACS2=/fsimb/groups/imb-bioinfocf/projects/cfb_internal/imbforge-code/test/chipseq/results/macs2
+SHINYREPS_PREFIX=Sample_imb_gcf_2014_07_

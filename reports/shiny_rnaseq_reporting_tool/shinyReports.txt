@@ -1,0 +1,15 @@
+SHINYREPS_PROJECT=/fsimb/groups/imb-bioinfocf/projects/cfb_internal/imb_cf_2013_04_sayols_infrastructure_pipelines/test
+SHINYREPS_ORG=mouse
+SHINYREPS_DB=mm9
+SHINYREPS_LOG=/fsimb/groups/imb-bioinfocf/projects/cfb_internal/imb_cf_2013_04_sayols_infrastructure_pipelines/test/logs
+SHINYREPS_QC=/fsimb/groups/imb-bioinfocf/projects/cfb_internal/imb_cf_2013_04_sayols_infrastructure_pipelines/test/qc
+SHINYREPS_RES=/fsimb/groups/imb-bioinfocf/projects/cfb_internal/imb_cf_2013_04_sayols_infrastructure_pipelines/test/results
+SHINYREPS_PREFIX=Sample_imb_[A-Za-z]+_\d+_\d+_
+SHINYREPS_STAR_LOG=/fsimb/groups/imb-bioinfocf/projects/cfb_internal/imb_cf_2013_04_sayols_infrastructure_pipelines/test/logs/STAR_se
+SHINYREPS_STAR_SUFFIX=Log.final.out
+SHINYREPS_STARparms_SUFFIX=Log.out
+SHINYREPS_FASTQC_LOG=/fsimb/groups/imb-bioinfocf/projects/cfb_internal/imb_cf_2013_04_sayols_infrastructure_pipelines/test/qc/fastqc
+SHINYREPS_DUPRADAR_LOG=/fsimb/groups/imb-bioinfocf/projects/cfb_internal/imb_cf_2013_04_sayols_infrastructure_pipelines/test/qc/dupRadar
+SHINYREPS_GENEBODYCOV_LOG=/fsimb/groups/imb-bioinfocf/projects/cfb_internal/imb_cf_2013_04_sayols_infrastructure_pipelines/test/qc/geneBodyCov
+SHINYREPS_BUSTARD=/fsimb/groups/imb-bioinfocf/projects/cfb_internal/imb_cf_2013_04_sayols_infrastructure_pipelines/test/qc/DemultiplexedBustardSummary.xml
+SHINYREPS_DE_EDGER=/fsimb/groups/imb-bioinfocf/projects/cfb_internal/imb_cf_2013_04_sayols_infrastructure_pipelines/test/results/DE_edgeR/DE_edgeR.RData
