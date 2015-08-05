@@ -1,0 +1,9 @@
+args <- as.character()
+args[1] <- "targets=targets.txt"
+args[2] <- "contrasts=contrasts.txt"
+args[3] <- "mmatrix=~group" # "~0+group" for glm
+args[4] <- "filter=TRUE"
+args[5] <- "prefix=Sample_imb_richly_2014_05_\\d+_"
+args[6] <- "suffix=.readcounts.tsv"
+args[7] <- "cwd=/fsimb/groups/imb-bioinfocf/projects/richly/imb_richly_2014_05_papadopoulou_rnaseq/results/htseq-count"
+args[8] <- "out=DE.edgeR"
