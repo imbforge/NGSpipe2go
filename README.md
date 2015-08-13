@@ -31,7 +31,7 @@ Select a pipeline to run and make it available in the main project.
 
     ln -s project_folder/imbforge/pipelines/RNAseq/* project_folder/
 or 
-    
+
     ln -s project_folder/imbforge/pipelines/ChIPseq/* project_folder/
 
 Adjust the information found in the following files:
