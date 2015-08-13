@@ -23,15 +23,6 @@ geneBodyCov = {
 				export TMPDIR=/jobdir/\${LSB_JOBID}; 
 			fi &&
 			
-			echo '>>>>>>>>>>' &&
-			echo $output.dir  &&
-			echo $output1     &&
-			echo $output2     &&
-			echo $output3     &&
-			echo $output3.prefix.prefix &&
-			echo '<<<<<<<<<<' &&
-			
-			
 			python ${TOOL_RSeQC}/bin/geneBody_coverage.py -i $input -f png -r $GENEBODYCOV_BED -o ${output3.prefix.prefix}
 		""","geneBodyCov"
 	}
