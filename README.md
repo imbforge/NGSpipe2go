@@ -25,13 +25,13 @@ Currently, the tool set sports a RNAseq and ChIPseq pipeline and its respective 
 NGS projects are required to be run in a consistant way and may be required to be rerun in the near or far future. Hence NGSpipe2go asks you to copy all tools into the project folder, which will ensure that you always use the same program versions at a later time point.
 To this end we suggest to copy all modules, which may be subject to updates, into the project folder.
 
-< cp -r github/imbforge/ project_folder/ >
+    cp -r github/imbforge/ project_folder/
 
 Select a pipeline to run and make it available in the main project.
 
-< ln -s imbforge/pipelines/RNAseq/* project_folder/ >
+    ln -s imbforge/pipelines/RNAseq/* project_folder/
 or 
-< ln -s imbforge/pipelines/ChIPseq/* project_folder/ >
+    ln -s imbforge/pipelines/ChIPseq/* project_folder/
 
 Adjust the folder information found in the following files:
 - modules/RNAseq/tool.locations or modules/ChIPseq/tool.locations
@@ -42,6 +42,6 @@ Adjust the folder information found in the following files:
 We suggest to put the input files to a folder like rawdata.
 
 To start running the pipeline (tested for bpipe-0.9.8.7)
-< bpipe run rnaseq_v1.2.txt rawdata/*.fastq.gz >
+    bpipe run rnaseq_v1.2.txt rawdata/*.fastq.gz
 or
-< bpipe run chipseq_v1.2.txt rawdata/*.fastq.gz >
+    bpipe run chipseq_v1.2.txt rawdata/*.fastq.gz
