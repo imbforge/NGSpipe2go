@@ -45,4 +45,5 @@ To start running the pipeline (tested for bpipe-0.9.8.7)
 
     bpipe run rnaseq_v1.2.txt rawdata/*.fastq.gz
 or
+
     bpipe run chipseq_v1.2.txt rawdata/*.fastq.gz
