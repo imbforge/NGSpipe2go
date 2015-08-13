@@ -1,0 +1,43 @@
+MODULE_FOLDER="/home/odrechse/bpipe/chipseq/"
+
+load MODULE_FOLDER + "essential.vars.groovy"
+load MODULE_FOLDER + "tool.locations.groovy"
+
+load MODULE_FOLDER + "fastqc.vars.groovy"
+load MODULE_FOLDER + "fastqc.module.groovy"
+
+load MODULE_FOLDER + "bowtie1.vars.groovy"
+load MODULE_FOLDER + "bowtie1.module.groovy"
+
+load MODULE_FOLDER + "bamindexer.vars.groovy"
+load MODULE_FOLDER + "bamindexer.module.groovy"
+
+load MODULE_FOLDER + "markdups.vars.groovy"
+load MODULE_FOLDER + "markdups.module.groovy"
+
+load MODULE_FOLDER + "extend.vars.groovy"
+load MODULE_FOLDER + "extend.module.groovy"
+
+load MODULE_FOLDER + "bam2bw.vars.groovy"
+load MODULE_FOLDER + "bam2bw.module.groovy"
+
+load MODULE_FOLDER + "ipstrength.vars.groovy"
+load MODULE_FOLDER + "ipstrength.module.groovy"
+
+load MODULE_FOLDER + "phantompeak.vars.groovy"
+load MODULE_FOLDER + "phantompeak.module.groovy"
+
+load MODULE_FOLDER + "pbc.module.groovy"
+
+load MODULE_FOLDER + "macs2.vars.groovy"
+load MODULE_FOLDER + "macs2.module.groovy"
+
+load MODULE_FOLDER + "collectbpipes.module.2.groovy"
+
+load MODULE_FOLDER + "shinyreports.vars.groovy"
+load MODULE_FOLDER + "shinyreports.module.groovy"
+
+//MAIN PIPELINE TASK
+run {
+	"%.fastq.gz" * [ FastQC , bowtie_se + BAMindexer + [ MarkDups + BAMindexer + [ extend + bam2bw , phantompeak ] , pbc ] ] + "%_duprm.bam" * [ ipstrength , macs2 ] + collectBpipeLogs + shinyReports
+}

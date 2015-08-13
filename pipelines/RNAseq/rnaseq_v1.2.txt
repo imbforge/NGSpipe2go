@@ -1,0 +1,49 @@
+MODULE_FOLDER="/home/odrechse/bpipe/rnaseq"
+
+load MODULE_FOLDER + "essential.vars.groovy"
+load MODULE_FOLDER + "tool.locations.groovy"
+
+load MODULE_FOLDER + "fastqc.vars.groovy"
+load MODULE_FOLDER + "fastqc.module.groovy"
+
+load MODULE_FOLDER + "star.vars.groovy"
+load MODULE_FOLDER + "star.module.groovy"
+
+load MODULE_FOLDER + "bamindexer.vars.groovy"
+load MODULE_FOLDER + "bamindexer.module.groovy"
+
+load MODULE_FOLDER + "subread.vars.groovy"
+load MODULE_FOLDER + "subread.module.groovy"
+
+load MODULE_FOLDER + "filter2htseq.vars.groovy"
+load MODULE_FOLDER + "filter2htseq.module.groovy"
+
+load MODULE_FOLDER + "bam2bw.vars.groovy"
+load MODULE_FOLDER + "bam2bw.module.groovy"
+
+load MODULE_FOLDER + "markdups.vars.groovy"
+load MODULE_FOLDER + "markdups.module.groovy"
+
+load MODULE_FOLDER + "dupradar.vars.groovy"
+load MODULE_FOLDER + "dupradar.module.groovy"
+
+load MODULE_FOLDER + "genebodycov.vars.groovy"
+load MODULE_FOLDER + "genebodycov.module.groovy"
+
+load MODULE_FOLDER + "rnatypes.vars.groovy"
+load MODULE_FOLDER + "rnatypes.module.groovy"
+
+load MODULE_FOLDER + "edger.vars.groovy"
+load MODULE_FOLDER + "edger.module.groovy"
+
+load MODULE_FOLDER + "deseq2.vars.groovy"
+load MODULE_FOLDER + "deseq2.module.groovy"
+
+load MODULE_FOLDER + "collectbpipes.module.2.groovy"
+
+load MODULE_FOLDER + "shinyreports.vars.groovy"
+load MODULE_FOLDER + "shinyreports.module.groovy"
+
+run {
+	"%.fastq.gz" * [ FastQC , STAR_se + BAMindexer + [ subread_count + filter2htseq, bam2bw, MarkDups + BAMindexer + [ dupRadar , geneBodyCov ] ] ] + [ RNAtypes, DE_edgeR, DE_DESeq2] + collectBpipeLogs + shinyReports
+}
