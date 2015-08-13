@@ -29,7 +29,7 @@ To this end we suggest to copy all modules, which may be subject to updates, int
 
 Select a pipeline to run and make it available in the main project.
 
-    ln -s imbforge/pipelines/RNAseq/* project_folder/
+    ln -s project_folder/imbforge/pipelines/RNAseq/* project_folder/
 or 
     
     ln -s project_folder/imbforge/pipelines/ChIPseq/* project_folder/
