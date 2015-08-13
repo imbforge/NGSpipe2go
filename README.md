@@ -42,6 +42,7 @@ Adjust the folder information found in the following files:
 We suggest to put the input files to a folder like rawdata.
 
 To start running the pipeline (tested for bpipe-0.9.8.7)
+
     bpipe run rnaseq_v1.2.txt rawdata/*.fastq.gz
 or
     bpipe run chipseq_v1.2.txt rawdata/*.fastq.gz
