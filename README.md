@@ -4,7 +4,8 @@ A set of tools used at IMB and you're very welcome to do so at your institute as
 The tool set consists of several published tools and others developed at IMB.
 Currently, the tool set sports a RNAseq and ChIPseq pipeline and its respective modules.
 
-## Prerequisites for the RNAseq pipeline ##
+## RNAseq ##
+### Programs required ###
 - FastQC
 - STAR
 - Samtools
@@ -18,8 +19,21 @@ Currently, the tool set sports a RNAseq and ChIPseq pipeline and its respective 
 
 (*) is provided via another project from imbforge
 
-## Prerequisites for the ChIPseq pipeline ##
+### Files required ###
+- targets.txt (*)
+- contrasts.txt (*)
+- raw reads or mapped data
+Both files are needed to run the EdgeR and DEseq2 modules.
+
+(*) examples provided within this project
+
+## ChIPseq ##
+### Programs required ###
 - TODO-fill
+
+### Files required ###
+- raw reads or mapped data
+
 
 ## Preprations to run ##
 NGS projects are required to be run in a consistant way and may be required to be rerun in the near or far future. Hence NGSpipe2go asks you to copy all tools into the project folder, which will ensure that you always use the same program versions at a later time point.
