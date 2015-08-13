@@ -31,11 +31,12 @@ Select a pipeline to run and make it available in the main project.
 
     ln -s imbforge/pipelines/RNAseq/* project_folder/
 or 
-    ln -s imbforge/pipelines/ChIPseq/* project_folder/
+    ln -s project_folder/imbforge/pipelines/ChIPseq/* project_folder/
 
-Adjust the folder information found in the following files:
-- modules/RNAseq/tool.locations or modules/ChIPseq/tool.locations
-- the recently linked rnaseq- or chipseq pipeline file
+Adjust the information found in the following files:
+- Folder information in modules/RNAseq/tool.locations or modules/ChIPseq/tool.locations
+- Folder information in the recently linked rnaseq- or chipseq pipeline file
+- Compute requirements for the used queueing system according to the project data (Whole genome data might need more compute ressources than a low coverage ChIPseq experiment)
 
 ## Run ##
 
