@@ -62,13 +62,17 @@ or
     ln -s project_folder/imbforge/pipelines/ChIPseq/* project_folder/
 
 Adjust the information found in the following files:
-- Folder information in modules/RNAseq/tool.locations or modules/ChIPseq/tool.locations
-- Folder information in the recently linked rnaseq- or chipseq pipeline file
-- Compute requirements for the used queueing system according to the project data (Whole genome data might need more compute ressources than a low coverage ChIPseq experiment)
+- Folder information in modules/RNAseq/tool.locations or modules/ChIPseq/tool.locations (*)
+- Project_folder needs to be entered in modules/RNAseq/essential.vars.groovy modules/ChIPseq/essential.vars.groovy (**)
+- Folder information in the recently linked rnaseq- or chipseq pipeline file (**)
+- Compute requirements for the used queueing system according to the project data (Whole genome data might need more compute ressources than a low coverage ChIPseq experiment) (*)
+
+(*) these steps need to be done once for the setup of NGSpipe2go
+(**) these steps need to be repeated for each project to be run
 
 ## Run ##
 
-We suggest to put the input files to a folder like rawdata.
+We suggest to put the input files to a folder, e.g. project_folder/rawdata.
 
 To start running the pipeline (tested for bpipe-0.9.8.7)
 
