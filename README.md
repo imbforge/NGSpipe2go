@@ -6,8 +6,9 @@ A set of tools used at IMB and you're very welcome to do so at your institute as
 The tool set consists of several published tools and others developed at IMB (<http://www.imb-mainz.de/home/>).
 Currently, the tool set sports a RNAseq and ChIPseq pipeline and its respective modules.
 
-## RNAseq ##
-### Programs required ###
+## Prerequisites ##
+### RNAseq ###
+#### Programs required ####
 - FastQC
 - STAR
 - Samtools
@@ -22,7 +23,7 @@ Currently, the tool set sports a RNAseq and ChIPseq pipeline and its respective 
 
 (*) is provided via another project from imbforge
 
-### Files required ###
+#### Files required ####
 - targets.txt (+) (*)
 - contrasts.txt (+) (*)
 - chromosome sizes (*)
@@ -32,8 +33,8 @@ Currently, the tool set sports a RNAseq and ChIPseq pipeline and its respective 
 
 (*) examples provided within this project
 
-## ChIPseq ##
-### Programs required ###
+### ChIPseq ###
+#### Programs required ####
 - FastQC
 - Bowtie 1
 - Samtools
@@ -45,14 +46,14 @@ Currently, the tool set sports a RNAseq and ChIPseq pipeline and its respective 
 
 (*) is provided via another project from imbforge
 
-### Files required ###
+#### Files required ####
 - chromosome sizes (*)
 - targets.txt (*)
 - raw reads or mapped data
 
 (*) examples provided within this project
 
-## Preprations to run ##
+## Preparations to run ##
 NGS projects are required to be run in a consistant way and may be required to be rerun in the near or far future. Hence NGSpipe2go asks you to copy all tools into the project folder, which will ensure that you always use the same program versions at a later time point.
 To this end we suggest to copy all modules, which may be subject to updates, into the project folder.
 
