@@ -25,7 +25,7 @@ bowtie_se = {
 				export TMPDIR=/jobdir/\${LSB_JOBID};
 			fi                                          &&
 
-			zcat $input | bowtie $BOWTIE_FLAGS $BOWTIE_REF - | ${TOOL_SAMTOOLS} view -bhSu - | ${SAMTOOLS} sort -@ $BOWTIE_THREADS - $output.prefix
+			zcat $input | bowtie $BOWTIE_FLAGS $BOWTIE_REF - | ${TOOL_SAMTOOLS} view -bhSu - | ${TOOL_SAMTOOLS} sort -@ $BOWTIE_THREADS - $output.prefix
 		""","bowtie_se"
 	}
 }
