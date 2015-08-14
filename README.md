@@ -1,7 +1,9 @@
+![IMB-logo](resources/IMB_logo.png)
+
 # NGSpipe2go #
 A set of tools used at IMB and you're very welcome to do so at your institute as well.
 
-The tool set consists of several published tools and others developed at IMB.
+The tool set consists of several published tools and others developed at IMB (<http://www.imb-mainz.de/home/>).
 Currently, the tool set sports a RNAseq and ChIPseq pipeline and its respective modules.
 
 ## RNAseq ##
