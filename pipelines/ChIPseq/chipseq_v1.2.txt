@@ -1,41 +1,41 @@
-MODULE_FOLDER="/home/odrechse/bpipe/chipseq/"
+MODULE_FOLDER="project_folder/imbforge/modules/"
 
-load MODULE_FOLDER + "essential.vars.groovy"
-load MODULE_FOLDER + "tool.locations.groovy"
+load MODULE_FOLDER + "ChIPseq/essential.vars.groovy"
+load MODULE_FOLDER + "ChIPseq/tool.locations.groovy"
 
-load MODULE_FOLDER + "fastqc.vars.groovy"
-load MODULE_FOLDER + "fastqc.module.groovy"
+load MODULE_FOLDER + "NGS/fastqc.vars.groovy"
+load MODULE_FOLDER + "NGS/fastqc.module.groovy"
 
-load MODULE_FOLDER + "bowtie1.vars.groovy"
-load MODULE_FOLDER + "bowtie1.module.groovy"
+load MODULE_FOLDER + "ChIPseq/bowtie1.vars.groovy"
+load MODULE_FOLDER + "ChIPseq/bowtie1.module.groovy"
 
-load MODULE_FOLDER + "bamindexer.vars.groovy"
-load MODULE_FOLDER + "bamindexer.module.groovy"
+load MODULE_FOLDER + "NGS/bamindexer.vars.groovy"
+load MODULE_FOLDER + "NGS/bamindexer.module.groovy"
 
-load MODULE_FOLDER + "markdups.vars.groovy"
-load MODULE_FOLDER + "markdups.module.groovy"
+load MODULE_FOLDER + "NGS/markdups.vars.groovy"
+load MODULE_FOLDER + "NGS/markdups.module.groovy"
 
-load MODULE_FOLDER + "extend.vars.groovy"
-load MODULE_FOLDER + "extend.module.groovy"
+load MODULE_FOLDER + "NGS/extend.vars.groovy"
+load MODULE_FOLDER + "NGS/extend.module.groovy"
 
-load MODULE_FOLDER + "bam2bw.vars.groovy"
-load MODULE_FOLDER + "bam2bw.module.groovy"
+load MODULE_FOLDER + "NGS/bam2bw.vars.groovy"
+load MODULE_FOLDER + "NGS/bam2bw.module.groovy"
 
-load MODULE_FOLDER + "ipstrength.vars.groovy"
-load MODULE_FOLDER + "ipstrength.module.groovy"
+load MODULE_FOLDER + "ChIPseq/ipstrength.vars.groovy"
+load MODULE_FOLDER + "ChIPseq/ipstrength.module.groovy"
 
-load MODULE_FOLDER + "phantompeak.vars.groovy"
-load MODULE_FOLDER + "phantompeak.module.groovy"
+load MODULE_FOLDER + "ChIPseq/phantompeak.vars.groovy"
+load MODULE_FOLDER + "ChIPseq/phantompeak.module.groovy"
 
-load MODULE_FOLDER + "pbc.module.groovy"
+load MODULE_FOLDER + "ChIPseq/pbc.module.groovy"
 
-load MODULE_FOLDER + "macs2.vars.groovy"
-load MODULE_FOLDER + "macs2.module.groovy"
+load MODULE_FOLDER + "ChIPseq/macs2.vars.groovy"
+load MODULE_FOLDER + "ChIPseq/macs2.module.groovy"
 
-load MODULE_FOLDER + "collectbpipes.module.2.groovy"
+load MODULE_FOLDER + "miscellaneous/collectbpipes.module.2.groovy"
 
-load MODULE_FOLDER + "shinyreports.vars.groovy"
-load MODULE_FOLDER + "shinyreports.module.groovy"
+load MODULE_FOLDER + "ChIPseq/shinyreports.vars.groovy"
+load MODULE_FOLDER + "ChIPseq/shinyreports.module.groovy"
 
 //MAIN PIPELINE TASK
 run {

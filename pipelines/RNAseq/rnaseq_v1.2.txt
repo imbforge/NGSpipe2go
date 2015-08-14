@@ -1,4 +1,4 @@
-MODULE_FOLDER="/home/odrechse/bpipe/rnaseq"
+MODULE_FOLDER="project_folder/imbforge/modules/"
 
 load MODULE_FOLDER + "essential.vars.groovy"
 load MODULE_FOLDER + "tool.locations.groovy"
