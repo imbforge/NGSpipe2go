@@ -27,6 +27,7 @@ Currently, the tool set sports a RNAseq and ChIPseq pipeline and its respective 
 - raw reads or mapped data
 
 (+) files are needed to run the EdgeR and DEseq2 modules.
+
 (*) examples provided within this project
 
 ## ChIPseq ##
@@ -39,6 +40,7 @@ Currently, the tool set sports a RNAseq and ChIPseq pipeline and its respective 
 - UCSC tool set
 - encodeChIPqc (*)
 - MACS2
+
 (*) is provided via another project from imbforge
 
 ### Files required ###
@@ -63,12 +65,13 @@ or
 
 Adjust the information found in the following files:
 - Folder information in modules/RNAseq/tool.locations or modules/ChIPseq/tool.locations (*)
-- Project_folder needs to be entered in modules/RNAseq/essential.vars.groovy modules/ChIPseq/essential.vars.groovy (**)
-- Folder information in the recently linked rnaseq- or chipseq pipeline file (**)
+- Project_folder needs to be entered in modules/RNAseq/essential.vars.groovy modules/ChIPseq/essential.vars.groovy (+)
+- Folder information in the recently linked rnaseq- or chipseq pipeline file (+)
 - Compute requirements for the used queueing system according to the project data (Whole genome data might need more compute ressources than a low coverage ChIPseq experiment) (*)
 
 (*) these steps need to be done once for the setup of NGSpipe2go
-(**) these steps need to be repeated for each project to be run
+
+(+) these steps need to be repeated for each project to be run
 
 ## Run ##
 
