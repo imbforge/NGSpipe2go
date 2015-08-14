@@ -67,8 +67,8 @@ or
     ln -s project_folder/imbforge/pipelines/ChIPseq/* project_folder/
 
 Adjust the information found in the following files:
-- Folder information in modules/RNAseq/tool.locations or modules/ChIPseq/tool.locations (*)
-- Project_folder needs to be entered in modules/RNAseq/essential.vars.groovy modules/ChIPseq/essential.vars.groovy (+)
+- Folder information in project_folder/imbforge/modules/RNAseq/tool.locations or project_folder/imbforge/modules/ChIPseq/tool.locations (*)
+- Project_folder needs to be entered in project_folder/imbforge/modules/RNAseq/essential.vars.groovy or project_folder/imbforge/modules/ChIPseq/essential.vars.groovy (+)
 - Folder information in the recently linked rnaseq- or chipseq pipeline file (+)
 - Compute requirements for the used queueing system according to the project data (Whole genome data might need more compute ressources than a low coverage ChIPseq experiment) (*)
 
