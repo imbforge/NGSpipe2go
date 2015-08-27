@@ -57,18 +57,18 @@ Currently, the tool set sports a RNAseq and ChIPseq pipeline and its respective 
 NGS projects are required to be run in a consistant way and may be required to be rerun in the near or far future. Hence NGSpipe2go asks you to copy all tools into the project folder, which will ensure that you always use the same program versions at a later time point.
 To this end we suggest to copy all modules, which may be subject to updates, into the project folder.
 
-    cp -r github/imbforge/ project_folder/
+    cp -r github/NGSpipe2go/ project_folder/
 
 Select a pipeline to run and make it available in the main project.
 
-    ln -s project_folder/imbforge/pipelines/RNAseq/* project_folder/
+    ln -s project_folder/NGSpipe2go/pipelines/RNAseq/* project_folder/
 or 
 
-    ln -s project_folder/imbforge/pipelines/ChIPseq/* project_folder/
+    ln -s project_folder/NGSpipe2go/pipelines/ChIPseq/* project_folder/
 
 Adjust the information found in the following files:
-- Folder information in project_folder/imbforge/modules/RNAseq/tool.locations or project_folder/imbforge/modules/ChIPseq/tool.locations (*)
-- Project_folder needs to be entered in project_folder/imbforge/modules/RNAseq/essential.vars.groovy or project_folder/imbforge/modules/ChIPseq/essential.vars.groovy (+)
+- Folder information in project_folder/NGSpipe2go/modules/RNAseq/tool.locations or project_folder/NGSpipe2go/modules/ChIPseq/tool.locations (*)
+- Project_folder needs to be entered in project_folder/NGSpipe2go/modules/RNAseq/essential.vars.groovy or project_folder/NGSpipe2go/modules/ChIPseq/essential.vars.groovy (+)
 - Folder information in the recently linked rnaseq- or chipseq pipeline file (+)
 - Compute requirements for the used queueing system according to the project data (Whole genome data might need more compute ressources than a low coverage ChIPseq experiment) (*)
 
