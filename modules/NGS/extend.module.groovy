@@ -16,9 +16,11 @@ extend = {
 				export TMPDIR=/jobdir/\${LSB_JOBID};
 			fi &&
 
+			CHRSIZES=${TMP}/\$(basename ${input.prefix}).extend.chrsizes  &&
+			${TOOL_SAMTOOLS} idxstats ${input} | cut -f1-2 > \${CHRSIZES} &&
 			bedtools bamtobed -split -i $input |
-			bedtools slop -g $EXTEND_CHRSIZES -l 0 -r $EXTEND_FRAGLEN -s |
-			bedtools bedtobam -ubam -g $EXTEND_CHRSIZES |
+			bedtools slop -g \$CHRSIZES -l 0 -r $EXTEND_FRAGLEN -s |
+			bedtools bedtobam -ubam -g \$CHRSIZES |
 			${TOOL_SAMTOOLS} sort - $output.prefix &&
 			${TOOL_SAMTOOLS} index $output
 		""","extend"

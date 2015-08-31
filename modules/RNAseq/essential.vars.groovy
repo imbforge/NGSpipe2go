@@ -8,7 +8,6 @@ ESSENTIAL_STAR_REF="/fsimb/groups/imb-bioinfocf/common-data/star_genomes/Mus_mus
 ESSENTIAL_GENESGTF="/fsimb/groups/imb-bioinfocf/common-data/igenomes_reference/Mus_musculus/UCSC/mm9/Annotation/Genes/genes.gtf"        // "/fsimb/groups/imb-bioinfocf/common-data/igenomes_reference/Mus_musculus/UCSC/mm9/Annotation/Genes/genes.gtf" // used for gene mapping (STAR), counting (HTSEQ), duprate analysis
 ESSENTIAL_GENESGTF2="/fsimb/groups/imb-bioinfocf/common-data/annotation/mm9/gencode.vM1.annotation.gtf.gz"   // "/fsimb/groups/imb-bioinfocf/common-data/annotation/mm9/gencode.vM1.annotation.gtf.gz"  // to use with RNAtypes
 ESSENTIAL_GENESBED="/fsimb/groups/imb-bioinfocf/common-data/annotation/mm9/mm9_UCSC_knownGene.bed"      // "/fsimb/groups/imb-bioinfocf/common-data/annotation/mm9/mm9_UCSC_knownGene.bed"
-ESSENTIAL_CHR_SIZES=ESSENTIAL_PROJECT + "/mm9.chrom.sizes"      // ESSENTIAL_PROJECT + "/mm9.chrom.sizes"
 ESSENTIAL_SAMPLE_PREFIX="Sample_imb_richly_2014_05_"     // "Sample_imb_richly_2014_05_"
 ESSENTIAL_PAIRED="no"                   // paired end design
 ESSENTIAL_STRANDED="reverse"    // strandness: no|yes|reverse

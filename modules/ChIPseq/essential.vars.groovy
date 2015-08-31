@@ -1,6 +1,5 @@
 ESSENTIAL_PROJECT="" // put project folder here
 ESSENTIAL_BOWTIE_REF="/fsimb/groups/imb-bioinfocf/common-data/igenomes_reference/Mus_musculus/UCSC/mm9/Sequence/BowtieIndex/genome"
-ESSENTIAL_CHR_SIZES=ESSENTIAL_PROJECT + "/mm9.chrom.sizes"
 ESSENTIAL_SAMPLE_PREFIX="Sample_imb_gcf_2014_07_"
 ESSENTIAL_BSGENOME="BSgenome.Mmusculus.UCSC.mm9"
 ESSENTIAL_FRAGLEN=200
