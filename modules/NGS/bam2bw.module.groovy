@@ -16,10 +16,13 @@ bam2bw = {
 				export TMPDIR=/jobdir/\${LSB_JOBID};
 			fi &&
 
+			CHRSIZES=${TMP}/\$(basename ${input.prefix}).bam2bw.chrsizes &&
+			${TOOL_SAMTOOLS} idxstats ${input} | cut -f1-2 > \${CHRSIZES} &&
 			TOTAL_MAPPED=\$( ${TOOL_SAMTOOLS} flagstat $input | head -n1| cut -f1 -d" ") &&
 			SCALE=\$(echo "1000000/\$TOTAL_MAPPED" | bc -l) &&
-			genomeCoverageBed -bg -split -scale \${SCALE} -ibam ${input} -g $BAM2BW_CHRSIZES > ${output.prefix}.bedgraph &&
-			${TOOL_DEPENDENCIES}/ucsc/default/bedGraphToBigWig ${output.prefix}.bedgraph $BAM2BW_CHRSIZES $output
+			genomeCoverageBed -bg -split -scale \${SCALE} -ibam ${input} -g \${CHRSIZES} > ${output.prefix}.bedgraph &&
+			${TOOL_DEPENDENCIES}/ucsc/default/bedGraphToBigWig ${output.prefix}.bedgraph \${CHRSIZES} $output &&
+			rm \${CHRSIZES} ${output.prefix}.bedgraph
 		""","bam2bw"
 	}
 }
