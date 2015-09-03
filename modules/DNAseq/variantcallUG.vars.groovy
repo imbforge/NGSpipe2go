@@ -1,0 +1,1 @@
+GATK_THREADS=4
