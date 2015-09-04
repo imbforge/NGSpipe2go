@@ -9,7 +9,7 @@ VariantCallHC = {
 
 	output.dir = RESULTS
     
-    transform (".bam") to (".HC.vcf.gz") {
+    transform (".realigned.recalibrated.bam") to (".HC.vcf.gz") {
         
         // usage parameters https://www.broadinstitute.org/gatk/gatkdocs/org_broadinstitute_gatk_tools_walkers_haplotypecaller_HaplotypeCaller.php
         def GATK_FLAGS = "--emitRefConfidence GVCF --variant_index_type LINEAR --variant_index_parameter 128000"
