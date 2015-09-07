@@ -26,7 +26,6 @@ Currently, the tool set sports a RNAseq and ChIPseq pipeline and its respective 
 #### Files required ####
 - targets.txt (+) (*)
 - contrasts.txt (+) (*)
-- chromosome sizes (*)
 - raw reads or mapped data
 
 (+) files are needed to run the EdgeR and DEseq2 modules.
@@ -47,11 +46,10 @@ Currently, the tool set sports a RNAseq and ChIPseq pipeline and its respective 
 (*) is provided via another project from imbforge
 
 #### Files required ####
-- chromosome sizes (*)
 - targets.txt (*)
 - raw reads or mapped data
 
-(*) examples provided within this project
+(*) example provided within this project
 
 ## Preparations to run ##
 NGS projects are required to be run in a consistant way and may be required to be rerun in the near or far future. Hence NGSpipe2go asks you to copy all tools into the project folder, which will ensure that you always use the same program versions at a later time point.
