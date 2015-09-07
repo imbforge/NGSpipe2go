@@ -27,8 +27,13 @@ load MODULE_FOLDER + "DNAseq/variantcallHC.module.groovy"
 load MODULE_FOLDER + "DNAseq/variantcallUG.vars.groovy"
 load MODULE_FOLDER + "DNAseq/variantcallUG.module.groovy"
 
+load MODULE_FOLDER + "DNAseq/varianteval.vars.groovy"
+load MODULE_FOLDER + "DNAseq/varianteval.module.groovy"
+
+load MODULE_FOLDER + "miscellaneous/collectbpipes.module.2.groovy"
+
 run {
     //"%.fastq.gz" * [ FastQC ] + "%_*.fastq.gz" * [ BWA_pe ]
-    "%.fastq.gz" * [ FastQC ] + "%_*.fastq.gz" * [ BWA_pe ] + "%.bam" * [ MarkDups + BAMindexer + IndelRealignment + BaseRecalibration + [ VariantCallHC, VariantCallUG ] ]
+    "%.fastq.gz" * [ FastQC ] + "%_*.fastq.gz" * [ BWA_pe ] + "%.bam" * [ MarkDups + BAMindexer + IndelRealignment + BaseRecalibration + [ VariantCallHC, VariantCallUG ] ] + "%.vcf.gz" * [ VariantEval ] + collectBpipeLogs
     // "%.fastq.gz" * [ FastQC ] + "%_*.fastq.gz" * [ BWA_pe ] + "%.bam" * [ MarkDups + IndelRealignment + BaseRecalibrate + HaplotypeCall ]
     }
