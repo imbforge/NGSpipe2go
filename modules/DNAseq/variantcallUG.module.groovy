@@ -9,7 +9,7 @@ VariantCallUG = {
 
 	output.dir = RESULTS
     
-    transform (".realigned.recalibrated.bam") to (".UG.vcf.gz") {
+    transform (".duprm.realigned.recalibrated.bam") to (".UG.vcf.gz") {
         
         // usage parameters https://www.broadinstitute.org/gatk/gatkdocs/org_broadinstitute_gatk_tools_walkers_genotyper_UnifiedGenotyper.php
         def GATK_FLAGS = " --output_mode EMIT_ALL_SITES " 
