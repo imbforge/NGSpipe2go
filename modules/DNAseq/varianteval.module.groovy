@@ -7,7 +7,7 @@ VariantEval = {
 	constraints: "Requires BWA ( paramteter -M ) produced BAM file, with correct chromosome order and ReadGroup attached.",
 	author: "Oliver Drechsel"
 
-	output.dir = RESULTS
+	output.dir = QC
     
     transform (".vcf.gz") to (".report") {
         
@@ -22,10 +22,11 @@ VariantEval = {
 			fi                                          &&
         
         
-        java -Djava.io.tmpdir=$TMPDIR -jar $TOOL_GATK/GenomeAnalysisTK.jar -T VariantEval -R $ESSENTIAL_BWA_REF -nt $GATK_THREADS --eval $input -o $output
+        java -Djava.io.tmpdir=$TMPDIR -jar $TOOL_GATK/GenomeAnalysisTK.jar -T VariantEval -R $ESSENTIAL_BWA_REF -nt $GATK_THREADS --dbsnp ${ESSENTIAL_KNOWN_VARIANTS} --eval $input -o $output
 
         ""","VariantEval"
     }
-    forward $input
+    
+    forward input
     
 }
