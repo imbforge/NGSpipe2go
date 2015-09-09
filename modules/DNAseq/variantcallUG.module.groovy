@@ -9,11 +9,23 @@ VariantCallUG = {
 
 	output.dir = RESULTS
     
+    def GATK_FLAGS = ""
+    
+    if (ESSENTIAL_CALL_REGION!=null && ESSENTIAL_CALL_REGION.length()>0) {
+        
+        GATK_FLAGS = " -L " + ESSENTIAL_CALL_REGION
+        
+    } else {
+        
+        GATK_FLAGS = ""
+        
+    }
+    
+    //def GATK_FLAGS = " --output_mode EMIT_ALL_SITES " 
+    
     transform (".duprm.realigned.recalibrated.bam") to (".UG.vcf.gz") {
         
         // usage parameters https://www.broadinstitute.org/gatk/gatkdocs/org_broadinstitute_gatk_tools_walkers_genotyper_UnifiedGenotyper.php
-        def GATK_FLAGS = " --output_mode EMIT_ALL_SITES " 
-        
         exec """
         
             export TOOL_DEPENDENCIES=$TOOL_DEPENDENCIES &&
@@ -22,7 +34,7 @@ VariantCallUG = {
 			fi                                          &&
         
         
-        java -Djava.io.tmpdir=$TMPDIR -jar $TOOL_GATK/GenomeAnalysisTK.jar -T UnifiedGenotyper -nt $GATK_THREADS -nct $GATK_THREADS -R $ESSENTIAL_BWA_REF -glm BOTH -I $input -o $output
+        java -Djava.io.tmpdir=$TMPDIR -jar $TOOL_GATK/GenomeAnalysisTK.jar -T UnifiedGenotyper -nt $GATK_THREADS -nct $GATK_THREADS -R $ESSENTIAL_BWA_REF -glm BOTH -I $input -o $output $GATK_FLAGS
         
         ""","VariantCallUG"
     }
