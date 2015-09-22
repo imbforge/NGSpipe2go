@@ -60,14 +60,16 @@ To this end we suggest to copy all modules, which may be subject to updates, int
 Select a pipeline to run and make it available in the main project.
 
     ln -s project_folder/NGSpipe2go/pipelines/RNAseq/* project_folder/
+    ln -s project_folder/NGSpipe2go/modules/RNAseq/essential.vars.groovy project_folder/
 or 
 
     ln -s project_folder/NGSpipe2go/pipelines/ChIPseq/* project_folder/
+    ln -s project_folder/NGSpipe2go/modules/ChIPseq/essential.vars.groovy project_folder/
 
 Adjust the information found in the following files:
-- Folder information in project_folder/NGSpipe2go/modules/RNAseq/tool.locations or project_folder/NGSpipe2go/modules/ChIPseq/tool.locations (*)
-- Project_folder needs to be entered in project_folder/NGSpipe2go/modules/RNAseq/essential.vars.groovy or project_folder/NGSpipe2go/modules/ChIPseq/essential.vars.groovy (+)
+- Project_folder needs to be entered in essential.vars.groovy or essential.vars.groovy (+)
 - Folder information in the recently linked rnaseq- or chipseq pipeline file (+)
+- Folder information in project_folder/NGSpipe2go/modules/RNAseq/tool.locations or project_folder/NGSpipe2go/modules/ChIPseq/tool.locations (*)
 - Compute requirements for the used queueing system according to the project data (Whole genome data might need more compute ressources than a low coverage ChIPseq experiment) (*)
 
 (*) these steps need to be done once for the setup of NGSpipe2go
