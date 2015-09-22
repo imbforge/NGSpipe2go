@@ -28,6 +28,9 @@ STAR_se = {
 	//						   input.prefix.prefix + "Log.final.out") {
 	//from(".fastq.gz") produce( "bam", "Log.final.out") {
 		// flags
+		def int OVERHANG
+        OVERHANG = ESSENTIAL_READLENGTH.toInteger() - 1
+		
 		def SAMPLE = new File(input.prefix.prefix)
 		def STAR_FLAGS = " --runMode alignReads" +
 					 " --limitGenomeGenerateRAM " + STAR_MAXRAM +
@@ -44,7 +47,8 @@ STAR_se = {
 					 " --outFileNamePrefix " + LOGS + "/STAR_se/" + SAMPLE.name +
 					 " --outTmpDir " + TMP + "/" + SAMPLE.name +
 					 " --readFilesCommand zcat" +
-					 " --sjdbOverhang 50 "
+					 " --sjdbOverhang " + OVERHANG.toString() +
+					 " --sjdbGTFfile " + ESSENTIAL_GENESGTF
 
 		def SAMTOOLS_FLAGS = "-bhSu"
 		if(STAR_FILTER_SEC == "YES") {
