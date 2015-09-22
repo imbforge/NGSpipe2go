@@ -217,7 +217,7 @@ ChIPhelper.IPstrength<- function(web=TRUE) {
 	# add a row with the sample names
 	df.names <- matrix(sapply(1:nrow(df),function(i) { c(df[i,],samples[i,]) }),
                        ncol=SHINYREPS_PLOTS_COLUMN,byrow=T)
-	colnames(df.names) <- c(" "," "," "," ")
+	colnames(df.names) <- rep(" ",SHINYREPS_PLOTS_COLUMN)
 	
 	kable(as.data.frame(df.names),output=F)
 }
@@ -258,7 +258,7 @@ ChIPhelper.PhantomPeak <- function(web=TRUE) {
 	# add a row with the sample names
 	df.names <- matrix(sapply(1:nrow(df),function(i) { c(df[i,],samples[i,]) }),
                        ncol=SHINYREPS_PLOTS_COLUMN,byrow=T)
-	colnames(df.names) <- c(" "," "," "," ")
+	colnames(df.names) <- rep(" ",SHINYREPS_PLOTS_COLUMN)
 	
 	kable(as.data.frame(df.names),output=F)
 }
