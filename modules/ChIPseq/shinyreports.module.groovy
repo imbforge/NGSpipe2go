@@ -34,7 +34,8 @@ shinyReports = {
 		echo "SHINYREPS_PHANTOMPEAK=${SHINYREPS_PHANTOMPEAK}"   >> ${REPORTS}/shinyReports.txt &&
 		echo "SHINYREPS_BUSTARD=${SHINYREPS_BUSTARD}" >> ${REPORTS}/shinyReports.txt &&
 		echo "SHINYREPS_MACS2=${SHINYREPS_MACS2}"     >> ${REPORTS}/shinyReports.txt &&
-		echo "SHINYREPS_PREFIX=${SHINYREPS_PREFIX}"   >> ${REPORTS}/shinyReports.txt
+		echo "SHINYREPS_PREFIX=${SHINYREPS_PREFIX}"   >> ${REPORTS}/shinyReports.txt &&
+		echo "SHINYREPS_PLOTS_COLUMN=${SHINYREPS_PLOTS_COLUMN}" >> ${REPORTS}/shinyReports.txt
 	""","shinyReports"
 }
 
