@@ -13,4 +13,4 @@ SHINYREPS_PBC=QC + "/pbc"               	//where the PBC files lie
 SHINYREPS_PHANTOMPEAK=QC + "/phantompeak"	//where the PhantomPeak files lie
 SHINYREPS_BUSTARD=QC + "/DemultiplexedBustardSummary.xml"	//where the bustard xml file lies
 SHINYREPS_MACS2=RESULTS + "/macs2"	//where the MACS2 results lie
-
+SHINYREPS_PLOTS_COLUMN=4            //number of columns to splits the plot grids (ipstrength, phantompeaks...). Min=2

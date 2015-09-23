@@ -257,6 +257,10 @@ DEhelper.dupRadar <- function(web=TRUE) {
 	if(!file.exists(SHINYREPS_DUPRADAR_LOG)) {
 		return("DupRadar statistics not available")
 	}
+
+    if(!is.integer(SHINYREPS_PLOTS_COLUMN) | SHINYREPS_PLOTS_COLUMN < 2) {
+        SHINYREPS_PLOTS_COLUMN <- 4L    # default to 4 columns
+    }
 	
 	# construct the folder name, which is different for web and noweb
 	QC <- if(web) "/dupRadar" else SHINYREPS_DUPRADAR_LOG
@@ -267,18 +271,19 @@ DEhelper.dupRadar <- function(web=TRUE) {
 		paste0("![alt text](",QC,"/",basename(f),")")
 	})
 	
-	# put sample names and output an md table of 4 columns
-	while(length(df) %% 4 != 0) df <- c(df,"")
+	# put sample names and output an md table of SHINYREPS_PLOTS_COLUMN columns
+	while(length(df) %% SHINYREPS_PLOTS_COLUMN != 0) df <- c(df,"")
 	samples <- sapply(df,function(x) {
 		x <- sapply(x,function(x) gsub(paste0("^",SHINYREPS_PREFIX),"",basename(x)))
 		gsub("_dupRadar.png)","",x)
 	})
-	df      <- matrix(df     ,ncol=4,byrow=T)
-	samples <- matrix(samples,ncol=4,byrow=T)
+	df      <- matrix(df     ,ncol=SHINYREPS_PLOTS_COLUMN,byrow=T)
+	samples <- matrix(samples,ncol=SHINYREPS_PLOTS_COLUMN,byrow=T)
 	
 	# add a row with the sample names
-	df.names <- matrix(sapply(1:nrow(df),function(i) { c(df[i,],samples[i,]) }),ncol=4,byrow=T)
-	colnames(df.names) <- c(" "," "," "," ")
+	df.names <- matrix(sapply(1:nrow(df),function(i) { c(df[i,],samples[i,]) }),
+                       ncol=SHINYREPS_PLOTS_COLUMN,byrow=T)
+	colnames(df.names) <- rep(" ",SHINYREPS_PLOTS_COLUMN)
 	
 	kable(as.data.frame(df.names),output=F)
 }
@@ -298,14 +303,14 @@ DEhelper.RNAtypes <- function(web=TRUE) {
 	QC <- if(web) "/RNAtypes" else SHINYREPS_RNATYPES_LOG
 	
 	# construct the image url from the folder contents (skip current dir .)
-	f <- list.files(SHINYREPS_RNATYPES_LOG,pattern="*.png")
+	f <- list.files(SHINYREPS_RNATYPES_LOG,pattern="RNAtypes.counts.per.png")
 	df <- sapply(f,function(f) {
 		paste0("![alt text](",QC,"/",basename(f),")")
 	})
 	
-	# output an md table of 3 columns and 1 row
-	df <- matrix(df,ncol=3)
-	colnames(df) <- c(" "," "," ")
+	# output an md table of 1 columns and 1 row
+	df <- matrix(df,ncol=1,nrow=1)
+	colnames(df) <- c(" ")
 
 	kable(as.data.frame(df),output=F)
 }
@@ -321,6 +326,10 @@ DEhelper.geneBodyCov <- function(web=TRUE) {
 		return("geneBodyCov statistics not available")
 	}
 	
+    if(!is.integer(SHINYREPS_PLOTS_COLUMN) | SHINYREPS_PLOTS_COLUMN < 2) {
+        SHINYREPS_PLOTS_COLUMN <- 4L    # default to 4 columns
+    }
+	
 	# construct the folder name, which is different for web and noweb
 	QC <- if(web) "/geneBodyCov" else SHINYREPS_GENEBODYCOV_LOG
 	
@@ -330,18 +339,19 @@ DEhelper.geneBodyCov <- function(web=TRUE) {
 		paste0("![alt text](",QC,"/",basename(f),")")
 	})
 	
-	# put sample names and output an md table of 4 columns
-	while(length(df) %% 4 != 0) df <- c(df,"")
+	# put sample names and output an md table of SHINYREPS_PLOTS_COLUMN columns
+	while(length(df) %% SHINYREPS_PLOTS_COLUMN != 0) df <- c(df,"")
 	samples <- sapply(df,function(x) {
 		x <- sapply(x,function(x) gsub(paste0("^",SHINYREPS_PREFIX),"",basename(x)))
 		gsub(".geneBodyCoverage.curves.png)","",x)
 	})
-	df      <- matrix(df     ,ncol=4,byrow=T)
-	samples <- matrix(samples,ncol=4,byrow=T)
+	df      <- matrix(df     ,ncol=SHINYREPS_PLOTS_COLUMN,byrow=T)
+	samples <- matrix(samples,ncol=SHINYREPS_PLOTS_COLUMN,byrow=T)
 	
 	# add a row with the sample names
-	df.names <- matrix(sapply(1:nrow(df),function(i) { c(df[i,],samples[i,]) }),ncol=4,byrow=T)
-	colnames(df.names) <- c(" "," "," "," ")
+	df.names <- matrix(sapply(1:nrow(df),function(i) { c(df[i,],samples[i,]) }),
+                       ncol=SHINYREPS_PLOTS_COLUMN,byrow=T)
+	colnames(df.names) <- rep(" ",SHINYREPS_PLOTS_COLUMN)
 	
 	kable(as.data.frame(df.names),output=F)
 }
