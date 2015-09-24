@@ -43,7 +43,8 @@ shinyReports = {
 		echo "SHINYREPS_BUSTARD=${SHINYREPS_BUSTARD}"         >> ${REPORTS}/shinyReports.txt &&
 		echo "SHINYREPS_DE_EDGER=${SHINYREPS_DE_EDGER}"       >> ${REPORTS}/shinyReports.txt &&
 		echo "SHINYREPS_SUBREAD=${SHINYREPS_SUBREAD}"       >> ${REPORTS}/shinyReports.txt &&
-		echo "SHINYREPS_SUBREAD_SUFFIX=${SHINYREPS_SUBREAD_SUFFIX}"       >> ${REPORTS}/shinyReports.txt
+		echo "SHINYREPS_SUBREAD_SUFFIX=${SHINYREPS_SUBREAD_SUFFIX}"       >> ${REPORTS}/shinyReports.txt &&
+        echo "SHINYREPS_PLOTS_COLUMN=${SHINYREPS_PLOTS_COLUMN}" >> ${REPORTS}/shinyReports.txt
 	""","shinyReports"
 }
 

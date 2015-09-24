@@ -17,4 +17,5 @@ SHINYREPS_BUSTARD=QC + "/DemultiplexedBustardSummary.xml"	//where the bustard xm
 SHINYREPS_DE_EDGER=DE_edgeR_OUTDIR + "/DE_edgeR.RData"   //where the DE_edgeR output lies
 SHINYREPS_SUBREAD=RESULTS + "/subread-count" // location of the subread counts
 SHINYREPS_SUBREAD_SUFFIX=".raw_readcounts.tsv.summary" // the extension of the subread stats file
+SHINYREPS_PLOTS_COLUMN=4    //number of columns to splits the plot grids (dupradar, genebodycov...). Min=2
 
