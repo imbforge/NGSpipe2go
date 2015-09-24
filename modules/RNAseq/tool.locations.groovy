@@ -1,9 +1,9 @@
 // variables containing the location of the used tools
 TOOL_DEPENDENCIES="/fsimb/groups/imb-bioinfocf/common-tools/dependencies/" // your local tools folder
-PROJECT_DEPENDENCIES="/fsimb/groups/imb-bioinfocf/projects/cfb_internal/imbforge-code/test/rnaseq_pipe_modular_git/imbforge/" // please copy the bpipe tools to the project folder and include the location here
+PROJECT_DEPENDENCIES=ESSENTIAL_PROJECT + "/NGSpipe2go/tools/" // please copy the bpipe tools to the project folder and include the location here
 TOOL_R=TOOL_DEPENDENCIES + "/R/3.1.2/" // outdated (3.2.0) -- was default as of 150428
 TOOL_FASTQC=TOOL_DEPENDENCIES + "/fastqc/0.11.3" // outdated (0.11.3) -- was default as of 150428
-TOOL_STAR=TOOL_DEPENDENCIES + "/star/2.4.1a/" // -- was latest as of 150428
+TOOL_STAR=TOOL_DEPENDENCIES + "/star/2.4.2a/" // -- latest as of 150922 
 TOOL_SAMTOOLS=TOOL_DEPENDENCIES + "/samtools/1.2/samtools"
 TOOL_HTSEQ=TOOL_DEPENDENCIES + "/htseq/0.6.1p1" // -- was latest as of 150428
 TOOL_SUBREAD=TOOL_DEPENDENCIES + "/subread/1.4.6-p2/" // was introduced as of 150428
