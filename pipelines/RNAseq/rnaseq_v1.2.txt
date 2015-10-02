@@ -1,4 +1,4 @@
-MODULE_FOLDER="project_folder/imbforge/modules/"
+MODULE_FOLDER="project_folder/NGSpipe2go/modules/" // adjust to your projects needs
 
 load MODULE_FOLDER + "RNAseq/essential.vars.groovy"
 load MODULE_FOLDER + "RNAseq/tool.locations.groovy"
