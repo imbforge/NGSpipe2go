@@ -6,36 +6,43 @@ shinyReports = {
 		constraints: "",
 		author: "Sergi Sayols"
 
-	exec """
-		if [ ! -d "${REPORTS}" ]; then
-			mkdir -p ${REPORTS};
-		fi &&
-
-		cp ${TOOL_DEPENDENCIES}/imb-forge/reports/chipseq/server.R ${REPORTS}                &&
-		cp ${TOOL_DEPENDENCIES}/imb-forge/reports/chipseq/ui.R ${REPORTS}                    &&
-		cp ${TOOL_DEPENDENCIES}/imb-forge/reports/chipseq/ChIP.shinyrep.helpers.R ${REPORTS} &&
-		cp ${TOOL_DEPENDENCIES}/imb-forge/reports/chipseq/bustard.pl ${REPORTS}              &&
-		cp ${TOOL_DEPENDENCIES}/imb-forge/reports/chipseq/BustardSummary.toMD.xsl ${REPORTS} &&
-		cp ${TOOL_DEPENDENCIES}/imb-forge/reports/chipseq/ChIPreport.Rmd ${REPORTS}          &&
-
-		PROJECT=\$(basename ${SHINYREPS_PROJECT})                              &&
-		sed -i "2,2s/SHINYREPS_PROJECT/\${PROJECT}/" ${REPORTS}/ChIPreport.Rmd &&
-
-		echo "SHINYREPS_PROJECT=${SHINYREPS_PROJECT}" >  ${REPORTS}/shinyReports.txt &&
-		echo "SHINYREPS_LOG=${SHINYREPS_LOG}"         >> ${REPORTS}/shinyReports.txt &&
-		echo "SHINYREPS_QC=${SHINYREPS_QC}"           >> ${REPORTS}/shinyReports.txt &&
-		echo "SHINYREPS_RES=${SHINYREPS_RES}"         >> ${REPORTS}/shinyReports.txt &&
-		echo "SHINYREPS_TARGETS=${SHINYREPS_TARGETS}" >> ${REPORTS}/shinyReports.txt &&
-		echo "SHINYREPS_BOWTIE_LOG=${SHINYREPS_BOWTIE_LOG}"     >> ${REPORTS}/shinyReports.txt &&
-		echo "SHINYREPS_MARKDUPS_LOG=${SHINYREPS_MARKDUPS_LOG}" >> ${REPORTS}/shinyReports.txt &&
-		echo "SHINYREPS_FASTQC=${SHINYREPS_FASTQC}"   >> ${REPORTS}/shinyReports.txt &&
-		echo "SHINYREPS_IPSTRENGTH=${SHINYREPS_IPSTRENGTH}"     >> ${REPORTS}/shinyReports.txt &&
-		echo "SHINYREPS_PBC=${SHINYREPS_PBC}"         >> ${REPORTS}/shinyReports.txt &&
-		echo "SHINYREPS_PHANTOMPEAK=${SHINYREPS_PHANTOMPEAK}"   >> ${REPORTS}/shinyReports.txt &&
-		echo "SHINYREPS_BUSTARD=${SHINYREPS_BUSTARD}" >> ${REPORTS}/shinyReports.txt &&
-		echo "SHINYREPS_MACS2=${SHINYREPS_MACS2}"     >> ${REPORTS}/shinyReports.txt &&
-		echo "SHINYREPS_PREFIX=${SHINYREPS_PREFIX}"   >> ${REPORTS}/shinyReports.txt &&
-		echo "SHINYREPS_PLOTS_COLUMN=${SHINYREPS_PLOTS_COLUMN}" >> ${REPORTS}/shinyReports.txt
-	""","shinyReports"
+	output.dir = REPORTS
+	
+	produce("shinyReports.txt") {
+		exec """
+			
+			cp ${MODULE_FOLDER}/../tools/reports/shiny_chipseq_reporting_tool/server.R ${REPORTS}                &&
+			cp ${MODULE_FOLDER}/../tools/reports/shiny_chipseq_reporting_tool/ui.R ${REPORTS}                    &&
+			cp ${MODULE_FOLDER}/../tools/reports/shiny_chipseq_reporting_tool/ChIP.shinyrep.helpers.R ${REPORTS} &&
+			cp ${MODULE_FOLDER}/../tools/reports/shiny_chipseq_reporting_tool/bustard.pl ${REPORTS}              &&
+			cp ${MODULE_FOLDER}/../tools/reports/shiny_chipseq_reporting_tool/BustardSummary.toMD.xsl ${REPORTS} &&
+			
+			if [ -e "${REPORTS}/DEreport.Rmd" ]; then
+				echo 'DEreport.Rmd already exists. Older copy will be kept and not overwritten';
+			else
+				cp ${MODULE_FOLDER}/../tools/reports/shiny_chipseq_reporting_tool/ChIPreport.Rmd ${REPORTS};
+			fi &&
+			
+	
+			PROJECT=\$(basename ${SHINYREPS_PROJECT})                              &&
+			sed -i "2,2s/SHINYREPS_PROJECT/\${PROJECT}/" ${REPORTS}/ChIPreport.Rmd &&
+	
+			echo "SHINYREPS_PROJECT=${SHINYREPS_PROJECT}" >  $output &&
+			echo "SHINYREPS_LOG=${SHINYREPS_LOG}"         >> $output &&
+			echo "SHINYREPS_QC=${SHINYREPS_QC}"           >> $output &&
+			echo "SHINYREPS_RES=${SHINYREPS_RES}"         >> $output &&
+			echo "SHINYREPS_TARGETS=${SHINYREPS_TARGETS}" >> $output &&
+			echo "SHINYREPS_BOWTIE_LOG=${SHINYREPS_BOWTIE_LOG}"     >> $output &&
+			echo "SHINYREPS_MARKDUPS_LOG=${SHINYREPS_MARKDUPS_LOG}" >> $output &&
+			echo "SHINYREPS_FASTQC=${SHINYREPS_FASTQC}"   >> $output &&
+			echo "SHINYREPS_IPSTRENGTH=${SHINYREPS_IPSTRENGTH}"     >> $output &&
+			echo "SHINYREPS_PBC=${SHINYREPS_PBC}"         >> $output &&
+			echo "SHINYREPS_PHANTOMPEAK=${SHINYREPS_PHANTOMPEAK}"   >> $output &&
+			echo "SHINYREPS_BUSTARD=${SHINYREPS_BUSTARD}" >> $output &&
+			echo "SHINYREPS_MACS2=${SHINYREPS_MACS2}"     >> $output &&
+			echo "SHINYREPS_PREFIX=${SHINYREPS_PREFIX}"   >> $output &&
+			echo "SHINYREPS_PLOTS_COLUMN=${SHINYREPS_PLOTS_COLUMN}" >> $output
+		""","shinyReports"
+	}
 }
 
