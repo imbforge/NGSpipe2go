@@ -15,7 +15,11 @@ extend = {
 			if [ -n "\$LSB_JOBID" ]; then
 				export TMPDIR=/jobdir/\${LSB_JOBID};
 			fi &&
-
+			
+			if [ ! -d ${TMP} ]; then
+				mkdir -p ${TMP};
+			fi &&
+			
 			CHRSIZES=${TMP}/\$(basename ${input.prefix}).extend.chrsizes  &&
 			${TOOL_SAMTOOLS} idxstats ${input} | cut -f1-2 > \${CHRSIZES} &&
 			bedtools bamtobed -split -i $input |
