@@ -7,7 +7,7 @@ VariantEval = {
 	constraints: "Requires BWA ( paramteter -M ) produced BAM file, with correct chromosome order and ReadGroup attached.",
 	author: "Oliver Drechsel"
 
-	output.dir = QC
+	output.dir = QC + '/GATK_varianteval'
     
     transform (".vcf.gz") to (".report") {
         
