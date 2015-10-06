@@ -22,7 +22,7 @@ phantompeak = {
 				export TMPDIR=/jobdir/\${LSB_JOBID};
 			fi;
 
-			${TOOL_R}/bin/Rscript ${TOOL_DEPENDENCIES}/imb-forge/encodeChIPqc/phantompeak.R $input \$(basename $input.prefix) $PHANTOMPEAK_FLAGS &&
+			${TOOL_R}/bin/Rscript ${TOOL_ENCODEqc}/phantompeak.R $input \$(basename $input.prefix) $PHANTOMPEAK_FLAGS &&
 			mv *_phantompeak.* $output.dir
 		""","phantompeak"
 	}

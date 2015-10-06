@@ -31,7 +31,7 @@ ipstrength = {
 
 				if [ "\$BAM" != "\$INPUT" ]; then
 					echo "\${IPname} vs \${INPUTname}" >> $output ;
-					${TOOL_R}/bin/Rscript ${TOOL_DEPENDENCIES}/imb-forge/encodeChIPqc/IPstrength.R $IPSTRENGTH_MAPPED/\$IP \$IPname $IPSTRENGTH_MAPPED/\$INPUT \$INPUTname \${IPname}.vs.\${INPUTname}_ipstrength $IPSTRENGTH_BSGENOME;
+					${TOOL_R}/bin/Rscript ${TOOL_ENCODEqc}/IPstrength.R $IPSTRENGTH_MAPPED/\$IP \$IPname $IPSTRENGTH_MAPPED/\$INPUT \$INPUTname \${IPname}.vs.\${INPUTname}_ipstrength $IPSTRENGTH_BSGENOME;
 					if [ \$? -ne 0 ]; then rm $output; fi;
 					mv \${IPname}.vs.\${INPUTname}_ipstrength* $output.dir;
 				fi;
