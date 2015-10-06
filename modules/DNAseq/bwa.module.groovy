@@ -41,8 +41,11 @@ BWA_pe = {
 
 			PLATFORM="genomics" &&
 						
-			${TOOL_BWA}/bwa mem $BWA_FLAGS -R \"@RG\\tID:${SAMPLE_NAME}\\tSM:${SAMPLE_NAME}\\tPL:illumina\\tLB:${SAMPLE_NAME}\\tPU:${PLATFORM}\" $ESSENTIAL_BWA_REF $input1 $input2 | ${TOOL_SAMTOOLS} view ${SAMTOOLS_FLAGS} - | ${TOOL_SAMTOOLS} sort -@ ${BWA_THREADS} -O bam -T ${SAMPLE_NAME} -  > ${output} 
+			${TOOL_BWA}/bwa mem $BWA_FLAGS -R \"@RG\\tID:${SAMPLE_NAME}\\tSM:${SAMPLE_NAME}\\tPL:illumina\\tLB:${SAMPLE_NAME}\\tPU:${PLATFORM}\" $ESSENTIAL_BWA_REF $input1 $input2 | ${TOOL_SAMTOOLS} view ${SAMTOOLS_FLAGS} - | ${TOOL_SAMTOOLS} sort -@ ${BWA_THREADS} -O bam -T ${SAMPLE_NAME} -  > ${output}
+			
+			${TOOL_SAMTOOLS} flagstat ${output}
 			 
+			}
 			
         ""","BWA_pe"
     }
