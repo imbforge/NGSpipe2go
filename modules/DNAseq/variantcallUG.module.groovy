@@ -11,6 +11,7 @@ VariantCallUG = {
     
     def GATK_FLAGS = ""
     
+    // check if a region limit was provided
     if (ESSENTIAL_CALL_REGION!=null && ESSENTIAL_CALL_REGION.length()>0) {
         
         GATK_FLAGS = " -L " + ESSENTIAL_CALL_REGION
