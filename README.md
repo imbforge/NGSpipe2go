@@ -86,3 +86,13 @@ To start running the pipeline (tested for bpipe-0.9.8.7)
 or
 
     bpipe run chipseq_v1.2.txt rawdata/*.fastq.gz
+
+## Report ##
+
+The final result of the provided pipelines will be saved in project/reports. The Rmd files can be transformed to easily readable documents using knitr, e.g.:
+    
+    R usage:
+    knitr::knit2html("DEreport.Rmd")
+    rmarkdown::render("DEreport.md")
+
+
