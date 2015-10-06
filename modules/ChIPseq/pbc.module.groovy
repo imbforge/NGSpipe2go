@@ -16,7 +16,7 @@ pbc = {
 				export TMPDIR=/jobdir/\${LSB_JOBID};
 			fi;
 
-			${TOOL_R}/bin/Rscript ${TOOL_DEPENDENCIES}/imb-forge/encodeChIPqc/PBC.R $input && mv ${input.prefix}_PBC.csv $output.dir
+			${TOOL_R}/bin/Rscript ${TOOL_ENCODEqc}/PBC.R $input && mv ${input.prefix}_PBC.csv $output.dir
 		""","pbc"
 	}
 	
