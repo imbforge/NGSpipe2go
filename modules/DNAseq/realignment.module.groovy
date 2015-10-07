@@ -14,6 +14,16 @@ IndelRealignment = {
         
         def GATK_FLAGS = "-known gold_indels.vcf "
         
+        // check if a region limit was provided
+        if (ESSENTIAL_CALL_REGION!=null && ESSENTIAL_CALL_REGION.length()>0) {
+            
+            GATK_FLAGS = GATK_FLAGS + " -L " + ESSENTIAL_CALL_REGION
+            
+        } else {
+            
+            GATK_FLAGS = ""
+            
+        }
         
         exec """
         
