@@ -112,7 +112,7 @@ ChIPhelper.Bowtie <- function() {
 		return("Bowtie statistics not available")
 	}
 	
-	# look for the lines aining the strings
+	# look for the lines containing the strings
 	# and get the values associated with this strings
 	x <- sapply(list.files(LOG),function(f) {
 		
