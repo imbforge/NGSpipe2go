@@ -4,6 +4,8 @@
 // REMEMBER TO CHANGE THESE ESSENTIAL VARS!!
 //
 ESSENTIAL_PROJECT="/fsimb/groups/imb-bioinfocf/projects/cfb_internal/imbforge/test/dnaseq"          // "/fsimb/groups/imb-bioinfocf/projects/cfb_internal/imb_cf_2013_04_sayols_infrastructure_pipelines/test"
+ESSENTIAL_ORG="mouse"
+ESSENTIAL_DB="mm9"
 ESSENTIAL_BWA_REF="/fsimb/groups/imb-bioinfocf/common-data/igenomes_reference/Homo_sapiens/UCSC/hg19/Sequence/BWAIndex/genome.fa"        // "/fsimb/groups/imb-bioinfocf/common-data/star_genomes/mm9/"
 ESSENTIAL_GATK_REF=""
 ESSENTIAL_CALL_REGION="/fsimb/groups/imb-bioinfocf/projects/cfb_internal/imbforge/test/dnaseq/call.region.bed" // OPTIONALLY limit variant calling to a limited region, e.g. exonic sequences or chr3 only. Will save a lot of compute time.
