@@ -3,7 +3,7 @@
 ## helper functions to create the plots for the Shiny report
 ##
 ##################################
-library("edgeR")
+# library("edgeR")
 library("RColorBrewer")
 library("gplots")
 library("ggplot2")
@@ -30,7 +30,7 @@ loadGlobalVars <- function(f="shinyReports.txt") {
 ##
 ## DEhelper.init: some time consuming tasks that can be done in advance
 ##
-DEhelper.init <- function(task) {
+VARhelper.init <- function(task) {
 	
 	# Prepare the DE data frame
 	renderUcscGeneLinks <- function() {
@@ -65,6 +65,85 @@ DEhelper.init <- function(task) {
 		   renderUcscGeneLinks=renderUcscGeneLinks(),
 		   prepareDEdataTable=prepareDEdataTable(),
 		   prepareDistanceMatrix=prepareDistanceMatrix())
+}
+
+##
+## VARhelper.Fastqc: go through Fastqc output dir and create a md table with the duplication & read quals & sequence bias plots
+##
+VARhelper.Fastqc <- function(web=TRUE) {
+	
+	# logs folder
+	if(!file.exists(SHINYREPS_FASTQC_LOG)) {
+		return("Fastqc statistics not available")
+	}
+	
+	# construct the folder name, which is different for web and noweb
+	QC <- if(web) "/fastqc" else SHINYREPS_FASTQC_LOG
+	
+	# construct the image url from the folder ents (skip current dir .)
+	samples <- list.dirs(SHINYREPS_FASTQC_LOG,recursive=F)
+	df <- sapply(samples,function(f) {
+		c(paste0("![alt text](",QC,"/",basename(f),"/Images/duplication_levels.png)"), 
+		  paste0("![alt text](",QC,"/",basename(f),"/Images/per_base_quality.png)"), 
+		  paste0("![alt text](",QC,"/",basename(f),"/Images/per_base_sequence_content.png)"))
+	})
+
+	# set row and column names, and output the md table
+	df <- as.data.frame(t(df))
+	rownames(df) <- gsub(paste0("^",SHINYREPS_PREFIX),"",basename(samples))
+	colnames(df) <- c("Duplication","Read qualities","Sequence bias")
+	kable(df,output=F)
+}
+
+##
+## VARhelper.BWA: parse BWA mem and samtools flagstat output
+##
+VARhelper.BWA <- function() {
+
+	# log file, which was copied from .bpipe folder
+	# contains the runtime STDOUT of BWA and the samtools flagstat STDOUT
+	LOG <- SHINYREPS_BWA_LOG
+	SUFFIX <- paste0(SHINYREPS_BWA_SUFFIX, '$')
+	
+	if(!file.exists(LOG)) {
+		return("BWA statistics not available")
+	}
+	
+	# look for the lines containing the strings
+	# and get the values associated with this strings
+	# produce a list by lapply to be robust in projects containing only one file
+	x <- lapply(list.files(LOG, full.names=TRUE),function(f) { # list all files and feed them into function one by one
+		l <- readLines(f) # read file content to l
+		#close(f)
+		
+		sapply(c("in total",                             #1
+				 "secondary",                            #2
+				 "mapped \\(",                           #3
+				 "paired in sequencing",                 #4
+				 "read1",                                #5
+				 "read2",                                #6
+				 "properly paired",                      #7
+				 "with itself and mate mapped",          #8
+				 "singletons",                           #9
+				 "with mate mapped to a different chr$", #10
+				 "with mate mapped to a different chr \\(mapQ>=5\\)"),function(y) {   #11
+				 	as.numeric(gsub("(^\\d+).+","\\1",l[grep(y,l)])) # grep returns line number, then get the respective line ([]) and extract the first number out of it (gsub and replace the whole line with it)
+				 })	
+	})
+	
+	# transform x from list to matrix (in extreme cases also with only one column)
+	x <- do.call(cbind, x)
+	# set row and column names, and output the md table
+	colnames(x) <- gsub(paste0("^",SHINYREPS_PREFIX),"",colnames(x))
+	colnames(x) <- gsub(paste0(SUFFIX,"$"),"",colnames(x))
+	df <- data.frame(total=x[1,],
+					 mapped=paste0( x[3,] ," (", round(x[3,] / x[1,] * 100, digits=2), "%)" ),
+					 proper_pair=paste0( x[7,] ," (", round(x[7,] / x[1,] * 100, digits=2), "%)" ) ,
+					 secondary_alignments=paste0( x[2,]," (", round(x[2,] / x[1,] * 100, digits=2), "%)" ),
+					 unmapped=paste0( x[3,] - x[4,]," (", round((x[3,] - x[4,]) / x[4,] * 100, digits=2), "%)" ),
+					 different_chromosome=paste0( x[10,], " (", x[11,], " (mapQ>=5))" )
+					 )
+	kable(df,align=c("r","r","r","r","r","r"),output=F)
 }
 
 ##
@@ -120,104 +199,8 @@ DEhelper.DEgenes <- function(i=1) {
 	lrt[[i]]$table[ord,cols]
 }
 
-##
-## DEhelper.STAR: parse STAR log files and create a md table
-##
-DEhelper.STARparms <- function() {
-	
-	# log file
-	LOG <- SHINYREPS_STAR_LOG
-	SUFFIX <- paste0(SHINYREPS_STARparms_SUFFIX,'$')
-	if(!file.exists(LOG)) {
-		return("STAR statistics not available")
-	}
-	
-	# look for the lines containing the strings and get the values associated with this strings
-	parseLog <- function(f) {
-		# read in the lines
-		f <- file(paste0(LOG,"/",f))
-		l <- readLines(f)
-		close(f)
-		
-		# get the version number from the first line (STAR svn revision compiled=STAR_2.3.1z13_r470)
-		v <- unlist(strsplit(l[1],"="))[2]
-		
-		# get the redifined parameters and parse them in a key-value data.frame
-		redefined <- l[grep("\\s+\\~RE-DEFINED$",l)]
-		redefined <- sapply(redefined,function(x) {
-			x <- unlist(strsplit(gsub("\\s+\\~RE-DEFINED$","",x),"\\s+"))
-			x[2] <- if(length(x) < 2) "" else x[2]
-			l <- nchar(x[2])
-			x[2] <- if(l > 40) paste(substr(x[2],1,20),substr(x[2],(l-15),l),sep="...") else x[2]
-			x[c(1,2)]
-		})
-		x <- redefined[2,]
-		names(x) <- redefined[1,]
-		
-		# put the STAR version number
-		x <- c(version=v,x)
-		return(x)
-	}
-	df <- sapply(list.files(LOG,pattern=SUFFIX),parseLog)
-	
-	# remove variable lines (lines depending on the fastq.gz file name)
-	# and check if all the columns contain the same value. Display a warning otherwise
-	df <- df[!grepl("(outFileNamePrefix|outTmpDir|readFilesIn)",rownames(df)),]
-	l <- apply(df,1,function(x) length(unique(x)))	# rows differing (l > 1)
-	df <- as.data.frame(df[,1,drop=F])	# keep only the first column
-	colnames(df) <- "parms"
-	df$warning[l > 1] <- "Some files aligned with a different parm. Check logs"
-	
-	# set row and column names, and output the md table
-	if(all(is.na(df$warning))) {
-		kable(df[,1,drop=F],align=c("r"),output=F)
-	} else {
-		kable(df,align=c("r","r"),output=F)
-	}
-}
 
-##
-## DEhelper.STAR: parse STAR log files and create a md table
-##
-DEhelper.STAR <- function() {
-	
-	# log file
-	LOG <- SHINYREPS_STAR_LOG
-	SUFFIX <- paste0(SHINYREPS_STAR_SUFFIX, '$')
-	if(!file.exists(LOG)) {
-		return("STAR statistics not available")
-	}
-	
-	# look for the lines containing the strings
-	# and get the values associated with this strings
-	x <- sapply(list.files(LOG,pattern=SUFFIX),function(f) {
-		f <- file(paste0(LOG,"/",f))
-		l <- readLines(f)
-		close(f)
-		
-		sapply(c("Number of input reads",                      #1
-				 "Uniquely mapped reads number",               #2
-				 "Uniquely mapped reads %",                    #3
-				 "Number of reads mapped to multiple loci",    #4
-				 "Number of reads mapped to too many loci",    #5
-				 "% of reads mapped to multiple loci",         #6
-				 "% of reads mapped to too many loci",         #7
-				 "% of reads unmapped: too many mismatches",   #8
-				 "% of reads unmapped: too short",             #9
-				 "% of reads unmapped: other"),function(x) {   #10
-				 	as.numeric(gsub("%","",gsub(".+\\|\t(.+)","\\1",l[grep(x,l)])))
-				 })	
-	})
-	
-	# set row and column names, and output the md table
-	colnames(x) <- gsub(paste0("^",SHINYREPS_PREFIX),"",colnames(x))
-	colnames(x) <- gsub(paste0(SUFFIX,"$"),"",colnames(x))
-	df <- data.frame(input_reads=x[1,],
-					 uniq_mapped=paste0(x[2,]," (",x[3,],"%)"),
-					 multimapped=paste0(x[4,] + x[5,]," (",x[6,] + x[7,],"%)"),
-					 unmapped=paste0(x[8,] + x[9,] + x[10,],"%"))
-	kable(df,align=c("r","r","r","r"),output=F)
-}
+
 
 ##
 ## DEhelper.Fastqc: go through Fastqc output dir and create a md table with the duplication & read quals & sequence bias plots
@@ -356,27 +339,7 @@ DEhelper.geneBodyCov <- function(web=TRUE) {
 	kable(as.data.frame(df.names),output=F)
 }
 
-##
-## DEhelper.Bustard: call the perl XML interpreter and get the MD output
-##
-DEhelper.Bustard <- function() {
-	f  <- SHINYREPS_BUSTARD
-	
-	if(!file.exists(f)) {
-		return("Bustard statistics not available")
-	}
-	
-	# call the perl XSL inetrpreter
-	cmd <- paste(" bustard.pl",f)
-	try(ret <- system2("perl",cmd,stdout=TRUE,stderr=FALSE))
-	
-	# check RC
-	if(!is.null(attributes(ret))) {
-		return(paste("Error parsing bustard statistics. RC:",attributes(ret)$status,"in command: perl",cmd))
-	}
-	
-	ret 	# ret contains already MD code
-}
+
 
 ##
 ## DEhelper.Subread: parse Subread summary stats and create a md table
@@ -432,21 +395,21 @@ DEhelper.Subread <- function() {
 ## extract tool versions
 ##
 
-DEhelper.ToolVersions <- function() {
-  tools <- c("FastQC", "STAR", "HTseq", "Subread", "DupRadar", "Samtools", "BedTools", "Picard", "R")
-  variables <- list(SHINYREPS_TOOL_FASTQC, SHINYREPS_TOOL_STAR, SHINYREPS_TOOL_HTSEQ, SHINYREPS_TOOL_SUBREAD, SHINYREPS_TOOL_DUPRADAR, SHINYREPS_TOOL_SAMTOOLS, SHINYREPS_TOOL_BEDTOOLS, SHINYREPS_TOOL_PICARD, SHINYREPS_TOOL_R)
-  # get the last element in path, which is the tool's version (for the tools listed)
-  versions <- sapply(variables, function(x) {
-    y <- strsplit(x, '/')[[1]]
-    tail(y, n=1)
-  })
-  
-  # correct the samtools version (second, but last element)
-  tmp_x <- strsplit(SHINYREPS_TOOL_SAMTOOLS, '/')[[1]]
-  versions[6] <- head(tail(tmp_x, n=2), n=1) 
-  
-  df <- data.frame(tool_name=tools, tool_version=versions)
-  
-  kable(df,align=c("l","l"),output=F)
+VARhelper.ToolVersions <- function() {
+  #tools <- c("FastQC", "STAR", "HTseq", "Subread", "DupRadar", "Samtools", "BedTools", "Picard", "R")
+  #variables <- list(SHINYREPS_TOOL_FASTQC, SHINYREPS_TOOL_STAR, SHINYREPS_TOOL_HTSEQ, SHINYREPS_TOOL_SUBREAD, SHINYREPS_TOOL_DUPRADAR, SHINYREPS_TOOL_SAMTOOLS, SHINYREPS_TOOL_BEDTOOLS, SHINYREPS_TOOL_PICARD, SHINYREPS_TOOL_R)
+  ## get the last element in path, which is the tool's version (for the tools listed)
+  #versions <- sapply(variables, function(x) {
+  #  y <- strsplit(x, '/')[[1]]
+  #  tail(y, n=1)
+  #})
+  #
+  ## correct the samtools version (second, but last element)
+  #tmp_x <- strsplit(SHINYREPS_TOOL_SAMTOOLS, '/')[[1]]
+  #versions[6] <- head(tail(tmp_x, n=2), n=1) 
+  #
+  #df <- data.frame(tool_name=tools, tool_version=versions)
+  #
+  #kable(df,align=c("l","l"),output=F)
   
 }
