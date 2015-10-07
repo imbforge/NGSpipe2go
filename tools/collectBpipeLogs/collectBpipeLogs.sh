@@ -23,6 +23,6 @@ do
  then
   echo "${PROJECT}/.bpipe/commandtmp/${ID}/cmd.err --> ${LOGS}/${JOB}/${FILE}.log"
   cp -v ${PROJECT}/.bpipe/commandtmp/${ID}/cmd.err ${LOGS}/${JOB}/${FILE}.log
-  cp -v ${PROJECT}/.bpipe/commandtmp/${ID}/cmd.out ${LOGS}/${JOB}/${FILE}.out
+  # cp -v ${PROJECT}/.bpipe/commandtmp/${ID}/cmd.out ${LOGS}/${JOB}/${FILE}.out
  fi
 done 
