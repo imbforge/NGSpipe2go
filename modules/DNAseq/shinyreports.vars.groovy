@@ -9,6 +9,10 @@ SHINYREPS_PREFIX=ESSENTIAL_SAMPLE_PREFIX	//standard sample prefix
 SHINYREPS_FASTQC_LOG=FASTQC_OUTDIR		//where the Fastqc logs lie
 SHINYREPS_BWA_LOG=LOGS + "/BWA_pe"	//where the BWA (samtools flagstat) logs lie
 SHINYREPS_BWA_SUFFIX=".bam.log"	//extension given to the BWA log files
+SHINYREPS_GATKug_LOG=LOGS + "/VariantCallUG"	//where the GATK UnifiedGenotyper logs lie
+SHINYREPS_GATKug_SUFFIX=".UG.vcf.gz.log"	//extension given to the BWA log files
+SHINYREPS_GATKhc_LOG=LOGS + "/VariantCallHC"	//where the GATK HaplotypeCaller logs lie
+SHINYREPS_GATKhc_SUFFIX=".HC.vcf.gz.log"	//extension given to the BWA log files
 
 //SHINYREPS_STAR_LOG=LOGS + "/STAR_se"	//where the STAR logs lie
 //SHINYREPS_STAR_SUFFIX="Log.final.out"	//extension given to the STAR log files
