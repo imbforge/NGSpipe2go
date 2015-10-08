@@ -40,6 +40,10 @@ Both tools include default read filters that exclude reads from variant calling.
 cat(VARhelper.GATKug(),sep="\n")
 ```
 
+#### GATK HaplotypeCaller filtered read statistics
+```{r echo=F,results='asis',error=F,warning=F,message=F}
+cat(VARhelper.GATKhc(),sep="\n")
+```
 
 ## Used tools and versions for this analysis
 
