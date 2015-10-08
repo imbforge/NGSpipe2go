@@ -147,6 +147,65 @@ VARhelper.BWA <- function() {
 }
 
 ##
+## VARhelper.GATKug: parse GATK UnifiedGenotyper output for omitted reads
+##
+VARhelper.GATKug <- function() {
+
+	# log file, which was copied from .bpipe folder
+	# contains the runtime STDERR of GATK Unified Genotyper
+	LOG <- SHINYREPS_GATKug_LOG
+	SUFFIX <- paste0(SHINYREPS_GATKug_SUFFIX, '$')
+	
+	if(!file.exists(LOG)) {
+		print(LOG)
+		return("GATK Unified Genotyper statistics not available")
+	}
+	
+	# look for the lines containing the strings
+	# and get the values associated with this strings
+	# produce a list by lapply to be robust in projects containing only one file
+	x <- lapply(list.files(LOG, full.names=TRUE),function(f) { # list all files and feed them into function one by one
+		l <- readLines(f) # read file content to l
+		#close(f)
+		
+		a <- sapply(c(# "reads were filtered out during the traversal out",  #1 # this probably has to be done seperately
+				 "failing BadCigarFilter",                            #1
+				 "failing BadMateFilter",                             #2
+				 "failing DuplicateReadFilter",                       #3
+				 "failing FailsVendorQualityCheckFilter",             #4
+				 "failing MalformedReadFilter",                       #5
+				 "failing MappingQualityUnavailableFilter",           #6
+				 "failing NotPrimaryAlignmentFilter",                 #7
+				 "failing UnmappedReadFilter"),function(y) {          #8
+				 	as.numeric(gsub(".+?(\\d+) reads.+","\\1",l[grep(y,l)])) # grep returns line number, then get the respective line ([]) and extract the first number out of it (gsub and replace the whole line with it)
+				 })
+		
+		l.tmp <- l[grep("reads were filtered out during the traversal out",l)]
+		b <- gsub(".+? - (\\d+).+?(\\d+).*","\\1;\\2", l.tmp) #9 #10
+		
+		return( c(a, as.numeric( strsplit(b, ';')[[1]] )) )	
+		
+	})
+	
+	# transform x from list to matrix (in extreme cases also with only one column)
+	x <- do.call(cbind, x)
+	# set row and column names, and output the md table
+	colnames(x) <- gsub(paste0("^",SHINYREPS_PREFIX),"",colnames(x))
+	colnames(x) <- gsub(paste0(SUFFIX,"$"),"",colnames(x))
+	df <- data.frame("total reads"=x[10,],
+					 "total filtered"=paste0( x[9,], " (", round(x[9,] / x[10,] * 100, digits=2), "%)" ),
+					 "CIGAR"=paste0( x[1,], " (", round(x[1,] / x[10,] * 100, digits=2), "%)" ),
+					 "BadMate"=paste0( x[2,], " (", round(x[2,] / x[10,] * 100, digits=2), "%)" ),
+					 "Duplicate"=paste0( x[3,], " (", round(x[3,] / x[10,] * 100, digits=2), "%)" ),
+					 "Malformed read"=paste0( x[5,], " (", round(x[5,] / x[10,] * 100, digits=2), "%)" ),
+					 "no MappingQuality"=paste0( x[6,], " (", round(x[6,] / x[10,] * 100, digits=2), "%)" ),
+					 "not Primary"=paste0( x[7,], " (", round(x[7,] / x[10,] * 100, digits=2), "%)" ),
+					 "unmapped"=paste0( x[8,], " (", round(x[8,] / x[10,] * 100, digits=2), "%)" )
+					 )
+	kable(df,align=c("r","r","r","r","r","r","r","r","r"),output=F)
+}
+
+##
 ## DEhelper.MDS
 ##
 DEhelper.MDS <- function() {

@@ -29,7 +29,17 @@ The mapping statistics show the total number of reads delivered to the aligner, 
 
 ```{r echo=F,results='asis',error=F,warning=F,message=F}
 cat(VARhelper.BWA(),sep="\n")
-``` 
+```
+
+### Variant calling
+Variant calling can be performed using GATK UnifiedGenotyper and GATK HaplotypeCaller.
+Both tools include default read filters that exclude reads from variant calling.
+
+#### GATK UnifiedGenotyper filtered read statistics
+```{r echo=F,results='asis',error=F,warning=F,message=F}
+cat(VARhelper.GATKug(),sep="\n")
+```
+
 
 ## Used tools and versions for this analysis
 
