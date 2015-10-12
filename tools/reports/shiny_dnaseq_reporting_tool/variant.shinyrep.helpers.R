@@ -141,7 +141,7 @@ VARhelper.BWA <- function() {
 					 proper_pair=paste0( x[7,] ," (", round(x[7,] / x[1,] * 100, digits=2), "%)" ) ,
 					 secondary_alignments=paste0( x[2,]," (", round(x[2,] / x[1,] * 100, digits=2), "%)" ),
 					 unmapped=paste0( x[3,] - x[4,]," (", round((x[3,] - x[4,]) / x[4,] * 100, digits=2), "%)" ),
-					 different_chromosome=paste0( x[10,], " (", x[11,], " (mapQ>=5))" )
+					 different_chromosome=paste0( x[10,], ", ", x[11,], " (mapQ>=5)" )
 					 )
 	kable(df,align=c("r","r","r","r","r","r"),output=F)
 }
@@ -202,7 +202,192 @@ VARhelper.GATKug <- function() {
 					 "not Primary"=paste0( x[7,], " (", round(x[7,] / x[10,] * 100, digits=2), "%)" ),
 					 "unmapped"=paste0( x[8,], " (", round(x[8,] / x[10,] * 100, digits=2), "%)" )
 					 )
+	
 	kable(df,align=c("r","r","r","r","r","r","r","r","r"),output=F)
+
+	
+	
+}
+
+##
+## VARhelper.GATKhc: parse GATK HaplotypeCaller output for omitted reads
+##
+VARhelper.GATKhc <- function() {
+
+	# log file, which was copied from .bpipe folder
+	# contains the runtime STDERR of GATK Unified Genotyper
+	LOG <- SHINYREPS_GATKhc_LOG
+	SUFFIX <- paste0(SHINYREPS_GATKhc_SUFFIX, '$')
+	
+	if(!file.exists(LOG)) {
+		print(LOG)
+		return("GATK Haplotype Caller statistics not available")
+	}
+	
+	# look for the lines containing the strings
+	# and get the values associated with this strings
+	# produce a list by lapply to be robust in projects containing only one file
+	x <- lapply(list.files(LOG, full.names=TRUE),function(f) { # list all files and feed them into function one by one
+		l <- readLines(f) # read file content to l
+		#close(f)
+		
+		a <- sapply(c(# "reads were filtered out during the traversal out",  #1 # this probably has to be done seperately
+				 "failing BadCigarFilter",                            #1
+				 "failing DuplicateReadFilter",                       #2
+				 "failing FailsVendorQualityCheckFilter",             #3
+				 "failing HCMappingQualityFilter",                    #4
+				 "failing MalformedReadFilter",                       #5
+				 "failing MappingQualityUnavailableFilter",           #6
+				 "failing NotPrimaryAlignmentFilter",                 #7
+				 "failing UnmappedReadFilter"),function(y) {          #8
+				 	as.numeric(gsub(".+?(\\d+) reads.+","\\1",l[grep(y,l)])) # grep returns line number, then get the respective line ([]) and extract the first number out of it (gsub and replace the whole line with it)
+				 })
+		
+		l.tmp <- l[grep("reads were filtered out during the traversal out",l)]
+		b <- gsub(".+? - (\\d+).+?(\\d+).*","\\1;\\2", l.tmp) #9 #10
+		
+		return( c(a, as.numeric( strsplit(b, ';')[[1]] )) )	
+		
+	})
+	
+	# transform x from list to matrix (in extreme cases also with only one column)
+	x <- do.call(cbind, x)
+	# set row and column names, and output the md table
+	colnames(x) <- gsub(paste0("^",SHINYREPS_PREFIX),"",colnames(x))
+	colnames(x) <- gsub(paste0(SUFFIX,"$"),"",colnames(x))
+	df <- data.frame("total reads"=x[10,],
+					 "total filtered"=paste0( x[9,], " (", round(x[9,] / x[10,] * 100, digits=2), "%)" ),
+					 "CIGAR"=paste0( x[1,], " (", round(x[1,] / x[10,] * 100, digits=2), "%)" ),
+					 "Duplicate"=paste0( x[2,], " (", round(x[2,] / x[10,] * 100, digits=2), "%)" ),
+					 "MappingQuality"=paste0( x[4,], " (", round(x[4,] / x[10,] * 100, digits=2), "%)" ),
+					 "Malformed read"=paste0( x[5,], " (", round(x[5,] / x[10,] * 100, digits=2), "%)" ),
+					 "no MappingQuality"=paste0( x[6,], " (", round(x[6,] / x[10,] * 100, digits=2), "%)" ),
+					 "not Primary"=paste0( x[7,], " (", round(x[7,] / x[10,] * 100, digits=2), "%)" ),
+					 "unmapped"=paste0( x[8,], " (", round(x[8,] / x[10,] * 100, digits=2), "%)" )
+					 )
+	kable(df,align=c("r","r","r","r","r","r","r","r","r"),output=F)
+}
+
+##
+## VARhelper.GATKvarianteval: parse GATK VariantEvaluation output for variant call statistics
+##
+VARhelper.GATKvarianteval <- function() {
+
+	# log file, which was copied from .bpipe folder
+	# contains the runtime STDERR of GATK Unified Genotyper
+	LOG <- SHINYREPS_GATKvarianteval
+	
+	if(!file.exists(LOG)) {
+		return("GATK Variant Evaluation statistics not available")
+	}
+	
+	# look for the lines containing the strings
+	# and get the values associated with this strings
+	# produce a list by lapply to be robust in projects containing only one file
+	x <- lapply(list.files(LOG, full.names=TRUE),function(f) { # list all files and feed them into function one by one
+		l <- readLines(f) # read file content to l
+		#close(f)
+		
+		parse.results <- list()
+		
+		# parse the CompOverlap table containing all variants (SNP & InDel)
+		# header: "CompOverlap  CompRod  EvalRod  JexlExpression  Novelty  nEvalVariants  novelSites  nVariantsAtComp  compRate  nConcordant  concordantRate"
+		# this yields a vector with one entry
+		l.tmp <- l[grep("CompOverlap",l)]
+		parse.results[[1]] <- sapply(c(
+										"all ",
+										"known ",
+										"novel " # the additional space is necessary, because otherwise the header line is found as well.
+									  ), function(y) {
+													#l.grepped <- l.tmp[grep(y,l.tmp)] # select the line of interest
+													#regindex <- regexpr("\\d+", l.grepped) # get the first occurence of a number, which is the total number of the respective variants
+													as.numeric(gsub(".+?(\\d+).*" ,"\\1", l.tmp[grep(y,l.tmp)]))	# perform the last two lines in one go!
+													 }
+									 )
+		
+		# header: CountVariants  CompRod  EvalRod  JexlExpression  Novelty  nProcessedLoci  nCalledLoci  nRefLoci  nVariantLoci  variantRate  variantRatePerBp   nSNPs  nMNPs  nInsertions  nDeletions  nComplex  nSymbolic  nMixed  nNoCalls  nHets  nHomRef  nHomVar  nSingletons  nHomDerived  heterozygosity  heterozygosityPerBp  hetHomRatio  indelRate  indelRatePerBp  insertionDeletionRatio
+		# this yields a matrix
+		l.tmp <- l[grep("CountVariants",l)]
+		parse.results[[2]] <- sapply( c(
+										"all ",
+										"known ",
+										"novel "
+									   ), function(y) {
+													   # extract nSNPs, nMNPs, nInsertions, nDeletions, nHets, nHomVar, (calculate on our own HetHomRatio & InsDelRatio)
+													   as.numeric( unlist( strsplit( l.tmp[grep(y,l.tmp)], "\\s+", perl=T ) )[c(12:15,20,22)] ) # strsplit returns list, which has to be unlisted to make it a vector. Then single elements can be addressed and extracted.
+													   #as.numeric(gsub(".+?(\\d+).+?(\\d+).+?(\\d+).+?(\\d+).+?(\\d+).+?(\\d+).+?(\\d+).+?(\\d+).*" ,"\\1", l.tmp[grep(y,l.tmp)]))
+													  }
+									)
+		
+		l.tmp <- l[grep("MultiallelicSummary",l)]
+		parse.results[[3]] <- sapply( c(
+										"all ",
+										"known ",
+										"novel "
+									   ), function(y) {
+													   # only extract number of MultiAllelicSNP
+													   as.numeric( unlist( strsplit( l.tmp[grep(y,l.tmp)], "\\s+", perl=T ) )[8] )
+													   #as.numeric(gsub(".+?(\\d+).+?(\\d+).+?(\\d+).+?(\\d+).+?(\\d+).+?(\\d+).+?(\\d+).+?(\\d+).*" ,"\\1", l.tmp[grep(y,l.tmp)]))
+													  }
+									)
+		
+		l.tmp <- l[grep("TiTvVariantEvaluator",l)]
+		parse.results[[4]] <- sapply( c(
+										"all ",
+										"known ",
+										"novel "
+									   ), function(y) {
+													   # extract nTi and nTv from sample and database
+													   as.numeric( unlist( strsplit( l.tmp[grep(y,l.tmp)], "\\s+", perl=T ) )[c(6,7,9,10)] )
+													   #as.numeric(gsub(".+?(\\d+).+?(\\d+).+?(\\d+).+?(\\d+).+?(\\d+).+?(\\d+).+?(\\d+).+?(\\d+).*" ,"\\1", l.tmp[grep(y,l.tmp)]))
+													  }
+									)
+		
+		# will consist CompOverlap(all, known, novel)[VariantCount], CountVariants (all, known, novel)[nSNPs, nMNPs, nInsertions, nDeletions, nHets, nHomVar], MultiallelicSummary(all, known, novel)[MultiAllelicSNP], TiTvVariantEvaluator(all, known, novel)[nTi, nTv, TiDB, TvDB]
+		output <- c(
+					 parse.results[[1]],     # CompOverlap(all, known, novel)[VariantCount] # 1,2,3
+					 parse.results[[2]][,1], # CountVariants (all)[nSNPs, nMNPs, nInsertions, nDeletions, nHets, nHomVar] # 4,5,6,7,8,9
+					 parse.results[[2]][,2], # CountVariants (known)[nSNPs, nMNPs, nInsertions, nDeletions, nHets, nHomVar] # 10,11,12,13,14,15
+					 parse.results[[2]][,3], # CountVariants (novel)[nSNPs, nMNPs, nInsertions, nDeletions, nHets, nHomVar] # 16,17,18,19,20,21
+					 parse.results[[3]],     # MultiallelicSummary(all, known, novel)[MultiAllelicSNP] # 22,23,24
+					 parse.results[[4]][,1], # TiTvVariantEvaluator(all)[nTi, nTv, TiDB, TvDB # 25,26,27,28
+					 parse.results[[4]][,2], # TiTvVariantEvaluator(known)[nTi, nTv, TiDB, TvDB # 29,30,31,32
+					 parse.results[[4]][,3]  # TiTvVariantEvaluator(novel)[nTi, nTv, TiDB, TvDB # 33,34,35,36
+					 )
+		return( output )	
+		
+	})
+	
+	
+	# transform x from list to matrix (in extreme cases also with only one column)
+	x <- do.call(cbind, x)
+	
+	# set row and column names, and output the md table
+	colnames(x) <- gsub(paste0("^",SHINYREPS_PREFIX),"",colnames(x))
+	#colnames(x) <- gsub(paste0(SUFFIX,"$"),"",colnames(x))
+	df <- data.frame("total counts"=paste(x[1,], x[2,],  x[3,], sep=", "),
+					 "SNP"=         paste(x[4,] ,x[10,], x[16,],sep=", "),
+					 "MNP"=         paste(x[5,], x[11,], x[17,],sep=", "),
+					 "Insertion"=   paste(x[6,], x[12,], x[18,],sep=", "),
+					 "Deletion"=    paste(x[7,], x[13,], x[19,],sep=", "),
+					 #"het hom ratio"=     paste(paste(x[8,] , x[9,],  sep=';'), paste(x[14,] , x[15,], sep=';'), paste(x[20,] , x[21,], sep=';') ,sep=", "),
+					 #"ins del ratio"=     paste(paste(x[6,] , x[7,],  sep=';'), paste(x[12,] , x[13,], sep=';'), paste(x[18,] , x[19,], sep=';'), sep=", "),
+					 #"Ti Tv ratio"=       paste(paste(x[25,], x[26,], sep=';'), paste(x[29,] , x[30,], sep=';'), paste(x[33,] , x[34,], sep=';'),sep=", ")
+					 "het hom ratio"=     paste(round(x[8,] / x[9,], digits=2),   round(x[14,] / x[15,], digits=2), round(x[20,] / x[21,], digits=2),sep=", "),
+					 "ins del ratio"=     paste(round(x[6,] / x[7,], digits=2),   round(x[12,] / x[13,], digits=2), round(x[18,] / x[19,], digits=2),sep=", "),
+					 "Ti Tv ratio"=       paste(round(x[25,] / x[26,], digits=2), round(x[29,] / x[30,], digits=2), round(x[33,] / x[34,], digits=2),sep=", ")
+					 
+					 
+					 #"CIGAR"=paste0( x[1,], " (", round(x[1,] / x[10,] * 100, digits=2), "%)" ),
+					 #"Duplicate"=paste0( x[2,], " (", round(x[2,] / x[10,] * 100, digits=2), "%)" ),
+					 #"MappingQuality"=paste0( x[4,], " (", round(x[4,] / x[10,] * 100, digits=2), "%)" ),
+					 #"Malformed read"=paste0( x[5,], " (", round(x[5,] / x[10,] * 100, digits=2), "%)" ),
+					 #"no MappingQuality"=paste0( x[6,], " (", round(x[6,] / x[10,] * 100, digits=2), "%)" ),
+					 #"not Primary"=paste0( x[7,], " (", round(x[7,] / x[10,] * 100, digits=2), "%)" ),
+					 #"unmapped"=paste0( x[8,], " (", round(x[8,] / x[10,] * 100, digits=2), "%)" )
+					 )
+	
+	kable(df,align=c("r","r","r","r","r","r","r","r"),output=F)
 }
 
 ##
