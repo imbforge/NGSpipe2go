@@ -45,6 +45,17 @@ cat(VARhelper.GATKug(),sep="\n")
 cat(VARhelper.GATKhc(),sep="\n")
 ```
 
+#### GATK VariantEval variant statistics
+Variant statistics show the basic properties of your variants as triplets for "all", "known" ,"novel" variants in comparison to dbSNP.
+The calculated ratios should be similar in "all", "known" and "novel" subsets. Highly deviating values in the "novel" subset indicate a high false positive rate.
+Due to selective pressure transitions are more likely to be retained in the genome than transversions.
+For Exome sequencing a Ti/Tv ration of 3 would be good, while whole genome sequencing might result in values blow 2.
+
+
+```{r echo=F,results='asis',error=F,warning=F,message=F}
+cat(VARhelper.GATKvarianteval(),sep="\n")
+```
+
 ## Used tools and versions for this analysis
 
 ```{r echo=F,results='asis',error=F,warning=F,message=F}
