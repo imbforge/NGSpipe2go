@@ -49,8 +49,9 @@ cat(VARhelper.GATKhc(),sep="\n")
 Variant statistics show the basic properties of your variants as triplets for "all", "known" ,"novel" variants in comparison to dbSNP.
 The calculated ratios should be similar in "all", "known" and "novel" subsets. Highly deviating values in the "novel" subset indicate a high false positive rate.
 Due to selective pressure transitions are more likely to be retained in the genome than transversions.
-For Exome sequencing a Ti/Tv ration of 3 would be good, while whole genome sequencing might result in values blow 2.
+For (human) Exome sequencing a Ti/Tv ration of 2.8-3 would be good, while whole genome sequencing might result in values 2-2.1. A completely random Ti/Tv ratio would be 0.5.
 
+[one source of many: http://www.cureffi.org/2012/10/17/descriptive-statistics-and-quality-control-on-variants/]
 
 ```{r echo=F,results='asis',error=F,warning=F,message=F}
 cat(VARhelper.GATKvarianteval(),sep="\n")
