@@ -5,7 +5,7 @@ output:
     toc: yes
 ---
 
-```{r echo=F,result='hide',error=F,warning=F,message=F}
+```{r LoadingGloabalVariables, echo=F,result='hide',error=F,warning=F,message=F}
 source('variant.shinyrep.helpers.R')
 loadGlobalVars()
 # load(SHINYREPS_DE_EDGER,envir=.GlobalEnv)		# the outcome from the DE analysis
@@ -20,14 +20,14 @@ loadGlobalVars()
 The sequencing quality of the run was good, and the read distribution over the libraries was good.
 
 ### Raw reads qualities, sequence bias and duplication
-```{r echo=F,results='asis',error=F,warning=F,message=F}
+```{r FastQC_paragraph, echo=F,results='asis',error=F,warning=F,message=F}
 cat(VARhelper.Fastqc(web=F),sep="\n")
 ```
 
 ### Mapping
 The mapping statistics show the total number of reads delivered to the aligner, the number of mapped reads and reads not mapping at all to the ref aligning to the wrong reference genome.
 
-```{r echo=F,results='asis',error=F,warning=F,message=F}
+```{r BWA_ReadStats_paragraph, echo=F,results='asis',error=F,warning=F,message=F}
 cat(VARhelper.BWA(),sep="\n")
 ```
 
@@ -36,20 +36,20 @@ Variant calling can be performed using GATK UnifiedGenotyper and GATK HaplotypeC
 Both tools include default read filters that exclude reads from variant calling.
 
 #### GATK UnifiedGenotyper filtered read statistics
-```{r echo=F,results='asis',error=F,warning=F,message=F}
+```{r GATKug_paragraph, echo=F,results='asis',error=F,warning=F,message=F}
 cat(VARhelper.GATKug(),sep="\n")
 ```
 
 #### GATK HaplotypeCaller filtered read statistics
 
-```{r echo=F,results='asis',error=F,warning=F,message=F}
+```{r GATKhc_paragraph, echo=F,results='asis',error=F,warning=F,message=F}
 cat(VARhelper.GATKhc(),sep="\n")
 ```
 
 GATK Haplotyper annotates variants with dbSNP entries, if the database file is provided. Novel variants, which are not found in dbSNP usually tend to be heterozygous variants in low coverage regions.
 These regions are prone to lead to false positive calls and should be taken with a grain of salt.
 
-```{r echo=F,results='asis',error=F,warning=F,message=F}
+```{r CoveragePlot, echo=F,results='asis',error=F,warning=F,message=F}
 no.feedback <- VARhelper.CoveragePlot()
 ```
 
@@ -63,12 +63,12 @@ For (human) Exome sequencing a Ti/Tv ration of 2.8-3 would be good, while whole 
 
 [one source of many: http://www.cureffi.org/2012/10/17/descriptive-statistics-and-quality-control-on-variants/]
 
-```{r echo=F,results='asis',error=F,warning=F,message=F}
+```{r GATK_VariantEval_paragraph, echo=F,results='asis',error=F,warning=F,message=F}
 cat(VARhelper.GATKvarianteval(),sep="\n")
 ```
 
 ## Used tools and versions for this analysis
 
-```{r echo=F,results='asis',error=F,warning=F,message=F}
+```{r ToolVersions_paragraph, echo=F,results='asis',error=F,warning=F,message=F}
 cat(VARhelper.ToolVersions(),sep="\n")
 ``` 

@@ -134,14 +134,16 @@ VARhelper.BWA <- function() {
 	# transform x from list to matrix (in extreme cases also with only one column)
 	x <- do.call(cbind, x)
 	# set row and column names, and output the md table
+	colnames(x) <- list.files(LOG)
 	colnames(x) <- gsub(paste0("^",SHINYREPS_PREFIX),"",colnames(x))
 	colnames(x) <- gsub(paste0(SUFFIX,"$"),"",colnames(x))
-	df <- data.frame(total=x[1,],
-					 mapped=paste0( x[3,] ," (", round(x[3,] / x[1,] * 100, digits=2), "%)" ),
-					 proper_pair=paste0( x[7,] ," (", round(x[7,] / x[1,] * 100, digits=2), "%)" ) ,
-					 secondary_alignments=paste0( x[2,]," (", round(x[2,] / x[1,] * 100, digits=2), "%)" ),
-					 unmapped=paste0( x[3,] - x[4,]," (", round((x[3,] - x[4,]) / x[4,] * 100, digits=2), "%)" ),
-					 different_chromosome=paste0( x[10,], ", ", x[11,], " (mapQ>=5)" )
+	df <- data.frame(#"sample name"       = colnames(x),
+					 "total reads"       = x[1,],
+					 "mapped"            = paste0( x[3,] ," (", round(x[3,] / x[1,] * 100, digits=2), "%)" ),
+					 "proper pair"       = paste0( x[7,] ," (", round(x[7,] / x[1,] * 100, digits=2), "%)" ) ,
+					 "secondary alignments" = paste0( x[2,]," (", round(x[2,] / x[1,] * 100, digits=2), "%)" ),
+					 "unmapped"             = paste0( x[3,] - x[4,]," (", round((x[3,] - x[4,]) / x[4,] * 100, digits=2), "%)" ),
+					 "different chromosome" = paste0( x[10,], ", ", x[11,], " (mapQ>=5)" )
 					 )
 	kable(df,align=c("r","r","r","r","r","r"),output=F)
 }
@@ -190,19 +192,21 @@ VARhelper.GATKug <- function() {
 	# transform x from list to matrix (in extreme cases also with only one column)
 	x <- do.call(cbind, x)
 	# set row and column names, and output the md table
+	colnames(x) <- list.files(LOG)
 	colnames(x) <- gsub(paste0("^",SHINYREPS_PREFIX),"",colnames(x))
 	colnames(x) <- gsub(paste0(SUFFIX,"$"),"",colnames(x))
-	df <- data.frame("total reads"=x[10,],
-					 "total filtered"=paste0( x[9,], " (", round(x[9,] / x[10,] * 100, digits=2), "%)" ),
-					 "CIGAR"=paste0( x[1,], " (", round(x[1,] / x[10,] * 100, digits=2), "%)" ),
-					 "BadMate"=paste0( x[2,], " (", round(x[2,] / x[10,] * 100, digits=2), "%)" ),
-					 "Duplicate"=paste0( x[3,], " (", round(x[3,] / x[10,] * 100, digits=2), "%)" ),
-					 "Malformed read"=paste0( x[5,], " (", round(x[5,] / x[10,] * 100, digits=2), "%)" ),
+	df <- data.frame(#"sample name"    = colnames(x),
+					 "total reads"    = x[10,],
+					 "total filtered" = paste0( x[9,], " (", round(x[9,] / x[10,] * 100, digits=2), "%)" ),
+					 "CIGAR"          = paste0( x[1,], " (", round(x[1,] / x[10,] * 100, digits=2), "%)" ),
+					 "BadMate"        = paste0( x[2,], " (", round(x[2,] / x[10,] * 100, digits=2), "%)" ),
+					 "Duplicate"      = paste0( x[3,], " (", round(x[3,] / x[10,] * 100, digits=2), "%)" ),
+					 "Malformed read" = paste0( x[5,], " (", round(x[5,] / x[10,] * 100, digits=2), "%)" ),
 					 "no MappingQuality"=paste0( x[6,], " (", round(x[6,] / x[10,] * 100, digits=2), "%)" ),
-					 "not Primary"=paste0( x[7,], " (", round(x[7,] / x[10,] * 100, digits=2), "%)" ),
-					 "unmapped"=paste0( x[8,], " (", round(x[8,] / x[10,] * 100, digits=2), "%)" )
+					 "not Primary"    = paste0( x[7,], " (", round(x[7,] / x[10,] * 100, digits=2), "%)" ),
+					 "unmapped"       = paste0( x[8,], " (", round(x[8,] / x[10,] * 100, digits=2), "%)" )
 					 )
-	
+	rownames(df) <- colnames(x)
 	kable(df,align=c("r","r","r","r","r","r","r","r","r"),output=F)
 
 	
@@ -252,18 +256,22 @@ VARhelper.GATKhc <- function() {
 	# transform x from list to matrix (in extreme cases also with only one column)
 	x <- do.call(cbind, x)
 	# set row and column names, and output the md table
+	colnames(x) <- list.files(LOG)
 	colnames(x) <- gsub(paste0("^",SHINYREPS_PREFIX),"",colnames(x))
 	colnames(x) <- gsub(paste0(SUFFIX,"$"),"",colnames(x))
-	df <- data.frame("total reads"=x[10,],
-					 "total filtered"=paste0( x[9,], " (", round(x[9,] / x[10,] * 100, digits=2), "%)" ),
-					 "CIGAR"=paste0( x[1,], " (", round(x[1,] / x[10,] * 100, digits=2), "%)" ),
-					 "Duplicate"=paste0( x[2,], " (", round(x[2,] / x[10,] * 100, digits=2), "%)" ),
-					 "MappingQuality"=paste0( x[4,], " (", round(x[4,] / x[10,] * 100, digits=2), "%)" ),
-					 "Malformed read"=paste0( x[5,], " (", round(x[5,] / x[10,] * 100, digits=2), "%)" ),
+	
+	df <- data.frame(#"sample name"    = colnames(x),
+					 "total reads"    = x[10,],
+					 "total filtered" = paste0( x[9,], " (", round(x[9,] / x[10,] * 100, digits=2), "%)" ),
+					 "CIGAR"          = paste0( x[1,], " (", round(x[1,] / x[10,] * 100, digits=2), "%)" ),
+					 "Duplicate"      = paste0( x[2,], " (", round(x[2,] / x[10,] * 100, digits=2), "%)" ),
+					 "MappingQuality" = paste0( x[4,], " (", round(x[4,] / x[10,] * 100, digits=2), "%)" ),
+					 "Malformed read" = paste0( x[5,], " (", round(x[5,] / x[10,] * 100, digits=2), "%)" ),
 					 "no MappingQuality"=paste0( x[6,], " (", round(x[6,] / x[10,] * 100, digits=2), "%)" ),
-					 "not Primary"=paste0( x[7,], " (", round(x[7,] / x[10,] * 100, digits=2), "%)" ),
-					 "unmapped"=paste0( x[8,], " (", round(x[8,] / x[10,] * 100, digits=2), "%)" )
+					 "not Primary"    = paste0( x[7,], " (", round(x[7,] / x[10,] * 100, digits=2), "%)" ),
+					 "unmapped"       = paste0( x[8,], " (", round(x[8,] / x[10,] * 100, digits=2), "%)" )
 					 )
+	rownames(df) <- colnames(x)
 	kable(df,align=c("r","r","r","r","r","r","r","r","r"),output=F)
 }
 
@@ -275,6 +283,7 @@ VARhelper.GATKvarianteval <- function() {
 	# log file, which locates to qc folder
 	# contains the output of GATK VariantEval
 	LOG <- SHINYREPS_GATKvarianteval
+	SUFFIX <- SHINYREPS_GATKvarianteval_SUFFIX
 	
 	if(!file.exists(LOG)) {
 		return("GATK Variant Evaluation statistics not available")
@@ -362,32 +371,22 @@ VARhelper.GATKvarianteval <- function() {
 	x <- do.call(cbind, x)
 	
 	# set row and column names, and output the md table
-	#rownames(x) <- list.files(LOG)
-	#rownames(x) <- gsub(paste0("^",SHINYREPS_PREFIX),"",colnames(x))
-	#rownames(x) <- gsub(paste0(SUFFIX,"$"),"",colnames(x))
-	#
-	df <- data.frame("total counts"=paste(x[1,], x[2,],  x[3,], sep=", "),
+	colnames(x) <- list.files(LOG)
+	#colnames(x) <- gsub(paste0("^",SHINYREPS_PREFIX),"",colnames(x))
+	colnames(x) <- gsub(paste0(SUFFIX,"$"),"",colnames(x))
+	
+	
+	df <- data.frame(#"sample name"= colnames(x),
+					 "total counts"=paste(x[1,], x[2,],  x[3,], sep=", "),
 					 "SNP"=         paste(x[4,] ,x[10,], x[16,],sep=", "),
 					 "MNP"=         paste(x[5,], x[11,], x[17,],sep=", "),
 					 "Insertion"=   paste(x[6,], x[12,], x[18,],sep=", "),
 					 "Deletion"=    paste(x[7,], x[13,], x[19,],sep=", "),
-					 #"het hom ratio"=     paste(paste(x[8,] , x[9,],  sep=';'), paste(x[14,] , x[15,], sep=';'), paste(x[20,] , x[21,], sep=';') ,sep=", "),
-					 #"ins del ratio"=     paste(paste(x[6,] , x[7,],  sep=';'), paste(x[12,] , x[13,], sep=';'), paste(x[18,] , x[19,], sep=';'), sep=", "),
-					 #"Ti Tv ratio"=       paste(paste(x[25,], x[26,], sep=';'), paste(x[29,] , x[30,], sep=';'), paste(x[33,] , x[34,], sep=';'),sep=", ")
 					 "het hom ratio"=     paste(round(x[8,] / x[9,], digits=2),   round(x[14,] / x[15,], digits=2), round(x[20,] / x[21,], digits=2),sep=", "),
 					 "ins del ratio"=     paste(round(x[6,] / x[7,], digits=2),   round(x[12,] / x[13,], digits=2), round(x[18,] / x[19,], digits=2),sep=", "),
 					 "Ti Tv ratio"=       paste(round(x[25,] / x[26,], digits=2), round(x[29,] / x[30,], digits=2), round(x[33,] / x[34,], digits=2),sep=", ")
-					 
-					 
-					 #"CIGAR"=paste0( x[1,], " (", round(x[1,] / x[10,] * 100, digits=2), "%)" ),
-					 #"Duplicate"=paste0( x[2,], " (", round(x[2,] / x[10,] * 100, digits=2), "%)" ),
-					 #"MappingQuality"=paste0( x[4,], " (", round(x[4,] / x[10,] * 100, digits=2), "%)" ),
-					 #"Malformed read"=paste0( x[5,], " (", round(x[5,] / x[10,] * 100, digits=2), "%)" ),
-					 #"no MappingQuality"=paste0( x[6,], " (", round(x[6,] / x[10,] * 100, digits=2), "%)" ),
-					 #"not Primary"=paste0( x[7,], " (", round(x[7,] / x[10,] * 100, digits=2), "%)" ),
-					 #"unmapped"=paste0( x[8,], " (", round(x[8,] / x[10,] * 100, digits=2), "%)" )
 					 )
-	
+	rownames(df) <- colnames(x)
 	kable(df,align=c("r","r","r","r","r","r","r","r"),output=F)
 }
 
