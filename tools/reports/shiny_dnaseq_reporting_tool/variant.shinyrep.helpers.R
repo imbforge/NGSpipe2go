@@ -362,10 +362,10 @@ VARhelper.GATKvarianteval <- function() {
 	x <- do.call(cbind, x)
 	
 	# set row and column names, and output the md table
-	rownames(x) <- list.files(LOG)
-	rownames(x) <- gsub(paste0("^",SHINYREPS_PREFIX),"",colnames(x))
-	rownames(x) <- gsub(paste0(SUFFIX,"$"),"",colnames(x))
-	
+	#rownames(x) <- list.files(LOG)
+	#rownames(x) <- gsub(paste0("^",SHINYREPS_PREFIX),"",colnames(x))
+	#rownames(x) <- gsub(paste0(SUFFIX,"$"),"",colnames(x))
+	#
 	df <- data.frame("total counts"=paste(x[1,], x[2,],  x[3,], sep=", "),
 					 "SNP"=         paste(x[4,] ,x[10,], x[16,],sep=", "),
 					 "MNP"=         paste(x[5,], x[11,], x[17,],sep=", "),
