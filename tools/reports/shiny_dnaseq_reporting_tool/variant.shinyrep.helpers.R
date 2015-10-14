@@ -220,7 +220,6 @@ VARhelper.GATKhc <- function() {
 	SUFFIX <- paste0(SHINYREPS_GATKhc_SUFFIX, '$')
 	
 	if(!file.exists(LOG)) {
-		print(LOG)
 		return("GATK Haplotype Caller statistics not available")
 	}
 	
@@ -363,8 +362,10 @@ VARhelper.GATKvarianteval <- function() {
 	x <- do.call(cbind, x)
 	
 	# set row and column names, and output the md table
-	colnames(x) <- gsub(paste0("^",SHINYREPS_PREFIX),"",colnames(x))
-	#colnames(x) <- gsub(paste0(SUFFIX,"$"),"",colnames(x))
+	rownames(x) <- list.files(LOG)
+	rownames(x) <- gsub(paste0("^",SHINYREPS_PREFIX),"",colnames(x))
+	rownames(x) <- gsub(paste0(SUFFIX,"$"),"",colnames(x))
+	
 	df <- data.frame("total counts"=paste(x[1,], x[2,],  x[3,], sep=", "),
 					 "SNP"=         paste(x[4,] ,x[10,], x[16,],sep=", "),
 					 "MNP"=         paste(x[5,], x[11,], x[17,],sep=", "),
@@ -390,258 +391,83 @@ VARhelper.GATKvarianteval <- function() {
 	kable(df,align=c("r","r","r","r","r","r","r","r"),output=F)
 }
 
-varianthelper.CoveragePlot <- function() {
+
+##
+## VARhelper.CoveragePlot: produce a plot that is aimed to improve interaction between Genotype, ReadDepth, GenotypeQuality & dbSNP re-ocurrence
+##
+
 	# read file
 	# vcfData <- read.table(file="results/NA12877.HC.vcf.gz", stringsAsFactors=F)
 	# parse
 	# Genotype data: unlist(strsplit(vcfData[,10], ":"))[c(1,3,4)]
 	# position data: paste(vcfData[,1], vcfData[,2], sep='_')
 	# known/novel  : ifelse(vcfData[, 3] == ".", 'novel', 'known')
+
+VARhelper.CoveragePlot <- function() {
 	
-}
-
-##
-## DEhelper.MDS
-##
-DEhelper.MDS <- function() {
-	edgeR::plotMDS.DGEList(y,col=brewer.pal(max(length(levels(group)),3),"Accent")[group])
-}
-
-##
-## DEhelper.var: variance along log gene count-per-milion
-##
-DEhelper.var <- function() {
-	edgeR::plotBCV(y)
-}
-
-##
-## DEhelper.cluster: Heatmap of top variant 'n' genes of the counts-per-milion table
-##
-DEhelper.cluster <- function(n=50) {
-	heatmap.2(m[rev(order(v))[1:n],],col=hmcol,trace="none",margin=c(10,6))
-}
-
-##
-## DEhelper.corr: Heatmap of sample to sample distances
-##
-DEhelper.corr <- function() {
-	heatmap.2(mat,trace="none",col=rev(hmcol),margin=c(13,13))
-}
-
-##
-## DEhelper.MAplot: MA plots
-##
-DEhelper.MAplot <- function(i=1,fdr=.05) {
-	# get DE genes (p.adjust='BH', pval<.05)
-	de <- decideTestsDGE(lrt[[i]],p.value=fdr)
-	degenes <- rownames(y)[as.logical(de)]
+	#```{r echo=F,results='asis',error=F,warning=F,message=F}
+	#cat(VARhelper.CoveragePlot(),sep="\n")
+	#```
 	
-	# MA plot
-	plotSmear(lrt[[i]],de.tags=degenes,main=names(lrt)[i])	# MA plot
-	abline(h=c(-1,1),col="blue")	# indicate 2-fold changes in the MA plot
-	abline(v=0,col="blue")			# indicate >1 counts-per-million
-}
-
-##
-## DEhelper.DEgenes: show the DE results
-##
-DEhelper.DEgenes <- function(i=1) {
-	ord  <- order(-log(lrt[[i]]$table$FDR),
-				   abs(lrt[[i]]$table$logFC),
-				  decreasing=TRUE)
-	cols <- c("gene","logFC","logCPM","LR","PValue","FDR")
-	lrt[[i]]$table[ord,cols]
-}
-
-
-
-
-##
-## DEhelper.Fastqc: go through Fastqc output dir and create a md table with the duplication & read quals & sequence bias plots
-##
-DEhelper.Fastqc <- function(web=TRUE) {
 	
-	# logs folder
-	if(!file.exists(SHINYREPS_FASTQC_LOG)) {
-		return("Fastqc statistics not available")
+	library(ggplot2)
+	
+	# vcf result file from Haplotype caller
+	# need to extract variant properties and compile list
+	LOG <- SHINYREPS_RES
+	SUFFIX <- paste0(SHINYREPS_RES_GATKhc_SUFFIX, '$')
+	
+	if(!file.exists(LOG)) {
+		return("GATK Haplotype Caller results not available")
 	}
 	
-	# construct the folder name, which is different for web and noweb
-	QC <- if(web) "/fastqc" else SHINYREPS_FASTQC_LOG
-	
-	# construct the image url from the folder contents (skip current dir .)
-	samples <- list.dirs(SHINYREPS_FASTQC_LOG,recursive=F)
-	df <- sapply(samples,function(f) {
-		c(paste0("![alt text](",QC,"/",basename(f),"/Images/duplication_levels.png)"), 
-		  paste0("![alt text](",QC,"/",basename(f),"/Images/per_base_quality.png)"), 
-		  paste0("![alt text](",QC,"/",basename(f),"/Images/per_base_sequence_content.png)"))
-	})
-
-	# set row and column names, and output the md table
-	df <- as.data.frame(t(df))
-	rownames(df) <- gsub(paste0("^",SHINYREPS_PREFIX),"",basename(samples))
-	colnames(df) <- c("Duplication","Read qualities","Sequence bias")
-	kable(df,output=F)
-}
-
-##
-## DEhelper.dupRadar: go through dupRadar output dir and create a md table with
-##     the duplication plots
-##
-DEhelper.dupRadar <- function(web=TRUE) {
-	
-	# logs folder
-	if(!file.exists(SHINYREPS_DUPRADAR_LOG)) {
-		return("DupRadar statistics not available")
-	}
-
-    if(!is.integer(SHINYREPS_PLOTS_COLUMN) | SHINYREPS_PLOTS_COLUMN < 2) {
-        SHINYREPS_PLOTS_COLUMN <- 4L    # default to 4 columns
-    }
-	
-	# construct the folder name, which is different for web and noweb
-	QC <- if(web) "/dupRadar" else SHINYREPS_DUPRADAR_LOG
-	
-	# construct the image url from the folder contents (skip current dir .)
-	samples <- list.files(SHINYREPS_DUPRADAR_LOG,pattern="*.png")
-	df <- sapply(samples,function(f) {
-		paste0("![alt text](",QC,"/",basename(f),")")
-	})
-	
-	# put sample names and output an md table of SHINYREPS_PLOTS_COLUMN columns
-	while(length(df) %% SHINYREPS_PLOTS_COLUMN != 0) df <- c(df,"")
-	samples <- sapply(df,function(x) {
-		x <- sapply(x,function(x) gsub(paste0("^",SHINYREPS_PREFIX),"",basename(x)))
-		gsub("_dupRadar.png)","",x)
-	})
-	df      <- matrix(df     ,ncol=SHINYREPS_PLOTS_COLUMN,byrow=T)
-	samples <- matrix(samples,ncol=SHINYREPS_PLOTS_COLUMN,byrow=T)
-	
-	# add a row with the sample names
-	df.names <- matrix(sapply(1:nrow(df),function(i) { c(df[i,],samples[i,]) }),
-                       ncol=SHINYREPS_PLOTS_COLUMN,byrow=T)
-	colnames(df.names) <- rep(" ",SHINYREPS_PLOTS_COLUMN)
-	
-	kable(as.data.frame(df.names),output=F)
-}
-
-##
-## DEhelper.RNAtypes: go through RNAtypes output dir and create a md table with
-##     the RNAtypes plots
-##
-DEhelper.RNAtypes <- function(web=TRUE) {
-	
-	# logs folder
-	if(!file.exists(SHINYREPS_RNATYPES_LOG)) {
-		return("RNAtypes statistics not available")
-	}
-	
-	# construct the folder name, which is different for web and noweb
-	QC <- if(web) "/RNAtypes" else SHINYREPS_RNATYPES_LOG
-	
-	# construct the image url from the folder contents (skip current dir .)
-	f <- list.files(SHINYREPS_RNATYPES_LOG,pattern="RNAtypes.counts.per.png")
-	df <- sapply(f,function(f) {
-		paste0("![alt text](",QC,"/",basename(f),")")
-	})
-	
-	# output an md table of 1 columns and 1 row
-	df <- matrix(df,ncol=1,nrow=1)
-	colnames(df) <- c(" ")
-
-	kable(as.data.frame(df),output=F)
-}
-
-##
-## DEhelper.geneBodyCov: go through dupRadar output dir and create a md table with
-##     the duplication plots
-##
-DEhelper.geneBodyCov <- function(web=TRUE) {
-	
-	# logs folder
-	if(!file.exists(SHINYREPS_GENEBODYCOV_LOG)) {
-		return("geneBodyCov statistics not available")
-	}
-	
-    if(!is.integer(SHINYREPS_PLOTS_COLUMN) | SHINYREPS_PLOTS_COLUMN < 2) {
-        SHINYREPS_PLOTS_COLUMN <- 4L    # default to 4 columns
-    }
-	
-	# construct the folder name, which is different for web and noweb
-	QC <- if(web) "/geneBodyCov" else SHINYREPS_GENEBODYCOV_LOG
-	
-	# construct the image url from the folder contents (skip current dir .)
-	samples <- list.files(SHINYREPS_GENEBODYCOV_LOG,pattern="*.png")
-	df <- sapply(samples,function(f) {
-		paste0("![alt text](",QC,"/",basename(f),")")
-	})
-	
-	# put sample names and output an md table of SHINYREPS_PLOTS_COLUMN columns
-	while(length(df) %% SHINYREPS_PLOTS_COLUMN != 0) df <- c(df,"")
-	samples <- sapply(df,function(x) {
-		x <- sapply(x,function(x) gsub(paste0("^",SHINYREPS_PREFIX),"",basename(x)))
-		gsub(".geneBodyCoverage.curves.png)","",x)
-	})
-	df      <- matrix(df     ,ncol=SHINYREPS_PLOTS_COLUMN,byrow=T)
-	samples <- matrix(samples,ncol=SHINYREPS_PLOTS_COLUMN,byrow=T)
-	
-	# add a row with the sample names
-	df.names <- matrix(sapply(1:nrow(df),function(i) { c(df[i,],samples[i,]) }),
-                       ncol=SHINYREPS_PLOTS_COLUMN,byrow=T)
-	colnames(df.names) <- rep(" ",SHINYREPS_PLOTS_COLUMN)
-	
-	kable(as.data.frame(df.names),output=F)
-}
-
-
-
-##
-## DEhelper.Subread: parse Subread summary stats and create a md table
-##
-DEhelper.Subread <- function() {
-	
-	FOLDER <- SHINYREPS_SUBREAD
-	SUFFIX <- paste0(SHINYREPS_SUBREAD_SUFFIX, '$')
-	
-	# check if folder exists
-	if(!file.exists(FOLDER)) {
-		return("Subread statistics not available")
-	}
-	
-	# create a matrix using feature names as rownames, sample names as colnames
-	x <- sapply(list.files(FOLDER,pattern=SUFFIX),function(f) {
+	# look for the lines containing the strings
+	# and get the values associated with this strings
+	# produce a list by lapply to be robust in projects containing only one file
+	x <- lapply(list.files(LOG, pattern=SUFFIX, full.names=TRUE),function(f) { # list all files and feed them into function one by one
+		l <- read.table(file=f, stringsAsFactors=F, strip.white=T) # read file content to l
 		
-		f <- file(paste0(FOLDER, '/', f))
-		l <- readLines(f)
-		close(f)
+		# parse
+		m <- apply( l, 1, function(l.line){
+			
+			#trim white spaces that seem to be retained in an apply, but stripped in test cases
+			l.line[2] <- gsub("^\\s+|\\s+$", "", l.line[2])
+			
+			tmp.list <- list()
+			tmp.list[[1]] <- paste(l.line[1], l.line[2], sep='_') # chr_position
+			tmp.list[[2]] <- ifelse(l.line[3] == ".", 'novel', 'known') # known to dbSNP?
+			tmp.list[[3]] <- unlist( strsplit(l.line[10], ":") )[c(1,3,4)] # genotype, read depth & genotype quality
+			tmp.list[[4]] <- l.line[1]
+			tmp.list[[5]] <- l.line[2]
+			
+			return( c(tmp.list[[1]], tmp.list[[2]], tmp.list[[3]], tmp.list[[4]], tmp.list[[5]]) ) # return vector
+			
+			} )
 		
+		m <- t(m)
 		
-		sapply(c("Assigned",                      #1
-				 "Unassigned_Ambiguity",          #2
-				 "Unassigned_MultiMapping",       #3
-				 "Unassigned_NoFeatures",         #4
-				 "Unassigned_Unmapped",           #5
-				 "Unassigned_MappingQuality",     #6
-				 "Unassigned_FragementLength",    #7
-				 "Unassigned_Chimera",            #8
-				 "Unassigned_Secondary",          #9
-				 "Unassigned_Nonjunction",        #10
-				 "Unassigned_Duplicate"),function(y) {   #11
-					as.numeric(  gsub( ".+\t(.+)","\\1",l[grep(y,l)] )  )
-				 })	
+		return( data.frame("name"  = basename(f),
+						   "chr"   = m[,1],
+						   "dbSNP" = m[,2],
+						   "GT"    = m[,3],
+						   "DP"    = as.numeric(m[,4]),
+						   "GQ"    = as.numeric(m[,5])
+						   )  )
 		
 	})
 	
-	# correct column names
-	colnames(x) <- gsub(paste0("^",SHINYREPS_PREFIX),"",colnames(x))
-	colnames(x) <- gsub(paste0(SUFFIX,"$"),"",colnames(x))
+	# plot
+	n <- lapply(x, function(y){
+		
+		sample.name <- sub(SUFFIX, "", y$name)[1] # y$name is a vector of length data.frame
+		p <- ggplot(data=y, aes(GQ, DP, colour=dbSNP, shape=GT) ) + geom_point() + scale_color_manual(values=c("#0000cc","#dd0000")) + scale_shape_manual(values=c(4,1,20,3)) + labs(x="Genotype Quality", y="Read Coverage", title=sample.name)
+		print(p)
+		
+		return() # explicitly return NULL, which will arrive in n
+		
+		})
 	
-	# create md table (omitting various values that are 0 for now)
-	df <- data.frame(assigned=x[1,],
-					 unass_ambiguous=x[2,],
-					 unass_multimap=x[3,],
-					 unass_nofeat=x[4,])
-	kable(df,align=c("r","r","r","r"),output=F)
+	return() # return NULL, which will emerge in report environment
 	
 }
 

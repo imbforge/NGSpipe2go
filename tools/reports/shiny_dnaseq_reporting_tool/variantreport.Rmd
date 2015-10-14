@@ -41,9 +41,19 @@ cat(VARhelper.GATKug(),sep="\n")
 ```
 
 #### GATK HaplotypeCaller filtered read statistics
+
 ```{r echo=F,results='asis',error=F,warning=F,message=F}
 cat(VARhelper.GATKhc(),sep="\n")
 ```
+
+GATK Haplotyper annotates variants with dbSNP entries, if the database file is provided. Novel variants, which are not found in dbSNP usually tend to be heterozygous variants in low coverage regions.
+These regions are prone to lead to false positive calls and should be taken with a grain of salt.
+
+```{r echo=F,results='asis',error=F,warning=F,message=F}
+no.feedback <- VARhelper.CoveragePlot()
+```
+
+
 
 #### GATK VariantEval variant statistics
 Variant statistics show the basic properties of your variants as triplets for "all", "known" ,"novel" variants in comparison to dbSNP.
