@@ -273,8 +273,8 @@ VARhelper.GATKhc <- function() {
 ##
 VARhelper.GATKvarianteval <- function() {
 
-	# log file, which was copied from .bpipe folder
-	# contains the runtime STDERR of GATK Unified Genotyper
+	# log file, which locates to qc folder
+	# contains the output of GATK VariantEval
 	LOG <- SHINYREPS_GATKvarianteval
 	
 	if(!file.exists(LOG)) {
@@ -388,6 +388,16 @@ VARhelper.GATKvarianteval <- function() {
 					 )
 	
 	kable(df,align=c("r","r","r","r","r","r","r","r"),output=F)
+}
+
+varianthelper.CoveragePlot <- function() {
+	# read file
+	# vcfData <- read.table(file="results/NA12877.HC.vcf.gz", stringsAsFactors=F)
+	# parse
+	# Genotype data: unlist(strsplit(vcfData[,10], ":"))[c(1,3,4)]
+	# position data: paste(vcfData[,1], vcfData[,2], sep='_')
+	# known/novel  : ifelse(vcfData[, 3] == ".", 'novel', 'known')
+	
 }
 
 ##
