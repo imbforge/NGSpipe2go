@@ -60,6 +60,7 @@ Variant statistics show the basic properties of your variants as triplets for "a
 The calculated ratios should be similar in "all", "known" and "novel" subsets. Highly deviating values in the "novel" subset indicate a high false positive rate.
 Due to selective pressure transitions are more likely to be retained in the genome than transversions.
 For (human) Exome sequencing a Ti/Tv ration of 2.8-3 would be good, while whole genome sequencing might result in values 2-2.1. A completely random Ti/Tv ratio would be 0.5.
+Sample names end with .HC (HaplotypeCaller) and .UG (UnifiedGenotyper).
 
 [one source of many: http://www.cureffi.org/2012/10/17/descriptive-statistics-and-quality-control-on-variants/]
 
@@ -69,6 +70,10 @@ cat(VARhelper.GATKvarianteval(),sep="\n")
 
 ## Used tools and versions for this analysis
 
-```{r ToolVersions_paragraph, echo=F,results='asis',error=F,warning=F,message=F}
-cat(VARhelper.ToolVersions(),sep="\n")
-``` 
+```{r ToolVersions_paragraph1, echo=F,results='asis',error=F,warning=F,message=F}
+table.content <- data.frame(  tool=c("BWA"),
+							  version=c(Toolhelper.VersionBWA()) )
+kable(table.content)
+
+```
+

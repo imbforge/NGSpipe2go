@@ -414,7 +414,7 @@ VARhelper.CoveragePlot <- function() {
 	# vcf result file from Haplotype caller
 	# need to extract variant properties and compile list
 	LOG <- SHINYREPS_RES
-	SUFFIX <- paste0(SHINYREPS_RES_GATKhc_SUFFIX, '$')
+	SUFFIX <- paste0(SHINYREPS_GATKhc_SUFFIX, '$')
 	
 	if(!file.exists(LOG)) {
 		return("GATK Haplotype Caller results not available")
@@ -473,6 +473,45 @@ VARhelper.CoveragePlot <- function() {
 ##
 ## extract tool versions
 ##
+
+Toolhelper.VersionBWA <- function() {
+	
+	# bwa call without parameters
+	#[...]
+	#Program: bwa (alignment via Burrows-Wheeler transformation)
+	#Version: 0.7.12-r1039
+	#Contact: Heng Li <lh3@sanger.ac.uk>
+	#[...]
+	
+	LOG <- SHINYREPS_BWA_LOG
+	
+	# logs folder
+	if(!file.exists(SHINYREPS_BWA_LOG)) {
+		return("BWA version not available")
+	}
+	
+	x <- lapply( list.files(LOG, full.names=TRUE), function(f){
+		# read all lines
+		l <- readLines(f)
+		# e.g. Version: 0.7.12-r1039
+		l.tmp <- l[grep("Version:",l)]
+		# extract version number
+		l.version <- unlist( strsplit(l.tmp, ': ') )[2]
+		
+		return(l.version)
+		
+		} )
+	
+	# x is a list of always the same content
+	if(is.na(x[[1]][1])) {
+		return("no version tag")
+	}
+	else {
+		return(x[[1]][1])
+	}
+	
+	
+}
 
 VARhelper.ToolVersions <- function() {
   #tools <- c("FastQC", "STAR", "HTseq", "Subread", "DupRadar", "Samtools", "BedTools", "Picard", "R")
