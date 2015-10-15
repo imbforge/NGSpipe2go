@@ -40,6 +40,10 @@ BWA_pe = {
 			SAMPLE_NAME=\$(basename $output.prefix.prefix) &&
 
 			PLATFORM="genomics" &&
+			
+			echo 'VERSION INFO'  1>&2 &&
+			${TOOL_BWA}/bwa      1>&2 &&
+			echo '\VERSION INFO' 1>&2 &&
 						
 			${TOOL_BWA}/bwa mem $BWA_FLAGS -R \"@RG\\tID:${SAMPLE_NAME}\\tSM:${SAMPLE_NAME}\\tPL:illumina\\tLB:${SAMPLE_NAME}\\tPU:${PLATFORM}\" $ESSENTIAL_BWA_REF $input1 $input2 | ${TOOL_SAMTOOLS} view ${SAMTOOLS_FLAGS} - | ${TOOL_SAMTOOLS} sort -@ ${BWA_THREADS} -O bam -T ${SAMPLE_NAME} -  > ${output} &&
 			
