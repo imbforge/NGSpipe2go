@@ -118,6 +118,4 @@ for(i in 1:length(colnames(conts))) {
 
 ## Used tools and versions for this analysis
 
-```{r echo=F,results='asis',error=F,warning=F,message=F}
-cat(DEhelper.ToolVersions(),sep="\n")
-``` 
+TODO to be developed
