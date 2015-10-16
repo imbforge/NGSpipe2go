@@ -16,7 +16,11 @@ MarkDups = {
 			if [ -n "\$LSB_JOBID" ]; then
 				export TMPDIR=/jobdir/\${LSB_JOBID};
 			fi &&
-
+			
+			echo 'VERSION INFO'  1>&2 &&
+			java -jar ${TOOL_PICARD}/MarkDuplicates.jar --version 1>&2 &&
+			echo '/VERSION INFO' 1>&2 &&
+			
 			java -Xmx50000m -jar ${TOOL_PICARD}/MarkDuplicates.jar $MARKDUPS_FLAGS
 				INPUT=$input
 				OUTPUT=$output

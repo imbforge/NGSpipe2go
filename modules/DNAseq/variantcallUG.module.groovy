@@ -24,6 +24,8 @@ VariantCallUG = {
     
     //def GATK_FLAGS = " --output_mode EMIT_ALL_SITES " 
     
+    // TODO add a vcf stats step how many variants on which chromosome
+    
     transform (".duprm.realigned.recalibrated.bam") to (".UG.vcf.gz") {
         
         // usage parameters https://www.broadinstitute.org/gatk/gatkdocs/org_broadinstitute_gatk_tools_walkers_genotyper_UnifiedGenotyper.php
@@ -34,6 +36,9 @@ VariantCallUG = {
 				export TMPDIR=/jobdir/\${LSB_JOBID};
 			fi                                          &&
         
+        echo 'VERSION INFO'  1>&2 &&
+        java -Djava.io.tmpdir=$TMPDIR -jar $TOOL_GATK/GenomeAnalysisTK.jar --version 1>&2 &&
+        echo '/VERSION INFO' 1>&2 &&
         
         java -Djava.io.tmpdir=$TMPDIR -jar $TOOL_GATK/GenomeAnalysisTK.jar -T UnifiedGenotyper -nt $GATK_THREADS -nct $GATK_THREADS -R $ESSENTIAL_BWA_REF -glm BOTH -I $input -o $output $GATK_FLAGS
         

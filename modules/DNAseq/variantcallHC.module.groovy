@@ -27,6 +27,8 @@ VariantCallHC = {
         // usage parameters https://www.broadinstitute.org/gatk/gatkdocs/org_broadinstitute_gatk_tools_walkers_haplotypecaller_HaplotypeCaller.php
         // def GATK_FLAGS = "--emitRefConfidence GVCF --variant_index_type LINEAR --variant_index_parameter 128000"
         
+        // TODO add a vcf stats step how many variants on which chromosome
+        
         
         exec """
         
@@ -34,6 +36,10 @@ VariantCallHC = {
 			if [ -n "\$LSB_JOBID" ]; then
 				export TMPDIR=/jobdir/\${LSB_JOBID};
 			fi                                          &&
+        
+        echo 'VERSION INFO'  1>&2 &&
+        java -Djava.io.tmpdir=$TMPDIR -jar $TOOL_GATK/GenomeAnalysisTK.jar --version 1>&2 &&
+        echo '/VERSION INFO' 1>&2 &&
         
         java -Djava.io.tmpdir=$TMPDIR -jar $TOOL_GATK/GenomeAnalysisTK.jar -T HaplotypeCaller -nct $GATK_THREADS -R $ESSENTIAL_BWA_REF --dbsnp ${ESSENTIAL_KNOWN_VARIANTS} -I $input -o $output $GATK_FLAGS
         
