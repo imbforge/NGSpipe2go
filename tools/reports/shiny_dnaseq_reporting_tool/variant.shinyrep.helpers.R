@@ -72,16 +72,16 @@ VARhelper.init <- function(task) {
 ##
 VARhelper.Fastqc <- function(web=TRUE) {
 	
-	# logs folder
-	if(!file.exists(SHINYREPS_FASTQC_LOG)) {
+	# output folder
+	if(!file.exists(SHINYREPS_FASTQC_OUT)) {
 		return("Fastqc statistics not available")
 	}
 	
 	# construct the folder name, which is different for web and noweb
-	QC <- if(web) "/fastqc" else SHINYREPS_FASTQC_LOG
+	QC <- if(web) "/fastqc" else SHINYREPS_FASTQC_OUT
 	
 	# construct the image url from the folder ents (skip current dir .)
-	samples <- list.dirs(SHINYREPS_FASTQC_LOG,recursive=F)
+	samples <- list.dirs(SHINYREPS_FASTQC_OUT,recursive=F)
 	df <- sapply(samples,function(f) {
 		c(paste0("![alt text](",QC,"/",basename(f),"/Images/duplication_levels.png)"), 
 		  paste0("![alt text](",QC,"/",basename(f),"/Images/per_base_quality.png)"), 
@@ -112,7 +112,7 @@ VARhelper.BWA <- function() {
 	# look for the lines containing the strings
 	# and get the values associated with this strings
 	# produce a list by lapply to be robust in projects containing only one file
-	x <- lapply(list.files(LOG, full.names=TRUE),function(f) { # list all files and feed them into function one by one
+	x <- lapply(list.files(LOG, pattern=SUFFIX, full.names=TRUE),function(f) { # list all files and feed them into function one by one
 		l <- readLines(f) # read file content to l
 		#close(f)
 		
@@ -134,7 +134,7 @@ VARhelper.BWA <- function() {
 	# transform x from list to matrix (in extreme cases also with only one column)
 	x <- do.call(cbind, x)
 	# set row and column names, and output the md table
-	colnames(x) <- list.files(LOG)
+	colnames(x) <- list.files(LOG, pattern=SUFFIX)
 	colnames(x) <- gsub(paste0("^",SHINYREPS_PREFIX),"",colnames(x))
 	colnames(x) <- gsub(paste0(SUFFIX,"$"),"",colnames(x))
 	df <- data.frame(#"sample name"       = colnames(x),
@@ -166,7 +166,7 @@ VARhelper.GATKug <- function() {
 	# look for the lines containing the strings
 	# and get the values associated with this strings
 	# produce a list by lapply to be robust in projects containing only one file
-	x <- lapply(list.files(LOG, full.names=TRUE),function(f) { # list all files and feed them into function one by one
+	x <- lapply(list.files(LOG, pattern=SUFFIX, full.names=TRUE),function(f) { # list all files and feed them into function one by one
 		l <- readLines(f) # read file content to l
 		#close(f)
 		
@@ -192,7 +192,7 @@ VARhelper.GATKug <- function() {
 	# transform x from list to matrix (in extreme cases also with only one column)
 	x <- do.call(cbind, x)
 	# set row and column names, and output the md table
-	colnames(x) <- list.files(LOG)
+	colnames(x) <- list.files(LOG, pattern=SUFFIX)
 	colnames(x) <- gsub(paste0("^",SHINYREPS_PREFIX),"",colnames(x))
 	colnames(x) <- gsub(paste0(SUFFIX,"$"),"",colnames(x))
 	df <- data.frame(#"sample name"    = colnames(x),
@@ -230,7 +230,7 @@ VARhelper.GATKhc <- function() {
 	# look for the lines containing the strings
 	# and get the values associated with this strings
 	# produce a list by lapply to be robust in projects containing only one file
-	x <- lapply(list.files(LOG, full.names=TRUE),function(f) { # list all files and feed them into function one by one
+	x <- lapply(list.files(LOG, pattern=SUFFIX, full.names=TRUE),function(f) { # list all files and feed them into function one by one
 		l <- readLines(f) # read file content to l
 		#close(f)
 		
@@ -256,7 +256,7 @@ VARhelper.GATKhc <- function() {
 	# transform x from list to matrix (in extreme cases also with only one column)
 	x <- do.call(cbind, x)
 	# set row and column names, and output the md table
-	colnames(x) <- list.files(LOG)
+	colnames(x) <- list.files(LOG, pattern=SUFFIX)
 	colnames(x) <- gsub(paste0("^",SHINYREPS_PREFIX),"",colnames(x))
 	colnames(x) <- gsub(paste0(SUFFIX,"$"),"",colnames(x))
 	
@@ -292,7 +292,7 @@ VARhelper.GATKvarianteval <- function() {
 	# look for the lines containing the strings
 	# and get the values associated with this strings
 	# produce a list by lapply to be robust in projects containing only one file
-	x <- lapply(list.files(LOG, full.names=TRUE),function(f) { # list all files and feed them into function one by one
+	x <- lapply(list.files(LOG, pattern=SUFFIX, full.names=TRUE),function(f) { # list all files and feed them into function one by one
 		l <- readLines(f) # read file content to l
 		#close(f)
 		
@@ -371,7 +371,7 @@ VARhelper.GATKvarianteval <- function() {
 	x <- do.call(cbind, x)
 	
 	# set row and column names, and output the md table
-	colnames(x) <- list.files(LOG)
+	colnames(x) <- list.files(LOG, pattern=SUFFIX)
 	#colnames(x) <- gsub(paste0("^",SHINYREPS_PREFIX),"",colnames(x))
 	colnames(x) <- gsub(paste0(SUFFIX,"$"),"",colnames(x))
 	
@@ -395,18 +395,14 @@ VARhelper.GATKvarianteval <- function() {
 ## VARhelper.CoveragePlot: produce a plot that is aimed to improve interaction between Genotype, ReadDepth, GenotypeQuality & dbSNP re-ocurrence
 ##
 
+VARhelper.CoveragePlot <- function() {
+	
 	# read file
 	# vcfData <- read.table(file="results/NA12877.HC.vcf.gz", stringsAsFactors=F)
 	# parse
 	# Genotype data: unlist(strsplit(vcfData[,10], ":"))[c(1,3,4)]
 	# position data: paste(vcfData[,1], vcfData[,2], sep='_')
 	# known/novel  : ifelse(vcfData[, 3] == ".", 'novel', 'known')
-
-VARhelper.CoveragePlot <- function() {
-	
-	#```{r echo=F,results='asis',error=F,warning=F,message=F}
-	#cat(VARhelper.CoveragePlot(),sep="\n")
-	#```
 	
 	
 	library(ggplot2)
@@ -486,7 +482,7 @@ Toolhelper.VersionBWA <- function() {
 	LOG <- SHINYREPS_BWA_LOG
 	
 	# logs folder
-	if(!file.exists(SHINYREPS_BWA_LOG)) {
+	if(!file.exists(LOG)) {
 		return("BWA version not available")
 	}
 	
@@ -503,7 +499,176 @@ Toolhelper.VersionBWA <- function() {
 		} )
 	
 	# x is a list of always the same content
-	if(is.na(x[[1]][1])) {
+	if (is.null(x[[1]][1])) {
+		return("no version tag")
+	}
+	else if (is.na(x[[1]][1])) {
+		return("no version tag")
+	}
+	else {
+		return(x[[1]][1])
+	}
+	
+	
+}
+
+Toolhelper.VersionFastQC <- function() {
+	
+	# fastqc --version
+	#
+	#FastQC v0.11.3
+	#
+	
+	LOG <- SHINYREPS_FASTQC_LOG
+	SUFFIX <- paste0(".log","$")
+	
+	# logs folder
+	if(!file.exists(LOG)) {
+		return("FastQC version not available")
+	}
+	
+	x <- lapply( list.files(LOG, pattern=SUFFIX, full.names=TRUE), function(f){
+		# read all lines
+		l <- readLines(f)
+		# need to check Version number in one line lower than "VERSION INFO"
+		# e.g. FastQC v0.11.3
+		l.tmp <- l[ grep("^VERSION INFO",l) + 1 ]
+		# extract version number
+		l.version <- unlist( strsplit(l.tmp, ' ') )[2]
+		
+		return(l.version)
+		
+		} )
+	
+	# x is a list of always the same content
+	if (is.null(x[[1]][1])) {
+		return("no version tag")
+	}
+	else if (is.na(x[[1]][1])) {
+		return("no version tag")
+	}
+	else {
+		return(x[[1]][1])
+	}
+	
+	
+}
+
+Toolhelper.VersionMarkDups <- function() {
+	
+	# java -jar MarkDuplicates.jar --version
+	#
+	#1.92(1464)
+	#
+	
+	LOG <- SHINYREPS_MARKDUPS_LOG
+	
+	# logs folder
+	if(!file.exists(LOG)) {
+		return("Picard MarkDuplicates version not available")
+	}
+	
+	x <- lapply( list.files(LOG, full.names=TRUE), function(f){
+		# read all lines
+		l <- readLines(f)
+		# need to check Version number in one line lower than "VERSION INFO"
+		# e.g. FastQC v0.11.3
+		l.version <- l[ grep("^VERSION INFO",l) + 1 ]
+		# extract version number
+		
+		return(l.version)
+		
+		} )
+	
+	# x is a list of always the same content
+	if (is.null(x[[1]][1])) {
+		return("no version tag")
+	}
+	else if (is.na(x[[1]][1])) {
+		return("no version tag")
+	}
+	else {
+		return(x[[1]][1])
+	}
+	
+	
+}
+
+Toolhelper.VersionGATKug <- function() {
+	
+	# call GATK and get the version
+	#java -jar GenomeAnalysisTK.jar --version
+	#3.4-46-gbc02625
+	
+	
+	LOG <- SHINYREPS_GATKug_LOG
+	
+	# logs folder
+	if(!file.exists(LOG)) {
+		return("GATK Unified Genotyper version not available")
+	}
+	
+	x <- lapply( list.files(LOG, full.names=TRUE), function(f){
+		# read all lines
+		l <- readLines(f)
+		# need to check Version number in one line lower than "VERSION INFO"
+		# e.g.
+		# VERSION INFO
+		# 3.4-46-gbc02625
+		# \VERSION INFO
+		l.version <- l[ grep("^VERSION INFO",l) + 1 ]
+				
+		return(l.version)
+		
+		} )
+	
+	# x is a list of always the same content
+	if (is.null(x[[1]][1])) {
+		return("no version tag")
+	}
+	else if (is.na(x[[1]][1])) {
+		return("no version tag")
+	}
+	else {
+		return(x[[1]][1])
+	}
+	
+	
+}
+
+Toolhelper.VersionGATKhc <- function() {
+	
+	# call GATK and get the version
+	#java -jar GenomeAnalysisTK.jar --version
+	#3.4-46-gbc02625
+	
+	
+	LOG <- SHINYREPS_GATKhc_LOG
+	
+	# logs folder
+	if(!file.exists(LOG)) {
+		return("GATK Haplotype Caller version not available")
+	}
+	
+	x <- lapply( list.files(LOG, full.names=TRUE), function(f){
+		# read all lines
+		l <- readLines(f)
+		# need to check Version number in one line lower than "VERSION INFO"
+		# e.g.
+		# VERSION INFO
+		# 3.4-46-gbc02625
+		# \VERSION INFO
+		l.version <- l[ grep("^VERSION INFO",l) + 1 ]
+				
+		return(l.version)
+		
+		} )
+	
+	# x is a list of always the same content
+	if (is.null(x[[1]][1])) {
+		return("no version tag")
+	}
+	else if (is.na(x[[1]][1])) {
 		return("no version tag")
 	}
 	else {

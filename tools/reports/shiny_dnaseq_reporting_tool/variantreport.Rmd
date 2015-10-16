@@ -70,9 +70,20 @@ cat(VARhelper.GATKvarianteval(),sep="\n")
 
 ## Used tools and versions for this analysis
 
-```{r ToolVersions_paragraph1, echo=F,results='asis',error=F,warning=F,message=F}
-table.content <- data.frame(  tool=c("BWA"),
-							  version=c(Toolhelper.VersionBWA()) )
+```{r ToolVersions_paragraph, echo=F,results='asis',error=F,warning=F,message=F}
+table.content <- data.frame(  tool=c(
+									  "FastQC",
+									  "BWA",
+									  "GATK UnifiedGenotyper",
+									  "GATK HaplotypeCaller"
+									  ),
+							  version=c(
+									  Toolhelper.VersionFastQC(),
+									  Toolhelper.VersionBWA(),
+									  Toolhelper.VersionGATKug(),
+									  Toolhelper.VersionGATKhc()
+									  )
+						   )
 kable(table.content)
 
 ```

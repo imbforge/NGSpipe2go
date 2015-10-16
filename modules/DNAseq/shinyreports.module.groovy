@@ -11,11 +11,7 @@ shinyReports = {
 	produce("shinyReports.txt") {
 		exec """
 			
-			cp ${MODULE_FOLDER}/../tools/reports/shiny_dnaseq_reporting_tool/server.R ${REPORTS}                &&
-			cp ${MODULE_FOLDER}/../tools/reports/shiny_dnaseq_reporting_tool/ui.R ${REPORTS}                    &&
-			cp ${MODULE_FOLDER}/../tools/reports/shiny_dnaseq_reporting_tool/variant.shinyrep.helpers.R ${REPORTS}   &&
-			cp ${MODULE_FOLDER}/../tools/reports/shiny_dnaseq_reporting_tool/bustard.pl ${REPORTS}              &&
-			cp ${MODULE_FOLDER}/../tools/reports/shiny_dnaseq_reporting_tool/BustardSummary.toMD.xsl ${REPORTS} &&
+			
 			
 			if [ -e "${REPORTS}/variantreport.Rmd" ]; then
 				echo 'variantreport.Rmd already exists. Older copy will be kept and not overwritten';
@@ -33,16 +29,18 @@ shinyReports = {
 			echo "SHINYREPS_QC=${SHINYREPS_QC}"           >> $output &&
 			echo "SHINYREPS_RES=${SHINYREPS_RES}"         >> $output &&
 			echo "SHINYREPS_PREFIX=${SHINYREPS_PREFIX}"   >> $output &&
+			echo "SHINYREPS_FASTQC_OUT=${SHINYREPS_FASTQC_OUT}"     >> $output &&
 			echo "SHINYREPS_FASTQC_LOG=${SHINYREPS_FASTQC_LOG}"     >> $output &&
 			echo "SHINYREPS_BWA_LOG=${SHINYREPS_BWA_LOG}"           >> $output &&
 			echo "SHINYREPS_BWA_SUFFIX=${SHINYREPS_BWA_SUFFIX}"     >> $output &&
+			echo "SHINYREPS_MARKDUPS_LOG=${SHINYREPS_MARKDUPS_LOG}" >> $output &&
 			echo "SHINYREPS_GATKug_LOG=${SHINYREPS_GATKug_LOG}"           >> $output &&
 			echo "SHINYREPS_GATKug_SUFFIX=${SHINYREPS_GATKug_SUFFIX}"     >> $output &&
 			echo "SHINYREPS_GATKhc_LOG=${SHINYREPS_GATKhc_LOG}"           >> $output &&
 			echo "SHINYREPS_GATKhc_SUFFIX=${SHINYREPS_GATKhc_SUFFIX}"     >> $output &&
 			echo "SHINYREPS_GATKvarianteval=${SHINYREPS_GATKvarianteval}"           >> $output &&
 			echo "SHINYREPS_GATKvarianteval_SUFFIX=${SHINYREPS_GATKvarianteval_SUFFIX}"       >> $output &&
-			echo "SHINYREPS_GATKhc_SUFFIX=${SHINYREPS_GATKhc_SUFFIX}"       >> $output &&
+			echo "SHINYREPS_GATKhc_SUFFIX=${SHINYREPS_GATKhc_SUFFIX}"       >> $output
 			
 		""","shinyReports"
 	}
