@@ -499,15 +499,18 @@ Toolhelper.VersionBWA <- function() {
 		} )
 	
 	# x is a list of always the same content
-	if (is.null(x[[1]][1])) {
-		return("no version tag")
-	}
-	else if (is.na(x[[1]][1])) {
-		return("no version tag")
-	}
-	else {
-		return(x[[1]][1])
-	}
+	r <- tryCatch(
+		{
+			return(x[[1]][1])
+		},
+		warning = function(w) {
+			return("no version tag")
+		},
+		error = function(e) {
+			return("no version tag")
+		},
+		finally = {}
+	)
 	
 	
 }
@@ -542,15 +545,18 @@ Toolhelper.VersionFastQC <- function() {
 		} )
 	
 	# x is a list of always the same content
-	if (is.null(x[[1]][1])) {
-		return("no version tag")
-	}
-	else if (is.na(x[[1]][1])) {
-		return("no version tag")
-	}
-	else {
-		return(x[[1]][1])
-	}
+	r <- tryCatch(
+		{
+			return(x[[1]][1])
+		},
+		warning = function(w) {
+			return("no version tag")
+		},
+		error = function(e) {
+			return("no version tag")
+		},
+		finally = {}
+	)
 	
 	
 }
@@ -582,15 +588,18 @@ Toolhelper.VersionMarkDups <- function() {
 		} )
 	
 	# x is a list of always the same content
-	if (is.null(x[[1]][1])) {
-		return("no version tag")
-	}
-	else if (is.na(x[[1]][1])) {
-		return("no version tag")
-	}
-	else {
-		return(x[[1]][1])
-	}
+	r <- tryCatch(
+		{
+			return(x[[1]][1])
+		},
+		warning = function(w) {
+			return("no version tag")
+		},
+		error = function(e) {
+			return("no version tag")
+		},
+		finally = {}
+	)
 	
 	
 }
@@ -624,15 +633,18 @@ Toolhelper.VersionGATKug <- function() {
 		} )
 	
 	# x is a list of always the same content
-	if (is.null(x[[1]][1])) {
-		return("no version tag")
-	}
-	else if (is.na(x[[1]][1])) {
-		return("no version tag")
-	}
-	else {
-		return(x[[1]][1])
-	}
+	r <- tryCatch(
+		{
+			return(x[[1]][1])
+		},
+		warning = function(w) {
+			return("no version tag")
+		},
+		error = function(e) {
+			return("no version tag")
+		},
+		finally = {}
+	)
 	
 	
 }
@@ -666,15 +678,18 @@ Toolhelper.VersionGATKhc <- function() {
 		} )
 	
 	# x is a list of always the same content
-	if (is.null(x[[1]][1])) {
-		return("no version tag")
-	}
-	else if (is.na(x[[1]][1])) {
-		return("no version tag")
-	}
-	else {
-		return(x[[1]][1])
-	}
+	r <- tryCatch(
+		{
+			return(x[[1]][1])
+		},
+		warning = function(w) {
+			return("no version tag")
+		},
+		error = function(e) {
+			return("no version tag")
+		},
+		finally = {}
+	)
 	
 	
 }
