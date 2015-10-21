@@ -512,6 +512,7 @@ Toolhelper.VersionBWA <- function() {
 	
 }
 
+
 Toolhelper.VersionFastQC <- function() {
 	
 	# fastqc --version
@@ -678,21 +679,4 @@ Toolhelper.VersionGATKhc <- function() {
 	
 }
 
-VARhelper.ToolVersions <- function() {
-  #tools <- c("FastQC", "STAR", "HTseq", "Subread", "DupRadar", "Samtools", "BedTools", "Picard", "R")
-  #variables <- list(SHINYREPS_TOOL_FASTQC, SHINYREPS_TOOL_STAR, SHINYREPS_TOOL_HTSEQ, SHINYREPS_TOOL_SUBREAD, SHINYREPS_TOOL_DUPRADAR, SHINYREPS_TOOL_SAMTOOLS, SHINYREPS_TOOL_BEDTOOLS, SHINYREPS_TOOL_PICARD, SHINYREPS_TOOL_R)
-  ## get the last element in path, which is the tool's version (for the tools listed)
-  #versions <- sapply(variables, function(x) {
-  #  y <- strsplit(x, '/')[[1]]
-  #  tail(y, n=1)
-  #})
-  #
-  ## correct the samtools version (second, but last element)
-  #tmp_x <- strsplit(SHINYREPS_TOOL_SAMTOOLS, '/')[[1]]
-  #versions[6] <- head(tail(tmp_x, n=2), n=1) 
-  #
-  #df <- data.frame(tool_name=tools, tool_version=versions)
-  #
-  #kable(df,align=c("l","l"),output=F)
-  
-}
+

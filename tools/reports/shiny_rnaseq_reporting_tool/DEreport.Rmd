@@ -118,4 +118,28 @@ for(i in 1:length(colnames(conts))) {
 
 ## Used tools and versions for this analysis
 
-TODO to be developed
+```{r ToolVersions_paragraph, echo=F,results='asis',error=F,warning=F,message=F}
+table.content <- data.frame(  tool=c(
+									  "FastQC",
+									  "STAR",
+									  "Samtools",
+									  "Subread",
+									  "Picard",
+									  "GeneBodyCoverage",
+									  "R/EdgeR",
+									  "R/DEseq2"
+									  ),
+							  version=c(
+									  Toolhelper.VersionFastQC(),
+									  Toolhelper.VersionSTAR(),
+									  Toolhelper.VersionSamtools(),
+									  Toolhelper.VersionSubread(),
+									  Toolhelper.VersionPicard(),
+									  Toolhelper.VersionGeneBodyCoverage(),
+									  Toolhelper.VersionEdgeR(),
+									  Toolhelper.VersionDEseq()
+									  )
+						   )
+kable(table.content)
+
+```
