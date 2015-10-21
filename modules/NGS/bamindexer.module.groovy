@@ -14,7 +14,11 @@ BAMindexer = {
 			if [ -n "\$LSB_JOBID" ]; then
 				export TMPDIR=/jobdir/\${LSB_JOBID};
 			fi &&
-
+			
+			echo 'VERSION INFO'  1>&2 &&
+			${TOOL_SAMTOOLS} --version 1>&2 &&
+			echo '/VERSION INFO' 1>&2 &&
+			
 			${TOOL_SAMTOOLS} index $input
 		""","BAMindexer"
 	}

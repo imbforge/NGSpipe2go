@@ -25,6 +25,10 @@ DE_edgeR = {
 			if [ -n "\$LSB_JOBID" ]; then
 				export TMPDIR=/jobdir/\${LSB_JOBID};
 			fi &&
+			
+			echo 'VERSION INFO'  1>&2 ;
+			${TOOL_R}/bin/Rscript --version 1>&2 ;
+			echo '/VERSION INFO' 1>&2 ;
 
 			${TOOL_R}/bin/Rscript ${TOOL_EDGER}/DE_edgeR.R $DE_edgeR_FLAGS
 		""","DE_edgeR"

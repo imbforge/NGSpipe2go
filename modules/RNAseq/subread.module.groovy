@@ -29,9 +29,6 @@ subread_count = {
 	}
 	
 	// run the chunk
-	
-	// println("DEBUG" + input.prefix)
-	
 	transform(".bam") to (".raw_readcounts.tsv") {
 		exec """
 			export TOOL_DEPENDENCIES=$TOOL_DEPENDENCIES &&
@@ -40,6 +37,10 @@ subread_count = {
 			if [ -n "\$LSB_JOBID" ]; then
 				export TMPDIR=/jobdir/\${LSB_JOBID};
 			fi &&
+			
+			echo 'VERSION INFO'  1>&2 ;
+			featureCounts        1>&2 ;
+			echo '/VERSION INFO' 1>&2 ;
 			
 			echo "CMDLINE: featureCounts $SUBREAD_FLAGS -o $output $input" &&
 			

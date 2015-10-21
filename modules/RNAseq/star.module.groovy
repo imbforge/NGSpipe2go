@@ -70,7 +70,11 @@ STAR_se = {
 				echo 'removing old STAR tmp folder';
 				rm -r $TMP/$SAMPLE.name*;
 			fi &&
-
+			
+			echo 'VERSION INFO'  1>&2 &&
+			STAR --version       1>&2 &&
+			echo '/VERSION INFO' 1>&2 &&
+			
 			STAR $STAR_FLAGS --readFilesIn $input | ${TOOL_SAMTOOLS} view $SAMTOOLS_FLAGS - | ${TOOL_SAMTOOLS} sort -@ $STAR_THREADS - $output.prefix &&
 			
 			mv ${LOGS}/STAR_se/${SAMPLE.name}SJ.out.tab $output.dir &&

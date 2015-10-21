@@ -3,7 +3,7 @@
 //
 // REMEMBER TO CHANGE THESE ESSENTIAL VARS!!
 //
-ESSENTIAL_PROJECT="/fsimb/groups/imb-bioinfocf/projects/cfb_internal/imbforge-code/test/rnaseq_pipe_modular"          // "/fsimb/groups/imb-bioinfocf/projects/cfb_internal/imb_cf_2013_04_sayols_infrastructure_pipelines/test"
+ESSENTIAL_PROJECT="/fsimb/groups/imb-bioinfocf/projects/cfb_internal/imbforge/test/rnaseq_pipe_modular_git/"          // "/fsimb/groups/imb-bioinfocf/projects/cfb_internal/imb_cf_2013_04_sayols_infrastructure_pipelines/test"
 ESSENTIAL_STAR_REF="/fsimb/groups/imb-bioinfocf/common-data/star_genomes/Mus_musculus/UCSC/mm9/star2.4.2a_noGTF/"        // "/fsimb/groups/imb-bioinfocf/common-data/star_genomes/mm9/"
 ESSENTIAL_GENESGTF="/fsimb/groups/imb-bioinfocf/common-data/igenomes_reference/Mus_musculus/UCSC/mm9/Annotation/Genes/genes.gtf"        // "/fsimb/groups/imb-bioinfocf/common-data/igenomes_reference/Mus_musculus/UCSC/mm9/Annotation/Genes/genes.gtf" // used for gene mapping (STAR), counting (HTSEQ), duprate analysis
 ESSENTIAL_GENESGTF2="/fsimb/groups/imb-bioinfocf/common-data/annotation/mm9/gencode.vM1.annotation.gtf.gz"   // "/fsimb/groups/imb-bioinfocf/common-data/annotation/mm9/gencode.vM1.annotation.gtf.gz"  // to use with RNAtypes

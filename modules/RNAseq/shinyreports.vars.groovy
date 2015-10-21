@@ -9,7 +9,9 @@ SHINYREPS_PREFIX=ESSENTIAL_SAMPLE_PREFIX	//standard sample prefix
 SHINYREPS_STAR_LOG=LOGS + "/STAR_se"	//where the STAR logs lie
 SHINYREPS_STAR_SUFFIX="Log.final.out"	//extension given to the STAR log files
 SHINYREPS_STARparms_SUFFIX="Log.out"	//extension given to the STAR log files
-SHINYREPS_FASTQC_LOG=FASTQC_OUTDIR		//where the Fastqc logs lie
+SHINYREPS_FASTQC_OUT=FASTQC_OUTDIR		//where the Fastqc output lie
+SHINYREPS_FASTQC_LOG=LOGS + "/FastQC"		//where the Fastqc logs lie
+SHINYREPS_BAMINDEX_LOG=LOGS + "/BAMindexer"	//where the Samtools/BamIndexer logs lie
 SHINYREPS_DUPRADAR_LOG=DUPRADAR_OUTDIR	//where the dupRadar logs lie
 SHINYREPS_RNATYPES_LOG=QC + "/RNAtypes"	//where the RNAtypes logs lie
 SHINYREPS_GENEBODYCOV_LOG=GENEBODYCOV_OUTDIR //where the geneBodyCov logs lie
@@ -17,5 +19,11 @@ SHINYREPS_BUSTARD=QC + "/DemultiplexedBustardSummary.xml"	//where the bustard xm
 SHINYREPS_DE_EDGER=DE_edgeR_OUTDIR + "/DE_edgeR.RData"   //where the DE_edgeR output lies
 SHINYREPS_SUBREAD=RESULTS + "/subread-count" // location of the subread counts
 SHINYREPS_SUBREAD_SUFFIX=".raw_readcounts.tsv.summary" // the extension of the subread stats file
+SHINYREPS_SUBREAD_LOG=LOGS + "/subread_count"	//where the Subread/FeatureCounts logs lie
+SHINYREPS_BAM2BW_LOG=LOGS + "/bam2bw"        	//where the Bam2BW logs lie
+SHINYREPS_MARKDUPS_LOG=LOGS + "/MarkDups"	//where the picard MarkDuplicates logs lie
+SHINYREPS_GENEBODYCOVERAGE_LOGS=LOGS + "/geneBodyCov" //where the GeneBodyCoverage logs lie
+SHINYREPS_EDGER_LOGS=LOGS + "/DE_edgeR" //where the EdgeR logs lie
+SHINYREPS_DESEQ_LOGS=LOGS + "/DE_DESeq2" //where the DE_DESeq2 logs lie
 SHINYREPS_PLOTS_COLUMN=4    //number of columns to splits the plot grids (dupradar, genebodycov...). Min=2
 
