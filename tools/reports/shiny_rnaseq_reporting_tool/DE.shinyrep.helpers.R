@@ -43,12 +43,13 @@ DEhelper.init <- function(task) {
 	}
 	prepareDEdataTable <- function() {
 		for(i in 1:length(lrt)) {
-			lrt[[i]]$table$FDR    <<- p.adjust(lrt[[i]]$table$PValue,method="fdr")
+			#lrt[[i]]$table$FDR    <<- p.adjust(lrt[[i]]$table$PValue,method="fdr")
 			lrt[[i]]$table$logFC  <<- round(lrt[[i]]$table$logFC,2)
 			lrt[[i]]$table$logCPM <<- round(lrt[[i]]$table$logCPM,2)
 			lrt[[i]]$table$LR     <<- round(lrt[[i]]$table$LR,2)
-			lrt[[i]]$table$PValue <<- round(lrt[[i]]$table$PValue,4)
-			lrt[[i]]$table$FDR    <<- round(lrt[[i]]$table$FDR,4)
+			lrt[[i]]$table$PValue <<- lrt[[i]]$table$PValue
+			lrt[[i]]$table$FDR    <<- lrt[[i]]$table$FDR
+			lrt[[i]]$table$gene_name <<- lrt[[i]]$table$gene_name 
 		}
 	}
 	
@@ -116,7 +117,8 @@ DEhelper.DEgenes <- function(i=1) {
 	ord  <- order(-log(lrt[[i]]$table$FDR),
 				   abs(lrt[[i]]$table$logFC),
 				  decreasing=TRUE)
-	cols <- c("gene","logFC","logCPM","LR","PValue","FDR")
+#	cols <- c("gene","logFC","logCPM","LR","PValue","FDR")
+	cols <- c("gene_name","logFC","logCPM","PValue","FDR")
 	lrt[[i]]$table[ord,cols]
 }
 
@@ -212,10 +214,10 @@ DEhelper.STAR <- function() {
 	# set row and column names, and output the md table
 	colnames(x) <- gsub(paste0("^",SHINYREPS_PREFIX),"",colnames(x))
 	colnames(x) <- gsub(paste0(SUFFIX,"$"),"",colnames(x))
-	df <- data.frame(input_reads=x[1,],
-					 uniq_mapped=paste0(x[2,]," (",x[3,],"%)"),
-					 multimapped=paste0(x[4,] + x[5,]," (",x[6,] + x[7,],"%)"),
-					 unmapped=paste0(x[8,] + x[9,] + x[10,],"%"))
+	df <- data.frame(input_reads=format(x[1,],big.mark=","),
+					 uniq_mapped=paste0(format(x[2,],big.mark=",")," (",format(x[3,],nsmall=2),"%)"),
+					 multimapped=paste0(format(x[4,] + x[5,],big.mark=",")," (",format(x[6,] + x[7,],nsmall=2),"%)"),
+					 unmapped=paste0(format(x[8,] + x[9,] + x[10,],nsmall=2),"%"))
 	kable(df,align=c("r","r","r","r"),output=F)
 }
 
@@ -235,16 +237,16 @@ DEhelper.Fastqc <- function(web=TRUE) {
 	# construct the image url from the folder contents (skip current dir .)
 	samples <- list.dirs(SHINYREPS_FASTQC_OUT,recursive=F)
 	df <- sapply(samples,function(f) {
-		c(paste0("![alt text](",QC,"/",basename(f),"/Images/duplication_levels.png)"), 
-		  paste0("![alt text](",QC,"/",basename(f),"/Images/per_base_quality.png)"), 
-		  paste0("![alt text](",QC,"/",basename(f),"/Images/per_base_sequence_content.png)"))
+		c(paste0("![fastqc img](",QC,"/",basename(f),"/Images/duplication_levels.png)"), 
+		  paste0("![fastqc img](",QC,"/",basename(f),"/Images/per_base_quality.png)"), 
+		  paste0("![fastqc img](",QC,"/",basename(f),"/Images/per_base_sequence_content.png)"))
 	})
 
 	# set row and column names, and output the md table
 	df <- as.data.frame(t(df))
 	rownames(df) <- gsub(paste0("^",SHINYREPS_PREFIX),"",basename(samples))
 	colnames(df) <- c("Duplication","Read qualities","Sequence bias")
-	kable(df,output=F)
+	kable(df,output=F,align="c")
 }
 
 ##
@@ -268,7 +270,7 @@ DEhelper.dupRadar <- function(web=TRUE) {
 	# construct the image url from the folder contents (skip current dir .)
 	samples <- list.files(SHINYREPS_DUPRADAR_LOG,pattern="*.png")
 	df <- sapply(samples,function(f) {
-		paste0("![alt text](",QC,"/",basename(f),")")
+		paste0("![dupRadar img](",QC,"/",basename(f),")")
 	})
 	
 	# put sample names and output an md table of SHINYREPS_PLOTS_COLUMN columns
@@ -285,7 +287,7 @@ DEhelper.dupRadar <- function(web=TRUE) {
                        ncol=SHINYREPS_PLOTS_COLUMN,byrow=T)
 	colnames(df.names) <- rep(" ",SHINYREPS_PLOTS_COLUMN)
 	
-	kable(as.data.frame(df.names),output=F)
+	kable(as.data.frame(df.names),align="c",output=F)
 }
 
 ##
@@ -305,7 +307,7 @@ DEhelper.RNAtypes <- function(web=TRUE) {
 	# construct the image url from the folder contents (skip current dir .)
 	f <- list.files(SHINYREPS_RNATYPES_LOG,pattern="RNAtypes.counts.per.png")
 	df <- sapply(f,function(f) {
-		paste0("![alt text](",QC,"/",basename(f),")")
+		paste0("![RNAtypes img](",QC,"/",basename(f),")")
 	})
 	
 	# output an md table of 1 columns and 1 row
@@ -336,7 +338,7 @@ DEhelper.geneBodyCov <- function(web=TRUE) {
 	# construct the image url from the folder contents (skip current dir .)
 	samples <- list.files(SHINYREPS_GENEBODYCOV_LOG,pattern="*.png")
 	df <- sapply(samples,function(f) {
-		paste0("![alt text](",QC,"/",basename(f),")")
+		paste0("![geneBodyCov img](",QC,"/",basename(f),")")
 	})
 	
 	# put sample names and output an md table of SHINYREPS_PLOTS_COLUMN columns
@@ -353,7 +355,7 @@ DEhelper.geneBodyCov <- function(web=TRUE) {
                        ncol=SHINYREPS_PLOTS_COLUMN,byrow=T)
 	colnames(df.names) <- rep(" ",SHINYREPS_PLOTS_COLUMN)
 	
-	kable(as.data.frame(df.names),output=F)
+	kable(as.data.frame(df.names),align="c",output=F)
 }
 
 ##
@@ -420,10 +422,10 @@ DEhelper.Subread <- function() {
 	colnames(x) <- gsub(paste0(SUFFIX,"$"),"",colnames(x))
 	
 	# create md table (omitting various values that are 0 for now)
-	df <- data.frame(assigned=x[1,],
-					 unass_ambiguous=x[2,],
-					 unass_multimap=x[3,],
-					 unass_nofeat=x[4,])
+	df <- data.frame(assigned=format(x[1,],big.mark=","),
+					 unass_ambiguous=format(x[2,],big.mark=","),
+					 unass_multimap=format(x[3,],big.mark=","),
+					 unass_nofeat=format(x[4,],big.mark=","))
 	kable(df,align=c("r","r","r","r"),output=F)
 	
 }

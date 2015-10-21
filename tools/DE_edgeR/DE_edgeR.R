@@ -18,6 +18,7 @@
 ## cwd=.					# current working directory where the files .tsv files are located
 ## robust=FALSE             # robustly estimate dispersion?
 ## out=DE.edgeR				# prefix filename for output
+## gtf=GTF                  # gtf file for gene_name information
 ##
 ## IMPORTANT: due to the difficulties in expressing the contrasts in complex designs, one should
 ## ---------  use the helper script DE.edgeR.mmatrix.R to generate beforehand a design matrix
@@ -52,6 +53,7 @@ suf          <- parseArgs(args,"suffix=","_readcounts.tsv")    # suffix to remov
 cwd          <- parseArgs(args,"cwd=","./")     # current working directory
 robust       <- parseArgs(args,"robust=",FALSE,convert="as.logical") # robustly estimate dispersion
 out          <- parseArgs(args,"out=","DE.edgeR") # output filename
+gtf          <- parseArgs(args,"gtf=","test.gtf") # gtf file
 
 runstr <- "Rscript DE.edgeR.R [targets=targets.txt] [contrasts=contrasts.txt] [mmatrix=~0+group] [filter=TRUE] [prefix=RE] [suffix=RE] [cwd=.] [robust=FALSE] [out=DE.edgeR]"
 if(!file.exists(ftargets))   stop(paste("File",ftargets,"does NOT exist. Run with:\n",runstr))
@@ -188,6 +190,19 @@ dists <- dist(t(m))
 mat <- as.matrix(dists)
 heatmap.2(mat,trace="none",col=rev(hmcol),margin=c(13,13))
 
+
+# read in gtf
+require(rtracklayer)
+GTF <- as.data.frame(import.gff(gtf,format="gtf",asRangedData=F,feature.type="exon"))
+
+for(i in 1:length(lrt)) {
+        # calculating FDR and extracting gene_name
+        lrt[[i]]$table <- cbind(lrt[[i]]$table,FDR=p.adjust(lrt[[i]]$table[,"PValue"],method="fdr"))
+        lrt[[i]]$table <- cbind(lrt[[i]]$table,gene_name=GTF$gene_name[match(rownames(lrt[[i]]$table),GTF$gene_id)])
+}
+
+
+
 # MA plots
 lapply(1:length(lrt),function(i) {
 	
@@ -204,7 +219,8 @@ lapply(1:length(lrt),function(i) {
 	groups  <- rownames(conts)[conts[,i] != 0]	# the groups involved in this contrast
 	samples <- rownames(design)[apply(design[,groups],1,sum) > 0]	# samples belonging to the involved groups
 	x <- merge(m[,samples],lrt[[i]]$table,by=0)
-	x$FDR <- p.adjust(x$PValue,method="fdr")
+	#x$FDR <- p.adjust(x$PValue,method="fdr")
+        #x$gene_name <- GTF$gene_name[match(x$Row.names,GTF$gene_id)]
 	write.csv(x[order(x$FDR),],file=paste(out,names(lrt)[i],"csv",sep="."),row.names=F)
 
 	invisible(0)

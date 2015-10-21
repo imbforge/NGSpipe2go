@@ -15,7 +15,8 @@ DE_edgeR = {
 	                     " suffix="     + DE_edgeR_SUFFIX +
 	                     " cwd="        + DE_edgeR_CWD +
 	                     " robust="     + DE_edgeR_ROBUST +
-                         " out="        + DE_edgeR_OUTDIR + "/DE_edgeR"
+                             " out="        + DE_edgeR_OUTDIR + "/DE_edgeR" +
+                             " gtf="        + DE_edgeR_GTF
 
 	// run the chunk
 	produce("DE_edgeR.RData") {

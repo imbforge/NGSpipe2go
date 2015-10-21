@@ -3,7 +3,10 @@ title: "SHINYREPS_PROJECT"
 output:
   html_document:
     toc: yes
+    css: styles.css
 ---
+
+<div class="contentbox">
 
 ```{r echo=F,result='hide',error=F,warning=F,message=F}
 source('DE.shinyrep.helpers.R')
@@ -73,27 +76,27 @@ cat(DEhelper.geneBodyCov(web=F),sep="\n")
 ```
 
 ### Batch effect
-The MDS plot shows the sample relations based on multidimensional scaling (MDS). Distances in the plot can be interpreted in terms of leading log2 fold change. Overall, we see sample replicates that show little distances within them, while groups show higher distance between them. The ratio between/within groups distances is high which means there is no batch effect (or technical variation) if the experiment was well randomized:
+The MDS plot shows the sample relations based on multidimensional scaling (MDS). Distances in the plot can be interpreted in terms of leading log2 fold change. Overall, sample replicates should show little distances between them, while groups should show higher distances between them. If the ratio between/within groups distances is high, there is no batch effect (or technical variation) if the experiment was well randomized:
 
-```{r echo=F,error=F,warning=F,message=F}
+```{r echo=F,error=F,warning=F,message=F,fig.align="center"}
 DEhelper.MDS()		# sample MDS 
 ```
 
-Clustering the samples based on the distance calculated on the expression levels of the 50 most variable genes, one can have an idea which samples have similar gene expression profile. This, together with the MDS plot, enables us to detect if the replicates behave similar in terms of expression and spot batches of samples related by other characteristics rather than condition:
+Clustering the samples based on the distance calculated on the expression levels of the 50 most variable genes, one can have an idea which samples have similar gene expression profiles. This, together with the MDS plot, enables us to detect if the replicates behave similar in terms of expression and spot batches of samples related by other characteristics rather than condition: <br>
 
-```{r echo=F,error=F,warning=F,message=F}
+```{r echo=F,error=F,warning=F,message=F,fig.align="center"}
 DEhelper.cluster()	# heatmap of top variant 'n' genes of the counts-per-milion table
 ```
 
-Finally, sample to sample correlation based on the distance calculated on the expression profile gives us a measure of sample similarity:
+Finally, sample to sample correlation based on the distance calculated on the expression profile gives us a measure of sample similarity: <br>
 
-```{r echo=F,error=F,warning=F,message=F}
+```{r echo=F,error=F,warning=F,message=F,fig.align="center"}
 DEhelper.corr()		# heatmap of sample to sample distances
 ```
 
 ## Differential Expression Analysis
 
-```{r echo=F,results='asis',error=F,warning=F,message=F}
+```{r echo=F,results='asis',error=F,warning=F,message=F,fig.align="center"}
 for(i in 1:length(colnames(conts))) {
 
 	# subsection
@@ -106,12 +109,15 @@ for(i in 1:length(colnames(conts))) {
 	cat("There are",sum(genes$FDR < fdr),
 		"genes highlighted in the MA plot with corrected pvalue (Benjamini and Hochberg, FDR) <",fdr,fill=T)
 	DEhelper.MAplot(i,fdr)	# should be fine at taking the value from the UI slider
-	cat("",fill=T)
+	cat("\n",fill=T)
 
 	# and DE table
-	cat("The table contains the top 25 differentially expressed genes in terms of fold change and Pvalue:",fill=T)
+	cat("The table contains the top 25 differentially expressed genes in terms of fold change and FDR:",fill=T)
 	cat("",fill=T)
-	cat(kable(genes[1:25,-1],row.names=T),sep="\n")	# show only the top 25 genes
+	genes$PValue <- format(genes$PValue,scientific=TRUE)
+	genes$FDR <- format(genes$FDR,scientific=TRUE)
+#	cat(kable(genes[1:25,-1],row.names=T,align="r"),sep="\n")	# show only the top 25 genes
+	cat(kable(genes[1:25,-4],row.names=T,align="r"),sep="\n")	# show only the top 25 genes
 	cat("",fill=T)
 }
 ```
@@ -143,3 +149,6 @@ table.content <- data.frame(  tool=c(
 kable(table.content)
 
 ```
+
+</div>
+

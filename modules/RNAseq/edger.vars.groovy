@@ -8,4 +8,5 @@ DE_edgeR_SUFFIX="" //suffix to be removed from file names if a sample column is 
 DE_edgeR_CWD=RESULTS + "/subread-count"        //current working directory
 DE_edgeR_ROBUST="FALSE"            //robust estimation of the negative binomial dispersion
 DE_edgeR_OUTDIR=RESULTS + "/DE_edgeR" //output filename base pattern
+DE_edgeR_GTF=ESSENTIAL_GENESGTF
 
