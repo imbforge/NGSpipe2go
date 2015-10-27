@@ -16,6 +16,7 @@ shinyReports = {
 			cp ${MODULE_FOLDER}/../tools/reports/shiny_chipseq_reporting_tool/ChIP.shinyrep.helpers.R ${REPORTS} &&
 			cp ${MODULE_FOLDER}/../tools/reports/shiny_chipseq_reporting_tool/bustard.pl ${REPORTS}              &&
 			cp ${MODULE_FOLDER}/../tools/reports/shiny_chipseq_reporting_tool/BustardSummary.toMD.xsl ${REPORTS} &&
+			cp ${MODULE_FOLDER}/../tools/reports/shiny_rnaseq_reporting_tool/styles.css ${REPORTS}               &&
 			
 			if [ -e "${REPORTS}/DEreport.Rmd" ]; then
 				echo 'DEreport.Rmd already exists. Older copy will be kept and not overwritten';

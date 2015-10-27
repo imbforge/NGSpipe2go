@@ -3,7 +3,10 @@ title: "chipseq"
 output:
   html_document:
     toc: yes
+    css: styles.css
 ---
+
+<div class="contentbox">
 
 ```{r Initialise, echo=F,result='hide',error=F,warning=F,message=F}
 source('ChIP.shinyrep.helpers.R')
@@ -103,3 +106,33 @@ cat("",fill=T)
 cat(kable(p,row.names=T),sep="\n")
 cat("",fill=T)
 ```
+
+## Used tools and versions for this analysis
+
+```{r ToolVersions_paragraph, echo=F,results='asis',error=F,warning=F,message=F}
+table.content <- data.frame(  tool=c(
+									  "FastQC",
+									  "STAR",
+									  "Samtools",
+									  "Subread",
+									  "Picard",
+									  "GeneBodyCoverage",
+									  "R/EdgeR",
+									  "R/DEseq2"
+									  ),
+							  version=c(
+									  Toolhelper.VersionFastQC(),
+									  Toolhelper.VersionSTAR(),
+									  Toolhelper.VersionSamtools(),
+									  Toolhelper.VersionSubread(),
+									  Toolhelper.VersionPicard(),
+									  Toolhelper.VersionGeneBodyCoverage(),
+									  Toolhelper.VersionEdgeR(),
+									  Toolhelper.VersionDEseq()
+									  )
+						   )
+kable(table.content)
+
+```
+
+</div>
