@@ -3,7 +3,10 @@ title: "SHINYREPS_PROJECT"
 output:
   html_document:
     toc: yes
+    css: styles.css
 ---
+
+<div class="contentbox">
 
 ```{r LoadingGloabalVariables, echo=F,result='hide',error=F,warning=F,message=F}
 source('variant.shinyrep.helpers.R')
@@ -88,3 +91,4 @@ kable(table.content)
 
 ```
 
+</div>
