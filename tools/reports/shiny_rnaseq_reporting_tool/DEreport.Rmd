@@ -8,7 +8,7 @@ output:
 
 <div class="contentbox">
 
-```{r echo=F,result='hide',error=F,warning=F,message=F}
+```{r Initialise, echo=F,result='hide',error=F,warning=F,message=F}
 source('DE.shinyrep.helpers.R')
 loadGlobalVars()
 load(SHINYREPS_DE_EDGER,envir=.GlobalEnv)		# the outcome from the DE analysis
@@ -22,7 +22,7 @@ DEhelper.init("prepareDistanceMatrix")
 ### Sequencing quality ###
 The sequencing quality of the run was good, and the read distribution over the libraries was good. See tables the SAV quality tables:
 
-```{r echo=F,results='asis',error=F,warning=F,message=F}
+```{r Bustard_paragraph, echo=F,results='asis',error=F,warning=F,message=F}
 # I used to include a already rendered MD file with the bustard statistics, but
 # now we can generate it by calling the perl-xslt parser directly from the helpers
 #```{r autodoc, child='bustard.md', eval=TRUE}
@@ -32,71 +32,71 @@ cat(DEhelper.Bustard(),sep="\n")
 ### Mapping
 Mapping was done using STAR. The program version and genome assembly are described in the following table. The following parameters were used to get only uniquely mapping reads:
 
-```{r echo=F,results='asis',error=F,warning=F,message=F}
+```{r STAR_parameters_paragraph, echo=F,results='asis',error=F,warning=F,message=F}
 cat(DEhelper.STARparms(),sep="\n")
 ``` 
 
 The mapping statistics show the total number of reads delivered to the aligner, the number of uniquely mapped reads, and the number of reads discarded because of mapping to multiple positions or not mapping at all to the reference genome.
 
-```{r echo=F,results='asis',error=F,warning=F,message=F}
+```{r STAR_paragraph, echo=F,results='asis',error=F,warning=F,message=F}
 cat(DEhelper.STAR(),sep="\n")
 ``` 
 
 ### Raw reads qualities, sequence bias and duplication
-```{r echo=F,results='asis',error=F,warning=F,message=F}
+```{r FastQC_paragraph, echo=F,results='asis',error=F,warning=F,message=F}
 cat(DEhelper.Fastqc(web=F),sep="\n")
 ```
 
 ### PCR duplication assessment
 Measuring the fraction of duplicated reads is a common quality control step for NGS data sets, which can hint towards too low library complexity due to too many PCR cycles during library preparation or other problems in the sequencing workflow. However in RNA-Seq duplicate reads arise naturally due to highly expressed genes, which renders the overall read duplication rate useless.
 
-```{r echo=F,results='asis',error=F,warning=F,message=F}
+```{r Dupradar_paragraph, echo=F,results='asis',error=F,warning=F,message=F}
 cat(DEhelper.dupRadar(web=F),sep="\n")
 ```
 
 ### Subread
 Mapping statistics of reads assigned to known features in the genome and evaluated in further steps. In addition, the count and rate of reads is shown that could not be assigned to the investigated genomic features due to various reasons detailed in the column headers.
 
-```{r echo=F,results='asis',error=F,warning=F,message=F}
+```{r Subread_paragraph, echo=F,results='asis',error=F,warning=F,message=F}
 cat(DEhelper.Subread(),sep="\n")
 ```
 
 ### RNA types
 Check for an enrichment of specific RNA types. This plots helps in detecting if the extraction protocol worked well, and the expected RNA types were sequenced.
 
-```{r echo=F,results='asis',error=F,warning=F,message=F}
+```{r RNAtypes_paragraph, echo=F,results='asis',error=F,warning=F,message=F}
 cat(DEhelper.RNAtypes(web=F),sep="\n")
 ```
 
 ### Gene body coverage
 Check if reads coverage is uniform and if there is any 5' or 3' bias:
 
-```{r echo=F,results='asis',error=F,warning=F,message=F}
+```{r GeneBodyCoverage_paragraph, echo=F,results='asis',error=F,warning=F,message=F}
 cat(DEhelper.geneBodyCov(web=F),sep="\n")
 ```
 
 ### Batch effect
 The MDS plot shows the sample relations based on multidimensional scaling (MDS). Distances in the plot can be interpreted in terms of leading log2 fold change. Overall, sample replicates should show little distances between them, while groups should show higher distances between them. If the ratio between/within groups distances is high, there is no batch effect (or technical variation) if the experiment was well randomized:
 
-```{r echo=F,error=F,warning=F,message=F,fig.align="center"}
+```{r MDSplot_paragraph, echo=F,error=F,warning=F,message=F,fig.align="center"}
 DEhelper.MDS()		# sample MDS 
 ```
 
 Clustering the samples based on the distance calculated on the expression levels of the 50 most variable genes, one can have an idea which samples have similar gene expression profiles. This, together with the MDS plot, enables us to detect if the replicates behave similar in terms of expression and spot batches of samples related by other characteristics rather than condition: <br>
 
-```{r echo=F,error=F,warning=F,message=F,fig.align="center"}
+```{r Heatmap1_paragraph, echo=F,error=F,warning=F,message=F,fig.align="center"}
 DEhelper.cluster()	# heatmap of top variant 'n' genes of the counts-per-milion table
 ```
 
 Finally, sample to sample correlation based on the distance calculated on the expression profile gives us a measure of sample similarity: <br>
 
-```{r echo=F,error=F,warning=F,message=F,fig.align="center"}
+```{r Heatmap2_paragraph, echo=F,error=F,warning=F,message=F,fig.align="center"}
 DEhelper.corr()		# heatmap of sample to sample distances
 ```
 
 ## Differential Expression Analysis
 
-```{r echo=F,results='asis',error=F,warning=F,message=F,fig.align="center"}
+```{r DifferentialExpression_paragraph, echo=F,results='asis',error=F,warning=F,message=F,fig.align="center"}
 for(i in 1:length(colnames(conts))) {
 
 	# subsection
