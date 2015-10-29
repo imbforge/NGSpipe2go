@@ -465,7 +465,11 @@ Toolhelper.VersionFastQC <- function() {
 	# x is a list of always the same content
 	r <- tryCatch(
 		{
-			return(x[[1]][1])
+			if (is.null(x[[1]][1])) {
+				return("no version tag")
+			} else {
+				return(x[[1]][1])
+			}
 		},
 		warning = function(w) {
 			return("no version tag")
@@ -506,7 +510,11 @@ Toolhelper.VersionSTAR <- function() {
 	# x is a list of always the same content
 	r <- tryCatch(
 		{
-			return(x[[1]][1])
+			if (is.null(x[[1]][1])) {
+				return("no version tag")
+			} else {
+				return(x[[1]][1])
+			}
 		},
 		warning = function(w) {
 			return("no version tag")
@@ -552,7 +560,11 @@ Toolhelper.VersionSamtools <- function() {
 	# x is a list of always the same content
 	r <- tryCatch(
 		{
-			return(x[[1]][1])
+			if (is.null(x[[1]][1])) {
+				return("no version tag")
+			} else {
+				return(x[[1]][1])
+			}
 		},
 		warning = function(w) {
 			return("no version tag")
@@ -596,7 +608,11 @@ Toolhelper.VersionSubread <- function() {
 	# x is a list of always the same content
 	r <- tryCatch(
 		{
-			return(x[[1]][1])
+			if (is.null(x[[1]][1])) {
+				return("no version tag")
+			} else {
+				return(x[[1]][1])
+			}
 		},
 		warning = function(w) {
 			return("no version tag")
@@ -642,7 +658,11 @@ Toolhelper.VersionPicard <- function() {
 	# x is a list of always the same content
 	r <- tryCatch(
 		{
-			return(x[[1]][1])
+			if (is.null(x[[1]][1])) {
+				return("no version tag")
+			} else {
+				return(x[[1]][1])
+			}
 		},
 		warning = function(w) {
 			return("no version tag")
@@ -685,7 +705,11 @@ Toolhelper.VersionGeneBodyCoverage <- function() {
 	# x is a list of always the same content
 	r <- tryCatch(
 		{
-			return(x[[1]][1])
+			if (is.null(x[[1]][1])) {
+				return("no version tag")
+			} else {
+				return(x[[1]][1])
+			}
 		},
 		warning = function(w) {
 			return("no version tag")
@@ -728,7 +752,11 @@ Toolhelper.VersionEdgeR <- function() {
 	# x is a list of always the same content
 	r <- tryCatch(
 		{
-			return(x[[1]][1])
+			if (is.null(x[[1]][1])) {
+				return("no version tag")
+			} else {
+				return(x[[1]][1])
+			}
 		},
 		warning = function(w) {
 			return("no version tag")
@@ -771,7 +799,11 @@ Toolhelper.VersionDEseq <- function() {
 	# x is a list of always the same content
 	r <- tryCatch(
 		{
-			return(x[[1]][1])
+			if (is.null(x[[1]][1])) {
+				return("no version tag")
+			} else {
+				return(x[[1]][1])
+			}
 		},
 		warning = function(w) {
 			return("no version tag")

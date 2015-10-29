@@ -501,7 +501,11 @@ Toolhelper.VersionBWA <- function() {
 	# x is a list of always the same content
 	r <- tryCatch(
 		{
-			return(x[[1]][1])
+			if (is.null(x[[1]][1])) {
+				return("no version tag")
+			} else {
+				return(x[[1]][1])
+			}
 		},
 		warning = function(w) {
 			return("no version tag")
@@ -547,7 +551,11 @@ Toolhelper.VersionFastQC <- function() {
 	# x is a list of always the same content
 	r <- tryCatch(
 		{
-			return(x[[1]][1])
+			if (is.null(x[[1]][1])) {
+				return("no version tag")
+			} else {
+				return(x[[1]][1])
+			}
 		},
 		warning = function(w) {
 			return("no version tag")
@@ -590,7 +598,11 @@ Toolhelper.VersionMarkDups <- function() {
 	# x is a list of always the same content
 	r <- tryCatch(
 		{
-			return(x[[1]][1])
+			if (is.null(x[[1]][1])) {
+				return("no version tag")
+			} else {
+				return(x[[1]][1])
+			}
 		},
 		warning = function(w) {
 			return("no version tag")
@@ -635,7 +647,11 @@ Toolhelper.VersionGATKug <- function() {
 	# x is a list of always the same content
 	r <- tryCatch(
 		{
-			return(x[[1]][1])
+			if (is.null(x[[1]][1])) {
+				return("no version tag")
+			} else {
+				return(x[[1]][1])
+			}
 		},
 		warning = function(w) {
 			return("no version tag")
@@ -680,7 +696,11 @@ Toolhelper.VersionGATKhc <- function() {
 	# x is a list of always the same content
 	r <- tryCatch(
 		{
-			return(x[[1]][1])
+			if (is.null(x[[1]][1])) {
+				return("no version tag")
+			} else {
+				return(x[[1]][1])
+			}
 		},
 		warning = function(w) {
 			return("no version tag")
