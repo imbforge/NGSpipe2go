@@ -24,7 +24,11 @@ bowtie_se = {
 			if [ -n "\$LSB_JOBID" ]; then
 				export TMPDIR=/jobdir/\${LSB_JOBID};
 			fi                                          &&
-
+			
+			echo 'VERSION INFO'  1>&2 ;
+			bowtie --version     1>&2 ;
+			echo '/VERSION INFO' 1>&2 ;
+			
 			zcat $input | bowtie $BOWTIE_FLAGS $BOWTIE_REF - | ${TOOL_SAMTOOLS} view -bhSu - | ${TOOL_SAMTOOLS} sort -@ $BOWTIE_THREADS - $output.prefix
 		""","bowtie_se"
 	}

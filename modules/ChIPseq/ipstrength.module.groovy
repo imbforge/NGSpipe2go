@@ -21,7 +21,12 @@ ipstrength = {
 				echo "Targets file $IPSTRENGTH_TARGETS doesn't exist" >> $output &&
 				exit 0;
 			fi;
-
+			
+			echo 'VERSION INFO'  1>&2 &&
+			${TOOL_R}/bin/Rscript --version 1>&2 &&
+			echo '/VERSION INFO' 1>&2 &&
+			
+			
 			BAM=\$(basename $input) &&
 			grep \$BAM $IPSTRENGTH_TARGETS | while read -r TARGET; do
 				IP=\$(       echo $TARGET | cut -f1 -d" ") &&
