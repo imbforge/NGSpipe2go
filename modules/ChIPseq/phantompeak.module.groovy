@@ -21,7 +21,11 @@ phantompeak = {
 			if [ -n "\$LSB_JOBID" ]; then
 				export TMPDIR=/jobdir/\${LSB_JOBID};
 			fi;
-
+			
+			echo 'VERSION INFO'  1>&2 &&
+			${TOOL_R}/bin/Rscript --version 1>&2 &&
+			echo '/VERSION INFO' 1>&2 &&
+			
 			${TOOL_R}/bin/Rscript ${TOOL_ENCODEqc}/phantompeak.R $input \$(basename $input.prefix) $PHANTOMPEAK_FLAGS &&
 			mv *_phantompeak.* $output.dir
 		""","phantompeak"

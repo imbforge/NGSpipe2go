@@ -20,6 +20,10 @@ extend = {
 				mkdir -p ${TMP};
 			fi &&
 			
+			echo 'VERSION INFO'  1>&2 ;
+			bedtools --version   1>&2 ;
+			echo '/VERSION INFO' 1>&2 ;
+			
 			CHRSIZES=${TMP}/\$(basename ${input.prefix}).extend.chrsizes  &&
 			${TOOL_SAMTOOLS} idxstats ${input} | cut -f1-2 > \${CHRSIZES} &&
 			bedtools bamtobed -split -i $input |

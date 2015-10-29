@@ -23,7 +23,11 @@ macs2 = {
 				echo "Targets file $MACS2_TARGETS doesn't exist" >> $output &&
 				exit 0;
 			fi;
-
+			
+			echo 'VERSION INFO'  1>&2 &&
+			${TOOL_MACS2}/bin/macs2 --version &&
+			echo '/VERSION INFO' 1>&2 &&
+			
 			BAM=\$(basename $input) &&
 			grep \$BAM $MACS2_TARGETS | while read -r TARGET; do
 				IP=\$(       echo \$TARGET | cut -f1 -d" ") &&
