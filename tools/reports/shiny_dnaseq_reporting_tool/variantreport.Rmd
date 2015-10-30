@@ -20,7 +20,9 @@ loadGlobalVars()
 ## Quality Control RNAseq ##
 
 ### Sequencing quality ###
-The sequencing quality of the run was good, and the read distribution over the libraries was good.
+The sequencing quality is determined by read quality, sequence bias and duplication rates.
+Bias and duplication rates ideally should be low and read qualities should be continuously
+high all over the read length. A slight drop towards the end of the read is unavoidable.
 
 ### Raw reads qualities, sequence bias and duplication
 ```{r FastQC_paragraph, echo=F,results='asis',error=F,warning=F,message=F}
