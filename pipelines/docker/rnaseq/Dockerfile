@@ -45,15 +45,15 @@ RUN	apt-get update && apt-get dist-upgrade -y && \
 ## install R and the needed packages
 COPY ./deps/R-3.2.2 /usr/local/src/R-3.2.2
 WORKDIR /usr/local/src/R-3.2.2
-RUN	./configure --prefix=/opt/R/3.1.2 --with-readline=no && \
+RUN	./configure --prefix=/opt/R/3.2.2 --with-readline=no && \
 	make && \
 	make install && \
-	/opt/R/3.1.2/bin/Rscript -e 'source("http://bioconductor.org/biocLite.R"); biocLite(c("DESeq2","edgeR","rtracklayer","GenomicAlignments","GenomicRanges","Rsubread","dupRadar"),ask=FALSE)' && \
-	/opt/R/3.1.2/bin/Rscript -e 'install.packages(c("ggplot2","reshape","RColorBrewer","gplots","knitr"),dependencies=TRUE,repos="http://cran.rstudio.org")' && \
+	/opt/R/3.2.2/bin/Rscript -e 'source("http://bioconductor.org/biocLite.R"); biocLite(c("DESeq2","edgeR","rtracklayer","GenomicAlignments","GenomicRanges","Rsubread","dupRadar"),ask=FALSE)' && \
+	/opt/R/3.2.2/bin/Rscript -e 'install.packages(c("ggplot2","reshape","RColorBrewer","gplots","knitr"),dependencies=TRUE,repos="http://cran.rstudio.org")' && \
 	rm -rf /usr/local/src/R-3.2.2 && \
-	ln -s /opt/R/3.1.2 /opt/R/latest && \
-	ln -s /opt/R/3.1.2 /opt/R/default && \
-	echo "export PATH=/opt/R/3.1.2/bin:\$PATH" > /opt/R/3.1.2/env.sh
+	ln -s /opt/R/3.2.2 /opt/R/latest && \
+	ln -s /opt/R/3.2.2 /opt/R/default && \
+	echo "export PATH=/opt/R/3.2.2/bin:\$PATH" > /opt/R/3.2.2/env.sh
 
 ## install FastQC
 COPY ./deps/FastQC /opt/fastqc/0.11.3
