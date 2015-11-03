@@ -43,23 +43,23 @@ RUN	apt-get update && apt-get dist-upgrade -y && \
 	rm -rf /var/lib/apt/lists/* /tmp/* /var/tmp/*
 
 ## install R and the needed packages
-COPY ./deps/R-3.1.2 /usr/local/src/R-3.1.2
-WORKDIR /usr/local/src/R-3.1.2
+COPY ./deps/R-3.2.2 /usr/local/src/R-3.2.2
+WORKDIR /usr/local/src/R-3.2.2
 RUN	./configure --prefix=/opt/R/3.1.2 --with-readline=no && \
 	make && \
 	make install && \
-	/opt/R/3.1.2/bin/Rscript -e 'source("http://bioconductor.org/biocLite.R"); biocLite(c("DESeq2","edgeR","rtracklayer","GenomicAlignments","GenomicRanges","Rsubread"),ask=FALSE)' && \
+	/opt/R/3.1.2/bin/Rscript -e 'source("http://bioconductor.org/biocLite.R"); biocLite(c("DESeq2","edgeR","rtracklayer","GenomicAlignments","GenomicRanges","Rsubread","dupRadar"),ask=FALSE)' && \
 	/opt/R/3.1.2/bin/Rscript -e 'install.packages(c("ggplot2","reshape","RColorBrewer","gplots","knitr"),dependencies=TRUE,repos="http://cran.rstudio.org")' && \
-	rm -rf /usr/local/src/R-3.1.2 && \
+	rm -rf /usr/local/src/R-3.2.2 && \
 	ln -s /opt/R/3.1.2 /opt/R/latest && \
 	ln -s /opt/R/3.1.2 /opt/R/default && \
 	echo "export PATH=/opt/R/3.1.2/bin:\$PATH" > /opt/R/3.1.2/env.sh
 
 ## install FastQC
-COPY ./deps/FastQC /opt/fastqc/0.11.2
-RUN	ln -s /opt/fastqc/0.11.2 /opt/fastqc/latest && \
-	ln -s /opt/fastqc/0.11.2 /opt/fastqc/default && \
-	echo "export PATH=/opt/fastqc/0.11.2:\$PATH" > /opt/fastqc/0.11.2/env.sh
+COPY ./deps/FastQC /opt/fastqc/0.11.3
+RUN	ln -s /opt/fastqc/0.11.3 /opt/fastqc/latest && \
+	ln -s /opt/fastqc/0.11.3 /opt/fastqc/default && \
+	echo "export PATH=/opt/fastqc/0.11.3:\$PATH" > /opt/fastqc/0.11.3/env.sh
 
 ## install htseq-count
 COPY ./deps/HTSeq-0.6.1p1 /usr/local/src/HTSeq-0.6.1p1
@@ -72,11 +72,17 @@ RUN	python setup.py build && \
 	echo "export PATH=/opt/htseq/0.6.1p1/bin:\$PATH" > /opt/htseq/0.6.1p1/env.sh && \
 	echo "export PYTHONPATH=/opt/htseq/0.6.1p1/lib/python2.7/site-packages:\$PYTHONPATH" >> /opt/htseq/0.6.1p1/env.sh
 
+## install Subread
+COPY ./deps/subread-1.4.6-p2 /opt/subread/1.4.6-p2
+RUN ln -s /opt/subread/1.4.6-p2 /opt/subread/latest && \
+	ln -s /opt/subread/1.4.6-p2 /opt/subread/default && \
+	echo "export PATH=/opt/subread/1.4.6-p2/bin:\$PATH" > /opt/star/2.4.2a/env.sh
+
 ## install STAR
-COPY ./deps/STAR_2.4.0j /opt/star/2.4.0j
-RUN ln -s /opt/star/2.4.0j /opt/star/latest && \
-	ln -s /opt/star/2.4.0j /opt/star/default && \
-	echo "export PATH=/opt/star/2.4.0j/bin/Linux_x86_64_static:\$PATH" > /opt/star/2.4.0j/env.sh
+COPY ./deps/STAR_2.4.2a /opt/star/2.4.2a
+RUN ln -s /opt/star/2.4.2a /opt/star/latest && \
+	ln -s /opt/star/2.4.2a /opt/star/default && \
+	echo "export PATH=/opt/star/2.4.2a/bin/Linux_x86_64_static:\$PATH" > /opt/star/2.4.2a/env.sh
 
 ## install samtools
 COPY ./deps/samtools-1.2 /usr/local/src/samtools-1.2
@@ -125,17 +131,15 @@ RUN ln -s /opt/ucsc/2014-02-05 /opt/ucsc/latest && \
 	echo "export PATH=/opt/ucsc/2014-02-05/:\$PATH" > /opt/ucsc/2014-02-05/env.sh
 
 ## install bpipe
-COPY ./deps/bpipe-0.9.8.5 /opt/bpipe/0.9.8.5
-RUN ln -s /opt/bpipe/0.9.8.5 /opt/bpipe/latest && \
-	ln -s /opt/bpipe/0.9.8.5 /opt/bpipe/default && \
-	echo "export PATH=\${TOOL_DEPENDENCIES}/bpipe/0.9.8.5/bin/:\$PATH" > /opt/bpipe/0.9.8.5/env.sh
+COPY ./deps/bpipe-0.9.8.7 /opt/bpipe/0.9.8.7
+RUN ln -s /opt/bpipe/0.9.8.7 /opt/bpipe/latest && \
+	ln -s /opt/bpipe/0.9.8.7 /opt/bpipe/default && \
+	echo "export PATH=\${TOOL_DEPENDENCIES}/bpipe/0.9.8.7/bin/:\$PATH" > /opt/bpipe/0.9.8.7/env.sh
 
 ## install pipelines and wrappers
 COPY ./deps/imb-forge /opt/imb-forge
-RUN /opt/R/latest/bin/R CMD INSTALL /opt/imb-forge/dupRadar/dupRadar_0.99.0.tar.gz && \
-	rm /opt/imb-forge/dupRadar/dupRadar_0.99.0.tar.gz && \
-	ln -s /opt/imb-forge/pipelines/rnaseq/1.0 /opt/imb-forge/pipelines/rnaseq/latest && \
-	ln -s /opt/imb-forge/pipelines/rnaseq/1.0 /opt/imb-forge/pipelines/rnaseq/default
+RUN ln -s /opt/imb-forge/pipelines/rnaseq/1.2 /opt/imb-forge/pipelines/rnaseq/latest && \
+	ln -s /opt/imb-forge/pipelines/rnaseq/1.2 /opt/imb-forge/pipelines/rnaseq/default
 
 ## post install tasks
 WORKDIR /

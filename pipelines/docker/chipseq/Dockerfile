@@ -120,15 +120,15 @@ RUN	mkdir -p /opt/macs2/2.1.0.20150420/lib/python2.7/site-packages && \
 	echo "export PYTHONPATH=/opt/macs2/2.1.0.20150420/lib/python2.7/site-packages:\$PYTHONPATH" >> /opt/macs2/2.1.0.20150420/env.sh
 
 ## install bpipe
-COPY ./deps/bpipe-0.9.8.5 /opt/bpipe/0.9.8.5
-RUN ln -s /opt/bpipe/0.9.8.5 /opt/bpipe/latest && \
-	ln -s /opt/bpipe/0.9.8.5 /opt/bpipe/default && \
-	echo "export PATH=\${TOOL_DEPENDENCIES}/bpipe/0.9.8.5/bin/:\$PATH" > /opt/bpipe/0.9.8.5/env.sh
+COPY ./deps/bpipe-0.9.8.7 /opt/bpipe/0.9.8.7
+RUN ln -s /opt/bpipe/0.9.8.7 /opt/bpipe/latest && \
+	ln -s /opt/bpipe/0.9.8.7 /opt/bpipe/default && \
+	echo "export PATH=\${TOOL_DEPENDENCIES}/bpipe/0.9.8.7/bin/:\$PATH" > /opt/bpipe/0.9.8.7/env.sh
 
 ## install pipelines and wrappers
 COPY ./deps/imb-forge /opt/imb-forge
-RUN ln -s /opt/imb-forge/pipelines/chipseq/1.0 /opt/imb-forge/pipelines/chipseq/latest && \
-	ln -s /opt/imb-forge/pipelines/chipseq/1.0 /opt/imb-forge/pipelines/chipseq/default
+RUN ln -s /opt/imb-forge/pipelines/chipseq/1.2 /opt/imb-forge/pipelines/chipseq/latest && \
+	ln -s /opt/imb-forge/pipelines/chipseq/1.2 /opt/imb-forge/pipelines/chipseq/default
 
 ## post install tasks
 WORKDIR /
