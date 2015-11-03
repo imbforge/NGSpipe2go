@@ -44,17 +44,17 @@ RUN	apt-get update && apt-get dist-upgrade -y && \
 	rm -rf /var/lib/apt/lists/* /tmp/* /var/tmp/*
 
 ## install R and the needed packages
-COPY ./deps/R-3.1.2 /usr/local/src/R-3.1.2
-WORKDIR /usr/local/src/R-3.1.2
-RUN	./configure --prefix=/opt/R/3.1.2 --with-readline=no && \
+COPY ./deps/R-3.2.2 /usr/local/src/R-3.2.2
+WORKDIR /usr/local/src/R-3.2.2
+RUN	./configure --prefix=/opt/R/3.2.2 --with-readline=no && \
 	make && \
 	make install && \
-	/opt/R/3.1.2/bin/Rscript -e 'source("http://bioconductor.org/biocLite.R"); biocLite(c("GenomicAlignments","GenomicRanges","ShortRead"),ask=FALSE)' && \
-	/opt/R/3.1.2/bin/Rscript -e 'install.packages(c("snow","knitr"),dependencies=TRUE,repos="http://cran.rstudio.org")' && \
-	rm -rf /usr/local/src/R-3.1.2 && \
-	ln -s /opt/R/3.1.2 /opt/R/latest && \
-	ln -s /opt/R/3.1.2 /opt/R/default && \
-	echo "export PATH=/opt/R/3.1.2/bin:\$PATH" > /opt/R/3.1.2/env.sh
+	/opt/R/3.2.2/bin/Rscript -e 'source("http://bioconductor.org/biocLite.R"); biocLite(c("GenomicAlignments","GenomicRanges","ShortRead"),ask=FALSE)' && \
+	/opt/R/3.2.2/bin/Rscript -e 'install.packages(c("snow","knitr"),dependencies=TRUE,repos="http://cran.rstudio.org")' && \
+	rm -rf /usr/local/src/R-3.2.2 && \
+	ln -s /opt/R/3.2.2 /opt/R/latest && \
+	ln -s /opt/R/3.2.2 /opt/R/default && \
+	echo "export PATH=/opt/R/3.2.2/bin:\$PATH" > /opt/R/3.2.2/env.sh
 
 ## install SPP
 COPY ./deps/spp_1.11.tar.gz /usr/local/src/
@@ -63,10 +63,10 @@ RUN	/opt/R/3.1.2/bin/R CMD INSTALL spp_1.11.tar.gz && \
 	rm spp_1.11.tar.gz
 
 ## install FastQC
-COPY ./deps/FastQC /opt/fastqc/0.11.2
-RUN	ln -s /opt/fastqc/0.11.2 /opt/fastqc/latest && \
-	ln -s /opt/fastqc/0.11.2 /opt/fastqc/default && \
-	echo "export PATH=/opt/fastqc/0.11.2:\$PATH" > /opt/fastqc/0.11.2/env.sh
+COPY ./deps/FastQC /opt/fastqc/0.11.3
+RUN	ln -s /opt/fastqc/0.11.3 /opt/fastqc/latest && \
+	ln -s /opt/fastqc/0.11.3 /opt/fastqc/default && \
+	echo "export PATH=/opt/fastqc/0.11.3:\$PATH" > /opt/fastqc/0.11.3/env.sh
 
 ## install bowtie
 COPY ./deps/bowtie-1.1.1 /opt/bowtie/1.1.1
@@ -107,17 +107,17 @@ RUN ln -s /opt/ucsc/2014-02-05 /opt/ucsc/latest && \
 	echo "export PATH=/opt/ucsc/2014-02-05/:\$PATH" > /opt/ucsc/2014-02-05/env.sh
 
 ## install macs2
-COPY ./deps/macs2-2.1.0.20150420 /usr/local/src/macs2-2.1.0.20150420
-WORKDIR /usr/local/src/macs2-2.1.0.20150420
-RUN	mkdir -p /opt/macs2/2.1.0.20150420/lib/python2.7/site-packages && \
-	export PYTHONPATH=/opt/macs2/2.1.0.20150420/lib/python2.7/site-packages:\$PYTHONPATH && \
+COPY ./deps/macs2-2.1.0 /usr/local/src/macs2-2.1.0
+WORKDIR /usr/local/src/macs2-2.1.0
+RUN	mkdir -p /opt/macs2/2.1.0/lib/python2.7/site-packages && \
+	export PYTHONPATH=/opt/macs2/2.1.0/lib/python2.7/site-packages:\$PYTHONPATH && \
 	python setup.py build && \
-	python setup.py install --prefix=/opt/macs2/2.1.0.20150420 && \
-	rm -rf /usr/local/src/macs2-2.1.0.20150420 && \
-	ln -s /opt/macs2/2.1.0.20150420 /opt/macs2/latest && \
-	ln -s /opt/macs2/2.1.0.20150420 /opt/macs2/default && \
-	echo "export PATH=/opt/macs2/2.1.0.20150420/bin:\$PATH" > /opt/macs2/2.1.0.20150420/env.sh && \
-	echo "export PYTHONPATH=/opt/macs2/2.1.0.20150420/lib/python2.7/site-packages:\$PYTHONPATH" >> /opt/macs2/2.1.0.20150420/env.sh
+	python setup.py install --prefix=/opt/macs2/2.1.0 && \
+	rm -rf /usr/local/src/macs2-2.1.0 && \
+	ln -s /opt/macs2/2.1.0 /opt/macs2/latest && \
+	ln -s /opt/macs2/2.1.0 /opt/macs2/default && \
+	echo "export PATH=/opt/macs2/2.1.0/bin:\$PATH" > /opt/macs2/2.1.0/env.sh && \
+	echo "export PYTHONPATH=/opt/macs2/2.1.0/lib/python2.7/site-packages:\$PYTHONPATH" >> /opt/macs2/2.1.0./env.sh
 
 ## install bpipe
 COPY ./deps/bpipe-0.9.8.7 /opt/bpipe/0.9.8.7
