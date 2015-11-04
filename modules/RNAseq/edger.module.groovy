@@ -4,6 +4,7 @@ DE_edgeR = {
 	doc title: "DE_edgeR",
 		desc:  "Differential expression analysis using linears models and edgeR",
 		constraints: "",
+		bpipe_version: "tested with bpipe 0.9.8.7",
 		author: "Sergi Sayols"
 
 	output.dir = DE_edgeR_OUTDIR

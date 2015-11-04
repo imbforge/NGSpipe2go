@@ -4,6 +4,7 @@ ipstrength = {
 	doc title: "IPstrength plot",
 		desc:  "IPstrength",
 		constraints: "install the right reference BSgenome",
+		bpipe_version: "tested with bpipe 0.9.8.7",
 		author: "Sergi Sayols"
 
 	output.dir = QC + "/ipstrength"

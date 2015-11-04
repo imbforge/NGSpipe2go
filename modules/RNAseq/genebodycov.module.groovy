@@ -5,6 +5,7 @@ geneBodyCov = {
 		desc:  """Calculate the RNA-seq coverage over gene body. 
 			Useful to check the 5' or 3' coverage bias""",
 		constraints: "",
+		bpipe_version: "tested with bpipe 0.9.8.7",
 		author: "Sergi Sayols"
 
     output.dir = GENEBODYCOV_OUTDIR

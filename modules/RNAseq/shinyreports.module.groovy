@@ -4,6 +4,7 @@ shinyReports = {
 	doc title: "shinyReports",
 		desc:  "creates the source code to compile the shiny and markdown reports",
 		constraints: "",
+		bpipe_version: "tested with bpipe 0.9.8.7",
 		author: "Sergi Sayols"
 	
 	output.dir = REPORTS

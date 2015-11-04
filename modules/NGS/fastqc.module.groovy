@@ -2,7 +2,7 @@ FastQC = {
 	doc title: "FastQC",
 		desc:  "Quality control of input file",
 		constraints: "Only supports compressed FASTQ files",
-		constraints: "tested with bpipe 0.9.8.7",
+		bpipe_version: "tested with bpipe 0.9.8.7",
 		author: "Sergi Sayols"
 
 	output.dir   = FASTQC_OUTDIR

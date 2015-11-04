@@ -4,6 +4,7 @@ phantompeak = {
 	doc title: "Phantompeak QC  plot",
 		desc:  "Phantompeak",
 		constraints: "",
+		bpipe_version: "tested with bpipe 0.9.8.7",
 		author: "Sergi Sayols"
 
 	output.dir = QC + "/phantompeak"

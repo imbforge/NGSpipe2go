@@ -4,6 +4,7 @@ subread_count = {
 	doc title: "subread_count_se",
 	desc:  "Counting reads in features with feature-count out of the subread package",
 	constraints: """Default: strand specific counting.""",
+	bpipe_version: "tested with bpipe 0.9.8.7",
 	author: "Oliver Drechsel"
 	
 	output.dir  = SUBREAD_OUTDIR

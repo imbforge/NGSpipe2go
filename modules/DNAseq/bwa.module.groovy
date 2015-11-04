@@ -4,6 +4,7 @@ BWA_pe = {
 	doc title: "BWA PE alignment",
 	desc:  "Align paired end reads",
 	constraints: "Only works with compressed input. Set all global vars.",
+	bpipe_version: "tested with bpipe 0.9.8.7",
 	author: "Oliver Drechsel"
 
 	output.dir = MAPPED

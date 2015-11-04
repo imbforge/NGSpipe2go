@@ -5,6 +5,7 @@ FastqScreen = {
 	doc title: "FastScreen",
 		desc:  "Quality control of input file against various contaminants",
 		constraints: "Only supports compressed FASTQ files",
+		bpipe_version: "tested with bpipe 0.9.8.7",
 		author: "Nastasja Kreim"
 
 	output.dir   = FASTQSCREEN_OUTDIR

@@ -4,6 +4,7 @@ MarkDups = {
 	doc title: "MarkDups",
 		desc:  "Call picard tools to mark with/without removing duplicated reads from a bam file",
 		constraints: "",
+		bpipe_version: "tested with bpipe 0.9.8.7",
 		author: "Sergi Sayols"
 
 	output.dir=MAPPED
