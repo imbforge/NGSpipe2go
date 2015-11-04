@@ -26,8 +26,6 @@ shinyReports = {
 			sed -i "2,2s/SHINYREPS_PROJECT/\${PROJECT}/" ${REPORTS}/variantreport.Rmd &&
 			
 			echo "SHINYREPS_PROJECT=${SHINYREPS_PROJECT}" >  $output &&
-			echo "SHINYREPS_ORG=${SHINYREPS_ORG}"         >> $output &&
-			echo "SHINYREPS_DB=${SHINYREPS_DB}"           >> $output &&
 			echo "SHINYREPS_LOG=${SHINYREPS_LOG}"         >> $output &&
 			echo "SHINYREPS_QC=${SHINYREPS_QC}"           >> $output &&
 			echo "SHINYREPS_RES=${SHINYREPS_RES}"         >> $output &&
