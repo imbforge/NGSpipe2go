@@ -3,7 +3,7 @@
 MarkDups = {
 	doc title: "MarkDups",
 		desc:  "Call picard tools to mark with/without removing duplicated reads from a bam file",
-		constraints: "",
+		constraints: "Picard tools version <= 1.123",
 		bpipe_version: "tested with bpipe 0.9.8.7",
 		author: "Sergi Sayols"
 
