@@ -20,7 +20,7 @@ MarkDups = {
 			fi &&
 			
 			echo 'VERSION INFO'  1>&2 ;
-			echo \$(java -jar ${TOOL_PICARD}/MarkDuplicates.jar --version) 1>&2 ;
+			echo \$(java -jar ${TOOL_PICARD}/MarkDuplicates.jar --version 2>&1 | cut -d'(' -f1 ) 1>&2 ;
 			echo '/VERSION INFO' 1>&2 ;
 			
 			java $JAVA_FLAGS -jar ${TOOL_PICARD}/MarkDuplicates.jar $MARKDUPS_FLAGS INPUT=$input OUTPUT=$output METRICS_FILE=${input.prefix}_dupmetrics.tsv

@@ -346,9 +346,7 @@ Toolhelper.VersionFastQC <- function() {
 		l <- readLines(f)
 		# need to check Version number in one line lower than "VERSION INFO"
 		# e.g. FastQC v0.11.3
-		l.tmp <- l[ grep("^VERSION INFO",l) + 1 ]
-		# extract version number
-		l.version <- unlist( strsplit(l.tmp, ' ') )[2]
+		l.version <- l[ grep("^VERSION INFO",l) + 1 ]
 		
 		return(l.version)
 		
@@ -377,10 +375,10 @@ Toolhelper.VersionFastQC <- function() {
 
 Toolhelper.VersionBowtie <- function() {
 	
-	# fastqc --version
+	# bowie --version
 	#
-	#FastQC v0.11.3
-	#
+	#bowtie version 1.1.1
+	#[...]
 	
 	LOG <- SHINYREPS_BOWTIE_LOG
 	SUFFIX <- paste0(".log","$")
@@ -395,9 +393,7 @@ Toolhelper.VersionBowtie <- function() {
 		l <- readLines(f)
 		# need to check Version number in one line lower than "VERSION INFO"
 		# e.g. bowtie version 1.1.1
-		l.tmp <- l[ grep("^bowtie version",l) ]
-		# extract version number
-		l.version <- unlist( strsplit(l.tmp, ' ') )[3]
+		l.version <- l[ grep("^VERSION INFO",l) + 1 ]
 		
 		return(l.version)
 		
@@ -446,9 +442,7 @@ Toolhelper.VersionSamtools <- function() {
 		# e.g. samtools 1.2
 		# Using htslib 1.2.1
 
-		l.tmp <- l[ grep("^VERSION INFO",l) + 1 ]
-		# extract version number
-		l.version <- unlist( strsplit(l.tmp, ' ') )[2]
+		l.version <- l[ grep("^VERSION INFO",l) + 1 ]
 		
 		return(l.version)
 		
@@ -495,9 +489,7 @@ Toolhelper.VersionPicard <- function() {
 		l <- readLines(f)
 		# need to check Version number in one line lower than "VERSION INFO"
 		# e.g. FastQC v0.11.3
-		l.tmp <- l[ grep("^VERSION INFO",l) + 1 ]
-		# extract version number
-		l.version <- unlist( strsplit(l.tmp, ' ') )[1]
+		l.version <- l[ grep("^VERSION INFO",l) + 1 ]
 		
 		return(l.version)
 		
@@ -542,9 +534,7 @@ Toolhelper.VersionBedTools <- function() {
 		l <- readLines(f)
 		# need to check Version number in one line lower than "VERSION INFO"
 		# e.g. FastQC v0.11.3
-		l.tmp <- l[ grep("^VERSION INFO",l) + 1 ]
-		# extract version number
-		l.version <- unlist( strsplit(l.tmp, ' ') )[2]
+		l.version <- l[ grep("^VERSION INFO",l) + 1 ]
 		
 		return(l.version)
 		
@@ -589,9 +579,7 @@ Toolhelper.VersionIPstrength <- function() {
 		l <- readLines(f)
 		# need to check Version number in one line lower than "VERSION INFO"
 		# e.g. FastQC v0.11.3
-		l.tmp <- l[ grep("^R scripting front-end version" ,l) ]
-		# extract version number
-		l.version <- unlist( strsplit(l.tmp, ' ') )[5]
+		l.version <- l[ grep("^VERSION INFO",l) + 1 ]
 		
 		return(l.version)
 		
@@ -637,9 +625,7 @@ Toolhelper.VersionPhantomPeak <- function() {
 		l <- readLines(f)
 		# need to check Version number in one line lower than "VERSION INFO"
 		# e.g. FastQC v0.11.3
-		l.tmp <- l[ grep("^R scripting front-end version" ,l) ]
-		# extract version number
-		l.version <- unlist( strsplit(l.tmp, ' ') )[5]
+		l.version <- l[ grep("^VERSION INFO",l) + 1 ]
 		
 		return(l.version)
 		
@@ -685,9 +671,7 @@ Toolhelper.VersionMacs <- function() {
 		l <- readLines(f)
 		# need to check Version number in one line lower than "VERSION INFO"
 		# e.g. macs2 2.1.0.20140616
-		l.tmp <- l[ grep("^VERSION INFO",l) + 1 ]
-		# extract version number
-		l.version <- unlist( strsplit(l.tmp, ' ') )[2]
+		l.version <- l[ grep("^VERSION INFO",l) + 1 ]
 		
 		return(l.version)
 		

@@ -26,7 +26,7 @@ macs2 = {
 			fi;
 			
 			echo 'VERSION INFO'  1>&2 ;
-			echo \$(${TOOL_MACS2}/bin/macs2 --version) 1>&2 ;
+			echo \$(${TOOL_MACS2}/bin/macs2 --version  2>&1 | cut -d' ' -f2) 1>&2 ;
 			echo '/VERSION INFO' 1>&2 ;
 			
 			BAM=\$(basename $input) &&

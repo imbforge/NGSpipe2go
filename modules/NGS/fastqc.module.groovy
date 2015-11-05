@@ -17,7 +17,7 @@ FastQC = {
 			fi &&
 			
 			echo 'VERSION INFO'  1>&2 &&
-			echo \$(fastqc --version) 1>&2 &&
+			echo \$(fastqc --version | cut -d' ' -f2) 1>&2 &&
 			echo '/VERSION INFO' 1>&2 &&
 			
 			fastqc $FASTQC_FLAGS -o $output.dir $input
