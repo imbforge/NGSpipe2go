@@ -25,7 +25,7 @@ DE_DESeq2 = {
 			fi &&
 			
 			echo 'VERSION INFO'  1>&2 ;
-			echo \$(${TOOL_R}/bin/Rscript --version) 1>&2 ;
+			echo \$(${TOOL_R}/bin/Rscript --version 2>&1 | cut -d' ' -f5) 1>&2 ;
 			echo '/VERSION INFO'  1>&2 ;
 			
 			${TOOL_R}/bin/Rscript ${TOOL_DESeq2}/DE_DESeq2.R $DE_DESeq2_FLAGS

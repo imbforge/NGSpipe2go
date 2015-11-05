@@ -454,9 +454,7 @@ Toolhelper.VersionFastQC <- function() {
 		l <- readLines(f)
 		# need to check Version number in one line lower than "VERSION INFO"
 		# e.g. FastQC v0.11.3
-		l.tmp <- l[ grep("^VERSION INFO",l) + 1 ]
-		# extract version number
-		l.version <- unlist( strsplit(l.tmp, ' ') )[2]
+		l.version <- l[ grep("^VERSION INFO",l) + 1 ]
 		
 		return(l.version)
 		
@@ -549,9 +547,7 @@ Toolhelper.VersionSamtools <- function() {
 		l <- readLines(f)
 		# need to check Version number in one line lower than "VERSION INFO"
 		# e.g. FastQC v0.11.3
-		l.tmp <- l[ grep("^VERSION INFO",l) + 1 ]
-		# extract version number
-		l.version <- unlist( strsplit(l.tmp, ' ') )[2]
+		l.version <- l[ grep("^VERSION INFO",l) + 1 ]
 		
 		return(l.version)
 		
@@ -597,9 +593,7 @@ Toolhelper.VersionSubread <- function() {
 		l <- readLines(f)
 		# need to check Version number in one line lower than "VERSION INFO"
 		# e.g. FastQC v0.11.3
-		l.tmp <- l[ grep("^VERSION INFO",l) + 2 ]
-		# extract version number
-		l.version <- unlist( strsplit(l.tmp, ' ') )[2]
+		l.version <- l[ grep("^VERSION INFO",l) + 1 ]
 		
 		return(l.version)
 		
@@ -647,9 +641,7 @@ Toolhelper.VersionPicard <- function() {
 		l <- readLines(f)
 		# need to check Version number in one line lower than "VERSION INFO"
 		# e.g. FastQC v0.11.3
-		l.tmp <- l[ grep("^Version: ",l) ]
-		# extract version number
-		l.version <- unlist( strsplit(l.tmp, ' ') )[2]
+		l.version <- l[ grep("^Version: ",l) ]
 		
 		return(l.version)
 		
@@ -694,9 +686,7 @@ Toolhelper.VersionGeneBodyCoverage <- function() {
 		l <- readLines(f)
 		# need to check Version number in one line lower than "VERSION INFO"
 		# e.g. FastQC v0.11.3
-		l.tmp <- l[ grep("^VERSION INFO",l) + 1 ]
-		# extract version number
-		l.version <- unlist( strsplit(l.tmp, ' ') )[2]
+		l.version <- l[ grep("^VERSION INFO",l) + 1 ]
 		
 		return(l.version)
 		
@@ -741,9 +731,7 @@ Toolhelper.VersionEdgeR <- function() {
 		l <- readLines(f)
 		# need to check Version number in one line lower than "VERSION INFO"
 		# e.g. FastQC v0.11.3
-		l.tmp <- l[ grep("^R scripting front-end version" ,l) ]
-		# extract version number
-		l.version <- unlist( strsplit(l.tmp, ' ') )[5]
+		l.version <- l[ grep("^VERSION INFO",l) + 1 ]
 		
 		return(l.version)
 		
@@ -788,9 +776,7 @@ Toolhelper.VersionDEseq <- function() {
 		l <- readLines(f)
 		# need to check Version number in one line lower than "VERSION INFO"
 		# e.g. FastQC v0.11.3
-		l.tmp <- l[ grep("^R scripting front-end version" ,l) ]
-		# extract version number
-		l.version <- unlist( strsplit(l.tmp, ' ') )[5]
+		l.version <- l[ grep("^VERSION INFO",l) + 1 ]
 		
 		return(l.version)
 		

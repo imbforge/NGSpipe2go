@@ -40,7 +40,7 @@ subread_count = {
 			fi &&
 			
 			echo 'VERSION INFO'  1>&2 ;
-			echo \$(./featureCounts 2>&1 |grep Version) 1>&2 ;
+			echo \$(featureCounts 2>&1 | grep Version | cut -d' ' -f2) 1>&2 ;
 			echo '/VERSION INFO' 1>&2 ;
 			
 			featureCounts $SUBREAD_FLAGS -o $output $input 2> ${output.prefix}_subreadlog.stderr
