@@ -7,6 +7,7 @@ MarkDups = {
 		author: "Sergi Sayols"
 
 	output.dir=MAPPED
+	def JAVA_FLAGS  = "-Xmx" + MARKDUPS_MAXMEM + "m"
 	def MARKDUPS_FLAGS  = "REMOVE_DUPLICATES=" + MARKDUPS_REMOVE + " ASSUME_SORTED=TRUE"
 
 	transform(".bam") to (".duprm.bam") { // to be changed to ".duprm.bam" -- bpipe 0.9.8.7 does not support transform ("_duprm.bam") to (".xyz") for later steps anymore
@@ -18,13 +19,10 @@ MarkDups = {
 			fi &&
 			
 			echo 'VERSION INFO'  1>&2 ;
-			java -jar ${TOOL_PICARD}/MarkDuplicates.jar --version 1>&2 ;
+			echo \$(java -jar ${TOOL_PICARD}/MarkDuplicates.jar --version) 1>&2 ;
 			echo '/VERSION INFO' 1>&2 ;
 			
-			java -Xmx50000m -jar ${TOOL_PICARD}/MarkDuplicates.jar $MARKDUPS_FLAGS
-				INPUT=$input
-				OUTPUT=$output
-				METRICS_FILE=${input.prefix}_dupmetrics.tsv
+			java $JAVA_FLAGS -jar ${TOOL_PICARD}/MarkDuplicates.jar $MARKDUPS_FLAGS INPUT=$input OUTPUT=$output METRICS_FILE=${input.prefix}_dupmetrics.tsv
 		""","MarkDups"
 	}
 }

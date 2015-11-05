@@ -16,7 +16,7 @@ BAMindexer = {
 			fi &&
 			
 			echo 'VERSION INFO'  1>&2 &&
-			${TOOL_SAMTOOLS} --version 1>&2 &&
+			echo \$(${TOOL_SAMTOOLS} --version) 1>&2 &&
 			echo '/VERSION INFO' 1>&2 &&
 			
 			${TOOL_SAMTOOLS} index $input

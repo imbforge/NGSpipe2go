@@ -24,9 +24,9 @@ macs2 = {
 				exit 0;
 			fi;
 			
-			echo 'VERSION INFO'  1>&2 &&
-			${TOOL_MACS2}/bin/macs2 --version &&
-			echo '/VERSION INFO' 1>&2 &&
+			echo 'VERSION INFO'  1>&2 ;
+			echo \$(${TOOL_MACS2}/bin/macs2 --version) 1>&2 ;
+			echo '/VERSION INFO' 1>&2 ;
 			
 			BAM=\$(basename $input) &&
 			grep \$BAM $MACS2_TARGETS | while read -r TARGET; do

@@ -23,7 +23,7 @@ ipstrength = {
 			fi;
 			
 			echo 'VERSION INFO'  1>&2 &&
-			${TOOL_R}/bin/Rscript --version 1>&2 &&
+			echo \$(${TOOL_R}/bin/Rscript --version) 1>&2 &&
 			echo '/VERSION INFO' 1>&2 &&
 			
 			

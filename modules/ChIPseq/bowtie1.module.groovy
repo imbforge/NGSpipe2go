@@ -9,13 +9,13 @@ bowtie_se = {
 	output.dir = MAPPED
 
 	def BOWTIE_FLAGS = " -q --sam"  +
-	                   " "   + BOWTIE_QUALS    +
-					   " "   + BOWTIE_BEST     +
-	                   " -n" + BOWTIE_MM       +
-					   " -l" + BOWTIE_INSERT   +
-					   " -e" + BOWTIE_MAQERR   +
-					   " -m" + BOWTIE_MULTIMAP +
-					   " -p" + BOWTIE_THREADS
+                       " "   + BOWTIE_QUALS    +
+                       " "   + BOWTIE_BEST     +
+                       " -n" + Integer.toString(BOWTIE_MM)       +
+                       " -l" + Integer.toString(BOWTIE_INSERT)   +
+                       " -e" + Integer.toString(BOWTIE_MAQERR)   +
+                       " -m" + Integer.toString(BOWTIE_MULTIMAP) +
+                       " -p" + Integer.toString(BOWTIE_THREADS)
 
 	transform(".fastq.gz") to (".bam") {
 		exec """
@@ -26,7 +26,7 @@ bowtie_se = {
 			fi                                          &&
 			
 			echo 'VERSION INFO'  1>&2 ;
-			bowtie --version     1>&2 ;
+			echo \$(bowtie --version) 1>&2 ;
 			echo '/VERSION INFO' 1>&2 ;
 			
 			zcat $input | bowtie $BOWTIE_FLAGS $BOWTIE_REF - | ${TOOL_SAMTOOLS} view -bhSu - | ${TOOL_SAMTOOLS} sort -@ $BOWTIE_THREADS - $output.prefix

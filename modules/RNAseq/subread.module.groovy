@@ -8,7 +8,7 @@ subread_count = {
 	
 	output.dir  = SUBREAD_OUTDIR
 	def SUBREAD_FLAGS = //" -s " + SUBREAD_STRANDED + 
-						" -T " + SUBREAD_CORES +
+						" -T " + Integer.toString(SUBREAD_CORES) +
 						" -a " + SUBREAD_GENESGTF +
 						//" -o " + ???
 						" --ignoreDup "
@@ -39,13 +39,10 @@ subread_count = {
 			fi &&
 			
 			echo 'VERSION INFO'  1>&2 ;
-			featureCounts        1>&2 ;
+			echo \$(./featureCounts 2>&1 |grep Version) 1>&2 ;
 			echo '/VERSION INFO' 1>&2 ;
 			
-			echo "CMDLINE: featureCounts $SUBREAD_FLAGS -o $output $input" &&
-			
 			featureCounts $SUBREAD_FLAGS -o $output $input 2> ${output.prefix}_subreadlog.stderr
-			
 	
 		""","subread_count"
 	}

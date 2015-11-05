@@ -1,5 +1,5 @@
 //vars for task STAR_se from catalog RNAseq, version 1
-STAR_THREADS = 8
+STAR_THREADS = ESSENTIAL_THREADS
 STAR_REF = ESSENTIAL_STAR_REF
 STAR_MAXRAM = "31000000000"	// around 30Gb for mammals
 STAR_BUFSIZE = "150000000"	// buffer size

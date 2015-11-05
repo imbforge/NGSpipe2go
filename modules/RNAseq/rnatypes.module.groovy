@@ -18,7 +18,7 @@ RNAtypes = {
 	                     " multimap=" + RNAtypes_MULTIMAP +
 	                     " ftype="    + RNAtypes_FTYPE    +
 	                     " ftypecol=" + RNAtypes_FTYPECOL +
-					     " cores="    + RNAtypes_CORES
+					     " cores="    + Integer.toString(RNAtypes_CORES)
 
 	// run the chunk
 	produce(RNAtypes_OUT + ".counts.raw.png",

@@ -10,18 +10,15 @@ shinyReports = {
 	
 	produce("shinyReports.txt") {
 		exec """
-			
-			
-			
 			if [ -e "${REPORTS}/variantreport.Rmd" ]; then
 				echo 'variantreport.Rmd already exists. Older copy will be kept and not overwritten';
 			else
 				cp ${MODULE_FOLDER}/../tools/reports/shiny_dnaseq_reporting_tool/variantreport.Rmd ${REPORTS};
 			fi &&
 			
-			cp ${MODULE_FOLDER}/../tools/reports/shiny_dnaseq_reporting_tool/styles.css ${REPORTS}              &&
+			cp ${MODULE_FOLDER}/../tools/reports/shiny_dnaseq_reporting_tool/styles.css ${REPORTS} &&
 			
-			PROJECT=\$(basename ${SHINYREPS_PROJECT})                            &&
+			PROJECT=\$(basename ${SHINYREPS_PROJECT})                                 &&
 			sed -i "2,2s/SHINYREPS_PROJECT/\${PROJECT}/" ${REPORTS}/variantreport.Rmd &&
 			
 			echo "SHINYREPS_PROJECT=${SHINYREPS_PROJECT}" >  $output &&

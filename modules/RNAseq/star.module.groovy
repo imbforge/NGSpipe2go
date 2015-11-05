@@ -36,7 +36,7 @@ STAR_se = {
 					 " --limitGenomeGenerateRAM " + STAR_MAXRAM +
 					 " --limitIObufferSize " + STAR_BUFSIZE +
 					 " --genomeDir " + STAR_REF +
-					 " --runThreadN " + STAR_THREADS +
+					 " --runThreadN " + Integer.toString(STAR_THREADS) +
 					 " --outFilterMismatchNmax " + STAR_MM +
 					 " --outFilterMultimapNmax " + STAR_MULTIMAP +
 					 " --genomeLoad NoSharedMemory" +

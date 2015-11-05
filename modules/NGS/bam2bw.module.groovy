@@ -20,10 +20,6 @@ bam2bw = {
 				mkdir -p ${TMP};
 			fi &&
 			
-			echo 'VERSION INFO'  1>&2 ;
-			genomeCoverageBed    1>&2 ;
-			echo '/VERSION INFO' 1>&2 ;
-			
 			CHRSIZES=${TMP}/\$(basename ${input.prefix}).bam2bw.chrsizes &&
 			${TOOL_SAMTOOLS} idxstats ${input} | cut -f1-2 > \${CHRSIZES} &&
 			TOTAL_MAPPED=\$( ${TOOL_SAMTOOLS} flagstat $input | head -n1| cut -f1 -d" ") &&

@@ -6,11 +6,12 @@ ESSENTIAL_GENESBED="/data/annotation/mm9/mm9_UCSC_knownGene.bed"
 ESSENTIAL_SAMPLE_PREFIX="Sample_"
 ESSENTIAL_PAIRED="no"           // paired end design
 ESSENTIAL_STRANDED="reverse"    // strandness: no|yes|reverse
-ESSENTIAL_ORG="mouse"           //UCSC organism
-ESSENTIAL_DB="mm9"              //UCSC assembly version
-ESSENTIAL_READLENGTH="50" // added for STAR version > 2.4.1a
+ESSENTIAL_ORG="mouse"           // UCSC organism
+ESSENTIAL_DB="mm9"              // UCSC assembly version
+ESSENTIAL_READLENGTH="50"       // added for STAR version > 2.4.1a
+ESSENTIAL_THREADS=4             // number of threads for parallel tasks
 
-//global vars that will be reused in some global vars
+//global vars
 PROJECT=ESSENTIAL_PROJECT
 LOGS=PROJECT + "/logs"
 MAPPED=PROJECT + "/mapped"

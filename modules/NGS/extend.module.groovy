@@ -21,7 +21,7 @@ extend = {
 			fi &&
 			
 			echo 'VERSION INFO'  1>&2 ;
-			bedtools --version   1>&2 ;
+			echo \$(bedtools --version) 1>&2 ;
 			echo '/VERSION INFO' 1>&2 ;
 			
 			CHRSIZES=${TMP}/\$(basename ${input.prefix}).extend.chrsizes  &&

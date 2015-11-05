@@ -9,7 +9,7 @@ dupRadar = {
 	                     " stranded=" + DUPRADAR_STRANDED + 
 			    		 " paired="   + DUPRADAR_PAIRED   +
 						 " outdir="   + DUPRADAR_OUTDIR   +
-				    	 " threads="  + DUPRADAR_THREADS
+				    	 " threads="  + Integer.toString(DUPRADAR_THREADS)
 
 	// run the chunk
 	transform(".bam") to("_dupRadar.png") {

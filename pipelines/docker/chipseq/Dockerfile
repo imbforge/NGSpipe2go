@@ -59,7 +59,7 @@ RUN	./configure --prefix=/opt/R/3.2.2 --with-readline=no && \
 ## install SPP
 COPY ./deps/spp_1.11.tar.gz /usr/local/src/
 WORKDIR /usr/local/src
-RUN	/opt/R/3.1.2/bin/R CMD INSTALL spp_1.11.tar.gz && \
+RUN	/opt/R/3.2.2/bin/R CMD INSTALL spp_1.11.tar.gz && \
 	rm spp_1.11.tar.gz
 
 ## install FastQC
