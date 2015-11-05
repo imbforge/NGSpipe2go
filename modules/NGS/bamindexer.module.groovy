@@ -4,6 +4,7 @@ BAMindexer = {
 	doc title: "BAMindexer",
 		desc:  "Call samtools to index a bam file",
 		constraints: "Define a global SAMTOOLS var pointing to the bin file",
+		bpipe_version: "tested with bpipe 0.9.8.7",
 		author: "Sergi Sayols"
 
 	output.dir = MAPPED

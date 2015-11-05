@@ -4,6 +4,7 @@ shinyReports = {
 	doc title: "shinyReports",
 		desc:  "creates the source code to compile the shiny and markdown reports",
 		constraints: "",
+		bpipe_version: "tested with bpipe 0.9.8.7",
 		author: "Oliver Drechsel"
 	
 	output.dir = REPORTS
@@ -15,15 +16,14 @@ shinyReports = {
 			else
 				cp ${MODULE_FOLDER}/../tools/reports/shiny_dnaseq_reporting_tool/variantreport.Rmd ${REPORTS};
 			fi &&
-			
-			cp ${MODULE_FOLDER}/../tools/reports/shiny_dnaseq_reporting_tool/styles.css ${REPORTS} &&
+
+			cp ${MODULE_FOLDER}/../tools/reports/shiny_dnaseq_reporting_tool/variant.shinyrep.helpers.R ${REPORTS} &&
+			cp ${MODULE_FOLDER}/../tools/reports/shiny_dnaseq_reporting_tool/styles.css ${REPORTS}                 &&
 			
 			PROJECT=\$(basename ${SHINYREPS_PROJECT})                                 &&
 			sed -i "2,2s/SHINYREPS_PROJECT/\${PROJECT}/" ${REPORTS}/variantreport.Rmd &&
 			
 			echo "SHINYREPS_PROJECT=${SHINYREPS_PROJECT}" >  $output &&
-			echo "SHINYREPS_ORG=${SHINYREPS_ORG}"         >> $output &&
-			echo "SHINYREPS_DB=${SHINYREPS_DB}"           >> $output &&
 			echo "SHINYREPS_LOG=${SHINYREPS_LOG}"         >> $output &&
 			echo "SHINYREPS_QC=${SHINYREPS_QC}"           >> $output &&
 			echo "SHINYREPS_RES=${SHINYREPS_RES}"         >> $output &&

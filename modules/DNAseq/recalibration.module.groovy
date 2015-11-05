@@ -5,6 +5,7 @@ BaseRecalibration = {
     doc title: "GATK Base Quality Recalibration",
 	desc:  "Recalibrate Base Qualities in BAM files, using GATK",
 	constraints: "Requires BWA ( paramteter -M ) produced BAM file, with correct chromosome order and ReadGroup attached.",
+	bpipe_version: "tested with bpipe 0.9.8.7",
 	author: "Oliver Drechsel"
 
 	output.dir = MAPPED

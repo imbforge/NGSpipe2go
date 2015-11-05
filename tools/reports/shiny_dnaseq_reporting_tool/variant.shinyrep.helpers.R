@@ -28,46 +28,6 @@ loadGlobalVars <- function(f="shinyReports.txt") {
 }
 
 ##
-## DEhelper.init: some time consuming tasks that can be done in advance
-##
-VARhelper.init <- function(task) {
-	
-	# Prepare the DE data frame
-	renderUcscGeneLinks <- function() {
-		ucsc_url <- paste0("http://genome.ucsc.edu/cgi-bin/hgGene?org=",SHINYREPS_ORG,"&db=",SHINYREPS_DB,"&hgg_gene=")
-		for(i in 1:length(lrt)) {
-			lrt[[i]]$table$gene <<- sapply(rownames(lrt[[i]]$table),function(x) {
-				paste0("<a href=\"",ucsc_url,x,"\">",x,"</a>")
-			})
-		}
-	}
-	prepareDEdataTable <- function() {
-		for(i in 1:length(lrt)) {
-			lrt[[i]]$table$FDR    <<- p.adjust(lrt[[i]]$table$PValue,method="fdr")
-			lrt[[i]]$table$logFC  <<- round(lrt[[i]]$table$logFC,2)
-			lrt[[i]]$table$logCPM <<- round(lrt[[i]]$table$logCPM,2)
-			lrt[[i]]$table$LR     <<- round(lrt[[i]]$table$LR,2)
-			lrt[[i]]$table$PValue <<- round(lrt[[i]]$table$PValue,4)
-			lrt[[i]]$table$FDR    <<- round(lrt[[i]]$table$FDR,4)
-		}
-	}
-	
-	# Cluster and correlation tasks
-	prepareDistanceMatrix <- function() {
-		v <<- apply(m,1,sd,na.rm=T)		# get top variant genes
-		dists <<- dist(t(m))
-		mat <<- as.matrix(dists)
-		hmcol <<- colorRampPalette(brewer.pal(max(length(levels(group)),3),"Oranges"))(100)
-	}
-	
-	# dispatch tasks
-	switch(task,
-		   renderUcscGeneLinks=renderUcscGeneLinks(),
-		   prepareDEdataTable=prepareDEdataTable(),
-		   prepareDistanceMatrix=prepareDistanceMatrix())
-}
-
-##
 ## VARhelper.Fastqc: go through Fastqc output dir and create a md table with the duplication & read quals & sequence bias plots
 ##
 VARhelper.Fastqc <- function(web=TRUE) {

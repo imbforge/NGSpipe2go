@@ -2,6 +2,7 @@ DE_DESeq2 = {
 	doc title: "DE_DESeq2",
 		desc:  "Differential expression analysis using linears models and DESeq2",
 		constraints: "Only simple contrasts in 1-factor design. Include always the intercept. Always gene filtering",
+		bpipe_version: "tested with bpipe 0.9.8.7",
 		author: "Sergi Sayols"
 
 	output.dir = DE_DESeq2_OUTDIR

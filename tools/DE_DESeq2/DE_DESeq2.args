@@ -1,9 +1,0 @@
-args <- as.character()
-args[1] <- "targets=targets.txt"
-args[2] <- "contrasts=contrasts.txt"
-args[3] <- "mmatrix=~group" # "~0+group" for glm
-args[4] <- "filter=NOTUSEd"
-args[5] <- "prefix=Sample_imb_soshnikova_2014_2_\\d+_"
-args[6] <- "suffix=.readcounts.tsv"
-args[7] <- "cwd=/fsimb/groups/imb-bioinfocf/projects/soshnikova/imb_soshnikova_2014_02_soshnikova_RNAseq/results/htseq-count"
-args[8] <- "out=DE.DESeq2"

@@ -2,6 +2,7 @@ dupRadar = {
 	doc title: "dupRadar",
 		desc:  "analysis of duplication rate on RNAseq analysis",
 		constraints: "",
+		bpipe_version: "tested with bpipe 0.9.8.7",
 		author: "Sergi Sayols"
 
 	output.dir = DUPRADAR_OUTDIR

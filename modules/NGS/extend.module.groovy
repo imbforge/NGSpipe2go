@@ -4,6 +4,7 @@ extend = {
 	doc title: "extend",
 		desc:  "Extend read length to the average fragment size",
 		constraints: "",
+		bpipe_version: "tested with bpipe 0.9.8.7",
 		author: "Sergi Sayols"
 
 	output.dir=MAPPED

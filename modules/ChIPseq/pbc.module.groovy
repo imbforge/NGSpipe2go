@@ -4,6 +4,7 @@ pbc = {
 	doc title: "PBC",
 		desc:  "PCR Bottleneck Coefficient",
 		constraints: "",
+		bpipe_version: "tested with bpipe 0.9.8.7",
 		author: "Sergi Sayols"
 
 	output.dir = QC + "/pbc"

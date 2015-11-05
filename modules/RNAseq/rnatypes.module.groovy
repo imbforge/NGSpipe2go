@@ -4,6 +4,7 @@ RNAtypes = {
 	doc title: "RNAtypes",
 		desc:  "analysis of duplication rate on RNAseq analysis",
 		constraints: "",
+		bpipe_version: "tested with bpipe 0.9.8.7",
 		author: "Sergi Sayols"
 
 	output.dir = QC + "/RNAtypes/"

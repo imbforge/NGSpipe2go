@@ -4,6 +4,7 @@ bam2bw = {
 	doc title: "bam2bw",
 		desc:  "Convert BAM file to bigWig",
 		constraints: "none.",
+		bpipe_version: "tested with bpipe 0.9.8.7",
 		author: "Sergi Sayols"
 
 	output.dir=TRACKS
