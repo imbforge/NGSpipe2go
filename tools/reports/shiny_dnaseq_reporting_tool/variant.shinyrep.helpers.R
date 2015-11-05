@@ -450,9 +450,7 @@ Toolhelper.VersionBWA <- function() {
 		# read all lines
 		l <- readLines(f)
 		# e.g. Version: 0.7.12-r1039
-		l.tmp <- l[grep("Version:",l)]
-		# extract version number
-		l.version <- unlist( strsplit(l.tmp, ': ') )[2]
+		l.version <- l[ grep("^VERSION INFO",l) + 1 ]
 		
 		return(l.version)
 		
@@ -500,9 +498,7 @@ Toolhelper.VersionFastQC <- function() {
 		l <- readLines(f)
 		# need to check Version number in one line lower than "VERSION INFO"
 		# e.g. FastQC v0.11.3
-		l.tmp <- l[ grep("^VERSION INFO",l) + 1 ]
-		# extract version number
-		l.version <- unlist( strsplit(l.tmp, ' ') )[2]
+		l.version <- l[ grep("^VERSION INFO",l) + 1 ]
 		
 		return(l.version)
 		

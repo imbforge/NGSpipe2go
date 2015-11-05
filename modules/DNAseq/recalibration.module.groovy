@@ -32,7 +32,7 @@ BaseRecalibration = {
 			fi                                          &&
         
             echo 'VERSION INFO'  1>&2 &&
-            echo \$(java -Djava.io.tmpdir=$TMPDIR -jar $TOOL_GATK/GenomeAnalysisTK.jar --version) 1>&2 &&
+            echo \$(java -jar $TOOL_GATK/GenomeAnalysisTK.jar --version) 1>&2 &&
             echo '/VERSION INFO' 1>&2 &&
             
             java -Djava.io.tmpdir=$TMPDIR -jar $TOOL_GATK/GenomeAnalysisTK.jar -T BaseRecalibrator -nct $GATK_THREADS -R $ESSENTIAL_BWA_REF -knownSites ${ESSENTIAL_KNOWN_VARIANTS} -I $input -o $output1 &&

@@ -30,7 +30,7 @@ VariantCallUG = {
 			fi                                          &&
         
             echo 'VERSION INFO'  1>&2 ;
-            echo \$(java -Djava.io.tmpdir=$TMPDIR -jar $TOOL_GATK/GenomeAnalysisTK.jar --version 1>&2) ;
+            echo \$(java -jar $TOOL_GATK/GenomeAnalysisTK.jar --version 1>&2) ;
             echo '/VERSION INFO' 1>&2 ;
             
             java -Djava.io.tmpdir=$TMPDIR -jar $TOOL_GATK/GenomeAnalysisTK.jar -T UnifiedGenotyper -nt $GATK_THREADS -nct $GATK_THREADS -R $ESSENTIAL_BWA_REF -glm BOTH -I $input -o $output $GATK_FLAGS
