@@ -11,7 +11,7 @@ MarkDups = {
 	def JAVA_FLAGS  = "-Xmx" + MARKDUPS_MAXMEM + "m"
 	def MARKDUPS_FLAGS  = "REMOVE_DUPLICATES=" + MARKDUPS_REMOVE + " ASSUME_SORTED=TRUE"
 
-	transform(".bam") to (".duprm.bam") { // to be changed to ".duprm.bam" -- bpipe 0.9.8.7 does not support transform ("_duprm.bam") to (".xyz") for later steps anymore
+	transform(".bam") to (".duprm.bam") {
 		exec """
 			export TOOL_DEPENDENCIES=$TOOL_DEPENDENCIES &&
 			source ${TOOL_PICARD}/env.sh &&
