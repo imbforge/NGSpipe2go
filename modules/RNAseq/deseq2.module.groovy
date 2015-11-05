@@ -24,9 +24,9 @@ DE_DESeq2 = {
 				export TMPDIR=/jobdir/\${LSB_JOBID};
 			fi &&
 			
-			echo '<<<<<<<<<<<<<<<<' &&
-			echo ${TOOL_R}/bin/Rscript ${TOOL_DESeq2}/DE_DESeq2.R $DE_DESeq2_FLAGS &&
-			echo '>>>>>>>>>>>>>>>>' &&
+			echo 'VERSION INFO'  1>&2 ;
+			echo \$(${TOOL_R}/bin/Rscript ${TOOL_DESeq2}/DE_DESeq2.R $DE_DESeq2_FLAGS) ;
+			echo '/VERSION INFO'  1>&2 ;
 			
 			${TOOL_R}/bin/Rscript ${TOOL_DESeq2}/DE_DESeq2.R $DE_DESeq2_FLAGS
 		""","DE_DESeq2"

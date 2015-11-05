@@ -12,7 +12,6 @@ STAR_se = {
 	// create the TMP folder if it doesn't exists
 	// seems to cause issues, if the for the folder respective sample exists already (Oliver)
 	// TODO: add removal of TMP/sampleID, if exists
-	// println("DEBUG" + TMP)
 	F_TMP = new File(TMP)
 	if(! F_TMP.exists()) { 
 		F_TMP.mkdirs()
@@ -73,7 +72,7 @@ STAR_se = {
 			fi &&
 			
 			echo 'VERSION INFO'  1>&2 &&
-			STAR --version       1>&2 &&
+			echo \$(STAR --version) 1>&2 &&
 			echo '/VERSION INFO' 1>&2 &&
 			
 			STAR $STAR_FLAGS --readFilesIn $input | ${TOOL_SAMTOOLS} view $SAMTOOLS_FLAGS - | ${TOOL_SAMTOOLS} sort -@ $STAR_THREADS - $output.prefix &&

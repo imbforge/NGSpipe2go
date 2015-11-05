@@ -29,14 +29,12 @@ DE_edgeR = {
 			fi &&
 			
 			echo 'VERSION INFO'  1>&2 ;
-			${TOOL_R}/bin/Rscript --version 1>&2 ;
+			echo \$(${TOOL_R}/bin/Rscript --version) 1>&2 ;
 			echo '/VERSION INFO' 1>&2 ;
 
 			${TOOL_R}/bin/Rscript ${TOOL_EDGER}/DE_edgeR.R $DE_edgeR_FLAGS
 		""","DE_edgeR"
 	}
-	
-	//${TOOL_DEPENDENCIES}/R/default/bin/Rscript ${TOOL_DEPENDENCIES}/imb-forge/DE_edgeR/DE_edgeR.R $DE_edgeR_FLAGS
 	
 	forward input
 }

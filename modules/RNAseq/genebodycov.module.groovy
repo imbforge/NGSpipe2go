@@ -25,7 +25,7 @@ geneBodyCov = {
 			fi &&
 			
 			echo 'VERSION INFO'  1>&2 ;
-			python ${TOOL_RSeQC}/bin/geneBody_coverage.py --version 1>&2 ;
+			echo \$(python ${TOOL_RSeQC}/bin/geneBody_coverage.py --version) 1>&2 ;
 			echo '/VERSION INFO' 1>&2 ;
 			
 			python ${TOOL_RSeQC}/bin/geneBody_coverage.py -i $input -f png -r $GENEBODYCOV_BED -o ${output3.prefix.prefix}
