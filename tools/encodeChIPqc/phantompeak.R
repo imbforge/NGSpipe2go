@@ -1,6 +1,7 @@
 ###################################
 ##
 ## Shortened version of the spp.R QC to report only the phantompeak profile
+## Based on the SPP tutorial from http://compbio.med.harvard.edu/Supplements/ChIP-seq/tutorial.html
 ##
 ## Who : Sergi Sayols
 ## When: 11 nov 2014
@@ -24,7 +25,8 @@ print(argv)
 
 # load the library
 library(spp)
-library(snow)
+#library(snow)
+library(parallel)
 cluster <- makeCluster(CORES)
 
 ##
@@ -42,6 +44,8 @@ chip.data  <- read.bam.tags(SAMPLE_FILE)
 # IMPORTANT: add remove.tag.anomalies=F if duplicates were already removed
 #
 binding.characteristics <- get.binding.characteristics(chip.data,srange=c(MIN.SHIFT,MAX.SHIFT),bin=BIN.SIZE,remove.tag.anomalies=F,cluster=cluster)
+
+stopCluster(cluster)
 
 # select informative tags based on the binding characteristics
 chip.data  <- select.informative.tags(chip.data,binding.characteristics)
