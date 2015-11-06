@@ -1,0 +1,17 @@
+{
+	"folders":
+	[
+		{
+			"path": "modules"
+		},
+		{
+			"path": "pipelines"
+		},
+		{
+			"path": "tools"
+		},
+		{
+			"path": "resources"
+		}
+	]
+}
