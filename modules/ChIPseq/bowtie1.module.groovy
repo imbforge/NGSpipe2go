@@ -12,7 +12,7 @@ bowtie_se = {
 	def BOWTIE_FLAGS = " -q --sam"  +
                        " "   + BOWTIE_QUALS    +
                        " "   + BOWTIE_BEST     +
-                       " -n" + Integer.toString(BOWTIE_MM)       +
+                       " -n" + Integer.toString(BOWTIE_MM_SEED)  +
                        " -l" + Integer.toString(BOWTIE_INSERT)   +
                        " -e" + Integer.toString(BOWTIE_MAQERR)   +
                        " -m" + Integer.toString(BOWTIE_MULTIMAP) +
