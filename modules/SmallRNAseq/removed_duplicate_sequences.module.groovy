@@ -15,11 +15,12 @@ FilterDuplicates = {
 				export TMPDIR=/jobdir/\${LSB_JOBID};
 			fi &&
 
-			echo 'REMOVING DUPLICATES' 1>&2 &&
+         echo 'REMOVING DUPLICATES' 1>&2 &&
+			echo 'Sample is ${SAMPLE}' 1>&2 &&
 
 			cat $input | paste -d, - - - -  > ${SAMPLE}.fastq2table &&
          sort -u -t, -k2,2 ${SAMPLE}.fastq2table > ${SAMPLE}.fastq2table.unique &&
-         tr ',' '\n' < ${SAMPLE}.fastq2table.unique > ${SAMPLE}.deduped_barcoded.fastq &&
+         tr ',' '\\n' < ${SAMPLE}.fastq2table.unique > ${SAMPLE}.deduped_barcoded.fastq &&
          gzip ${SAMPLE}.deduped_barcoded.fastq
 
 		""","FilterDuplicates"
