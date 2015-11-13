@@ -10,8 +10,6 @@ STAR_se = {
 	output.dir = MAPPED
 
 	// create the TMP folder if it doesn't exists
-	// seems to cause issues, if the for the folder respective sample exists already (Oliver)
-	// TODO: add removal of TMP/sampleID, if exists
 	F_TMP = new File(TMP)
 	if(! F_TMP.exists()) { 
 		F_TMP.mkdirs()
@@ -24,12 +22,9 @@ STAR_se = {
 
 	// code chunk
 	transform(".fastq.gz") to(".bam", "Log.final.out") {
-	//from(".fastq.gz") produce( input.prefix.prefix + ".bam",
-	//						   input.prefix.prefix + "Log.final.out") {
-	//from(".fastq.gz") produce( "bam", "Log.final.out") {
 		// flags
 		def int OVERHANG
-        OVERHANG = ESSENTIAL_READLENGTH.toInteger() - 1
+		OVERHANG = ESSENTIAL_READLENGTH.toInteger() - 1
 		
 		def SAMPLE = new File(input.prefix.prefix)
 		def STAR_FLAGS = " --runMode alignReads" +
@@ -48,7 +43,8 @@ STAR_se = {
 					 " --outTmpDir " + TMP + "/" + SAMPLE.name +
 					 " --readFilesCommand zcat" +
 					 " --sjdbOverhang " + OVERHANG.toString() +
-					 " --sjdbGTFfile " + ESSENTIAL_GENESGTF
+					 " --sjdbGTFfile " + ESSENTIAL_GENESGTF +
+					 " --outSAMunmapped Within "
 
 		def SAMTOOLS_FLAGS = "-bhSu"
 		if(STAR_FILTER_SEC == "YES") {
