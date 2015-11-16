@@ -1,7 +1,5 @@
 //vars for task shinyReports from catalog miscellaneous, version 1
 SHINYREPS_PROJECT=PROJECT	//project directory
-SHINYREPS_ORG=ESSENTIAL_ORG	//UCSC organism
-SHINYREPS_DB=ESSENTIAL_DB	//UCSC assembly version
 SHINYREPS_LOG=LOGS			//where the logs lie
 SHINYREPS_QC=QC				//where the QC lie
 SHINYREPS_RES=RESULTS		//where the results lie

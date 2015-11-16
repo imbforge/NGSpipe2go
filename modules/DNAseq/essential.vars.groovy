@@ -4,10 +4,7 @@
 // REMEMBER TO CHANGE THESE ESSENTIAL VARS!!
 //
 ESSENTIAL_PROJECT="/project"
-ESSENTIAL_ORG="mouse"
-ESSENTIAL_DB="mm9"
 ESSENTIAL_BWA_REF="/data/igenomes_reference/Mus_musculus/UCSC/mm9/Sequence/BWAIndex/genome.fa"
-ESSENTIAL_GATK_REF=""
 ESSENTIAL_CALL_REGION="/project/dnaseq/call.region.bed" // OPTIONALLY limit variant calling to a limited region, e.g. exonic sequences or chr3 only. Will save a lot of compute time.
 ESSENTIAL_PAIRED="yes"                   // paired end design
 ESSENTIAL_SAMPLE_PREFIX="Sample_" 
