@@ -326,19 +326,14 @@ ChIPhelper.Bustard <- function() {
 ## extract tool versions
 ##
 
-Toolhelper.VersionFastQC <- function() {
+Toolhelper.VersionReporter <- function(tool, logfolder) {
 	
-	# fastqc --version
-	#
-	#FastQC v0.11.3
-	#
-	
-	LOG <- SHINYREPS_FASTQC_LOG
+	LOG <- logfolder
 	SUFFIX <- paste0(".log","$")
 	
 	# logs folder
 	if(!file.exists(LOG)) {
-		return("FastQC version not available")
+		return(paste0(tool, " version not available"))
 	}
 	
 	x <- lapply( list.files(LOG, pattern=SUFFIX, full.names=TRUE), function(f){
@@ -373,326 +368,373 @@ Toolhelper.VersionFastQC <- function() {
 }
 
 
-Toolhelper.VersionBowtie <- function() {
-	
-	# bowie --version
-	#
-	#bowtie version 1.1.1
-	#[...]
-	
-	LOG <- SHINYREPS_BOWTIE_LOG
-	SUFFIX <- paste0(".log","$")
-	
-	# logs folder
-	if(!file.exists(LOG)) {
-		return("Bowtie version not available")
-	}
-	
-	x <- lapply( list.files(LOG, pattern=SUFFIX, full.names=TRUE), function(f){
-		# read all lines
-		l <- readLines(f)
-		# need to check Version number in one line lower than "VERSION INFO"
-		# e.g. bowtie version 1.1.1
-		l.version <- l[ grep("^VERSION INFO",l) + 1 ]
-		
-		return(l.version)
-		
-		} )
-	
-	# x is a list of always the same content
-	r <- tryCatch(
-		{
-			if (is.null(x[[1]][1])) {
-				return("no version tag")
-			} else {
-				return(x[[1]][1])
-			}
-		},
-		warning = function(w) {
-			return("no version tag")
-		},
-		error = function(e) {
-			return("no version tag")
-		},
-		finally = {}
-	)
-	
-}
-
-Toolhelper.VersionSamtools <- function() {
-	
-	# samtools --version
-	# samtools 1.2
-	# Using htslib 1.2.1
-	# Copyright (C) 2015 Genome Research Ltd.
-
-	
-	LOG <- SHINYREPS_BAMINDEX_LOG
-	SUFFIX <- paste0(".log","$")
-	
-	# logs folder
-	if(!file.exists(LOG)) {
-		return("Samtools version not available")
-	}
-	
-	x <- lapply( list.files(LOG, pattern=SUFFIX, full.names=TRUE), function(f){
-		# read all lines
-		l <- readLines(f)
-		# need to check Version number in one line lower than "VERSION INFO"
-		# e.g. samtools 1.2
-		# Using htslib 1.2.1
-
-		l.version <- l[ grep("^VERSION INFO",l) + 1 ]
-		
-		return(l.version)
-		
-		} )
-	
-	# x is a list of always the same content
-	r <- tryCatch(
-		{
-			if (is.null(x[[1]][1])) {
-				return("no version tag")
-			} else {
-				return(x[[1]][1])
-			}
-		},
-		warning = function(w) {
-			return("no version tag")
-		},
-		error = function(e) {
-			return("no version tag")
-		},
-		finally = {}
-	)
-	
-}
-
-Toolhelper.VersionPicard <- function() {
-	
-	# genomeCoverageBed
-	#
-	#Tool:    bedtools genomecov (aka genomeCoverageBed)
-	#Version: v2.25.0
-	#Summary: Compute the coverage of a feature file among a genome.
-	
-	LOG <- SHINYREPS_MARKDUPS_LOG
-	SUFFIX <- paste0(".log","$")
-	
-	# logs folder
-	if(!file.exists(LOG)) {
-		return("Picard version not available")
-	}
-	
-	x <- lapply( list.files(LOG, pattern=SUFFIX, full.names=TRUE), function(f){
-		# read all lines
-		l <- readLines(f)
-		# need to check Version number in one line lower than "VERSION INFO"
-		# e.g. FastQC v0.11.3
-		l.version <- l[ grep("^VERSION INFO",l) + 1 ]
-		
-		return(l.version)
-		
-		} )
-	
-	# x is a list of always the same content
-	r <- tryCatch(
-		{
-			if (is.null(x[[1]][1])) {
-				return("no version tag")
-			} else {
-				return(x[[1]][1])
-			}
-		},
-		warning = function(w) {
-			return("no version tag")
-		},
-		error = function(e) {
-			return("no version tag")
-		},
-		finally = {}
-	)
-	
-}
-
-Toolhelper.VersionBedTools <- function() {
-	
-	# bedtools --version
-	#bedtools v2.25.0
-	#
-	
-	LOG <- SHINYREPS_EXTEND_LOG
-	SUFFIX <- paste0(".log","$")
-	
-	# logs folder
-	if(!file.exists(LOG)) {
-		return("BedTools Extend version not available")
-	}
-	
-	x <- lapply( list.files(LOG, pattern=SUFFIX, full.names=TRUE), function(f){
-		# read all lines
-		l <- readLines(f)
-		# need to check Version number in one line lower than "VERSION INFO"
-		# e.g. FastQC v0.11.3
-		l.version <- l[ grep("^VERSION INFO",l) + 1 ]
-		
-		return(l.version)
-		
-		} )
-	
-	# x is a list of always the same content
-	r <- tryCatch(
-		{
-			if (is.null(x[[1]][1])) {
-				return("no version tag")
-			} else {
-				return(x[[1]][1])
-			}
-		},
-		warning = function(w) {
-			return("no version tag")
-		},
-		error = function(e) {
-			return("no version tag")
-		},
-		finally = {}
-	)
-	
-}
-
-Toolhelper.VersionIPstrength <- function() {
-	
-	# Rscript --version
-	# R scripting front-end version 3.2.2 (2015-08-14)
-	#
-	
-	LOG <- SHINYREPS_IPSTRENGTH_LOG
-	SUFFIX <- paste0(".log","$")
-	
-	# logs folder
-	if(!file.exists(LOG)) {
-		return("R and IPstrength version not available")
-	}
-	
-	x <- lapply( list.files(LOG, pattern=SUFFIX, full.names=TRUE), function(f){
-		# read all lines
-		l <- readLines(f)
-		# need to check Version number in one line lower than "VERSION INFO"
-		# e.g. FastQC v0.11.3
-		l.version <- l[ grep("^VERSION INFO",l) + 1 ]
-		
-		return(l.version)
-		
-		} )
-	
-	# x is a list of always the same content
-	r <- tryCatch(
-		{
-			if (is.null(x[[1]][1])) {
-				return("no version tag")
-			} else {
-				return(x[[1]][1])
-			}
-		},
-		warning = function(w) {
-			return("no version tag")
-		},
-		error = function(e) {
-			return("no version tag")
-		},
-		finally = {}
-	)
-	
-}
-
-Toolhelper.VersionPhantomPeak <- function() {
-	
-	
-	# Rscript --version
-	# R scripting front-end version 3.2.2 (2015-08-14)
-	#
-	
-	LOG <- SHINYREPS_PHANTOM_LOG
-	SUFFIX <- paste0(".log","$")
-	
-	# logs folder
-	if(!file.exists(LOG)) {
-		return("R and PhantomPeak version not available")
-	}
-	
-	x <- lapply( list.files(LOG, pattern=SUFFIX, full.names=TRUE), function(f){
-		# read all lines
-		l <- readLines(f)
-		# need to check Version number in one line lower than "VERSION INFO"
-		# e.g. FastQC v0.11.3
-		l.version <- l[ grep("^VERSION INFO",l) + 1 ]
-		
-		return(l.version)
-		
-		} )
-	
-	# x is a list of always the same content
-	r <- tryCatch(
-		{
-			if (is.null(x[[1]][1])) {
-				return("no version tag")
-			} else {
-				return(x[[1]][1])
-			}
-		},
-		warning = function(w) {
-			return("no version tag")
-		},
-		error = function(e) {
-			return("no version tag")
-		},
-		finally = {}
-	)
-	
-}
-
-Toolhelper.VersionMacs <- function() {
-	
-	
-	# Rscript --version
-	# R scripting front-end version 3.2.2 (2015-08-14)
-	#
-	
-	LOG <- SHINYREPS_MACS2_LOG
-	SUFFIX <- paste0(".log","$")
-	
-	# logs folder
-	if(!file.exists(LOG)) {
-		return("MACS version not available")
-	}
-	
-	x <- lapply( list.files(LOG, pattern=SUFFIX, full.names=TRUE), function(f){
-		# read all lines
-		l <- readLines(f)
-		# need to check Version number in one line lower than "VERSION INFO"
-		# e.g. macs2 2.1.0.20140616
-		l.version <- l[ grep("^VERSION INFO",l) + 1 ]
-		
-		return(l.version)
-		
-		} )
-	
-	# x is a list of always the same content
-	r <- tryCatch(
-		{
-			if (is.null(x[[1]][1])) {
-				return("no version tag")
-			} else {
-				return(x[[1]][1])
-			}
-		},
-		warning = function(w) {
-			return("no version tag")
-		},
-		error = function(e) {
-			return("no version tag")
-		},
-		finally = {}
-	)
-	
-}
+#Toolhelper.VersionFastQC <- function() {
+#	
+#	# fastqc --version
+#	#
+#	#FastQC v0.11.3
+#	#
+#	
+#	LOG <- SHINYREPS_FASTQC_LOG
+#	SUFFIX <- paste0(".log","$")
+#	
+#	# logs folder
+#	if(!file.exists(LOG)) {
+#		return("FastQC version not available")
+#	}
+#	
+#	x <- lapply( list.files(LOG, pattern=SUFFIX, full.names=TRUE), function(f){
+#		# read all lines
+#		l <- readLines(f)
+#		# need to check Version number in one line lower than "VERSION INFO"
+#		# e.g. FastQC v0.11.3
+#		l.version <- l[ grep("^VERSION INFO",l) + 1 ]
+#		
+#		return(l.version)
+#		
+#		} )
+#	
+#	# x is a list of always the same content
+#	r <- tryCatch(
+#		{
+#			if (is.null(x[[1]][1])) {
+#				return("no version tag")
+#			} else {
+#				return(x[[1]][1])
+#			}
+#		},
+#		warning = function(w) {
+#			return("no version tag")
+#		},
+#		error = function(e) {
+#			return("no version tag")
+#		},
+#		finally = {}
+#	)
+#	
+#}
+#
+#
+#Toolhelper.VersionBowtie <- function() {
+#	
+#	# bowie --version
+#	#
+#	#bowtie version 1.1.1
+#	#[...]
+#	
+#	LOG <- SHINYREPS_BOWTIE_LOG
+#	SUFFIX <- paste0(".log","$")
+#	
+#	# logs folder
+#	if(!file.exists(LOG)) {
+#		return("Bowtie version not available")
+#	}
+#	
+#	x <- lapply( list.files(LOG, pattern=SUFFIX, full.names=TRUE), function(f){
+#		# read all lines
+#		l <- readLines(f)
+#		# need to check Version number in one line lower than "VERSION INFO"
+#		# e.g. bowtie version 1.1.1
+#		l.version <- l[ grep("^VERSION INFO",l) + 1 ]
+#		
+#		return(l.version)
+#		
+#		} )
+#	
+#	# x is a list of always the same content
+#	r <- tryCatch(
+#		{
+#			if (is.null(x[[1]][1])) {
+#				return("no version tag")
+#			} else {
+#				return(x[[1]][1])
+#			}
+#		},
+#		warning = function(w) {
+#			return("no version tag")
+#		},
+#		error = function(e) {
+#			return("no version tag")
+#		},
+#		finally = {}
+#	)
+#	
+#}
+#
+#Toolhelper.VersionSamtools <- function() {
+#	
+#	# samtools --version
+#	# samtools 1.2
+#	# Using htslib 1.2.1
+#	# Copyright (C) 2015 Genome Research Ltd.
+#
+#	
+#	LOG <- SHINYREPS_BAMINDEX_LOG
+#	SUFFIX <- paste0(".log","$")
+#	
+#	# logs folder
+#	if(!file.exists(LOG)) {
+#		return("Samtools version not available")
+#	}
+#	
+#	x <- lapply( list.files(LOG, pattern=SUFFIX, full.names=TRUE), function(f){
+#		# read all lines
+#		l <- readLines(f)
+#		# need to check Version number in one line lower than "VERSION INFO"
+#		# e.g. samtools 1.2
+#		# Using htslib 1.2.1
+#
+#		l.version <- l[ grep("^VERSION INFO",l) + 1 ]
+#		
+#		return(l.version)
+#		
+#		} )
+#	
+#	# x is a list of always the same content
+#	r <- tryCatch(
+#		{
+#			if (is.null(x[[1]][1])) {
+#				return("no version tag")
+#			} else {
+#				return(x[[1]][1])
+#			}
+#		},
+#		warning = function(w) {
+#			return("no version tag")
+#		},
+#		error = function(e) {
+#			return("no version tag")
+#		},
+#		finally = {}
+#	)
+#	
+#}
+#
+#Toolhelper.VersionPicard <- function() {
+#	
+#	# genomeCoverageBed
+#	#
+#	#Tool:    bedtools genomecov (aka genomeCoverageBed)
+#	#Version: v2.25.0
+#	#Summary: Compute the coverage of a feature file among a genome.
+#	
+#	LOG <- SHINYREPS_MARKDUPS_LOG
+#	SUFFIX <- paste0(".log","$")
+#	
+#	# logs folder
+#	if(!file.exists(LOG)) {
+#		return("Picard version not available")
+#	}
+#	
+#	x <- lapply( list.files(LOG, pattern=SUFFIX, full.names=TRUE), function(f){
+#		# read all lines
+#		l <- readLines(f)
+#		# need to check Version number in one line lower than "VERSION INFO"
+#		# e.g. FastQC v0.11.3
+#		l.version <- l[ grep("^VERSION INFO",l) + 1 ]
+#		
+#		return(l.version)
+#		
+#		} )
+#	
+#	# x is a list of always the same content
+#	r <- tryCatch(
+#		{
+#			if (is.null(x[[1]][1])) {
+#				return("no version tag")
+#			} else {
+#				return(x[[1]][1])
+#			}
+#		},
+#		warning = function(w) {
+#			return("no version tag")
+#		},
+#		error = function(e) {
+#			return("no version tag")
+#		},
+#		finally = {}
+#	)
+#	
+#}
+#
+#Toolhelper.VersionBedTools <- function() {
+#	
+#	# bedtools --version
+#	#bedtools v2.25.0
+#	#
+#	
+#	LOG <- SHINYREPS_EXTEND_LOG
+#	SUFFIX <- paste0(".log","$")
+#	
+#	# logs folder
+#	if(!file.exists(LOG)) {
+#		return("BedTools Extend version not available")
+#	}
+#	
+#	x <- lapply( list.files(LOG, pattern=SUFFIX, full.names=TRUE), function(f){
+#		# read all lines
+#		l <- readLines(f)
+#		# need to check Version number in one line lower than "VERSION INFO"
+#		# e.g. FastQC v0.11.3
+#		l.version <- l[ grep("^VERSION INFO",l) + 1 ]
+#		
+#		return(l.version)
+#		
+#		} )
+#	
+#	# x is a list of always the same content
+#	r <- tryCatch(
+#		{
+#			if (is.null(x[[1]][1])) {
+#				return("no version tag")
+#			} else {
+#				return(x[[1]][1])
+#			}
+#		},
+#		warning = function(w) {
+#			return("no version tag")
+#		},
+#		error = function(e) {
+#			return("no version tag")
+#		},
+#		finally = {}
+#	)
+#	
+#}
+#
+#Toolhelper.VersionIPstrength <- function() {
+#	
+#	# Rscript --version
+#	# R scripting front-end version 3.2.2 (2015-08-14)
+#	#
+#	
+#	LOG <- SHINYREPS_IPSTRENGTH_LOG
+#	SUFFIX <- paste0(".log","$")
+#	
+#	# logs folder
+#	if(!file.exists(LOG)) {
+#		return("R and IPstrength version not available")
+#	}
+#	
+#	x <- lapply( list.files(LOG, pattern=SUFFIX, full.names=TRUE), function(f){
+#		# read all lines
+#		l <- readLines(f)
+#		# need to check Version number in one line lower than "VERSION INFO"
+#		# e.g. FastQC v0.11.3
+#		l.version <- l[ grep("^VERSION INFO",l) + 1 ]
+#		
+#		return(l.version)
+#		
+#		} )
+#	
+#	# x is a list of always the same content
+#	r <- tryCatch(
+#		{
+#			if (is.null(x[[1]][1])) {
+#				return("no version tag")
+#			} else {
+#				return(x[[1]][1])
+#			}
+#		},
+#		warning = function(w) {
+#			return("no version tag")
+#		},
+#		error = function(e) {
+#			return("no version tag")
+#		},
+#		finally = {}
+#	)
+#	
+#}
+#
+#Toolhelper.VersionPhantomPeak <- function() {
+#	
+#	
+#	# Rscript --version
+#	# R scripting front-end version 3.2.2 (2015-08-14)
+#	#
+#	
+#	LOG <- SHINYREPS_PHANTOM_LOG
+#	SUFFIX <- paste0(".log","$")
+#	
+#	# logs folder
+#	if(!file.exists(LOG)) {
+#		return("R and PhantomPeak version not available")
+#	}
+#	
+#	x <- lapply( list.files(LOG, pattern=SUFFIX, full.names=TRUE), function(f){
+#		# read all lines
+#		l <- readLines(f)
+#		# need to check Version number in one line lower than "VERSION INFO"
+#		# e.g. FastQC v0.11.3
+#		l.version <- l[ grep("^VERSION INFO",l) + 1 ]
+#		
+#		return(l.version)
+#		
+#		} )
+#	
+#	# x is a list of always the same content
+#	r <- tryCatch(
+#		{
+#			if (is.null(x[[1]][1])) {
+#				return("no version tag")
+#			} else {
+#				return(x[[1]][1])
+#			}
+#		},
+#		warning = function(w) {
+#			return("no version tag")
+#		},
+#		error = function(e) {
+#			return("no version tag")
+#		},
+#		finally = {}
+#	)
+#	
+#}
+#
+#Toolhelper.VersionMacs <- function() {
+#	
+#	
+#	# Rscript --version
+#	# R scripting front-end version 3.2.2 (2015-08-14)
+#	#
+#	
+#	LOG <- SHINYREPS_MACS2_LOG
+#	SUFFIX <- paste0(".log","$")
+#	
+#	# logs folder
+#	if(!file.exists(LOG)) {
+#		return("MACS version not available")
+#	}
+#	
+#	x <- lapply( list.files(LOG, pattern=SUFFIX, full.names=TRUE), function(f){
+#		# read all lines
+#		l <- readLines(f)
+#		# need to check Version number in one line lower than "VERSION INFO"
+#		# e.g. macs2 2.1.0.20140616
+#		l.version <- l[ grep("^VERSION INFO",l) + 1 ]
+#		
+#		return(l.version)
+#		
+#		} )
+#	
+#	# x is a list of always the same content
+#	r <- tryCatch(
+#		{
+#			if (is.null(x[[1]][1])) {
+#				return("no version tag")
+#			} else {
+#				return(x[[1]][1])
+#			}
+#		},
+#		warning = function(w) {
+#			return("no version tag")
+#		},
+#		error = function(e) {
+#			return("no version tag")
+#		},
+#		finally = {}
+#	)
+#	
+#}

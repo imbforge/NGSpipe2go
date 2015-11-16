@@ -430,67 +430,14 @@ VARhelper.CoveragePlot <- function() {
 ## extract tool versions
 ##
 
-Toolhelper.VersionBWA <- function() {
+Toolhelper.VersionReporter <- function(tool, logfolder) {
 	
-	# bwa call without parameters
-	#[...]
-	#Program: bwa (alignment via Burrows-Wheeler transformation)
-	#Version: 0.7.12-r1039
-	#Contact: Heng Li <lh3@sanger.ac.uk>
-	#[...]
-	
-	LOG <- SHINYREPS_BWA_LOG
-	
-	# logs folder
-	if(!file.exists(LOG)) {
-		return("BWA version not available")
-	}
-	
-	x <- lapply( list.files(LOG, full.names=TRUE), function(f){
-		# read all lines
-		l <- readLines(f)
-		# e.g. Version: 0.7.12-r1039
-		l.version <- l[ grep("^VERSION INFO",l) + 1 ]
-		
-		return(l.version)
-		
-		} )
-	
-	# x is a list of always the same content
-	r <- tryCatch(
-		{
-			if (is.null(x[[1]][1])) {
-				return("no version tag")
-			} else {
-				return(x[[1]][1])
-			}
-		},
-		warning = function(w) {
-			return("no version tag")
-		},
-		error = function(e) {
-			return("no version tag")
-		},
-		finally = {}
-	)
-	
-	
-}
-
-
-Toolhelper.VersionFastQC <- function() {
-	
-	# fastqc --version
-	#
-	#FastQC v0.11.3
-	#
-	
-	LOG <- SHINYREPS_FASTQC_LOG
+	LOG <- logfolder
 	SUFFIX <- paste0(".log","$")
 	
 	# logs folder
 	if(!file.exists(LOG)) {
-		return("FastQC version not available")
+		return(paste0(tool, " version not available"))
 	}
 	
 	x <- lapply( list.files(LOG, pattern=SUFFIX, full.names=TRUE), function(f){
@@ -522,152 +469,247 @@ Toolhelper.VersionFastQC <- function() {
 		finally = {}
 	)
 	
-	
 }
 
-Toolhelper.VersionMarkDups <- function() {
-	
-	# java -jar MarkDuplicates.jar --version
-	#
-	#1.92(1464)
-	#
-	
-	LOG <- SHINYREPS_MARKDUPS_LOG
-	
-	# logs folder
-	if(!file.exists(LOG)) {
-		return("Picard MarkDuplicates version not available")
-	}
-	
-	x <- lapply( list.files(LOG, full.names=TRUE), function(f){
-		# read all lines
-		l <- readLines(f)
-		# need to check Version number in one line lower than "VERSION INFO"
-		# e.g. FastQC v0.11.3
-		l.version <- l[ grep("^VERSION INFO",l) + 1 ]
-		# extract version number
-		
-		return(l.version)
-		
-		} )
-	
-	# x is a list of always the same content
-	r <- tryCatch(
-		{
-			if (is.null(x[[1]][1])) {
-				return("no version tag")
-			} else {
-				return(x[[1]][1])
-			}
-		},
-		warning = function(w) {
-			return("no version tag")
-		},
-		error = function(e) {
-			return("no version tag")
-		},
-		finally = {}
-	)
-	
-	
-}
 
-Toolhelper.VersionGATKug <- function() {
-	
-	# call GATK and get the version
-	#java -jar GenomeAnalysisTK.jar --version
-	#3.4-46-gbc02625
-	
-	
-	LOG <- SHINYREPS_GATKug_LOG
-	
-	# logs folder
-	if(!file.exists(LOG)) {
-		return("GATK Unified Genotyper version not available")
-	}
-	
-	x <- lapply( list.files(LOG, full.names=TRUE), function(f){
-		# read all lines
-		l <- readLines(f)
-		# need to check Version number in one line lower than "VERSION INFO"
-		# e.g.
-		# VERSION INFO
-		# 3.4-46-gbc02625
-		# \VERSION INFO
-		l.version <- l[ grep("^VERSION INFO",l) + 1 ]
-				
-		return(l.version)
-		
-		} )
-	
-	# x is a list of always the same content
-	r <- tryCatch(
-		{
-			if (is.null(x[[1]][1])) {
-				return("no version tag")
-			} else {
-				return(x[[1]][1])
-			}
-		},
-		warning = function(w) {
-			return("no version tag")
-		},
-		error = function(e) {
-			return("no version tag")
-		},
-		finally = {}
-	)
-	
-	
-}
-
-Toolhelper.VersionGATKhc <- function() {
-	
-	# call GATK and get the version
-	#java -jar GenomeAnalysisTK.jar --version
-	#3.4-46-gbc02625
-	
-	
-	LOG <- SHINYREPS_GATKhc_LOG
-	
-	# logs folder
-	if(!file.exists(LOG)) {
-		return("GATK Haplotype Caller version not available")
-	}
-	
-	x <- lapply( list.files(LOG, full.names=TRUE), function(f){
-		# read all lines
-		l <- readLines(f)
-		# need to check Version number in one line lower than "VERSION INFO"
-		# e.g.
-		# VERSION INFO
-		# 3.4-46-gbc02625
-		# \VERSION INFO
-		l.version <- l[ grep("^VERSION INFO",l) + 1 ]
-				
-		return(l.version)
-		
-		} )
-	
-	# x is a list of always the same content
-	r <- tryCatch(
-		{
-			if (is.null(x[[1]][1])) {
-				return("no version tag")
-			} else {
-				return(x[[1]][1])
-			}
-		},
-		warning = function(w) {
-			return("no version tag")
-		},
-		error = function(e) {
-			return("no version tag")
-		},
-		finally = {}
-	)
-	
-	
-}
-
+#Toolhelper.VersionBWA <- function() {
+#	
+#	# bwa call without parameters
+#	#[...]
+#	#Program: bwa (alignment via Burrows-Wheeler transformation)
+#	#Version: 0.7.12-r1039
+#	#Contact: Heng Li <lh3@sanger.ac.uk>
+#	#[...]
+#	
+#	LOG <- SHINYREPS_BWA_LOG
+#	
+#	# logs folder
+#	if(!file.exists(LOG)) {
+#		return("BWA version not available")
+#	}
+#	
+#	x <- lapply( list.files(LOG, full.names=TRUE), function(f){
+#		# read all lines
+#		l <- readLines(f)
+#		# e.g. Version: 0.7.12-r1039
+#		l.version <- l[ grep("^VERSION INFO",l) + 1 ]
+#		
+#		return(l.version)
+#		
+#		} )
+#	
+#	# x is a list of always the same content
+#	r <- tryCatch(
+#		{
+#			if (is.null(x[[1]][1])) {
+#				return("no version tag")
+#			} else {
+#				return(x[[1]][1])
+#			}
+#		},
+#		warning = function(w) {
+#			return("no version tag")
+#		},
+#		error = function(e) {
+#			return("no version tag")
+#		},
+#		finally = {}
+#	)
+#	
+#	
+#}
+#
+#
+#Toolhelper.VersionFastQC <- function() {
+#	
+#	# fastqc --version
+#	#
+#	#FastQC v0.11.3
+#	#
+#	
+#	LOG <- SHINYREPS_FASTQC_LOG
+#	SUFFIX <- paste0(".log","$")
+#	
+#	# logs folder
+#	if(!file.exists(LOG)) {
+#		return("FastQC version not available")
+#	}
+#	
+#	x <- lapply( list.files(LOG, pattern=SUFFIX, full.names=TRUE), function(f){
+#		# read all lines
+#		l <- readLines(f)
+#		# need to check Version number in one line lower than "VERSION INFO"
+#		# e.g. FastQC v0.11.3
+#		l.version <- l[ grep("^VERSION INFO",l) + 1 ]
+#		
+#		return(l.version)
+#		
+#		} )
+#	
+#	# x is a list of always the same content
+#	r <- tryCatch(
+#		{
+#			if (is.null(x[[1]][1])) {
+#				return("no version tag")
+#			} else {
+#				return(x[[1]][1])
+#			}
+#		},
+#		warning = function(w) {
+#			return("no version tag")
+#		},
+#		error = function(e) {
+#			return("no version tag")
+#		},
+#		finally = {}
+#	)
+#	
+#	
+#}
+#
+#Toolhelper.VersionMarkDups <- function() {
+#	
+#	# java -jar MarkDuplicates.jar --version
+#	#
+#	#1.92(1464)
+#	#
+#	
+#	LOG <- SHINYREPS_MARKDUPS_LOG
+#	
+#	# logs folder
+#	if(!file.exists(LOG)) {
+#		return("Picard MarkDuplicates version not available")
+#	}
+#	
+#	x <- lapply( list.files(LOG, full.names=TRUE), function(f){
+#		# read all lines
+#		l <- readLines(f)
+#		# need to check Version number in one line lower than "VERSION INFO"
+#		# e.g. FastQC v0.11.3
+#		l.version <- l[ grep("^VERSION INFO",l) + 1 ]
+#		# extract version number
+#		
+#		return(l.version)
+#		
+#		} )
+#	
+#	# x is a list of always the same content
+#	r <- tryCatch(
+#		{
+#			if (is.null(x[[1]][1])) {
+#				return("no version tag")
+#			} else {
+#				return(x[[1]][1])
+#			}
+#		},
+#		warning = function(w) {
+#			return("no version tag")
+#		},
+#		error = function(e) {
+#			return("no version tag")
+#		},
+#		finally = {}
+#	)
+#	
+#	
+#}
+#
+#Toolhelper.VersionGATKug <- function() {
+#	
+#	# call GATK and get the version
+#	#java -jar GenomeAnalysisTK.jar --version
+#	#3.4-46-gbc02625
+#	
+#	
+#	LOG <- SHINYREPS_GATKug_LOG
+#	
+#	# logs folder
+#	if(!file.exists(LOG)) {
+#		return("GATK Unified Genotyper version not available")
+#	}
+#	
+#	x <- lapply( list.files(LOG, full.names=TRUE), function(f){
+#		# read all lines
+#		l <- readLines(f)
+#		# need to check Version number in one line lower than "VERSION INFO"
+#		# e.g.
+#		# VERSION INFO
+#		# 3.4-46-gbc02625
+#		# \VERSION INFO
+#		l.version <- l[ grep("^VERSION INFO",l) + 1 ]
+#				
+#		return(l.version)
+#		
+#		} )
+#	
+#	# x is a list of always the same content
+#	r <- tryCatch(
+#		{
+#			if (is.null(x[[1]][1])) {
+#				return("no version tag")
+#			} else {
+#				return(x[[1]][1])
+#			}
+#		},
+#		warning = function(w) {
+#			return("no version tag")
+#		},
+#		error = function(e) {
+#			return("no version tag")
+#		},
+#		finally = {}
+#	)
+#	
+#	
+#}
+#
+#Toolhelper.VersionGATKhc <- function() {
+#	
+#	# call GATK and get the version
+#	#java -jar GenomeAnalysisTK.jar --version
+#	#3.4-46-gbc02625
+#	
+#	
+#	LOG <- SHINYREPS_GATKhc_LOG
+#	
+#	# logs folder
+#	if(!file.exists(LOG)) {
+#		return("GATK Haplotype Caller version not available")
+#	}
+#	
+#	x <- lapply( list.files(LOG, full.names=TRUE), function(f){
+#		# read all lines
+#		l <- readLines(f)
+#		# need to check Version number in one line lower than "VERSION INFO"
+#		# e.g.
+#		# VERSION INFO
+#		# 3.4-46-gbc02625
+#		# \VERSION INFO
+#		l.version <- l[ grep("^VERSION INFO",l) + 1 ]
+#				
+#		return(l.version)
+#		
+#		} )
+#	
+#	# x is a list of always the same content
+#	r <- tryCatch(
+#		{
+#			if (is.null(x[[1]][1])) {
+#				return("no version tag")
+#			} else {
+#				return(x[[1]][1])
+#			}
+#		},
+#		warning = function(w) {
+#			return("no version tag")
+#		},
+#		error = function(e) {
+#			return("no version tag")
+#		},
+#		finally = {}
+#	)
+#	
+#	
+#}
+#
 

@@ -125,6 +125,9 @@ for(i in 1:length(colnames(conts))) {
 ## Used tools and versions for this analysis
 
 ```{r ToolVersions_paragraph, echo=F,results='asis',error=F,warning=F,message=F}
+
+# this section requires an init() that loads the location to the *_LOG variables 
+
 table.content <- data.frame(  tool=c(
 									  "FastQC",
 									  "STAR",
@@ -136,14 +139,14 @@ table.content <- data.frame(  tool=c(
 									  "R/DEseq2"
 									  ),
 							  version=c(
-									  Toolhelper.VersionFastQC(),
-									  Toolhelper.VersionSTAR(),
-									  Toolhelper.VersionSamtools(),
-									  Toolhelper.VersionSubread(),
-									  Toolhelper.VersionPicard(),
-									  Toolhelper.VersionGeneBodyCoverage(),
-									  Toolhelper.VersionEdgeR(),
-									  Toolhelper.VersionDEseq()
+									  Toolhelper.VersionReporter("FastQC",   SHINYREPS_FASTQC_LOG ),
+									  Toolhelper.VersionReporter("STAR",     SHINYREPS_STAR_LOG ),
+									  Toolhelper.VersionReporter("Samtools", SHINYREPS_BAMINDEX_LOG),
+									  Toolhelper.VersionReporter("Subread",  SHINYREPS_SUBREAD_LOG),
+									  Toolhelper.VersionReporter("Picard",   SHINYREPS_BAM2BW_LOG),
+									  Toolhelper.VersionReporter("GeneBodyCoverage", SHINYREPS_GENEBODYCOVERAGE_LOGS),
+									  Toolhelper.VersionReporter("R/EdgeR",  SHINYREPS_EDGER_LOGS ),
+									  Toolhelper.VersionReporter("R/DEseq2", SHINYREPS_DESEQ_LOGS)
 									  )
 						   )
 kable(table.content)
