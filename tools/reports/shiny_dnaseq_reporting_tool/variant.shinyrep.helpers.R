@@ -119,7 +119,6 @@ VARhelper.GATKug <- function() {
 	SUFFIX <- paste0(SHINYREPS_GATKug_SUFFIX, '$')
 	
 	if(!file.exists(LOG)) {
-		print(LOG)
 		return("GATK Unified Genotyper statistics not available")
 	}
 	
