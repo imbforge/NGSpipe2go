@@ -13,7 +13,7 @@ DE_DESeq2 = {
 	                     " prefix="    + DE_DESeq2_PREFIX +
 	                     " suffix="    + DE_DESeq2_SUFFIX +
 	                     " cwd="       + DE_DESeq2_CWD +
-                         " out="       + DE_DESeq2_OUTDIR + "/DE_DESeq2"
+                         " out="       + DE_DESeq2_OUTDIR
 
 	// run the chunk
 	produce("DE_DESeq2.RData") {

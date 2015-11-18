@@ -9,15 +9,15 @@ DE_edgeR = {
 
 	output.dir = DE_edgeR_OUTDIR
 	def DE_edgeR_FLAGS = " targets="    + DE_edgeR_TARGETS + 
-	                     " contrasts="  + DE_edgeR_CONTRASTS +
-	                     " mmatrix="    + DE_edgeR_MMATRIX +
-	                     " filter="     + DE_edgeR_FILTER +
-	                     " prefix="     + DE_edgeR_PREFIX +
-	                     " suffix="     + DE_edgeR_SUFFIX +
-	                     " cwd="        + DE_edgeR_CWD +
-	                     " robust="     + DE_edgeR_ROBUST +
-                             " out="        + DE_edgeR_OUTDIR + "/DE_edgeR" +
-                             " gtf="        + DE_edgeR_GTF
+                         " contrasts="  + DE_edgeR_CONTRASTS +
+                         " mmatrix="    + DE_edgeR_MMATRIX +
+                         " filter="     + DE_edgeR_FILTER +
+                         " prefix="     + DE_edgeR_PREFIX +
+                         " suffix="     + DE_edgeR_SUFFIX +
+                         " cwd="        + DE_edgeR_CWD +
+                         " robust="     + DE_edgeR_ROBUST +
+                         " out="        + DE_edgeR_OUTDIR +
+                         " gtf="        + DE_edgeR_GTF
 
 	// run the chunk
 	produce("DE_edgeR.RData") {
