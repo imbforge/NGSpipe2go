@@ -1,32 +1,37 @@
 //rule for task bowtie_se from catalog ChIPseq, version 1
 //desc: Align single end reads
-bowtie_se = {
-	doc title: "Bowtie SE alignment",
-		desc:  "Align single end reads",
-		constraints: "Only works with compressed input. Samtools multithreaded version expected (>=0.1.19).",
-		author: "Sergi Sayols"
+Bowtie_se = {
+   doc title: "Bowtie SE alignment",
+      desc:  "Align single end reads",
+      constraints: "Only works with compressed input. Samtools multithreaded version expected (>=0.1.19).",
+      bpipe_version: "tested with bpipe 0.9.8.7",
+      author: "Sergi Sayols"
 
-	output.dir = MAPPED
+   output.dir = MAPPED
 
-	def BOWTIE_FLAGS = " -q --sam"  +
-	                   " "   + BOWTIE_QUALS    +
-					   " "   + BOWTIE_BEST     +
-	                   " -n" + BOWTIE_MM       +
-					   " -l" + BOWTIE_INSERT   +
-					   " -e" + BOWTIE_MAQERR   +
-					   " -m" + BOWTIE_MULTIMAP +
-					   " -p" + BOWTIE_THREADS
+   def BOWTIE_FLAGS = " -q --sam"  +
+                       " "   + BOWTIE_QUALS    +
+                       " "   + BOWTIE_BEST     +
+                       " -p " + Integer.toString(BOWTIE_THREADS) +
+                       " -v " + Integer.toString(BOWTIE_MM)       +
+                       " -m " + Integer.toString(BOWTIE_MULTIMAP) +
+                       " --trim5 " + Integer.toString(BOWTIE_TRIMM5)  +
+                       " --trim3 " + Integer.toString(BOWTIE_TRIMM3)
 
-	transform(".fastq.gz") to (".bam") {
-		exec """
-			export TOOL_DEPENDENCIES=$TOOL_DEPENDENCIES &&
-			source ${TOOL_BOWTIE}/env.sh   &&
-			if [ -n "\$LSB_JOBID" ]; then
-				export TMPDIR=/jobdir/\${LSB_JOBID};
-			fi                                          &&
+   transform(".fastq.gz") to (".bam") {
 
-			zcat $input | bowtie $BOWTIE_FLAGS $BOWTIE_REF - | ${TOOL_SAMTOOLS} view -bhSu - | ${TOOL_SAMTOOLS} sort -@ $BOWTIE_THREADS - $output.prefix
-		""","bowtie_se"
-	}
+      def SAMPLE = input.prefix.prefix
+
+      exec """
+         if [ -n "\$LSB_JOBID" ]; then
+            export TMPDIR=/jobdir/\${LSB_JOBID};
+         fi                                          &&
+
+         echo 'VERSION INFO'  1>&2 ;
+         echo \$(bowtie --version) 1>&2 ;
+         echo '/VERSION INFO' 1>&2 ;
+
+         zcat $input | $BOWTIE_PATH $BOWTIE_FLAGS $BOWTIE_REF - 2> $SAMPLE.bt.log | samtools view -bhSu - | sort -@ $BOWTIE_THREADS - $output.prefix
+      ""","Bowtie_se"
+   }
 }
-

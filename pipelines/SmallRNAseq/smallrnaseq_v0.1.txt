@@ -18,8 +18,13 @@ load MODULE_FOLDER + "SmallRNAseq/removed_duplicate_sequences.module.groovy"
 // load MODULE_FOLDER + "SmallRNAseq/dedup_stats.vars.groovy"
 load MODULE_FOLDER + "SmallRNAseq/dedup_stats.module.groovy"
 
+load MODULE_FOLDER + "SmallRNAseq/bowtie1.vars.groovy"
+load MODULE_FOLDER + "SmallRNAseq/bowtie1.module.groovy"
+
+load MODULE_FOLDER + "SmallRNAseq/bamindexer.module.groovy"
+
 
 //MAIN PIPELINE TASK
 run {
-	"%.fastq.gz" * [ FastQC , Cutadapt + FastQQualityFilter + FilterDuplicates ] + "%.deduped_barcoded.fastq.gz" * [ FastQC ] + DedupStats
+	"%.fastq.gz" * [ FastQC , Cutadapt + FastQQualityFilter + FilterDuplicates ] + "%.deduped_barcoded.fastq.gz" * [ FastQC , Bowtie_se + BAMindexer ] + DedupStats
 }
