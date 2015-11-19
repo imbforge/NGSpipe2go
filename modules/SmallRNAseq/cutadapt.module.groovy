@@ -20,7 +20,7 @@ Cutadapt = {
 			cutadapt --version 1>&2 &&
 			echo '/VERSION INFO' 1>&2 &&
 
-			cutadapt $ADAPTER_SEQUENCE -O $MINIMUM_OVERLAP -m $MINIMUM_LENGTH_KEEP -M $MAXIMUM_LENGTH_KEEP -o $output $input  2>&1 >> cutadapt.log
+			cutadapt $ADAPTER_SEQUENCE -O $MINIMUM_OVERLAP -m $MINIMUM_LENGTH_KEEP -M $MAXIMUM_LENGTH_KEEP -o $output $input  2>&1 >> ${FASTQ_QUALITY_FILTER_OUTDIR}/cutadapt.log
 		""","Cutadapt"
 	}
 }
