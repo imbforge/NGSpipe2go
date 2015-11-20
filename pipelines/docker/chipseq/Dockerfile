@@ -49,7 +49,7 @@ WORKDIR /usr/local/src/R-3.2.2
 RUN	./configure --prefix=/opt/R/3.2.2 --with-readline=no && \
 	make && \
 	make install && \
-	/opt/R/3.2.2/bin/Rscript -e 'source("http://bioconductor.org/biocLite.R"); biocLite(c("GenomicAlignments","GenomicRanges","ShortRead"),ask=FALSE)' && \
+	/opt/R/3.2.2/bin/Rscript -e 'source("http://bioconductor.org/biocLite.R"); biocLite(c("GenomicAlignments","GenomicRanges","Rsamtools","ShortRead"),ask=FALSE)' && \
 	/opt/R/3.2.2/bin/Rscript -e 'install.packages(c("snow","knitr"),dependencies=TRUE,repos="http://cran.rstudio.org")' && \
 	rm -rf /usr/local/src/R-3.2.2 && \
 	ln -s /opt/R/3.2.2 /opt/R/latest && \
