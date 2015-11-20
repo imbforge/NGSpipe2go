@@ -26,6 +26,7 @@
 ##
 ####################################
 library(ShortRead)
+library(Rsamtools)
 library(parallel)
 
 ##
@@ -57,7 +58,9 @@ cat("Program called with args:",args,fill=T)
 ## 1-Read bam files and count reads per bin
 ##
 if(!require(bsgenome,character.only=T)) {
-    bins <- NULL
+    cat("Tiling genome from",IP,"...\n")
+    aln  <- BamFile(IP)
+    bins <- tileGenome(seqinfo(aln),tilewidth=BIN_SIZE,cut.last.tile.in.chrom=TRUE)
 } else {
     bins <- tileGenome(seqinfo(get(org)),tilewidth=BIN_SIZE,cut.last.tile.in.chrom=TRUE)
 }
@@ -66,10 +69,6 @@ counter <- function(fl,bins)
 {
 	cat("Reading",fl,"...\n")
 	aln <- readGAlignments(fl)
-    if(is.null(bins)) {
-        cat("Tiling genome from",fl,"...\n")
-        bins <- tileGenome(seqinfo(aln),tilewidth=BIN_SIZE,cut.last.tile.in.chrom=TRUE)
-    }
 	strand(aln) <- STRAND_SPECIFIC
 	hits   <- countOverlaps(aln,bins)
 	counts <- countOverlaps(bins,aln[hits==1])	# discard reads hitting more than one gene
