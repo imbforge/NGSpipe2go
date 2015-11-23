@@ -4,6 +4,10 @@
 		"selected_items":
 		[
 			[
+				"un",
+				"unmmapped"
+			],
+			[
 				"ESS",
 				"ESSENTIAL_BOWTIE_REF"
 			],
@@ -510,10 +514,6 @@
 			[
 				"pad",
 				"padjust"
-			],
-			[
-				"geom",
-				"geom_bar"
 			]
 		]
 	},
@@ -523,23 +523,7 @@
 			"file": "/home/adomingu/imbc1/adomingues/projects/notebook/doc/notebook.md",
 			"settings":
 			{
-				"buffer_size": 31283,
-				"line_ending": "Unix"
-			}
-		},
-		{
-			"file": "pipelines/SmallRNAseq/smallrnaseq_v0.1.txt",
-			"settings":
-			{
-				"buffer_size": 1083,
-				"line_ending": "Unix"
-			}
-		},
-		{
-			"file": "/home/adomingu/imbc1/adomingues/projects/bpipe_all/scripts/trim_and_QC_smRNA-seq_saxe.groovy",
-			"settings":
-			{
-				"buffer_size": 3033,
+				"buffer_size": 31841,
 				"line_ending": "Unix"
 			}
 		},
@@ -552,10 +536,34 @@
 			}
 		},
 		{
+			"file": "pipelines/SmallRNAseq/smallrnaseq_v0.1.txt",
+			"settings":
+			{
+				"buffer_size": 1301,
+				"line_ending": "Unix"
+			}
+		},
+		{
+			"file": "pipelines/ChIPseq/chipseq_v1.2.txt",
+			"settings":
+			{
+				"buffer_size": 1568,
+				"line_ending": "Unix"
+			}
+		},
+		{
 			"file": "modules/SmallRNAseq/essential.vars.groovy",
 			"settings":
 			{
 				"buffer_size": 798,
+				"line_ending": "Unix"
+			}
+		},
+		{
+			"file": "modules/SmallRNAseq/maping_stats.vars.groovy",
+			"settings":
+			{
+				"buffer_size": 224,
 				"line_ending": "Unix"
 			}
 		},
@@ -571,7 +579,7 @@
 			"file": "modules/SmallRNAseq/cutadapt.module.groovy",
 			"settings":
 			{
-				"buffer_size": 753,
+				"buffer_size": 784,
 				"line_ending": "Unix"
 			}
 		},
@@ -592,10 +600,18 @@
 			}
 		},
 		{
+			"file": "modules/SmallRNAseq/maping_stats.module.groovy",
+			"settings":
+			{
+				"buffer_size": 829,
+				"line_ending": "Unix"
+			}
+		},
+		{
 			"file": "modules/SmallRNAseq/dedup_stats.module.groovy",
 			"settings":
 			{
-				"buffer_size": 871,
+				"buffer_size": 827,
 				"line_ending": "Unix"
 			}
 		},
@@ -603,7 +619,7 @@
 			"file": "modules/SmallRNAseq/bowtie1.module.groovy",
 			"settings":
 			{
-				"buffer_size": 1338,
+				"buffer_size": 1407,
 				"line_ending": "Unix"
 			}
 		},
@@ -616,10 +632,18 @@
 			}
 		},
 		{
+			"file": "tools/mapping_stats/mapping_stats_bowtie1.R",
+			"settings":
+			{
+				"buffer_size": 2392,
+				"line_ending": "Unix"
+			}
+		},
+		{
 			"file": "pipelines/ChIPseq/bpipe.config",
 			"settings":
 			{
-				"buffer_size": 808,
+				"buffer_size": 1016,
 				"line_ending": "Unix"
 			}
 		}
@@ -700,6 +724,18 @@
 	},
 	"file_history":
 	[
+		"/home/adomingu/imbc1/adomingues/projects/NGSpipe2go/modules/NGS/fastqc.vars.groovy",
+		"/home/adomingu/imbc1/adomingues/projects/NGSpipe2go/modules/NGS/fastqc.module.groovy",
+		"/home/adomingu/imbc1/adomingues/projects/general_usage_scripts/mappingEfficiencyBowtie1.sh",
+		"/home/adomingu/imbc1/adomingues/projects/NGSpipe2go/modules/SmallRNAseq/cutadapt.vars.groovy",
+		"/home/adomingu/imbc1/adomingues/projects/NGSpipe2go/modules/SmallRNAseq/bamindexer.module.groovy",
+		"/home/adomingu/imbc1/adomingues/projects/NGSpipe2go/modules/NGS/bamindexer.module.groovy",
+		"/home/adomingu/imbc1/adomingues/projects/general_usage_scripts/CountMappedReads.r",
+		"/home/adomingu/imbc1/adomingues/projects/NGSpipe2go/modules/NGS/bamindexer.vars.groovy",
+		"/home/adomingu/imbc1/adomingues/projects/bpipe_all/scripts/trim_and_QC_smRNA-seq_saxe.groovy",
+		"/home/adomingu/imbc1/adomingues/projects/ziwi_zili_ip_tdrkh_elke/scripts/mappingSEbowtieUnique.sh",
+		"/home/adomingu/imbc1/adomingues/projects/NGSpipe2go/modules/ChIPseq/bowtie1.module.groovy",
+		"/home/adomingu/imbc1/adomingues/projects/NGSpipe2go/modules/NGS/extend.module.groovy",
 		"/home/adomingu/imbc1/adomingues/projects/ziwi_zili_ip_tdrkh_elke/scripts/smallRNA_reads_processing.sh",
 		"/home/adomingu/.config/sublime-text-2/Packages/User/Preferences.sublime-settings",
 		"/home/adomingu/imbc1/adomingues/projects/NGSpipe2go/modules/SmallRNAseq/dedup_stats.groovy",
@@ -707,7 +743,6 @@
 		"/home/adomingu/imbc1/adomingues/projects/NGSpipe2go/modules/miscellaneous/collectbpipes.module.2.groovy",
 		"/home/adomingu/imbc1/adomingues/projects/NGSpipe2go/modules/RNAseq/star.module.groovy",
 		"/home/adomingu/imbc1/adomingues/projects/bpipe_all/scripts/bpipe.config",
-		"/home/adomingu/imbc1/adomingues/projects/NGSpipe2go/modules/SmallRNAseq/cutadapt.vars.groovy",
 		"/home/adomingu/imbc1/adomingues/projects/NGSpipe2go/modules/SmallRNAseq/dedup.vars.groovy",
 		"/home/adomingu/imbc1/adomingues/projects/NGSpipe2go/tools/dupRadar/dupRadar.R",
 		"/home/adomingu/imbc1/adomingues/projects/NGSpipe2go/modules/SmallRNAseq/removed_duplicate_sequences.vars.groovy",
@@ -720,13 +755,9 @@
 		"/home/adomingu/imbc1/adomingues/projects/svetlana_fusKD/scripts/PCRDuplicatesPlot.R",
 		"/home/adomingu/imbc1/adomingues/projects/ziwi_zili_ip_tdrkh_elke/scripts/mappingSEbowtie.sh",
 		"/home/adomingu/imbc1/adomingues/projects/NGSpipe2go/modules/SmallRNAseq/cutadapt.module.groovy",
-		"/home/adomingu/imbc1/adomingues/projects/NGSpipe2go/modules/NGS/fastqc.module.groovy",
-		"/home/adomingu/imbc1/adomingues/projects/NGSpipe2go/modules/NGS/fastqc.vars.groovy",
 		"/home/adomingu/imbc1/adomingues/projects/piPipes/scripts/proTrac_pipeline.sh",
 		"/home/adomingu/imbc1/adomingues/projects/NGSpipe2go/modules/ChIPseq/tool.locations.groovy",
-		"/home/adomingu/imbc1/adomingues/projects/NGSpipe2go/modules/ChIPseq/bowtie1.module.groovy",
 		"/home/adomingu/imbc1/adomingues/projects/NGSpipe2go/modules/NGS/extend.vars.groovy",
-		"/home/adomingu/imbc1/adomingues/projects/NGSpipe2go/modules/NGS/extend.module.groovy",
 		"/home/adomingu/imbc1/adomingues/projects/NGSpipe2go/pipelines/SmallRNAseq/chipseq_v1.2.txt",
 		"/home/adomingu/imbc1/adomingues/projects/ziwi_zili_ip_tdrkh_elke/scripts/countReadsInRElength.sh",
 		"/home/adomingu/imbc1/adomingues/projects/general_usage_scripts/bamToBedWithSequence.py",
@@ -759,7 +790,6 @@
 		"/home/adomingu/imbc1/adomingues/projects/ping-pong/doc/ping-pong.md",
 		"/home/adomingu/imbc1/adomingues/projects/general_usage_scripts/signature.py",
 		"/home/adomingu/imbc1/adomingues/projects/ziwi_zili_ip_tdrkh_elke/scripts/plotAlignmentLength.R",
-		"/home/adomingu/imbc1/adomingues/projects/ziwi_zili_ip_tdrkh_elke/scripts/mappingSEbowtieUnique.sh",
 		"/home/adomingu/scratch/projects/ziwi_zili_ip_tdrkh_elke/results/piRNA_3end/.Rhistory",
 		"/home/adomingu/scratch/projects/ziwi_zili_ip_tdrkh_elke/results/piRNA_3end/fabio.antonio.bed",
 		"/home/adomingu/scratch/projects/ziwi_zili_ip_tdrkh_elke/results/piRNA_3end/test2.bed",
@@ -767,13 +797,11 @@
 		"/home/adomingu/imbc1/adomingues/projects/bpipe_all/scripts/trim_and_QC_test.groovy",
 		"/home/adomingu/imbc1/adomingues/projects/bpipe_all/scripts/piRNAs_pipeline.txt",
 		"/home/adomingu/imbc1/adomingues/projects/general_usage_scripts/convertSam2Bam.sh",
-		"/home/adomingu/imbc1/adomingues/projects/bpipe_all/scripts/trim_and_QC_smRNA-seq_saxe.groovy",
 		"/home/adomingu/imbc1/adomingues/projects/bpipe_all/doc/bpipe_all.md",
 		"/home/adomingu/imbc1/adomingues/projects/general_usage_scripts/smRtools.py",
 		"/home/adomingu/imbc1/adomingues/projects/general_usage_scripts/prototypePingPong.sh",
 		"/home/adomingu/imbc1/adomingues/projects/general_usage_scripts/separateStrandsBam.sh",
 		"/home/adomingu/imbc1/adomingues/projects/general_usage_scripts/downloadAllSRA.sh",
-		"/home/adomingu/imbc1/adomingues/projects/general_usage_scripts/mappingEfficiencyBowtie1.sh",
 		"/home/adomingu/imbc1/adomingues/projects/ziwi_zili_ip_tdrkh_elke/scripts/Vasa-GFP_profile_length.Rmd",
 		"/home/adomingu/R/x86_64-pc-linux-gnu-library/3.2/BH/include/boost/math/special_functions/spherical_harmonic.hpp",
 		"/home/adomingu/imbc1/adomingues/projects/holger_piRNA_motifs/doc/holger_piRNA_motifs.md",
@@ -782,7 +810,6 @@
 		"/home/adomingu/imbc1/adomingues/projects/ziwi_zili_ip_tdrkh_elke/scripts/countReadsInTranscripts.sh",
 		"/home/adomingu/imbc1/adomingues/projects/walter_circular_rna/doc/walter_circular_rna.md",
 		"/home/adomingu/imbc1/adomingues/projects/general_usage_scripts/plot_mapped_reads.R",
-		"/home/adomingu/imbc1/adomingues/projects/general_usage_scripts/CountMappedReads.r",
 		"/home/adomingu/imbc1/adomingues/projects/general_usage_scripts/addReadGroups.sh",
 		"/home/adomingu/imbc1/adomingues/projects/Ziwi-IP_stephan/scripts/smRNA_profile_length.Rmd",
 		"/home/adomingu/scratch/projects/ziwi_zili_ip_tdrkh_elke/results/piRNA_quantification/readlength.txt",
@@ -824,10 +851,7 @@
 		"/home/adomingu/imbc1/adomingues/projects/svetlana_fusKD/scripts/bamCorrelateWrapper.sh",
 		"/home/adomingu/imbc1/adomingues/projects/svetlana_fusKD/scripts/summaryAndComparisonRNAseqMassSpec.Rmd",
 		"/home/adomingu/imbc1/adomingues/projects/svetlana_fusKD/scripts/degDESeq2.Rmd",
-		"/home/adomingu/imbc1/adomingues/projects/svetlana_fusKD/scripts/RNA-SeQC_wrapper.sh",
-		"/home/adomingu/Documents/projects/P381_ayelet/doc/P381_ayelet.tex",
-		"/home/adomingu/imbc1/adomingues/projects/svetlana_fusKD/results/DEG/deseq2/degDESeq2.md",
-		"/home/adomingu/imbc1/adomingues/projects/svetlana_fusKD/scripts/tophat_mapping.sh"
+		"/home/adomingu/imbc1/adomingues/projects/svetlana_fusKD/scripts/RNA-SeQC_wrapper.sh"
 	],
 	"find":
 	{
@@ -835,7 +859,7 @@
 	},
 	"find_in_files":
 	{
-		"height": 93.0,
+		"height": 0.0,
 		"where_history":
 		[
 			"*,<open files>,/home/adomingu/imbc1/adomingues/projects/NGSpipe2go/modules",
@@ -902,6 +926,18 @@
 		"case_sensitive": false,
 		"find_history":
 		[
+			"ngs",
+			"Type",
+			"reads",
+			"Reads",
+			"Type",
+			"Mapped Reads",
+			" Reads",
+			"dataset",
+			"stats",
+			"internal",
+			"mapping_summary",
+			"project",
 			"REMOVE_DUP_OUTDIR",
 			"rsyn",
 			"prefix",
@@ -1017,19 +1053,7 @@
 			"lendis",
 			"_gene",
 			"split",
-			"protein coding genes",
-			"exon",
-			"100",
-			"filter",
-			"smRNA_profile_length_saxe.Rmd",
-			"intersectBed",
-			"convert",
-			"label",
-			"NucleotideDistributionOnPiRNA",
-			"excluding_res",
-			"signature",
-			"3end_lengthening",
-			"free"
+			"protein coding genes"
 		],
 		"highlight": true,
 		"in_selection": false,
@@ -1072,7 +1096,7 @@
 	"groups":
 	[
 		{
-			"selected": 3,
+			"selected": 6,
 			"sheets":
 			[
 				{
@@ -1080,15 +1104,15 @@
 					"file": "/home/adomingu/imbc1/adomingues/projects/notebook/doc/notebook.md",
 					"settings":
 					{
-						"buffer_size": 31283,
+						"buffer_size": 31841,
 						"regions":
 						{
 						},
 						"selection":
 						[
 							[
-								0,
-								0
+								22421,
+								22421
 							]
 						],
 						"settings":
@@ -1234,341 +1258,13 @@
 							"syntax": "Packages/AcademicMarkdown/AcademicMarkdown.tmLanguage"
 						},
 						"translation.x": 0.0,
-						"translation.y": 1410.0,
+						"translation.y": 11532.0,
 						"zoom_level": 1.0
 					},
 					"type": "text"
 				},
 				{
 					"buffer": 1,
-					"file": "pipelines/SmallRNAseq/smallrnaseq_v0.1.txt",
-					"settings":
-					{
-						"buffer_size": 1083,
-						"regions":
-						{
-						},
-						"selection":
-						[
-							[
-								1065,
-								1065
-							]
-						],
-						"settings":
-						{
-							"BracketHighlighterBusy": false,
-							"annotations":
-							[
-								"TODO",
-								"README",
-								"FIXME"
-							],
-							"bh_regions":
-							[
-								"bh_regex",
-								"bh_regex_center",
-								"bh_regex_open",
-								"bh_regex_close",
-								"bh_double_quote",
-								"bh_double_quote_center",
-								"bh_double_quote_open",
-								"bh_double_quote_close",
-								"bh_square",
-								"bh_square_center",
-								"bh_square_open",
-								"bh_square_close",
-								"bh_angle",
-								"bh_angle_center",
-								"bh_angle_open",
-								"bh_angle_close",
-								"bh_curly",
-								"bh_curly_center",
-								"bh_curly_open",
-								"bh_curly_close",
-								"bh_c_define",
-								"bh_c_define_center",
-								"bh_c_define_open",
-								"bh_c_define_close",
-								"bh_default",
-								"bh_default_center",
-								"bh_default_open",
-								"bh_default_close",
-								"bh_unmatched",
-								"bh_unmatched_center",
-								"bh_unmatched_open",
-								"bh_unmatched_close",
-								"bh_round",
-								"bh_round_center",
-								"bh_round_open",
-								"bh_round_close",
-								"bh_tag",
-								"bh_tag_center",
-								"bh_tag_open",
-								"bh_tag_close",
-								"bh_single_quote",
-								"bh_single_quote_center",
-								"bh_single_quote_open",
-								"bh_single_quote_close"
-							],
-							"csslint_options":
-							{
-								"adjoining-classes": "warning",
-								"box-model": true,
-								"box-sizing": "warning",
-								"compatible-vendor-prefixes": "warning",
-								"display-property-grouping": true,
-								"duplicate-background-images": "warning",
-								"duplicate-properties": true,
-								"empty-rules": true,
-								"errors": true,
-								"fallback-colors": "warning",
-								"floats": "warning",
-								"font-faces": "warning",
-								"font-sizes": "warning",
-								"gradients": "warning",
-								"ids": "warning",
-								"import": "warning",
-								"important": "warning",
-								"known-properties": true,
-								"outline-none": "warning",
-								"overqualified-elements": "warning",
-								"qualified-headings": "warning",
-								"regex-selectors": "warning",
-								"rules-count": "warning",
-								"shorthand": "warning",
-								"star-property-hack": "warning",
-								"text-indent": "warning",
-								"underscore-property-hack": "warning",
-								"unique-headings": "warning",
-								"universal-selector": "warning",
-								"vendor-prefix": true,
-								"zero-units": "warning"
-							},
-							"gjslint_ignore":
-							[
-								110
-							],
-							"gjslint_options":
-							[
-							],
-							"javascript_linter": "jshint",
-							"jshint_options":
-							{
-								"browser": true,
-								"devel": true,
-								"evil": true,
-								"regexdash": true,
-								"sub": true,
-								"trailing": true,
-								"wsh": true
-							},
-							"pep8": true,
-							"pep8_ignore":
-							[
-								"E501"
-							],
-							"perl_linter": "perlcritic",
-							"pyflakes_ignore":
-							[
-							],
-							"pyflakes_ignore_import_*": true,
-							"sublimelinter": "load-save",
-							"sublimelinter_delay": 2,
-							"sublimelinter_disable":
-							[
-							],
-							"sublimelinter_executable_map":
-							{
-							},
-							"sublimelinter_fill_outlines": false,
-							"sublimelinter_gutter_marks": true,
-							"sublimelinter_gutter_marks_theme": "simple",
-							"sublimelinter_mark_style": "none",
-							"sublimelinter_notes": false,
-							"sublimelinter_objj_check_ascii": false,
-							"sublimelinter_popup_errors_on_save": false,
-							"sublimelinter_syntax_map":
-							{
-								"C++": "c",
-								"Python Django": "python",
-								"Ruby on Rails": "ruby"
-							},
-							"sublimelinter_wrap_find": true,
-							"syntax": "Packages/Groovy/Groovy.tmLanguage"
-						},
-						"translation.x": 0.0,
-						"translation.y": 0.0,
-						"zoom_level": 1.0
-					},
-					"type": "text"
-				},
-				{
-					"buffer": 2,
-					"file": "/home/adomingu/imbc1/adomingues/projects/bpipe_all/scripts/trim_and_QC_smRNA-seq_saxe.groovy",
-					"settings":
-					{
-						"buffer_size": 3033,
-						"regions":
-						{
-						},
-						"selection":
-						[
-							[
-								907,
-								907
-							]
-						],
-						"settings":
-						{
-							"BracketHighlighterBusy": false,
-							"annotations":
-							[
-								"TODO",
-								"README",
-								"FIXME"
-							],
-							"bh_regions":
-							[
-								"bh_regex",
-								"bh_regex_center",
-								"bh_regex_open",
-								"bh_regex_close",
-								"bh_double_quote",
-								"bh_double_quote_center",
-								"bh_double_quote_open",
-								"bh_double_quote_close",
-								"bh_square",
-								"bh_square_center",
-								"bh_square_open",
-								"bh_square_close",
-								"bh_angle",
-								"bh_angle_center",
-								"bh_angle_open",
-								"bh_angle_close",
-								"bh_curly",
-								"bh_curly_center",
-								"bh_curly_open",
-								"bh_curly_close",
-								"bh_c_define",
-								"bh_c_define_center",
-								"bh_c_define_open",
-								"bh_c_define_close",
-								"bh_default",
-								"bh_default_center",
-								"bh_default_open",
-								"bh_default_close",
-								"bh_unmatched",
-								"bh_unmatched_center",
-								"bh_unmatched_open",
-								"bh_unmatched_close",
-								"bh_round",
-								"bh_round_center",
-								"bh_round_open",
-								"bh_round_close",
-								"bh_tag",
-								"bh_tag_center",
-								"bh_tag_open",
-								"bh_tag_close",
-								"bh_single_quote",
-								"bh_single_quote_center",
-								"bh_single_quote_open",
-								"bh_single_quote_close"
-							],
-							"csslint_options":
-							{
-								"adjoining-classes": "warning",
-								"box-model": true,
-								"box-sizing": "warning",
-								"compatible-vendor-prefixes": "warning",
-								"display-property-grouping": true,
-								"duplicate-background-images": "warning",
-								"duplicate-properties": true,
-								"empty-rules": true,
-								"errors": true,
-								"fallback-colors": "warning",
-								"floats": "warning",
-								"font-faces": "warning",
-								"font-sizes": "warning",
-								"gradients": "warning",
-								"ids": "warning",
-								"import": "warning",
-								"important": "warning",
-								"known-properties": true,
-								"outline-none": "warning",
-								"overqualified-elements": "warning",
-								"qualified-headings": "warning",
-								"regex-selectors": "warning",
-								"rules-count": "warning",
-								"shorthand": "warning",
-								"star-property-hack": "warning",
-								"text-indent": "warning",
-								"underscore-property-hack": "warning",
-								"unique-headings": "warning",
-								"universal-selector": "warning",
-								"vendor-prefix": true,
-								"zero-units": "warning"
-							},
-							"gjslint_ignore":
-							[
-								110
-							],
-							"gjslint_options":
-							[
-							],
-							"javascript_linter": "jshint",
-							"jshint_options":
-							{
-								"browser": true,
-								"devel": true,
-								"evil": true,
-								"regexdash": true,
-								"sub": true,
-								"trailing": true,
-								"wsh": true
-							},
-							"pep8": true,
-							"pep8_ignore":
-							[
-								"E501"
-							],
-							"perl_linter": "perlcritic",
-							"pyflakes_ignore":
-							[
-							],
-							"pyflakes_ignore_import_*": true,
-							"sublimelinter": "load-save",
-							"sublimelinter_delay": 2,
-							"sublimelinter_disable":
-							[
-							],
-							"sublimelinter_executable_map":
-							{
-							},
-							"sublimelinter_fill_outlines": false,
-							"sublimelinter_gutter_marks": true,
-							"sublimelinter_gutter_marks_theme": "simple",
-							"sublimelinter_mark_style": "none",
-							"sublimelinter_notes": false,
-							"sublimelinter_objj_check_ascii": false,
-							"sublimelinter_popup_errors_on_save": false,
-							"sublimelinter_syntax_map":
-							{
-								"C++": "c",
-								"Python Django": "python",
-								"Ruby on Rails": "ruby"
-							},
-							"sublimelinter_wrap_find": true,
-							"syntax": "Packages/Groovy/Groovy.tmLanguage"
-						},
-						"translation.x": 0.0,
-						"translation.y": 851.0,
-						"zoom_level": 1.0
-					},
-					"type": "text"
-				},
-				{
-					"buffer": 3,
 					"file": "/home/adomingu/imbc1/adomingues/projects/ziwi_zili_ip_tdrkh_elke/scripts/mappingSEbowtieUnique.sh",
 					"settings":
 					{
@@ -1579,8 +1275,8 @@
 						"selection":
 						[
 							[
-								593,
-								593
+								508,
+								508
 							]
 						],
 						"settings":
@@ -1726,7 +1422,339 @@
 							"syntax": "Packages/ShellScript/Shell-Unix-Generic.tmLanguage"
 						},
 						"translation.x": 0.0,
-						"translation.y": 153.0,
+						"translation.y": 51.0,
+						"zoom_level": 1.0
+					},
+					"type": "text"
+				},
+				{
+					"buffer": 2,
+					"file": "pipelines/SmallRNAseq/smallrnaseq_v0.1.txt",
+					"settings":
+					{
+						"buffer_size": 1301,
+						"regions":
+						{
+						},
+						"selection":
+						[
+							[
+								1002,
+								1002
+							],
+							[
+								1064,
+								1064
+							]
+						],
+						"settings":
+						{
+							"BracketHighlighterBusy": false,
+							"annotations":
+							[
+								"TODO",
+								"README",
+								"FIXME"
+							],
+							"bh_regions":
+							[
+								"bh_regex",
+								"bh_regex_center",
+								"bh_regex_open",
+								"bh_regex_close",
+								"bh_double_quote",
+								"bh_double_quote_center",
+								"bh_double_quote_open",
+								"bh_double_quote_close",
+								"bh_square",
+								"bh_square_center",
+								"bh_square_open",
+								"bh_square_close",
+								"bh_angle",
+								"bh_angle_center",
+								"bh_angle_open",
+								"bh_angle_close",
+								"bh_curly",
+								"bh_curly_center",
+								"bh_curly_open",
+								"bh_curly_close",
+								"bh_c_define",
+								"bh_c_define_center",
+								"bh_c_define_open",
+								"bh_c_define_close",
+								"bh_default",
+								"bh_default_center",
+								"bh_default_open",
+								"bh_default_close",
+								"bh_unmatched",
+								"bh_unmatched_center",
+								"bh_unmatched_open",
+								"bh_unmatched_close",
+								"bh_round",
+								"bh_round_center",
+								"bh_round_open",
+								"bh_round_close",
+								"bh_tag",
+								"bh_tag_center",
+								"bh_tag_open",
+								"bh_tag_close",
+								"bh_single_quote",
+								"bh_single_quote_center",
+								"bh_single_quote_open",
+								"bh_single_quote_close"
+							],
+							"csslint_options":
+							{
+								"adjoining-classes": "warning",
+								"box-model": true,
+								"box-sizing": "warning",
+								"compatible-vendor-prefixes": "warning",
+								"display-property-grouping": true,
+								"duplicate-background-images": "warning",
+								"duplicate-properties": true,
+								"empty-rules": true,
+								"errors": true,
+								"fallback-colors": "warning",
+								"floats": "warning",
+								"font-faces": "warning",
+								"font-sizes": "warning",
+								"gradients": "warning",
+								"ids": "warning",
+								"import": "warning",
+								"important": "warning",
+								"known-properties": true,
+								"outline-none": "warning",
+								"overqualified-elements": "warning",
+								"qualified-headings": "warning",
+								"regex-selectors": "warning",
+								"rules-count": "warning",
+								"shorthand": "warning",
+								"star-property-hack": "warning",
+								"text-indent": "warning",
+								"underscore-property-hack": "warning",
+								"unique-headings": "warning",
+								"universal-selector": "warning",
+								"vendor-prefix": true,
+								"zero-units": "warning"
+							},
+							"gjslint_ignore":
+							[
+								110
+							],
+							"gjslint_options":
+							[
+							],
+							"javascript_linter": "jshint",
+							"jshint_options":
+							{
+								"browser": true,
+								"devel": true,
+								"evil": true,
+								"regexdash": true,
+								"sub": true,
+								"trailing": true,
+								"wsh": true
+							},
+							"pep8": true,
+							"pep8_ignore":
+							[
+								"E501"
+							],
+							"perl_linter": "perlcritic",
+							"pyflakes_ignore":
+							[
+							],
+							"pyflakes_ignore_import_*": true,
+							"sublimelinter": "load-save",
+							"sublimelinter_delay": 2,
+							"sublimelinter_disable":
+							[
+							],
+							"sublimelinter_executable_map":
+							{
+							},
+							"sublimelinter_fill_outlines": false,
+							"sublimelinter_gutter_marks": true,
+							"sublimelinter_gutter_marks_theme": "simple",
+							"sublimelinter_mark_style": "none",
+							"sublimelinter_notes": false,
+							"sublimelinter_objj_check_ascii": false,
+							"sublimelinter_popup_errors_on_save": false,
+							"sublimelinter_syntax_map":
+							{
+								"C++": "c",
+								"Python Django": "python",
+								"Ruby on Rails": "ruby"
+							},
+							"sublimelinter_wrap_find": true,
+							"syntax": "Packages/Groovy/Groovy.tmLanguage"
+						},
+						"translation.x": 0.0,
+						"translation.y": 0.0,
+						"zoom_level": 1.0
+					},
+					"type": "text"
+				},
+				{
+					"buffer": 3,
+					"file": "pipelines/ChIPseq/chipseq_v1.2.txt",
+					"settings":
+					{
+						"buffer_size": 1568,
+						"regions":
+						{
+						},
+						"selection":
+						[
+							[
+								392,
+								392
+							]
+						],
+						"settings":
+						{
+							"BracketHighlighterBusy": false,
+							"annotations":
+							[
+								"TODO",
+								"README",
+								"FIXME"
+							],
+							"bh_regions":
+							[
+								"bh_regex",
+								"bh_regex_center",
+								"bh_regex_open",
+								"bh_regex_close",
+								"bh_double_quote",
+								"bh_double_quote_center",
+								"bh_double_quote_open",
+								"bh_double_quote_close",
+								"bh_square",
+								"bh_square_center",
+								"bh_square_open",
+								"bh_square_close",
+								"bh_angle",
+								"bh_angle_center",
+								"bh_angle_open",
+								"bh_angle_close",
+								"bh_curly",
+								"bh_curly_center",
+								"bh_curly_open",
+								"bh_curly_close",
+								"bh_c_define",
+								"bh_c_define_center",
+								"bh_c_define_open",
+								"bh_c_define_close",
+								"bh_default",
+								"bh_default_center",
+								"bh_default_open",
+								"bh_default_close",
+								"bh_unmatched",
+								"bh_unmatched_center",
+								"bh_unmatched_open",
+								"bh_unmatched_close",
+								"bh_round",
+								"bh_round_center",
+								"bh_round_open",
+								"bh_round_close",
+								"bh_tag",
+								"bh_tag_center",
+								"bh_tag_open",
+								"bh_tag_close",
+								"bh_single_quote",
+								"bh_single_quote_center",
+								"bh_single_quote_open",
+								"bh_single_quote_close"
+							],
+							"csslint_options":
+							{
+								"adjoining-classes": "warning",
+								"box-model": true,
+								"box-sizing": "warning",
+								"compatible-vendor-prefixes": "warning",
+								"display-property-grouping": true,
+								"duplicate-background-images": "warning",
+								"duplicate-properties": true,
+								"empty-rules": true,
+								"errors": true,
+								"fallback-colors": "warning",
+								"floats": "warning",
+								"font-faces": "warning",
+								"font-sizes": "warning",
+								"gradients": "warning",
+								"ids": "warning",
+								"import": "warning",
+								"important": "warning",
+								"known-properties": true,
+								"outline-none": "warning",
+								"overqualified-elements": "warning",
+								"qualified-headings": "warning",
+								"regex-selectors": "warning",
+								"rules-count": "warning",
+								"shorthand": "warning",
+								"star-property-hack": "warning",
+								"text-indent": "warning",
+								"underscore-property-hack": "warning",
+								"unique-headings": "warning",
+								"universal-selector": "warning",
+								"vendor-prefix": true,
+								"zero-units": "warning"
+							},
+							"gjslint_ignore":
+							[
+								110
+							],
+							"gjslint_options":
+							[
+							],
+							"javascript_linter": "jshint",
+							"jshint_options":
+							{
+								"browser": true,
+								"devel": true,
+								"evil": true,
+								"regexdash": true,
+								"sub": true,
+								"trailing": true,
+								"wsh": true
+							},
+							"pep8": true,
+							"pep8_ignore":
+							[
+								"E501"
+							],
+							"perl_linter": "perlcritic",
+							"pyflakes_ignore":
+							[
+							],
+							"pyflakes_ignore_import_*": true,
+							"sublimelinter": "load-save",
+							"sublimelinter_delay": 2,
+							"sublimelinter_disable":
+							[
+							],
+							"sublimelinter_executable_map":
+							{
+							},
+							"sublimelinter_fill_outlines": false,
+							"sublimelinter_gutter_marks": true,
+							"sublimelinter_gutter_marks_theme": "simple",
+							"sublimelinter_mark_style": "none",
+							"sublimelinter_notes": false,
+							"sublimelinter_objj_check_ascii": false,
+							"sublimelinter_popup_errors_on_save": false,
+							"sublimelinter_syntax_map":
+							{
+								"C++": "c",
+								"Python Django": "python",
+								"Ruby on Rails": "ruby"
+							},
+							"sublimelinter_wrap_find": true,
+							"syntax": "Packages/Groovy/Groovy.tmLanguage"
+						},
+						"translation.x": 0.0,
+						"translation.y": 0.0,
 						"zoom_level": 1.0
 					},
 					"type": "text"
@@ -1737,340 +1765,6 @@
 					"settings":
 					{
 						"buffer_size": 798,
-						"regions":
-						{
-						},
-						"selection":
-						[
-							[
-								468,
-								468
-							]
-						],
-						"settings":
-						{
-							"BracketHighlighterBusy": false,
-							"annotations":
-							[
-								"TODO",
-								"README",
-								"FIXME"
-							],
-							"bh_regions":
-							[
-								"bh_regex",
-								"bh_regex_center",
-								"bh_regex_open",
-								"bh_regex_close",
-								"bh_double_quote",
-								"bh_double_quote_center",
-								"bh_double_quote_open",
-								"bh_double_quote_close",
-								"bh_square",
-								"bh_square_center",
-								"bh_square_open",
-								"bh_square_close",
-								"bh_angle",
-								"bh_angle_center",
-								"bh_angle_open",
-								"bh_angle_close",
-								"bh_curly",
-								"bh_curly_center",
-								"bh_curly_open",
-								"bh_curly_close",
-								"bh_c_define",
-								"bh_c_define_center",
-								"bh_c_define_open",
-								"bh_c_define_close",
-								"bh_default",
-								"bh_default_center",
-								"bh_default_open",
-								"bh_default_close",
-								"bh_unmatched",
-								"bh_unmatched_center",
-								"bh_unmatched_open",
-								"bh_unmatched_close",
-								"bh_round",
-								"bh_round_center",
-								"bh_round_open",
-								"bh_round_close",
-								"bh_tag",
-								"bh_tag_center",
-								"bh_tag_open",
-								"bh_tag_close",
-								"bh_single_quote",
-								"bh_single_quote_center",
-								"bh_single_quote_open",
-								"bh_single_quote_close"
-							],
-							"csslint_options":
-							{
-								"adjoining-classes": "warning",
-								"box-model": true,
-								"box-sizing": "warning",
-								"compatible-vendor-prefixes": "warning",
-								"display-property-grouping": true,
-								"duplicate-background-images": "warning",
-								"duplicate-properties": true,
-								"empty-rules": true,
-								"errors": true,
-								"fallback-colors": "warning",
-								"floats": "warning",
-								"font-faces": "warning",
-								"font-sizes": "warning",
-								"gradients": "warning",
-								"ids": "warning",
-								"import": "warning",
-								"important": "warning",
-								"known-properties": true,
-								"outline-none": "warning",
-								"overqualified-elements": "warning",
-								"qualified-headings": "warning",
-								"regex-selectors": "warning",
-								"rules-count": "warning",
-								"shorthand": "warning",
-								"star-property-hack": "warning",
-								"text-indent": "warning",
-								"underscore-property-hack": "warning",
-								"unique-headings": "warning",
-								"universal-selector": "warning",
-								"vendor-prefix": true,
-								"zero-units": "warning"
-							},
-							"gjslint_ignore":
-							[
-								110
-							],
-							"gjslint_options":
-							[
-							],
-							"javascript_linter": "jshint",
-							"jshint_options":
-							{
-								"browser": true,
-								"devel": true,
-								"evil": true,
-								"regexdash": true,
-								"sub": true,
-								"trailing": true,
-								"wsh": true
-							},
-							"pep8": true,
-							"pep8_ignore":
-							[
-								"E501"
-							],
-							"perl_linter": "perlcritic",
-							"pyflakes_ignore":
-							[
-							],
-							"pyflakes_ignore_import_*": true,
-							"sublimelinter": "load-save",
-							"sublimelinter_delay": 2,
-							"sublimelinter_disable":
-							[
-							],
-							"sublimelinter_executable_map":
-							{
-							},
-							"sublimelinter_fill_outlines": false,
-							"sublimelinter_gutter_marks": true,
-							"sublimelinter_gutter_marks_theme": "simple",
-							"sublimelinter_mark_style": "none",
-							"sublimelinter_notes": false,
-							"sublimelinter_objj_check_ascii": false,
-							"sublimelinter_popup_errors_on_save": false,
-							"sublimelinter_syntax_map":
-							{
-								"C++": "c",
-								"Python Django": "python",
-								"Ruby on Rails": "ruby"
-							},
-							"sublimelinter_wrap_find": true,
-							"syntax": "Packages/Groovy/Groovy.tmLanguage"
-						},
-						"translation.x": 0.0,
-						"translation.y": 0.0,
-						"zoom_level": 1.0
-					},
-					"type": "text"
-				},
-				{
-					"buffer": 5,
-					"file": "modules/SmallRNAseq/dedup.vars.groovy",
-					"settings":
-					{
-						"buffer_size": 227,
-						"regions":
-						{
-						},
-						"selection":
-						[
-							[
-								227,
-								227
-							]
-						],
-						"settings":
-						{
-							"BracketHighlighterBusy": false,
-							"annotations":
-							[
-								"TODO",
-								"README",
-								"FIXME"
-							],
-							"bh_regions":
-							[
-								"bh_regex",
-								"bh_regex_center",
-								"bh_regex_open",
-								"bh_regex_close",
-								"bh_double_quote",
-								"bh_double_quote_center",
-								"bh_double_quote_open",
-								"bh_double_quote_close",
-								"bh_square",
-								"bh_square_center",
-								"bh_square_open",
-								"bh_square_close",
-								"bh_angle",
-								"bh_angle_center",
-								"bh_angle_open",
-								"bh_angle_close",
-								"bh_curly",
-								"bh_curly_center",
-								"bh_curly_open",
-								"bh_curly_close",
-								"bh_c_define",
-								"bh_c_define_center",
-								"bh_c_define_open",
-								"bh_c_define_close",
-								"bh_default",
-								"bh_default_center",
-								"bh_default_open",
-								"bh_default_close",
-								"bh_unmatched",
-								"bh_unmatched_center",
-								"bh_unmatched_open",
-								"bh_unmatched_close",
-								"bh_round",
-								"bh_round_center",
-								"bh_round_open",
-								"bh_round_close",
-								"bh_tag",
-								"bh_tag_center",
-								"bh_tag_open",
-								"bh_tag_close",
-								"bh_single_quote",
-								"bh_single_quote_center",
-								"bh_single_quote_open",
-								"bh_single_quote_close"
-							],
-							"csslint_options":
-							{
-								"adjoining-classes": "warning",
-								"box-model": true,
-								"box-sizing": "warning",
-								"compatible-vendor-prefixes": "warning",
-								"display-property-grouping": true,
-								"duplicate-background-images": "warning",
-								"duplicate-properties": true,
-								"empty-rules": true,
-								"errors": true,
-								"fallback-colors": "warning",
-								"floats": "warning",
-								"font-faces": "warning",
-								"font-sizes": "warning",
-								"gradients": "warning",
-								"ids": "warning",
-								"import": "warning",
-								"important": "warning",
-								"known-properties": true,
-								"outline-none": "warning",
-								"overqualified-elements": "warning",
-								"qualified-headings": "warning",
-								"regex-selectors": "warning",
-								"rules-count": "warning",
-								"shorthand": "warning",
-								"star-property-hack": "warning",
-								"text-indent": "warning",
-								"underscore-property-hack": "warning",
-								"unique-headings": "warning",
-								"universal-selector": "warning",
-								"vendor-prefix": true,
-								"zero-units": "warning"
-							},
-							"gjslint_ignore":
-							[
-								110
-							],
-							"gjslint_options":
-							[
-							],
-							"javascript_linter": "jshint",
-							"jshint_options":
-							{
-								"browser": true,
-								"devel": true,
-								"evil": true,
-								"regexdash": true,
-								"sub": true,
-								"trailing": true,
-								"wsh": true
-							},
-							"pep8": true,
-							"pep8_ignore":
-							[
-								"E501"
-							],
-							"perl_linter": "perlcritic",
-							"pyflakes_ignore":
-							[
-							],
-							"pyflakes_ignore_import_*": true,
-							"sublimelinter": "load-save",
-							"sublimelinter_delay": 2,
-							"sublimelinter_disable":
-							[
-							],
-							"sublimelinter_executable_map":
-							{
-							},
-							"sublimelinter_fill_outlines": false,
-							"sublimelinter_gutter_marks": true,
-							"sublimelinter_gutter_marks_theme": "simple",
-							"sublimelinter_mark_style": "none",
-							"sublimelinter_notes": false,
-							"sublimelinter_objj_check_ascii": false,
-							"sublimelinter_popup_errors_on_save": false,
-							"sublimelinter_syntax_map":
-							{
-								"C++": "c",
-								"Python Django": "python",
-								"Ruby on Rails": "ruby"
-							},
-							"sublimelinter_wrap_find": true,
-							"syntax": "Packages/Groovy/Groovy.tmLanguage"
-						},
-						"translation.x": 0.0,
-						"translation.y": 0.0,
-						"zoom_level": 1.0
-					},
-					"type": "text"
-				}
-			]
-		},
-		{
-			"selected": 4,
-			"sheets":
-			[
-				{
-					"buffer": 6,
-					"file": "modules/SmallRNAseq/cutadapt.module.groovy",
-					"settings":
-					{
-						"buffer_size": 753,
 						"regions":
 						{
 						},
@@ -2230,19 +1924,353 @@
 					"type": "text"
 				},
 				{
-					"buffer": 7,
-					"file": "modules/SmallRNAseq/fastq_quality_filter.module.groovy",
+					"buffer": 5,
+					"file": "modules/SmallRNAseq/maping_stats.vars.groovy",
 					"settings":
 					{
-						"buffer_size": 934,
+						"buffer_size": 224,
 						"regions":
 						{
 						},
 						"selection":
 						[
 							[
-								704,
-								704
+								224,
+								224
+							]
+						],
+						"settings":
+						{
+							"BracketHighlighterBusy": false,
+							"annotations":
+							[
+								"TODO",
+								"README",
+								"FIXME"
+							],
+							"bh_regions":
+							[
+								"bh_regex",
+								"bh_regex_center",
+								"bh_regex_open",
+								"bh_regex_close",
+								"bh_double_quote",
+								"bh_double_quote_center",
+								"bh_double_quote_open",
+								"bh_double_quote_close",
+								"bh_square",
+								"bh_square_center",
+								"bh_square_open",
+								"bh_square_close",
+								"bh_angle",
+								"bh_angle_center",
+								"bh_angle_open",
+								"bh_angle_close",
+								"bh_curly",
+								"bh_curly_center",
+								"bh_curly_open",
+								"bh_curly_close",
+								"bh_c_define",
+								"bh_c_define_center",
+								"bh_c_define_open",
+								"bh_c_define_close",
+								"bh_default",
+								"bh_default_center",
+								"bh_default_open",
+								"bh_default_close",
+								"bh_unmatched",
+								"bh_unmatched_center",
+								"bh_unmatched_open",
+								"bh_unmatched_close",
+								"bh_round",
+								"bh_round_center",
+								"bh_round_open",
+								"bh_round_close",
+								"bh_tag",
+								"bh_tag_center",
+								"bh_tag_open",
+								"bh_tag_close",
+								"bh_single_quote",
+								"bh_single_quote_center",
+								"bh_single_quote_open",
+								"bh_single_quote_close"
+							],
+							"csslint_options":
+							{
+								"adjoining-classes": "warning",
+								"box-model": true,
+								"box-sizing": "warning",
+								"compatible-vendor-prefixes": "warning",
+								"display-property-grouping": true,
+								"duplicate-background-images": "warning",
+								"duplicate-properties": true,
+								"empty-rules": true,
+								"errors": true,
+								"fallback-colors": "warning",
+								"floats": "warning",
+								"font-faces": "warning",
+								"font-sizes": "warning",
+								"gradients": "warning",
+								"ids": "warning",
+								"import": "warning",
+								"important": "warning",
+								"known-properties": true,
+								"outline-none": "warning",
+								"overqualified-elements": "warning",
+								"qualified-headings": "warning",
+								"regex-selectors": "warning",
+								"rules-count": "warning",
+								"shorthand": "warning",
+								"star-property-hack": "warning",
+								"text-indent": "warning",
+								"underscore-property-hack": "warning",
+								"unique-headings": "warning",
+								"universal-selector": "warning",
+								"vendor-prefix": true,
+								"zero-units": "warning"
+							},
+							"gjslint_ignore":
+							[
+								110
+							],
+							"gjslint_options":
+							[
+							],
+							"javascript_linter": "jshint",
+							"jshint_options":
+							{
+								"browser": true,
+								"devel": true,
+								"evil": true,
+								"regexdash": true,
+								"sub": true,
+								"trailing": true,
+								"wsh": true
+							},
+							"pep8": true,
+							"pep8_ignore":
+							[
+								"E501"
+							],
+							"perl_linter": "perlcritic",
+							"pyflakes_ignore":
+							[
+							],
+							"pyflakes_ignore_import_*": true,
+							"sublimelinter": "load-save",
+							"sublimelinter_delay": 2,
+							"sublimelinter_disable":
+							[
+							],
+							"sublimelinter_executable_map":
+							{
+							},
+							"sublimelinter_fill_outlines": false,
+							"sublimelinter_gutter_marks": true,
+							"sublimelinter_gutter_marks_theme": "simple",
+							"sublimelinter_mark_style": "none",
+							"sublimelinter_notes": false,
+							"sublimelinter_objj_check_ascii": false,
+							"sublimelinter_popup_errors_on_save": false,
+							"sublimelinter_syntax_map":
+							{
+								"C++": "c",
+								"Python Django": "python",
+								"Ruby on Rails": "ruby"
+							},
+							"sublimelinter_wrap_find": true,
+							"syntax": "Packages/Groovy/Groovy.tmLanguage"
+						},
+						"translation.x": 0.0,
+						"translation.y": 0.0,
+						"zoom_level": 1.0
+					},
+					"type": "text"
+				},
+				{
+					"buffer": 6,
+					"file": "modules/SmallRNAseq/dedup.vars.groovy",
+					"settings":
+					{
+						"buffer_size": 227,
+						"regions":
+						{
+						},
+						"selection":
+						[
+							[
+								196,
+								196
+							]
+						],
+						"settings":
+						{
+							"BracketHighlighterBusy": false,
+							"annotations":
+							[
+								"TODO",
+								"README",
+								"FIXME"
+							],
+							"bh_regions":
+							[
+								"bh_regex",
+								"bh_regex_center",
+								"bh_regex_open",
+								"bh_regex_close",
+								"bh_double_quote",
+								"bh_double_quote_center",
+								"bh_double_quote_open",
+								"bh_double_quote_close",
+								"bh_square",
+								"bh_square_center",
+								"bh_square_open",
+								"bh_square_close",
+								"bh_angle",
+								"bh_angle_center",
+								"bh_angle_open",
+								"bh_angle_close",
+								"bh_curly",
+								"bh_curly_center",
+								"bh_curly_open",
+								"bh_curly_close",
+								"bh_c_define",
+								"bh_c_define_center",
+								"bh_c_define_open",
+								"bh_c_define_close",
+								"bh_default",
+								"bh_default_center",
+								"bh_default_open",
+								"bh_default_close",
+								"bh_unmatched",
+								"bh_unmatched_center",
+								"bh_unmatched_open",
+								"bh_unmatched_close",
+								"bh_round",
+								"bh_round_center",
+								"bh_round_open",
+								"bh_round_close",
+								"bh_tag",
+								"bh_tag_center",
+								"bh_tag_open",
+								"bh_tag_close",
+								"bh_single_quote",
+								"bh_single_quote_center",
+								"bh_single_quote_open",
+								"bh_single_quote_close"
+							],
+							"csslint_options":
+							{
+								"adjoining-classes": "warning",
+								"box-model": true,
+								"box-sizing": "warning",
+								"compatible-vendor-prefixes": "warning",
+								"display-property-grouping": true,
+								"duplicate-background-images": "warning",
+								"duplicate-properties": true,
+								"empty-rules": true,
+								"errors": true,
+								"fallback-colors": "warning",
+								"floats": "warning",
+								"font-faces": "warning",
+								"font-sizes": "warning",
+								"gradients": "warning",
+								"ids": "warning",
+								"import": "warning",
+								"important": "warning",
+								"known-properties": true,
+								"outline-none": "warning",
+								"overqualified-elements": "warning",
+								"qualified-headings": "warning",
+								"regex-selectors": "warning",
+								"rules-count": "warning",
+								"shorthand": "warning",
+								"star-property-hack": "warning",
+								"text-indent": "warning",
+								"underscore-property-hack": "warning",
+								"unique-headings": "warning",
+								"universal-selector": "warning",
+								"vendor-prefix": true,
+								"zero-units": "warning"
+							},
+							"gjslint_ignore":
+							[
+								110
+							],
+							"gjslint_options":
+							[
+							],
+							"javascript_linter": "jshint",
+							"jshint_options":
+							{
+								"browser": true,
+								"devel": true,
+								"evil": true,
+								"regexdash": true,
+								"sub": true,
+								"trailing": true,
+								"wsh": true
+							},
+							"pep8": true,
+							"pep8_ignore":
+							[
+								"E501"
+							],
+							"perl_linter": "perlcritic",
+							"pyflakes_ignore":
+							[
+							],
+							"pyflakes_ignore_import_*": true,
+							"sublimelinter": "load-save",
+							"sublimelinter_delay": 2,
+							"sublimelinter_disable":
+							[
+							],
+							"sublimelinter_executable_map":
+							{
+							},
+							"sublimelinter_fill_outlines": false,
+							"sublimelinter_gutter_marks": true,
+							"sublimelinter_gutter_marks_theme": "simple",
+							"sublimelinter_mark_style": "none",
+							"sublimelinter_notes": false,
+							"sublimelinter_objj_check_ascii": false,
+							"sublimelinter_popup_errors_on_save": false,
+							"sublimelinter_syntax_map":
+							{
+								"C++": "c",
+								"Python Django": "python",
+								"Ruby on Rails": "ruby"
+							},
+							"sublimelinter_wrap_find": true,
+							"syntax": "Packages/Groovy/Groovy.tmLanguage"
+						},
+						"translation.x": 0.0,
+						"translation.y": 0.0,
+						"zoom_level": 1.0
+					},
+					"type": "text"
+				}
+			]
+		},
+		{
+			"selected": 4,
+			"sheets":
+			[
+				{
+					"buffer": 7,
+					"file": "modules/SmallRNAseq/cutadapt.module.groovy",
+					"settings":
+					{
+						"buffer_size": 784,
+						"regions":
+						{
+						},
+						"selection":
+						[
+							[
+								77,
+								77
 							]
 						],
 						"settings":
@@ -2395,18 +2423,18 @@
 				},
 				{
 					"buffer": 8,
-					"file": "modules/SmallRNAseq/removed_duplicate_sequences.module.groovy",
+					"file": "modules/SmallRNAseq/fastq_quality_filter.module.groovy",
 					"settings":
 					{
-						"buffer_size": 1343,
+						"buffer_size": 934,
 						"regions":
 						{
 						},
 						"selection":
 						[
 							[
-								710,
-								710
+								312,
+								312
 							]
 						],
 						"settings":
@@ -2559,18 +2587,182 @@
 				},
 				{
 					"buffer": 9,
-					"file": "modules/SmallRNAseq/dedup_stats.module.groovy",
+					"file": "modules/SmallRNAseq/removed_duplicate_sequences.module.groovy",
 					"settings":
 					{
-						"buffer_size": 871,
+						"buffer_size": 1343,
 						"regions":
 						{
 						},
 						"selection":
 						[
 							[
-								261,
-								261
+								807,
+								807
+							]
+						],
+						"settings":
+						{
+							"BracketHighlighterBusy": false,
+							"annotations":
+							[
+								"TODO",
+								"README",
+								"FIXME"
+							],
+							"bh_regions":
+							[
+								"bh_regex",
+								"bh_regex_center",
+								"bh_regex_open",
+								"bh_regex_close",
+								"bh_double_quote",
+								"bh_double_quote_center",
+								"bh_double_quote_open",
+								"bh_double_quote_close",
+								"bh_square",
+								"bh_square_center",
+								"bh_square_open",
+								"bh_square_close",
+								"bh_angle",
+								"bh_angle_center",
+								"bh_angle_open",
+								"bh_angle_close",
+								"bh_curly",
+								"bh_curly_center",
+								"bh_curly_open",
+								"bh_curly_close",
+								"bh_c_define",
+								"bh_c_define_center",
+								"bh_c_define_open",
+								"bh_c_define_close",
+								"bh_default",
+								"bh_default_center",
+								"bh_default_open",
+								"bh_default_close",
+								"bh_unmatched",
+								"bh_unmatched_center",
+								"bh_unmatched_open",
+								"bh_unmatched_close",
+								"bh_round",
+								"bh_round_center",
+								"bh_round_open",
+								"bh_round_close",
+								"bh_tag",
+								"bh_tag_center",
+								"bh_tag_open",
+								"bh_tag_close",
+								"bh_single_quote",
+								"bh_single_quote_center",
+								"bh_single_quote_open",
+								"bh_single_quote_close"
+							],
+							"csslint_options":
+							{
+								"adjoining-classes": "warning",
+								"box-model": true,
+								"box-sizing": "warning",
+								"compatible-vendor-prefixes": "warning",
+								"display-property-grouping": true,
+								"duplicate-background-images": "warning",
+								"duplicate-properties": true,
+								"empty-rules": true,
+								"errors": true,
+								"fallback-colors": "warning",
+								"floats": "warning",
+								"font-faces": "warning",
+								"font-sizes": "warning",
+								"gradients": "warning",
+								"ids": "warning",
+								"import": "warning",
+								"important": "warning",
+								"known-properties": true,
+								"outline-none": "warning",
+								"overqualified-elements": "warning",
+								"qualified-headings": "warning",
+								"regex-selectors": "warning",
+								"rules-count": "warning",
+								"shorthand": "warning",
+								"star-property-hack": "warning",
+								"text-indent": "warning",
+								"underscore-property-hack": "warning",
+								"unique-headings": "warning",
+								"universal-selector": "warning",
+								"vendor-prefix": true,
+								"zero-units": "warning"
+							},
+							"gjslint_ignore":
+							[
+								110
+							],
+							"gjslint_options":
+							[
+							],
+							"javascript_linter": "jshint",
+							"jshint_options":
+							{
+								"browser": true,
+								"devel": true,
+								"evil": true,
+								"regexdash": true,
+								"sub": true,
+								"trailing": true,
+								"wsh": true
+							},
+							"pep8": true,
+							"pep8_ignore":
+							[
+								"E501"
+							],
+							"perl_linter": "perlcritic",
+							"pyflakes_ignore":
+							[
+							],
+							"pyflakes_ignore_import_*": true,
+							"sublimelinter": "load-save",
+							"sublimelinter_delay": 2,
+							"sublimelinter_disable":
+							[
+							],
+							"sublimelinter_executable_map":
+							{
+							},
+							"sublimelinter_fill_outlines": false,
+							"sublimelinter_gutter_marks": true,
+							"sublimelinter_gutter_marks_theme": "simple",
+							"sublimelinter_mark_style": "none",
+							"sublimelinter_notes": false,
+							"sublimelinter_objj_check_ascii": false,
+							"sublimelinter_popup_errors_on_save": false,
+							"sublimelinter_syntax_map":
+							{
+								"C++": "c",
+								"Python Django": "python",
+								"Ruby on Rails": "ruby"
+							},
+							"sublimelinter_wrap_find": true,
+							"syntax": "Packages/Groovy/Groovy.tmLanguage"
+						},
+						"translation.x": 0.0,
+						"translation.y": 153.0,
+						"zoom_level": 1.0
+					},
+					"type": "text"
+				},
+				{
+					"buffer": 10,
+					"file": "modules/SmallRNAseq/maping_stats.module.groovy",
+					"settings":
+					{
+						"buffer_size": 829,
+						"regions":
+						{
+						},
+						"selection":
+						[
+							[
+								720,
+								720
 							]
 						],
 						"settings":
@@ -2722,19 +2914,19 @@
 					"type": "text"
 				},
 				{
-					"buffer": 10,
-					"file": "modules/SmallRNAseq/bowtie1.module.groovy",
+					"buffer": 11,
+					"file": "modules/SmallRNAseq/dedup_stats.module.groovy",
 					"settings":
 					{
-						"buffer_size": 1338,
+						"buffer_size": 827,
 						"regions":
 						{
 						},
 						"selection":
 						[
 							[
-								1291,
-								1291
+								800,
+								800
 							]
 						],
 						"settings":
@@ -2880,7 +3072,171 @@
 							"syntax": "Packages/Groovy/Groovy.tmLanguage"
 						},
 						"translation.x": 0.0,
-						"translation.y": 102.0,
+						"translation.y": 0.0,
+						"zoom_level": 1.0
+					},
+					"type": "text"
+				},
+				{
+					"buffer": 12,
+					"file": "modules/SmallRNAseq/bowtie1.module.groovy",
+					"settings":
+					{
+						"buffer_size": 1407,
+						"regions":
+						{
+						},
+						"selection":
+						[
+							[
+								389,
+								389
+							]
+						],
+						"settings":
+						{
+							"BracketHighlighterBusy": false,
+							"annotations":
+							[
+								"TODO",
+								"README",
+								"FIXME"
+							],
+							"bh_regions":
+							[
+								"bh_regex",
+								"bh_regex_center",
+								"bh_regex_open",
+								"bh_regex_close",
+								"bh_double_quote",
+								"bh_double_quote_center",
+								"bh_double_quote_open",
+								"bh_double_quote_close",
+								"bh_square",
+								"bh_square_center",
+								"bh_square_open",
+								"bh_square_close",
+								"bh_angle",
+								"bh_angle_center",
+								"bh_angle_open",
+								"bh_angle_close",
+								"bh_curly",
+								"bh_curly_center",
+								"bh_curly_open",
+								"bh_curly_close",
+								"bh_c_define",
+								"bh_c_define_center",
+								"bh_c_define_open",
+								"bh_c_define_close",
+								"bh_default",
+								"bh_default_center",
+								"bh_default_open",
+								"bh_default_close",
+								"bh_unmatched",
+								"bh_unmatched_center",
+								"bh_unmatched_open",
+								"bh_unmatched_close",
+								"bh_round",
+								"bh_round_center",
+								"bh_round_open",
+								"bh_round_close",
+								"bh_tag",
+								"bh_tag_center",
+								"bh_tag_open",
+								"bh_tag_close",
+								"bh_single_quote",
+								"bh_single_quote_center",
+								"bh_single_quote_open",
+								"bh_single_quote_close"
+							],
+							"csslint_options":
+							{
+								"adjoining-classes": "warning",
+								"box-model": true,
+								"box-sizing": "warning",
+								"compatible-vendor-prefixes": "warning",
+								"display-property-grouping": true,
+								"duplicate-background-images": "warning",
+								"duplicate-properties": true,
+								"empty-rules": true,
+								"errors": true,
+								"fallback-colors": "warning",
+								"floats": "warning",
+								"font-faces": "warning",
+								"font-sizes": "warning",
+								"gradients": "warning",
+								"ids": "warning",
+								"import": "warning",
+								"important": "warning",
+								"known-properties": true,
+								"outline-none": "warning",
+								"overqualified-elements": "warning",
+								"qualified-headings": "warning",
+								"regex-selectors": "warning",
+								"rules-count": "warning",
+								"shorthand": "warning",
+								"star-property-hack": "warning",
+								"text-indent": "warning",
+								"underscore-property-hack": "warning",
+								"unique-headings": "warning",
+								"universal-selector": "warning",
+								"vendor-prefix": true,
+								"zero-units": "warning"
+							},
+							"gjslint_ignore":
+							[
+								110
+							],
+							"gjslint_options":
+							[
+							],
+							"javascript_linter": "jshint",
+							"jshint_options":
+							{
+								"browser": true,
+								"devel": true,
+								"evil": true,
+								"regexdash": true,
+								"sub": true,
+								"trailing": true,
+								"wsh": true
+							},
+							"pep8": true,
+							"pep8_ignore":
+							[
+								"E501"
+							],
+							"perl_linter": "perlcritic",
+							"pyflakes_ignore":
+							[
+							],
+							"pyflakes_ignore_import_*": true,
+							"sublimelinter": "load-save",
+							"sublimelinter_delay": 2,
+							"sublimelinter_disable":
+							[
+							],
+							"sublimelinter_executable_map":
+							{
+							},
+							"sublimelinter_fill_outlines": false,
+							"sublimelinter_gutter_marks": true,
+							"sublimelinter_gutter_marks_theme": "simple",
+							"sublimelinter_mark_style": "none",
+							"sublimelinter_notes": false,
+							"sublimelinter_objj_check_ascii": false,
+							"sublimelinter_popup_errors_on_save": false,
+							"sublimelinter_syntax_map":
+							{
+								"C++": "c",
+								"Python Django": "python",
+								"Ruby on Rails": "ruby"
+							},
+							"sublimelinter_wrap_find": true,
+							"syntax": "Packages/Groovy/Groovy.tmLanguage"
+						},
+						"translation.x": 0.0,
+						"translation.y": 0.0,
 						"zoom_level": 1.0
 					},
 					"type": "text"
@@ -2892,7 +3248,7 @@
 			"sheets":
 			[
 				{
-					"buffer": 11,
+					"buffer": 13,
 					"file": "modules/SmallRNAseq/bowtie1.vars.groovy",
 					"settings":
 					{
@@ -2903,8 +3259,8 @@
 						"selection":
 						[
 							[
-								0,
-								0
+								33,
+								33
 							]
 						],
 						"settings":
@@ -3054,6 +3410,171 @@
 						"zoom_level": 1.0
 					},
 					"type": "text"
+				},
+				{
+					"buffer": 14,
+					"file": "tools/mapping_stats/mapping_stats_bowtie1.R",
+					"settings":
+					{
+						"buffer_size": 2392,
+						"regions":
+						{
+						},
+						"selection":
+						[
+							[
+								53,
+								53
+							]
+						],
+						"settings":
+						{
+							"BracketHighlighterBusy": false,
+							"annotations":
+							[
+								"TODO",
+								"README",
+								"FIXME"
+							],
+							"bh_regions":
+							[
+								"bh_regex",
+								"bh_regex_center",
+								"bh_regex_open",
+								"bh_regex_close",
+								"bh_double_quote",
+								"bh_double_quote_center",
+								"bh_double_quote_open",
+								"bh_double_quote_close",
+								"bh_square",
+								"bh_square_center",
+								"bh_square_open",
+								"bh_square_close",
+								"bh_angle",
+								"bh_angle_center",
+								"bh_angle_open",
+								"bh_angle_close",
+								"bh_curly",
+								"bh_curly_center",
+								"bh_curly_open",
+								"bh_curly_close",
+								"bh_c_define",
+								"bh_c_define_center",
+								"bh_c_define_open",
+								"bh_c_define_close",
+								"bh_default",
+								"bh_default_center",
+								"bh_default_open",
+								"bh_default_close",
+								"bh_unmatched",
+								"bh_unmatched_center",
+								"bh_unmatched_open",
+								"bh_unmatched_close",
+								"bh_round",
+								"bh_round_center",
+								"bh_round_open",
+								"bh_round_close",
+								"bh_tag",
+								"bh_tag_center",
+								"bh_tag_open",
+								"bh_tag_close",
+								"bh_single_quote",
+								"bh_single_quote_center",
+								"bh_single_quote_open",
+								"bh_single_quote_close"
+							],
+							"csslint_options":
+							{
+								"adjoining-classes": "warning",
+								"box-model": true,
+								"box-sizing": "warning",
+								"compatible-vendor-prefixes": "warning",
+								"display-property-grouping": true,
+								"duplicate-background-images": "warning",
+								"duplicate-properties": true,
+								"empty-rules": true,
+								"errors": true,
+								"fallback-colors": "warning",
+								"floats": "warning",
+								"font-faces": "warning",
+								"font-sizes": "warning",
+								"gradients": "warning",
+								"ids": "warning",
+								"import": "warning",
+								"important": "warning",
+								"known-properties": true,
+								"outline-none": "warning",
+								"overqualified-elements": "warning",
+								"qualified-headings": "warning",
+								"regex-selectors": "warning",
+								"rules-count": "warning",
+								"shorthand": "warning",
+								"star-property-hack": "warning",
+								"text-indent": "warning",
+								"underscore-property-hack": "warning",
+								"unique-headings": "warning",
+								"universal-selector": "warning",
+								"vendor-prefix": true,
+								"zero-units": "warning"
+							},
+							"gjslint_ignore":
+							[
+								110
+							],
+							"gjslint_options":
+							[
+							],
+							"javascript_linter": "jshint",
+							"jshint_options":
+							{
+								"browser": true,
+								"devel": true,
+								"evil": true,
+								"regexdash": true,
+								"sub": true,
+								"trailing": true,
+								"wsh": true
+							},
+							"pep8": true,
+							"pep8_ignore":
+							[
+								"E501"
+							],
+							"perl_linter": "perlcritic",
+							"pyflakes_ignore":
+							[
+							],
+							"pyflakes_ignore_import_*": true,
+							"r_box_status": false,
+							"sublimelinter": "load-save",
+							"sublimelinter_delay": 2,
+							"sublimelinter_disable":
+							[
+							],
+							"sublimelinter_executable_map":
+							{
+							},
+							"sublimelinter_fill_outlines": false,
+							"sublimelinter_gutter_marks": true,
+							"sublimelinter_gutter_marks_theme": "simple",
+							"sublimelinter_mark_style": "none",
+							"sublimelinter_notes": false,
+							"sublimelinter_objj_check_ascii": false,
+							"sublimelinter_popup_errors_on_save": false,
+							"sublimelinter_syntax_map":
+							{
+								"C++": "c",
+								"Python Django": "python",
+								"Ruby on Rails": "ruby"
+							},
+							"sublimelinter_wrap_find": true,
+							"syntax": "Packages/R-Box/syntax/R Extended.tmLanguage"
+						},
+						"translation.x": 0.0,
+						"translation.y": 0.0,
+						"zoom_level": 1.0
+					},
+					"type": "text"
 				}
 			]
 		},
@@ -3062,19 +3583,19 @@
 			"sheets":
 			[
 				{
-					"buffer": 12,
+					"buffer": 15,
 					"file": "pipelines/ChIPseq/bpipe.config",
 					"settings":
 					{
-						"buffer_size": 808,
+						"buffer_size": 1016,
 						"regions":
 						{
 						},
 						"selection":
 						[
 							[
-								706,
-								706
+								804,
+								804
 							]
 						],
 						"settings":
@@ -3220,7 +3741,7 @@
 							"syntax": "Packages/Groovy/Groovy.tmLanguage"
 						},
 						"translation.x": 0.0,
-						"translation.y": 0.0,
+						"translation.y": 255.0,
 						"zoom_level": 1.0
 					},
 					"type": "text"

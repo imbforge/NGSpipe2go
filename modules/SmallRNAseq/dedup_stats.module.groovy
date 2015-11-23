@@ -3,7 +3,7 @@ DedupStats = {
 		desc:  "Counts the number of reads in the original reads file, and after PCR duplicate removal, and plots results",
 		author: "Antonio Domingues"
 
-   PLOT_TOOL = PLOT_TOOL_PATH + "/PCRDuplicatesPlot.R"
+   DEDUP_PLOT_TOOL = DEDUP_PLOT_TOOL_PATH + "/PCRDuplicatesPlot.R"
 
 	produce(REMOVE_DUP_OUTDIR + "/figure/PCRDuplicates.pdf",
            REMOVE_DUP_OUTDIR + "/figure/PCRDuplicates.png") {
@@ -20,7 +20,7 @@ DedupStats = {
          cd ${REMOVE_DUP_OUTDIR} &&
 			for i in *.fastq2table; do wc -l $i >> dedup.stats.txt; done &&
          for i in *.unique; do wc -l $i >> dedup.stats.txt; done &&
-         Rscript ${PLOT_TOOL}
+         Rscript ${DEDUP_PLOT_TOOL}
 
 		""","DedupStats"
 	}

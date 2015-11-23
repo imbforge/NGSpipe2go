@@ -20,18 +20,20 @@ Bowtie_se = {
 
    transform(".fastq.gz") to (".bam") {
 
-      def SAMPLE = input.prefix.prefix
+      def SAMPLE_NAME = input.prefix.prefix
 
       exec """
          if [ -n "\$LSB_JOBID" ]; then
             export TMPDIR=/jobdir/\${LSB_JOBID};
          fi                                          &&
 
-         echo 'VERSION INFO'  1>&2 ;
-         echo \$(bowtie --version) 1>&2 ;
-         echo '/VERSION INFO' 1>&2 ;
+         echo 'VERSION INFO'  1>&2 &&
+         echo \$(bowtie --version) 1>&2 &&
+         echo '/VERSION INFO' 1>&2 &&
 
-         zcat $input | $BOWTIE_PATH $BOWTIE_FLAGS $BOWTIE_REF - 2> $SAMPLE.bt.log | samtools view -bhSu - | sort -@ $BOWTIE_THREADS - $output.prefix
+         echo "Sample is: ${SAMPLE_NAME}" &&
+
+         zcat $input | $BOWTIE_PATH $BOWTIE_FLAGS $BOWTIE_REF - 2> ${SAMPLE_NAME}.bt.log | samtools view -bhSu - | samtools sort -@ $BOWTIE_THREADS - $output.prefix
       ""","Bowtie_se"
    }
 }
