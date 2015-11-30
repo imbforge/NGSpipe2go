@@ -7,21 +7,16 @@ FilterDuplicates = {
 
 	output.dir = REMOVE_DUP_OUTDIR
 
-	transform(".highQ.fastq") to (".deduped_barcoded.fastq.gz") {
+	transform(".highQ.fastq.gz") to (".deduped_barcoded.fastq.gz") {
 
-      def SAMPLE = input.prefix.prefix
+      def SAMPLE_NAME = input.prefix.prefix
+
       exec """
-			if [ -n "\$LSB_JOBID" ]; then
-				export TMPDIR=/jobdir/\${LSB_JOBID};
-			fi &&
+         if [ -n "\$LSB_JOBID" ]; then
+            export TMPDIR=/jobdir/\${LSB_JOBID};
+         fi                                          &&
 
-         echo 'REMOVING DUPLICATES' 1>&2 &&
-			echo 'Sample is ${SAMPLE}' 1>&2 &&
-
-			cat $input | paste -d, - - - -  > ${SAMPLE}.fastq2table &&
-         sort -u -t, -k2,2 ${SAMPLE}.fastq2table > ${SAMPLE}.fastq2table.unique &&
-         tr ',' '\\n' < ${SAMPLE}.fastq2table.unique > ${SAMPLE}.deduped_barcoded.fastq &&
-         gzip ${SAMPLE}.deduped_barcoded.fastq
+			zcat $input | paste -d, - - - - | tee >(echo hello) | sort -u -t, -k2,2 | tee >(echo hello) | tr ',' '\\n' | gzip > $output
 
 		""","FilterDuplicates"
 	}

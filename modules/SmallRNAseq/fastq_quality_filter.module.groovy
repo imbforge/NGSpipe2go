@@ -10,7 +10,7 @@ FastQQualityFilter = {
              " -Q " + QUAL_FORMAT +
              FASTQ_QUALITY_FILTER_OTHER
 
-   transform(".cutadapt28to51nt.fastq") to (".highQ.fastq") {
+   transform(".cutadapt28to51nt.fastq.gz") to (".highQ.fastq.gz") {
       exec """
          if [ -n "\$LSB_JOBID" ]; then
             export TMPDIR=/jobdir/\${LSB_JOBID};
@@ -20,7 +20,7 @@ FastQQualityFilter = {
          echo \$(fastq_quality_filter -h 2>&1 | grep 'Toolkit') 1>&2 &&
          echo '/VERSION INFO'  1>&2 &&
 
-         fastq_quality_filter $FASTQ_QUALITY_FILTER_FLAGS -i $input -o $output
+         zcat $input | fastq_quality_filter $FASTQ_QUALITY_FILTER_FLAGS -o $output
       ""","FastQQualityFilter"
    }
 }

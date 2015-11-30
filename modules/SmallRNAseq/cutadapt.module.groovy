@@ -5,14 +5,10 @@ Cutadapt = {
 		author: "Antonio Domingues"
 
 	output.dir = CUTADAPT_OUTDIR
-   MACS2_FLAGS= " -m "   + MACS2_MFOLD  +
-                " -g "   + MACS2_GSIZE  +
-                " --bw " + MACS2_BWIDTH +
-                MACS2_OTHER
 
-	transform(".fastq.gz") to (".cutadapt28to51nt.fastq") {
-		exec """
-			if [ -n "\$LSB_JOBID" ]; then
+	transform(".fastq.gz") to (".cutadapt28to51nt.fastq.gz") {
+      exec """
+         if [ -n "\$LSB_JOBID" ]; then
 				export TMPDIR=/jobdir/\${LSB_JOBID};
 			fi &&
 
@@ -20,7 +16,7 @@ Cutadapt = {
 			cutadapt --version 1>&2 &&
 			echo '/VERSION INFO' 1>&2 &&
 
-			cutadapt $ADAPTER_SEQUENCE -O $MINIMUM_OVERLAP -m $MINIMUM_LENGTH_KEEP -M $MAXIMUM_LENGTH_KEEP -o $output $input  2>&1 >> ${FASTQ_QUALITY_FILTER_OUTDIR}/cutadapt.log
+			cutadapt $ADAPTER_SEQUENCE -O $MINIMUM_OVERLAP -m $MINIMUM_LENGTH_KEEP -M $MAXIMUM_LENGTH_KEEP -o $output $input 2>&1 >> ${FASTQ_QUALITY_FILTER_OUTDIR}/cutadapt.log
 		""","Cutadapt"
 	}
 }
