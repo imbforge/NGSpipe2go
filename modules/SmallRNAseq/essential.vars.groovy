@@ -10,7 +10,7 @@ ESSENTIAL_BOWTIE_REF="/home/adomingu/imb-kettinggr/genomes/Danio_rerio/Ensembl/Z
 //global vars that will be reused in some global vars
 PROJECT=ESSENTIAL_PROJECT
 LOGS=PROJECT + "/logs"
-QC=PROJECT + "data/qc"
+QC=PROJECT + "/data/qc"
 REPORTS=PROJECT + "/reports"
 RESULTS=PROJECT + "/results"
 MAPPED=RESULTS + "/mapped"

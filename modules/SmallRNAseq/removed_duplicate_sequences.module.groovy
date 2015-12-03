@@ -16,7 +16,13 @@ FilterDuplicates = {
             export TMPDIR=/jobdir/\${LSB_JOBID};
          fi                                          &&
 
-			zcat $input | paste -d, - - - - | tee >(awk -v var="$SAMPLE_NAME" 'END {print NR,var}' >> dedup.stats.txt) | sort -u -t, -k2,2 | tee >(awk -v var="$SAMPLE_NAME" 'END {print NR,var}' >> dedup.stats.txt) | tr ',' '\\n' | gzip > $output
+         nreads=\$(zcat $input | echo \$((`wc -l`/4))) &&
+         echo \$nreads \$input >> dedup.stats.txt
+
+			zcat $input | paste -d, - - - - | sort -u -t, -k2,2 | tr ',' '\\n' | gzip > $output &&
+
+         nreads=\$(zcat $output | echo \$((`wc -l`/4))) &&
+         echo \$nreads \$output >> dedup.stats.txt
 
 		""","FilterDuplicates"
 	}

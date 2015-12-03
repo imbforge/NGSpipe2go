@@ -13,9 +13,9 @@ load MODULE_FOLDER + "SmallRNAseq/fastq_quality_filter.vars.groovy"
 load MODULE_FOLDER + "SmallRNAseq/fastq_quality_filter.module.groovy"
 
 load MODULE_FOLDER + "SmallRNAseq/dedup.vars.groovy"
-load MODULE_FOLDER + "SmallRNAseq/removed_duplicate_sequences.module.groovy"
+load MODULE_FOLDER + "SmallRNAseq/dedup.module.groovy"
 
-// load MODULE_FOLDER + "SmallRNAseq/dedup_stats.vars.groovy"
+load MODULE_FOLDER + "SmallRNAseq/dedup_stats.vars.groovy"
 load MODULE_FOLDER + "SmallRNAseq/dedup_stats.module.groovy"
 
 load MODULE_FOLDER + "SmallRNAseq/bowtie1.vars.groovy"
