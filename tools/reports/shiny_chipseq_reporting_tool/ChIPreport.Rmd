@@ -1,5 +1,5 @@
 ---
-title: "chipseq"
+title: "SHINYREPS_PROJECT"
 output:
   html_document:
     toc: yes
