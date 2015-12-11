@@ -26,8 +26,17 @@ load MODULE_FOLDER + "SmallRNAseq/bamindexer.module.groovy"
 load MODULE_FOLDER + "SmallRNAseq/maping_stats.module.groovy"
 load MODULE_FOLDER + "SmallRNAseq/maping_stats.vars.groovy"
 
+load MODULE_FOLDER + "SmallRNAseq/read_count.module.groovy"
+load MODULE_FOLDER + "SmallRNAseq/read_count.vars.groovy"
+
+load MODULE_FOLDER + "SmallRNAseq/split_read_strands.module.groovy"
+load MODULE_FOLDER + "SmallRNAseq/split_read_strands.vars.groovy"
+
+load MODULE_FOLDER + "SmallRNAseq/bam2bw.module.groovy"
+load MODULE_FOLDER + "SmallRNAseq/bam2bw.vars.groovy"
+
 
 //MAIN PIPELINE TASK
 run {
-	"%.fastq.gz" * [ FastQC , Cutadapt + FastQQualityFilter + FilterDuplicates ] + "%.deduped_barcoded.fastq.gz" * [ FastQC , Bowtie_se + BAMindexer ] + [ DedupStats, MappingStatsPlot]
+	"%.fastq.gz" * [ FastQC , Cutadapt + FastQQualityFilter + FilterDuplicates ] + "%.deduped_barcoded.fastq.gz" * [ FastQC , Bowtie_se + BAMindexer ] + "%.bam" * [ CountReads, bam2bw, SplitReadStrands + "%sense.bam" * [bam2bw] ] + [ DedupStats, MappingStatsPlot]
 }
