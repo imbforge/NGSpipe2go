@@ -29,6 +29,11 @@ The sequencing quality of the run was good, and the read distribution over the l
 cat(DEhelper.Bustard(),sep="\n")
 ```
 
+### Raw reads qualities, sequence bias and duplication
+```{r FastQC_paragraph, echo=F,results='asis',error=F,warning=F,message=F}
+cat(DEhelper.Fastqc(web=F),sep="\n")
+```
+
 ### Mapping
 Mapping was done using STAR. The program version and genome assembly are described in the following table. The following parameters were used to get only uniquely mapping reads:
 
@@ -41,11 +46,6 @@ The mapping statistics show the total number of reads delivered to the aligner, 
 ```{r STAR_paragraph, echo=F,results='asis',error=F,warning=F,message=F}
 cat(DEhelper.STAR(),sep="\n")
 ``` 
-
-### Raw reads qualities, sequence bias and duplication
-```{r FastQC_paragraph, echo=F,results='asis',error=F,warning=F,message=F}
-cat(DEhelper.Fastqc(web=F),sep="\n")
-```
 
 ### PCR duplication assessment
 Measuring the fraction of duplicated reads is a common quality control step for NGS data sets, which can hint towards too low library complexity due to too many PCR cycles during library preparation or other problems in the sequencing workflow. However in RNA-Seq duplicate reads arise naturally due to highly expressed genes, which renders the overall read duplication rate useless.
