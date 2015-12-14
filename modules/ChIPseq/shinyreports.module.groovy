@@ -44,10 +44,10 @@ shinyReports = {
 			echo "SHINYREPS_IPSTRENGTH_LOG=${SHINYREPS_IPSTRENGTH_LOG}"      >> $output &&
 			echo "SHINYREPS_PBC=${SHINYREPS_PBC}"         >> $output &&
 			echo "SHINYREPS_PHANTOMPEAK=${SHINYREPS_PHANTOMPEAK}"    >> $output &&
-			echo "SHINYREPS_PHANTOM_LOG=${SHINYREPS_PHANTOM_LOGS}"      >> $output &&
+			echo "SHINYREPS_PHANTOM_LOG=${SHINYREPS_PHANTOM_LOG}"      >> $output &&
 			echo "SHINYREPS_BUSTARD=${SHINYREPS_BUSTARD}" >> $output &&
 			echo "SHINYREPS_MACS2=${SHINYREPS_MACS2}"     >> $output &&
-			echo "SHINYREPS_MACS2_LOG=${SHINYREPS_MACS2_LOGS}"         >> $output &&
+			echo "SHINYREPS_MACS2_LOG=${SHINYREPS_MACS2_LOG}"         >> $output &&
 			echo "SHINYREPS_PREFIX=${SHINYREPS_PREFIX}"   >> $output &&
 			echo "SHINYREPS_PLOTS_COLUMN=${SHINYREPS_PLOTS_COLUMN}" >> $output
 		""","shinyReports"
