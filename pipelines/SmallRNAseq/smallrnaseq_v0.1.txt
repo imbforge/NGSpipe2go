@@ -35,8 +35,10 @@ load MODULE_FOLDER + "SmallRNAseq/split_read_strands.vars.groovy"
 load MODULE_FOLDER + "SmallRNAseq/bam2bw.module.groovy"
 load MODULE_FOLDER + "SmallRNAseq/bam2bw.vars.groovy"
 
+load MODULE_FOLDER + "SmallRNAseq/nucleotide_signature.module.groovy"
+load MODULE_FOLDER + "SmallRNAseq/nucleotide_signature.vars.groovy"
 
 //MAIN PIPELINE TASK
 run {
-	"%.fastq.gz" * [ FastQC , Cutadapt + FastQQualityFilter + FilterDuplicates ] + "%.deduped_barcoded.fastq.gz" * [ FastQC , Bowtie_se + BAMindexer ] + "%.bam" * [ CountReads, bam2bw, SplitReadStrands + "%sense.bam" * [bam2bw] ] + [ DedupStats, MappingStatsPlot]
+	"%.fastq.gz" * [ FastQC , Cutadapt + FastQQualityFilter + FilterDuplicates ] + "%.deduped_barcoded.fastq.gz" * [ FastQC , Bowtie_se + BAMindexer ] + "%.bam" * [ CountReads, NucleotideSignature, bam2bw, SplitReadStrands + "%sense.bam" * [bam2bw] ] + [ DedupStats, MappingStatsPlot]
 }

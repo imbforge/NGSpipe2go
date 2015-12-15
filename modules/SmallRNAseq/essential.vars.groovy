@@ -3,9 +3,11 @@
 //
 // REMEMBER TO CHANGE THESE ESSENTIAL VARS!!
 //
-ESSENTIAL_PROJECT="/local/scratch1/imb-kettinggr/adomingues/projects/bpipe_small_rna"          // "/fsimb/groups/imb-bioinfocf/projects/cfb_internal/imb_cf_2013_04_sayols_infrastructure_pipelines/test"
+ESSENTIAL_PROJECT="/local/scratch1/imb-kettinggr/adomingues/projects/bpipe_small_rna"
 ESSENTIAL_BOWTIE_PATH="~/bin/bowtie-0.12.8/bowtie"
 ESSENTIAL_BOWTIE_REF="/home/adomingu/imb-kettinggr/genomes/Danio_rerio/Ensembl/Zv9/Sequence/BowtieIndexChr/chr"
+ESSENTIAL_GENOME_REF="/home/adomingu/imb-kettinggr/genomes/Danio_rerio/Ensembl/Zv9/Sequence/chr_sequences/chr.clean.fa"
+ESSENTIAL_FEATURES="/local/scratch1/imb-kettinggr/adomingues/projects/bpipe_small_rna/data/annotations/features.bed"
 
 //global vars that will be reused in some global vars
 PROJECT=ESSENTIAL_PROJECT
