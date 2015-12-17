@@ -1,0 +1,33 @@
+MODULE_FOLDER="NGSpipe2go/modules/" // adjust to your projects needs
+
+load MODULE_FOLDER + "SmallRNAseq/essential.vars.groovy"
+// load MODULE_FOLDER + "SmallRNAseq/tool.locations.groovy"
+
+load MODULE_FOLDER + "NGS/fastqc.vars.groovy"
+load MODULE_FOLDER + "NGS/fastqc.module.groovy"
+
+load MODULE_FOLDER + "SmallRNAseq/cutadapt.vars.groovy"
+load MODULE_FOLDER + "SmallRNAseq/cutadapt.module.groovy"
+
+load MODULE_FOLDER + "SmallRNAseq/fastq_quality_filter.vars.groovy"
+load MODULE_FOLDER + "SmallRNAseq/fastq_quality_filter.module.groovy"
+
+load MODULE_FOLDER + "SmallRNAseq/dedup.vars.groovy"
+load MODULE_FOLDER + "SmallRNAseq/removed_duplicate_sequences.module.groovy"
+
+// load MODULE_FOLDER + "SmallRNAseq/dedup_stats.vars.groovy"
+load MODULE_FOLDER + "SmallRNAseq/dedup_stats.module.groovy"
+
+load MODULE_FOLDER + "SmallRNAseq/bowtie1.vars.groovy"
+load MODULE_FOLDER + "SmallRNAseq/bowtie1.module.groovy"
+
+load MODULE_FOLDER + "SmallRNAseq/bamindexer.module.groovy"
+
+load MODULE_FOLDER + "SmallRNAseq/maping_stats.module.groovy"
+load MODULE_FOLDER + "SmallRNAseq/maping_stats.vars.groovy"
+
+
+//MAIN PIPELINE TASK
+run {
+	"%.fastq.gz" * [ FilterDuplicates ]
+}
