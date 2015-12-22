@@ -1,0 +1,23 @@
+MODULE_FOLDER="NGSpipe2go/modules/" // adjust to your projects needs
+
+load MODULE_FOLDER + "RNAseqVariantCalling/essential.vars.groovy"
+// load MODULE_FOLDER + "RNAseqVariantCalling/tool.locations.groovy"
+
+load MODULE_FOLDER + "RNAseqVariantCalling/star1pass.module.groovy"
+load MODULE_FOLDER + "RNAseqVariantCalling/star1pass.vars.groovy"
+
+load MODULE_FOLDER + "NGS/bamindexer.vars.groovy"
+load MODULE_FOLDER + "NGS/bamindexer.module.groovy"
+
+load MODULE_FOLDER + "RNAseqVariantCalling/merge_SJ_tab.module.groovy"
+load MODULE_FOLDER + "RNAseqVariantCalling/merge_SJ_tab.vars.groovy"
+
+load MODULE_FOLDER + "RNAseqVariantCalling/create_star_index_sjdb.module.groovy"
+load MODULE_FOLDER + "RNAseqVariantCalling/create_star_index_sjdb.vars.groovy"
+
+load MODULE_FOLDER + "RNAseqVariantCalling/star2pass.module.groovy"
+load MODULE_FOLDER + "RNAseqVariantCalling/star2pass.vars.groovy"
+
+run {
+	"%R*.fastq.gz" * [ STAR_se ] + "*.SJ.out.tab" * [ FilterAndMergeSJtab + GenerateStarIndexFromSJ ] + "%R*.fastq.gz" * [ STAR_pe_2nd ]
+}

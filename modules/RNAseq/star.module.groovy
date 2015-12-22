@@ -4,7 +4,7 @@ STAR_se = {
 	doc title: "STAR SE alignment",
 		desc:  "Align single end reads",
 		constraints: "Only works with compressed input. Set all global vars.",
-		author: "Sergi Sayols"
+		author: "Sergi Sayols, Antonnio Domingues"
 
 	output.dir = MAPPED
 
@@ -13,7 +13,7 @@ STAR_se = {
 	// TODO: add removal of TMP/sampleID, if exists
 	// println("DEBUG" + TMP)
 	F_TMP = new File(TMP)
-	if(! F_TMP.exists()) { 
+	if(! F_TMP.exists()) {
 		F_TMP.mkdirs()
 	}
 	// create the LOGS/STAR folder if it doesn't exists
@@ -30,7 +30,7 @@ STAR_se = {
 		// flags
 		def int OVERHANG
         OVERHANG = ESSENTIAL_READLENGTH.toInteger() - 1
-		
+
 		def SAMPLE = new File(input.prefix.prefix)
 		def STAR_FLAGS = " --runMode alignReads" +
 					 " --limitGenomeGenerateRAM " + STAR_MAXRAM +
@@ -54,29 +54,25 @@ STAR_se = {
 		if(STAR_FILTER_SEC == "YES") {
 			SAMTOOLS_FLAGS = " -F 256 " + SAMTOOLS_FLAGS
 		}
-		
-		
-		// TODO: change to latest or at least try to warn, if the genome index was created using the wrong version of STAR
-		// DONE: replace ""source ${TOOL_DEPENDENCIES}/star/default/env.sh""
+
+
 		exec """
-			export TOOL_DEPENDENCIES=$TOOL_DEPENDENCIES &&
-			source ${TOOL_STAR}/env.sh &&
 			if [ -n "\$LSB_JOBID" ]; then
 				export TMPDIR=/jobdir/\${LSB_JOBID};
 			fi                                          &&
-			
+
 			if [ -e $TMP/$SAMPLE.name ];
 			then
 				echo 'removing old STAR tmp folder';
 				rm -r $TMP/$SAMPLE.name*;
 			fi &&
-			
+
 			echo 'VERSION INFO'  1>&2 &&
 			STAR --version       1>&2 &&
 			echo '/VERSION INFO' 1>&2 &&
-			
+
 			STAR $STAR_FLAGS --readFilesIn $input | ${TOOL_SAMTOOLS} view $SAMTOOLS_FLAGS - | ${TOOL_SAMTOOLS} sort -@ $STAR_THREADS - $output.prefix &&
-			
+
 			mv ${LOGS}/STAR_se/${SAMPLE.name}SJ.out.tab $output.dir &&
 			ln -s ${LOGS}/STAR_se/${SAMPLE.name}Log.final.out $output.dir
 		""","STAR_se"
