@@ -17,7 +17,7 @@ PingPongPro = {
             export TMPDIR=/jobdir/\${LSB_JOBID};
          fi &&
 
-         pingpongpro -i $input -t $FEATURES_PATH -o $OUT_FOLDER
+         ${TOOL_PINGPONGPRO} -i $input -t $FEATURES_PATH -o $OUT_FOLDER
 
       ""","PingPongPro"
    }

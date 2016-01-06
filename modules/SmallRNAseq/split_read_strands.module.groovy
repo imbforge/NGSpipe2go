@@ -8,11 +8,11 @@ SplitReadStrands = {
 
    transform(".bam") to (".sense.bam", ".antisense.bam"){
       exec """
-         samtools view -hbF 16 $input | samtools sort -@ $BOWTIE_THREADS - $output1.prefix &&
-         samtools index $output1 &&
+         ${TOOL_SAMTOOLS} view -hbF 16 $input | ${TOOL_SAMTOOLS} sort -@ $BOWTIE_THREADS - -o $output1 &&
+         ${TOOL_SAMTOOLS} index $output1 &&
 
-         samtools view -hbf 16 $input | samtools sort -@ $BOWTIE_THREADS - $output2.prefix &&
-         samtools index $output2
+         ${TOOL_SAMTOOLS} view -hbf 16 $input | ${TOOL_SAMTOOLS} sort -@ $BOWTIE_THREADS - -o $output2 &&
+         ${TOOL_SAMTOOLS} index $output2
 
       """, "SplitReadStrands"
    }

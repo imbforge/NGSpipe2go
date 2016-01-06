@@ -11,10 +11,10 @@ BAMindexer = {
 		exec """
 
 			echo 'VERSION INFO'  1>&2 &&
-			samtools --version 1>&2 &&
+			${TOOL_SAMTOOLS} --version 1>&2 &&
 			echo '/VERSION INFO' 1>&2 &&
 
-			samtools index $input
+			${TOOL_SAMTOOLS} index $input
 		""","BAMindexer"
 	}
 

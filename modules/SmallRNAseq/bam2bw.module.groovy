@@ -19,16 +19,16 @@ bam2bw = {
 			fi &&
 
 			echo 'VERSION INFO'  1>&2 &&
-         echo \$(genomeCoverageBed -h 2>&1 | grep 'Version') 1>&2
-			genomeCoverageBed    1>&2 &&
+         echo \$(${TOOL_BEDTOOLS}/genomeCoverageBed -h 2>&1 | grep 'Version') 1>&2
+			${TOOL_KENTUTILS}/bedGraphToBigWig    1>&2 &&
 			echo '/VERSION INFO' 1>&2 &&
 
 			CHRSIZES=${TMP}/\$(basename ${input.prefix}).bam2bw.chrsizes &&
 			${TOOL_SAMTOOLS} idxstats ${input} | cut -f1-2 > \${CHRSIZES} &&
 			TOTAL_MAPPED=\$( ${TOOL_SAMTOOLS} flagstat $input | head -n1 | cut -f1 -d" ") &&
 			SCALE=\$(echo "1000000/\$TOTAL_MAPPED" | bc -l) &&
-			genomeCoverageBed -bg -split -scale \${SCALE} -ibam ${input} -g \${CHRSIZES} > ${output.prefix}.bedgraph &&
-			bedGraphToBigWig ${output.prefix}.bedgraph \${CHRSIZES} $output &&
+			${TOOL_BEDTOOLS}/genomeCoverageBed -bg -split -scale \${SCALE} -ibam ${input} -g \${CHRSIZES} > ${output.prefix}.bedgraph &&
+			${TOOL_KENTUTILS}/bedGraphToBigWig ${output.prefix}.bedgraph \${CHRSIZES} $output &&
 			rm \${CHRSIZES} ${output.prefix}.bedgraph
 		""","bam2bw"
 	}

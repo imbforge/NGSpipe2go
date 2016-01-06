@@ -13,11 +13,11 @@ DedupStats = {
          fi &&
 
          echo 'VERSION INFO'  1>&2 &&
-         echo \$(Rscript --version 2>&1 | cut -d' ' -f5) 1>&2 &&
+         echo \$(${TOOL_R}/bin/Rscript --version 2>&1 | cut -d' ' -f5) 1>&2 &&
          echo '/VERSION INFO'  1>&2 &&
 
          cd ${REMOVE_DUP_OUTDIR} &&
-         Rscript ${DEDUP_PLOT_TOOL}
+         ${TOOL_R}/bin/Rscript ${DEDUP_PLOT_TOOL}
 
 		""","DedupStats"
 	}

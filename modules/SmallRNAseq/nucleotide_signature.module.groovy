@@ -16,7 +16,7 @@ NucleotideSignature = {
          if [ -n "\$LSB_JOBID" ]; then
             export TMPDIR=/jobdir/\${LSB_JOBID};
          fi &&
-         source ~/env/bin/activate &&
+         source ${TOOL_PYTHONENV} &&
          cd $PIRNA_SIGNATURE_OUTDIR &&
 
          python $PIRNA_SIGNATURE_TOOL_PATH -f $FASTA_PATH -b $input -u 20 -d 20 -g danRer7 -i $FEATURES_PATH -o $OUT_FOLDER

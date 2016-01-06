@@ -17,10 +17,10 @@ FastQQualityFilter = {
          fi &&
 
          echo 'VERSION INFO'  1>&2 &&
-         echo \$(fastq_quality_filter -h 2>&1 | grep 'Toolkit') 1>&2 &&
+         echo \$(${TOOL_FASTX}/fastq_quality_filter -h 2>&1 | grep 'Toolkit') 1>&2 &&
          echo '/VERSION INFO'  1>&2 &&
 
-         zcat $input | fastq_quality_filter $FASTQ_QUALITY_FILTER_FLAGS -o $output
+         zcat $input | ${TOOL_FASTX}/fastq_quality_filter $FASTQ_QUALITY_FILTER_FLAGS -o $output
       ""","FastQQualityFilter"
    }
 }

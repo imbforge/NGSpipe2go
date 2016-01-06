@@ -16,11 +16,11 @@ CountReadsSummary = {
          fi &&
 
          echo 'VERSION INFO'  1>&2 &&
-         echo \$(Rscript --version 2>&1 | cut -d' ' -f5) 1>&2 &&
-         echo '/VERSION INFO'  1>&2 &&
+         echo \$(${TOOL_R}/bin/Rscript --version 2>&1 | cut -d' ' -f5) 1>&2 &&
+         echo '/VERSION${TOOL_R}/bin/Rscript INFO'  1>&2 &&
 
          cd $COUNT_READS_OUTDIR &&
-         Rscript $AGREGATE_SCRIPT
+         ${TOOL_R}/bin/Rscript $AGREGATE_SCRIPT
 
       ""","CountReadsSummary"
    }

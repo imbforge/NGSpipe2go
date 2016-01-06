@@ -14,11 +14,11 @@ MappingStatsPlot = {
          fi &&
 
          echo 'VERSION INFO'  1>&2 &&
-         echo \$(Rscript --version 2>&1 | cut -d' ' -f5) 1>&2 &&
+         echo \$(${TOOL_R}/bin/Rscript --version 2>&1 | cut -d' ' -f5) 1>&2 &&
          echo '/VERSION INFO'  1>&2 &&
 
          cd ${MAPPING_STATS_OUTDIR} &&
-			Rscript ${MAPPING_STATS_TOOL}
+			${TOOL_R}/bin/Rscript ${MAPPING_STATS_TOOL}
 
 		""","MappingStatsPlot"
 	}
