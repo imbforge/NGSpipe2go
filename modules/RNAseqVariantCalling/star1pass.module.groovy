@@ -1,6 +1,6 @@
-//rule for task STAR_se from catalog RNAseq, version 1
+//rule for task STAR_pe from catalog RNAseq, version 1
 //desc: Align single end reads
-STAR_se = {
+STAR_pe = {
    doc title: "STAR SE/PE alignment",
       desc:  "Align single end and pair end reads",
       constraints: "Only works with compressed input. Set all global vars.",
@@ -56,6 +56,6 @@ STAR_se = {
 
          rm -rf ${TMP}/${EXP}
 
-      ""","STAR_se"
+      ""","STAR_pe"
    }
 }

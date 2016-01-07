@@ -19,5 +19,5 @@ load MODULE_FOLDER + "RNAseqVariantCalling/star2pass.module.groovy"
 load MODULE_FOLDER + "RNAseqVariantCalling/star2pass.vars.groovy"
 
 run {
-	"%R*.fastq.gz" * [ STAR_se ] + "*.SJ.out.tab" * [ FilterAndMergeSJtab + GenerateStarIndexFromSJ ] + "%R*.fastq.gz" * [ STAR_pe_2nd ]
+	"%R*.fastq.gz" * [ STAR_pe ] + "*.SJ.out.tab" * [ FilterAndMergeSJtab + GenerateStarIndexFromSJ ] + "%R*.fastq.gz" * [ STAR_pe_2nd ]
 }
