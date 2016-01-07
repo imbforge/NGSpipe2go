@@ -31,7 +31,7 @@ Bowtie_se = {
          echo \$(bowtie --version) 1>&2 &&
          echo '/VERSION INFO' 1>&2 &&
 
-         zcat $input | $BOWTIE_PATH $BOWTIE_FLAGS $BOWTIE_REF - 2> ${SAMPLE_NAME}.bt.log | samtools view -bhSu - | samtools sort -@ $BOWTIE_THREADS - $output.prefix
+         zcat $input | ${TOOL_BOWTIE}/bowtie $BOWTIE_FLAGS $BOWTIE_REF - 2> ${SAMPLE_NAME}.bt.log | ${TOOL_SAMTOOLS} view -bhSu - | ${TOOL_SAMTOOLS} sort -@ $BOWTIE_THREADS - -o $output
       ""","Bowtie_se"
    }
 }

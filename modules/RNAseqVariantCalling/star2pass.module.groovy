@@ -21,18 +21,18 @@ STAR_pe_2nd = {
 
    // code chunk
    //before we start we have to define the output filename
-   def OUTPUTFILE = input1
-   OUTPUTFILE = (OUTPUTFILE =~ /_R1.fastq.gz/).replaceFirst("")
+   // def OUTPUTFILE = input1
+   // OUTPUTFILE = (OUTPUTFILE =~ /_R1.fastq.gz/).replaceFirst("")
    def EXP = input1.split("/")[-1].replaceAll("_R1.fastq.gz", "")
 
-   produce(OUTPUTFILE + ".bam") {
+   produce(EXP + ".bam") {
       def int OVERHANG
       OVERHANG = ESSENTIAL_READLENGTH.toInteger() - 1
 
       def STAR_FLAGS = " --runMode alignReads" +
                 " --limitGenomeGenerateRAM " + STAR_MAXRAM +
                 " --limitIObufferSize " + STAR_BUFSIZE +
-                " --genomeDir " + STAR_REF +
+                " --genomeDir " + STAR_REF_2 +
                 " --runThreadN " + STAR_THREADS +
                 " --outFilterMismatchNmax " + STAR_MM +
                 " --outFilterMultimapNmax " + STAR_MULTIMAP +

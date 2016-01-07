@@ -31,7 +31,7 @@ STAR_pe = {
       def STAR_FLAGS = " --runMode alignReads" +
                 " --limitGenomeGenerateRAM " + STAR_MAXRAM +
                 " --limitIObufferSize " + STAR_BUFSIZE +
-                " --genomeDir " + STAR_REF +
+                " --genomeDir " + ESSENTIAL_STAR_REF +
                 " --runThreadN " + STAR_THREADS +
                 " --outFilterMismatchNmax " + STAR_MM +
                 " --outFilterMultimapNmax " + STAR_MULTIMAP +
