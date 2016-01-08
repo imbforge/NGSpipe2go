@@ -1,23 +1,28 @@
 // rule to add read groups to bam
-@filter('rg')
-AddReadGroup = {
-   dic title: "AddReadGroup",
+AddRG = {
+   doc title: "AddReadGroup",
    desc: "Adds reads groups to bam as part of the GATK pipeline",
-   constraints: "requires picard tools"
+   constraints: "Picard tools version >= 1.141"
    author: "Antonio Domingues"
 
    output.dir = OUTDIR_STAR2ND
-   DEF JAVA_FLAGS = "-Xmx" + RG_MAXMEM
+   def JAVA_FLAGS = "-Xmx" + RG_MAXMEM
+   def EXP = input1.split("/")[-1].replaceAll(".bam", "")
 
-   exec """
-         if [ -n "\$LSB_JOBID" ]; then
-            export TMPDIR=/jobdir/\${LSB_JOBID};
-         fi &&
+   transform(".bam") to (".rg.bam"){
+      exec """
+            if [ -n "\$LSB_JOBID" ]; then
+               export TMPDIR=/jobdir/\${LSB_JOBID};
+            fi &&
 
-         SAMPLE_NAME=\$(basename $input.prefix) &&
-         PLATFORM="genomics" &&
+            echo 'VERSION INFO'  1>&2 &&
+            echo \$(${TOOL_JAVA}/java ${JAVA_FLAGS} -jar ${TOOL_PICARD} AddOrReplaceReadGroups --version) 1>&2 &&
+            echo '/VERSION INFO' 1>&2 &&
 
-         ${TOOL_JAVA}/java ${JAVA_FLAGS} -jar ${TOOL_PICARD} AddOrReplaceReadGroups I=$input O=$output SO=coordinate RGID=${SAMPLE_NAME} RGLB=${SAMPLE_NAME} RGPL=illumina RGPU=${PLATFORM} RGSM=${SAMPLE_NAME}
+            PLATFORM="genomics" &&
 
-   ""","AddRG"
+            ${TOOL_JAVA}/java ${JAVA_FLAGS} -jar ${TOOL_PICARD} AddOrReplaceReadGroups I=$input O=$output SO=coordinate RGID=${EXP} RGLB=${EXP} RGPL=illumina RGPU=${PLATFORM} RGSM=${EXP}
+
+      ""","AddRG"
+   }
 }
