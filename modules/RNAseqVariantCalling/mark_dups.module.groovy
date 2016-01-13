@@ -3,7 +3,7 @@ MarkDups = {
    doc title: "MarkDups",
    desc: "Call picard tools to mark with/without removing duplicated reads from a bam file",
    constraints: "Picard tools version >= 1.141"
-   author: "Antonio Domingues"
+   author: "Sergi Sayols, modified by Antonio Domingues"
 
    output.dir = OUTDIR_STAR2ND
 
@@ -22,7 +22,7 @@ MarkDups = {
             fi &&
 
             echo 'VERSION INFO'  1>&2 &&
-            echo \$(${TOOL_JAVA}/java ${JAVA_FLAGS} -jar ${TOOL_PICARD} MarkDuplicates --version) 1>&2 &&
+            echo \$(${TOOL_JAVA}/java -jar ${TOOL_PICARD} MarkDuplicates --version) 1>&2 &&
             echo '/VERSION INFO' 1>&2 &&
 
             ${TOOL_JAVA}/java ${JAVA_FLAGS} -jar ${TOOL_PICARD} MarkDuplicates $MARKDUPS_FLAGS I=$input O=$output M=${input.prefix}_dupmetrics.tsv

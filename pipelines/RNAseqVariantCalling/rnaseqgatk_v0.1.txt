@@ -24,6 +24,12 @@ load MODULE_FOLDER + "RNAseqVariantCalling/add_read_group.vars.groovy"
 load MODULE_FOLDER + "RNAseqVariantCalling/mark_dups.module.groovy"
 load MODULE_FOLDER + "RNAseqVariantCalling/mark_dups.vars.groovy"
 
+load MODULE_FOLDER + "RNAseqVariantCalling/splitNcigar.module.groovy"
+load MODULE_FOLDER + "RNAseqVariantCalling/splitNcigar.vars.groovy"
+
+load MODULE_FOLDER + "RNAseqVariantCalling/base_recalibration.module.groovy"
+load MODULE_FOLDER + "RNAseqVariantCalling/base_recalibration.vars.groovy"
+
 run {
-	"%R*.fastq.gz" * [ STAR_pe ] + "*.SJ.out.tab" * [ FilterAndMergeSJtab + GenerateStarIndexFromSJ ] + "%R*.fastq.gz" * [ STAR_pe_2nd ] + "%.bam" * [ AddRG + MarkDups ]
+	"%R*.fastq.gz" * [ STAR_pe ] + "*.SJ.out.tab" * [ FilterAndMergeSJtab + GenerateStarIndexFromSJ ] + "%R*.fastq.gz" * [ STAR_pe_2nd ] + "%.bam" * [ AddRG + MarkDups + SplitNCigarReads + BaseRecalibration ]
 }

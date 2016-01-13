@@ -16,7 +16,7 @@ AddRG = {
             fi &&
 
             echo 'VERSION INFO'  1>&2 &&
-            echo \$(${TOOL_JAVA}/java ${JAVA_FLAGS} -jar ${TOOL_PICARD} AddOrReplaceReadGroups --version) 1>&2 &&
+            echo \$(${TOOL_JAVA}/java -jar ${TOOL_PICARD} AddOrReplaceReadGroups --version) 1>&2 &&
             echo '/VERSION INFO' 1>&2 &&
 
             PLATFORM="genomics" &&
