@@ -33,6 +33,9 @@ load MODULE_FOLDER + "RNAseqVariantCalling/base_recalibration.vars.groovy"
 load MODULE_FOLDER + "RNAseqVariantCalling/variantCall_HC.module.groovy"
 load MODULE_FOLDER + "RNAseqVariantCalling/variantCall_HC.vars.groovy"
 
+load MODULE_FOLDER + "RNAseqVariantCalling/variant_filtration.module.groovy"
+load MODULE_FOLDER + "RNAseqVariantCalling/variant_filtration.vars.groovy"
+
 run {
-	"%R*.fastq.gz" * [ STAR_pe ] + "*.SJ.out.tab" * [ FilterAndMergeSJtab + GenerateStarIndexFromSJ ] + "%R*.fastq.gz" * [ STAR_pe_2nd ] + "%.bam" * [ AddRG + MarkDups + SplitNCigarReads + BaseRecalibration + VariantCallHC ]
+	"%R*.fastq.gz" * [ STAR_pe ] + "*.SJ.out.tab" * [ FilterAndMergeSJtab + GenerateStarIndexFromSJ ] + "%R*.fastq.gz" * [ STAR_pe_2nd ] + "%.bam" * [ AddRG + MarkDups + SplitNCigarReads + BaseRecalibration + VariantCallHC ] + "%.vcf.gz" * [ VariantFiltration ]
 }
