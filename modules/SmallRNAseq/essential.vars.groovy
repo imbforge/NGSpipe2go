@@ -19,5 +19,3 @@ MAPPED=RESULTS + "/mapped"
 TMP=PROJECT + "/tmp"
 TRACKS=MAPPED + "/tracks"
 
-// binaries
-TOOL_SAMTOOLS="/home/adomingu/bin/samtools"
