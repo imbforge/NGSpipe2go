@@ -6,6 +6,8 @@ SplitNCigarReads = {
        author: "Antonio Domingues"
 
    output.dir = OUTDIR_STAR2ND
+
+   def JAVA_FLAGS = "-Xmx" + SPLITNCIGAR_MAXMEM
    def SPLITCIGAR_FLAGS  = " -R " + GATK_REF +
                          " -rf " + READ_FILTER_FLAG +
                          " -RMQF " + MAP_Q_FROM_FLAG +
@@ -23,7 +25,7 @@ SplitNCigarReads = {
             echo \$(${TOOL_JAVA}/java -jar ${TOOL_GATK}/GenomeAnalysisTK.jar --version) 1>&2 &&
             echo '/VERSION INFO' 1>&2 &&
 
-            ${TOOL_JAVA}/java -jar ${TOOL_GATK}/GenomeAnalysisTK.jar -T SplitNCigarReads -I $input -o $output ${SPLITCIGAR_FLAGS}
+            ${TOOL_JAVA}/java ${JAVA_FLAGS} -jar ${TOOL_GATK}/GenomeAnalysisTK.jar -T SplitNCigarReads -I $input -o $output ${SPLITCIGAR_FLAGS}
       ""","SplitNCigarReads"
    }
 }

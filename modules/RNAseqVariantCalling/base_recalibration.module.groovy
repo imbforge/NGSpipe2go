@@ -6,6 +6,8 @@ BaseRecalibration = {
        author: "Antonio Domingues"
 
    output.dir = OUTDIR_STAR2ND
+
+   def JAVA_FLAGS = "-Xmx" + RECAL_MAXMEM
    def GATK_FLAGS  = " -R " + GATK_REF +
                      " -nct " + GATK_THREADS
 
@@ -22,7 +24,7 @@ BaseRecalibration = {
 
             ${TOOL_JAVA}/java -jar ${TOOL_GATK}/GenomeAnalysisTK.jar -T BaseRecalibrator -I $input -o $output1 -knownSites ${VCF_REF}  ${GATK_FLAGS} &&
 
-            ${TOOL_JAVA}/java -jar ${TOOL_GATK}/GenomeAnalysisTK.jar -T PrintReads -I $input -BQSR $output1 -o $output2 ${GATK_FLAGS}
+            ${TOOL_JAVA}/java ${JAVA_FLAGS} -jar ${TOOL_GATK}/GenomeAnalysisTK.jar -T PrintReads -I $input -BQSR $output1 -o $output2 ${GATK_FLAGS}
 
       ""","BaseRecalibration"
    }

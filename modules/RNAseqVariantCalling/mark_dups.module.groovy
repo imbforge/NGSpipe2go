@@ -7,7 +7,7 @@ MarkDups = {
 
    output.dir = OUTDIR_STAR2ND
 
-   def JAVA_FLAGS = "-Xmx" + RG_MAXMEM
+   def JAVA_FLAGS = "-Xmx" + MARKDUPS_MAXMEM
    def MARKDUPS_FLAGS  = " REMOVE_DUPLICATES=" + MARKDUPS_REMOVE +
                          " CREATE_INDEX=" + MARKDUPS_INDEX +
                          " VALIDATION_STRINGENCY=" + MARKDUPS_VALIDATION +
