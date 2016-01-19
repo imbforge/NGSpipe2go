@@ -4,6 +4,14 @@
 		"selected_items":
 		[
 			[
+				"ou",
+				"output1"
+			],
+			[
+				"mir",
+				"mirDeep2	(mirDeep2.module.groovy)"
+			],
+			[
 				"le",
 				"levels"
 			],
@@ -506,32 +514,24 @@
 			[
 				"face",
 				"facet_grid"
-			],
-			[
-				"data",
-				"data.table"
-			],
-			[
-				"ch",
-				"chromosome"
 			]
 		]
 	},
 	"buffers":
 	[
 		{
-			"file": "tools/piRNA/piRNA_quantification_summarization.R",
-			"settings":
-			{
-				"buffer_size": 5647,
-				"line_ending": "Unix"
-			}
-		},
-		{
 			"file": "modules/SmallRNAseq/bowtie1.vars.groovy",
 			"settings":
 			{
 				"buffer_size": 652,
+				"line_ending": "Unix"
+			}
+		},
+		{
+			"file": "modules/SmallRNAseq/bowtie1.module.groovy",
+			"settings":
+			{
+				"buffer_size": 1469,
 				"line_ending": "Unix"
 			}
 		},
@@ -544,6 +544,22 @@
 			}
 		},
 		{
+			"file": "modules/SmallRNAseq/bam2bw.module.groovy",
+			"settings":
+			{
+				"buffer_size": 1190,
+				"line_ending": "Unix"
+			}
+		},
+		{
+			"file": "modules/SmallRNAseq/mirDeep2.vars.groovy",
+			"settings":
+			{
+				"buffer_size": 130,
+				"line_ending": "Unix"
+			}
+		},
+		{
 			"file": "modules/SmallRNAseq/bamindexer.module.groovy",
 			"settings":
 			{
@@ -552,26 +568,18 @@
 			}
 		},
 		{
-			"file": "modules/SmallRNAseq/tool.locations.groovy",
+			"file": "modules/SmallRNAseq/mirDeep2.module.groovy",
 			"settings":
 			{
-				"buffer_size": 903,
+				"buffer_size": 705,
 				"line_ending": "Unix"
 			}
 		},
 		{
-			"file": "modules/SmallRNAseq/split_read_strands.module.groovy",
+			"file": "pipelines/SmallRNAseq/miRNA_v0.1.txt",
 			"settings":
 			{
-				"buffer_size": 700,
-				"line_ending": "Unix"
-			}
-		},
-		{
-			"file": "pipelines/SmallRNAseq/smallrnaseq_v0.1.txt",
-			"settings":
-			{
-				"buffer_size": 2315,
+				"buffer_size": 1193,
 				"line_ending": "Unix"
 			}
 		},
@@ -579,7 +587,7 @@
 			"file": "pipelines/SmallRNAseq/bpipe.config",
 			"settings":
 			{
-				"buffer_size": 1729,
+				"buffer_size": 1919,
 				"line_ending": "Unix"
 			}
 		},
@@ -587,7 +595,15 @@
 			"file": "modules/SmallRNAseq/essential.vars.groovy",
 			"settings":
 			{
-				"buffer_size": 977,
+				"buffer_size": 921,
+				"line_ending": "Unix"
+			}
+		},
+		{
+			"file": "modules/SmallRNAseq/tool.locations.groovy",
+			"settings":
+			{
+				"buffer_size": 1001,
 				"line_ending": "Unix"
 			}
 		}
@@ -668,16 +684,19 @@
 	},
 	"file_history":
 	[
+		"/home/adomingu/imbc1/adomingues/projects/NGSpipe2go/tools/piRNA/piRNA_quantification_summarization.R",
+		"/home/adomingu/imbc1/adomingues/projects/NGSpipe2go/modules/SmallRNAseq/ping_pong_pro.module.groovy",
+		"/home/adomingu/imbc1/adomingues/projects/NGSpipe2go/modules/SmallRNAseq/cutadapt.module.groovy",
+		"/home/adomingu/imbc1/adomingues/projects/NGSpipe2go/modules/SmallRNAseq/split_read_strands.module.groovy",
+		"/home/adomingu/imbc1/adomingues/projects/NGSpipe2go/pipelines/SmallRNAseq/smallrnaseq_v0.1.txt",
 		"/home/adomingu/imbc1/adomingues/projects/NGSpipe2go/modules/SmallRNAseq/removed_duplicate_sequences.module.groovy",
 		"/home/adomingu/imbc1/adomingues/projects/NGSpipe2go/modules/SmallRNAseq/read_count_summary.module.groovy",
-		"/home/adomingu/imbc1/adomingues/projects/NGSpipe2go/modules/SmallRNAseq/cutadapt.module.groovy",
 		"/home/adomingu/imbc1/adomingues/projects/NGSpipe2go/modules/SmallRNAseq/maping_stats.module.groovy",
 		"/home/adomingu/imbc1/adomingues/projects/NGSpipe2go/modules/SmallRNAseq/dedup_stats.module.groovy",
 		"/home/adomingu/imbc1/adomingues/projects/NGSpipe2go/modules/SmallRNAseq/bam2bw.module.groovy",
 		"/home/adomingu/imbc1/adomingues/projects/NGSpipe2go/modules/SmallRNAseq/read_count.module.groovy",
 		"/home/adomingu/imbc1/adomingues/projects/NGSpipe2go/modules/SmallRNAseq/ping_pong_signal.module.groovy",
 		"/home/adomingu/imbc1/adomingues/projects/NGSpipe2go/modules/SmallRNAseq/nucleotide_signature.module.groovy",
-		"/home/adomingu/imbc1/adomingues/projects/NGSpipe2go/modules/SmallRNAseq/ping_pong_pro.module.groovy",
 		"/home/adomingu/imbc1/adomingues/projects/NGSpipe2go/modules/SmallRNAseq/fastq_quality_filter.module.groovy",
 		"/home/adomingu/imbc1/adomingues/projects/NGSpipe2go/modules/NGS/fastqc.module.groovy",
 		"/home/adomingu/imbc1/adomingues/projects/ziwi_zili_ip_tdrkh_elke/doc/ziwi_zili_ip_tdrkh_elke.md",
@@ -696,7 +715,6 @@
 		"/home/adomingu/imbc1/adomingues/projects/general_usage_scripts/separateStrandsBam.sh",
 		"/home/adomingu/scratch/projects/tmp/test_pipe.tmp",
 		"/home/adomingu/imbc1/adomingues/projects/NGSpipe2go/tools/piRNA/piRNABaseTerminalBasesPlot.R",
-		"/home/adomingu/imbc1/adomingues/projects/NGSpipe2go/modules/SmallRNAseq/split_read_strands.module.groovy",
 		"/home/adomingu/imbc1/adomingues/projects/NGSpipe2go/modules/SmallRNAseq/split_read_strands.vars.groovy",
 		"/home/adomingu/imbc1/adomingues/projects/NGSpipe2go/modules/SmallRNAseq/bowtie1.module.groovy",
 		"/home/adomingu/imbc1/adomingues/projects/NGSpipe2go/modules/SmallRNAseq/bowtie1.vars.groovy",
@@ -793,9 +811,7 @@
 		"/home/adomingu/imbc1/adomingues/projects/ziwi_zili_ip_tdrkh_elke/scripts/plotCountReadsInRE.R",
 		"/home/adomingu/imbc1/adomingues/projects/ziwi_zili_ip_tdrkh_elke/scripts/countReadsInTranscripts.sh",
 		"/home/adomingu/imbc1/adomingues/projects/walter_circular_rna/doc/walter_circular_rna.md",
-		"/home/adomingu/imbc1/adomingues/projects/general_usage_scripts/plot_mapped_reads.R",
-		"/home/adomingu/imbc1/adomingues/projects/general_usage_scripts/addReadGroups.sh",
-		"/home/adomingu/imbc1/adomingues/projects/Ziwi-IP_stephan/scripts/smRNA_profile_length.Rmd"
+		"/home/adomingu/imbc1/adomingues/projects/general_usage_scripts/plot_mapped_reads.R"
 	],
 	"find":
 	{
@@ -880,6 +896,7 @@
 		"case_sensitive": false,
 		"find_history":
 		[
+			"dedup_stats",
 			"rsy",
 			" ",
 			"bpipe",
@@ -1006,8 +1023,7 @@
 			"NUMTHREADS",
 			"FASTQC",
 			"CUTADAPT",
-			"FASTQC_THREADS",
-			"FASTQC"
+			"FASTQC_THREADS"
 		],
 		"highlight": true,
 		"in_selection": false,
@@ -1050,23 +1066,23 @@
 	"groups":
 	[
 		{
-			"selected": 3,
+			"selected": 4,
 			"sheets":
 			[
 				{
 					"buffer": 0,
-					"file": "tools/piRNA/piRNA_quantification_summarization.R",
+					"file": "modules/SmallRNAseq/bowtie1.vars.groovy",
 					"settings":
 					{
-						"buffer_size": 5647,
+						"buffer_size": 652,
 						"regions":
 						{
 						},
 						"selection":
 						[
 							[
-								4497,
-								4497
+								264,
+								264
 							]
 						],
 						"settings":
@@ -1187,7 +1203,6 @@
 							[
 							],
 							"pyflakes_ignore_import_*": true,
-							"r_box_status": false,
 							"sublimelinter": "load-save",
 							"sublimelinter_delay": 2,
 							"sublimelinter_disable":
@@ -1210,28 +1225,28 @@
 								"Ruby on Rails": "ruby"
 							},
 							"sublimelinter_wrap_find": true,
-							"syntax": "Packages/R/R.tmLanguage"
+							"syntax": "Packages/Groovy/Groovy.tmLanguage"
 						},
 						"translation.x": 0.0,
-						"translation.y": 867.0,
+						"translation.y": 0.0,
 						"zoom_level": 1.0
 					},
 					"type": "text"
 				},
 				{
 					"buffer": 1,
-					"file": "modules/SmallRNAseq/bowtie1.vars.groovy",
+					"file": "modules/SmallRNAseq/bowtie1.module.groovy",
 					"settings":
 					{
-						"buffer_size": 652,
+						"buffer_size": 1469,
 						"regions":
 						{
 						},
 						"selection":
 						[
 							[
-								0,
-								0
+								789,
+								789
 							]
 						],
 						"settings":
@@ -1548,18 +1563,182 @@
 				},
 				{
 					"buffer": 3,
-					"file": "modules/SmallRNAseq/bamindexer.module.groovy",
+					"file": "modules/SmallRNAseq/bam2bw.module.groovy",
 					"settings":
 					{
-						"buffer_size": 449,
+						"buffer_size": 1190,
 						"regions":
 						{
 						},
 						"selection":
 						[
 							[
-								123,
-								123
+								552,
+								552
+							]
+						],
+						"settings":
+						{
+							"BracketHighlighterBusy": false,
+							"annotations":
+							[
+								"TODO",
+								"README",
+								"FIXME"
+							],
+							"bh_regions":
+							[
+								"bh_regex",
+								"bh_regex_center",
+								"bh_regex_open",
+								"bh_regex_close",
+								"bh_double_quote",
+								"bh_double_quote_center",
+								"bh_double_quote_open",
+								"bh_double_quote_close",
+								"bh_square",
+								"bh_square_center",
+								"bh_square_open",
+								"bh_square_close",
+								"bh_angle",
+								"bh_angle_center",
+								"bh_angle_open",
+								"bh_angle_close",
+								"bh_curly",
+								"bh_curly_center",
+								"bh_curly_open",
+								"bh_curly_close",
+								"bh_c_define",
+								"bh_c_define_center",
+								"bh_c_define_open",
+								"bh_c_define_close",
+								"bh_default",
+								"bh_default_center",
+								"bh_default_open",
+								"bh_default_close",
+								"bh_unmatched",
+								"bh_unmatched_center",
+								"bh_unmatched_open",
+								"bh_unmatched_close",
+								"bh_round",
+								"bh_round_center",
+								"bh_round_open",
+								"bh_round_close",
+								"bh_tag",
+								"bh_tag_center",
+								"bh_tag_open",
+								"bh_tag_close",
+								"bh_single_quote",
+								"bh_single_quote_center",
+								"bh_single_quote_open",
+								"bh_single_quote_close"
+							],
+							"csslint_options":
+							{
+								"adjoining-classes": "warning",
+								"box-model": true,
+								"box-sizing": "warning",
+								"compatible-vendor-prefixes": "warning",
+								"display-property-grouping": true,
+								"duplicate-background-images": "warning",
+								"duplicate-properties": true,
+								"empty-rules": true,
+								"errors": true,
+								"fallback-colors": "warning",
+								"floats": "warning",
+								"font-faces": "warning",
+								"font-sizes": "warning",
+								"gradients": "warning",
+								"ids": "warning",
+								"import": "warning",
+								"important": "warning",
+								"known-properties": true,
+								"outline-none": "warning",
+								"overqualified-elements": "warning",
+								"qualified-headings": "warning",
+								"regex-selectors": "warning",
+								"rules-count": "warning",
+								"shorthand": "warning",
+								"star-property-hack": "warning",
+								"text-indent": "warning",
+								"underscore-property-hack": "warning",
+								"unique-headings": "warning",
+								"universal-selector": "warning",
+								"vendor-prefix": true,
+								"zero-units": "warning"
+							},
+							"gjslint_ignore":
+							[
+								110
+							],
+							"gjslint_options":
+							[
+							],
+							"javascript_linter": "jshint",
+							"jshint_options":
+							{
+								"browser": true,
+								"devel": true,
+								"evil": true,
+								"regexdash": true,
+								"sub": true,
+								"trailing": true,
+								"wsh": true
+							},
+							"pep8": true,
+							"pep8_ignore":
+							[
+								"E501"
+							],
+							"perl_linter": "perlcritic",
+							"pyflakes_ignore":
+							[
+							],
+							"pyflakes_ignore_import_*": true,
+							"sublimelinter": "load-save",
+							"sublimelinter_delay": 2,
+							"sublimelinter_disable":
+							[
+							],
+							"sublimelinter_executable_map":
+							{
+							},
+							"sublimelinter_fill_outlines": false,
+							"sublimelinter_gutter_marks": true,
+							"sublimelinter_gutter_marks_theme": "simple",
+							"sublimelinter_mark_style": "none",
+							"sublimelinter_notes": false,
+							"sublimelinter_objj_check_ascii": false,
+							"sublimelinter_popup_errors_on_save": false,
+							"sublimelinter_syntax_map":
+							{
+								"C++": "c",
+								"Python Django": "python",
+								"Ruby on Rails": "ruby"
+							},
+							"sublimelinter_wrap_find": true,
+							"syntax": "Packages/Groovy/Groovy.tmLanguage"
+						},
+						"translation.x": 0.0,
+						"translation.y": 0.0,
+						"zoom_level": 1.0
+					},
+					"type": "text"
+				},
+				{
+					"buffer": 4,
+					"file": "modules/SmallRNAseq/mirDeep2.vars.groovy",
+					"settings":
+					{
+						"buffer_size": 130,
+						"regions":
+						{
+						},
+						"selection":
+						[
+							[
+								130,
+								130
 							]
 						],
 						"settings":
@@ -1717,19 +1896,19 @@
 			"sheets":
 			[
 				{
-					"buffer": 4,
-					"file": "modules/SmallRNAseq/tool.locations.groovy",
+					"buffer": 5,
+					"file": "modules/SmallRNAseq/bamindexer.module.groovy",
 					"settings":
 					{
-						"buffer_size": 903,
+						"buffer_size": 449,
 						"regions":
 						{
 						},
 						"selection":
 						[
 							[
-								903,
-								903
+								272,
+								272
 							]
 						],
 						"settings":
@@ -1881,19 +2060,19 @@
 					"type": "text"
 				},
 				{
-					"buffer": 5,
-					"file": "modules/SmallRNAseq/split_read_strands.module.groovy",
+					"buffer": 6,
+					"file": "modules/SmallRNAseq/mirDeep2.module.groovy",
 					"settings":
 					{
-						"buffer_size": 700,
+						"buffer_size": 705,
 						"regions":
 						{
 						},
 						"selection":
 						[
 							[
-								405,
-								405
+								8,
+								8
 							]
 						],
 						"settings":
@@ -2047,23 +2226,27 @@
 			]
 		},
 		{
-			"selected": 0,
+			"selected": 1,
 			"sheets":
 			[
 				{
-					"buffer": 6,
-					"file": "pipelines/SmallRNAseq/smallrnaseq_v0.1.txt",
+					"buffer": 7,
+					"file": "pipelines/SmallRNAseq/miRNA_v0.1.txt",
 					"settings":
 					{
-						"buffer_size": 2315,
+						"buffer_size": 1193,
 						"regions":
 						{
 						},
 						"selection":
 						[
 							[
-								586,
-								586
+								923,
+								923
+							],
+							[
+								979,
+								979
 							]
 						],
 						"settings":
@@ -2209,25 +2392,25 @@
 							"syntax": "Packages/Groovy/Groovy.tmLanguage"
 						},
 						"translation.x": 0.0,
-						"translation.y": 0.0,
+						"translation.y": 153.0,
 						"zoom_level": 1.0
 					},
 					"type": "text"
 				},
 				{
-					"buffer": 7,
+					"buffer": 8,
 					"file": "pipelines/SmallRNAseq/bpipe.config",
 					"settings":
 					{
-						"buffer_size": 1729,
+						"buffer_size": 1919,
 						"regions":
 						{
 						},
 						"selection":
 						[
 							[
-								1726,
-								1726
+								1812,
+								1812
 							]
 						],
 						"settings":
@@ -2373,7 +2556,7 @@
 							"syntax": "Packages/Groovy/Groovy.tmLanguage"
 						},
 						"translation.x": 0.0,
-						"translation.y": 688.0,
+						"translation.y": 833.0,
 						"zoom_level": 1.0
 					},
 					"type": "text"
@@ -2385,19 +2568,19 @@
 			"sheets":
 			[
 				{
-					"buffer": 8,
+					"buffer": 9,
 					"file": "modules/SmallRNAseq/essential.vars.groovy",
 					"settings":
 					{
-						"buffer_size": 977,
+						"buffer_size": 921,
 						"regions":
 						{
 						},
 						"selection":
 						[
 							[
-								561,
-								561
+								331,
+								331
 							]
 						],
 						"settings":
@@ -2547,6 +2730,170 @@
 						"zoom_level": 1.0
 					},
 					"type": "text"
+				},
+				{
+					"buffer": 10,
+					"file": "modules/SmallRNAseq/tool.locations.groovy",
+					"settings":
+					{
+						"buffer_size": 1001,
+						"regions":
+						{
+						},
+						"selection":
+						[
+							[
+								962,
+								962
+							]
+						],
+						"settings":
+						{
+							"BracketHighlighterBusy": false,
+							"annotations":
+							[
+								"TODO",
+								"README",
+								"FIXME"
+							],
+							"bh_regions":
+							[
+								"bh_regex",
+								"bh_regex_center",
+								"bh_regex_open",
+								"bh_regex_close",
+								"bh_double_quote",
+								"bh_double_quote_center",
+								"bh_double_quote_open",
+								"bh_double_quote_close",
+								"bh_square",
+								"bh_square_center",
+								"bh_square_open",
+								"bh_square_close",
+								"bh_angle",
+								"bh_angle_center",
+								"bh_angle_open",
+								"bh_angle_close",
+								"bh_curly",
+								"bh_curly_center",
+								"bh_curly_open",
+								"bh_curly_close",
+								"bh_c_define",
+								"bh_c_define_center",
+								"bh_c_define_open",
+								"bh_c_define_close",
+								"bh_default",
+								"bh_default_center",
+								"bh_default_open",
+								"bh_default_close",
+								"bh_unmatched",
+								"bh_unmatched_center",
+								"bh_unmatched_open",
+								"bh_unmatched_close",
+								"bh_round",
+								"bh_round_center",
+								"bh_round_open",
+								"bh_round_close",
+								"bh_tag",
+								"bh_tag_center",
+								"bh_tag_open",
+								"bh_tag_close",
+								"bh_single_quote",
+								"bh_single_quote_center",
+								"bh_single_quote_open",
+								"bh_single_quote_close"
+							],
+							"csslint_options":
+							{
+								"adjoining-classes": "warning",
+								"box-model": true,
+								"box-sizing": "warning",
+								"compatible-vendor-prefixes": "warning",
+								"display-property-grouping": true,
+								"duplicate-background-images": "warning",
+								"duplicate-properties": true,
+								"empty-rules": true,
+								"errors": true,
+								"fallback-colors": "warning",
+								"floats": "warning",
+								"font-faces": "warning",
+								"font-sizes": "warning",
+								"gradients": "warning",
+								"ids": "warning",
+								"import": "warning",
+								"important": "warning",
+								"known-properties": true,
+								"outline-none": "warning",
+								"overqualified-elements": "warning",
+								"qualified-headings": "warning",
+								"regex-selectors": "warning",
+								"rules-count": "warning",
+								"shorthand": "warning",
+								"star-property-hack": "warning",
+								"text-indent": "warning",
+								"underscore-property-hack": "warning",
+								"unique-headings": "warning",
+								"universal-selector": "warning",
+								"vendor-prefix": true,
+								"zero-units": "warning"
+							},
+							"gjslint_ignore":
+							[
+								110
+							],
+							"gjslint_options":
+							[
+							],
+							"javascript_linter": "jshint",
+							"jshint_options":
+							{
+								"browser": true,
+								"devel": true,
+								"evil": true,
+								"regexdash": true,
+								"sub": true,
+								"trailing": true,
+								"wsh": true
+							},
+							"pep8": true,
+							"pep8_ignore":
+							[
+								"E501"
+							],
+							"perl_linter": "perlcritic",
+							"pyflakes_ignore":
+							[
+							],
+							"pyflakes_ignore_import_*": true,
+							"sublimelinter": "load-save",
+							"sublimelinter_delay": 2,
+							"sublimelinter_disable":
+							[
+							],
+							"sublimelinter_executable_map":
+							{
+							},
+							"sublimelinter_fill_outlines": false,
+							"sublimelinter_gutter_marks": true,
+							"sublimelinter_gutter_marks_theme": "simple",
+							"sublimelinter_mark_style": "none",
+							"sublimelinter_notes": false,
+							"sublimelinter_objj_check_ascii": false,
+							"sublimelinter_popup_errors_on_save": false,
+							"sublimelinter_syntax_map":
+							{
+								"C++": "c",
+								"Python Django": "python",
+								"Ruby on Rails": "ruby"
+							},
+							"sublimelinter_wrap_find": true,
+							"syntax": "Packages/Groovy/Groovy.tmLanguage"
+						},
+						"translation.x": 0.0,
+						"translation.y": 0.0,
+						"zoom_level": 1.0
+					},
+					"type": "text"
 				}
 			]
 		}
@@ -2591,7 +2938,7 @@
 		"cols":
 		[
 			0.0,
-			0.507335026373,
+			0.490374817632,
 			1.0
 		],
 		"rows":
