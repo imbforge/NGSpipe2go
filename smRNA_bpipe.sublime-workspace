@@ -571,7 +571,7 @@
 			"file": "modules/SmallRNAseq/mirDeep2.module.groovy",
 			"settings":
 			{
-				"buffer_size": 705,
+				"buffer_size": 786,
 				"line_ending": "Unix"
 			}
 		},
@@ -1066,7 +1066,7 @@
 	"groups":
 	[
 		{
-			"selected": 4,
+			"selected": 0,
 			"sheets":
 			[
 				{
@@ -1081,8 +1081,8 @@
 						"selection":
 						[
 							[
-								264,
-								264
+								0,
+								0
 							]
 						],
 						"settings":
@@ -1245,8 +1245,8 @@
 						"selection":
 						[
 							[
-								789,
-								789
+								0,
+								0
 							]
 						],
 						"settings":
@@ -1409,8 +1409,8 @@
 						"selection":
 						[
 							[
-								225,
-								225
+								0,
+								0
 							]
 						],
 						"settings":
@@ -1573,8 +1573,8 @@
 						"selection":
 						[
 							[
-								552,
-								552
+								0,
+								0
 							]
 						],
 						"settings":
@@ -1737,8 +1737,8 @@
 						"selection":
 						[
 							[
-								130,
-								130
+								0,
+								0
 							]
 						],
 						"settings":
@@ -1907,8 +1907,8 @@
 						"selection":
 						[
 							[
-								272,
-								272
+								0,
+								0
 							]
 						],
 						"settings":
@@ -2064,15 +2064,15 @@
 					"file": "modules/SmallRNAseq/mirDeep2.module.groovy",
 					"settings":
 					{
-						"buffer_size": 705,
+						"buffer_size": 786,
 						"regions":
 						{
 						},
 						"selection":
 						[
 							[
-								8,
-								8
+								295,
+								295
 							]
 						],
 						"settings":
@@ -2226,7 +2226,7 @@
 			]
 		},
 		{
-			"selected": 1,
+			"selected": 0,
 			"sheets":
 			[
 				{
@@ -2241,12 +2241,8 @@
 						"selection":
 						[
 							[
-								923,
-								923
-							],
-							[
-								979,
-								979
+								0,
+								0
 							]
 						],
 						"settings":
@@ -2409,8 +2405,8 @@
 						"selection":
 						[
 							[
-								1812,
-								1812
+								0,
+								0
 							]
 						],
 						"settings":
@@ -2579,8 +2575,8 @@
 						"selection":
 						[
 							[
-								331,
-								331
+								0,
+								0
 							]
 						],
 						"settings":
@@ -2743,8 +2739,8 @@
 						"selection":
 						[
 							[
-								962,
-								962
+								0,
+								0
 							]
 						],
 						"settings":
