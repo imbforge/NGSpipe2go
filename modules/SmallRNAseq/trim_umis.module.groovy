@@ -23,7 +23,7 @@ TrimUMIs = {
          echo \$(${TOOL_SEQTK} 2>&1 | grep 'Version') 1>&2 &&
          echo '/VERSION INFO' 1>&2 &&
 
-         ${TOOL_SEQTK} trimfq -b ${LEFT_TRIM} -e ${RIGHT_TRIM} $input > $output
+         ${TOOL_SEQTK} trimfq -b ${LEFT_TRIM} -e ${RIGHT_TRIM} $input | ${TOOL_SEQTK} seq -L 15 - > $output
 
 		""","TrimUMIs"
 	}

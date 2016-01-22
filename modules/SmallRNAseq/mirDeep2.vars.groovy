@@ -1,4 +1,6 @@
-//vars for task TrimmUMIs from catalog SmallRNAseq, version 0.1
+//vars for task MirDeep2 from catalog SmallRNAseq, version 0.1
 
 MIR_OUTDIR=RESULTS + "/mirDeep2"
-GENOME_REF=ESSENTIAL_BOWTIE_REF
+GENOME_SEQ=ESSENTIAL_GENOME_REF
+MATURE_MIRNA=ESSENTIAL_MATURE_MIRNA
+HAIRPIN_MIRNA=ESSENTIAL_HAIRPIN_MIRNA

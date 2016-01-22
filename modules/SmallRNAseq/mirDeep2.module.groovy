@@ -1,12 +1,12 @@
 MirDeep2 = {
 	doc title: "mirDeep2",
-		desc:  """Quantification of miRNAs performed in 2 steps: (1) Processes reads and mappping to the reference genome; (2) quantification of miRNA expression.""",
+		desc:  """Quantification of miRNAs performed in 2 steps: (1) Processes reads and mappping to the reference genome; (2) quantification of miRNA expression. This is step 2""",
       constraints: "Requires mirDeep2.",
 		author: "Antonio Domingues"
 
 	output.dir = MIR_OUTDIR
 
-	transform(".deduped_barcoded.trimmed.fastq") to (".arf", ".fa") {
+	transform(".arf", ".fa") to (".csv", ".html") {
 
 
       exec """
@@ -16,8 +16,10 @@ MirDeep2 = {
 
          export PATH=${TOOL_DEPENDENCIES}:$PATH &&
          export PATH=${TOOL_MIRDEEP2}:$PATH &&
+         export PATH=${TOOL_VIENNA}:$PATH &&
+         export PATH=${TOOL_RANDFOLD}:$PATH &&
 
-         ${TOOL_MIRDEEP2}/mapper.pl $input -e -p $GENOME_REF -s $output2.fa -t $output1 -h -m -i -j -o 8 1>&2 ${output2.prefix}.mapper.log
+         ${TOOL_MIRDEEP2}/miRDeep2.pl $input2 $GENOME_SEQ $input1 $MATURE_MIRNA none $HAIRPIN_MIRNA -t zebrafish -c -r $input1.prefix 2> $output.dir/report.log
 
 		""","MirDeep2"
 	}

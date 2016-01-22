@@ -4,7 +4,7 @@ MirDeep2Mapper = {
       constraints: "Requires mirDeep2.",
 		author: "Antonio Domingues"
 
-	output.dir = MIR_OUTDIR
+	output.dir = MIR_MAPPER_OUTDIR
 
 	transform(".deduped_barcoded.trimmed.fastq") to (".arf", ".fa") {
 
