@@ -12,8 +12,8 @@ ESSENTIAL_GENOME_REF="/home/adomingu/imb-kettinggr/genomes/Danio_rerio/Ensembl/Z
 ESSENTIAL_FEATURES="/local/scratch1/imb-kettinggr/adomingues/projects/bpipe_small_rna/data/annotations/features.bed"
 
 // vars for mirDeep2
-ESSENTIAL_MATURE_MIRNA="~/imb-kettinggr/genomes/Danio_rerio/Ensembl/Zv9/Annotation/SmallRNA/mature.fa"
-ESSENTIAL_HAIRPIN_MIRNA="~/imb-kettinggr/genomes/Danio_rerio/Ensembl/Zv9/Annotation/SmallRNA/hairpin.fa"
+ESSENTIAL_MATURE_MIRNA="~/imb-kettinggr/genomes/Danio_rerio/Ensembl/Zv9/Annotation/SmallRNA/mature.noSpaces.fa"
+ESSENTIAL_HAIRPIN_MIRNA="~/imb-kettinggr/genomes/Danio_rerio/Ensembl/Zv9/Annotation/SmallRNA/hairpin.noSpaces.fa"
 
 //global vars that will be reused in some global vars
 PROJECT=ESSENTIAL_PROJECT
