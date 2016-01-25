@@ -17,6 +17,8 @@ MirDeep2Mapper = {
          export PATH=${TOOL_DEPENDENCIES}:$PATH &&
          export PATH=${TOOL_MIRDEEP2}:$PATH &&
 
+         cd $output.dir &&
+
          ${TOOL_MIRDEEP2}/mapper.pl $input -e -p $GENOME_REF -s $output2.fa -t $output1 -h -m -i -j -o 8 1>&2 ${output2.prefix}.mapper.log
 
 		""","MirDeep2Mapper"
