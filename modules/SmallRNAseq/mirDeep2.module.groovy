@@ -4,10 +4,10 @@ MirDeep2 = {
       constraints: "Requires mirDeep2.",
 		author: "Antonio Domingues"
 
-	output.dir = MIR_OUTDIR
    def EXP = input1.split("/")[-1].replaceAll(".arf", "")
+	output.dir = MIR_OUTDIR + "/" + EXP
 
-	transform(".arf", ".fa") to (".csv", ".html") {
+	transform(".arf", ".fa") to (".tmp") {
 
 
       exec """
@@ -23,7 +23,9 @@ MirDeep2 = {
 
          cd $output.dir &&
 
-         ${TOOL_MIRDEEP2}/miRDeep2.pl $input2 $GENOME_SEQ $input1 $MATURE_MIRNA none $HAIRPIN_MIRNA -t zebrafish -c -r ${EXP} 2> report.log
+         ${TOOL_MIRDEEP2}/miRDeep2.pl $input2 $GENOME_SEQ $input1 $MATURE_MIRNA none $HAIRPIN_MIRNA -t zebrafish -c -d -v -r ${EXP} -z "."${EXP} 2> ${EXP}.report.log &&
+
+         touch ${EXP}.tmp
 
 		""","MirDeep2"
 	}
