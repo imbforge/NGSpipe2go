@@ -5,6 +5,7 @@ MirDeep2 = {
 		author: "Antonio Domingues"
 
 	output.dir = MIR_OUTDIR
+   def EXP = input1.split("/")[-1].replaceAll(".arf", "")
 
 	transform(".arf", ".fa") to (".csv", ".html") {
 
@@ -20,7 +21,9 @@ MirDeep2 = {
          export PERL5LIB=$PERL5LIB:/fsimb/groups/imb-kettinggr/common_bin/mirdeep2_0_0_7/lib/ &&
          export PATH=${TOOL_MIRDEEP2}:$PATH &&
 
-         ${TOOL_MIRDEEP2}/miRDeep2.pl $input2 $GENOME_SEQ $input1 $MATURE_MIRNA none $HAIRPIN_MIRNA -t zebrafish -c -r $input1.prefix 2> $output.dir/report.log
+         cd $output.dir &&
+
+         ${TOOL_MIRDEEP2}/miRDeep2.pl $input2 $GENOME_SEQ $input1 $MATURE_MIRNA none $HAIRPIN_MIRNA -t zebrafish -c -r ${EXP} 2> report.log
 
 		""","MirDeep2"
 	}

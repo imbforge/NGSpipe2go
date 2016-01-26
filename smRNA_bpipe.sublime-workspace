@@ -568,6 +568,16 @@
 			}
 		},
 		{
+			"contents": "Searching 13 files for \"output.dir\"\n\n/home/adomingu/imbc1/adomingues/projects/NGSpipe2go/modules/SmallRNAseq/bam2bw.module.groovy:\n    7  		author: \"Sergi Sayols\"\n    8  \n    9: 	output.dir=TRACKS\n   10  \n   11  	transform(\".bam\") to (\".scaled.bw\") {\n\n/home/adomingu/imbc1/adomingues/projects/NGSpipe2go/modules/SmallRNAseq/bamindexer.module.groovy:\n    6  		author: \"Sergi Sayols\"\n    7  \n    8: 	output.dir = MAPPED\n    9  \n   10  	transform(\".bam\") to(\".bam.bai\") {\n\n/home/adomingu/imbc1/adomingues/projects/NGSpipe2go/modules/SmallRNAseq/bowtie1.module.groovy:\n    8        author: \"Sergi Sayols\"\n    9  \n   10:    output.dir = MAPPED\n   11  \n   12     def BOWTIE_FLAGS = \" -q --sam\"  +\n\n/home/adomingu/imbc1/adomingues/projects/NGSpipe2go/modules/SmallRNAseq/mirDeep2.module.groovy:\n    5  		author: \"Antonio Domingues\"\n    6  \n    7: 	output.dir = MIR_OUTDIR\n    8  \n    9  	transform(\".arf\", \".fa\") to (\".csv\", \".html\") {\n   ..\n   21           export PATH=${TOOL_MIRDEEP2}:$PATH &&\n   22  \n   23:          ${TOOL_MIRDEEP2}/miRDeep2.pl $input2 $GENOME_SEQ $input1 $MATURE_MIRNA none $HAIRPIN_MIRNA -t zebrafish -c -r $input1.prefix 2> $output.dir/report.log\n   24  \n   25  		\"\"\",\"MirDeep2\"\n\n/home/adomingu/imbc1/adomingues/projects/NGSpipe2go/modules/SmallRNAseq/mirDeep2_mapper.module.groovy:\n    5  		author: \"Antonio Domingues\"\n    6  \n    7: 	output.dir = MIR_MAPPER_OUTDIR\n    8  \n    9  	transform(\".deduped_barcoded.trimmed.fastq\") to (\".arf\", \".fa\") {\n   ..\n   18           export PATH=${TOOL_MIRDEEP2}:$PATH &&\n   19  \n   20:          cd $output.dir &&\n   21  \n   22           ${TOOL_MIRDEEP2}/mapper.pl $input -e -p $GENOME_REF -s $output2.fa -t $output1 -h -m -i -j -o 8 1>&2 ${output2.prefix}.mapper.log\n\n/home/adomingu/imbc1/adomingues/projects/NGSpipe2go/modules/SmallRNAseq/trim_umis.module.groovy:\n    6  		author: \"Antonio Domingues\"\n    7  \n    8: 	output.dir = TRIM_OUTDIR\n    9     def SEQTK_FLAGS = \" -l \" + LEFT_TRIM +\n   10                         \" -b \" + RIGHT_TRIM\n\n8 matches across 6 files\n",
+			"settings":
+			{
+				"buffer_size": 2023,
+				"line_ending": "Unix",
+				"name": "Find Results",
+				"scratch": true
+			}
+		},
+		{
 			"file": "modules/SmallRNAseq/trim_umis.vars.groovy",
 			"settings":
 			{
@@ -587,7 +597,7 @@
 			"file": "modules/SmallRNAseq/mirDeep2.module.groovy",
 			"settings":
 			{
-				"buffer_size": 993,
+				"buffer_size": 1059,
 				"line_ending": "Unix"
 			}
 		},
@@ -616,10 +626,10 @@
 			}
 		},
 		{
-			"contents": "export PATH=/fsimb/groups/imb-kettinggr/common_bin:$PATH && \nexport PATH=/fsimb/groups/imb-kettinggr/common_bin/mirdeep2_0_0_7:$PATH &&\nexport PATH=/fsimb/groups/imb-kettinggr/common_bin/ViennaRNA/2.1.9/ViennaRNA/bin:$PATH && \n/fsimb/groups/imb-kettinggr/common_bin/mirdeep2_0_0_7/miRDeep2.pl /home/adomingu/imb-kettinggr/adomingues/projects/nadinew_mir140/results/mirDeep2/miR140-duplication.fa /home/adomingu/imb-kettinggr/genomes/Danio_rerio/Ensembl/Zv9/Sequence/chr_sequences/chr.clean.fa /home/adomingu/imb-kettinggr/adomingues/projects/nadinew_mir140/results/mirDeep2/miR140-duplication.arf ~/imb-kettinggr/genomes/Danio_rerio/Ensembl/Zv9/Annotation/SmallRNA/mature.fa none ~/imb-kettinggr/genomes/Danio_rerio/Ensembl/Zv9/Annotation/SmallRNA/hairpin.fa -t zebrafish -c -r /home/adomingu/imb-kettinggr/adomingues/projects/nadinew_mir140/results/mirDeep2/miR140-duplication 2> /fsimb/groups/imb-kettinggr/adomingues/projects/nadinew_mir140/results/mirDeep2/report.log\n\n",
+			"contents": "${TOOL_MIRDEEP2}/miRDeep2.pl $input2 $GENOME_SEQ $input1 $MATURE_MIRNA none $HAIRPIN_MIRNA -t zebrafish -c -r $input1.prefix 2> $output.dir/report.log",
 			"settings":
 			{
-				"buffer_size": 973,
+				"buffer_size": 150,
 				"line_ending": "Unix"
 			}
 		},
@@ -859,9 +869,10 @@
 	},
 	"find_in_files":
 	{
-		"height": 0.0,
+		"height": 93.0,
 		"where_history":
 		[
+			"<open files>,*.groovy",
 			"<open files>",
 			"/home/adomingu/imbc1/adomingues/projects/notebook,/home/adomingu/imbc1/adomingues/projects/walter_circular_rna/doc",
 			"/home/adomingu/imbc1/adomingues/projects/notebook",
@@ -936,6 +947,8 @@
 		"case_sensitive": false,
 		"find_history":
 		[
+			"output.dir",
+			"$output.dir",
 			"&&",
 			"SmallRNAseq",
 			"mirDeep2",
@@ -1061,9 +1074,7 @@
 			".bed",
 			"NGSpipe2go",
 			"16_April_2015_unique",
-			"rsyn",
-			"FilterDuplicates",
-			"4"
+			"rsyn"
 		],
 		"highlight": true,
 		"in_selection": false,
@@ -1941,8 +1952,8 @@
 						"selection":
 						[
 							[
-								137,
-								137
+								82,
+								82
 							]
 						],
 						"settings":
@@ -2095,6 +2106,126 @@
 				},
 				{
 					"buffer": 6,
+					"settings":
+					{
+						"buffer_size": 2023,
+						"regions":
+						{
+							"match":
+							{
+								"flags": 112,
+								"regions":
+								[
+									[
+										179,
+										189
+									],
+									[
+										398,
+										408
+									],
+									[
+										619,
+										629
+									],
+									[
+										841,
+										851
+									],
+									[
+										1142,
+										1152
+									],
+									[
+										1353,
+										1363
+									],
+									[
+										1554,
+										1564
+									],
+									[
+										1873,
+										1883
+									]
+								],
+								"scope": ""
+							}
+						},
+						"selection":
+						[
+							[
+								0,
+								0
+							]
+						],
+						"settings":
+						{
+							"BracketHighlighterBusy": false,
+							"bh_regions":
+							[
+								"bh_regex",
+								"bh_regex_center",
+								"bh_regex_open",
+								"bh_regex_close",
+								"bh_double_quote",
+								"bh_double_quote_center",
+								"bh_double_quote_open",
+								"bh_double_quote_close",
+								"bh_square",
+								"bh_square_center",
+								"bh_square_open",
+								"bh_square_close",
+								"bh_angle",
+								"bh_angle_center",
+								"bh_angle_open",
+								"bh_angle_close",
+								"bh_curly",
+								"bh_curly_center",
+								"bh_curly_open",
+								"bh_curly_close",
+								"bh_c_define",
+								"bh_c_define_center",
+								"bh_c_define_open",
+								"bh_c_define_close",
+								"bh_default",
+								"bh_default_center",
+								"bh_default_open",
+								"bh_default_close",
+								"bh_unmatched",
+								"bh_unmatched_center",
+								"bh_unmatched_open",
+								"bh_unmatched_close",
+								"bh_round",
+								"bh_round_center",
+								"bh_round_open",
+								"bh_round_close",
+								"bh_tag",
+								"bh_tag_center",
+								"bh_tag_open",
+								"bh_tag_close",
+								"bh_single_quote",
+								"bh_single_quote_center",
+								"bh_single_quote_open",
+								"bh_single_quote_close"
+							],
+							"detect_indentation": false,
+							"output_tag": 1,
+							"result_base_dir": "",
+							"result_file_regex": "^([A-Za-z\\\\/<].*):$",
+							"result_line_regex": "^ +([0-9]+):",
+							"scroll_past_end": true,
+							"syntax": "Packages/Default/Find Results.hidden-tmLanguage",
+							"translate_tabs_to_spaces": false
+						},
+						"translation.x": 0.0,
+						"translation.y": 51.0,
+						"zoom_level": 1.0
+					},
+					"type": "text"
+				},
+				{
+					"buffer": 7,
 					"file": "modules/SmallRNAseq/trim_umis.vars.groovy",
 					"settings":
 					{
@@ -2260,11 +2391,11 @@
 			]
 		},
 		{
-			"selected": 2,
+			"selected": 1,
 			"sheets":
 			[
 				{
-					"buffer": 7,
+					"buffer": 8,
 					"file": "modules/SmallRNAseq/bamindexer.module.groovy",
 					"settings":
 					{
@@ -2428,19 +2559,19 @@
 					"type": "text"
 				},
 				{
-					"buffer": 8,
+					"buffer": 9,
 					"file": "modules/SmallRNAseq/mirDeep2.module.groovy",
 					"settings":
 					{
-						"buffer_size": 993,
+						"buffer_size": 1059,
 						"regions":
 						{
 						},
 						"selection":
 						[
 							[
-								809,
-								809
+								1036,
+								1036
 							]
 						],
 						"settings":
@@ -2586,13 +2717,13 @@
 							"syntax": "Packages/Groovy/Groovy.tmLanguage"
 						},
 						"translation.x": 0.0,
-						"translation.y": 0.0,
+						"translation.y": 5.0,
 						"zoom_level": 1.0
 					},
 					"type": "text"
 				},
 				{
-					"buffer": 9,
+					"buffer": 10,
 					"file": "modules/SmallRNAseq/mirDeep2_mapper.module.groovy",
 					"settings":
 					{
@@ -2603,8 +2734,8 @@
 						"selection":
 						[
 							[
-								307,
-								307
+								635,
+								635
 							]
 						],
 						"settings":
@@ -2756,7 +2887,7 @@
 					"type": "text"
 				},
 				{
-					"buffer": 10,
+					"buffer": 11,
 					"file": "modules/SmallRNAseq/trim_umis.module.groovy",
 					"settings":
 					{
@@ -2926,7 +3057,7 @@
 			"sheets":
 			[
 				{
-					"buffer": 11,
+					"buffer": 12,
 					"file": "pipelines/SmallRNAseq/miRNA_v0.1.txt",
 					"settings":
 					{
@@ -3090,18 +3221,18 @@
 					"type": "text"
 				},
 				{
-					"buffer": 12,
+					"buffer": 13,
 					"settings":
 					{
-						"buffer_size": 973,
+						"buffer_size": 150,
 						"regions":
 						{
 						},
 						"selection":
 						[
 							[
-								972,
-								972
+								150,
+								150
 							]
 						],
 						"settings":
@@ -3253,7 +3384,7 @@
 					"type": "text"
 				},
 				{
-					"buffer": 13,
+					"buffer": 14,
 					"file": "pipelines/SmallRNAseq/bpipe.config",
 					"settings":
 					{
@@ -3423,7 +3554,7 @@
 			"sheets":
 			[
 				{
-					"buffer": 14,
+					"buffer": 15,
 					"file": "modules/SmallRNAseq/essential.vars.groovy",
 					"settings":
 					{
@@ -3587,7 +3718,7 @@
 					"type": "text"
 				},
 				{
-					"buffer": 15,
+					"buffer": 16,
 					"file": "modules/SmallRNAseq/tool.locations.groovy",
 					"settings":
 					{
