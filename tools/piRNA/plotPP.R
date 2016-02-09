@@ -73,8 +73,8 @@ plotPP <- function(pp_file){
 
 
    ## plot title
-   # tt <- paste(basename(getwd()), "\n", sep="")
-   tt <- gsub('.pp_freq.txt', '', pp_file)
+   tt <- basename(getwd())
+   # tt <- gsub('.pp_freq.txt', '', pp_file)
    pp_plot <- ggplot(pp, aes(x=position, y=frequency)) +
       geom_bar(stat="identity") +
       xlab("\n5'-5' distance") +
@@ -89,8 +89,8 @@ plotPP <- function(pp_file){
        panel.border = element_blank(),
        panel.background = element_blank())
 
-   ggsave(paste("figure/", tt, "ppPlot.pdf", sep=""), pp_plot)
-   ggsave(paste("figure/", tt, "ppPlot.png", sep=""), pp_plot)
+   ggsave(paste("figure/", tt, ".ppPlot.pdf", sep=""), pp_plot)
+   ggsave(paste("figure/", tt, ".ppPlot.png", sep=""), pp_plot)
 }
 
 pp_files <- list.files(pattern='pp_freq.txt')
