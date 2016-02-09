@@ -58,6 +58,7 @@ counts[, Feature:=ifelse(grepl("nonsense_mediated_decay", Feature), "protein_cod
 counts[, Feature:=ifelse(grepl("processed_transcript", Feature), "protein_coding", Feature),]
 
 len <- counts[, list(.N), by=list(Sample, Genotype, IP, Tissue, readlength, Mapping)][order(Sample, Genotype, IP, Tissue, readlength, Mapping)]
+n_samples <- length(unique(len$Sample))
 
 # colourCount = length(unique(len$Sample))
 # getPalette = colorRampPalette(brewer.pal(9, "Set1"))
@@ -71,12 +72,14 @@ len_ip_p <- ggplot(len, aes(x=factor(readlength), y=N, color=Mapping)) +
    theme(strip.text = element_text(size = 14),
       # axis.title.y = element_text(size = 10),
       # axis.title.x = element_text(size = 10),
+      strip.text = element_text(size = 14),
+      strip.text.y = element_text(size = 8),
       strip.background = element_rect(fill="white")) +
    xlab('read length') +
    ylab('Number of reads')
 
-ggsave('figure/AllLibLengthDistributionBySample.pdf', len_ip_p, width=15, height=7)
-ggsave('figure/AllLibLengthDistributionBySample.png', len_ip_p, width=15, height=7)
+ggsave('figure/AllLibLengthDistributionBySample.pdf', len_ip_p, width=15, height= 2* n_samples)
+ggsave('figure/AllLibLengthDistributionBySample.png', len_ip_p, width=15, height= 2* n_samples)
 
 
 
@@ -98,11 +101,11 @@ length_ip_class_p <- ggplot(re_only_length, aes(x=factor(readlength), y=N, color
 ggsave('figure/AllLibLengthDistributionBySampleFeature.pdf',
    length_ip_class_p,
    width=20,
-   height=20)
+   height=2* n_samples)
 ggsave('figure/AllLibLengthDistributionBySampleFeature.png',
    length_ip_class_p,
    width=20,
-   height=20)
+   height=2* n_samples)
 
 
 ## Mapping to Repeat elements
@@ -113,7 +116,7 @@ getPalette = colorRampPalette(brewer.pal(9, "Set1"))
 
 features_p <- ggplot(counts_sum, aes(x=Sample, y=N, fill=Feature)) +
    geom_bar(stat="identity", position='fill') +
-   theme(axis.text.x = element_text(angle=30, hjust=1, vjust=1)) +
+   theme(axis.text.x = element_text(angle = -30, hjust = 0)) +
    # facet_grid(Tissue ~ IP) +
    scale_fill_manual(values = getPalette(colourCount)) +
    scale_y_continuous(labels = percent_format(), name='% of reads mapped to Feature')
@@ -129,10 +132,10 @@ rna_sum <- counts[Feature %in% "RNA_repeats"][, list(.N), by=list(repClass, Samp
 colourCount = length(unique(rna_sum$repClass))
 features_p2 <- ggplot(rna_sum, aes(x=Sample, y=N, fill=repClass)) +
    geom_bar(stat="identity", position='fill') +
-   theme(axis.text.x = element_text(angle=30, hjust=1, vjust=1)) +
+   theme(axis.text.x = element_text(angle = -30, hjust = 0)) +
    # facet_grid(Tissue ~ IP) +
    scale_fill_manual(values = getPalette(colourCount)) +
    scale_y_continuous(labels = percent_format(), name='% of reads mapped to RNA repeats')
 
-ggsave('figure/PercentageOfFeature.pdf', features_p2)
-ggsave('figure/PercentageOfFeature.png', features_p2)
+ggsave('figure/PercentageOfFeatureRepeats.pdf', features_p2)
+ggsave('figure/PercentageOfFeatureRepeats.png', features_p2)
