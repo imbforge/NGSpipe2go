@@ -1,3 +1,4 @@
+MULTIMAP_OUT_DIR=MAPPED + "/multimapped"
 BOWTIE_PATH=ESSENTIAL_BOWTIE_PATH // bowtie bin to use
 BOWTIE_THREADS=8			// threads to use
 BOWTIE_REF=ESSENTIAL_BOWTIE_REF // prefix of the bowtie reference genome
