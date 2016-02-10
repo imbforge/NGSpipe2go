@@ -3,7 +3,6 @@ BOWTIE_THREADS=8			// threads to use
 BOWTIE_REF=ESSENTIAL_BOWTIE_REF // prefix of the bowtie reference genome
 BOWTIE_MM=0             // number of mismatches allowed
 BOWTIE_MULTIMAP=1       // discard reads mapping to more than MULTIMAP positions
-BOWTIE_MM=0					// number of mismatches allowed in read
 BOWTIE_BEST="--tryhard --best --strata --chunkmbs 256"	// bowtie best mode
 BOWTIE_TRIMM5=4        // seed size. Match with fragment size
 BOWTIE_TRIMM3=4        // max sum of quals for -n mismatches
