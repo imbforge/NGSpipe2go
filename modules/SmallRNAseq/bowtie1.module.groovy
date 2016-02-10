@@ -7,14 +7,14 @@ Bowtie_se = {
       bpipe_version: "tested with bpipe 0.9.8.7",
       author: "Sergi Sayols"
 
-   output.dir = MAPPED
+   output.dir = MULTIMAP_OUT_DIR
 
    def BOWTIE_FLAGS = " -q --sam"  +
                        " "   + BOWTIE_QUALS    +
                        " "   + BOWTIE_BEST     +
                        " -p " + Integer.toString(BOWTIE_THREADS) +
                        " -v " + Integer.toString(BOWTIE_MM)       +
-                       " -m " + Integer.toString(BOWTIE_MULTIMAP) +
+                       " -M " + Integer.toString(BOWTIE_MULTIREPORT) +
                        " --trim5 " + Integer.toString(BOWTIE_TRIMM5)  +
                        " --trim3 " + Integer.toString(BOWTIE_TRIMM3)
 
