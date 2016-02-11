@@ -22,6 +22,8 @@ QC=PROJECT + "/data/qc"
 REPORTS=PROJECT + "/reports"
 RESULTS=PROJECT + "/results"
 MAPPED=RESULTS + "/mapped"
+UNIQUE_MAPPED=MAPPED + "/unique"
+MULTI_MAPPED=MAPPED + "/multimapped"
 TMP=PROJECT + "/tmp"
 TRACKS=MAPPED + "/tracks"
 
