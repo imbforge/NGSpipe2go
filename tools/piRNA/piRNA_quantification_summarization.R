@@ -93,6 +93,7 @@ length_ip_class_p <- ggplot(re_only_length, aes(x=factor(readlength), y=N, color
    geom_point() +
    theme(axis.text.x = element_text(angle=30, hjust=1, vjust=1)) +
    facet_grid(Sample ~ Feature, scales="free_y") +
+   scale_colour_manual(values = rev(brewer.pal(3,"Set1")[1:2])) +
    scale_y_continuous(labels = comma, name='Total read counts', breaks=pretty_breaks(n=2)) +
     theme(strip.text = element_text(size = 14),
       strip.text.y = element_text(size = 8),
