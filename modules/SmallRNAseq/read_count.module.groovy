@@ -21,8 +21,8 @@ CountReads = {
          echo \$(${TOOL_BEDTOOLS}/bedtools --version) 1>&2 ;
          echo '/VERSION INFO'  1>&2 &&
 
-         ${TOOL_BEDTOOLS}/bamToBed -i $input | bedtools intersect -a - -b $FEATURES_PATH -s -wa -wb -bed -f 1.0 -nonamecheck > $output1 &&
-         ${TOOL_BEDTOOLS}/bamToBed -i $input | bedtools intersect -a - -b $FEATURES_PATH -S -wa -wb -bed -f 1.0 -nonamecheck > $output2
+         ${TOOL_BEDTOOLS}/bamToBed -i $input | ${TOOL_BEDTOOLS}/bedtools intersect -a - -b $FEATURES_PATH -s -wa -wb -bed -f 1.0 -nonamecheck > $output1 &&
+         ${TOOL_BEDTOOLS}/bamToBed -i $input | ${TOOL_BEDTOOLS}/bedtools intersect -a - -b $FEATURES_PATH -S -wa -wb -bed -f 1.0 -nonamecheck > $output2
 
       ""","CountReads"
    }
