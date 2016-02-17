@@ -59,25 +59,30 @@ counts[, Feature:=ifelse(grepl("processed_transcript", Feature), "protein_coding
 
 len <- counts[, list(.N), by=list(Sample, Genotype, IP, Tissue, readlength, Mapping)][order(Sample, Genotype, IP, Tissue, readlength, Mapping)]
 n_samples <- length(unique(len$Sample))
+len[,sample_short:=gsub("^\\w+-(.*)", "\\1", len$Sample),]
+protein = unique(gsub("(\\w+)-.*", "\\1", len$Genotype))
 
 # colourCount = length(unique(len$Sample))
 # getPalette = colorRampPalette(brewer.pal(9, "Set1"))
 
 param = "IP ~ Tissue"
+
 len_ip_p <- ggplot(len, aes(x=factor(readlength), y=N, color=Mapping)) +
    geom_line(aes(group=Mapping)) + geom_point() +
    scale_y_continuous(labels = comma) +
-   facet_grid(Sample ~ ., scales='free') +
+   facet_grid(Genotype + IP + Tissue ~ ., scales='free') +
    scale_colour_manual(values = rev(brewer.pal(3,"Set1")[1:2])) +
    theme(strip.text = element_text(size = 14),
       # axis.title.y = element_text(size = 10),
       # axis.title.x = element_text(size = 10),
       strip.text = element_text(size = 14),
-      strip.text.y = element_text(size = 8),
+      strip.text.y = element_text(size = 10),
       strip.background = element_rect(fill="white")) +
    xlab('read length') +
-   ylab('Number of reads')
-
+   ylab('Number of reads') +
+   ggtitle(protein)
+# possible solution to join labels:
+# http://stackoverflow.com/questions/11353287/how-do-you-add-a-general-label-to-facets-in-ggplot2
 ggsave('figure/AllLibLengthDistributionBySample.pdf', len_ip_p, width=15, height= 2* n_samples)
 ggsave('figure/AllLibLengthDistributionBySample.png', len_ip_p, width=15, height= 2* n_samples)
 
@@ -86,18 +91,20 @@ ggsave('figure/AllLibLengthDistributionBySample.png', len_ip_p, width=15, height
 classes <- c("DNA_repeats", "RNA_repeats", "protein_coding")
 re_only <- counts[Feature %in% classes]
 
-re_only_length <- re_only[, list(.N), by=list(Feature, Sample, Mapping, readlength)]
+re_only_length <- re_only[, list(.N), by=list(Feature, Sample, Genotype, IP, Tissue, Mapping, readlength)]
 
-length_ip_class_p <- ggplot(re_only_length, aes(x=factor(readlength), y=N, color=Mapping, fill=Mapping)) +
+length_ip_class_p <- ggplot(re_only_length, aes(x=factor(readlength), y=N, color=Mapping)) +
    geom_line(aes(group=Mapping)) +
    geom_point() +
    theme(axis.text.x = element_text(angle=30, hjust=1, vjust=1)) +
-   facet_grid(Sample ~ Feature, scales="free_y") +
+   facet_grid(Genotype + IP + Tissue ~ Feature, scales="free_y") +
    scale_colour_manual(values = rev(brewer.pal(3,"Set1")[1:2])) +
    scale_y_continuous(labels = comma, name='Total read counts', breaks=pretty_breaks(n=2)) +
-    theme(strip.text = element_text(size = 14),
-      strip.text.y = element_text(size = 8),
-      strip.background = element_rect(fill="white"))
+   theme(strip.text = element_text(size = 14),
+      strip.text.y = element_text(size = 10),
+      strip.background = element_rect(fill="white")) +
+   guides(fill = guide_legend(reverse=TRUE)) +
+   ggtitle(protein)
 
 ggsave('figure/AllLibLengthDistributionBySampleFeature.pdf',
    length_ip_class_p,
@@ -120,7 +127,8 @@ features_p <- ggplot(counts_sum, aes(x=Sample, y=N, fill=Feature)) +
    theme(axis.text.x = element_text(angle = -30, hjust = 0)) +
    # facet_grid(Tissue ~ IP) +
    scale_fill_manual(values = getPalette(colourCount)) +
-   scale_y_continuous(labels = percent_format(), name='% of reads mapped to Feature')
+   scale_y_continuous(labels = percent_format(), name='% of reads mapped to Feature') +
+   guides(fill = guide_legend(reverse=TRUE))
 ggsave('figure/PercentageOfFeature.pdf', features_p)
 ggsave('figure/PercentageOfFeature.png', features_p)
 
