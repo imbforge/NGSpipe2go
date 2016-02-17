@@ -5,7 +5,7 @@ BAMindexer = {
 		desc:  "Call samtools to index a bam file",
 		author: "Sergi Sayols"
 
-	output.dir = MAPPED
+	output.dir = MULTIMAP_OUT_DIR
 
 	transform(".bam") to(".bam.bai") {
 		exec """

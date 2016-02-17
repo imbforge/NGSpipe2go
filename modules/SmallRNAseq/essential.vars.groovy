@@ -4,7 +4,6 @@
 // REMEMBER TO CHANGE THESE ESSENTIAL VARS!!
 //
 ESSENTIAL_PROJECT="/local/scratch1/imb-kettinggr/adomingues/projects/bpipe_small_rna"
-ESSENTIAL_BOWTIE_PATH="~/bin/bowtie-0.12.8/bowtie"
 ESSENTIAL_BOWTIE_REF="/home/adomingu/imb-kettinggr/genomes/Danio_rerio/Ensembl/Zv9/Sequence/BowtieIndexChr/chr"
 ESSENTIAL_GENOME_REF="/home/adomingu/imb-kettinggr/genomes/Danio_rerio/Ensembl/Zv9/Sequence/chr_sequences/chr.clean.fa"
 
