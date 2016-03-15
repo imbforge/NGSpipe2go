@@ -102,7 +102,7 @@ VARhelper.BWA <- function() {
 					 "mapped"            = paste0( format( x[3,], big.mark=",") ," (", round(x[3,] / x[1,] * 100, digits=2), "%)" ),
 					 "proper pair"       = paste0( format( x[7,], big.mark=",") ," (", round(x[7,] / x[1,] * 100, digits=2), "%)" ) ,
 					 "secondary alignments" = paste0( format( x[2,], big.mark=",")," (", round(x[2,] / x[1,] * 100, digits=2), "%)" ),
-					 "unmapped"             = paste0( format( x[3,] - x[4,], big.mark=",")," (", round((x[3,] - x[4,]) / x[4,] * 100, digits=2), "%)" ),
+					 "unmapped"             = paste0( format( x[1,] - x[3,], big.mark=",")," (", round((x[1,] - x[3,]) / x[1,] * 100, digits=2), "%)" ),
 					 "different chromosome" = paste0( format( x[10,], big.mark=","), ", ", format( x[11,], big.mark=","), " (mapQ>=5)" )
 					 )
 	kable(df,align=c("r","r","r","r","r","r"),output=F)
