@@ -7,9 +7,9 @@ macs2 = {
 
 	output.dir = RESULTS + "/macs2"
 	MACS2_FLAGS= MACS2_MFOLD  + " " + 
-	             MACS2_GSIZE  + " " + 
-				 MACS2_BWIDTH + " " + 
-				 MACS2_EXTRA
+                 MACS2_GSIZE  + " " + 
+                 MACS2_BWIDTH + " " + 
+                 MACS2_EXTRA
 
 	transform(".bam") to("_macs2.done") {
 		exec """

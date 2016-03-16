@@ -6,14 +6,15 @@ DE_DESeq2 = {
 		author: "Sergi Sayols"
 
 	output.dir = DE_DESeq2_OUTDIR
-	def DE_DESeq2_FLAGS = " targets="   + DE_DESeq2_TARGETS + 
-                          " contrasts=" + DE_DESeq2_CONTRASTS +
-                          " mmatrix="   + DE_DESeq2_MMATRIX +
-                          " filter="    + DE_DESeq2_FILTER +
-                          " prefix="    + DE_DESeq2_PREFIX +
-                          " suffix="    + DE_DESeq2_SUFFIX +
-                          " cwd="       + DE_DESeq2_CWD +
-                          " out="       + DE_DESeq2_OUTDIR + "/DE_DESeq2"
+	def DE_DESeq2_FLAGS = DE_DESeq2_TARGETS   + " " + 
+                          DE_DESeq2_CONTRASTS + " " +
+                          DE_DESeq2_MMATRIX   + " " +
+                          DE_DESeq2_FILTER    + " " +
+                          DE_DESeq2_PREFIX    + " " +
+                          DE_DESeq2_SUFFIX    + " " +
+                          DE_DESeq2_CWD       + " " +
+                          DE_DESeq2_OUTDIR    + " " +
+                          DE_DESeq2_EXTRA
 
 	// run the chunk
 	produce("DE_DESeq2.RData") {

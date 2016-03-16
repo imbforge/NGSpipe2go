@@ -9,13 +9,11 @@ geneBodyCov = {
 		author: "Sergi Sayols"
 
     output.dir = GENEBODYCOV_OUTDIR
+	def GENEBODYCOV_FLAGS = GENEBODYCOV_FORMAT + " " +
+                            GENEBODYCOV_BED    + " " +
+                            GENEBODYCOV_EXTRA
 	
-	// println("DEBUG: " + output.dir)
-
     // run the chunk
-    //from(".bam") produce(input.prefix + ".geneBodyCoverage.curves.png",
-    //                     input.prefix + ".geneBodyCoverage.r",
-    //                     input.prefix + ".geneBodyCoverage.txt") {
 	transform(".bam") to (".geneBodyCoverage.curves.png", ".geneBodyCoverage.r", ".geneBodyCoverage.txt") {
 		exec """
 			export TOOL_DEPENDENCIES=$TOOL_DEPENDENCIES && 
@@ -28,11 +26,8 @@ geneBodyCov = {
 			echo \$(python ${TOOL_RSeQC}/bin/geneBody_coverage.py --version | cut -d' ' -f2) 1>&2 ;
 			echo '/VERSION INFO' 1>&2 ;
 			
-			python ${TOOL_RSeQC}/bin/geneBody_coverage.py -i $input -f png -r $GENEBODYCOV_BED -o ${output3.prefix.prefix}
+			python ${TOOL_RSeQC}/bin/geneBody_coverage.py -i $input -o ${output3.prefix.prefix} $GENEBODYCOV_FLAGS
 		""","geneBodyCov"
 	}
-	// python ${TOOL_RSeQC}/bin/geneBody_coverage.py -i $input -f png -r $GENEBODYCOV_BED -o ${output.prefix} && mv ${input.prefix}.geneBodyCoverage.* $output.dir
-
 	forward input
-
 }

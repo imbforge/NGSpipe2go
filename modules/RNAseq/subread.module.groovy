@@ -8,11 +8,10 @@ subread_count = {
 	author: "Oliver Drechsel"
 	
 	output.dir  = SUBREAD_OUTDIR
-	def SUBREAD_FLAGS = //" -s " + SUBREAD_STRANDED + 
-						" -T " + Integer.toString(SUBREAD_CORES) +
-						" -a " + SUBREAD_GENESGTF +
-						//" -o " + ???
-						" --ignoreDup "
+	def SUBREAD_FLAGS = SUBREAD_CORES    + " " +
+						SUBREAD_GENESGTF + " " +
+                        SUBREAD_EXTRA    + " "
+						
 	
 	if(SUBREAD_PAIRED == "yes") {
 		SUBREAD_FLAGS = "-p " + SUBREAD_FLAGS
@@ -20,13 +19,13 @@ subread_count = {
 	
 	// no|yes|reverse
 	if(SUBREAD_STRANDED == "no") {
-		SUBREAD_FLAGS = " -s 0 " + SUBREAD_FLAGS
+		SUBREAD_FLAGS = "-s 0 " + SUBREAD_FLAGS
 	}
 	else if (SUBREAD_STRANDED == "yes") {
-		SUBREAD_FLAGS = " -s 1 " + SUBREAD_FLAGS
+		SUBREAD_FLAGS = "-s 1 " + SUBREAD_FLAGS
 	}
 	else {
-		SUBREAD_FLAGS = " -s 2 " + SUBREAD_FLAGS
+		SUBREAD_FLAGS = "-s 2 " + SUBREAD_FLAGS
 	}
 	
 	// run the chunk
