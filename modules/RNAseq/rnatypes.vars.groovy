@@ -1,7 +1,7 @@
 RNAtypes_FOLDER="folder=" + MAPPED		    // folder containing the mapped files
 RNAtypes_PATTERN="pattern=duprm\\\\.bam\$" // process all the .bam files
 RNAtypes_GTF="gtf=" + ESSENTIAL_GENESGTF2  // the gencode annotation GTF (can be compressed)
-RNAtypes_OUT="out=RNAtypes"		            // output file name
+RNAtypes_OUT="RNAtypes"		            // output file name prefix the output dir is defined in the module
 RNAtypes_PRE="pre=" + ESSENTIAL_SAMPLE_PREFIX // prefix to be removed
 RNAtypes_SUF="suf=.bam"			            // sufix to be removed
 RNAtypes_PAIRED="paired=" + ESSENTIAL_PAIRED   // paired end yes|no
