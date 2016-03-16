@@ -9,10 +9,13 @@ VariantCallHC = {
 	author: "Oliver Drechsel"
 
 	output.dir = RESULTS
+    def GATK_FLAGS = GATK_REFCONF   + " " +
+                     GATK_INDEXTYPE + " " +
+                     GATK_INDEXPARM + " " +
+                     GATK_EXTRA
     
     transform (".duprm.realigned.recalibrated.bam") to (".HC.vcf.gz") {
         // usage parameters https://www.broadinstitute.org/gatk/gatkdocs/org_broadinstitute_gatk_tools_walkers_haplotypecaller_HaplotypeCaller.php
-        def GATK_FLAGS = "--emitRefConfidence GVCF --variant_index_type LINEAR --variant_index_parameter 128000"
         
         exec """
             export TOOL_DEPENDENCIES=$TOOL_DEPENDENCIES &&
@@ -20,7 +23,7 @@ VariantCallHC = {
 				export TMPDIR=/jobdir/\${LSB_JOBID};
 			fi                                          &&
         
-            java -Djava.io.tmpdir=$TMPDIR -jar $TOOL_GATK/GenomeAnalysisTK.jar -T HaplotypeCaller -nct $GATK_THREADS -R $ESSENTIAL_BWA_REF --dbsnp ${ESSENTIAL_KNOWN_VARIANTS} -I $input -o $output
+            java -Djava.io.tmpdir=$TMPDIR -jar $TOOL_GATK/GenomeAnalysisTK.jar -T HaplotypeCaller -nct $GATK_THREADS -R $GATK_BWA_REF --dbsnp ${GATK_KNOWN_VARIANTS} -I $input -o $output
         ""","VariantCallHC"
     }
 }
