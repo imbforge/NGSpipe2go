@@ -1,4 +1,4 @@
-//rule for task geneBodyCov from catalog RNAseq, version 1
+//rule for task infer_experiment from catalog RNAseq, version 1
 inferexperiment = {
 	doc title: "inferexperiment",
 		desc:  """Calculate the strand-specificity. 
