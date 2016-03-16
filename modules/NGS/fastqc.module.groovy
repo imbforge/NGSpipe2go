@@ -6,7 +6,7 @@ FastQC = {
 		author: "Sergi Sayols"
 
 	output.dir   = FASTQC_OUTDIR
-	def FASTQC_FLAGS = "--extract --quiet -t"
+	def FASTQC_FLAGS = "--extract --quiet"
 	
 	transform(".fastq.gz") to ("_fastqc.zip") {
 		exec """
