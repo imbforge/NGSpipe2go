@@ -9,11 +9,12 @@ phantompeak = {
 
 	output.dir = QC + "/phantompeak"
 
-	def PHANTOMPEAK_FLAGS = Integer.toString(PHANTOMPEAK_MINSHIFT) + " " + // left 'x' coordinate in plot
-                            Integer.toString(PHANTOMPEAK_MAXSHIFT) + " " + // right 'x' coordinate in plot
-                            Integer.toString(PHANTOMPEAK_BINSIZE)  + " " + // stepsize for cc calculation
-                            Integer.toString(PHANTOMPEAK_READLEN)  + " " + // read length
-                            Integer.toString(PHANTOMPEAK_THREADS)          // cores to use
+	def PHANTOMPEAK_FLAGS = PHANTOMPEAK_MINSHIFT) + " " + // left 'x' coordinate in plot
+                            PHANTOMPEAK_MAXSHIFT) + " " + // right 'x' coordinate in plot
+                            PHANTOMPEAK_BINSIZE)  + " " + // stepsize for cc calculation
+                            PHANTOMPEAK_READLEN)  + " " + // read length
+                            PHANTOMPEAK_THREADS)  + " " + // cores to use
+                            PHANTOMPEAK_EXTRA
 
 	transform(".bam") to("_phantompeak.png") {
 		exec """

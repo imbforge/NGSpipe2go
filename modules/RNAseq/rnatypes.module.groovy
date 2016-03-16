@@ -8,18 +8,19 @@ RNAtypes = {
 		author: "Sergi Sayols"
 
 	output.dir = QC + "/RNAtypes/"
-	def RNAtypes_FLAGS = " folder="   + RNAtypes_FOLDER   +
-	                     " pattern="  + RNAtypes_PATTERN  +
-	                     " gtf="      + RNAtypes_GTF +
-	                     " out="      + RNAtypes_OUT +
-	                     " pre="      + RNAtypes_PRE +
-	                     " suf="      + RNAtypes_SUF +
-	                     " paired="   + RNAtypes_PAIRED   +
-	                     " stranded=" + RNAtypes_STRANDED +
-	                     " multimap=" + RNAtypes_MULTIMAP +
-	                     " ftype="    + RNAtypes_FTYPE    +
-	                     " ftypecol=" + RNAtypes_FTYPECOL +
-					     " cores="    + Integer.toString(RNAtypes_CORES)
+	def RNAtypes_FLAGS = RNAtypes_FOLDER   + " " +
+	                     RNAtypes_PATTERN  + " " +
+	                     RNAtypes_GTF      + " " +
+	                     RNAtypes_OUT      + " " +
+	                     RNAtypes_PRE      + " " +
+	                     RNAtypes_SUF      + " " +
+	                     RNAtypes_PAIRED   + " " +
+	                     RNAtypes_STRANDED + " " +
+	                     RNAtypes_MULTIMAP + " " +
+	                     RNAtypes_FTYPE    + " " +
+	                     RNAtypes_FTYPECOL + " " +
+					     RNAtypes_CORES    + " " +
+                         RNAtypes_EXTRA
 
 	// run the chunk
 	produce(RNAtypes_OUT + ".counts.raw.png",

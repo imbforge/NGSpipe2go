@@ -6,11 +6,12 @@ dupRadar = {
 		author: "Sergi Sayols"
 
 	output.dir = DUPRADAR_OUTDIR
-	def DUPRADAR_FLAGS = " gtf="      + DUPRADAR_GTF      +
-	                     " stranded=" + DUPRADAR_STRANDED + 
-			    		 " paired="   + DUPRADAR_PAIRED   +
-						 " outdir="   + DUPRADAR_OUTDIR   +
-				    	 " threads="  + Integer.toString(DUPRADAR_THREADS)
+	def DUPRADAR_FLAGS = DUPRADAR_GTF      + " " +
+	                     DUPRADAR_STRANDED + " " + 
+			    		 DUPRADAR_PAIRED   + " " +
+						 DUPRADAR_OUTDIR   + " " +
+				    	 Integer.toString(DUPRADAR_THREADS) + " " +
+                         DUPRADAR_EXTRA
 
 	// run the chunk
 	transform(".bam") to("_dupRadar.png") {

@@ -1,13 +1,14 @@
-RNAtypes_FOLDER=MAPPED		         // folder containing the mapped files
-RNAtypes_PATTERN="duprm\\\\.bam\$"   // process all the .bam files
-RNAtypes_GTF=ESSENTIAL_GENESGTF2     // the gencode annotation GTF (can be compressed)
-RNAtypes_OUT="RNAtypes"		         // output file name
-RNAtypes_PRE=ESSENTIAL_SAMPLE_PREFIX // prefix to be removed
-RNAtypes_SUF=".bam"			         // sufix to be removed
-RNAtypes_PAIRED=ESSENTIAL_PAIRED	 // paired end yes|no
-RNAtypes_STRANDED=ESSENTIAL_STRANDED // strandness yes|no|reverse
-RNAtypes_MULTIMAP="NONE"	         // ALL|NONE|RANDOM
-RNAtypes_FTYPE="exon"		         // feature type on GTF file: exon|gene|...
-RNAtypes_FTYPECOL="gene_type"        // column name  on GTF file containing the biotype information
-RNAtypes_CORES=ESSENTIAL_THREADS     // number of cores to use
+RNAtypes_FOLDER="folder=" + MAPPED		    // folder containing the mapped files
+RNAtypes_PATTERN="pattern=duprm\\\\.bam\$" // process all the .bam files
+RNAtypes_GTF="gtf=" + ESSENTIAL_GENESGTF2  // the gencode annotation GTF (can be compressed)
+RNAtypes_OUT="out=RNAtypes"		            // output file name
+RNAtypes_PRE="pre=" + ESSENTIAL_SAMPLE_PREFIX // prefix to be removed
+RNAtypes_SUF="suf=.bam"			            // sufix to be removed
+RNAtypes_PAIRED="paired=" + ESSENTIAL_PAIRED   // paired end yes|no
+RNAtypes_STRANDED="stranded=" + ESSENTIAL_STRANDED // strandness yes|no|reverse
+RNAtypes_MULTIMAP="multimap=NONE"	        // ALL|NONE|RANDOM
+RNAtypes_FTYPE="ftype=exon"		            // feature type on GTF file: exon|gene|...
+RNAtypes_FTYPECOL="ftypecol=gene_type"      // column name  on GTF file containing the biotype information
+RNAtypes_CORES="cores=" + Integer.toString(ESSENTIAL_THREADS) // number of cores to use
+RNAtypes_EXTRA=""
 
