@@ -360,6 +360,22 @@ DEhelper.geneBodyCov <- function(web=TRUE) {
 }
 
 ##
+##DEhelper.strandspecifity: get the strandspecifity from the qc and display them
+##
+DEhelper.strandspecificity <- function(){
+
+	filelist <- list.files(path=SHINYREPS_INFEREXPERIMENT_LOGS,full.names=TRUE)
+	strandspecifity <- lapply(filelist, read.table, sep=":", skip=3, header=FALSE, row.names=1, blank.lines.skip=TRUE)
+	strandspecifity <- do.call(cbind, strandspecifity)
+	samplenames <- basename(filelist)
+	samplenames <- gsub(SHINYREPS_PREFIX, "", samplenames)
+	samplenames <- gsub("_inferexperiment.txt","", samplenames)
+	colnames(strandspecifity) <- samplenames 
+	rownames(strandspecifity) <- c("sense", "antisense", "other") 
+	kable(t(strandspecifity), output=F, align=c("l"))
+}
+
+##
 ## DEhelper.Bustard: call the perl XML interpreter and get the MD output
 ##
 DEhelper.Bustard <- function() {
