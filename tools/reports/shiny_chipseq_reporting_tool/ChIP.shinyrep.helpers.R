@@ -129,7 +129,7 @@ ChIPhelper.Bowtie <- function() {
 				 })
 	
 		# and add the duplicates information
-		f <- gsub(".bam.log","_duprm.bam.log",f)
+		f <- gsub(".bam.log",".duprm.bam.log",f)
 		dups <- if(file.exists(paste0(SHINYREPS_MARKDUPS_LOG,"/",f))) {
 			x <- file(paste0(SHINYREPS_MARKDUPS_LOG,"/",f))
 			l <- readLines(x)
@@ -156,13 +156,14 @@ ChIPhelper.Bowtie <- function() {
 	# set row and column names, and output the md table
 	colnames(x) <- gsub(paste0("^",SHINYREPS_PREFIX),"",colnames(x))
 	colnames(x) <- gsub(".bam.log$","",colnames(x))
-	df <- data.frame(input_reads=format( as.numeric(x[1,]),big.mark="," ),
+	df <- data.frame(sample_names=colnames(x),
+					 input_reads=format( as.numeric(x[1,]),big.mark=","),
 					 mapped=paste( format( as.numeric(x[2,]),big.mark=","), x[3,], sep=" "),
 					 failed=paste( format( as.numeric(x[4,]),big.mark=","), x[5,], sep=" "),
 					 discarded=paste( format( as.numeric(x[6,]),big.mark=","), x[7,], sep=" "),
-					 duplicates=paste0(format(as.numeric(x[8,]),big.mark=",")," (",round(100 * as.numeric(x[5,]) / as.numeric(x[1,]),2),"%)")
+					 duplicates=paste0(format(as.numeric(x[8,]),big.mark=",")," (",round(100 * as.numeric(x[8,]) / as.numeric(x[2,]),2),"%)")
 					 )
-	kable(df,align=c("r","r","r","r"),output=F)
+	kable(df,align=c("l","r","r","r","r","r"),output=F,col.names=c("sample names","all reads","mapped (% of all)","unmapped (% of all)","too many map. pos. (% all)","duplicates (% of mapped)"), format="markdown")
 }
 
 ##
@@ -190,7 +191,7 @@ ChIPhelper.Fastqc <- function(web=TRUE) {
 	df <- as.data.frame(t(df))
 	rownames(df) <- gsub(paste0("^",SHINYREPS_PREFIX),"",basename(samples))
 	colnames(df) <- c("Duplication","Read qualities","Sequence bias")
-	kable(df,output=F, align="c")
+	kable(df,output=F, align="c", format="markdown")
 }
 
 ##
@@ -213,25 +214,26 @@ ChIPhelper.IPstrength<- function(web=TRUE) {
 	
 	# construct the image url from the folder contents (skip current dir .)
 	samples <- list.files(SHINYREPS_IPSTRENGTH,pattern="*.png")
+    COLUMNS <- min(length(samples), SHINYREPS_PLOTS_COLUMN)
 	df <- sapply(samples,function(f) {
 		paste0("![IPstrength img](",QC,"/",basename(f),")")
 	})
 	
-	# put sample names and output an md table of SHINYREPS_PLOTS_COLUMN columns
-	while(length(df) %% SHINYREPS_PLOTS_COLUMN != 0) df <- c(df,"")
+	# put sample names and output an md table of COLUMNS columns
+	while(length(df) %% COLUMNS != 0) df <- c(df,"")
 	samples <- sapply(df,function(x) {
 		x <- sapply(x,function(x) gsub(paste0("^",SHINYREPS_PREFIX),"",basename(x)))
 		gsub("_ipstrength.png)","",x)
 	})
-	df      <- matrix(df     ,ncol=SHINYREPS_PLOTS_COLUMN,byrow=T)
-	samples <- matrix(samples,ncol=SHINYREPS_PLOTS_COLUMN,byrow=T)
+	df      <- matrix(df     ,ncol=COLUMNS,byrow=T)
+	samples <- matrix(samples,ncol=COLUMNS,byrow=T)
 	
 	# add a row with the sample names
 	df.names <- matrix(sapply(1:nrow(df),function(i) { c(df[i,],samples[i,]) }),
-                       ncol=SHINYREPS_PLOTS_COLUMN,byrow=T)
-	colnames(df.names) <- rep(" ",SHINYREPS_PLOTS_COLUMN)
+                       ncol=COLUMNS,byrow=T)
+	colnames(df.names) <- rep(" ",COLUMNS)
 	
-	kable(as.data.frame(df.names),output=F, align="c")
+	kable(as.data.frame(df.names),output=F, align="c", format="markdown")
 }
 
 ##
@@ -254,25 +256,26 @@ ChIPhelper.PhantomPeak <- function(web=TRUE) {
 	
 	# construct the image url from the folder contents (skip current dir .)
 	samples <- list.files(SHINYREPS_PHANTOMPEAK,pattern="*.png")
+    COLUMNS <- min(length(samples), SHINYREPS_PLOTS_COLUMN)
 	df <- sapply(samples,function(f) {
 		paste0("![PhantomPeak img](",QC,"/",basename(f),")")
 	})
 	
-	# put sample names and output an md table of SHINYREPS_PLOTS_COLUMN columns
-	while(length(df) %% SHINYREPS_PLOTS_COLUMN != 0) df <- c(df,"")
+	# put sample names and output an md table of COLUMN columns
+	while(length(df) %% COLUMNS != 0) df <- c(df,"")
 	samples <- sapply(df,function(x) {
 		x <- sapply(x,function(x) gsub(paste0("^",SHINYREPS_PREFIX),"",basename(x)))
 		gsub("_phantompeak.png)","",x)
 	})
-	df      <- matrix(df     ,ncol=SHINYREPS_PLOTS_COLUMN,byrow=T)
-	samples <- matrix(samples,ncol=SHINYREPS_PLOTS_COLUMN,byrow=T)
+	df      <- matrix(df     ,ncol=COLUMNS,byrow=T)
+	samples <- matrix(samples,ncol=COLUMNS,byrow=T)
 	
 	# add a row with the sample names
 	df.names <- matrix(sapply(1:nrow(df),function(i) { c(df[i,],samples[i,]) }),
-                       ncol=SHINYREPS_PLOTS_COLUMN,byrow=T)
-	colnames(df.names) <- rep(" ",SHINYREPS_PLOTS_COLUMN)
+                       ncol=COLUMNS,byrow=T)
+	colnames(df.names) <- rep(" ",COLUMNS)
 	
-	kable(as.data.frame(df.names),output=F, align="c")
+	kable(as.data.frame(df.names),output=F, align="c", format="markdown")
 }
 
 ##
@@ -296,7 +299,7 @@ ChIPhelper.PBC <- function() {
 	df <- as.data.frame(df)
 	colnames(df) <- "PBC"
 	rownames(df) <- gsub("_PBC.csv","",rownames(df))
-	kable(as.data.frame(df),output=F)
+	kable(as.data.frame(df),output=F, format="markdown")
 }
 
 ##
