@@ -19,9 +19,21 @@ STAR_se = {
 	if(! F_LOG.exists()) {
 		F_LOG.mkdirs()
 	}
+	
+	def OUTPUTFILE = input1
+	int path_index = OUTPUTFILE.lastIndexOf("/")
+	OUTPUTFILE = OUTPUTFILE.substring(path_index+1)
+	println(OUTPUTFILE)
+        if( ESSENTIAL_PAIRED == "yes") {
+		OUTPUTFILE = (OUTPUTFILE =~ /_R1.fastq.gz/).replaceFirst("")
+	}
+	else {
+		OUTPUTFILE = (OUTPUTFILE =~ /.fastq.gz/).replaceFirst("")
+	}
 
 	// code chunk
-	transform(".fastq.gz") to(".bam", "Log.final.out") {
+	produce(OUTPUTFILE + ".bam", OUTPUTFILE + "Log.final.out") {
+//	transform("_R1.fastq.gz") to(".bam", "Log.final.out") {
 		// flags
 		def SAMPLE = new File(input.prefix.prefix)
 		def STAR_FLAGS = "--runMode alignReads "        +
@@ -69,7 +81,7 @@ STAR_se = {
 			echo \$(STAR --version) 1>&2 &&
 			echo '/VERSION INFO' 1>&2 &&
 			
-			STAR $STAR_FLAGS --readFilesIn $input | ${TOOL_SAMTOOLS} view $SAMTOOLS_FLAGS - | ${TOOL_SAMTOOLS} sort -@ $STAR_THREADS - $output.prefix &&
+			STAR $STAR_FLAGS --readFilesIn $inputs | ${TOOL_SAMTOOLS} view $SAMTOOLS_FLAGS - | ${TOOL_SAMTOOLS} sort $STAR_SAMTOOLS_THREADS - $output.prefix &&
 			
 			mv ${LOGS}/STAR_se/${SAMPLE.name}SJ.out.tab $output.dir &&
 			ln -s ${LOGS}/STAR_se/${SAMPLE.name}Log.final.out $output.dir
