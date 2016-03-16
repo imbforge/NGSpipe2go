@@ -42,9 +42,10 @@ STAR_se = {
                          "--outSAMattributes Standard " +
                          "--outSJfilterReads Unique "   +
                          "--readFilesCommand zcat "     +
-                         "--outSAMunmapped Within "     +
                          "--outFileNamePrefix " + LOGS + "/STAR_se/" + SAMPLE.name + " " +
                          "--outTmpDir " + TMP + "/" + SAMPLE.name + " " +
+						 STAR_UNMAPPED_BAM + " " +
+						 STAR_UNMAPPED_OUT + " " +
                          STAR_MAXRAM   + " " +
                          STAR_BUFSIZE  + " " +
                          STAR_REF      + " " +
