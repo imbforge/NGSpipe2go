@@ -27,14 +27,19 @@ The sequencing quality of the run was good, and the read distribution over the l
 cat(ChIPhelper.Bustard(),sep="\n")
 ```
 
-### Mapping
-Mapping was done using Bowtie. The mapping statistics show the total number of reads delivered to the aligner, the number of mapped reads, the reads that failed to align, and the number of reads discarded because of mapping to multiple positions:
+### Raw reads qualities, sequence bias and duplication ###
+```{r FastQC_paragraph, echo=F,results='asis',error=F,warning=F,message=F}
+cat(ChIPhelper.Fastqc(web=F),sep="\n")
+```
+
+### Mapping ###
+Mapping was done using Bowtie. The mapping statistics show the total number of reads delivered to the aligner ("all reads"), the number of "mapped" reads, the reads that failed to align ("unmapped"), the number of reads discarded because of mapping to multiple positions ("too many map. pos.") and the number of duplicate reads ("duplicates") amongst the mapped reads:
 
 ```{r Bowtie_paragraph, echo=F,results='asis',error=F,warning=F,message=F}
 cat(ChIPhelper.Bowtie(),sep="\n")
-``` 
+```
 
-### PCR bottleneck coefficient
+### PCR bottleneck coefficient ###
 The PBC (PCR bottleneck coefficient) is an approximate measure of library complexity. Provisionally, 0-0.5 is severe bottlenecking, 0.5-0.8 is moderate bottlenecking, 0.8-0.9 is mild bottlenecking, while 0.9-1.0 is no bottlenecking.
 
 Very low values can indicate a technical problem, such as PCR bias, or a biological finding, such as a very rare genomic feature. Nuclease-based assays (DNase, MNase) detecting features with base-pair resolution (transcription factor footprints, positioned nucleosomes) are expected to recover the same read multiple times, resulting in a lower PBC score for these assays. Note that the most complex library, random DNA, would approach 1.0, thus the very highest values can indicate technical problems with libraries. Some common numbers from ENCODE datasets are: 82% for TF ChIP, 89% for His ChIP, 77% for DNase, 98% for FAIRE, and 97% for control ENCODE datasets have no or mild bottlenecking.
@@ -43,12 +48,7 @@ Very low values can indicate a technical problem, such as PCR bias, or a biologi
 cat(ChIPhelper.PBC(),sep="\n")
 ```
 
-### Raw reads qualities, sequence bias and duplication
-```{r FastQC_paragraph, echo=F,results='asis',error=F,warning=F,message=F}
-cat(ChIPhelper.Fastqc(web=F),sep="\n")
-```
-
-### IPstrength
+### IPstrength ###
 To estimate the IP strength, we attempt to decompose the population of IP reads into two distinct components: those pulled down by the antibody, and background.
 
 ```{r IPstrength_paragraph, echo=F,results='asis',error=F,warning=F,message=F}
@@ -56,11 +56,13 @@ cat(ChIPhelper.IPstrength(web=F),sep="\n")
 ```
 
 The plot is useful to detect several forms of biases:
+
 * The distance between the two curves represents the enrichment of the IP versus the input. Close curves means weak enrichment.
 * Undersequencing is shown by the curves close to the x-axis for a large percentage of bins, representing no reads were aligned on this bins. 
 * Sequencing bias towards a small set of specific regions is shown by the curves close to the y-axis for a large percentage of tags.
 
-### Cross-correlation analysis
+
+### Cross-correlation analysis ###
 
 **Cross-correlation**
 A measure of enrichment derived without dependence on prior determination of enriched regions. Forward and reverse strand read coverage signal tracks are computed (number of unique mapping read starts at each base in the genome on the + and - strand counted separately). The forward and reverse tracks are shifted towards and away from each other by incremental distances and for each shift, the Pearson correlation coefficient is computed. In this way, a cross-correlation profile is computed, representing the correlation between forward and reverse strand coverage at different shifts. The highest cross-correlation value is obtained at a strand shift equal to the predominant fragment length in the dataset as a result of clustering/enrichment of relative fixed-size fragments around the binding sites of the target factor or feature.
@@ -75,7 +77,7 @@ The RSC is the ratio of the fragment-length cross-correlation value minus the ba
 cat(ChIPhelper.PhantomPeak(web=F),sep="\n")
 ```
 
-## Peaks called
+## Peaks called ##
 
 A summary of the peaks called in the different comparisons is shown here:
 
@@ -107,7 +109,7 @@ cat(kable(p,row.names=T),sep="\n")
 cat("",fill=T)
 ```
 
-## Used tools and versions for this analysis
+## Used tools and versions for this analysis ##
 
 ```{r ToolVersions_paragraph, echo=F,results='asis',error=F,warning=F,message=F}
 
