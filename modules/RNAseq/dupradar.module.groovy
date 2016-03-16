@@ -9,8 +9,8 @@ dupRadar = {
 	def DUPRADAR_FLAGS = DUPRADAR_GTF      + " " +
 	                     DUPRADAR_STRANDED + " " + 
 			    		 DUPRADAR_PAIRED   + " " +
-						 DUPRADAR_OUTDIR   + " " +
-				    	 Integer.toString(DUPRADAR_THREADS) + " " +
+					 DUPRADAR_OUTDIR   + " " +
+				    	 DUPRADAR_THREADS + " " +
                          DUPRADAR_EXTRA
 
 	// run the chunk
