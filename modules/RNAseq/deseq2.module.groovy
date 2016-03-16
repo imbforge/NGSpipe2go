@@ -5,7 +5,7 @@ DE_DESeq2 = {
 		bpipe_version: "tested with bpipe 0.9.8.7",
 		author: "Sergi Sayols"
 
-	output.dir = DE_DESeq2_OUTDIR
+	output.dir = RESULTS + "/DE_DESeq2
 	def DE_DESeq2_FLAGS = DE_DESeq2_TARGETS   + " " + 
                           DE_DESeq2_CONTRASTS + " " +
                           DE_DESeq2_MMATRIX   + " " +

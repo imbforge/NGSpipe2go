@@ -5,7 +5,7 @@ dupRadar = {
 		bpipe_version: "tested with bpipe 0.9.8.7",
 		author: "Sergi Sayols"
 
-	output.dir = DUPRADAR_OUTDIR
+	output.dir = QC + "/dupradar"
 	def DUPRADAR_FLAGS = DUPRADAR_GTF      + " " +
 	                     DUPRADAR_STRANDED + " " + 
 			    		 DUPRADAR_PAIRED   + " " +
