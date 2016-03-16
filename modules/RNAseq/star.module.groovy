@@ -23,28 +23,26 @@ STAR_se = {
 	// code chunk
 	transform(".fastq.gz") to(".bam", "Log.final.out") {
 		// flags
-		def int OVERHANG
-		OVERHANG = ESSENTIAL_READLENGTH.toInteger() - 1
-		
 		def SAMPLE = new File(input.prefix.prefix)
-		def STAR_FLAGS = " --runMode alignReads" +
-					 " --limitGenomeGenerateRAM " + STAR_MAXRAM +
-					 " --limitIObufferSize " + STAR_BUFSIZE +
-					 " --genomeDir " + STAR_REF +
-					 " --runThreadN " + Integer.toString(STAR_THREADS) +
-					 " --outFilterMismatchNmax " + STAR_MM +
-					 " --outFilterMultimapNmax " + STAR_MULTIMAP +
-					 " --genomeLoad NoSharedMemory" +
-					 " --alignIntronMin " + STAR_MININTRO +
-					 " --outStd SAM" +
-					 " --outSAMattributes Standard" +
-					 " --outSJfilterReads Unique" +
-					 " --outFileNamePrefix " + LOGS + "/STAR_se/" + SAMPLE.name +
-					 " --outTmpDir " + TMP + "/" + SAMPLE.name +
-					 " --readFilesCommand zcat" +
-					 " --sjdbOverhang " + OVERHANG.toString() +
-					 " --sjdbGTFfile " + ESSENTIAL_GENESGTF +
-					 " --outSAMunmapped Within "
+		def STAR_FLAGS = "--runMode alignReads "        +
+                         "--genomeLoad NoSharedMemory " +
+                         "--outStd SAM "                +
+                         "--outSAMattributes Standard " +
+                         "--outSJfilterReads Unique "   +
+                         "--readFilesCommand zcat "     +
+                         "--outSAMunmapped Within "     +
+                         "--outFileNamePrefix " + LOGS + "/STAR_se/" + SAMPLE.name + " " +
+                         "--outTmpDir " + TMP + "/" + SAMPLE.name + " " +
+                         STAR_MAXRAM   + " " +
+                         STAR_BUFSIZE  + " " +
+                         STAR_REF      + " " +
+                         STAR_THREADS  + " " +
+                         STAR_MM       + " " +
+                         STAR_MULTIMAP + " " +
+                         STAR_MININTRO + " " +
+                         STAR_OVERHANG + " " +
+                         STAR_GTF      + " " +
+                         STAR_EXTRA
 
 		def SAMTOOLS_FLAGS = "-bhSu"
 		if(STAR_FILTER_SEC == "YES") {

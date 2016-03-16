@@ -9,14 +9,15 @@ bowtie_se = {
 
 	output.dir = MAPPED
 
-	def BOWTIE_FLAGS = " -q --sam"  +
-                       " "   + BOWTIE_QUALS    +
-                       " "   + BOWTIE_BEST     +
-                       " -n" + Integer.toString(BOWTIE_MM_SEED)  +
-                       " -l" + Integer.toString(BOWTIE_INSERT)   +
-                       " -e" + Integer.toString(BOWTIE_MAQERR)   +
-                       " -m" + Integer.toString(BOWTIE_MULTIMAP) +
-                       " -p" + Integer.toString(BOWTIE_THREADS)
+	def BOWTIE_FLAGS = "-q --sam "  +
+                       BOWTIE_QUALS    + " " + 
+                       BOWTIE_BEST     + " " + 
+                       BOWTIE_MM_SEED  + " " + 
+                       BOWTIE_INSERT   + " " + 
+                       BOWTIE_MAQERR   + " " + 
+                       BOWTIE_MULTIMAP + " " + 
+                       BOWTIE_THREADS  + " " + 
+                       BOWTIE_EXTRA
 
 	transform(".fastq.gz") to (".bam") {
 		exec """
