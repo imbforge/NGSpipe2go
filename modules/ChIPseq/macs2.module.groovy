@@ -6,10 +6,10 @@ macs2 = {
 		author: "Sergi Sayols"
 
 	output.dir = RESULTS + "/macs2"
-	MACS2_FLAGS= " -m "   + MACS2_MFOLD  +
-	             " -g "   + MACS2_GSIZE  +
-				 " --bw " + MACS2_BWIDTH +
-				 MACS2_OTHER
+	MACS2_FLAGS= MACS2_MFOLD  + " " + 
+	             MACS2_GSIZE  + " " + 
+				 MACS2_BWIDTH + " " + 
+				 MACS2_EXTRA
 
 	transform(".bam") to("_macs2.done") {
 		exec """
