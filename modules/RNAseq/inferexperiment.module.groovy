@@ -13,7 +13,7 @@ inferexperiment = {
     transform(".bam") to (input.prefix + "_inferexperiment.txt") {
 		exec """
 			export TOOL_DEPENDENCIES=$TOOL_DEPENDENCIES && 
-			source ${TOOL_RSEQC}/env.sh && 
+			source ${TOOL_RSeQC}/env.sh && 
 			if [ -n "\$LSB_JOBID" ]; then 
 				export TMPDIR=/jobdir/\${LSB_JOBID}; 
 			fi &&

@@ -83,11 +83,16 @@ cat(DEhelper.strandspecificity(), sep="\n")
 
 ```
 
+
 ### Distribution of reads on introns/exons and intergenic regions ###
 
 ```{r echo=F,results='asis',error=F,warning=F,message=F}
+
 cat(DEhelper.Qualimap(),sep="\n")		# sample Qualimap 
+
 ```
+
+
 
 ### Batch effect
 The MDS plot shows the sample relations based on multidimensional scaling (MDS). Distances in the plot can be interpreted in terms of leading log2 fold change. Overall, sample replicates should show little distances between them, while groups should show higher distances between them. If the ratio between/within groups distances is high, there is no batch effect (or technical variation) if the experiment was well randomized:

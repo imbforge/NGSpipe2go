@@ -451,7 +451,7 @@ DEhelper.Subread <- function() {
 ## extract the intron /exon and intergenic regons from the qualimap report
 DEhelper.Qualimap <- function() {
 
-	QC <- SHINYREPS_QUALIMAP_LOG	
+	QC <- SHINYREPS_QUALIMAP_LOGS	
 	# construct the image url from the folder contents (skip current dir .)
 	samples <- list.files(QC,pattern="Reads.*.png", recursive=T, full.names=T)
 	df <- sapply(samples,function(f) {
@@ -471,7 +471,7 @@ DEhelper.Qualimap <- function() {
 	df.names <- matrix(sapply(1:nrow(df),function(i) { c(df[i,],samples[i,]) }),ncol=2,byrow=T)
 	colnames(df.names) <- c(" "," ")
 	
-	kable(as.data.frame(df.names),output=F)
+	kable(as.data.frame(df.names),output=F, format="markdown")
 }
 
 
