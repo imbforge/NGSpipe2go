@@ -75,6 +75,14 @@ Check if reads coverage is uniform and if there is any 5' or 3' bias:
 cat(DEhelper.geneBodyCov(web=F),sep="\n")
 ```
 
+### Strand specificity 
+
+```{r echo=F,results='asis',error=F,warning=F,message=F}
+
+cat(DEhelper.strandspecificity(), sep="\n")
+
+```
+
 ### Batch effect
 The MDS plot shows the sample relations based on multidimensional scaling (MDS). Distances in the plot can be interpreted in terms of leading log2 fold change. Overall, sample replicates should show little distances between them, while groups should show higher distances between them. If the ratio between/within groups distances is high, there is no batch effect (or technical variation) if the experiment was well randomized:
 

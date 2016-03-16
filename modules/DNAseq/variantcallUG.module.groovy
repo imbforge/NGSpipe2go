@@ -9,20 +9,17 @@ VariantCallUG = {
 	author: "Oliver Drechsel"
 
 	output.dir = RESULTS
-    
     def GATK_FLAGS = ""
     
     // check if a region limit was provided
-    if (ESSENTIAL_CALL_REGION!=null && ESSENTIAL_CALL_REGION.length()>0) {
-        GATK_FLAGS = " -L " + ESSENTIAL_CALL_REGION
-        
+    if (GATK_CALL_REGION!=null && GATK_CALL_REGION.length()>0) {
+        GATK_FLAGS = " -L " + GATK_CALL_REGION
     } else {
         GATK_FLAGS = ""
-        
     }
     
     transform (".duprm.realigned.recalibrated.bam") to (".UG.vcf.gz") {
-        // usage parameters https://www.broadinstitute.org/gatk/gatkdocs/org_broadinstitute_gatk_tools_walkers_genotyper_UnifiedGenotyper.php
+    // usage parameters https://www.broadinstitute.org/gatk/gatkdocs/org_broadinstitute_gatk_tools_walkers_genotyper_UnifiedGenotyper.php
         exec """
             export TOOL_DEPENDENCIES=$TOOL_DEPENDENCIES &&
 			if [ -n "\$LSB_JOBID" ]; then
@@ -33,7 +30,7 @@ VariantCallUG = {
             echo \$(java -jar $TOOL_GATK/GenomeAnalysisTK.jar --version 1>&2) ;
             echo '/VERSION INFO' 1>&2 ;
             
-            java -Djava.io.tmpdir=$TMPDIR -jar $TOOL_GATK/GenomeAnalysisTK.jar -T UnifiedGenotyper -nt $GATK_THREADS -nct $GATK_THREADS -R $ESSENTIAL_BWA_REF -glm BOTH -I $input -o $output $GATK_FLAGS
+            java -Djava.io.tmpdir=$TMPDIR -jar $TOOL_GATK/GenomeAnalysisTK.jar -T UnifiedGenotyper -nt $GATK_THREADS -nct $GATK_THREADS -R $GATK_BWA_REF -glm BOTH -I $input -o $output $GATK_FLAGS
         ""","VariantCallUG"
     }
     

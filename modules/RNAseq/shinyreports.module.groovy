@@ -54,7 +54,8 @@ shinyReports = {
 			echo "SHINYREPS_GENEBODYCOVERAGE_LOGS=${SHINYREPS_GENEBODYCOVERAGE_LOGS}" >> $output &&
 			echo "SHINYREPS_EDGER_LOGS=${SHINYREPS_EDGER_LOGS}"          >> $output &&
 			echo "SHINYREPS_DESEQ_LOGS=${SHINYREPS_DESEQ_LOGS}"          >> $output &&
-			echo "SHINYREPS_PLOTS_COLUMN=${SHINYREPS_PLOTS_COLUMN}"      >> $output
+			echo "SHINYREPS_PLOTS_COLUMN=${SHINYREPS_PLOTS_COLUMN}"      >> $output &&
+			echo "SHINYREPS_INFEREXPERIMENT_LOGS=${SHINYREPS_INFEREXPERIMENT_LOGS}" >> $output
 		""","shinyReports"
 	}
 }

@@ -7,3 +7,4 @@ BOWTIE_MULTIMAP="-m 1"			// discard reads mapping to more than MULTIMAP position
 BOWTIE_BEST="--best --strata --chunkmbs 256"	// bowtie best mode
 BOWTIE_QUALS="--phred33-quals"	// phred33-quals. Use --phred64-quals for old sequencing runs
 BOWTIE_EXTRA=""                 // extra parms to be passed to bowtie
+BOWTIE_SAMTOOLS_THREADS=Integer.toString(ESSENTIAL_THREADS)
