@@ -27,4 +27,5 @@ SHINYREPS_EDGER_LOGS=LOGS + "/DE_edgeR" //where the EdgeR logs lie
 SHINYREPS_DESEQ_LOGS=LOGS + "/DE_DESeq2" //where the DE_DESeq2 logs lie
 SHINYREPS_PLOTS_COLUMN=4    //number of columns to splits the plot grids (dupradar, genebodycov...). Min=2
 SHINYREPS_INFEREXPERIMENT_LOGS=QC + "/inferexperiment" //where the inferexperiment logs lie
+SHINYREPS_QUALIMAP_LOGS=QC + "/qualimap" //where the qualimap output files are
 

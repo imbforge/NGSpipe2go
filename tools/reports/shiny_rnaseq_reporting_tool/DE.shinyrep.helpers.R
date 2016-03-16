@@ -448,6 +448,34 @@ DEhelper.Subread <- function() {
 }
 
 ##
+## extract the intron /exon and intergenic regons from the qualimap report
+DEhelper.Qualimap <- function() {
+
+	QC <- SHINYREPS_QUALIMAP_LOG	
+	# construct the image url from the folder contents (skip current dir .)
+	samples <- list.files(QC,pattern="Reads.*.png", recursive=T, full.names=T)
+	df <- sapply(samples,function(f) {
+		paste0("![alt text](",f,")")
+	})
+	
+	samples <- list.files(QC,pattern="Reads.*.png", recursive=T, full.names=F)
+	# put sample names and output an md table of 4 columns
+	while(length(df) %% 2 != 0) df <- c(df,"")
+	samples <-gsub(paste0("^", SHINYREPS_PREFIX), "", gsub("/.*", "", dirname(samples)))
+	samples <- gsub("_counts_qualimap", "", samples)
+	while(length(samples) %% 2 != 0) samples <- c(samples,"")
+	df      <- matrix(df     ,ncol=2,byrow=T)
+	samples <- matrix(samples,ncol=2,byrow=T)
+	
+	# add a row with the sample names
+	df.names <- matrix(sapply(1:nrow(df),function(i) { c(df[i,],samples[i,]) }),ncol=2,byrow=T)
+	colnames(df.names) <- c(" "," ")
+	
+	kable(as.data.frame(df.names),output=F)
+}
+
+
+##
 ## extract tool versions
 ##
 
