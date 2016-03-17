@@ -23,9 +23,9 @@ RNAtypes = {
                          RNAtypes_EXTRA
 
 	// run the chunk
-	produce(RNAtypes_OUT + ".counts.raw.png",
-	        RNAtypes_OUT + ".counts.per.png",
-	        RNAtypes_OUT + ".counts.rpk.png") {
+	produce(RNAtypes_OUTNAME + ".counts.raw.png",
+	        RNAtypes_OUTNAME + ".counts.per.png",
+	        RNAtypes_OUTNAME + ".counts.rpk.png") {
 		exec """
 			export TOOL_DEPENDENCIES=$TOOL_DEPENDENCIES &&
 			source ${TOOL_R}/env.sh &&
@@ -38,7 +38,7 @@ RNAtypes = {
 			echo '/VERSION INFO'  1>&2 ;
 			
 			${TOOL_R}/bin/Rscript ${TOOL_RNAtypes}/RNAtypes.R $RNAtypes_FLAGS &&
-			mv ${RNAtypes_OUT}.counts.* $output.dir
+			mv ${RNAtypes_OUTNAME}.counts.* $output.dir
 		""","RNAtypes"
 	}
 }
