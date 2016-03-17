@@ -10,7 +10,7 @@ dupRadar = {
 	                     DUPRADAR_STRANDED + " " + 
 			    		 DUPRADAR_PAIRED   + " " +
 						 DUPRADAR_OUTDIR   + " " +
-				    	 Integer.toString(DUPRADAR_THREADS) + " " +
+				    	 DUPRADAR_THREADS  + " " +
                          DUPRADAR_EXTRA
 
 	// run the chunk
