@@ -4,9 +4,11 @@
 ##
 ##################################
 library("edgeR")
+library("DESeq2")
 library("RColorBrewer")
 library("gplots")
 library("ggplot2")
+library("ggrepel")
 library("knitr")		# for markdown output
 
 ##
@@ -28,9 +30,53 @@ loadGlobalVars <- function(f="shinyReports.txt") {
 }
 
 ##
-## DEhelper.init: some time consuming tasks that can be done in advance
+## DESeq2 DE analysis
 ##
-DEhelper.init <- function(task) {
+## DEhelper.MDS
+DEhelper.DESeq2.MDS <- function() {
+    p <- plotPCA(rld, intgroup=colnames(colData(dds))[1])
+    print(p + geom_text_repel(aes(label=rownames(colData(dds)))) + theme_bw())
+}
+
+## DEhelper.cluster: Heatmap of top variant 'n' genes of the counts-per-milion table
+DEhelper.DESeq2.cluster <- function(n=25) {
+    rows <- order(apply(assay(rld), 1, sd), decreasing=TRUE)[1:n]
+    hmcol  <- colorRampPalette(brewer.pal(9, "GnBu"))(100)
+    heatmap.2(assay(rld)[rows,],col=hmcol,trace="none",margin=c(10,6),scale="none")
+}
+
+## DEhelper.corr: Heatmap of sample to sample distances
+DEhelper.DESeq2.corr <- function() {
+    distsRL <- dist(t(assay(rld)))
+    mat <- as.matrix(distsRL)
+    hc  <- hclust(distsRL)
+    hmcol <- colorRampPalette(brewer.pal(9, "GnBu"))(100)
+    heatmap.2(mat, Rowv=as.dendrogram(hc),
+              symm=TRUE, trace="none",
+              col = rev(hmcol), margin=c(13, 13))
+}
+
+## DEhelper.MAplot: MA plots
+DEhelper.DESeq2.MAplot <- function(i=1,fdr=.05) {
+    x <- mapply(function(res, cont) {
+        plotMA(res, main=cont)
+        invisible(0)
+    }, res, conts[, 1], SIMPLIFY=FALSE)
+}
+
+## DEhelper.DEgenes: show the DE results
+DEhelper.DESeq2.DEgenes <- function(i=1) {
+	ord  <- order(-log(res[[i]]$padj),
+				   abs(res[[i]]$log2FoldChange),
+				  decreasing=TRUE)
+	res[[i]][ord,]
+}
+
+##
+## edgeR DE analysis
+##
+## DEhelper.init: some time consuming tasks that can be done in advance
+DEhelper.edgeR.init <- function(task) {
 	
 	# Prepare the DE data frame
 	renderUcscGeneLinks <- function() {
@@ -68,38 +114,30 @@ DEhelper.init <- function(task) {
 		   prepareDistanceMatrix=prepareDistanceMatrix())
 }
 
-##
 ## DEhelper.MDS
-##
-DEhelper.MDS <- function() {
+DEhelper.edgeR.MDS <- function() {
 	edgeR::plotMDS.DGEList(y,col=brewer.pal(max(length(levels(group)),3),"Accent")[group])
 }
 
 ##
 ## DEhelper.var: variance along log gene count-per-milion
 ##
-DEhelper.var <- function() {
+DEhelper.edgeR.var <- function() {
 	edgeR::plotBCV(y)
 }
 
-##
 ## DEhelper.cluster: Heatmap of top variant 'n' genes of the counts-per-milion table
-##
-DEhelper.cluster <- function(n=50) {
+DEhelper.edgeR.cluster <- function(n=50) {
 	heatmap.2(m[rev(order(v))[1:n],],col=hmcol,trace="none",margin=c(10,6))
 }
 
-##
 ## DEhelper.corr: Heatmap of sample to sample distances
-##
-DEhelper.corr <- function() {
+DEhelper.edgeR.corr <- function() {
 	heatmap.2(mat,trace="none",col=rev(hmcol),margin=c(13,13))
 }
 
-##
 ## DEhelper.MAplot: MA plots
-##
-DEhelper.MAplot <- function(i=1,fdr=.05) {
+DEhelper.edgeR.MAplot <- function(i=1,fdr=.05) {
 	# get DE genes (p.adjust='BH', pval<.05)
 	de <- decideTestsDGE(lrt[[i]],p.value=fdr)
 	degenes <- rownames(y)[as.logical(de)]
@@ -110,10 +148,8 @@ DEhelper.MAplot <- function(i=1,fdr=.05) {
 	abline(v=0,col="blue")			# indicate >1 counts-per-million
 }
 
-##
 ## DEhelper.DEgenes: show the DE results
-##
-DEhelper.DEgenes <- function(i=1) {
+DEhelper.edgeR.DEgenes <- function(i=1) {
 	ord  <- order(-log(lrt[[i]]$table$FDR),
 				   abs(lrt[[i]]$table$logFC),
 				  decreasing=TRUE)
@@ -288,7 +324,7 @@ DEhelper.dupRadar <- function(web=TRUE) {
                        ncol=SHINYREPS_PLOTS_COLUMN,byrow=T)
 	colnames(df.names) <- rep(" ",SHINYREPS_PLOTS_COLUMN)
 	
-	kable(as.data.frame(df.names),align="c",output=F)
+	kable(as.data.frame(df.names),align="c",output=F, format="markdown")
 }
 
 ##
@@ -315,7 +351,7 @@ DEhelper.RNAtypes <- function(web=TRUE) {
 	df <- matrix(df,ncol=1,nrow=1)
 	colnames(df) <- c(" ")
 
-	kable(as.data.frame(df),output=F)
+	kable(as.data.frame(df),output=F, format="markdown")
 }
 
 ##
@@ -356,7 +392,7 @@ DEhelper.geneBodyCov <- function(web=TRUE) {
                        ncol=SHINYREPS_PLOTS_COLUMN,byrow=T)
 	colnames(df.names) <- rep(" ",SHINYREPS_PLOTS_COLUMN)
 	
-	kable(as.data.frame(df.names),align="c",output=F)
+	kable(as.data.frame(df.names),align="c",output=F, format="markdown")
 }
 
 ##
@@ -449,11 +485,15 @@ DEhelper.Subread <- function() {
 
 ##
 ## extract the intron /exon and intergenic regons from the qualimap report
+##
 DEhelper.Qualimap <- function() {
 
 	QC <- SHINYREPS_QUALIMAP_LOGS	
 	# construct the image url from the folder contents (skip current dir .)
 	samples <- list.files(QC,pattern="Reads.*.png", recursive=T, full.names=T)
+	if(length(samples) == 0) {
+		return("Qualimap report not available")
+	}
 	df <- sapply(samples,function(f) {
 		paste0("![alt text](",f,")")
 	})
