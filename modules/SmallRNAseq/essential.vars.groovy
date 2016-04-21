@@ -6,6 +6,8 @@
 ESSENTIAL_PROJECT="/local/scratch1/imb-kettinggr/adomingues/projects/bpipe_small_rna"
 ESSENTIAL_BOWTIE_REF="/home/adomingu/imb-kettinggr/genomes/Danio_rerio/Ensembl/Zv9/Sequence/BowtieIndexChr/chr"
 ESSENTIAL_GENOME_REF="/home/adomingu/imb-kettinggr/genomes/Danio_rerio/Ensembl/Zv9/Sequence/chr_sequences/chr.clean.fa"
+// transcriptome mapping
+ESSENTIAL_BOWTIE_REF="/home/adomingu/imb-kettinggr/genomes/Danio_rerio/Ensembl/Zv9/Sequence/cdna/BowtieIndexLongTramscriptome/Zv19.transcriptome"
 
 // vars for piRNA analyis
 ESSENTIAL_FEATURES="/fsimb/groups/imb-kettinggr/genomes/Danio_rerio/Ensembl/Zv9/Annotation/pipeline/features.bed"
@@ -22,6 +24,8 @@ REPORTS=PROJECT + "/reports"
 RESULTS=PROJECT + "/results"
 MAPPED=RESULTS + "/mapped"
 UNIQUE_MAPPED=MAPPED + "/unique"
+UNMAPPED=MAPPED + "/unmapped"
+FQ=MAPPED + "/bam2fq"
 MULTI_MAPPED=MAPPED + "/multimapped"
 TMP=PROJECT + "/tmp"
 TRACKS=MAPPED + "/tracks"
