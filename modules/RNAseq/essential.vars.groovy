@@ -8,7 +8,7 @@ ESSENTIAL_PAIRED="no"           // paired end design
 ESSENTIAL_STRANDED="reverse"    // strandness: no|yes|reverse
 ESSENTIAL_ORG="mouse"           // UCSC organism
 ESSENTIAL_DB="mm9"              // UCSC assembly version
-ESSENTIAL_READLENGTH="50"       // added for STAR version > 2.4.1a
+ESSENTIAL_READLENGTH=50         // added for STAR version > 2.4.1a
 ESSENTIAL_THREADS=4             // number of threads for parallel tasks
 
 //global vars

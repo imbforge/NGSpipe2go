@@ -11,16 +11,13 @@ output:
 ```{r Initialise, echo=F,result='hide',error=F,warning=F,message=F}
 source('DE.shinyrep.helpers.R')
 loadGlobalVars()
-load(SHINYREPS_DE_EDGER,envir=.GlobalEnv)		# the outcome from the DE analysis
-DEhelper.init("prepareDEdataTable")
-DEhelper.init("renderUcscGeneLinks")
-DEhelper.init("prepareDistanceMatrix")
+load(SHINYREPS_DE_DESEQ,envir=.GlobalEnv)		# the outcome from the DE analysis
 ``` 
 
 ## Quality Control RNAseq ##
 
-### Sequencing quality ###
-The sequencing quality of the run was good, and the read distribution over the libraries was good. See tables the SAV quality tables:
+### Sequence run quality
+The sequencing quality of the run was good, and the read distribution over the libraries was good. See the SAV quality tables:
 
 ```{r Bustard_paragraph, echo=F,results='asis',error=F,warning=F,message=F}
 # I used to include a already rendered MD file with the bustard statistics, but
@@ -29,47 +26,57 @@ The sequencing quality of the run was good, and the read distribution over the l
 cat(DEhelper.Bustard(),sep="\n")
 ```
 
-### Raw reads qualities, sequence bias and duplication
+### Raw reads QC
+The raw sequence reads of all samples are analysed with the popular FastQC tool (http://www.bioinformatics.babraham.ac.uk/projects/fastqc/).
+1. The "Per Base Sequence Quality" Box-Whisker plots show the range of quality values across all base positions:
+    + The central red line is the median value
+    + The yellow box represents the inter-quartile range (25-75%)
+    + The upper and lower whiskers represent the 10% and 90% points
+    + The blue line represents the mean quality
+The y-axis on the graph shows the Phred quality scores, which are logarithmically related to the base-calling error probabilities. The higher the score the better the base call. The background of the graph divides the y axis into very good quality calls (green), calls of reasonable quality (orange), and calls of poor quality (red). Typically, the majority of calls on all base positions fall into the green area.
+2. The "Per Base Sequence Content" plots show the proportion of each base (% G, A, T and C) at each position. In a random library there would be little difference between the positions of a sequence run, so the lines in this plot should run parallel with each other. But most RNA-seq libraries show sequence imbalance in the first 10-12 read positions due to RT priming biases, which should however look fairly similar in all samples.
+3. The "Per Sequence GC Content" plots show the GC% distribution of all reads (red lines) and the ideal normal distribution based on the data (blue lines). Typically, the red and blue lines tightly overlap and look essentially the same in all samples. An unusually shaped distribution could indicate a contaminated library.
+
 ```{r FastQC_paragraph, echo=F,results='asis',error=F,warning=F,message=F}
 cat(DEhelper.Fastqc(web=F),sep="\n")
 ```
 
-### Mapping
-Mapping was done using STAR. The program version and genome assembly are described in the following table. The following parameters were used to get only uniquely mapping reads:
+### Read mapping
+Mapping to the reference genome & transcriptome is performed with STAR (https://github.com/alexdobin/STAR). The program version, genome assembly and software parameters are described in the following table:
 
 ```{r STAR_parameters_paragraph, echo=F,results='asis',error=F,warning=F,message=F}
 cat(DEhelper.STARparms(),sep="\n")
 ``` 
 
-The mapping statistics show the total number of reads delivered to the aligner, the number of uniquely mapped reads, and the number of reads discarded because of mapping to multiple positions or not mapping at all to the reference genome.
+The mapping statistics below show the number and percentage of (i) input raw reads, (ii) uniquely mapped reads, (iii) reads mapping to multiple positions in the genome (multimapped), and (iv) reads not mapping to the reference genome. For the multimapped reads, one best alignment position is selected using the multi-mapper resolution tool MMR (https://github.com/ratschlab/mmr). All mapped reads are used for the production of browser coverage tracks but only uniquely mapped reads are taken into account in the DESeq differential expression analysis in order to avoid potential false-positives, however this standard analysis approach may also exclude some recently duplicated genes or gene-pseudogene pairs.
 
 ```{r STAR_paragraph, echo=F,results='asis',error=F,warning=F,message=F}
 cat(DEhelper.STAR(),sep="\n")
 ``` 
 
-### PCR duplication assessment
-Measuring the fraction of duplicated reads is a common quality control step for NGS data sets, which can hint towards too low library complexity due to too many PCR cycles during library preparation or other problems in the sequencing workflow. However in RNA-Seq duplicate reads arise naturally due to highly expressed genes, which renders the overall read duplication rate useless.
+### Library complexity assessment
+Measuring the fraction of duplicated reads is a common quality control step for NGS data sets, which can hint towards low library complexity due to PCR over-amplification during library preparation and/or suboptimal amount of input material. However, in RNA-seq  duplicate reads may also arise naturally due to the highly expressed (e.g. housekeeping) genes, which renders the overall read duplication rate as reported by FastQC useless. The IMB-developed tool dupRadar (http://bioconductor.org/packages/release/bioc/html/dupRadar.html) gives an informative insight into the duplication problem by graphically relating the gene expression level and the observed duplication rate. Thus, problematic samples can be easily identified by visual inspection.
 
 ```{r Dupradar_paragraph, echo=F,results='asis',error=F,warning=F,message=F}
 cat(DEhelper.dupRadar(web=F),sep="\n")
 ```
 
-### Subread
-Mapping statistics of reads assigned to known features in the genome and evaluated in further steps. In addition, the count and rate of reads is shown that could not be assigned to the investigated genomic features due to various reasons detailed in the column headers.
+### Mapped reads annotation
+The mapped reads were assigned to annotated features (gene exons) using the Subread tool featureCounts (http://bioinf.wehi.edu.au/featureCounts). Listed below is also the number of un-assigned reads due to ambiguity or lack of overlap with known gene annotation, e.g. intronic reads derived from unprocessed transcripts.
 
 ```{r Subread_paragraph, echo=F,results='asis',error=F,warning=F,message=F}
 cat(DEhelper.Subread(),sep="\n")
 ```
 
-### RNA types
-Check for an enrichment of specific RNA types. This plots helps in detecting if the extraction protocol worked well, and the expected RNA types were sequenced.
+### RNA class representation
+The plots below show the fraction of mapped reads assigned to various RNA classes. These plots help in determining if the sample prep protocol worked well and may reveal issues with rRNA contamination. 
 
 ```{r RNAtypes_paragraph, echo=F,results='asis',error=F,warning=F,message=F}
 cat(DEhelper.RNAtypes(web=F),sep="\n")
 ```
 
 ### Gene body coverage
-Check if reads coverage is uniform and if there is any 5' or 3' bias:
+The plots below show meta-gene profiles of 5' to 3' read coverage and reveal if there is some bias due to RNA degradation or library prep protocol. polyA-selection protocols are particularly prone of producing 3' coverage bias.
 
 ```{r GeneBodyCoverage_paragraph, echo=F,results='asis',error=F,warning=F,message=F}
 cat(DEhelper.geneBodyCov(web=F),sep="\n")
@@ -78,65 +85,60 @@ cat(DEhelper.geneBodyCov(web=F),sep="\n")
 ### Strand specificity 
 
 ```{r echo=F,results='asis',error=F,warning=F,message=F}
-
 cat(DEhelper.strandspecificity(), sep="\n")
-
 ```
-
 
 ### Distribution of reads on introns/exons and intergenic regions ###
 
 ```{r echo=F,results='asis',error=F,warning=F,message=F}
-
 cat(DEhelper.Qualimap(),sep="\n")		# sample Qualimap 
-
 ```
 
-
-
-### Batch effect
-The MDS plot shows the sample relations based on multidimensional scaling (MDS). Distances in the plot can be interpreted in terms of leading log2 fold change. Overall, sample replicates should show little distances between them, while groups should show higher distances between them. If the ratio between/within groups distances is high, there is no batch effect (or technical variation) if the experiment was well randomized:
+### Sample relatedness
+The plot below depicts sample similarity based on priniciple component analysis (PCA) with the 500 genes showing the highest variance. Overall, replicates are expected to show relatively small distances between them, while groups may show higher distances between them, depending on the magnitude of expression changes. If the samples cluster other than by group, there might be sample prep batch effects or some other unaccounted biological/technical factors in the experiment. 
 
 ```{r MDSplot_paragraph, echo=F,error=F,warning=F,message=F,fig.align="center"}
-DEhelper.MDS()		# sample MDS 
+DEhelper.DESeq2.MDS()		# sample MDS 
 ```
 
-Clustering the samples based on the distance calculated on the expression levels of the 50 most variable genes, one can have an idea which samples have similar gene expression profiles. This, together with the MDS plot, enables us to detect if the replicates behave similar in terms of expression and spot batches of samples related by other characteristics rather than condition: <br>
+Clustering the samples based on the distance calculated on the expression levels of the most variable genes reveals replicate consistency and can spot batches of samples related by other characteristics rather than condition:
 
 ```{r Heatmap1_paragraph, echo=F,error=F,warning=F,message=F,fig.align="center"}
-DEhelper.cluster()	# heatmap of top variant 'n' genes of the counts-per-milion table
+DEhelper.DESeq2.cluster()	# heatmap of top variant 'n' genes of the rlog transformed counts (normalized and stabilized)
 ```
 
-Finally, sample to sample correlation based on the distance calculated on the expression profile gives us a measure of sample similarity: <br>
+Finally, a heatmap clustogram of the Euclidean distances between the samples gives us a measure of sample similarity:
 
 ```{r Heatmap2_paragraph, echo=F,error=F,warning=F,message=F,fig.align="center"}
-DEhelper.corr()		# heatmap of sample to sample distances
+DEhelper.DESeq2.corr()		# heatmap of sample to sample distances
 ```
 
 ## Differential Expression Analysis
+Pairwise differential expression analysis between the sample groups was performed with the popular R package DESeq2 (https://bioconductor.org/packages/release/bioc/html/DESeq2.html). Shown below for each comparison are (i) MA plots depicting log2 of the expression fold changes versus the mean normalised gene expression level and (ii) tables of top hits order by statistical significance (FDR, false discovery rate).
 
 ```{r DifferentialExpression_paragraph, echo=F,results='asis',error=F,warning=F,message=F,fig.align="center"}
-for(i in 1:length(colnames(conts))) {
+for(i in 1:nrow(conts)) {
 
 	# subsection
-	cat("### ",colnames(conts)[i],fill=T)	
+	cat("### ",conts[i, 1],fill=T)	
 	cat("",fill=T)
 	
 	# MA plot
 	fdr <- if(exists("input")) { fdr <- if(is.numeric(input$slider_pval)) input$slider_pval else .01 } else .01
-	genes <- DEhelper.DEgenes(i)
-	cat("There are",sum(genes$FDR < fdr),
-		"genes highlighted in the MA plot with corrected pvalue (Benjamini and Hochberg, FDR) <",fdr,fill=T)
-	DEhelper.MAplot(i,fdr)	# should be fine at taking the value from the UI slider
+	genes <- DEhelper.DESeq2.DEgenes(i)
+	cat("There are",sum(genes$padj < fdr, na.rm=T),
+		"genes highlighted in the MA plot with corrected pvalue (Benjamini and Hochberg, FDR) <",fdr,"\n")
+	DEhelper.DESeq2.MAplot(i,fdr)	# should be fine at taking the value from the UI slider
 	cat("\n",fill=T)
 
 	# and DE table
 	cat("The table contains the top 25 differentially expressed genes in terms of fold change and FDR:",fill=T)
 	cat("",fill=T)
-	genes$PValue <- format(genes$PValue,scientific=TRUE)
-	genes$FDR <- format(genes$FDR,scientific=TRUE)
-#	cat(kable(genes[1:25,-1],row.names=T,align="r"),sep="\n")	# show only the top 25 genes
-	cat(kable(genes[1:25,-4],row.names=T,align="r"),sep="\n")	# show only the top 25 genes
+	genes$baseMean       <- round(genes$baseMean, 2)
+	genes$log2FoldChange <- round(genes$log2FoldChange, 2)
+	genes$padj           <- format(genes$padj,scientific=TRUE)
+    cols <- c("baseMean", "log2FoldChange", "padj")
+	cat(kable(genes[1:25,cols],row.names=T,align="r"),sep="\n")	# show only the top 25 genes
 	cat("",fill=T)
 }
 ```
