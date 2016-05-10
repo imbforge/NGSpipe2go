@@ -19,7 +19,7 @@ diffbind = {
                          DIFFBIND_EXTRA
 
 	// run the chunk
-	produce("DIFFBIND.RData") {
+	produce("diffbind.pdf", "diffbind.xls") {
 		exec """
 			export TOOL_DEPENDENCIES=$TOOL_DEPENDENCIES &&
 			source ${TOOL_R}/env.sh &&
