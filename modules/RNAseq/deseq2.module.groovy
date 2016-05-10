@@ -14,6 +14,7 @@ DE_DESeq2 = {
                           DE_DESeq2_SUFFIX    + " " +
                           DE_DESeq2_CWD       + " " +
                           DE_DESeq2_OUTDIR    + " " +
+			  DE_DESeq2_GENES     + " " +
                           DE_DESeq2_EXTRA
 
 	// run the chunk
