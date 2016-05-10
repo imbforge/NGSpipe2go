@@ -475,10 +475,15 @@ DEhelper.Subread <- function() {
 	colnames(x) <- gsub(paste0(SUFFIX,"$"),"",colnames(x))
 	
 	# create md table (omitting various values that are 0 for now)
-	df <- data.frame(assigned=format(x[1,],big.mark=","),
-					 unass_ambiguous=format(x[2,],big.mark=","),
-					 unass_multimap=format(x[3,],big.mark=","),
-					 unass_nofeat=format(x[4,],big.mark=","))
+	#from x we romeove the ones which are unmapped to calculate percentages
+	#only for the mapped ones
+	x <- x[rownames(x) != "Unassigned_Unmapped",]
+	x <- rbind(total=x, colSums(x))
+	rownames(x)[nrow(x)] <- "total"
+	df <- data.frame(assigned=paste0(format(x[1,],big.mark=",")," (", format((x[1,]/x["total",])*100, digits=2, nsmall=2), "%)"),
+					 unass_ambiguous=paste0(format(x[2,],big.mark=",")," (", format((x[2,]/x["total",])*100, digits=2, nsmall=2), "%)"),
+					 unass_multimap=paste0(format(x[3,],big.mark=",")," (", format((x[3,]/x["total",])*100, digits=2, nsmall=2), "%)"),
+					 unass_nofeat=paste0(format(x[4,],big.mark=",")," (", format((x[4,]/x["total",])*100, digits=2, nsmall=2), "%)"))
 	kable(df,align=c("r","r","r","r"),output=F)
 	
 }

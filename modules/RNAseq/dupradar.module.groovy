@@ -9,8 +9,13 @@ dupRadar = {
 	def DUPRADAR_FLAGS = DUPRADAR_GTF      + " " +
 	                     DUPRADAR_STRANDED + " " + 
 			    		 DUPRADAR_PAIRED   + " " +
+<<<<<<< HEAD
+					 DUPRADAR_OUTDIR   + " " +
+				    	 DUPRADAR_THREADS + " " +
+=======
 						 DUPRADAR_OUTDIR   + " " +
 				    	 DUPRADAR_THREADS  + " " +
+>>>>>>> 09da5224d240850b96c336eca90e9732bac000b9
                          DUPRADAR_EXTRA
 
 	// run the chunk
