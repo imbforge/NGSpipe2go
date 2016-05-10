@@ -54,10 +54,11 @@ gene.model   <- parseArgs(args,"gtf=","")       # gtf gene model
 filter.genes <- parseArgs(args,"filter=",TRUE,convert="as.logical") # filter invariant genes?
 pre          <- parseArgs(args,"prefix=","")    # prefix to remove from the sample name
 suf          <- parseArgs(args,"suffix=","_readcounts.tsv")    # suffix to remove from the sample name
+base          <- parseArgs(args,"base=",NA)    # suffix to remove from the sample name
 cwd          <- parseArgs(args,"cwd=","./")     # current working directory
 out          <- parseArgs(args,"out=","DE.DESeq2") # output filename
 
-runstr <- "Rscript DE.DESeq2.R [targets=targets.txt] [contrasts=contrasts.txt] [mmatrix=~condition] [filter=TRUE] [prefix=RE] [suffix=RE] [cwd=.] [out=DE.DESeq2]"
+runstr <- "Rscript DE.DESeq2.R [targets=targets.txt] [contrasts=contrasts.txt] [mmatrix=~condition] [filter=TRUE] [prefix=RE] [suffix=RE] [cwd=.] [base=] [out=DE.DESeq2]"
 if(!file.exists(ftargets))   stop(paste("File",ftargets,"does NOT exist. Run with:\n",runstr))
 if(!file.exists(fcontrasts)) stop(paste("File",fcontrasts,"does NOT exist. Run with:\n",runstr))
 if(!file.exists(cwd))        stop(paste("Dir",cwd,"does NOT exist. Run with:\n",runstr))
@@ -77,16 +78,18 @@ if(file.exists(gene.model)) {
 ##
 # load targets
 targets <- read.delim(ftargets,head=T,colClasses="character",comment.char="#",)
-if(ncol(targets) < 3) stop("targets file must have at least 3 columns and fit the format expected in DESeqDatcondition")
+if(!all(c("group", "file", "sample") %in% colnames(targets))) stop("targets file must have at least 3 columns and fit the format expected in DESeqDatcondition")
+#reorder the targets file
+add_factors <- colnames(targets)[!colnames(targets) %in% c("group", "sample", "file")]
+targets <- targets[, c("sample", "file", "group", add_factors)]
 # clean file names to construct the sample names
-targets[,1] <- gsub(paste0("(^",pre, "|", suf, "$)"),"", targets[,1])
+#targets[,1] <- gsub(paste0("(^",pre, "|", suf, "$)"),"", targets[,1])
 
 # load contrasts
 conts <- read.delim(fcontrasts,head=F,comment.char="#")
 
 # check if the specified targets exists in the CWD
 if(!all(x <- sapply(paste0(cwd,"/",targets$file),file.exists))) stop("one or more input files do not exist in",cwd,"(x=",x,")")
-
 ##
 ## DESeq analysis: right now it only allows simple linear models with pairwise comparisons
 ##
@@ -103,7 +106,7 @@ res <- lapply(conts[,1],function(cont) {
 	}
 
     # read input HTseq counts
-    this_targets <- targets[targets[, 3] %in% factors,]
+    this_targets <- targets[targets$group %in% factors,]
     dds <- DESeqDataSetFromHTSeqCount(sampleTable=this_targets,
                                       directory=cwd, 
                                       design=as.formula(mmatrix))
@@ -114,13 +117,25 @@ res <- lapply(conts[,1],function(cont) {
     } else { 
         assay(rlog(dds))
     }
+    if(!is.na(base) & any(base %in% targets$group)){
+	    colData(dds)[["group"]] <- relevel(colData(dds)[["group"]], base)
+    }
+
 
 	# DEseq2 stats
 	res <- results(dds, independentFiltering=filter.genes, format="DataFrame")
 
 	# write the results
-	x <- merge(res[, c("log2FoldChange", "padj")], quantification, by=0)
-	write.csv(x[order(x$padj),],file=paste0(out,"/",cont.name,".csv"),row.names=F)
+	x <- merge(res[, c("baseMean", "log2FoldChange", "padj")], quantification, by=0)
+	#order after adjusted p values
+	x <- x[order(x$padj),]
+	#adjusting the name for the log2Foldchange and the padj to the description given
+	#by deseq
+	
+	colnames(x)[which(colnames(x) %in%c("baseMean", "log2FoldChange", "padj"))]<-mcols(res)$description[match(c("baseMean", "log2FoldChange", "padj"), colnames(res))]
+	#our rownames should be the gene id and not rownames
+	colnames(x)[1] <- "gene_id"
+	write.csv(x,file=paste0(out,"/",cont.name,".csv"),row.names=F)
 	res
 })
 
