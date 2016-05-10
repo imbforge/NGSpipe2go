@@ -400,6 +400,11 @@ DEhelper.geneBodyCov <- function(web=TRUE) {
 ##
 DEhelper.strandspecificity <- function(){
 
+    # logs folder
+    if(!file.exists(SHINYREPS_INFEREXPERIMENT_LOGS)) {
+        return("Strand specificity statistics not available")
+    }
+    
 	filelist <- list.files(path=SHINYREPS_INFEREXPERIMENT_LOGS,full.names=TRUE)
 	strandspecifity <- lapply(filelist, read.table, sep=":", skip=3, header=FALSE, row.names=1, blank.lines.skip=TRUE)
 	strandspecifity <- do.call(cbind, strandspecifity)
@@ -484,10 +489,15 @@ DEhelper.Subread <- function() {
 }
 
 ##
-## extract the intron /exon and intergenic regons from the qualimap report
+## extract the intron/exon and intergenic regions from the qualimap report
 ##
 DEhelper.Qualimap <- function() {
-
+    
+    # logs folder
+    if(!file.exists(SHINYREPS_QUALIMAP_LOGS)) {
+        return("Read distribution statistics not available")
+    }  
+    
 	QC <- SHINYREPS_QUALIMAP_LOGS	
 	# construct the image url from the folder contents (skip current dir .)
 	samples <- list.files(QC,pattern="Reads.*.png", recursive=T, full.names=T)
