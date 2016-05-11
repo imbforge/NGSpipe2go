@@ -1,13 +1,11 @@
 ![IMB-logo](resources/IMB_logo.png)
 
 # NGSpipe2go #
-A set of tools used at IMB and you're very welcome to do so at your institute as well.
 
-The tool set consists of several published tools and others developed at IMB (<http://www.imb-mainz.de/home/>).
-Currently, the tool set sports a RNAseq and ChIPseq pipeline and its respective modules.
+A set of NGS data analysis tools and pipelines developed and utilised in the Bioinformatics Core Facility of the Institute of Molecular Biology in Mainz (https://www.imb.de/core-facilities/bioinformatics/). Currently NGSpipe2go contains bpipe-based pipelines for QC, processing, analysis and visualisation of RNA-seq, ChIP-seq and DNA-seq data.
 
 ## Prerequisites ##
-### RNAseq ###
+### RNA-seq pipeline ###
 #### Programs required ####
 - FastQC
 - STAR
@@ -32,7 +30,7 @@ Currently, the tool set sports a RNAseq and ChIPseq pipeline and its respective 
 
 (*) examples provided within this project
 
-### ChIPseq ###
+### ChIP-seq pipeline ###
 #### Programs required ####
 - FastQC
 - Bowtie 1
