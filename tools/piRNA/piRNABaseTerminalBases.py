@@ -18,6 +18,7 @@ import os
 import sys
 import argparse
 import pandas as pd
+import pysam
 
 
 def getArgs():
@@ -66,7 +67,7 @@ def getArgs():
 
     parser.add_argument(
         '-g', '--genome',
-        required=True,
+        required=False,
         type=str,
         help='The genome to retrieve chromosome lengths, e.g., hg19, mm10, danRer7...'
         )
@@ -105,6 +106,23 @@ def createAndChangeDir(dir_name):
         if not os.path.isdir(dir_name):
             raise
     os.chdir(dir_name)
+
+
+def get_chrom_lengths(path_to_bam):
+    '''
+    Uses pysam to retrieve chromosome sizes form bam.
+    Useful helper to use with some pybedtools functions (e.g. coverage), when a bam was mapped with custom genome not available in UCSC.
+    Input: path to bam file (should be indexed)
+    Output: dictionary.
+    Example output:
+    {'chr4': (0, 1351857), 'chr3L': (0, 24543557), 'chr2L': (0, 23011544), '*': (0, 0), 'chrX': (0, 22422827), 'chr2R': (0, 21146708), 'chr3R': (0, 27905053)}
+    '''
+    idx = pysam.idxstats(path_to_bam).splitlines()
+    chromsizes = {}
+    for element in idx:
+        stats = element.split("\t")
+        chromsizes[stats[0]] = (0, int(stats[1]))
+    return chromsizes
 
 
 def countNucleotidePerPosition(sequences):
@@ -252,12 +270,15 @@ if __name__ == '__main__':
     args = getArgs()
     print args
     fasta = BedTool(args.fasta)
-    chromsizes = pybedtools.chromsizes(args.genome)
     inbam = args.bam
     inbed = args.intervals
     up = args.upstream
     down = args.downstream
     out_folder = args.outFolder
+    if args.genome is not None:
+        chromsizes = pybedtools.chromsizes(args.genome)
+    else:
+        chromsizes = get_chrom_lengths(inbam)
 
     exp_name = os.path.split(inbam)[1].split(".")[0] + os.path.split(inbed)[1].split(".")[0]
     exp_folder = out_folder + '/' + exp_name
