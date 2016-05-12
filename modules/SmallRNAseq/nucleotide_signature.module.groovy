@@ -10,7 +10,9 @@ NucleotideSignature = {
    def OUTNAME = SAMPLE_NAME + "." + FEATURES_NAME
    def OUT_FOLDER = output.dir + "/" + OUTNAME
 
-   produce(OUT_FOLDER + "/figure/" + OUTNAME + ".NucleotideDistributionOnPiRNA.pdf") {
+   produce(
+      OUT_FOLDER + "/figure/" + OUTNAME + ".NucleotideDistributionOnPiRNA.pdf"
+      ) {
 
       exec """
          if [ -n "\$LSB_JOBID" ]; then
