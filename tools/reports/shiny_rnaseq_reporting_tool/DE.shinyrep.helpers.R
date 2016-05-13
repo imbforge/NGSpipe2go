@@ -489,6 +489,7 @@ DEhelper.Subread <- function() {
 					 unass_ambiguous=paste0(format(x[2,],big.mark=",")," (", format((x[2,]/x["total",])*100, digits=2, nsmall=2), "%)"),
 					 unass_multimap=paste0(format(x[3,],big.mark=",")," (", format((x[3,]/x["total",])*100, digits=2, nsmall=2), "%)"),
 					 unass_nofeat=paste0(format(x[4,],big.mark=",")," (", format((x[4,]/x["total",])*100, digits=2, nsmall=2), "%)"))
+	rownames(df) <- colnames(x)
 	kable(df,align=c("r","r","r","r"),output=F)
 	
 }
