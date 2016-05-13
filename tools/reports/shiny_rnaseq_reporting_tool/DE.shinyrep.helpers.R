@@ -400,6 +400,11 @@ DEhelper.geneBodyCov <- function(web=TRUE) {
 ##
 DEhelper.strandspecificity <- function(){
 
+    # logs folder
+    if(!file.exists(SHINYREPS_INFEREXPERIMENT_LOGS)) {
+        return("Strand specificity statistics not available")
+    }
+    
 	filelist <- list.files(path=SHINYREPS_INFEREXPERIMENT_LOGS,full.names=TRUE)
 	strandspecifity <- lapply(filelist, read.table, sep=":", skip=3, header=FALSE, row.names=1, blank.lines.skip=TRUE)
 	strandspecifity <- do.call(cbind, strandspecifity)
@@ -489,10 +494,15 @@ DEhelper.Subread <- function() {
 }
 
 ##
-## extract the intron /exon and intergenic regons from the qualimap report
+## extract the intron/exon and intergenic regions from the qualimap report
 ##
 DEhelper.Qualimap <- function() {
-
+    
+    # logs folder
+    if(!file.exists(SHINYREPS_QUALIMAP_LOGS)) {
+        return("Read distribution statistics not available")
+    }  
+    
 	QC <- SHINYREPS_QUALIMAP_LOGS	
 	# construct the image url from the folder contents (skip current dir .)
 	samples <- list.files(QC,pattern="Reads.*.png", recursive=T, full.names=T)
@@ -520,10 +530,25 @@ DEhelper.Qualimap <- function() {
 }
 
 
+
+##
+## DEhelper.VolcanoPlot: Volcano plots from DEseq2 results
+##
+DEhelper.VolcanoPlot <- function(i=1) {
+    # get DE genes (p.adjust='BH', pval<.05)
+    data.table <- data.frame(logFC=res[[i]]$log2FoldChange,
+                             pvalue=res[[i]]$padj,
+                             meanExp=res[[i]]$baseMean) # extract the final count, pValue and FDR data
+    x.limit <- max( c(max(data.table$logFC, na.rm = T), abs(min(data.table$logFC, na.rm = T))) ) # find the maximum spread of the x-axis
+    
+    # plotting
+    p <- ggplot(data.table, aes(logFC, -1 * log10(pvalue), colour=meanExp )) + geom_point() + xlim(-1 * x.limit, x.limit) + ylab("-log10( adj. p-value )") + theme_bw() + scale_colour_gradient(name="mean expression") # volcano plot
+    print(p)
+}
+
 ##
 ## extract tool versions
 ##
-
 Toolhelper.VersionReporter <- function(tool, logfolder) {
 	
 	LOG <- logfolder
