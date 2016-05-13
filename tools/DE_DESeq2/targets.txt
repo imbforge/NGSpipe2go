@@ -1,4 +1,4 @@
-sample	file	condition	subject
+sample	file	group	subject
 Med12_1	Sample_imb_richly_2014_05_12_mESCs_shMed12_rep_1.readcounts.tsv	Med12	1
 NMC_2	Sample_imb_richly_2014_05_19_mESCs_shNMC_rep_2.readcounts.tsv	NMC	2
 Med12_2	Sample_imb_richly_2014_05_21_mESCs_shMed12_rep_2.readcounts.tsv	Med12	2
