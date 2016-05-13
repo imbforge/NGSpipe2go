@@ -4,35 +4,41 @@ RNAtypes = {
 	doc title: "RNAtypes",
 		desc:  "analysis of duplication rate on RNAseq analysis",
 		constraints: "",
+		bpipe_version: "tested with bpipe 0.9.8.7",
 		author: "Sergi Sayols"
 
 	output.dir = QC + "/RNAtypes/"
-	def RNAtypes_FLAGS = " folder="   + RNAtypes_FOLDER   +
-	                     " pattern="  + RNAtypes_PATTERN  +
-	                     " gtf="      + RNAtypes_GTF +
-	                     " out="      + RNAtypes_OUT +
-	                     " pre="      + RNAtypes_PRE +
-	                     " suf="      + RNAtypes_SUF +
-	                     " paired="   + RNAtypes_PAIRED   +
-	                     " stranded=" + RNAtypes_STRANDED +
-	                     " multimap=" + RNAtypes_MULTIMAP +
-	                     " ftype="    + RNAtypes_FTYPE    +
-	                     " ftypecol=" + RNAtypes_FTYPECOL +
-					     " cores="    + RNAtypes_CORES
+	def RNAtypes_FLAGS = RNAtypes_FOLDER   + " " +
+	                     RNAtypes_PATTERN  + " " +
+	                     RNAtypes_GTF      + " " +
+	                     RNAtypes_OUT      + " " +
+	                     RNAtypes_PRE      + " " +
+	                     RNAtypes_SUF      + " " +
+	                     RNAtypes_PAIRED   + " " +
+	                     RNAtypes_STRANDED + " " +
+	                     RNAtypes_MULTIMAP + " " +
+	                     RNAtypes_FTYPE    + " " +
+	                     RNAtypes_FTYPECOL + " " +
+					     RNAtypes_CORES    + " " +
+                         RNAtypes_EXTRA
 
 	// run the chunk
-	produce(RNAtypes_OUT + ".counts.raw.png",
-	        RNAtypes_OUT + ".counts.per.png",
-	        RNAtypes_OUT + ".counts.rpk.png") {
+	produce(RNAtypes_OUTNAME + ".counts.raw.png",
+	        RNAtypes_OUTNAME + ".counts.per.png",
+	        RNAtypes_OUTNAME + ".counts.rpk.png") {
 		exec """
 			export TOOL_DEPENDENCIES=$TOOL_DEPENDENCIES &&
 			source ${TOOL_R}/env.sh &&
 			if [ -n "\$LSB_JOBID" ]; then
 				export TMPDIR=/jobdir/\${LSB_JOBID};
 			fi &&
-
+			
+			echo 'VERSION INFO'  1>&2 ;
+			echo \$(${TOOL_R}/bin/Rscript --version 2>&1 | cut -d' ' -f5) 1>&2 ;
+			echo '/VERSION INFO'  1>&2 ;
+			
 			${TOOL_R}/bin/Rscript ${TOOL_RNAtypes}/RNAtypes.R $RNAtypes_FLAGS &&
-			mv ${RNAtypes_OUT}.counts.* $output.dir
+			mv ${RNAtypes_OUTNAME}.counts.* $output.dir
 		""","RNAtypes"
 	}
 }

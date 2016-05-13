@@ -5,37 +5,32 @@ VariantCallUG = {
     doc title: "GATK Base Quality Recalibration",
 	desc:  "Recalibrate Base Qualities in BAM files, using GATK",
 	constraints: "Requires BWA ( paramteter -M ) produced BAM file, with correct chromosome order and ReadGroup attached.",
+	bpipe_version: "tested with bpipe 0.9.8.7",
 	author: "Oliver Drechsel"
 
 	output.dir = RESULTS
-    
     def GATK_FLAGS = ""
     
-    if (ESSENTIAL_CALL_REGION!=null && ESSENTIAL_CALL_REGION.length()>0) {
-        
-        GATK_FLAGS = " -L " + ESSENTIAL_CALL_REGION
-        
+    // check if a region limit was provided
+    if (GATK_CALL_REGION!=null && GATK_CALL_REGION.length()>0) {
+        GATK_FLAGS = " -L " + GATK_CALL_REGION
     } else {
-        
         GATK_FLAGS = ""
-        
     }
     
-    //def GATK_FLAGS = " --output_mode EMIT_ALL_SITES " 
-    
     transform (".duprm.realigned.recalibrated.bam") to (".UG.vcf.gz") {
-        
-        // usage parameters https://www.broadinstitute.org/gatk/gatkdocs/org_broadinstitute_gatk_tools_walkers_genotyper_UnifiedGenotyper.php
+    // usage parameters https://www.broadinstitute.org/gatk/gatkdocs/org_broadinstitute_gatk_tools_walkers_genotyper_UnifiedGenotyper.php
         exec """
-        
             export TOOL_DEPENDENCIES=$TOOL_DEPENDENCIES &&
 			if [ -n "\$LSB_JOBID" ]; then
 				export TMPDIR=/jobdir/\${LSB_JOBID};
 			fi                                          &&
         
-        
-        java -Djava.io.tmpdir=$TMPDIR -jar $TOOL_GATK/GenomeAnalysisTK.jar -T UnifiedGenotyper -nt $GATK_THREADS -nct $GATK_THREADS -R $ESSENTIAL_BWA_REF -glm BOTH -I $input -o $output $GATK_FLAGS
-        
+            echo 'VERSION INFO'  1>&2 ;
+            echo \$(java -jar $TOOL_GATK/GenomeAnalysisTK.jar --version 1>&2) ;
+            echo '/VERSION INFO' 1>&2 ;
+            
+            java -Djava.io.tmpdir=$TMPDIR -jar $TOOL_GATK/GenomeAnalysisTK.jar -T UnifiedGenotyper -nt $GATK_THREADS -nct $GATK_THREADS -R $GATK_BWA_REF -glm BOTH -I $input -o $output $GATK_FLAGS
         ""","VariantCallUG"
     }
     

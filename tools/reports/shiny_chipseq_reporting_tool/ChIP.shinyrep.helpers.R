@@ -112,7 +112,7 @@ ChIPhelper.Bowtie <- function() {
 		return("Bowtie statistics not available")
 	}
 	
-	# look for the lines aining the strings
+	# look for the lines containing the strings
 	# and get the values associated with this strings
 	x <- sapply(list.files(LOG),function(f) {
 		
@@ -120,7 +120,7 @@ ChIPhelper.Bowtie <- function() {
 		l <- readLines(x)
 		close(x)
 		
-		stats <- sapply(c("reads processed",                             #1
+		stats <- sapply(c("reads processed",                    #1
 				 "reads with at least one reported alignment",  #2
 				 "reads that failed to align",                  #3
 				 "reads with alignments suppressed due to -m"), #4
@@ -129,7 +129,7 @@ ChIPhelper.Bowtie <- function() {
 				 })
 	
 		# and add the duplicates information
-		f <- gsub(".bam.log","_duprm.bam.log",f)
+		f <- gsub(".bam.log",".duprm.bam.log",f)
 		dups <- if(file.exists(paste0(SHINYREPS_MARKDUPS_LOG,"/",f))) {
 			x <- file(paste0(SHINYREPS_MARKDUPS_LOG,"/",f))
 			l <- readLines(x)
@@ -139,18 +139,31 @@ ChIPhelper.Bowtie <- function() {
 			"not available"
 		}
 		
-		c(stats,dups)
+		stats.return <- c(
+			stats[1],							#1
+			unlist(strsplit(stats[2], " "))[1],	#2
+			unlist(strsplit(stats[2], " "))[2], #3
+			unlist(strsplit(stats[3], " "))[1],	#4
+			unlist(strsplit(stats[3], " "))[2],	#5
+			unlist(strsplit(stats[4], " "))[1],	#6
+			unlist(strsplit(stats[4], " "))[2]	#7
+		)
+		
+		
+		c(stats.return, dups)
 	})
 
 	# set row and column names, and output the md table
 	colnames(x) <- gsub(paste0("^",SHINYREPS_PREFIX),"",colnames(x))
 	colnames(x) <- gsub(".bam.log$","",colnames(x))
-	df <- data.frame(input_reads=x[1,],
-					 mapped=x[2,],
-					 failed=x[3,],
-					 discarded=x[4,],
-					 duplicates=paste0(x[5,]," (",round(100 * as.numeric(x[5,]) / as.numeric(x[1,]),2),"%)"))
-	kable(df,align=c("r","r","r","r"),output=F)
+	df <- data.frame(sample_names=colnames(x),
+					 input_reads=format( as.numeric(x[1,]),big.mark=","),
+					 mapped=paste( format( as.numeric(x[2,]),big.mark=","), x[3,], sep=" "),
+					 failed=paste( format( as.numeric(x[4,]),big.mark=","), x[5,], sep=" "),
+					 discarded=paste( format( as.numeric(x[6,]),big.mark=","), x[7,], sep=" "),
+					 duplicates=paste0(format(as.numeric(x[8,]),big.mark=",")," (",round(100 * as.numeric(x[8,]) / as.numeric(x[2,]),2),"%)")
+					 )
+	kable(df,align=c("l","r","r","r","r","r"),output=F,col.names=c("sample names","all reads","mapped (% of all)","unmapped (% of all)","too many map. pos. (% all)","duplicates (% of mapped)"), format="markdown")
 }
 
 ##
@@ -169,16 +182,16 @@ ChIPhelper.Fastqc <- function(web=TRUE) {
 	# construct the image url from the folder ents (skip current dir .)
 	samples <- list.dirs(SHINYREPS_FASTQC,recursive=F)
 	df <- sapply(samples,function(f) {
-		c(paste0("![alt text](",QC,"/",basename(f),"/Images/duplication_levels.png)"), 
-		  paste0("![alt text](",QC,"/",basename(f),"/Images/per_base_quality.png)"), 
-		  paste0("![alt text](",QC,"/",basename(f),"/Images/per_base_sequence_content.png)"))
+		c(paste0("![fastq dup img](",QC,"/",basename(f),"/Images/duplication_levels.png)"), 
+		  paste0("![fastq qual img](",QC,"/",basename(f),"/Images/per_base_quality.png)"), 
+		  paste0("![fastq sequ img](",QC,"/",basename(f),"/Images/per_base_sequence_content.png)"))
 	})
 
 	# set row and column names, and output the md table
 	df <- as.data.frame(t(df))
 	rownames(df) <- gsub(paste0("^",SHINYREPS_PREFIX),"",basename(samples))
 	colnames(df) <- c("Duplication","Read qualities","Sequence bias")
-	kable(df,output=F)
+	kable(df,output=F, align="c", format="markdown")
 }
 
 ##
@@ -192,29 +205,35 @@ ChIPhelper.IPstrength<- function(web=TRUE) {
 		return("IPstrength statistics not available")
 	}
 	
+    if(!is.integer(SHINYREPS_PLOTS_COLUMN) | SHINYREPS_PLOTS_COLUMN < 2) {
+        SHINYREPS_PLOTS_COLUMN <- 4L    # default to 4 columns
+    }
+	
 	# construct the folder name, which is different for web and noweb
 	QC <- if(web) "/ipstrength" else SHINYREPS_IPSTRENGTH
 	
 	# construct the image url from the folder contents (skip current dir .)
 	samples <- list.files(SHINYREPS_IPSTRENGTH,pattern="*.png")
+    COLUMNS <- min(length(samples), SHINYREPS_PLOTS_COLUMN)
 	df <- sapply(samples,function(f) {
-		paste0("![alt text](",QC,"/",basename(f),")")
+		paste0("![IPstrength img](",QC,"/",basename(f),")")
 	})
 	
-	# put sample names and output an md table of 4 columns
-	while(length(df) %% 4 != 0) df <- c(df,"")
+	# put sample names and output an md table of COLUMNS columns
+	while(length(df) %% COLUMNS != 0) df <- c(df,"")
 	samples <- sapply(df,function(x) {
 		x <- sapply(x,function(x) gsub(paste0("^",SHINYREPS_PREFIX),"",basename(x)))
 		gsub("_ipstrength.png)","",x)
 	})
-	df      <- matrix(df     ,ncol=4,byrow=T)
-	samples <- matrix(samples,ncol=4,byrow=T)
+	df      <- matrix(df     ,ncol=COLUMNS,byrow=T)
+	samples <- matrix(samples,ncol=COLUMNS,byrow=T)
 	
 	# add a row with the sample names
-	df.names <- matrix(sapply(1:nrow(df),function(i) { c(df[i,],samples[i,]) }),ncol=4,byrow=T)
-	colnames(df.names) <- c(" "," "," "," ")
+	df.names <- matrix(sapply(1:nrow(df),function(i) { c(df[i,],samples[i,]) }),
+                       ncol=COLUMNS,byrow=T)
+	colnames(df.names) <- rep(" ",COLUMNS)
 	
-	kable(as.data.frame(df.names),output=F)
+	kable(as.data.frame(df.names),output=F, align="c", format="markdown")
 }
 
 ##
@@ -228,29 +247,35 @@ ChIPhelper.PhantomPeak <- function(web=TRUE) {
 		return("PhantomPeak statistics not available")
 	}
 	
+    if(!is.integer(SHINYREPS_PLOTS_COLUMN) | SHINYREPS_PLOTS_COLUMN < 2) {
+        SHINYREPS_PLOTS_COLUMN <- 3L    # default to 4 columns
+    }
+	
 	# construct the folder name, which is different for web and noweb
 	QC <- if(web) "/phantompeak" else SHINYREPS_PHANTOMPEAK
 	
 	# construct the image url from the folder contents (skip current dir .)
 	samples <- list.files(SHINYREPS_PHANTOMPEAK,pattern="*.png")
+    COLUMNS <- min(length(samples), SHINYREPS_PLOTS_COLUMN)
 	df <- sapply(samples,function(f) {
-		paste0("![alt text](",QC,"/",basename(f),")")
+		paste0("![PhantomPeak img](",QC,"/",basename(f),")")
 	})
 	
-	# put sample names and output an md table of 4 columns
-	while(length(df) %% 4 != 0) df <- c(df,"")
+	# put sample names and output an md table of COLUMN columns
+	while(length(df) %% COLUMNS != 0) df <- c(df,"")
 	samples <- sapply(df,function(x) {
 		x <- sapply(x,function(x) gsub(paste0("^",SHINYREPS_PREFIX),"",basename(x)))
 		gsub("_phantompeak.png)","",x)
 	})
-	df      <- matrix(df     ,ncol=4,byrow=T)
-	samples <- matrix(samples,ncol=4,byrow=T)
+	df      <- matrix(df     ,ncol=COLUMNS,byrow=T)
+	samples <- matrix(samples,ncol=COLUMNS,byrow=T)
 	
 	# add a row with the sample names
-	df.names <- matrix(sapply(1:nrow(df),function(i) { c(df[i,],samples[i,]) }),ncol=4,byrow=T)
-	colnames(df.names) <- c(" "," "," "," ")
+	df.names <- matrix(sapply(1:nrow(df),function(i) { c(df[i,],samples[i,]) }),
+                       ncol=COLUMNS,byrow=T)
+	colnames(df.names) <- rep(" ",COLUMNS)
 	
-	kable(as.data.frame(df.names),output=F)
+	kable(as.data.frame(df.names),output=F, align="c", format="markdown")
 }
 
 ##
@@ -274,7 +299,7 @@ ChIPhelper.PBC <- function() {
 	df <- as.data.frame(df)
 	colnames(df) <- "PBC"
 	rownames(df) <- gsub("_PBC.csv","",rownames(df))
-	kable(as.data.frame(df),output=F)
+	kable(as.data.frame(df),output=F, format="markdown")
 }
 
 ##
@@ -298,3 +323,421 @@ ChIPhelper.Bustard <- function() {
 	
 	ret 	# ret contains already MD code
 }
+
+
+##
+## extract tool versions
+##
+
+Toolhelper.VersionReporter <- function(tool, logfolder) {
+	
+	LOG <- logfolder
+	SUFFIX <- paste0(".log","$")
+	
+	# logs folder
+	if(!file.exists(LOG)) {
+		return(paste0(tool, " version not available"))
+	}
+	
+	x <- lapply( list.files(LOG, pattern=SUFFIX, full.names=TRUE), function(f){
+		# read all lines
+		l <- readLines(f)
+		# need to check Version number in one line lower than "VERSION INFO"
+		# e.g. FastQC v0.11.3
+		l.version <- l[ grep("^VERSION INFO",l) + 1 ]
+		
+		return(l.version)
+		
+		} )
+	
+	# x is a list of always the same content
+	r <- tryCatch(
+		{
+			if (is.null(x[[1]][1])) {
+				return("no version tag")
+			} else {
+				return(x[[1]][1])
+			}
+		},
+		warning = function(w) {
+			return("no version tag")
+		},
+		error = function(e) {
+			return("no version tag")
+		},
+		finally = {}
+	)
+	
+}
+
+
+#Toolhelper.VersionFastQC <- function() {
+#	
+#	# fastqc --version
+#	#
+#	#FastQC v0.11.3
+#	#
+#	
+#	LOG <- SHINYREPS_FASTQC_LOG
+#	SUFFIX <- paste0(".log","$")
+#	
+#	# logs folder
+#	if(!file.exists(LOG)) {
+#		return("FastQC version not available")
+#	}
+#	
+#	x <- lapply( list.files(LOG, pattern=SUFFIX, full.names=TRUE), function(f){
+#		# read all lines
+#		l <- readLines(f)
+#		# need to check Version number in one line lower than "VERSION INFO"
+#		# e.g. FastQC v0.11.3
+#		l.version <- l[ grep("^VERSION INFO",l) + 1 ]
+#		
+#		return(l.version)
+#		
+#		} )
+#	
+#	# x is a list of always the same content
+#	r <- tryCatch(
+#		{
+#			if (is.null(x[[1]][1])) {
+#				return("no version tag")
+#			} else {
+#				return(x[[1]][1])
+#			}
+#		},
+#		warning = function(w) {
+#			return("no version tag")
+#		},
+#		error = function(e) {
+#			return("no version tag")
+#		},
+#		finally = {}
+#	)
+#	
+#}
+#
+#
+#Toolhelper.VersionBowtie <- function() {
+#	
+#	# bowie --version
+#	#
+#	#bowtie version 1.1.1
+#	#[...]
+#	
+#	LOG <- SHINYREPS_BOWTIE_LOG
+#	SUFFIX <- paste0(".log","$")
+#	
+#	# logs folder
+#	if(!file.exists(LOG)) {
+#		return("Bowtie version not available")
+#	}
+#	
+#	x <- lapply( list.files(LOG, pattern=SUFFIX, full.names=TRUE), function(f){
+#		# read all lines
+#		l <- readLines(f)
+#		# need to check Version number in one line lower than "VERSION INFO"
+#		# e.g. bowtie version 1.1.1
+#		l.version <- l[ grep("^VERSION INFO",l) + 1 ]
+#		
+#		return(l.version)
+#		
+#		} )
+#	
+#	# x is a list of always the same content
+#	r <- tryCatch(
+#		{
+#			if (is.null(x[[1]][1])) {
+#				return("no version tag")
+#			} else {
+#				return(x[[1]][1])
+#			}
+#		},
+#		warning = function(w) {
+#			return("no version tag")
+#		},
+#		error = function(e) {
+#			return("no version tag")
+#		},
+#		finally = {}
+#	)
+#	
+#}
+#
+#Toolhelper.VersionSamtools <- function() {
+#	
+#	# samtools --version
+#	# samtools 1.2
+#	# Using htslib 1.2.1
+#	# Copyright (C) 2015 Genome Research Ltd.
+#
+#	
+#	LOG <- SHINYREPS_BAMINDEX_LOG
+#	SUFFIX <- paste0(".log","$")
+#	
+#	# logs folder
+#	if(!file.exists(LOG)) {
+#		return("Samtools version not available")
+#	}
+#	
+#	x <- lapply( list.files(LOG, pattern=SUFFIX, full.names=TRUE), function(f){
+#		# read all lines
+#		l <- readLines(f)
+#		# need to check Version number in one line lower than "VERSION INFO"
+#		# e.g. samtools 1.2
+#		# Using htslib 1.2.1
+#
+#		l.version <- l[ grep("^VERSION INFO",l) + 1 ]
+#		
+#		return(l.version)
+#		
+#		} )
+#	
+#	# x is a list of always the same content
+#	r <- tryCatch(
+#		{
+#			if (is.null(x[[1]][1])) {
+#				return("no version tag")
+#			} else {
+#				return(x[[1]][1])
+#			}
+#		},
+#		warning = function(w) {
+#			return("no version tag")
+#		},
+#		error = function(e) {
+#			return("no version tag")
+#		},
+#		finally = {}
+#	)
+#	
+#}
+#
+#Toolhelper.VersionPicard <- function() {
+#	
+#	# genomeCoverageBed
+#	#
+#	#Tool:    bedtools genomecov (aka genomeCoverageBed)
+#	#Version: v2.25.0
+#	#Summary: Compute the coverage of a feature file among a genome.
+#	
+#	LOG <- SHINYREPS_MARKDUPS_LOG
+#	SUFFIX <- paste0(".log","$")
+#	
+#	# logs folder
+#	if(!file.exists(LOG)) {
+#		return("Picard version not available")
+#	}
+#	
+#	x <- lapply( list.files(LOG, pattern=SUFFIX, full.names=TRUE), function(f){
+#		# read all lines
+#		l <- readLines(f)
+#		# need to check Version number in one line lower than "VERSION INFO"
+#		# e.g. FastQC v0.11.3
+#		l.version <- l[ grep("^VERSION INFO",l) + 1 ]
+#		
+#		return(l.version)
+#		
+#		} )
+#	
+#	# x is a list of always the same content
+#	r <- tryCatch(
+#		{
+#			if (is.null(x[[1]][1])) {
+#				return("no version tag")
+#			} else {
+#				return(x[[1]][1])
+#			}
+#		},
+#		warning = function(w) {
+#			return("no version tag")
+#		},
+#		error = function(e) {
+#			return("no version tag")
+#		},
+#		finally = {}
+#	)
+#	
+#}
+#
+#Toolhelper.VersionBedTools <- function() {
+#	
+#	# bedtools --version
+#	#bedtools v2.25.0
+#	#
+#	
+#	LOG <- SHINYREPS_EXTEND_LOG
+#	SUFFIX <- paste0(".log","$")
+#	
+#	# logs folder
+#	if(!file.exists(LOG)) {
+#		return("BedTools Extend version not available")
+#	}
+#	
+#	x <- lapply( list.files(LOG, pattern=SUFFIX, full.names=TRUE), function(f){
+#		# read all lines
+#		l <- readLines(f)
+#		# need to check Version number in one line lower than "VERSION INFO"
+#		# e.g. FastQC v0.11.3
+#		l.version <- l[ grep("^VERSION INFO",l) + 1 ]
+#		
+#		return(l.version)
+#		
+#		} )
+#	
+#	# x is a list of always the same content
+#	r <- tryCatch(
+#		{
+#			if (is.null(x[[1]][1])) {
+#				return("no version tag")
+#			} else {
+#				return(x[[1]][1])
+#			}
+#		},
+#		warning = function(w) {
+#			return("no version tag")
+#		},
+#		error = function(e) {
+#			return("no version tag")
+#		},
+#		finally = {}
+#	)
+#	
+#}
+#
+#Toolhelper.VersionIPstrength <- function() {
+#	
+#	# Rscript --version
+#	# R scripting front-end version 3.2.2 (2015-08-14)
+#	#
+#	
+#	LOG <- SHINYREPS_IPSTRENGTH_LOG
+#	SUFFIX <- paste0(".log","$")
+#	
+#	# logs folder
+#	if(!file.exists(LOG)) {
+#		return("R and IPstrength version not available")
+#	}
+#	
+#	x <- lapply( list.files(LOG, pattern=SUFFIX, full.names=TRUE), function(f){
+#		# read all lines
+#		l <- readLines(f)
+#		# need to check Version number in one line lower than "VERSION INFO"
+#		# e.g. FastQC v0.11.3
+#		l.version <- l[ grep("^VERSION INFO",l) + 1 ]
+#		
+#		return(l.version)
+#		
+#		} )
+#	
+#	# x is a list of always the same content
+#	r <- tryCatch(
+#		{
+#			if (is.null(x[[1]][1])) {
+#				return("no version tag")
+#			} else {
+#				return(x[[1]][1])
+#			}
+#		},
+#		warning = function(w) {
+#			return("no version tag")
+#		},
+#		error = function(e) {
+#			return("no version tag")
+#		},
+#		finally = {}
+#	)
+#	
+#}
+#
+#Toolhelper.VersionPhantomPeak <- function() {
+#	
+#	
+#	# Rscript --version
+#	# R scripting front-end version 3.2.2 (2015-08-14)
+#	#
+#	
+#	LOG <- SHINYREPS_PHANTOM_LOG
+#	SUFFIX <- paste0(".log","$")
+#	
+#	# logs folder
+#	if(!file.exists(LOG)) {
+#		return("R and PhantomPeak version not available")
+#	}
+#	
+#	x <- lapply( list.files(LOG, pattern=SUFFIX, full.names=TRUE), function(f){
+#		# read all lines
+#		l <- readLines(f)
+#		# need to check Version number in one line lower than "VERSION INFO"
+#		# e.g. FastQC v0.11.3
+#		l.version <- l[ grep("^VERSION INFO",l) + 1 ]
+#		
+#		return(l.version)
+#		
+#		} )
+#	
+#	# x is a list of always the same content
+#	r <- tryCatch(
+#		{
+#			if (is.null(x[[1]][1])) {
+#				return("no version tag")
+#			} else {
+#				return(x[[1]][1])
+#			}
+#		},
+#		warning = function(w) {
+#			return("no version tag")
+#		},
+#		error = function(e) {
+#			return("no version tag")
+#		},
+#		finally = {}
+#	)
+#	
+#}
+#
+#Toolhelper.VersionMacs <- function() {
+#	
+#	
+#	# Rscript --version
+#	# R scripting front-end version 3.2.2 (2015-08-14)
+#	#
+#	
+#	LOG <- SHINYREPS_MACS2_LOG
+#	SUFFIX <- paste0(".log","$")
+#	
+#	# logs folder
+#	if(!file.exists(LOG)) {
+#		return("MACS version not available")
+#	}
+#	
+#	x <- lapply( list.files(LOG, pattern=SUFFIX, full.names=TRUE), function(f){
+#		# read all lines
+#		l <- readLines(f)
+#		# need to check Version number in one line lower than "VERSION INFO"
+#		# e.g. macs2 2.1.0.20140616
+#		l.version <- l[ grep("^VERSION INFO",l) + 1 ]
+#		
+#		return(l.version)
+#		
+#		} )
+#	
+#	# x is a list of always the same content
+#	r <- tryCatch(
+#		{
+#			if (is.null(x[[1]][1])) {
+#				return("no version tag")
+#			} else {
+#				return(x[[1]][1])
+#			}
+#		},
+#		warning = function(w) {
+#			return("no version tag")
+#		},
+#		error = function(e) {
+#			return("no version tag")
+#		},
+#		finally = {}
+#	)
+#	
+#}

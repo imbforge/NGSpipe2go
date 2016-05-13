@@ -1,0 +1,3 @@
+C1vsC2=(C1-C2)
+C1vsC3=(C1-C3)
+C2vsC3=(C2-C3)

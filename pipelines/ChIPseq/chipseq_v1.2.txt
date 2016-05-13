@@ -1,4 +1,4 @@
-MODULE_FOLDER="project_folder/imbforge/modules/"
+MODULE_FOLDER="project_folder/NGSpipe2go/modules/" // adjust to your projects needs
 
 load MODULE_FOLDER + "ChIPseq/essential.vars.groovy"
 load MODULE_FOLDER + "ChIPseq/tool.locations.groovy"
@@ -39,5 +39,5 @@ load MODULE_FOLDER + "ChIPseq/shinyreports.module.groovy"
 
 //MAIN PIPELINE TASK
 run {
-	"%.fastq.gz" * [ FastQC , bowtie_se + BAMindexer + [ MarkDups + BAMindexer + [ extend + bam2bw , phantompeak ] , pbc ] ] + "%_duprm.bam" * [ ipstrength , macs2 ] + collectBpipeLogs + shinyReports
+	"%.fastq.gz" * [ FastQC , bowtie_se + BAMindexer + [ MarkDups + BAMindexer + [ extend + bam2bw , phantompeak ] , pbc ] ] + "%.duprm.bam" * [ ipstrength , macs2 ] + collectBpipeLogs + shinyReports
 }

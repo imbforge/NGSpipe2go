@@ -18,6 +18,7 @@
 ## cwd=.					# current working directory where the files .tsv files are located
 ## robust=FALSE             # robustly estimate dispersion?
 ## out=DE.edgeR				# prefix filename for output
+## gtf=GTF                  # gtf file for gene_name information
 ##
 ## IMPORTANT: due to the difficulties in expressing the contrasts in complex designs, one should
 ## ---------  use the helper script DE.edgeR.mmatrix.R to generate beforehand a design matrix
@@ -52,10 +53,12 @@ suf          <- parseArgs(args,"suffix=","_readcounts.tsv")    # suffix to remov
 cwd          <- parseArgs(args,"cwd=","./")     # current working directory
 robust       <- parseArgs(args,"robust=",FALSE,convert="as.logical") # robustly estimate dispersion
 out          <- parseArgs(args,"out=","DE.edgeR") # output filename
+gtf          <- parseArgs(args,"gtf=","") # gtf file
 
 runstr <- "Rscript DE.edgeR.R [targets=targets.txt] [contrasts=contrasts.txt] [mmatrix=~0+group] [filter=TRUE] [prefix=RE] [suffix=RE] [cwd=.] [robust=FALSE] [out=DE.edgeR]"
 if(!file.exists(ftargets))   stop(paste("File",ftargets,"does NOT exist. Run with:\n",runstr))
 if(!file.exists(fcontrasts)) stop(paste("File",fcontrasts,"does NOT exist. Run with:\n",runstr))
+if(!file.exists(gtf))        stop(paste("File",gtf,"does NOT exist. Run with:\n",runstr))
 if(!file.exists(cwd))        stop(paste("Dir",cwd,"does NOT exist. Run with:\n",runstr))
 if(is.na(filter.genes))      stop(paste("Filter (filter invariant genes) has to be either TRUE or FALSE. Run with:\n",runstr))
 if(is.na(robust))            stop(paste("Robust (robustly estimate dispersion) has to be either TRUE or FALSE. Run with:\n",runstr))
@@ -75,24 +78,10 @@ design <- model.matrix(as.formula(mmatrix),data=targets)
 rownames(design) <- targets$sample
 conds  <- sapply(colnames(targets),grepl,mmatrix)	# total number of factors in the formula (~0+A+A:B or ~group)
 
-# clean the colnames in the design matrix that contain the targets.txt colname
-#for(x in colnames(targets)[conds]) {
-#	colnames(design) <- gsub(paste0("^",x),"",colnames(design))
-#	colnames(design) <- gsub(paste0("(.+:)",x),"\\1",colnames(design))
-#	if(length(i <- grep("Intercept",colnames(design))) > 0) {
-#		colnames(design)[-i] <- make.names(colnames(design)[-i]) # make sintactically valid names after gsub
-#	} else {
-#		colnames(design) <- make.names(colnames(design)) # make sintactically valid names after gsub
-#	}
-#}
-
 # define the group the samples belong to if there was only 1 categorical factor in the formula
 if(sum(conds) == 1) {
 	group <- as.factor(targets[,conds])
-#	colnames(design) <- levels(group)
 } else {
-#	group <- as.factor(rep(1,length(targets$sample)))
-#	colnames(design) <- levels(group)
 	group <- as.factor(targets[,which(conds)[1]])
 }
 
@@ -111,19 +100,11 @@ if(!all(x <- sapply(paste0(cwd,"/",targets$file),file.exists))) stop(paste("one 
 countTable <- lapply(paste0(cwd,"/",targets$file),read.table,header=F,row.names=1)
 
 # check, if all files are sorted the same way
-# this is inefficient code and needs to be improved
-tmp.rownames <- lapply( countTable, row.names )
-check.identity <- c()
-for ( i in seq(length(tmp.rownames)) ) {
-	check.identity <- c( check.identity, identical( tmp.rownames[[1]], tmp.rownames[[i]]) ) 
-}
+check.identity <- sapply(countTable, function(x, y) all(rownames(x) == y), rownames(countTable[[1]]))
 if ( ! all(check.identity) ) {
 	print( targets$file[!check.identity] )
-	# die!!!
-	stop(paste("File sorting seems to be different in the mentioned files, compared to: ", targets$file[[1]], sep=''))
+	stop(paste0("File sorting seems to be different in the mentioned files, compared to: ", targets$file[1]))
 }
-rm(tmp.rownames)
-rm(check.identity)
 
 # continue reading files
 countTable <- Reduce(cbind,countTable)
@@ -188,6 +169,16 @@ dists <- dist(t(m))
 mat <- as.matrix(dists)
 heatmap.2(mat,trace="none",col=rev(hmcol),margin=c(13,13))
 
+# read in gtf
+require(rtracklayer)
+GTF <- as.data.frame(import.gff(gtf,format="gtf",feature.type="exon"))
+
+for(i in 1:length(lrt)) {
+        # calculating FDR and extracting gene_name
+        lrt[[i]]$table$FDR <- p.adjust(lrt[[i]]$table[,"PValue"],method="fdr")
+        lrt[[i]]$table$gene_name <- GTF$gene_name[match(rownames(lrt[[i]]$table),GTF$gene_id)]
+}
+
 # MA plots
 lapply(1:length(lrt),function(i) {
 	
@@ -204,7 +195,8 @@ lapply(1:length(lrt),function(i) {
 	groups  <- rownames(conts)[conts[,i] != 0]	# the groups involved in this contrast
 	samples <- rownames(design)[apply(design[,groups],1,sum) > 0]	# samples belonging to the involved groups
 	x <- merge(m[,samples],lrt[[i]]$table,by=0)
-	x$FDR <- p.adjust(x$PValue,method="fdr")
+	#x$FDR <- p.adjust(x$PValue,method="fdr")
+        #x$gene_name <- GTF$gene_name[match(x$Row.names,GTF$gene_id)]
 	write.csv(x[order(x$FDR),],file=paste(out,names(lrt)[i],"csv",sep="."),row.names=F)
 
 	invisible(0)

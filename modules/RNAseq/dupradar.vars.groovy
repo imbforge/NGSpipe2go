@@ -1,7 +1,6 @@
-//vars for task dupRadar from catalog RNAseq, version 1
-DUPRADAR_STRANDED=ESSENTIAL_STRANDED // strandness
-DUPRADAR_PAIRED=ESSENTIAL_PAIRED	 // is a paired end experiment
-DUPRADAR_OUTDIR=QC + "/dupRadar"	 //output dir
-DUPRADAR_THREADS="4"	// number of threads to be used
-DUPRADAR_GTF=ESSENTIAL_GENESGTF   // gene model
-
+DUPRADAR_STRANDED="stranded=" + ESSENTIAL_STRANDED  // strandness
+DUPRADAR_PAIRED="paired="     + ESSENTIAL_PAIRED    // is a paired end experiment
+DUPRADAR_OUTDIR="outdir="     + QC + "/dupRadar"    //output dir. If you change it here, change it in the module file also
+DUPRADAR_THREADS="threads="   + Integer.toString(ESSENTIAL_THREADS)	// number of threads to be used
+DUPRADAR_GTF="gtf=" + ESSENTIAL_GENESGTF    // gene model
+DUPRADAR_EXTRA=""   // extra parms sent to the tool

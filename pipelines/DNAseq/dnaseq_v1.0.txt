@@ -1,4 +1,4 @@
-MODULE_FOLDER="/fsimb/groups/imb-bioinfocf/projects/cfb_internal/imbforge/test/dnaseq/NGSpipe2go/modules/" //project_folder/imbforge/modules/
+MODULE_FOLDER="project_folder/NGSpipe2go/modules/" // adjust to your projects needs
 
 load MODULE_FOLDER + "DNAseq/essential.vars.groovy"
 load MODULE_FOLDER + "DNAseq/tool.locations.groovy"
@@ -32,8 +32,11 @@ load MODULE_FOLDER + "DNAseq/varianteval.module.groovy"
 
 load MODULE_FOLDER + "miscellaneous/collectbpipes.module.2.groovy"
 
+load MODULE_FOLDER + "DNAseq/shinyreports.vars.groovy"
+load MODULE_FOLDER + "DNAseq/shinyreports.module.groovy"
+
 run {
-    //"%.fastq.gz" * [ FastQC ] + "%_*.fastq.gz" * [ BWA_pe ]
-    "%.fastq.gz" * [ FastQC ] + "%_*.fastq.gz" * [ BWA_pe ] + "%.bam" * [ MarkDups + BAMindexer + IndelRealignment + BaseRecalibration + [ VariantCallHC, VariantCallUG ] ] + "%.vcf.gz" * [ VariantEval ] + collectBpipeLogs
-    // "%.fastq.gz" * [ FastQC ] + "%_*.fastq.gz" * [ BWA_pe ] + "%.bam" * [ MarkDups + IndelRealignment + BaseRecalibrate + HaplotypeCall ]
+    //"%.fastq.gz" * [ FastQC ] + "%read_*.fastq.gz" * [ BWA_pe ]
+    "%.fastq.gz" * [ FastQC ] + "%read_*.fastq.gz" * [ BWA_pe ] + "%.bam" * [ MarkDups + BAMindexer + IndelRealignment + BaseRecalibration + [ VariantCallHC, VariantCallUG ] ] + "%.vcf.gz" * [ VariantEval ] + collectBpipeLogs + shinyReports
+    // "%.fastq.gz" * [ FastQC ] + "%read_*.fastq.gz" * [ BWA_pe ] + "%.bam" * [ MarkDups + IndelRealignment + BaseRecalibrate + HaplotypeCall ]
     }

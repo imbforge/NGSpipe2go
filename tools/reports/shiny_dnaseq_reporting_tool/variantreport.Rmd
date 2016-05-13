@@ -1,0 +1,97 @@
+---
+title: "SHINYREPS_PROJECT"
+output:
+  html_document:
+    toc: yes
+    css: styles.css
+---
+
+<div class="contentbox">
+
+```{r LoadingGloabalVariables, echo=F,result='hide',error=F,warning=F,message=F}
+source('variant.shinyrep.helpers.R')
+loadGlobalVars()
+``` 
+
+## Quality Control RNAseq ##
+
+### Sequencing quality ###
+The sequencing quality is determined by read quality, sequence bias and duplication rates.
+Bias and duplication rates ideally should be low and read qualities should be continuously
+high all over the read length. A slight drop towards the end of the read is unavoidable.
+
+### Raw reads qualities, sequence bias and duplication
+```{r FastQC_paragraph, echo=F,results='asis',error=F,warning=F,message=F}
+cat(VARhelper.Fastqc(web=F),sep="\n")
+```
+
+### Mapping
+The mapping statistics show the total number of reads delivered to the aligner, the number of mapped reads and reads not mapping at all to the ref aligning to the wrong reference genome.
+
+```{r BWA_ReadStats_paragraph, echo=F,results='asis',error=F,warning=F,message=F}
+cat(VARhelper.BWA(),sep="\n")
+```
+
+### Variant calling
+Variant calling can be performed using GATK UnifiedGenotyper and GATK HaplotypeCaller.
+Both tools include default read filters that exclude reads from variant calling.
+
+#### GATK UnifiedGenotyper filtered read statistics
+```{r GATKug_paragraph, echo=F,results='asis',error=F,warning=F,message=F}
+cat(VARhelper.GATKug(),sep="\n")
+```
+
+#### GATK HaplotypeCaller filtered read statistics
+
+```{r GATKhc_paragraph, echo=F,results='asis',error=F,warning=F,message=F}
+cat(VARhelper.GATKhc(),sep="\n")
+```
+
+GATK Haplotyper annotates variants with dbSNP entries, if the database file is provided. Novel variants, which are not found in dbSNP usually tend to be heterozygous variants in low coverage regions.
+These regions are prone to lead to false positive calls and should be taken with a grain of salt.
+
+```{r CoveragePlot, echo=F,results='asis',error=F,warning=F,message=F}
+no.feedback <- VARhelper.CoveragePlot()
+```
+
+
+
+#### GATK VariantEval variant statistics
+Variant statistics show the basic properties of your variants as triplets for "all", "known" ,"novel" variants in comparison to dbSNP.
+The calculated ratios should be similar in "all", "known" and "novel" subsets. Highly deviating values in the "novel" subset indicate a high false positive rate.
+Due to selective pressure transitions are more likely to be retained in the genome than transversions.
+For (human) Exome sequencing a Ti/Tv ration of 2.8-3 would be good, while whole genome sequencing might result in values 2-2.1. A completely random Ti/Tv ratio would be 0.5.
+Sample names end with .HC (HaplotypeCaller) and .UG (UnifiedGenotyper).
+
+[one source of many: http://www.cureffi.org/2012/10/17/descriptive-statistics-and-quality-control-on-variants/]
+
+```{r GATK_VariantEval_paragraph, echo=F,results='asis',error=F,warning=F,message=F}
+cat(VARhelper.GATKvarianteval(),sep="\n")
+```
+
+## Used tools and versions for this analysis
+
+```{r ToolVersions_paragraph, echo=F,results='asis',error=F,warning=F,message=F}
+
+# this section requires an init() that loads the location to the *_LOG variables 
+
+table.content <- data.frame(  tool=c(
+									  "FastQC",
+									  "BWA",
+									  "Picard",
+									  "GATK UnifiedGenotyper",
+									  "GATK HaplotypeCaller"
+									  ),
+							  version=c(
+									  Toolhelper.VersionReporter("FastQC", SHINYREPS_FASTQC_LOG),
+									  Toolhelper.VersionReporter("BWA",    SHINYREPS_BWA_LOG),
+									  Toolhelper.VersionReporter("Picard", SHINYREPS_MARKDUPS_LOG),
+									  Toolhelper.VersionReporter("GATK UnifiedGenotyper", SHINYREPS_GATKug_LOG),
+									  Toolhelper.VersionReporter("GATK HaplotypeCaller",  SHINYREPS_GATKhc_LOG)
+									  )
+						   )
+kable(table.content)
+
+```
+
+</div>
