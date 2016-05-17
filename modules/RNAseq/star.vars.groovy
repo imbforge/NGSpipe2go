@@ -21,6 +21,6 @@ STAR_EXTRA=""                // extra parms to sent to the tool
 // MMR settings imported from essential vars
 MMR_THREADS = "--threads " + Integer.toString(ESSENTIAL_THREADS)
 MMR_ANNOTATION = "--annotation " + ESSENTIAL_GENESGTF
-MMR_WINDOWSIZE = "-w 40" // window size
+MMR_WINDOWSIZE = "-w 60" // window size
 MMR_EXTRA = ""
 
