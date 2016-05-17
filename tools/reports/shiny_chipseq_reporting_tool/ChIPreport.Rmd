@@ -17,7 +17,7 @@ peaks   <<- ChIPhelper.init("readPeaks")
 
 ## Quality Control ChIPseq ##
 
-### Sequencing quality ###
+### Sequence run quality ###
 The sequencing quality of the run was good, and the read distribution over the libraries was good. See tables the SAV quality tables:
 
 ```{r Bustard_paragraph, echo=F,results='asis',error=F,warning=F,message=F}
@@ -27,13 +27,23 @@ The sequencing quality of the run was good, and the read distribution over the l
 cat(ChIPhelper.Bustard(),sep="\n")
 ```
 
-### Raw reads qualities, sequence bias and duplication ###
+### Raw reads QC ###
+The raw sequence reads of all samples are analysed with the popular FastQC tool (http://www.bioinformatics.babraham.ac.uk/projects/fastqc/).
+1. The "Sequence Duplication Levels" plots show the proportion of the library which is made up of sequences in each of the different duplication level bins. It is useful for the assessment of the NGS library complexity and the presence or absence of PCR over-amplification during library prep. There are two lines on the plot. The blue line takes the full sequence set and shows how its duplication levels are distributed. In the red plot the sequences are de-duplicated and the proportions shown are the proportions of the deduplicated set which come from different duplication levels in the original data. In a properly diverse library most sequences should fall into the far left of the plot in both the red and blue lines. A general level of enrichment, indicating broad oversequencing in the library will tend to flatten the lines, lowering the low end and generally raising other categories. More specific enrichments of subsets, or the presence of low complexity contaminants will tend to produce spikes towards the right of the plot. These high duplication peaks will most often appear in the red trace as they make up a high proportion of the original library, but usually disappear in the blue trace as they make up an insignificant proportion of the deduplicated set. If peaks persist in the blue trace then this suggests that there are a large number of different highly duplicated sequences which might indicate either a contaminant set or a severe PCR duplication. See the related PBC metrics below.
+2. The "Per Base Sequence Quality" Box-Whisker plots show the range of quality values across all base positions:
+    + The central red line is the median value
+    + The yellow box represents the inter-quartile range (25-75%)
+    + The upper and lower whiskers represent the 10% and 90% points
+    + The blue line represents the mean quality
+The y-axis on the graph shows the Phred quality scores, which are logarithmically related to the base-calling error probabilities. The higher the score the better the base call. The background of the graph divides the y axis into very good quality calls (green), calls of reasonable quality (orange), and calls of poor quality (red). Typically, the majority of calls on all base positions fall into the green area.
+3. The "Per Base Sequence Content" plots show the proportion of each base (% G, A, T and C) at each position. In a random library there would be little difference between the positions of a sequence run, so the lines in this plot should run parallel with each other. But most RNA-seq libraries show sequence imbalance in the first 10-12 read positions due to RT priming biases, which should however look fairly similar in all samples.
+
 ```{r FastQC_paragraph, echo=F,results='asis',error=F,warning=F,message=F}
 cat(ChIPhelper.Fastqc(web=F),sep="\n")
 ```
 
-### Mapping ###
-Mapping was done using Bowtie. The mapping statistics show the total number of reads delivered to the aligner ("all reads"), the number of "mapped" reads, the reads that failed to align ("unmapped"), the number of reads discarded because of mapping to multiple positions ("too many map. pos.") and the number of duplicate reads ("duplicates") amongst the mapped reads:
+### Read mapping ###
+Mapping to the reference genome was done using the established NGS mapping tool Bowtie (http://bowtie-bio.sourceforge.net/index.shtml). The mapping statistics show the total number of reads delivered to the aligner ("all reads"), the number of uniquely mapping reads ("mapped"), the reads that failed to align ("unmapped"), the number of reads discarded because of mapping to multiple positions ("too many map. pos.") and the number of duplicate reads ("duplicates") amongst the uniquely mapped reads:
 
 ```{r Bowtie_paragraph, echo=F,results='asis',error=F,warning=F,message=F}
 cat(ChIPhelper.Bowtie(),sep="\n")
@@ -57,10 +67,9 @@ cat(ChIPhelper.IPstrength(web=F),sep="\n")
 
 The plot is useful to detect several forms of biases:
 
-* The distance between the two curves represents the enrichment of the IP versus the input. Close curves means weak enrichment.
-* Undersequencing is shown by the curves close to the x-axis for a large percentage of bins, representing no reads were aligned on this bins. 
-* Sequencing bias towards a small set of specific regions is shown by the curves close to the y-axis for a large percentage of tags.
-
+* The distance between the two curves depends on the enrichment of the IP versus the input; close curves suggest weak or diffuse enrichment.
+* Under-sequencing produces curves close to the x-axis for a large percentage of bins since no reads were aligned on this bins. 
+* Sequencing bias towards a small set of specific regions produces curves shifted towards the y-axis for a large percentage of bins.
 
 ### Cross-correlation analysis ###
 
@@ -71,15 +80,15 @@ A measure of enrichment derived without dependence on prior determination of enr
 The NSC is the ratio of the maximal cross-correlation value (which occurs at strand shift equal to fragment length) divided by the background cross-correlation (minimum cross-correlation value over all possible strand shifts). Higher values indicate more enrichment, values less than 1.1 are relatively low NSC scores, and the minimum possible value is 1 (no enrichment). This score is sensitive to technical effects; for example, high-quality antibodies such as H3K4me3 and CTCF score well for all cell types and ENCODE production groups, and variation in enrichment in particular IPs is detected as stochastic variation. This score is also sensitive to biological effects; narrow marks score higher than broad marks (H3K4me3 vs H3K36me3, H3K27me3) for all cell types and ENCODE production groups, and features present in some individual cells, but not others, in a population are expected to have lower scores.
 
 **Relative Strand Cross-correlation coefficient (RSC):**
-The RSC is the ratio of the fragment-length cross-correlation value minus the background cross-correlation value, divided by the phantom-peak cross-correlation value minus the background cross-correlation value. The minimum possible value is 0 (no signal), highly enriched experiments have values greater than 1, and values much less than 1 may indicate low quality.
+The RSC is the ratio of the fragment-length cross-correlation value minus the background cross-correlation value, divided by the phantom-peak cross-correlation value minus the background cross-correlation value. The minimum possible value is 0 (no signal), highly enriched experiments have values greater than 1.
 
 ```{r PhantomPeak_paragraph, echo=F,results='asis',error=F,warning=F,message=F}
 cat(ChIPhelper.PhantomPeak(web=F),sep="\n")
 ```
 
-## Peaks called ##
+## ChIP-seq peaks ##
 
-A summary of the peaks called in the different comparisons is shown here:
+A summary of the peaks called by MACS2 (https://github.com/taoliu/MACS/) in the different comparisons is shown below.
 
 ```{r PeakCall_paragraph, echo=F,results='asis',error=F,warning=F,message=F}
 peaks <- ChIPhelper.init("readPeaks")

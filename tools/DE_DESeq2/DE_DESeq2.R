@@ -77,7 +77,7 @@ if(file.exists(gene.model)) {
 ## create the design and contrasts matrix
 ##
 # load targets
-targets <- read.delim(ftargets,head=T,colClasses="character",comment.char="#",)
+targets <- read.delim(ftargets,head=T,colClasses="character",comment.char="#")
 if(!all(c("group", "file", "sample") %in% colnames(targets))) stop("targets file must have at least 3 columns and fit the format expected in DESeqDatcondition")
 #reorder the targets file
 add_factors <- colnames(targets)[!colnames(targets) %in% c("group", "sample", "file")]
@@ -89,7 +89,7 @@ targets <- targets[, c("sample", "file", "group", add_factors)]
 conts <- read.delim(fcontrasts,head=F,comment.char="#")
 
 # check if the specified targets exists in the CWD
-if(!all(x <- sapply(paste0(cwd,"/",targets$file),file.exists))) stop("one or more input files do not exist in",cwd,"(x=",x,")")
+if(!all(x <- sapply(paste0(cwd,"/",targets$file),file.exists))) stop("one or more input files do not exist in ",cwd," (missing file(s): ",targets$file[!x],")")
 ##
 ## DESeq analysis: right now it only allows simple linear models with pairwise comparisons
 ##

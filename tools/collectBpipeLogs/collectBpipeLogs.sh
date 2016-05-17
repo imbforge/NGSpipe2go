@@ -1,6 +1,8 @@
 PROJECT=$1
 LOGS=$2
 
+# iterate through .bpipe outputs to pick up the run IDs of all finished tasks
+# copy all log files of the finished tasks out of the commandtmp folder
 for f in ${PROJECT}/.bpipe/outputs/*; 
 do 
  echo $f
