@@ -1,7 +1,7 @@
 FastxTrimmer = {
 	doc title: "Read trimming",
 		desc:  "Trims reads up to a given position. Useful when input files with the same read length are needed.",
-		constraints: "Only supports uncompressed FASTQ files",
+		constraints: "Only supports compressed FASTQ files",
 		author: "Antonio Domingues"
 
 	output.dir = FASTQ_TRIMMER_OUTDIR

@@ -1,7 +1,7 @@
 FastQQualityFilter = {
 	doc title: "Remove sequences",
 		desc:  "filter reads containing low-quality (Phred score below 20) bases in order to facilitate the PCR duplicates removal.",
-		constraints: "Only supports uncompressed FASTQ files",
+		constraints: "Only supports compressed FASTQ files",
 		author: "Antonio Domingues"
 
 	output.dir = FASTQ_QUALITY_FILTER_OUTDIR
