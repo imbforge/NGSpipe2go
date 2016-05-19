@@ -135,3 +135,17 @@ For convenience (visualization and further custom analysis) there there several 
 
 ### Summary of the pipeline
 There are plans to have a report of all results being generated at the end. While this does not happen, all relevant plots are merged in a single file for a quick overview: `results/all_plots.pdf`.
+
+
+## microRNA analysis
+
+To be properly documented. Uses mirDeep2 to quantify miRNAs.
+
+### Prerequisites
+#### Programs required
+- mirDeep2
+
+#### Files required
+- hairpin.fa provides the precursors, and
+- mature.fa the mir sequences
+Available in iGenomes download.
