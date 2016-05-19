@@ -2,7 +2,7 @@
 //desc: Convert Bam to FastQ using bedtools
 Bam2FastQ = {
    doc title: "Bam2FastQ",
-      desc:  "Call bedtools to create a new BAM with only the reads mapped that failed to map to the genome.",
+      desc:  "Call bedtools to create a new BAM with only the reads mapped to the genome.",
 
       author: "Antonio Domingues"
 
