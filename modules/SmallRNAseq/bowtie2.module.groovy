@@ -5,7 +5,7 @@ Bowtie2_se = {
       desc:  "Align single end reads",
       constraints: "Only works with compressed input. Samtools multithreaded version expected (>=0.1.19).",
       bpipe_version: "tested with bpipe 0.9.8.7",
-      author: "Sergi Sayols"
+      author: "Antonio Domingues"
 
    output.dir = MULTIMAP_OUT_DIR
 
