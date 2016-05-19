@@ -1,6 +1,6 @@
 SplitReadStrands = {
    doc title: "Splits plus and minus strands",
-        desc: "Creates two bam files, fot reads in the plus and minus strands. Basis to create big wig files for these strands",
+        desc: "Creates two bam files, for reads in the plus and minus strands. Basis to create big wig files for these strands",
         constraints: "",
         author: "Antonio Domingues"
 

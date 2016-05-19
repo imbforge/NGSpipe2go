@@ -1,9 +1,7 @@
-//rule for task SelectUniqMappers from catalog NGS, version 1
-//desc: Select uniquely mapped reads
+//rule for task SelectUniqMappers from catalog SmallRNAseq, version 0.1
 SelectUniqMappers = {
    doc title: "SelectUniqMappers",
-      desc:  "Call samtools to create a new BAM with only the uniquely mapped reads.",
-
+      desc:  "Call samtools to Select uniquely mapped reads.",
       author: "Antonio Domingues"
 
    output.dir = UNIQUEMAP_OUT_DIR

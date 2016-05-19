@@ -1,6 +1,6 @@
 CountReadsSummary = {
    doc title: "Count Reads Summary",
-      desc:  "Agregates the reac counts and plots results. Mighr be modified in the future.",
+      desc:  "Aggregates the read counts and plots results. Might be modified in the future.",
       constraints: "The bed files should contains an identifier, for instance, LINE or SINE, in col7. Uses bedtools v2.23.0",
       author: "Antonio Domingues"
 

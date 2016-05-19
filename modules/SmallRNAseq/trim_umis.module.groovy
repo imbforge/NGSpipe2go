@@ -1,6 +1,6 @@
 TrimUMIs = {
 	doc title: "Trim UMIs",
-		desc:  """Trims random barcodes that help in the identification of PCR duplicates and are in adaptor-removed reads: NNNN-insert-NNNN.""",
+		desc:  """Trims random barcodes that help in the identification of PCR duplicates and are in adapter-removed reads: NNNN-insert-NNNN.""",
       constraints: "Requires seqtk.",
 
 		author: "Antonio Domingues"

@@ -1,9 +1,7 @@
 //rule for task SelectUnMapped from catalog NGS, version 1
-//desc: Select unmapped reads
 SelectUnMapped = {
    doc title: "SelectUnMapped",
-      desc:  "Call samtools to create a new BAM with only the reads mapped that failed to map to the genome.",
-
+      desc:  "Call samtools to create a new BAM with only the reads that failed to map to the genome.",
       author: "Antonio Domingues"
 
    output.dir = UNIQUEMAP_OUT_DIR

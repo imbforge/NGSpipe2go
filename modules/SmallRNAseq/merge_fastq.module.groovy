@@ -3,7 +3,6 @@
 CatFastQ = {
    doc title: "CatFastQ",
       desc:  "merge single ended fastq files.",
-
       author: "Antonio Domingues"
 
    output.dir = FQ_OUT_DIR

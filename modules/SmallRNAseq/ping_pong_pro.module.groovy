@@ -1,7 +1,7 @@
 PingPongPro = {
    doc title: "PingPongPro",
          desc: "Calculates the ping-signal for each input transposon (genomic feature)",
-         constraints: "Needs PingPongPro in the path http://sourceforge.net/projects/pingpongpro/",
+         constraints: "Requires PingPongPro http://sourceforge.net/projects/pingpongpro/",
          author: "Antonio Domingues"
 
    output.dir = PINGPONG_OUTDIR
