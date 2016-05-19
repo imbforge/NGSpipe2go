@@ -1,7 +1,7 @@
-//rule for task bam2bw from catalog NGS, version 1
+//rule for task Bam2bw from catalog NGS, version 1
 //desc: Create scaled bigwig tracks from a bam file
-bam2bw = {
-	doc title: "bam2bw",
+Bam2bw = {
+	doc title: "Bam2bw",
 		desc:  "Convert BAM file to bigWig",
 		constraints: "none.",
 		author: "Sergi Sayols"
@@ -30,7 +30,7 @@ bam2bw = {
 			${TOOL_BEDTOOLS}/genomeCoverageBed -bg -split -scale \${SCALE} -ibam ${input} -g \${CHRSIZES} > ${output.prefix}.bedgraph &&
 			${TOOL_KENTUTILS}/bedGraphToBigWig ${output.prefix}.bedgraph \${CHRSIZES} $output &&
 			rm \${CHRSIZES} ${output.prefix}.bedgraph
-		""","bam2bw"
+		""","Bam2bw"
 	}
 }
 
