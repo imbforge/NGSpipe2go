@@ -2,7 +2,7 @@
 
 # NGSpipe2go #
 
-A set of NGS data analysis tools and pipelines developed and utilised in the Bioinformatics Core Facility of the Institute of Molecular Biology in Mainz (https://www.imb.de/core-facilities/bioinformatics/). Currently NGSpipe2go contains bpipe-based pipelines for QC, processing, analysis and visualisation of RNA-seq, ChIP-seq and DNA-seq data.
+A set of NGS data analysis tools and pipelines developed and utilised at the Institute of Molecular Biology gGmbH in Mainz (https://www.imb.de/). Currently NGSpipe2go contains bpipe-based pipelines for QC, processing, analysis and visualisation of RNA-seq, ChIP-seq and DNA-seq data.
 
 ## Prerequisites ##
 ### RNA-seq pipeline ###
@@ -52,8 +52,7 @@ A set of NGS data analysis tools and pipelines developed and utilised in the Bio
 ## Preparations to run ##
 
 ### Get NGSpipe2go to your project ###
-NGS projects are required to be run in a consistant way and may be required to be rerun in the near or far future. Hence NGSpipe2go asks you to copy all tools into the project folder, which will ensure that you always use the same program versions at a later time point.
-To this end we suggest to copy all modules, which may be subject to updates, into the project folder.
+NGS projects should be run in a consistant and reproducible way, hence NGSpipe2go asks you to copy all tools into the project folder, which will ensure that you always use the same program versions at a later time point.
 This can be done either from a local copy you created before:
 
     cp -r github/NGSpipe2go/ project_folder/
@@ -122,5 +121,4 @@ The Rmd files can be transformed to easily readable documents using knitr, e.g.:
     R usage:
     knitr::knit2html("DEreport.Rmd") # this step is optional
     rmarkdown::render("DEreport.md")
-
 
