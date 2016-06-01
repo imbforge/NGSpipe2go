@@ -28,46 +28,6 @@ loadGlobalVars <- function(f="shinyReports.txt") {
 }
 
 ##
-## DEhelper.init: some time consuming tasks that can be done in advance
-##
-VARhelper.init <- function(task) {
-	
-	# Prepare the DE data frame
-	renderUcscGeneLinks <- function() {
-		ucsc_url <- paste0("http://genome.ucsc.edu/cgi-bin/hgGene?org=",SHINYREPS_ORG,"&db=",SHINYREPS_DB,"&hgg_gene=")
-		for(i in 1:length(lrt)) {
-			lrt[[i]]$table$gene <<- sapply(rownames(lrt[[i]]$table),function(x) {
-				paste0("<a href=\"",ucsc_url,x,"\">",x,"</a>")
-			})
-		}
-	}
-	prepareDEdataTable <- function() {
-		for(i in 1:length(lrt)) {
-			lrt[[i]]$table$FDR    <<- p.adjust(lrt[[i]]$table$PValue,method="fdr")
-			lrt[[i]]$table$logFC  <<- round(lrt[[i]]$table$logFC,2)
-			lrt[[i]]$table$logCPM <<- round(lrt[[i]]$table$logCPM,2)
-			lrt[[i]]$table$LR     <<- round(lrt[[i]]$table$LR,2)
-			lrt[[i]]$table$PValue <<- round(lrt[[i]]$table$PValue,4)
-			lrt[[i]]$table$FDR    <<- round(lrt[[i]]$table$FDR,4)
-		}
-	}
-	
-	# Cluster and correlation tasks
-	prepareDistanceMatrix <- function() {
-		v <<- apply(m,1,sd,na.rm=T)		# get top variant genes
-		dists <<- dist(t(m))
-		mat <<- as.matrix(dists)
-		hmcol <<- colorRampPalette(brewer.pal(max(length(levels(group)),3),"Oranges"))(100)
-	}
-	
-	# dispatch tasks
-	switch(task,
-		   renderUcscGeneLinks=renderUcscGeneLinks(),
-		   prepareDEdataTable=prepareDEdataTable(),
-		   prepareDistanceMatrix=prepareDistanceMatrix())
-}
-
-##
 ## VARhelper.Fastqc: go through Fastqc output dir and create a md table with the duplication & read quals & sequence bias plots
 ##
 VARhelper.Fastqc <- function(web=TRUE) {
@@ -83,16 +43,16 @@ VARhelper.Fastqc <- function(web=TRUE) {
 	# construct the image url from the folder ents (skip current dir .)
 	samples <- list.dirs(SHINYREPS_FASTQC_OUT,recursive=F)
 	df <- sapply(samples,function(f) {
-		c(paste0("![alt text](",QC,"/",basename(f),"/Images/duplication_levels.png)"), 
-		  paste0("![alt text](",QC,"/",basename(f),"/Images/per_base_quality.png)"), 
-		  paste0("![alt text](",QC,"/",basename(f),"/Images/per_base_sequence_content.png)"))
+		c(paste0("![FastQC dup img](",QC,"/",basename(f),"/Images/duplication_levels.png)"), 
+		  paste0("![FastQC qual img](",QC,"/",basename(f),"/Images/per_base_quality.png)"), 
+		  paste0("![FastQC seq img](",QC,"/",basename(f),"/Images/per_base_sequence_content.png)"))
 	})
 
 	# set row and column names, and output the md table
 	df <- as.data.frame(t(df))
 	rownames(df) <- gsub(paste0("^",SHINYREPS_PREFIX),"",basename(samples))
 	colnames(df) <- c("Duplication","Read qualities","Sequence bias")
-	kable(df,output=F)
+	kable(df,output=F, align="c")
 }
 
 ##
@@ -138,12 +98,12 @@ VARhelper.BWA <- function() {
 	colnames(x) <- gsub(paste0("^",SHINYREPS_PREFIX),"",colnames(x))
 	colnames(x) <- gsub(paste0(SUFFIX,"$"),"",colnames(x))
 	df <- data.frame(#"sample name"       = colnames(x),
-					 "total reads"       = x[1,],
-					 "mapped"            = paste0( x[3,] ," (", round(x[3,] / x[1,] * 100, digits=2), "%)" ),
-					 "proper pair"       = paste0( x[7,] ," (", round(x[7,] / x[1,] * 100, digits=2), "%)" ) ,
-					 "secondary alignments" = paste0( x[2,]," (", round(x[2,] / x[1,] * 100, digits=2), "%)" ),
-					 "unmapped"             = paste0( x[3,] - x[4,]," (", round((x[3,] - x[4,]) / x[4,] * 100, digits=2), "%)" ),
-					 "different chromosome" = paste0( x[10,], ", ", x[11,], " (mapQ>=5)" )
+					 "total reads"       = format( as.numeric(x[1,]),big.mark="," ),
+					 "mapped"            = paste0( format( x[3,], big.mark=",") ," (", round(x[3,] / x[1,] * 100, digits=2), "%)" ),
+					 "proper pair"       = paste0( format( x[7,], big.mark=",") ," (", round(x[7,] / x[1,] * 100, digits=2), "%)" ) ,
+					 "secondary alignments" = paste0( format( x[2,], big.mark=",")," (", round(x[2,] / x[1,] * 100, digits=2), "%)" ),
+					 "unmapped"             = paste0( format( x[1,] - x[3,], big.mark=",")," (", round((x[1,] - x[3,]) / x[1,] * 100, digits=2), "%)" ),
+					 "different chromosome" = paste0( format( x[10,], big.mark=","), ", ", format( x[11,], big.mark=","), " (mapQ>=5)" )
 					 )
 	kable(df,align=c("r","r","r","r","r","r"),output=F)
 }
@@ -159,7 +119,6 @@ VARhelper.GATKug <- function() {
 	SUFFIX <- paste0(SHINYREPS_GATKug_SUFFIX, '$')
 	
 	if(!file.exists(LOG)) {
-		print(LOG)
 		return("GATK Unified Genotyper statistics not available")
 	}
 	
@@ -196,15 +155,15 @@ VARhelper.GATKug <- function() {
 	colnames(x) <- gsub(paste0("^",SHINYREPS_PREFIX),"",colnames(x))
 	colnames(x) <- gsub(paste0(SUFFIX,"$"),"",colnames(x))
 	df <- data.frame(#"sample name"    = colnames(x),
-					 "total reads"    = x[10,],
-					 "total filtered" = paste0( x[9,], " (", round(x[9,] / x[10,] * 100, digits=2), "%)" ),
-					 "CIGAR"          = paste0( x[1,], " (", round(x[1,] / x[10,] * 100, digits=2), "%)" ),
-					 "BadMate"        = paste0( x[2,], " (", round(x[2,] / x[10,] * 100, digits=2), "%)" ),
-					 "Duplicate"      = paste0( x[3,], " (", round(x[3,] / x[10,] * 100, digits=2), "%)" ),
-					 "Malformed read" = paste0( x[5,], " (", round(x[5,] / x[10,] * 100, digits=2), "%)" ),
-					 "no MappingQuality"=paste0( x[6,], " (", round(x[6,] / x[10,] * 100, digits=2), "%)" ),
-					 "not Primary"    = paste0( x[7,], " (", round(x[7,] / x[10,] * 100, digits=2), "%)" ),
-					 "unmapped"       = paste0( x[8,], " (", round(x[8,] / x[10,] * 100, digits=2), "%)" )
+					 "total reads"    = format( x[10,], big.mark=","),
+					 "total filtered" = paste0( format( x[9,], big.mark=","), " (", round(x[9,] / x[10,] * 100, digits=2), "%)" ),
+					 "CIGAR"          = paste0( format( x[1,], big.mark=","), " (", round(x[1,] / x[10,] * 100, digits=2), "%)" ),
+					 "BadMate"        = paste0( format( x[2,], big.mark=","), " (", round(x[2,] / x[10,] * 100, digits=2), "%)" ),
+					 "Duplicate"      = paste0( format( x[3,], big.mark=","), " (", round(x[3,] / x[10,] * 100, digits=2), "%)" ),
+					 "Malformed read" = paste0( format( x[5,], big.mark=","), " (", round(x[5,] / x[10,] * 100, digits=2), "%)" ),
+					 "no MappingQuality"=paste0( format( x[6,], big.mark=","), " (", round(x[6,] / x[10,] * 100, digits=2), "%)" ),
+					 "not Primary"    = paste0( format( x[7,], big.mark=","), " (", round(x[7,] / x[10,] * 100, digits=2), "%)" ),
+					 "unmapped"       = paste0( format( x[8,], big.mark=","), " (", round(x[8,] / x[10,] * 100, digits=2), "%)" )
 					 )
 	rownames(df) <- colnames(x)
 	kable(df,align=c("r","r","r","r","r","r","r","r","r"),output=F)
@@ -261,15 +220,15 @@ VARhelper.GATKhc <- function() {
 	colnames(x) <- gsub(paste0(SUFFIX,"$"),"",colnames(x))
 	
 	df <- data.frame(#"sample name"    = colnames(x),
-					 "total reads"    = x[10,],
-					 "total filtered" = paste0( x[9,], " (", round(x[9,] / x[10,] * 100, digits=2), "%)" ),
-					 "CIGAR"          = paste0( x[1,], " (", round(x[1,] / x[10,] * 100, digits=2), "%)" ),
-					 "Duplicate"      = paste0( x[2,], " (", round(x[2,] / x[10,] * 100, digits=2), "%)" ),
-					 "MappingQuality" = paste0( x[4,], " (", round(x[4,] / x[10,] * 100, digits=2), "%)" ),
-					 "Malformed read" = paste0( x[5,], " (", round(x[5,] / x[10,] * 100, digits=2), "%)" ),
-					 "no MappingQuality"=paste0( x[6,], " (", round(x[6,] / x[10,] * 100, digits=2), "%)" ),
-					 "not Primary"    = paste0( x[7,], " (", round(x[7,] / x[10,] * 100, digits=2), "%)" ),
-					 "unmapped"       = paste0( x[8,], " (", round(x[8,] / x[10,] * 100, digits=2), "%)" )
+					 "total reads"    = format( x[10,], big.mark=","),
+					 "total filtered" = paste0( format( x[9,], big.mark=","), " (", round(x[9,] / x[10,] * 100, digits=2), "%)" ),
+					 "CIGAR"          = paste0( format( x[1,], big.mark=","), " (", round(x[1,] / x[10,] * 100, digits=2), "%)" ),
+					 "Duplicate"      = paste0( format( x[2,], big.mark=","), " (", round(x[2,] / x[10,] * 100, digits=2), "%)" ),
+					 "MappingQuality" = paste0( format( x[4,], big.mark=","), " (", round(x[4,] / x[10,] * 100, digits=2), "%)" ),
+					 "Malformed read" = paste0( format( x[5,], big.mark=","), " (", round(x[5,] / x[10,] * 100, digits=2), "%)" ),
+					 "no MappingQuality"=paste0( format( x[6,], big.mark=","), " (", round(x[6,] / x[10,] * 100, digits=2), "%)" ),
+					 "not Primary"    = paste0( format( x[7,], big.mark=","), " (", round(x[7,] / x[10,] * 100, digits=2), "%)" ),
+					 "unmapped"       = paste0( format( x[8,], big.mark=","), " (", round(x[8,] / x[10,] * 100, digits=2), "%)" )
 					 )
 	rownames(df) <- colnames(x)
 	kable(df,align=c("r","r","r","r","r","r","r","r","r"),output=F)
@@ -376,18 +335,18 @@ VARhelper.GATKvarianteval <- function() {
 	colnames(x) <- gsub(paste0(SUFFIX,"$"),"",colnames(x))
 	
 	
-	df <- data.frame(#"sample name"= colnames(x),
-					 "total counts"=paste(x[1,], x[2,],  x[3,], sep=", "),
-					 "SNP"=         paste(x[4,] ,x[10,], x[16,],sep=", "),
-					 "MNP"=         paste(x[5,], x[11,], x[17,],sep=", "),
-					 "Insertion"=   paste(x[6,], x[12,], x[18,],sep=", "),
-					 "Deletion"=    paste(x[7,], x[13,], x[19,],sep=", "),
-					 "het hom ratio"=     paste(round(x[8,] / x[9,], digits=2),   round(x[14,] / x[15,], digits=2), round(x[20,] / x[21,], digits=2),sep=", "),
-					 "ins del ratio"=     paste(round(x[6,] / x[7,], digits=2),   round(x[12,] / x[13,], digits=2), round(x[18,] / x[19,], digits=2),sep=", "),
-					 "Ti Tv ratio"=       paste(round(x[25,] / x[26,], digits=2), round(x[29,] / x[30,], digits=2), round(x[33,] / x[34,], digits=2),sep=", ")
+	df <- data.frame(#"sample name"= colnames(x),format( x[3,], big.mark=",")
+					 "total counts"=paste(format( x[1,], big.mark=","), format( x[2,], big.mark=","),  format( x[3,], big.mark=","), sep="; "),
+					 "SNP"=         paste(format( x[4,], big.mark=","), format( x[10,], big.mark=","), format( x[16,], big.mark=","),sep="; "),
+					 "MNP"=         paste(format( x[5,], big.mark=","), format( x[11,], big.mark=","), format( x[17,], big.mark=","),sep="; "),
+					 "Insertion"=   paste(format( x[6,], big.mark=","), format( x[12,], big.mark=","), format( x[18,], big.mark=","),sep="; "),
+					 "Deletion"=    paste(format( x[7,], big.mark=","), format( x[13,], big.mark=","), format( x[19,], big.mark=","),sep="; "),
+					 "het hom ratio"=     paste(round(x[8,] / x[9,], digits=2),   round(x[14,] / x[15,], digits=2), round(x[20,] / x[21,], digits=2),sep="; "),
+					 "ins del ratio"=     paste(round(x[6,] / x[7,], digits=2),   round(x[12,] / x[13,], digits=2), round(x[18,] / x[19,], digits=2),sep="; "),
+					 "Ti Tv ratio"=       paste(round(x[25,] / x[26,], digits=2), round(x[29,] / x[30,], digits=2), round(x[33,] / x[34,], digits=2),sep="; ")
 					 )
 	rownames(df) <- colnames(x)
-	kable(df,align=c("r","r","r","r","r","r","r","r"),output=F)
+	kable(df,align=c("r","r","r","r","r","r","r","r"),output=F, )
 }
 
 
@@ -470,65 +429,14 @@ VARhelper.CoveragePlot <- function() {
 ## extract tool versions
 ##
 
-Toolhelper.VersionBWA <- function() {
+Toolhelper.VersionReporter <- function(tool, logfolder) {
 	
-	# bwa call without parameters
-	#[...]
-	#Program: bwa (alignment via Burrows-Wheeler transformation)
-	#Version: 0.7.12-r1039
-	#Contact: Heng Li <lh3@sanger.ac.uk>
-	#[...]
-	
-	LOG <- SHINYREPS_BWA_LOG
-	
-	# logs folder
-	if(!file.exists(LOG)) {
-		return("BWA version not available")
-	}
-	
-	x <- lapply( list.files(LOG, full.names=TRUE), function(f){
-		# read all lines
-		l <- readLines(f)
-		# e.g. Version: 0.7.12-r1039
-		l.tmp <- l[grep("Version:",l)]
-		# extract version number
-		l.version <- unlist( strsplit(l.tmp, ': ') )[2]
-		
-		return(l.version)
-		
-		} )
-	
-	# x is a list of always the same content
-	r <- tryCatch(
-		{
-			return(x[[1]][1])
-		},
-		warning = function(w) {
-			return("no version tag")
-		},
-		error = function(e) {
-			return("no version tag")
-		},
-		finally = {}
-	)
-	
-	
-}
-
-
-Toolhelper.VersionFastQC <- function() {
-	
-	# fastqc --version
-	#
-	#FastQC v0.11.3
-	#
-	
-	LOG <- SHINYREPS_FASTQC_LOG
+	LOG <- logfolder
 	SUFFIX <- paste0(".log","$")
 	
 	# logs folder
 	if(!file.exists(LOG)) {
-		return("FastQC version not available")
+		return(paste0(tool, " version not available"))
 	}
 	
 	x <- lapply( list.files(LOG, pattern=SUFFIX, full.names=TRUE), function(f){
@@ -536,52 +444,7 @@ Toolhelper.VersionFastQC <- function() {
 		l <- readLines(f)
 		# need to check Version number in one line lower than "VERSION INFO"
 		# e.g. FastQC v0.11.3
-		l.tmp <- l[ grep("^VERSION INFO",l) + 1 ]
-		# extract version number
-		l.version <- unlist( strsplit(l.tmp, ' ') )[2]
-		
-		return(l.version)
-		
-		} )
-	
-	# x is a list of always the same content
-	r <- tryCatch(
-		{
-			return(x[[1]][1])
-		},
-		warning = function(w) {
-			return("no version tag")
-		},
-		error = function(e) {
-			return("no version tag")
-		},
-		finally = {}
-	)
-	
-	
-}
-
-Toolhelper.VersionMarkDups <- function() {
-	
-	# java -jar MarkDuplicates.jar --version
-	#
-	#1.92(1464)
-	#
-	
-	LOG <- SHINYREPS_MARKDUPS_LOG
-	
-	# logs folder
-	if(!file.exists(LOG)) {
-		return("Picard MarkDuplicates version not available")
-	}
-	
-	x <- lapply( list.files(LOG, full.names=TRUE), function(f){
-		# read all lines
-		l <- readLines(f)
-		# need to check Version number in one line lower than "VERSION INFO"
-		# e.g. FastQC v0.11.3
 		l.version <- l[ grep("^VERSION INFO",l) + 1 ]
-		# extract version number
 		
 		return(l.version)
 		
@@ -590,7 +453,11 @@ Toolhelper.VersionMarkDups <- function() {
 	# x is a list of always the same content
 	r <- tryCatch(
 		{
-			return(x[[1]][1])
+			if (is.null(x[[1]][1])) {
+				return("no version tag")
+			} else {
+				return(x[[1]][1])
+			}
 		},
 		warning = function(w) {
 			return("no version tag")
@@ -601,97 +468,247 @@ Toolhelper.VersionMarkDups <- function() {
 		finally = {}
 	)
 	
-	
 }
 
-Toolhelper.VersionGATKug <- function() {
-	
-	# call GATK and get the version
-	#java -jar GenomeAnalysisTK.jar --version
-	#3.4-46-gbc02625
-	
-	
-	LOG <- SHINYREPS_GATKug_LOG
-	
-	# logs folder
-	if(!file.exists(LOG)) {
-		return("GATK Unified Genotyper version not available")
-	}
-	
-	x <- lapply( list.files(LOG, full.names=TRUE), function(f){
-		# read all lines
-		l <- readLines(f)
-		# need to check Version number in one line lower than "VERSION INFO"
-		# e.g.
-		# VERSION INFO
-		# 3.4-46-gbc02625
-		# \VERSION INFO
-		l.version <- l[ grep("^VERSION INFO",l) + 1 ]
-				
-		return(l.version)
-		
-		} )
-	
-	# x is a list of always the same content
-	r <- tryCatch(
-		{
-			return(x[[1]][1])
-		},
-		warning = function(w) {
-			return("no version tag")
-		},
-		error = function(e) {
-			return("no version tag")
-		},
-		finally = {}
-	)
-	
-	
-}
 
-Toolhelper.VersionGATKhc <- function() {
-	
-	# call GATK and get the version
-	#java -jar GenomeAnalysisTK.jar --version
-	#3.4-46-gbc02625
-	
-	
-	LOG <- SHINYREPS_GATKhc_LOG
-	
-	# logs folder
-	if(!file.exists(LOG)) {
-		return("GATK Haplotype Caller version not available")
-	}
-	
-	x <- lapply( list.files(LOG, full.names=TRUE), function(f){
-		# read all lines
-		l <- readLines(f)
-		# need to check Version number in one line lower than "VERSION INFO"
-		# e.g.
-		# VERSION INFO
-		# 3.4-46-gbc02625
-		# \VERSION INFO
-		l.version <- l[ grep("^VERSION INFO",l) + 1 ]
-				
-		return(l.version)
-		
-		} )
-	
-	# x is a list of always the same content
-	r <- tryCatch(
-		{
-			return(x[[1]][1])
-		},
-		warning = function(w) {
-			return("no version tag")
-		},
-		error = function(e) {
-			return("no version tag")
-		},
-		finally = {}
-	)
-	
-	
-}
-
+#Toolhelper.VersionBWA <- function() {
+#	
+#	# bwa call without parameters
+#	#[...]
+#	#Program: bwa (alignment via Burrows-Wheeler transformation)
+#	#Version: 0.7.12-r1039
+#	#Contact: Heng Li <lh3@sanger.ac.uk>
+#	#[...]
+#	
+#	LOG <- SHINYREPS_BWA_LOG
+#	
+#	# logs folder
+#	if(!file.exists(LOG)) {
+#		return("BWA version not available")
+#	}
+#	
+#	x <- lapply( list.files(LOG, full.names=TRUE), function(f){
+#		# read all lines
+#		l <- readLines(f)
+#		# e.g. Version: 0.7.12-r1039
+#		l.version <- l[ grep("^VERSION INFO",l) + 1 ]
+#		
+#		return(l.version)
+#		
+#		} )
+#	
+#	# x is a list of always the same content
+#	r <- tryCatch(
+#		{
+#			if (is.null(x[[1]][1])) {
+#				return("no version tag")
+#			} else {
+#				return(x[[1]][1])
+#			}
+#		},
+#		warning = function(w) {
+#			return("no version tag")
+#		},
+#		error = function(e) {
+#			return("no version tag")
+#		},
+#		finally = {}
+#	)
+#	
+#	
+#}
+#
+#
+#Toolhelper.VersionFastQC <- function() {
+#	
+#	# fastqc --version
+#	#
+#	#FastQC v0.11.3
+#	#
+#	
+#	LOG <- SHINYREPS_FASTQC_LOG
+#	SUFFIX <- paste0(".log","$")
+#	
+#	# logs folder
+#	if(!file.exists(LOG)) {
+#		return("FastQC version not available")
+#	}
+#	
+#	x <- lapply( list.files(LOG, pattern=SUFFIX, full.names=TRUE), function(f){
+#		# read all lines
+#		l <- readLines(f)
+#		# need to check Version number in one line lower than "VERSION INFO"
+#		# e.g. FastQC v0.11.3
+#		l.version <- l[ grep("^VERSION INFO",l) + 1 ]
+#		
+#		return(l.version)
+#		
+#		} )
+#	
+#	# x is a list of always the same content
+#	r <- tryCatch(
+#		{
+#			if (is.null(x[[1]][1])) {
+#				return("no version tag")
+#			} else {
+#				return(x[[1]][1])
+#			}
+#		},
+#		warning = function(w) {
+#			return("no version tag")
+#		},
+#		error = function(e) {
+#			return("no version tag")
+#		},
+#		finally = {}
+#	)
+#	
+#	
+#}
+#
+#Toolhelper.VersionMarkDups <- function() {
+#	
+#	# java -jar MarkDuplicates.jar --version
+#	#
+#	#1.92(1464)
+#	#
+#	
+#	LOG <- SHINYREPS_MARKDUPS_LOG
+#	
+#	# logs folder
+#	if(!file.exists(LOG)) {
+#		return("Picard MarkDuplicates version not available")
+#	}
+#	
+#	x <- lapply( list.files(LOG, full.names=TRUE), function(f){
+#		# read all lines
+#		l <- readLines(f)
+#		# need to check Version number in one line lower than "VERSION INFO"
+#		# e.g. FastQC v0.11.3
+#		l.version <- l[ grep("^VERSION INFO",l) + 1 ]
+#		# extract version number
+#		
+#		return(l.version)
+#		
+#		} )
+#	
+#	# x is a list of always the same content
+#	r <- tryCatch(
+#		{
+#			if (is.null(x[[1]][1])) {
+#				return("no version tag")
+#			} else {
+#				return(x[[1]][1])
+#			}
+#		},
+#		warning = function(w) {
+#			return("no version tag")
+#		},
+#		error = function(e) {
+#			return("no version tag")
+#		},
+#		finally = {}
+#	)
+#	
+#	
+#}
+#
+#Toolhelper.VersionGATKug <- function() {
+#	
+#	# call GATK and get the version
+#	#java -jar GenomeAnalysisTK.jar --version
+#	#3.4-46-gbc02625
+#	
+#	
+#	LOG <- SHINYREPS_GATKug_LOG
+#	
+#	# logs folder
+#	if(!file.exists(LOG)) {
+#		return("GATK Unified Genotyper version not available")
+#	}
+#	
+#	x <- lapply( list.files(LOG, full.names=TRUE), function(f){
+#		# read all lines
+#		l <- readLines(f)
+#		# need to check Version number in one line lower than "VERSION INFO"
+#		# e.g.
+#		# VERSION INFO
+#		# 3.4-46-gbc02625
+#		# \VERSION INFO
+#		l.version <- l[ grep("^VERSION INFO",l) + 1 ]
+#				
+#		return(l.version)
+#		
+#		} )
+#	
+#	# x is a list of always the same content
+#	r <- tryCatch(
+#		{
+#			if (is.null(x[[1]][1])) {
+#				return("no version tag")
+#			} else {
+#				return(x[[1]][1])
+#			}
+#		},
+#		warning = function(w) {
+#			return("no version tag")
+#		},
+#		error = function(e) {
+#			return("no version tag")
+#		},
+#		finally = {}
+#	)
+#	
+#	
+#}
+#
+#Toolhelper.VersionGATKhc <- function() {
+#	
+#	# call GATK and get the version
+#	#java -jar GenomeAnalysisTK.jar --version
+#	#3.4-46-gbc02625
+#	
+#	
+#	LOG <- SHINYREPS_GATKhc_LOG
+#	
+#	# logs folder
+#	if(!file.exists(LOG)) {
+#		return("GATK Haplotype Caller version not available")
+#	}
+#	
+#	x <- lapply( list.files(LOG, full.names=TRUE), function(f){
+#		# read all lines
+#		l <- readLines(f)
+#		# need to check Version number in one line lower than "VERSION INFO"
+#		# e.g.
+#		# VERSION INFO
+#		# 3.4-46-gbc02625
+#		# \VERSION INFO
+#		l.version <- l[ grep("^VERSION INFO",l) + 1 ]
+#				
+#		return(l.version)
+#		
+#		} )
+#	
+#	# x is a list of always the same content
+#	r <- tryCatch(
+#		{
+#			if (is.null(x[[1]][1])) {
+#				return("no version tag")
+#			} else {
+#				return(x[[1]][1])
+#			}
+#		},
+#		warning = function(w) {
+#			return("no version tag")
+#		},
+#		error = function(e) {
+#			return("no version tag")
+#		},
+#		finally = {}
+#	)
+#	
+#	
+#}
+#
 

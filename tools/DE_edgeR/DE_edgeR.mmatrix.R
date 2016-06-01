@@ -1,4 +1,3 @@
-#!/fsimb/groups/imb-bioinfocf/common-tools/dependencies/R/default/bin/Rscript
 #####################################
 ##
 ## What: DE.edgeR.R

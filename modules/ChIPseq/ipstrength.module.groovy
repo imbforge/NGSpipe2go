@@ -4,6 +4,7 @@ ipstrength = {
 	doc title: "IPstrength plot",
 		desc:  "IPstrength",
 		constraints: "install the right reference BSgenome",
+		bpipe_version: "tested with bpipe 0.9.8.7",
 		author: "Sergi Sayols"
 
 	output.dir = QC + "/ipstrength"
@@ -21,7 +22,12 @@ ipstrength = {
 				echo "Targets file $IPSTRENGTH_TARGETS doesn't exist" >> $output &&
 				exit 0;
 			fi;
-
+			
+			echo 'VERSION INFO'  1>&2 &&
+			echo \$(${TOOL_R}/bin/Rscript --version 2>&1 | cut -d' ' -f5) 1>&2 &&
+			echo '/VERSION INFO' 1>&2 &&
+			
+			
 			BAM=\$(basename $input) &&
 			grep \$BAM $IPSTRENGTH_TARGETS | while read -r TARGET; do
 				IP=\$(       echo $TARGET | cut -f1 -d" ") &&

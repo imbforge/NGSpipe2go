@@ -26,6 +26,7 @@
 ##
 ####################################
 library(ShortRead)
+library(Rsamtools)
 library(parallel)
 
 ##
@@ -48,7 +49,7 @@ bsgenome   <- args[6]
 if(length(args) != 6)   stop("Rscript IPstrength.R <IP> <IP.name> <input> <input.name> <output> <bsgenome>")
 if(!file.exists(IP))    stop(paste("File",IP   ,"does NOT exist"))
 if(!file.exists(input)) stop(paste("File",input,"does NOT exist"))
-if(!any(grepl(bsgenome,list.files(.libPaths())))) stop(paste(bsgenome,"not available in",.libPaths()))
+if(!any(grepl(bsgenome,list.files(.libPaths())))) warning(paste(bsgenome,"not available in",.libPaths()))
 org <- unlist(strsplit(bsgenome,"\\."))[2]
 
 cat("Program called with args:",args,fill=T)
@@ -56,12 +57,17 @@ cat("Program called with args:",args,fill=T)
 ##
 ## 1-Read bam files and count reads per bin
 ##
-require(bsgenome,character.only=T)
-bins <- tileGenome(seqinfo(get(org)),tilewidth=BIN_SIZE,cut.last.tile.in.chrom=TRUE)
+if(!require(bsgenome,character.only=T)) {
+    cat("Tiling genome from",IP,"...\n")
+    aln  <- BamFile(IP)
+    bins <- tileGenome(seqinfo(aln),tilewidth=BIN_SIZE,cut.last.tile.in.chrom=TRUE)
+} else {
+    bins <- tileGenome(seqinfo(get(org)),tilewidth=BIN_SIZE,cut.last.tile.in.chrom=TRUE)
+}
 
 counter <- function(fl,bins)
 {
-	cat("Reading ",fl,"...\n")
+	cat("Reading",fl,"...\n")
 	aln <- readGAlignments(fl)
 	strand(aln) <- STRAND_SPECIFIC
 	hits   <- countOverlaps(aln,bins)

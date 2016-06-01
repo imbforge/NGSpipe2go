@@ -4,6 +4,7 @@ shinyReports = {
 	doc title: "shinyReports",
 		desc:  "creates the source code to compile the shiny and markdown reports",
 		constraints: "",
+		bpipe_version: "tested with bpipe 0.9.8.7",
 		author: "Sergi Sayols"
 	
 	output.dir = REPORTS
@@ -45,6 +46,7 @@ shinyReports = {
 			echo "SHINYREPS_GENEBODYCOV_LOG=${SHINYREPS_GENEBODYCOV_LOG}" >> $output &&
 			echo "SHINYREPS_BUSTARD=${SHINYREPS_BUSTARD}"         >> $output &&
 			echo "SHINYREPS_DE_EDGER=${SHINYREPS_DE_EDGER}"       >> $output &&
+			echo "SHINYREPS_DE_DESEQ=${SHINYREPS_DE_DESEQ}"       >> $output &&
 			echo "SHINYREPS_SUBREAD=${SHINYREPS_SUBREAD}"         >> $output &&
 			echo "SHINYREPS_SUBREAD_SUFFIX=${SHINYREPS_SUBREAD_SUFFIX}"  >> $output &&
 			echo "SHINYREPS_SUBREAD_LOG=${SHINYREPS_SUBREAD_LOG}"        >> $output &&
@@ -53,7 +55,9 @@ shinyReports = {
 			echo "SHINYREPS_GENEBODYCOVERAGE_LOGS=${SHINYREPS_GENEBODYCOVERAGE_LOGS}" >> $output &&
 			echo "SHINYREPS_EDGER_LOGS=${SHINYREPS_EDGER_LOGS}"          >> $output &&
 			echo "SHINYREPS_DESEQ_LOGS=${SHINYREPS_DESEQ_LOGS}"          >> $output &&
-			echo "SHINYREPS_PLOTS_COLUMN=${SHINYREPS_PLOTS_COLUMN}"      >> $output
+			echo "SHINYREPS_PLOTS_COLUMN=${SHINYREPS_PLOTS_COLUMN}"      >> $output &&
+			echo "SHINYREPS_INFEREXPERIMENT_LOGS=${SHINYREPS_INFEREXPERIMENT_LOGS}" >> $output &&
+			echo "SHINYREPS_QUALIMAP_LOGS=${SHINYREPS_QUALIMAP_LOGS}" >> $output
 		""","shinyReports"
 	}
 }

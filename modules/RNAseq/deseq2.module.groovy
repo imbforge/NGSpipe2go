@@ -1,18 +1,22 @@
 DE_DESeq2 = {
 	doc title: "DE_DESeq2",
-		desc:  "Differential expression analysis using linears models and DESeq2",
+		desc:  "Differential expression analysis using linear models and DESeq2",
 		constraints: "Only simple contrasts in 1-factor design. Include always the intercept. Always gene filtering",
+		bpipe_version: "tested with bpipe 0.9.8.7",
 		author: "Sergi Sayols"
 
-	output.dir = DE_DESeq2_OUTDIR
-	def DE_DESeq2_FLAGS = " targets="  + DE_DESeq2_TARGETS + 
-	                     " contrasts=" + DE_DESeq2_CONTRASTS +
-	                     " mmatrix="   + DE_DESeq2_MMATRIX +
-	                     " filter="    + DE_DESeq2_FILTER +
-	                     " prefix="    + DE_DESeq2_PREFIX +
-	                     " suffix="    + DE_DESeq2_SUFFIX +
-	                     " cwd="       + DE_DESeq2_CWD +
-                         " out="       + DE_DESeq2_OUTDIR + "/DE_DESeq2"
+	output.dir = RESULTS + "/DE_DESeq2"
+	def DE_DESeq2_FLAGS = DE_DESeq2_TARGETS   + " " + 
+                          DE_DESeq2_CONTRASTS + " " +
+                          DE_DESeq2_MMATRIX   + " " +
+                          DE_DESeq2_FILTER    + " " +
+                          DE_DESeq2_PREFIX    + " " +
+                          DE_DESeq2_SUFFIX    + " " +
+                          DE_DESeq2_CWD       + " " +
+                          DE_DESeq2_OUTDIR    + " " +
+			  DE_DESeq2_GENES     + " " +
+			  DE_DESeq2_BASE      + " " +
+                          DE_DESeq2_EXTRA
 
 	// run the chunk
 	produce("DE_DESeq2.RData") {
@@ -23,9 +27,9 @@ DE_DESeq2 = {
 				export TMPDIR=/jobdir/\${LSB_JOBID};
 			fi &&
 			
-			echo '<<<<<<<<<<<<<<<<' &&
-			echo ${TOOL_R}/bin/Rscript ${TOOL_DESeq2}/DE_DESeq2.R $DE_DESeq2_FLAGS &&
-			echo '>>>>>>>>>>>>>>>>' &&
+			echo 'VERSION INFO'  1>&2 ;
+			echo \$(${TOOL_R}/bin/Rscript --version 2>&1 | cut -d' ' -f5) 1>&2 ;
+			echo '/VERSION INFO'  1>&2 ;
 			
 			${TOOL_R}/bin/Rscript ${TOOL_DESeq2}/DE_DESeq2.R $DE_DESeq2_FLAGS
 		""","DE_DESeq2"

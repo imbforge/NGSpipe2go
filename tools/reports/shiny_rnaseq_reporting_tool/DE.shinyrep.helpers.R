@@ -4,9 +4,11 @@
 ##
 ##################################
 library("edgeR")
+library("DESeq2")
 library("RColorBrewer")
 library("gplots")
 library("ggplot2")
+library("ggrepel")
 library("knitr")		# for markdown output
 
 ##
@@ -28,9 +30,53 @@ loadGlobalVars <- function(f="shinyReports.txt") {
 }
 
 ##
-## DEhelper.init: some time consuming tasks that can be done in advance
+## DESeq2 DE analysis
 ##
-DEhelper.init <- function(task) {
+## DEhelper.MDS
+DEhelper.DESeq2.MDS <- function() {
+    p <- plotPCA(rld, intgroup=colnames(colData(dds))[1])
+    print(p + geom_text_repel(aes(label=rownames(colData(dds)))) + theme_bw())
+}
+
+## DEhelper.cluster: Heatmap of top variant 'n' genes of the counts-per-milion table
+DEhelper.DESeq2.cluster <- function(n=25) {
+    rows <- order(apply(assay(rld), 1, sd), decreasing=TRUE)[1:n]
+    hmcol  <- colorRampPalette(brewer.pal(9, "GnBu"))(100)
+    heatmap.2(assay(rld)[rows,],col=hmcol,trace="none",margin=c(10,6),scale="none")
+}
+
+## DEhelper.corr: Heatmap of sample to sample distances
+DEhelper.DESeq2.corr <- function() {
+    distsRL <- dist(t(assay(rld)))
+    mat <- as.matrix(distsRL)
+    hc  <- hclust(distsRL)
+    hmcol <- colorRampPalette(brewer.pal(9, "GnBu"))(100)
+    heatmap.2(mat, Rowv=as.dendrogram(hc),
+              symm=TRUE, trace="none",
+              col = rev(hmcol), margin=c(13, 13))
+}
+
+## DEhelper.MAplot: MA plots
+DEhelper.DESeq2.MAplot <- function(i=1,fdr=.05) {
+    x <- mapply(function(res, cont) {
+        plotMA(res, main=cont)
+        invisible(0)
+    }, res, conts[, 1], SIMPLIFY=FALSE)
+}
+
+## DEhelper.DEgenes: show the DE results
+DEhelper.DESeq2.DEgenes <- function(i=1) {
+	ord  <- order(-log(res[[i]]$padj),
+				   abs(res[[i]]$log2FoldChange),
+				  decreasing=TRUE)
+	res[[i]][ord,]
+}
+
+##
+## edgeR DE analysis
+##
+## DEhelper.init: some time consuming tasks that can be done in advance
+DEhelper.edgeR.init <- function(task) {
 	
 	# Prepare the DE data frame
 	renderUcscGeneLinks <- function() {
@@ -68,38 +114,30 @@ DEhelper.init <- function(task) {
 		   prepareDistanceMatrix=prepareDistanceMatrix())
 }
 
-##
 ## DEhelper.MDS
-##
-DEhelper.MDS <- function() {
+DEhelper.edgeR.MDS <- function() {
 	edgeR::plotMDS.DGEList(y,col=brewer.pal(max(length(levels(group)),3),"Accent")[group])
 }
 
 ##
 ## DEhelper.var: variance along log gene count-per-milion
 ##
-DEhelper.var <- function() {
+DEhelper.edgeR.var <- function() {
 	edgeR::plotBCV(y)
 }
 
-##
 ## DEhelper.cluster: Heatmap of top variant 'n' genes of the counts-per-milion table
-##
-DEhelper.cluster <- function(n=50) {
+DEhelper.edgeR.cluster <- function(n=50) {
 	heatmap.2(m[rev(order(v))[1:n],],col=hmcol,trace="none",margin=c(10,6))
 }
 
-##
 ## DEhelper.corr: Heatmap of sample to sample distances
-##
-DEhelper.corr <- function() {
+DEhelper.edgeR.corr <- function() {
 	heatmap.2(mat,trace="none",col=rev(hmcol),margin=c(13,13))
 }
 
-##
 ## DEhelper.MAplot: MA plots
-##
-DEhelper.MAplot <- function(i=1,fdr=.05) {
+DEhelper.edgeR.MAplot <- function(i=1,fdr=.05) {
 	# get DE genes (p.adjust='BH', pval<.05)
 	de <- decideTestsDGE(lrt[[i]],p.value=fdr)
 	degenes <- rownames(y)[as.logical(de)]
@@ -110,10 +148,8 @@ DEhelper.MAplot <- function(i=1,fdr=.05) {
 	abline(v=0,col="blue")			# indicate >1 counts-per-million
 }
 
-##
 ## DEhelper.DEgenes: show the DE results
-##
-DEhelper.DEgenes <- function(i=1) {
+DEhelper.edgeR.DEgenes <- function(i=1) {
 	ord  <- order(-log(lrt[[i]]$table$FDR),
 				   abs(lrt[[i]]$table$logFC),
 				  decreasing=TRUE)
@@ -245,6 +281,7 @@ DEhelper.Fastqc <- function(web=TRUE) {
 	# set row and column names, and output the md table
 	df <- as.data.frame(t(df))
 	rownames(df) <- gsub(paste0("^",SHINYREPS_PREFIX),"",basename(samples))
+	rownames(df) <- gsub(paste0("_fastqc$"),"",rownames(df))
 	colnames(df) <- c("Duplication","Read qualities","Sequence bias")
 	kable(df,output=F,align="c")
 }
@@ -287,7 +324,7 @@ DEhelper.dupRadar <- function(web=TRUE) {
                        ncol=SHINYREPS_PLOTS_COLUMN,byrow=T)
 	colnames(df.names) <- rep(" ",SHINYREPS_PLOTS_COLUMN)
 	
-	kable(as.data.frame(df.names),align="c",output=F)
+	kable(as.data.frame(df.names),align="c",output=F, format="markdown")
 }
 
 ##
@@ -314,7 +351,7 @@ DEhelper.RNAtypes <- function(web=TRUE) {
 	df <- matrix(df,ncol=1,nrow=1)
 	colnames(df) <- c(" ")
 
-	kable(as.data.frame(df),output=F)
+	kable(as.data.frame(df),output=F, format="markdown")
 }
 
 ##
@@ -355,7 +392,28 @@ DEhelper.geneBodyCov <- function(web=TRUE) {
                        ncol=SHINYREPS_PLOTS_COLUMN,byrow=T)
 	colnames(df.names) <- rep(" ",SHINYREPS_PLOTS_COLUMN)
 	
-	kable(as.data.frame(df.names),align="c",output=F)
+	kable(as.data.frame(df.names),align="c",output=F, format="markdown")
+}
+
+##
+##DEhelper.strandspecifity: get the strandspecifity from the qc and display them
+##
+DEhelper.strandspecificity <- function(){
+
+    # logs folder
+    if(!file.exists(SHINYREPS_INFEREXPERIMENT_LOGS)) {
+        return("Strand specificity statistics not available")
+    }
+    
+	filelist <- list.files(path=SHINYREPS_INFEREXPERIMENT_LOGS,full.names=TRUE)
+	strandspecifity <- lapply(filelist, read.table, sep=":", skip=3, header=FALSE, row.names=1, blank.lines.skip=TRUE)
+	strandspecifity <- do.call(cbind, strandspecifity)
+	samplenames <- basename(filelist)
+	samplenames <- gsub(SHINYREPS_PREFIX, "", samplenames)
+	samplenames <- gsub("_inferexperiment.txt","", samplenames)
+	colnames(strandspecifity) <- samplenames 
+	rownames(strandspecifity) <- c("sense", "antisense", "other") 
+	kable(t(strandspecifity), output=F, align=c("l"))
 }
 
 ##
@@ -422,74 +480,84 @@ DEhelper.Subread <- function() {
 	colnames(x) <- gsub(paste0(SUFFIX,"$"),"",colnames(x))
 	
 	# create md table (omitting various values that are 0 for now)
-	df <- data.frame(assigned=format(x[1,],big.mark=","),
-					 unass_ambiguous=format(x[2,],big.mark=","),
-					 unass_multimap=format(x[3,],big.mark=","),
-					 unass_nofeat=format(x[4,],big.mark=","))
+	#from x we romeove the ones which are unmapped to calculate percentages
+	#only for the mapped ones
+	x <- x[rownames(x) != "Unassigned_Unmapped",]
+	x <- rbind(total=x, colSums(x))
+	rownames(x)[nrow(x)] <- "total"
+	df <- data.frame(assigned=paste0(format(x[1,],big.mark=",")," (", format((x[1,]/x["total",])*100, digits=2, nsmall=2), "%)"),
+					 unass_ambiguous=paste0(format(x[2,],big.mark=",")," (", format((x[2,]/x["total",])*100, digits=2, nsmall=2), "%)"),
+					 unass_multimap=paste0(format(x[3,],big.mark=",")," (", format((x[3,]/x["total",])*100, digits=2, nsmall=2), "%)"),
+					 unass_nofeat=paste0(format(x[4,],big.mark=",")," (", format((x[4,]/x["total",])*100, digits=2, nsmall=2), "%)"))
+	rownames(df) <- colnames(x)
 	kable(df,align=c("r","r","r","r"),output=F)
 	
 }
 
 ##
-## extract tool versions
+## extract the intron/exon and intergenic regions from the qualimap report
 ##
-
-Toolhelper.VersionFastQC <- function() {
-	
-	# fastqc --version
-	#
-	#FastQC v0.11.3
-	#
-	
-	LOG <- SHINYREPS_FASTQC_LOG
-	SUFFIX <- paste0(".log","$")
-	
-	# logs folder
-	if(!file.exists(LOG)) {
-		return("FastQC version not available")
+DEhelper.Qualimap <- function() {
+    
+    # logs folder
+    if(!file.exists(SHINYREPS_QUALIMAP_LOGS)) {
+        return("Read distribution statistics not available")
+    }  
+    
+	QC <- SHINYREPS_QUALIMAP_LOGS	
+	# construct the image url from the folder contents (skip current dir .)
+	samples <- list.files(QC,pattern="Reads.*.png", recursive=T, full.names=T)
+	if(length(samples) == 0) {
+		return("Qualimap report not available")
 	}
+	df <- sapply(samples,function(f) {
+		paste0("![alt text](",f,")")
+	})
 	
-	x <- lapply( list.files(LOG, pattern=SUFFIX, full.names=TRUE), function(f){
-		# read all lines
-		l <- readLines(f)
-		# need to check Version number in one line lower than "VERSION INFO"
-		# e.g. FastQC v0.11.3
-		l.tmp <- l[ grep("^VERSION INFO",l) + 1 ]
-		# extract version number
-		l.version <- unlist( strsplit(l.tmp, ' ') )[2]
-		
-		return(l.version)
-		
-		} )
+	samples <- list.files(QC,pattern="Reads.*.png", recursive=T, full.names=F)
+	# put sample names and output an md table of 4 columns
+	while(length(df) %% 2 != 0) df <- c(df,"")
+	samples <-gsub(paste0("^", SHINYREPS_PREFIX), "", gsub("/.*", "", dirname(samples)))
+	samples <- gsub("_counts_qualimap", "", samples)
+	while(length(samples) %% 2 != 0) samples <- c(samples,"")
+	df      <- matrix(df     ,ncol=2,byrow=T)
+	samples <- matrix(samples,ncol=2,byrow=T)
 	
-	# x is a list of always the same content
-	r <- tryCatch(
-		{
-			return(x[[1]][1])
-		},
-		warning = function(w) {
-			return("no version tag")
-		},
-		error = function(e) {
-			return("no version tag")
-		},
-		finally = {}
-	)
+	# add a row with the sample names
+	df.names <- matrix(sapply(1:nrow(df),function(i) { c(df[i,],samples[i,]) }),ncol=2,byrow=T)
+	colnames(df.names) <- c(" "," ")
 	
+	kable(as.data.frame(df.names),output=F, format="markdown")
 }
 
-Toolhelper.VersionSTAR <- function() {
-	
-	# STAR --version
-	# STAR_2.4.2a
 
+
+##
+## DEhelper.VolcanoPlot: Volcano plots from DEseq2 results
+##
+DEhelper.VolcanoPlot <- function(i=1) {
+    # get DE genes (p.adjust='BH', pval<.05)
+    data.table <- data.frame(logFC=res[[i]]$log2FoldChange,
+                             pvalue=res[[i]]$padj,
+                             meanExp=res[[i]]$baseMean) # extract the final count, pValue and FDR data
+    x.limit <- max( c(max(data.table$logFC, na.rm = T), abs(min(data.table$logFC, na.rm = T))) ) # find the maximum spread of the x-axis
+    
+    # plotting
+    p <- ggplot(data.table, aes(logFC, -1 * log10(pvalue), colour=meanExp )) + geom_point() + xlim(-1 * x.limit, x.limit) + ylab("-log10( adj. p-value )") + theme_bw() + scale_colour_gradient(name="mean expression") # volcano plot
+    print(p)
+}
+
+##
+## extract tool versions
+##
+Toolhelper.VersionReporter <- function(tool, logfolder) {
 	
-	LOG <- SHINYREPS_STAR_LOG
+	LOG <- logfolder
 	SUFFIX <- paste0(".log","$")
 	
 	# logs folder
 	if(!file.exists(LOG)) {
-		return("STAR version not available")
+		return(paste0(tool, " version not available"))
 	}
 	
 	x <- lapply( list.files(LOG, pattern=SUFFIX, full.names=TRUE), function(f){
@@ -498,7 +566,7 @@ Toolhelper.VersionSTAR <- function() {
 		# need to check Version number in one line lower than "VERSION INFO"
 		# e.g. FastQC v0.11.3
 		l.version <- l[ grep("^VERSION INFO",l) + 1 ]
-				
+		
 		return(l.version)
 		
 		} )
@@ -506,7 +574,11 @@ Toolhelper.VersionSTAR <- function() {
 	# x is a list of always the same content
 	r <- tryCatch(
 		{
-			return(x[[1]][1])
+			if (is.null(x[[1]][1])) {
+				return("no version tag")
+			} else {
+				return(x[[1]][1])
+			}
 		},
 		warning = function(w) {
 			return("no version tag")
@@ -518,289 +590,3 @@ Toolhelper.VersionSTAR <- function() {
 	)
 	
 }
-
-
-Toolhelper.VersionSamtools <- function() {
-	
-	# samtools --version
-	# samtools 1.2
-	# Using htslib 1.2.1
-	# Copyright (C) 2015 Genome Research Ltd.
-
-	
-	LOG <- SHINYREPS_BAMINDEX_LOG
-	SUFFIX <- paste0(".log","$")
-	
-	# logs folder
-	if(!file.exists(LOG)) {
-		return("FastQC version not available")
-	}
-	
-	x <- lapply( list.files(LOG, pattern=SUFFIX, full.names=TRUE), function(f){
-		# read all lines
-		l <- readLines(f)
-		# need to check Version number in one line lower than "VERSION INFO"
-		# e.g. FastQC v0.11.3
-		l.tmp <- l[ grep("^VERSION INFO",l) + 1 ]
-		# extract version number
-		l.version <- unlist( strsplit(l.tmp, ' ') )[2]
-		
-		return(l.version)
-		
-		} )
-	
-	# x is a list of always the same content
-	r <- tryCatch(
-		{
-			return(x[[1]][1])
-		},
-		warning = function(w) {
-			return("no version tag")
-		},
-		error = function(e) {
-			return("no version tag")
-		},
-		finally = {}
-	)
-	
-}
-
-Toolhelper.VersionSubread <- function() {
-	
-	# featureCounts
-	#
-	#Version 1.4.6-p4
-	
-	
-	LOG <- SHINYREPS_SUBREAD_LOG
-	SUFFIX <- paste0(".log","$")
-	
-	# logs folder
-	if(!file.exists(LOG)) {
-		return("Subread version not available")
-	}
-	
-	x <- lapply( list.files(LOG, pattern=SUFFIX, full.names=TRUE), function(f){
-		# read all lines
-		l <- readLines(f)
-		# need to check Version number in one line lower than "VERSION INFO"
-		# e.g. FastQC v0.11.3
-		l.tmp <- l[ grep("^VERSION INFO",l) + 2 ]
-		# extract version number
-		l.version <- unlist( strsplit(l.tmp, ' ') )[2]
-		
-		return(l.version)
-		
-		} )
-	
-	# x is a list of always the same content
-	r <- tryCatch(
-		{
-			return(x[[1]][1])
-		},
-		warning = function(w) {
-			return("no version tag")
-		},
-		error = function(e) {
-			return("no version tag")
-		},
-		finally = {}
-	)
-	
-}
-
-
-Toolhelper.VersionPicard <- function() {
-	
-	# genomeCoverageBed
-	#
-	#Tool:    bedtools genomecov (aka genomeCoverageBed)
-	#Version: v2.25.0
-	#Summary: Compute the coverage of a feature file among a genome.
-	
-	LOG <- SHINYREPS_BAM2BW_LOG
-	SUFFIX <- paste0(".log","$")
-	
-	# logs folder
-	if(!file.exists(LOG)) {
-		return("Picard version not available")
-	}
-	
-	x <- lapply( list.files(LOG, pattern=SUFFIX, full.names=TRUE), function(f){
-		# read all lines
-		l <- readLines(f)
-		# need to check Version number in one line lower than "VERSION INFO"
-		# e.g. FastQC v0.11.3
-		l.tmp <- l[ grep("^Version: ",l) ]
-		# extract version number
-		l.version <- unlist( strsplit(l.tmp, ' ') )[2]
-		
-		return(l.version)
-		
-		} )
-	
-	# x is a list of always the same content
-	r <- tryCatch(
-		{
-			return(x[[1]][1])
-		},
-		warning = function(w) {
-			return("no version tag")
-		},
-		error = function(e) {
-			return("no version tag")
-		},
-		finally = {}
-	)
-	
-}
-
-Toolhelper.VersionGeneBodyCoverage <- function() {
-	
-	# python geneBody_coverage.py --version
-	#geneBody_coverage.py 2.4
-	#
-	
-	LOG <- SHINYREPS_GENEBODYCOVERAGE_LOGS
-	SUFFIX <- paste0(".log","$")
-	
-	# logs folder
-	if(!file.exists(LOG)) {
-		return("GeneBodyCoverage version not available")
-	}
-	
-	x <- lapply( list.files(LOG, pattern=SUFFIX, full.names=TRUE), function(f){
-		# read all lines
-		l <- readLines(f)
-		# need to check Version number in one line lower than "VERSION INFO"
-		# e.g. FastQC v0.11.3
-		l.tmp <- l[ grep("^VERSION INFO",l) + 1 ]
-		# extract version number
-		l.version <- unlist( strsplit(l.tmp, ' ') )[2]
-		
-		return(l.version)
-		
-		} )
-	
-	# x is a list of always the same content
-	r <- tryCatch(
-		{
-			return(x[[1]][1])
-		},
-		warning = function(w) {
-			return("no version tag")
-		},
-		error = function(e) {
-			return("no version tag")
-		},
-		finally = {}
-	)
-	
-}
-
-Toolhelper.VersionEdgeR <- function() {
-	
-	# Rscript --version
-	# R scripting front-end version 3.2.2 (2015-08-14)
-	#
-	
-	LOG <- SHINYREPS_EDGER_LOGS
-	SUFFIX <- paste0(".log","$")
-	
-	# logs folder
-	if(!file.exists(LOG)) {
-		return("R and EdgeR version not available")
-	}
-	
-	x <- lapply( list.files(LOG, pattern=SUFFIX, full.names=TRUE), function(f){
-		# read all lines
-		l <- readLines(f)
-		# need to check Version number in one line lower than "VERSION INFO"
-		# e.g. FastQC v0.11.3
-		l.tmp <- l[ grep("^R scripting front-end version" ,l) ]
-		# extract version number
-		l.version <- unlist( strsplit(l.tmp, ' ') )[5]
-		
-		return(l.version)
-		
-		} )
-	
-	# x is a list of always the same content
-	r <- tryCatch(
-		{
-			return(x[[1]][1])
-		},
-		warning = function(w) {
-			return("no version tag")
-		},
-		error = function(e) {
-			return("no version tag")
-		},
-		finally = {}
-	)
-	
-}
-
-Toolhelper.VersionDEseq <- function() {
-	
-	# Rscript --version
-	# R scripting front-end version 3.2.2 (2015-08-14)
-	#
-	
-	LOG <- SHINYREPS_DESEQ_LOGS
-	SUFFIX <- paste0(".log","$")
-	
-	# logs folder
-	if(!file.exists(LOG)) {
-		return("R and DEseq2 version not available")
-	}
-	
-	x <- lapply( list.files(LOG, pattern=SUFFIX, full.names=TRUE), function(f){
-		# read all lines
-		l <- readLines(f)
-		# need to check Version number in one line lower than "VERSION INFO"
-		# e.g. FastQC v0.11.3
-		l.tmp <- l[ grep("^R scripting front-end version" ,l) ]
-		# extract version number
-		l.version <- unlist( strsplit(l.tmp, ' ') )[5]
-		
-		return(l.version)
-		
-		} )
-	
-	# x is a list of always the same content
-	r <- tryCatch(
-		{
-			return(x[[1]][1])
-		},
-		warning = function(w) {
-			return("no version tag")
-		},
-		error = function(e) {
-			return("no version tag")
-		},
-		finally = {}
-	)
-	
-}
-
-
-
-#DEhelper.ToolVersions <- function() {
-#  tools <- c("FastQC", "STAR", "HTseq", "Subread", "DupRadar", "Samtools", "BedTools", "Picard", "R")
-#  variables <- list(SHINYREPS_TOOL_FASTQC, SHINYREPS_TOOL_STAR, SHINYREPS_TOOL_HTSEQ, SHINYREPS_TOOL_SUBREAD, SHINYREPS_TOOL_DUPRADAR, SHINYREPS_TOOL_SAMTOOLS, SHINYREPS_TOOL_BEDTOOLS, SHINYREPS_TOOL_PICARD, SHINYREPS_TOOL_R)
-#  # get the last element in path, which is the tool's version (for the tools listed)
-#  versions <- sapply(variables, function(x) {
-#    y <- strsplit(x, '/')[[1]]
-#    tail(y, n=1)
-#  })
-#  
-#  # correct the samtools version (second, but last element)
-#  tmp_x <- strsplit(SHINYREPS_TOOL_SAMTOOLS, '/')[[1]]
-#  versions[6] <- head(tail(tmp_x, n=2), n=1) 
-#  
-#  df <- data.frame(tool_name=tools, tool_version=versions)
-#  
-#  kable(df,align=c("l","l"),output=F)
-#  
-#}

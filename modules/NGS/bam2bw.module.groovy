@@ -4,6 +4,7 @@ bam2bw = {
 	doc title: "bam2bw",
 		desc:  "Convert BAM file to bigWig",
 		constraints: "none.",
+		bpipe_version: "tested with bpipe 0.9.8.7",
 		author: "Sergi Sayols"
 
 	output.dir=TRACKS
@@ -19,10 +20,6 @@ bam2bw = {
 			if [ ! -d ${TMP} ]; then
 				mkdir -p ${TMP};
 			fi &&
-			
-			echo 'VERSION INFO'  1>&2 ;
-			genomeCoverageBed    1>&2 ;
-			echo '/VERSION INFO' 1>&2 ;
 			
 			CHRSIZES=${TMP}/\$(basename ${input.prefix}).bam2bw.chrsizes &&
 			${TOOL_SAMTOOLS} idxstats ${input} | cut -f1-2 > \${CHRSIZES} &&

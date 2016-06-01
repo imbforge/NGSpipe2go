@@ -3,21 +3,22 @@ title: "SHINYREPS_PROJECT"
 output:
   html_document:
     toc: yes
+    css: styles.css
 ---
+
+<div class="contentbox">
 
 ```{r LoadingGloabalVariables, echo=F,result='hide',error=F,warning=F,message=F}
 source('variant.shinyrep.helpers.R')
 loadGlobalVars()
-# load(SHINYREPS_DE_EDGER,envir=.GlobalEnv)		# the outcome from the DE analysis
-# VARhelper.init("prepareDEdataTable")
-# VARhelper.init("renderUcscGeneLinks")
-# VARhelper.init("prepareDistanceMatrix")
 ``` 
 
 ## Quality Control RNAseq ##
 
 ### Sequencing quality ###
-The sequencing quality of the run was good, and the read distribution over the libraries was good.
+The sequencing quality is determined by read quality, sequence bias and duplication rates.
+Bias and duplication rates ideally should be low and read qualities should be continuously
+high all over the read length. A slight drop towards the end of the read is unavoidable.
 
 ### Raw reads qualities, sequence bias and duplication
 ```{r FastQC_paragraph, echo=F,results='asis',error=F,warning=F,message=F}
@@ -71,20 +72,26 @@ cat(VARhelper.GATKvarianteval(),sep="\n")
 ## Used tools and versions for this analysis
 
 ```{r ToolVersions_paragraph, echo=F,results='asis',error=F,warning=F,message=F}
+
+# this section requires an init() that loads the location to the *_LOG variables 
+
 table.content <- data.frame(  tool=c(
 									  "FastQC",
 									  "BWA",
+									  "Picard",
 									  "GATK UnifiedGenotyper",
 									  "GATK HaplotypeCaller"
 									  ),
 							  version=c(
-									  Toolhelper.VersionFastQC(),
-									  Toolhelper.VersionBWA(),
-									  Toolhelper.VersionGATKug(),
-									  Toolhelper.VersionGATKhc()
+									  Toolhelper.VersionReporter("FastQC", SHINYREPS_FASTQC_LOG),
+									  Toolhelper.VersionReporter("BWA",    SHINYREPS_BWA_LOG),
+									  Toolhelper.VersionReporter("Picard", SHINYREPS_MARKDUPS_LOG),
+									  Toolhelper.VersionReporter("GATK UnifiedGenotyper", SHINYREPS_GATKug_LOG),
+									  Toolhelper.VersionReporter("GATK HaplotypeCaller",  SHINYREPS_GATKhc_LOG)
 									  )
 						   )
 kable(table.content)
 
 ```
 
+</div>

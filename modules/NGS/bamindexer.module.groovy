@@ -4,6 +4,7 @@ BAMindexer = {
 	doc title: "BAMindexer",
 		desc:  "Call samtools to index a bam file",
 		constraints: "Define a global SAMTOOLS var pointing to the bin file",
+		bpipe_version: "tested with bpipe 0.9.8.7",
 		author: "Sergi Sayols"
 
 	output.dir = MAPPED
@@ -16,7 +17,7 @@ BAMindexer = {
 			fi &&
 			
 			echo 'VERSION INFO'  1>&2 &&
-			${TOOL_SAMTOOLS} --version 1>&2 &&
+			echo \$(${TOOL_SAMTOOLS} --version | grep samtools | cut -d' ' -f2) 1>&2 &&
 			echo '/VERSION INFO' 1>&2 &&
 			
 			${TOOL_SAMTOOLS} index $input
