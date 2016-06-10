@@ -67,7 +67,7 @@ Note that uniquely mapped reads are defined by their mapping score `255`.
 
 ### piRNA analysis
 #### Nucleotide signature
-Determines the nucleotide bias of small RNA reads. It is expected that libraries enriched in piRNAs will have be enriched in U(ridine) at position 5 (Ziwi bound) and/or A(denine) at position 10 (Zili bound).
+Determines the nucleotide bias of small RNA reads. It is expected that libraries enriched in piRNAs will have be enriched in U(ridine) at position 1 (Ziwi bound) and/or A(denine) at position 10 (Zili bound).
 
 The nucleotide bias/signature of piRNAs is determined using the custom script `NGSpipe2go/tools/piRNA/piRNABaseTerminalBases.py`. Sense and antisense is determined using a features bed file.
 
@@ -130,7 +130,7 @@ Plots summarizing:
 
 
 ### Other outputs
-For convenience (visualization and further custom analysis) there there several bigwigs and alignment files (bam) generated, including bigwig files for all alignments and unique (`results/mapped/tracks/`), also separated by strand.
+For convenience (visualization and further custom analysis) there are several bigwigs and alignment files (bam) generated, including bigwig files for all alignments and unique (`results/mapped/tracks/`), also separated by strand.
 
 
 ### Summary of the pipeline
