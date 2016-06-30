@@ -51,7 +51,7 @@ ChIPhelper.init <- function(task) {
 
 		# and return the tables
 		peaks <- lapply(paste0(SHINYREPS_MACS2,"/",targets$IPname,".vs.",targets$INPUTname,"_macs2_peaks.xls"),function(x) {
-			x <- read.delim(x,comment.char="#")
+			x <- tryCatch(read.delim(x,comment.char="#"), error=function(e) as.data.frame(matrix(ncol=10)))
 			colnames(x) <- c("chr","start","end","length","summit","tags","-log10 pval","fold enrichment","-log10 FDR","name")
 			x[order(x$chr,x$start,x$end),c(-7,-10)]
 		})
