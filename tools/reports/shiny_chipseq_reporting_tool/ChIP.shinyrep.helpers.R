@@ -213,7 +213,7 @@ ChIPhelper.IPstrength<- function(web=TRUE) {
 	QC <- if(web) "/ipstrength" else SHINYREPS_IPSTRENGTH
 	
 	# construct the image url from the folder contents (skip current dir .)
-	samples <- list.files(SHINYREPS_IPSTRENGTH,pattern="*.png")
+	samples <- list.files(SHINYREPS_IPSTRENGTH,pattern=".png$")
     COLUMNS <- min(length(samples), SHINYREPS_PLOTS_COLUMN)
 	df <- sapply(samples,function(f) {
 		paste0("![IPstrength img](",QC,"/",basename(f),")")
@@ -223,7 +223,7 @@ ChIPhelper.IPstrength<- function(web=TRUE) {
 	while(length(df) %% COLUMNS != 0) df <- c(df,"")
 	samples <- sapply(df,function(x) {
 		x <- sapply(x,function(x) gsub(paste0("^",SHINYREPS_PREFIX),"",basename(x)))
-		gsub("_ipstrength.png)","",x)
+		gsub("_ipstrength.png$)","",x)
 	})
 	df      <- matrix(df     ,ncol=COLUMNS,byrow=T)
 	samples <- matrix(samples,ncol=COLUMNS,byrow=T)
@@ -255,7 +255,7 @@ ChIPhelper.PhantomPeak <- function(web=TRUE) {
 	QC <- if(web) "/phantompeak" else SHINYREPS_PHANTOMPEAK
 	
 	# construct the image url from the folder contents (skip current dir .)
-	samples <- list.files(SHINYREPS_PHANTOMPEAK,pattern="*.png")
+	samples <- list.files(SHINYREPS_PHANTOMPEAK,pattern=".png$")
     COLUMNS <- min(length(samples), SHINYREPS_PLOTS_COLUMN)
 	df <- sapply(samples,function(f) {
 		paste0("![PhantomPeak img](",QC,"/",basename(f),")")
@@ -265,7 +265,7 @@ ChIPhelper.PhantomPeak <- function(web=TRUE) {
 	while(length(df) %% COLUMNS != 0) df <- c(df,"")
 	samples <- sapply(df,function(x) {
 		x <- sapply(x,function(x) gsub(paste0("^",SHINYREPS_PREFIX),"",basename(x)))
-		gsub("_phantompeak.png)","",x)
+		gsub("_phantompeak.png$)","",x)
 	})
 	df      <- matrix(df     ,ncol=COLUMNS,byrow=T)
 	samples <- matrix(samples,ncol=COLUMNS,byrow=T)
