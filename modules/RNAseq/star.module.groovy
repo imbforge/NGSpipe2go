@@ -1,8 +1,8 @@
 //rule for task STAR_se from catalog RNAseq, version 1
 //desc: Align single end reads
 STAR_se = {
-	doc title: "STAR SE alignment",
-		desc:  "Align single end reads",
+	doc title: "STAR alignment",
+		desc:  "Align single/paired end reads",
 		constraints: "Only works with compressed input. Set all global vars.",
 		bpipe_version: "tested with bpipe 0.9.8.7",
 		author: "Sergi Sayols"
@@ -20,6 +20,7 @@ STAR_se = {
 		F_LOG.mkdirs()
 	}
 	
+    // add paired end support
 	def OUTPUTFILE = input1
 	int path_index = OUTPUTFILE.lastIndexOf("/")
 	OUTPUTFILE = OUTPUTFILE.substring(path_index+1)
@@ -33,7 +34,6 @@ STAR_se = {
 
 	// code chunk
 	produce(OUTPUTFILE + ".bam", OUTPUTFILE + "Log.final.out") {
-//	transform("_R1.fastq.gz") to(".bam", "Log.final.out") {
 		// flags
 		def SAMPLE = new File(input.prefix.prefix)
 		def STAR_FLAGS = "--runMode alignReads "        +
@@ -81,7 +81,7 @@ STAR_se = {
 			if [ -n "\$LSB_JOBID" ]; then
 				export TMPDIR=/jobdir/\${LSB_JOBID};
 			else 
-				export TMPDIR=/tmp;
+				export TMPDIR=$TMP;
 			fi                                          &&
 			
 			if [ -e $TMP/$SAMPLE.name ];
@@ -96,7 +96,7 @@ STAR_se = {
 			
 			STAROUTPUTFILE=\$(basename $output1.prefix) &&
 			
-			STAR $STAR_FLAGS --readFilesIn $inputs | ${TOOL_SAMTOOLS} view $SAMTOOLS_FLAGS - | ${TOOL_SAMTOOLS} sort -n $STAR_SAMTOOLS_THREADS - > \${TMPDIR}/\${STAROUTPUTFILE}_beforeMMR.bam &&
+			STAR $STAR_FLAGS --readFilesIn $inputs | ${TOOL_SAMTOOLS} view $SAMTOOLS_FLAGS - | ${TOOL_SAMTOOLS} sort -n -T \${TMPDIR}/\${STAROUTPUTFILE}_sort $STAR_SAMTOOLS_THREADS - > \${TMPDIR}/\${STAROUTPUTFILE}_beforeMMR.bam &&
 			echo "STAR done." &&
 			
 			mv ${LOGS}/STAR_se/${SAMPLE.name}SJ.out.tab $output.dir &&
@@ -105,7 +105,7 @@ STAR_se = {
 			mmr $MMR_FLAGS -o \${TMPDIR}/\${STAROUTPUTFILE}_afterMMR.bam \${TMPDIR}/\${STAROUTPUTFILE}_beforeMMR.bam && 
 			echo "MMR done." &&
 			
-			${TOOL_SAMTOOLS} sort \${TMPDIR}/\${STAROUTPUTFILE}_afterMMR.bam > $output1
+			${TOOL_SAMTOOLS} sort -T \${TMPDIR}/\${STAROUTPUTFILE}_sort2 $STAR_SAMTOOLS_THREADS \${TMPDIR}/\${STAROUTPUTFILE}_afterMMR.bam > $output1
 		""","STAR_se"
 	}
 }

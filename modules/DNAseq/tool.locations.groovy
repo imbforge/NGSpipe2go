@@ -2,7 +2,7 @@
 TOOL_DEPENDENCIES="/opt/" // your local tools folder
 PROJECT_DEPENDENCIES= ESSENTIAL_PROJECT + "/NGSpipe2go/tools/" // please copy the NGSpipe2Go tools to the project folder and include the location here
 
-TOOL_SAMTOOLS=TOOL_DEPENDENCIES + "/samtools/1.2/samtools"
+TOOL_SAMTOOLS=TOOL_DEPENDENCIES + "/samtools/1.3/samtools"
 TOOL_FASTQC=TOOL_DEPENDENCIES + "/fastqc/0.11.3"
 TOOL_BWA=TOOL_DEPENDENCIES + "/bwa/0.7.12"
 TOOL_PICARD=TOOL_DEPENDENCIES + "/picard/1.92"
