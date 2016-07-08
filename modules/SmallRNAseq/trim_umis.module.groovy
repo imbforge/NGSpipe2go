@@ -9,7 +9,7 @@ TrimUMIs = {
    def SEQTK_FLAGS = " -l " + LEFT_TRIM +
                        " -b " + RIGHT_TRIM
 
-	transform(".deduped_barcoded.fastq.gz") to (".deduped_barcoded.trimmed.fastq") {
+	transform(".deduped_barcoded.fastq.gz") to (".deduped_barcoded.trimmed.fastq.gz") {
 
 
       exec """
@@ -23,7 +23,7 @@ TrimUMIs = {
          echo \$(${TOOL_SEQTK} 2>&1 | grep 'Version') 1>&2 &&
          echo '/VERSION INFO' 1>&2 &&
 
-         ${TOOL_SEQTK} trimfq -b ${LEFT_TRIM} -e ${RIGHT_TRIM} $input | ${TOOL_SEQTK} seq -L 15 - > $output
+         ${TOOL_SEQTK} trimfq -b ${LEFT_TRIM} -e ${RIGHT_TRIM} $input | ${TOOL_SEQTK} seq -L 15 - | gzip > $output
 
 		""","TrimUMIs"
 	}
