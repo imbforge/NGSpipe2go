@@ -305,7 +305,7 @@ DEhelper.dupRadar <- function(web=TRUE) {
 	QC <- if(web) "/dupRadar" else SHINYREPS_DUPRADAR_LOG
 	
 	# construct the image url from the folder contents (skip current dir .)
-	samples <- list.files(SHINYREPS_DUPRADAR_LOG,pattern="*.png")
+	samples <- list.files(SHINYREPS_DUPRADAR_LOG,pattern=".png$")
 	df <- sapply(samples,function(f) {
 		paste0("![dupRadar img](",QC,"/",basename(f),")")
 	})
@@ -314,7 +314,7 @@ DEhelper.dupRadar <- function(web=TRUE) {
 	while(length(df) %% SHINYREPS_PLOTS_COLUMN != 0) df <- c(df,"")
 	samples <- sapply(df,function(x) {
 		x <- sapply(x,function(x) gsub(paste0("^",SHINYREPS_PREFIX),"",basename(x)))
-		gsub("_dupRadar.png)","",x)
+		gsub("_dupRadar.png$)","",x)
 	})
 	df      <- matrix(df     ,ncol=SHINYREPS_PLOTS_COLUMN,byrow=T)
 	samples <- matrix(samples,ncol=SHINYREPS_PLOTS_COLUMN,byrow=T)
@@ -342,7 +342,7 @@ DEhelper.RNAtypes <- function(web=TRUE) {
 	QC <- if(web) "/RNAtypes" else SHINYREPS_RNATYPES_LOG
 	
 	# construct the image url from the folder contents (skip current dir .)
-	f <- list.files(SHINYREPS_RNATYPES_LOG,pattern="RNAtypes.counts.per.png")
+	f <- list.files(SHINYREPS_RNATYPES_LOG,pattern="RNAtypes.counts.per.png$")
 	df <- sapply(f,function(f) {
 		paste0("![RNAtypes img](",QC,"/",basename(f),")")
 	})
@@ -373,7 +373,7 @@ DEhelper.geneBodyCov <- function(web=TRUE) {
 	QC <- if(web) "/geneBodyCov" else SHINYREPS_GENEBODYCOV_LOG
 	
 	# construct the image url from the folder contents (skip current dir .)
-	samples <- list.files(SHINYREPS_GENEBODYCOV_LOG,pattern="*.png")
+	samples <- list.files(SHINYREPS_GENEBODYCOV_LOG,pattern=".png$")
 	df <- sapply(samples,function(f) {
 		paste0("![geneBodyCov img](",QC,"/",basename(f),")")
 	})
@@ -382,7 +382,7 @@ DEhelper.geneBodyCov <- function(web=TRUE) {
 	while(length(df) %% SHINYREPS_PLOTS_COLUMN != 0) df <- c(df,"")
 	samples <- sapply(df,function(x) {
 		x <- sapply(x,function(x) gsub(paste0("^",SHINYREPS_PREFIX),"",basename(x)))
-		gsub(".geneBodyCoverage.curves.png)","",x)
+		gsub(".geneBodyCoverage.curves.png$)","",x)
 	})
 	df      <- matrix(df     ,ncol=SHINYREPS_PLOTS_COLUMN,byrow=T)
 	samples <- matrix(samples,ncol=SHINYREPS_PLOTS_COLUMN,byrow=T)
@@ -506,7 +506,7 @@ DEhelper.Qualimap <- function() {
     
 	QC <- SHINYREPS_QUALIMAP_LOGS	
 	# construct the image url from the folder contents (skip current dir .)
-	samples <- list.files(QC,pattern="Reads.*.png", recursive=T, full.names=T)
+	samples <- list.files(QC,pattern="Reads.*.png$", recursive=T, full.names=T)
 	if(length(samples) == 0) {
 		return("Qualimap report not available")
 	}
@@ -514,7 +514,7 @@ DEhelper.Qualimap <- function() {
 		paste0("![alt text](",f,")")
 	})
 	
-	samples <- list.files(QC,pattern="Reads.*.png", recursive=T, full.names=F)
+	samples <- list.files(QC,pattern="Reads.*.png$", recursive=T, full.names=F)
 	# put sample names and output an md table of 4 columns
 	while(length(df) %% 2 != 0) df <- c(df,"")
 	samples <-gsub(paste0("^", SHINYREPS_PREFIX), "", gsub("/.*", "", dirname(samples)))
