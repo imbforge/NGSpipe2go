@@ -6,7 +6,7 @@ Cutadapt = {
 
 	output.dir = CUTADAPT_OUTDIR
 
-	transform(".fastq.gz") to (".cutadapt28to51nt.fastq.gz") {
+	transform(".fastq.gz") to (".cutadapt.fastq.gz") {
       exec """
          if [ -n "\$LSB_JOBID" ]; then
 				export TMPDIR=/jobdir/\${LSB_JOBID};
