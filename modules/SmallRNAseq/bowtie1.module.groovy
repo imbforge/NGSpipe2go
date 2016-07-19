@@ -28,7 +28,7 @@ Bowtie_se = {
          fi                                          &&
 
          echo 'VERSION INFO'  1>&2 &&
-         echo \$(bowtie --version) 1>&2 &&
+         ${TOOL_BOWTIE} --version 1>&2 &&
          echo '/VERSION INFO' 1>&2 &&
 
          zcat $input | ${TOOL_BOWTIE}/bowtie $BOWTIE_FLAGS $BOWTIE_REF - 2> ${SAMPLE_NAME}.bt.log | ${TOOL_SAMTOOLS} view -bhSu - | ${TOOL_SAMTOOLS} sort -@ $BOWTIE_THREADS - -o $output
