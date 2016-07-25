@@ -21,7 +21,8 @@ FastqScreen = {
 			if [ ! -e "$output.prefix" ]; then
                 mkdir $output.prefix;
             fi &&
-			references=(\${$FASTQSCREEN_CONF//,/ });
+	    		fastqreference=$FASTQSCREEN_CONF;
+			references=(\${fastqreference//,/ });
 			for i in "\${!references[@]}";
 			do
 				reference=(\${references[i]//::/ });
