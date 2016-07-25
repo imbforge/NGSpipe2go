@@ -314,7 +314,7 @@ DEhelper.dupRadar <- function(web=TRUE) {
 	while(length(df) %% SHINYREPS_PLOTS_COLUMN != 0) df <- c(df,"")
 	samples <- sapply(df,function(x) {
 		x <- sapply(x,function(x) gsub(paste0("^",SHINYREPS_PREFIX),"",basename(x)))
-		gsub("_dupRadar.png$)","",x)
+		gsub("_dupRadar.png)","",x)
 	})
 	df      <- matrix(df     ,ncol=SHINYREPS_PLOTS_COLUMN,byrow=T)
 	samples <- matrix(samples,ncol=SHINYREPS_PLOTS_COLUMN,byrow=T)
@@ -382,7 +382,7 @@ DEhelper.geneBodyCov <- function(web=TRUE) {
 	while(length(df) %% SHINYREPS_PLOTS_COLUMN != 0) df <- c(df,"")
 	samples <- sapply(df,function(x) {
 		x <- sapply(x,function(x) gsub(paste0("^",SHINYREPS_PREFIX),"",basename(x)))
-		gsub(".geneBodyCoverage.curves.png$)","",x)
+		gsub(".geneBodyCoverage.curves.png)","",x)
 	})
 	df      <- matrix(df     ,ncol=SHINYREPS_PLOTS_COLUMN,byrow=T)
 	samples <- matrix(samples,ncol=SHINYREPS_PLOTS_COLUMN,byrow=T)
