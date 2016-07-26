@@ -17,7 +17,7 @@ load(SHINYREPS_DE_DESEQ,envir=.GlobalEnv)		# the outcome from the DE analysis
 ## Quality Control RNAseq ##
 
 ### Sequence run quality
-The sequencing quality of the run was good, and the read distribution over the libraries was good. See the SAV quality tables:
+SAV quality tables:
 
 ```{r Bustard_paragraph, echo=F,results='asis',error=F,warning=F,message=F}
 # I used to include a already rendered MD file with the bustard statistics, but
@@ -145,7 +145,7 @@ for(i in 1:nrow(conts)) {
 	genes$baseMean       <- round(genes$baseMean, 2)
 	genes$log2FoldChange <- round(genes$log2FoldChange, 2)
 	genes$padj           <- format(genes$padj,scientific=TRUE)
-    cols <- c("baseMean", "log2FoldChange", "padj")
+        cols <- c("gene_name", "baseMean", "log2FoldChange", "padj")
 	cat(kable(genes[1:25,cols],row.names=T,align="r"),sep="\n")	# show only the top 25 genes
 	cat("",fill=T)
 }
