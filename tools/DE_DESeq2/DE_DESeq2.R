@@ -121,7 +121,7 @@ res <- lapply(conts[,1],function(cont) {
     } else { 
         assay(rlog(dds))
     }
-    if(!is.na(base) & any(base %in% targets$group)){
+    if(!is.na(base) & any(base %in% this_targets$group)){
 	    colData(dds)[["group"]] <- relevel(colData(dds)[["group"]], base)
     }
 
