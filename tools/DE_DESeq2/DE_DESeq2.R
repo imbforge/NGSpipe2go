@@ -64,6 +64,7 @@ if(!file.exists(fcontrasts)) stop(paste("File",fcontrasts,"does NOT exist. Run w
 if(!file.exists(cwd))        stop(paste("Dir",cwd,"does NOT exist. Run with:\n",runstr))
 if(is.na(filter.genes))      stop(paste("Filter (filter invariant genes) has to be either TRUE or FALSE. Run with:\n",runstr))
 
+
 # calculate gene lengths
 if(file.exists(gene.model)) {
     library(GenomicRanges)
@@ -71,7 +72,10 @@ if(file.exists(gene.model)) {
     gtf <- import.gff(gene.model, format="gtf", feature.type="exon")
     gtf.flat <- unlist(reduce(split(gtf, elementMetadata(gtf)$gene_id)))
     gene.lengths <- tapply(width(gtf.flat), names(gtf.flat), sum)
+    #make sure we have a gene_name column (needed as output in the report later)
+    if (("gene_name" %in% colnames(mcols(gtf))) == FALSE) { gtf$gene_name <- rep("NA",length(gtf$gene_id)) }
 }
+
 
 ##
 ## create the design and contrasts matrix
@@ -125,9 +129,17 @@ res <- lapply(conts[,1],function(cont) {
 	# DEseq2 stats
 	res <- results(dds, independentFiltering=filter.genes, format="DataFrame")
 
-	# write the results
-	x <- merge(res[, c("baseMean", "log2FoldChange", "padj")], quantification, by=0)
-	#order after adjusted p values
+        #add gene_name column
+        if(file.exists(gene.model)) {
+           res$gene_name <- gtf$gene_name[match(rownames(res),gtf$gene_id)]
+        } else { 
+           res$gene_name <- rep("NA",length(res$padj))
+        }
+	
+        # write the results
+	x <- merge(res[, c("gene_name", "baseMean", "log2FoldChange", "padj")], quantification, by=0)
+	
+        #order after adjusted p values
 	x <- x[order(x$padj),]
 	#adjusting the name for the log2Foldchange and the padj to the description given
 	#by deseq
@@ -135,6 +147,8 @@ res <- lapply(conts[,1],function(cont) {
 	colnames(x)[which(colnames(x) %in%c("baseMean", "log2FoldChange", "padj"))]<-mcols(res)$description[match(c("baseMean", "log2FoldChange", "padj"), colnames(res))]
 	#our rownames should be the gene id and not rownames
 	colnames(x)[1] <- "gene_id"
+        #second column holds the gene_name
+        colnames(x)[2] <- "gene_name"
 	write.csv(x,file=paste0(out,"/",cont.name,".csv"),row.names=F)
 	res
 })
