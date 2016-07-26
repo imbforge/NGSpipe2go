@@ -58,10 +58,11 @@ DEhelper.DESeq2.corr <- function() {
 
 ## DEhelper.MAplot: MA plots
 DEhelper.DESeq2.MAplot <- function(i=1,fdr=.05) {
-    x <- mapply(function(res, cont) {
-        plotMA(res, main=cont)
-        invisible(0)
-    }, res, conts[, 1], SIMPLIFY=FALSE)
+     plotMA(res[[i]],main=conts[i,1])    
+#    x <- mapply(function(res, cont) {
+#        plotMA(res, main=cont)
+#        invisible(0)
+#    }, res, conts[, 1], SIMPLIFY=FALSE)
 }
 
 ## DEhelper.DEgenes: show the DE results
@@ -314,7 +315,7 @@ DEhelper.dupRadar <- function(web=TRUE) {
 	while(length(df) %% SHINYREPS_PLOTS_COLUMN != 0) df <- c(df,"")
 	samples <- sapply(df,function(x) {
 		x <- sapply(x,function(x) gsub(paste0("^",SHINYREPS_PREFIX),"",basename(x)))
-		gsub("_dupRadar.png$)","",x)
+		gsub("_dupRadar.png)","",x)
 	})
 	df      <- matrix(df     ,ncol=SHINYREPS_PLOTS_COLUMN,byrow=T)
 	samples <- matrix(samples,ncol=SHINYREPS_PLOTS_COLUMN,byrow=T)
@@ -382,7 +383,7 @@ DEhelper.geneBodyCov <- function(web=TRUE) {
 	while(length(df) %% SHINYREPS_PLOTS_COLUMN != 0) df <- c(df,"")
 	samples <- sapply(df,function(x) {
 		x <- sapply(x,function(x) gsub(paste0("^",SHINYREPS_PREFIX),"",basename(x)))
-		gsub(".geneBodyCoverage.curves.png$)","",x)
+		gsub(".geneBodyCoverage.curves.png)","",x)
 	})
 	df      <- matrix(df     ,ncol=SHINYREPS_PLOTS_COLUMN,byrow=T)
 	samples <- matrix(samples,ncol=SHINYREPS_PLOTS_COLUMN,byrow=T)
