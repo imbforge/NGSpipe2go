@@ -123,6 +123,11 @@ res <- lapply(conts[,1],function(cont) {
     }
     if(!is.na(base) & any(base %in% this_targets$group)){
 	    colData(dds)[["group"]] <- relevel(colData(dds)[["group"]], base)
+    }else{
+	    #relevel the groups ids to the second factor within the contrast
+            #since contrasts have the form group1-group2 the fd changes
+	    #should be calculated towards group2
+	    colData(dds)[["group"]] <- relevel(colData(dds)[["group"]], factors[2])
     }
 
 
