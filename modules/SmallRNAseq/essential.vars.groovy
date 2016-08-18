@@ -20,7 +20,7 @@
 // ESSENTIAL_PAIRED="no"
 
 // C. ELEGANS
-ESSENTIAL_PROJECT="/home/adomingu/imb-kettinggr/adomingues/projects/imb_ketting_2014_14_almeida_smallRNA_celegans"
+ESSENTIAL_PROJECT=""
 ESSENTIAL_BOWTIE_REF="/home/adomingu/imb-kettinggr/genomes/Caenorhabditis_elegans/Ensembl/WBcel235/Sequence/BowtieIndex/genome"
 ESSENTIAL_GENOME_REF="/home/adomingu/imb-kettinggr/genomes/Caenorhabditis_elegans/Ensembl/WBcel235/Sequence/BowtieIndex/genome.fa"
 // vars for piRNA analyis
@@ -30,7 +30,7 @@ ESSENTIAL_BIOTYPES_TABLE="/home/adomingu/imb-kettinggr/genomes/Caenorhabditis_el
 // read size to keep (added 8 bp to account for barcodes)
 MIN_LENGTH=26
 MAX_LENGTH=38
-ESSENTIAL_STRANDED="yes"
+ESSENTIAL_STRANDED="no" // strandness yes|no|reverse
 ESSENTIAL_PAIRED="no"
 ESSENTIAL_THREADS=4
 
