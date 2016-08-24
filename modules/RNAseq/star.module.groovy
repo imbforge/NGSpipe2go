@@ -85,7 +85,7 @@ STAR_se = {
 			
 			STAROUTPUTFILE=\$(basename $output1.prefix) &&
 			
-			STAR $STAR_FLAGS --readFilesIn $inputs | ${TOOL_SAMTOOLS} view $SAMTOOLS_FLAGS - | ${TOOL_SAMTOOLS} sort -n -T \${TMPDIR}/\${STAROUTPUTFILE}_sort $STAR_SAMTOOLS_THREADS - > $output1
+			STAR $STAR_FLAGS --readFilesIn $inputs | ${TOOL_SAMTOOLS} view $SAMTOOLS_FLAGS - | ${TOOL_SAMTOOLS} sort -O bam -T \${TMPDIR}/\${STAROUTPUTFILE}_sort $STAR_SAMTOOLS_THREADS - > $output1
 			echo "STAR done." &&
 			
 			mv ${LOGS}/STAR_se/${SAMPLE.name}SJ.out.tab $output.dir &&
