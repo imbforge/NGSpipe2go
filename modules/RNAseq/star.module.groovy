@@ -61,19 +61,8 @@ STAR_se = {
 		if(STAR_FILTER_SEC == "YES") {
 			SAMTOOLS_FLAGS = " -F 256 " + SAMTOOLS_FLAGS
 		}
-		
-		def MMR_FLAGS = "--filter-dist 0 " + // filter distance F for pre-filter
-				"--best-only " +     // print only best alignment
-				"--burn-in " +       // use the first iteration to fill coverage map only
-				"--keep-unmapped " + // print unmapped reads from input
-				MMR_THREADS + " " +
-				MMR_WINDOWSIZE + " " +
-				MMR_ANNOTATION + " " +
-				MMR_EXTRA
 
-		
 		// TODO: change to latest or at least try to warn, if the genome index was created using the wrong version of STAR
-		// DONE: replace ""source ${TOOL_DEPENDENCIES}/star/default/env.sh""
 		exec """
 			export TOOL_DEPENDENCIES=$TOOL_DEPENDENCIES &&
 			source ${TOOL_STAR}/env.sh &&
@@ -96,16 +85,11 @@ STAR_se = {
 			
 			STAROUTPUTFILE=\$(basename $output1.prefix) &&
 			
-			STAR $STAR_FLAGS --readFilesIn $inputs | ${TOOL_SAMTOOLS} view $SAMTOOLS_FLAGS - | ${TOOL_SAMTOOLS} sort -n -T \${TMPDIR}/\${STAROUTPUTFILE}_sort $STAR_SAMTOOLS_THREADS - > \${TMPDIR}/\${STAROUTPUTFILE}_beforeMMR.bam &&
+			STAR $STAR_FLAGS --readFilesIn $inputs | ${TOOL_SAMTOOLS} view $SAMTOOLS_FLAGS - | ${TOOL_SAMTOOLS} sort -n -T \${TMPDIR}/\${STAROUTPUTFILE}_sort $STAR_SAMTOOLS_THREADS - > $output1
 			echo "STAR done." &&
 			
 			mv ${LOGS}/STAR_se/${SAMPLE.name}SJ.out.tab $output.dir &&
 			ln -s ${LOGS}/STAR_se/${SAMPLE.name}Log.final.out $output.dir &&
-		
-			mmr $MMR_FLAGS -o \${TMPDIR}/\${STAROUTPUTFILE}_afterMMR.bam \${TMPDIR}/\${STAROUTPUTFILE}_beforeMMR.bam && 
-			echo "MMR done." &&
-			
-			${TOOL_SAMTOOLS} sort -T \${TMPDIR}/\${STAROUTPUTFILE}_sort2 $STAR_SAMTOOLS_THREADS \${TMPDIR}/\${STAROUTPUTFILE}_afterMMR.bam > $output1
 		""","STAR_se"
 	}
 }
