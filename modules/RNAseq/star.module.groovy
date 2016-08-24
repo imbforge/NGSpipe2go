@@ -89,7 +89,7 @@ STAR_se = {
 			echo "STAR done." &&
 			
 			mv ${LOGS}/STAR_se/${SAMPLE.name}SJ.out.tab $output.dir &&
-			ln -s ${LOGS}/STAR_se/${SAMPLE.name}Log.final.out $output.dir &&
+			ln -s ${LOGS}/STAR_se/${SAMPLE.name}Log.final.out $output.dir
 		""","STAR_se"
 	}
 }
