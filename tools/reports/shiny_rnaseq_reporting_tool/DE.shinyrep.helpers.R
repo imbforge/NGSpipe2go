@@ -531,8 +531,6 @@ DEhelper.Qualimap <- function() {
 	kable(as.data.frame(df.names),output=F, format="markdown")
 }
 
-
-
 ##
 ## DEhelper.VolcanoPlot: Volcano plots from DEseq2 results
 ##
@@ -540,11 +538,16 @@ DEhelper.VolcanoPlot <- function(i=1) {
     # get DE genes (p.adjust='BH', pval<.05)
     data.table <- data.frame(logFC=res[[i]]$log2FoldChange,
                              pvalue=res[[i]]$padj,
-                             meanExp=res[[i]]$baseMean) # extract the final count, pValue and FDR data
+                             meanExp=log2(res[[i]]$baseMean + 1)) # extract the final count, pValue and FDR data
     x.limit <- max( c(max(data.table$logFC, na.rm = T), abs(min(data.table$logFC, na.rm = T))) ) # find the maximum spread of the x-axis
     
     # plotting
-    p <- ggplot(data.table, aes(logFC, -1 * log10(pvalue), colour=meanExp )) + geom_point() + xlim(-1 * x.limit, x.limit) + ylab("-log10( adj. p-value )") + theme_bw() + scale_colour_gradient(name="mean expression") # volcano plot
+    p <- ggplot(data.table, aes(logFC, -1 * log10(pvalue), colour=meanExp )) +
+            geom_point(alpha=.5) +
+            theme_bw() +
+            xlim(-1 * x.limit, x.limit) +
+            ylab("-log10( adj. p-value )") +
+            scale_colour_gradient(name="log\u2082 mean expression")
     print(p)
 }
 
