@@ -27,8 +27,8 @@ load MODULE_FOLDER + "NGS/markdups.module.groovy"
 load MODULE_FOLDER + "RNAseq/dupradar.vars.groovy"
 load MODULE_FOLDER + "RNAseq/dupradar.module.groovy"
 
-load MODULE_FOLDER + "RNAseq/genebodycov.vars.groovy"
-load MODULE_FOLDER + "RNAseq/genebodycov.module.groovy"
+load MODULE_FOLDER + "RNAseq/genebodycov2.vars.groovy"
+load MODULE_FOLDER + "RNAseq/genebodycov2.module.groovy"
 
 load MODULE_FOLDER + "RNAseq/inferexperiment.vars.groovy"
 load MODULE_FOLDER + "RNAseq/inferexperiment.module.groovy"
@@ -51,5 +51,6 @@ load MODULE_FOLDER + "RNAseq/shinyreports.vars.groovy"
 load MODULE_FOLDER + "RNAseq/shinyreports.module.groovy"
 
 run {
-	"%.fastq.gz" * [ FastQC , STAR_se + BAMindexer + [ subread_count + filter2htseq, bam2bw, inferexperiment, qualimap, MarkDups + BAMindexer + [ dupRadar , geneBodyCov ] ] ] + [ RNAtypes, DE_DESeq2] + collectBpipeLogs + shinyReports
+	"%.fastq.gz" * [ FastQC , STAR_se + BAMindexer + [ subread_count + filter2htseq, bam2bw, inferexperiment, qualimap, MarkDups + BAMindexer + [ dupRadar , geneBodyCov2 ] ] ] + [ RNAtypes, DE_DESeq2] + collectBpipeLogs + shinyReports
 }
+

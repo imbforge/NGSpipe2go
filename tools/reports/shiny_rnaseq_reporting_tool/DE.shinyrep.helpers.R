@@ -356,8 +356,8 @@ DEhelper.RNAtypes <- function(web=TRUE) {
 }
 
 ##
-## DEhelper.geneBodyCov: go through dupRadar output dir and create a md table with
-##     the duplication plots
+## DEhelper.geneBodyCov: go through geneBodyCov output dir and create a md table with
+##     the gene coverage plots
 ##
 DEhelper.geneBodyCov <- function(web=TRUE) {
 	
@@ -383,7 +383,7 @@ DEhelper.geneBodyCov <- function(web=TRUE) {
 	while(length(df) %% SHINYREPS_PLOTS_COLUMN != 0) df <- c(df,"")
 	samples <- sapply(df,function(x) {
 		x <- sapply(x,function(x) gsub(paste0("^",SHINYREPS_PREFIX),"",basename(x)))
-		gsub(".geneBodyCoverage.curves.png)","",x)
+		gsub("_geneBodyCov.png)","",x)
 	})
 	df      <- matrix(df     ,ncol=SHINYREPS_PLOTS_COLUMN,byrow=T)
 	samples <- matrix(samples,ncol=SHINYREPS_PLOTS_COLUMN,byrow=T)
