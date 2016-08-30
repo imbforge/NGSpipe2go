@@ -1,7 +1,6 @@
 ESSENTIAL_PROJECT="/project/"
 ESSENTIAL_STAR_REF="/data/star_genomes/Mus_musculus/UCSC/mm9/star2.4.2a_noGTF/"
-ESSENTIAL_GENESGTF="/data/igenomes_reference/Mus_musculus/UCSC/mm9/Annotation/Genes/genes.gtf"  // used for gene mapping (STAR), counting (HTSEQ), duprate analysis
-ESSENTIAL_GENESGTF2="data/annotation/mm9/gencode.vM1.annotation.gtf.gz" // to use with RNAtypes
+ESSENTIAL_GENESGTF="/data/igenomes_reference/Mus_musculus/UCSC/mm9/Annotation/Genes/genes.gtf"
 ESSENTIAL_GENESBED="/data/annotation/mm9/mm9_UCSC_knownGene.bed"
 ESSENTIAL_SAMPLE_PREFIX="Sample_"
 ESSENTIAL_PAIRED="no"           // paired end design

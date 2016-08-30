@@ -1,6 +1,6 @@
 RNAtypes_FOLDER="folder=" + MAPPED	       // folder containing the mapped files
 RNAtypes_PATTERN="pattern=duprm\\\\.bam\$" // process all the .bam files
-RNAtypes_GTF="gtf=" + ESSENTIAL_GENESGTF2  // the gencode annotation GTF (can be compressed)
+RNAtypes_GTF="gtf=" + ESSENTIAL_GENESGTF  // the gencode annotation GTF (can be compressed)
 RNAtypes_OUTNAME="RNAtypes"                // output file name
 RNAtypes_OUT="out=" + RNAtypes_OUTNAME     // output file name (parm)
 RNAtypes_PRE="pre=" + ESSENTIAL_SAMPLE_PREFIX // prefix to be removed
