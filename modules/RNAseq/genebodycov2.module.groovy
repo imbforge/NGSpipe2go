@@ -28,6 +28,10 @@ geneBodyCov2 = {
 			echo \$(${TOOL_R}/bin/Rscript --version 2>&1 | cut -d' ' -f5) 1>&2 ;
 			echo '/VERSION INFO'  1>&2 ;
 			
+            if [[ ! -e "$output.dir" ]]; then
+                mkdir -p "$output.dir"
+            fi
+
 			${TOOL_R}/bin/Rscript ${TOOL_GENEBODYCOV2}/geneBodyCov.R bam=$input $GENEBODYCOV2_FLAGS &&
 			mv ${GENEBODYCOV2_OUTNAME}.counts.* $output.dir
 		""","geneBodyCov2"
