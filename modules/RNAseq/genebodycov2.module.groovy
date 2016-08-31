@@ -32,8 +32,7 @@ geneBodyCov2 = {
                 mkdir -p "$output.dir"
             fi
 
-			${TOOL_R}/bin/Rscript ${TOOL_GENEBODYCOV2}/geneBodyCov.R bam=$input $GENEBODYCOV2_FLAGS &&
-			mv ${GENEBODYCOV2_OUTNAME}.counts.* $output.dir
+			${TOOL_R}/bin/Rscript ${TOOL_GENEBODYCOV2}/geneBodyCov.R bam=$input $GENEBODYCOV2_FLAGS
 		""","geneBodyCov2"
 	}
 	forward input
