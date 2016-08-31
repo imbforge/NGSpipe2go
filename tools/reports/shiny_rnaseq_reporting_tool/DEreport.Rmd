@@ -163,8 +163,6 @@ table.content <- data.frame(  tool=c(
 									  "Samtools",
 									  "Subread",
 									  "Picard",
-									  "GeneBodyCoverage",
-									  "R/EdgeR",
 									  "R/DEseq2"
 									  ),
 							  version=c(
@@ -173,8 +171,6 @@ table.content <- data.frame(  tool=c(
 									  Toolhelper.VersionReporter("Samtools", SHINYREPS_BAMINDEX_LOG),
 									  Toolhelper.VersionReporter("Subread",  SHINYREPS_SUBREAD_LOG),
 									  Toolhelper.VersionReporter("Picard",   SHINYREPS_BAM2BW_LOG),
-									  Toolhelper.VersionReporter("GeneBodyCoverage", SHINYREPS_GENEBODYCOVERAGE_LOGS),
-									  Toolhelper.VersionReporter("R/EdgeR",  SHINYREPS_EDGER_LOGS ),
 									  Toolhelper.VersionReporter("R/DEseq2", SHINYREPS_DESEQ_LOGS)
 									  )
 						   )
