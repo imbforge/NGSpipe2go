@@ -8,7 +8,8 @@ geneBodyCov2 = {
 		bpipe_version: "tested with bpipe 0.9.9.9",
 		author: "Sergi Sayols"
 
-    output.dir = GENEBODYCOV2_OUTDIR
+    tmp = GENEBODYCOV2_OUTDIR
+    output.dir = tmp.replaceFirst(/^outdir=/, "")
 	def GENEBODYCOV2_FLAGS = GENEBODYCOV2_GTF      + " " +
                              GENEBODYCOV2_PAIRED   + " " +
                              GENEBODYCOV2_STRANDED + " " +
