@@ -29,8 +29,8 @@ geneBodyCov2 = {
 			echo '/VERSION INFO'  1>&2 ;
 			
             if [[ ! -e "$output.dir" ]]; then
-                mkdir -p "$output.dir"
-            fi
+                mkdir -p "$output.dir";
+            fi &&
 
 			${TOOL_R}/bin/Rscript ${TOOL_GENEBODYCOV2}/geneBodyCov.R bam=$input $GENEBODYCOV2_FLAGS
 		""","geneBodyCov2"

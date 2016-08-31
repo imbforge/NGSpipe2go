@@ -52,7 +52,6 @@ shinyReports = {
 			echo "SHINYREPS_SUBREAD_LOG=${SHINYREPS_SUBREAD_LOG}"        >> $output &&
 			echo "SHINYREPS_BAM2BW_LOG=${SHINYREPS_BAM2BW_LOG}"          >> $output &&
 			echo "SHINYREPS_MARKDUPS_LOG=${SHINYREPS_MARKDUPS_LOG}"      >> $output &&
-			echo "SHINYREPS_GENEBODYCOVERAGE_LOGS=${SHINYREPS_GENEBODYCOVERAGE_LOGS}" >> $output &&
 			echo "SHINYREPS_EDGER_LOGS=${SHINYREPS_EDGER_LOGS}"          >> $output &&
 			echo "SHINYREPS_DESEQ_LOGS=${SHINYREPS_DESEQ_LOGS}"          >> $output &&
 			echo "SHINYREPS_PLOTS_COLUMN=${SHINYREPS_PLOTS_COLUMN}"      >> $output &&

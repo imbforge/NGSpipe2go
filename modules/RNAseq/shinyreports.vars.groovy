@@ -14,7 +14,7 @@ SHINYREPS_FASTQC_LOG=LOGS + "/FastQC"		//where the Fastqc logs lie
 SHINYREPS_BAMINDEX_LOG=LOGS + "/BAMindexer"	//where the Samtools/BamIndexer logs lie
 SHINYREPS_DUPRADAR_LOG=QC + "/dupRadar"	//where the dupRadar logs lie
 SHINYREPS_RNATYPES_LOG=QC + "/RNAtypes"	//where the RNAtypes logs lie
-SHINYREPS_GENEBODYCOV_LOG=GENEBODYCOV_OUTDIR //where the geneBodyCov logs lie
+SHINYREPS_GENEBODYCOV_LOG=QC + "/geneBodyCov"
 SHINYREPS_BUSTARD=QC + "/DemultiplexedBustardSummary.xml"	//where the bustard xml file lies
 SHINYREPS_DE_EDGER=""       //where the DE_edgeR output lies
 SHINYREPS_DE_DESEQ=RESULTS + "/DE_DESeq2/DE_DESeq2.RData"   //where the DE_DESeq2 output lies
@@ -23,7 +23,6 @@ SHINYREPS_SUBREAD_SUFFIX=".raw_readcounts.tsv.summary" // the extension of the s
 SHINYREPS_SUBREAD_LOG=LOGS + "/subread_count"	//where the Subread/FeatureCounts logs lie
 SHINYREPS_BAM2BW_LOG=LOGS + "/bam2bw"        	//where the Bam2BW logs lie
 SHINYREPS_MARKDUPS_LOG=LOGS + "/MarkDups"	//where the picard MarkDuplicates logs lie
-SHINYREPS_GENEBODYCOVERAGE_LOGS=LOGS + "/geneBodyCov" //where the GeneBodyCoverage logs lie
 SHINYREPS_EDGER_LOGS=""                  //where the DE_edgeR logs lie
 SHINYREPS_DESEQ_LOGS=LOGS + "/DE_DESeq2" //where the DE_DESeq2 logs lie
 SHINYREPS_PLOTS_COLUMN=4L    //number of columns to splits the plot grids (dupradar, genebodycov...). Min=2L. L=integer in R
