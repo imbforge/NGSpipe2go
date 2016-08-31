@@ -9,11 +9,11 @@ geneBodyCov2 = {
 		author: "Sergi Sayols"
 
     output.dir = GENEBODYCOV2_OUTDIR
-	def GENEBODYCOV2_FLAGS = GENEBODYCOV_GTF      + " " +
-                             GENEBODYCOV_PAIRED   + " " +
-                             GENEBODYCOV_STRANDED + " " +
-                             GENEBODYCOV_OUTDIR   + " " +
-                             GENEBODYCOV_THREADS
+	def GENEBODYCOV2_FLAGS = GENEBODYCOV2_GTF      + " " +
+                             GENEBODYCOV2_PAIRED   + " " +
+                             GENEBODYCOV2_STRANDED + " " +
+                             GENEBODYCOV2_OUTDIR   + " " +
+                             GENEBODYCOV2_THREADS
 	
     // run the chunk
 	transform(".bam") to ("_geneBodyCov.png") {
