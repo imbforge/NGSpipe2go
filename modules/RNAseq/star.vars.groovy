@@ -15,5 +15,5 @@ STAR_OVERHANG = "--sjdbOverhang " + Integer.toString(ESSENTIAL_READLENGTH - 1)
 STAR_GTF = "--sjdbGTFfile " + ESSENTIAL_GENESGTF    // gene model
 STAR_SAMTOOLS_THREADS="-@ " + Integer.toString(ESSENTIAL_THREADS)
 
-STAR_FILTER_SEC="NO"		// filter out secondary alignments from the bam file?
-STAR_EXTRA=""                // extra parms to sent to the tool
+STAR_FILTER_SEC="YES"		// filter out secondary alignments from the bam file?
+STAR_EXTRA=""               // extra parms to sent to the tool
