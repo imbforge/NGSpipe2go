@@ -7,7 +7,7 @@ DE_edgeR = {
 		bpipe_version: "tested with bpipe 0.9.8.7",
 		author: "Sergi Sayols"
 
-	output.dir = RESULTS + "/DE_edgeR"
+	output.dir = DE_edgeR_OUTDIR.replcaeFirst("out=", "")
 	def DE_edgeR_FLAGS = DE_edgeR_TARGETS   + " " + 
 	                     DE_edgeR_CONTRASTS + " " +
 	                     DE_edgeR_MMATRIX   + " " +

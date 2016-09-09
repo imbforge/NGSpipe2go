@@ -7,7 +7,7 @@ RNAtypes = {
 		bpipe_version: "tested with bpipe 0.9.8.7",
 		author: "Sergi Sayols"
 
-	output.dir = QC + "/RNAtypes/"
+	output.dir = RNAtypes_OUT.replaceFirst("out=", "")
 	def RNAtypes_FLAGS = RNAtypes_FOLDER   + " " +
 	                     RNAtypes_PATTERN  + " " +
 	                     RNAtypes_GTF      + " " +
