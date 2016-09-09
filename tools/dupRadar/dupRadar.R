@@ -47,7 +47,7 @@ if(!file.exists(outdir)) stop(paste("Dir",outdir,"does NOT exist"))
 ##
 stranded <- if(stranded == "no") 0 else if(stranded == "yes") 1 else 2
 
-dm <- analyzeDuprates(bam,gtf,stranded,(paired == "yes"),threads)
+dm <- analyzeDuprates(bam,gtf,stranded,(paired == "yes"),threads, autosort=FALSE)
 png(paste0(outdir,"/",gsub("(.*)\\.[^.]+","\\1",basename(bam)),"_dupRadar.png"))
 duprateExpPlot(DupMat=dm)
 duprateExpBoxplot(DupMat=dm)
