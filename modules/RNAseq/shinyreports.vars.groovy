@@ -18,6 +18,7 @@ SHINYREPS_GENEBODYCOV_LOG=QC + "/geneBodyCov"
 SHINYREPS_BUSTARD=QC + "/DemultiplexedBustardSummary.xml"	//where the bustard xml file lies
 SHINYREPS_DE_EDGER=""       //where the DE_edgeR output lies
 SHINYREPS_DE_DESEQ=RESULTS + "/DE_DESeq2/DE_DESeq2.RData"   //where the DE_DESeq2 output lies
+SHINYREPS_DE_DESEQ_MM=RESULTS + "/DE_DESeq2_MM/DE_DESeq2.RData"   //where the DE_DESeq2_MM output lies
 SHINYREPS_SUBREAD=RESULTS + "/subread-count" // location of the subread counts
 SHINYREPS_SUBREAD_SUFFIX=".raw_readcounts.tsv.summary" // the extension of the subread stats file
 SHINYREPS_SUBREAD_LOG=LOGS + "/subread_count"	//where the Subread/FeatureCounts logs lie

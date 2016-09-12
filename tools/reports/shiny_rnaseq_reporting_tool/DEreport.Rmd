@@ -8,10 +8,14 @@ output:
 
 <div class="contentbox">
 
-```{r Initialise, echo=F,result='hide',error=F,warning=F,message=F}
+```{r Initialise, echo=F, result='hide', error=F, warning=F, message=F}
 source('DE.shinyrep.helpers.R')
 loadGlobalVars()
-load(SHINYREPS_DE_DESEQ,envir=.GlobalEnv)		# the outcome from the DE analysis
+load(SHINYREPS_DE_DESEQ, envir=.GlobalEnv)		# the outcome from the DE analysis
+resMM <- local({    # load in a local environment to avoid colliding with the analysis w/o MM
+    load(SHINYREPS_DE_DESEQ_MM)
+    res
+})
 ``` 
 
 ## Quality Control RNAseq ##
@@ -19,11 +23,11 @@ load(SHINYREPS_DE_DESEQ,envir=.GlobalEnv)		# the outcome from the DE analysis
 ### Sequence run quality
 SAV quality tables:
 
-```{r Bustard_paragraph, echo=F,results='asis',error=F,warning=F,message=F}
+```{r Bustard_paragraph, echo=F, results='asis', error=F, warning=F, message=F}
 # I used to include a already rendered MD file with the bustard statistics, but
 # now we can generate it by calling the perl-xslt parser directly from the helpers
 #```{r autodoc, child='bustard.md', eval=TRUE}
-cat(DEhelper.Bustard(),sep="\n")
+cat(DEhelper.Bustard(), sep="\n")
 ```
 
 ### Raw reads QC
@@ -37,145 +41,180 @@ The y-axis on the graph shows the Phred quality scores, which are logarithmicall
 2. The "Per Base Sequence Content" plots show the proportion of each base (% G, A, T and C) at each position. In a random library there would be little difference between the positions of a sequence run, so the lines in this plot should run parallel with each other. But most RNA-seq libraries show sequence imbalance in the first 10-12 read positions due to RT priming biases, which should however look fairly similar in all samples.
 3. The "Per Sequence GC Content" plots show the GC% distribution of all reads (red lines) and the ideal normal distribution based on the data (blue lines). Typically, the red and blue lines tightly overlap and look essentially the same in all samples. An unusually shaped distribution could indicate a contaminated library.
 
-```{r FastQC_paragraph, echo=F,results='asis',error=F,warning=F,message=F}
-cat(DEhelper.Fastqc(web=F),sep="\n")
+```{r FastQC_paragraph, echo=F, results='asis', error=F, warning=F, message=F}
+cat(DEhelper.Fastqc(web=F), sep="\n")
 ```
 
 ### Read mapping
 Mapping to the reference genome & transcriptome is performed with STAR (https://github.com/alexdobin/STAR). The program version, genome assembly and software parameters are described in the following table:
 
-```{r STAR_parameters_paragraph, echo=F,results='asis',error=F,warning=F,message=F}
-cat(DEhelper.STARparms(),sep="\n")
+```{r STAR_parameters_paragraph, echo=F, results='asis', error=F, warning=F, message=F}
+cat(DEhelper.STARparms(), sep="\n")
 ``` 
 
 The mapping statistics below show the number and percentage of (i) input raw reads, (ii) uniquely mapped reads, (iii) reads mapping to multiple positions in the genome (multimapped), and (iv) reads not mapping to the reference genome. For the multimapped reads, one best alignment position is selected using the multi-mapper resolution tool MMR (https://github.com/ratschlab/mmr). All mapped reads are used for the production of browser coverage tracks but only uniquely mapped reads are taken into account in the DESeq differential expression analysis in order to avoid potential false-positives, however this standard analysis approach may also exclude some recently duplicated genes or gene-pseudogene pairs.
 
-```{r STAR_paragraph, echo=F,results='asis',error=F,warning=F,message=F}
-cat(DEhelper.STAR(),sep="\n")
+```{r STAR_paragraph, echo=F, results='asis', error=F, warning=F, message=F}
+cat(DEhelper.STAR(), sep="\n")
 ``` 
 
 ### Library complexity assessment
 Measuring the fraction of duplicated reads is a common quality control step for NGS data sets, which can hint towards low library complexity due to PCR over-amplification during library preparation and/or suboptimal amount of input material. However, in RNA-seq  duplicate reads may also arise naturally due to the highly expressed (e.g. housekeeping) genes, which renders the overall read duplication rate as reported by FastQC useless. The IMB-developed tool dupRadar (http://bioconductor.org/packages/release/bioc/html/dupRadar.html) gives an informative insight into the duplication problem by graphically relating the gene expression level and the observed duplication rate. Thus, problematic samples can be easily identified by visual inspection.
 
-```{r Dupradar_paragraph, echo=F,results='asis',error=F,warning=F,message=F}
-cat(DEhelper.dupRadar(web=F),sep="\n")
+```{r Dupradar_paragraph, echo=F, results='asis', error=F, warning=F, message=F}
+cat(DEhelper.dupRadar(web=F), sep="\n")
 ```
 
 ### Mapped reads annotation
 The mapped reads were assigned to annotated features (gene exons) using the Subread tool featureCounts (http://bioinf.wehi.edu.au/featureCounts). Listed below is also the number of un-assigned reads due to ambiguity or lack of overlap with known gene annotation, e.g. intronic reads derived from unprocessed transcripts.
 
-```{r Subread_paragraph, echo=F,results='asis',error=F,warning=F,message=F}
-cat(DEhelper.Subread(),sep="\n")
+```{r Subread_paragraph, echo=F, results='asis', error=F, warning=F, message=F}
+cat(DEhelper.Subread(), sep="\n")
 ```
 
 ### RNA class representation
 The plots below show the fraction of mapped reads assigned to various RNA classes. These plots help in determining if the sample prep protocol worked well and may reveal issues with rRNA contamination. 
 
-```{r RNAtypes_paragraph, echo=F,results='asis',error=F,warning=F,message=F}
-cat(DEhelper.RNAtypes(web=F),sep="\n")
+```{r RNAtypes_paragraph, echo=F, results='asis', error=F, warning=F, message=F}
+cat(DEhelper.RNAtypes(web=F), sep="\n")
 ```
 
 ### Gene body coverage
 The plots below show meta-gene profiles of 5' to 3' read coverage and reveal if there is some bias due to RNA degradation or library prep protocol. polyA-selection protocols are particularly prone of producing 3' coverage bias.
 
-```{r GeneBodyCoverage_paragraph, echo=F,results='asis',error=F,warning=F,message=F}
-cat(DEhelper.geneBodyCov(web=F),sep="\n")
+```{r GeneBodyCoverage_paragraph, echo=F, results='asis', error=F, warning=F, message=F}
+cat(DEhelper.geneBodyCov(web=F), sep="\n")
 ```
 
 ### Strand specificity 
 
-```{r echo=F,results='asis',error=F,warning=F,message=F}
+```{r echo=F, results='asis', error=F, warning=F, message=F}
 cat(DEhelper.strandspecificity(), sep="\n")
 ```
 
 ### Distribution of reads on introns/exons and intergenic regions ###
 
-```{r echo=F,results='asis',error=F,warning=F,message=F}
-cat(DEhelper.Qualimap(),sep="\n")		# sample Qualimap 
+```{r echo=F, results='asis', error=F, warning=F, message=F}
+cat(DEhelper.Qualimap(), sep="\n")		# sample Qualimap 
 ```
 
 ### Sample relatedness
 The plot below depicts sample similarity based on priniciple component analysis (PCA) with the 500 genes showing the highest variance. Overall, replicates are expected to show relatively small distances between them, while groups may show higher distances between them, depending on the magnitude of expression changes. If the samples cluster other than by group, there might be sample prep batch effects or some other unaccounted biological/technical factors in the experiment. 
 
-```{r MDSplot_paragraph, echo=F,error=F,warning=F,message=F,fig.align="center"}
+```{r MDSplot_paragraph, echo=F, error=F, warning=F, message=F, fig.align="center"}
 DEhelper.DESeq2.MDS()		# sample MDS 
 ```
 
 Clustering the samples based on the distance calculated on the expression levels of the most variable genes reveals replicate consistency and can spot batches of samples related by other characteristics rather than condition:
 
-```{r Heatmap1_paragraph, echo=F,error=F,warning=F,message=F,fig.align="center"}
+```{r Heatmap1_paragraph, echo=F, error=F, warning=F, message=F, fig.align="center"}
 DEhelper.DESeq2.cluster()	# heatmap of top variant 'n' genes of the rlog transformed counts (normalized and stabilized)
 ```
 
 Finally, a heatmap clustogram of the Euclidean distances between the samples gives us a measure of sample similarity:
 
-```{r Heatmap2_paragraph, echo=F,error=F,warning=F,message=F,fig.align="center"}
+```{r Heatmap2_paragraph, echo=F, error=F, warning=F, message=F, fig.align="center"}
 DEhelper.DESeq2.corr()		# heatmap of sample to sample distances
 ```
 
 ## Differential Expression Analysis
 Pairwise differential expression analysis between the sample groups was performed with the popular R package DESeq2 (https://bioconductor.org/packages/release/bioc/html/DESeq2.html). Shown below for each comparison are (i) MA plots depicting log2 of the expression fold changes versus the mean normalised gene expression level and (ii) tables of top hits order by statistical significance (FDR, false discovery rate).
 
-```{r DifferentialExpression_paragraph, echo=F,results='asis',error=F,warning=F,message=F,fig.align="center"}
+```{r DifferentialExpression_paragraph, echo=F, results='asis', error=F, warning=F, message=F, fig.align="center"}
 for(i in 1:nrow(conts)) {
 
 	# subsection
-	cat("### ",conts[i, 1],fill=T)	
-	cat("",fill=T)
+	cat("### ", conts[i, 1], fill=T)	
+	cat("", fill=T)
 	
 	# MA plot
 	fdr <- if(exists("input")) { fdr <- if(is.numeric(input$slider_pval)) input$slider_pval else .01 } else .01
 	genes <- DEhelper.DESeq2.DEgenes(i)
-	cat("There are",sum(genes$padj < fdr, na.rm=T),
-		"genes highlighted in the MA plot with corrected pvalue (Benjamini and Hochberg, FDR) <",fdr,"\n")
-	DEhelper.DESeq2.MAplot(i,fdr)	# should be fine at taking the value from the UI slider
-	cat("\n",fill=T)
+	cat("There are", sum(genes$padj < fdr, na.rm=T), 
+		"genes highlighted in the MA plot with corrected pvalue (Benjamini and Hochberg, FDR) <", fdr, "\n")
+	DEhelper.DESeq2.MAplot(i, fdr)	# should be fine at taking the value from the UI slider
+	cat("\n", fill=T)
 
 	
 	# Volcano Plot
-	cat("##### Volcano-plot",fill=T)	
-	cat("Volcano plots are meant to facilitate an overview over all genes under investigation by combining log fold change and statistical significance. Outliers and genes with large changes should be easy to spot. As expression strength has a large effect on statistical significance it is added to the volcano plot by coloring the points.",fill=T)
+	cat("##### Volcano-plot", fill=T)	
+	cat("Volcano plots are meant to facilitate an overview over all genes under investigation by combining log fold change and statistical significance. Outliers and genes with large changes should be easy to spot. As expression strength has a large effect on statistical significance it is added to the volcano plot by coloring the points.", fill=T)
 	DEhelper.VolcanoPlot(i)	
-	cat("\n",fill=T)
+	cat("\n", fill=T)
 	
 	
 	# and DE table
-	cat("The table contains the top 25 differentially expressed genes in terms of fold change and FDR:",fill=T)
-	cat("",fill=T)
+	cat("The table contains the top 25 differentially expressed genes in terms of fold change and FDR:", fill=T)
+	cat("", fill=T)
 	genes$baseMean       <- round(genes$baseMean, 2)
 	genes$log2FoldChange <- round(genes$log2FoldChange, 2)
-	genes$padj           <- format(genes$padj,scientific=TRUE)
-        cols <- c("gene_name", "baseMean", "log2FoldChange", "padj")
-	cat(kable(genes[1:25,cols],row.names=T,align="r"),sep="\n")	# show only the top 25 genes
-	cat("",fill=T)
+	genes$padj           <- format(genes$padj, digits=3, scientific=TRUE)
+  cols <- c("gene_name", "baseMean", "log2FoldChange", "padj")
+	cat(kable(genes[1:25, cols], row.names=T, align="r"), sep="\n")	# show only the top 25 genes
+	cat("", fill=T)
+}
+```
+
+## Using information of reads mapping to multiple positions
+In a few gene classes, and some pairs of gene-pseudogene, which are result of duplication events, their abundance can only be estimated if reads mapping to multiple genes are taken into account. Thus, the quantification is just a rough estimation, but in some cases can give relevant information about the ratios the genes in these classes are expressed.
+
+There are several approaches on how to deal with multimappers, and here we're adopting the rather conservative one of assigning the read randomly to one of the several genes it may come from.
+
+Please use the information below only to answer questions about specific genes which is known to be affected by the aforementioned duplication events. In any case this analysis is conservative enough to refer to the vast majority of the genes, for which the analysis using only the uniquely mapping reads is the adequate.
+
+```{r DifferentialExpressionMM_paragraph, echo=F, results='asis', error=F, warning=F, message=F, fig.align="center"}
+for(i in 1:nrow(conts)) {
+
+    fdr <- .01
+
+    # subsection
+    cat("### ", conts[i, 1], fill=T)
+    cat("", fill=T)
+    
+    # Venn comparing DE genes w/ w/o MM
+    padj   <- ifelse(is.na(res  [[i]]$padj), 1, res  [[i]]$padj)
+    padjMM <- ifelse(is.na(resMM[[i]]$padj), 1, resMM[[i]]$padj)
+    img <- venn.diagram(list(with_MM  =rownames(resMM[[i]])[padjMM < fdr],
+                             wihout_MM=rownames(res  [[i]])[padj   < fdr]),
+                        fill=c("green", "blue"), alpha=.3, lwd=0, filename=NULL)
+    grid.newpage()
+    grid.draw(img)
+    
+    # the top genes in disagreement
+    cat("The table contains the top genes which are differentially expressed (fdr<", fdr, ") in only one analysis:", fill=T)
+    cat("", fill=T)
+    disagree   <- setdiff(rownames(res  [[i]])[padj   < fdr], rownames(resMM[[i]])[padjMM < fdr])
+    disagreeMM <- setdiff(rownames(resMM[[i]])[padjMM < fdr], rownames(res  [[i]])[padj   < fdr])
+
+    tables <- lapply(list(disagree, disagreeMM), function(genes) {
+        out <- data.frame(name       =resMM[[i]][genes, "gene_name"],
+                          baseMean   =round (res[[i]][genes, "baseMean"], 2),
+                          log2FC     =round (res[[i]][genes, "log2FoldChange"], 2),
+                          padj       =format(res[[i]][genes, "padj"], digits=3, scientific=TRUE),
+                          baseMean_MM=round (resMM[[i]][genes, "baseMean"], 2),
+                          log2FC_MM  =round (resMM[[i]][genes, "log2FoldChange"], 2),
+                          padj_MM    =format(resMM[[i]][genes, "padj"], digits=3, scientific=TRUE))
+        rownames(out) <- genes
+        o <- order(abs(out$log2FC - out$log2FC_MM), decreasing=T)
+        out[o[1:min(nrow(out), 25)], ]
+    })
+
+    # output result
+    cat("Without multimappers only:", fill=T)
+    cat("", fill=T)
+    cat(kable(tables[[1]], row.names=T, align="r"), sep="\n")    # show max 25 genes
+    cat("", fill=T)
+    cat("With multimappers only:", fill=T)
+    cat("", fill=T)
+    cat(kable(tables[[2]], row.names=T, align="r"), sep="\n")    # show max 25 genes
+    cat("", fill=T)
 }
 ```
 
 ## Used tools and versions for this analysis
 
-```{r ToolVersions_paragraph, echo=F,results='asis',error=F,warning=F,message=F}
-
-# this section requires an init() that loads the location to the *_LOG variables 
-
-table.content <- data.frame(  tool=c(
-									  "FastQC",
-									  "STAR",
-									  "Samtools",
-									  "Subread",
-									  "Picard",
-									  "R/DEseq2"
-									  ),
-							  version=c(
-									  Toolhelper.VersionReporter("FastQC",   SHINYREPS_FASTQC_LOG ),
-									  Toolhelper.VersionReporter("STAR",     SHINYREPS_STAR_LOG ),
-									  Toolhelper.VersionReporter("Samtools", SHINYREPS_BAMINDEX_LOG),
-									  Toolhelper.VersionReporter("Subread",  SHINYREPS_SUBREAD_LOG),
-									  Toolhelper.VersionReporter("Picard",   SHINYREPS_BAM2BW_LOG),
-									  Toolhelper.VersionReporter("R/DEseq2", SHINYREPS_DESEQ_LOGS)
-									  )
-						   )
-kable(table.content)
-
+```{r ToolVersions_paragraph, echo=F, results='asis', error=F, warning=F, message=F}
+cat(Toolhelper.ToolVersions(), sep="\n")
 ```
 
 </div>

@@ -114,46 +114,29 @@ res <- lapply(conts[,1],function(cont) {
     dds <- DESeqDataSetFromHTSeqCount(sampleTable=this_targets,
                                       directory=cwd, 
                                       design=as.formula(mmatrix))
+
+    # create DESeq object
     dds <- DESeq(dds)
-    quantification <- if(file.exists(gene.model)) { 
-        apply(fpm(dds),2,function(x,y) 1e3 * x / y,
-              gene.lengths[match(rownames(fpm(dds)),names(gene.lengths))])
-    } else { 
-        assay(rlog(dds))
-    }
-    if(!is.na(base) & any(base %in% this_targets$group)){
-	    colData(dds)[["group"]] <- relevel(colData(dds)[["group"]], base)
-    }else{
-	    #relevel the groups ids to the second factor within the contrast
-            #since contrasts have the form group1-group2 the fd changes
-	    #should be calculated towards group2
-	    colData(dds)[["group"]] <- relevel(colData(dds)[["group"]], factors[2])
-    }
-
-
-	# DEseq2 stats
+    colData(dds)[["group"]] <- if(!is.na(base) & any(base %in% this_targets$group)) relevel(colData(dds)[["group"]], base) else relevel(colData(dds)[["group"]], factors[2])
 	res <- results(dds, independentFiltering=filter.genes, format="DataFrame")
 
-        #add gene_name column
-        if(file.exists(gene.model)) {
-           res$gene_name <- gtf$gene_name[match(rownames(res),gtf$gene_id)]
-        } else { 
-           res$gene_name <- rep("NA",length(res$padj))
-        }
-	
-        # write the results
+    # calculate quantification (RPKM if gene model provided, rlog transformed values otherwise)
+    if(file.exists(gene.model)) { 
+        quantification <- apply(fpm(dds), 2, function(x,y) 1e3 * x / y, gene.lengths[rownames(fpm(dds))])
+        res$gene_name <- gtf$gene_name[match(rownames(res),gtf$gene_id)]
+    } else { 
+        quantification <- assay(rlog(dds))
+        res$gene_name <- res$gene_name <- "NA"
+    }
+
+    # write the results
 	x <- merge(res[, c("gene_name", "baseMean", "log2FoldChange", "padj")], quantification, by=0)
-	
-        #order after adjusted p values
 	x <- x[order(x$padj),]
-	#adjusting the name for the log2Foldchange and the padj to the description given
-	#by deseq
 	
-	colnames(x)[which(colnames(x) %in%c("baseMean", "log2FoldChange", "padj"))]<-mcols(res)$description[match(c("baseMean", "log2FoldChange", "padj"), colnames(res))]
-	#our rownames should be the gene id and not rownames
+	colnames(x)[which(colnames(x) %in% c("baseMean", "log2FoldChange", "padj"))] <- mcols(res)$description[match(c("baseMean", "log2FoldChange", "padj"), colnames(res))]
 	colnames(x)[1] <- "gene_id"
-        #second column holds the gene_name
-        colnames(x)[2] <- "gene_name"
+    colnames(x)[2] <- "gene_name"
+
 	write.csv(x,file=paste0(out,"/",cont.name,".csv"),row.names=F)
 	res
 })

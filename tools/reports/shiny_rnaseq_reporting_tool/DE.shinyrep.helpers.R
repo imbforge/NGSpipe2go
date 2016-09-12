@@ -9,6 +9,8 @@ library("RColorBrewer")
 library("gplots")
 library("ggplot2")
 library("ggrepel")
+library("VennDiagram")
+library("grid")
 library("knitr")		# for markdown output
 
 ##
@@ -546,6 +548,29 @@ DEhelper.VolcanoPlot <- function(i=1) {
 ##
 ## extract tool versions
 ##
+## report version of used tools
+Toolhelper.ToolVersions <- function() {
+    table.content <- data.frame(  tool=c(
+                                          "FastQC",
+                                          "STAR",
+                                          "Samtools",
+                                          "Subread",
+                                          "Picard",
+                                          "R/DEseq2"
+                                          ),
+                                  version=c(
+                                          Toolhelper.VersionReporter("FastQC",   SHINYREPS_FASTQC_LOG ),
+                                          Toolhelper.VersionReporter("STAR",     SHINYREPS_STAR_LOG ),
+                                          Toolhelper.VersionReporter("Samtools", SHINYREPS_BAMINDEX_LOG),
+                                          Toolhelper.VersionReporter("Subread",  SHINYREPS_SUBREAD_LOG),
+                                          Toolhelper.VersionReporter("Picard",   SHINYREPS_BAM2BW_LOG),
+                                          Toolhelper.VersionReporter("R/DEseq2", SHINYREPS_DESEQ_LOGS)
+                                          )
+                               )
+    kable(table.content)
+}
+
+## version version of one tool, knowing its log folder
 Toolhelper.VersionReporter <- function(tool, logfolder) {
 	
 	LOG <- logfolder

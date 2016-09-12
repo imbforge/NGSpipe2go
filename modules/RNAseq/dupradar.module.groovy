@@ -26,7 +26,7 @@ dupRadar = {
 			echo \$(${TOOL_R}/bin/Rscript --version 2>&1 | cut -d' ' -f5) 1>&2 ;
 			echo '/VERSION INFO'  1>&2 ;
 			
-			${TOOL_R}/bin/Rscript ${TOOL_DUPRADAR}/dupRadar.R $input $DUPRADAR_FLAGS
+			${TOOL_R}/bin/Rscript ${TOOL_DUPRADAR}/dupRadar.R bam=$input $DUPRADAR_FLAGS
 		""","dupRadar"
 	}
 

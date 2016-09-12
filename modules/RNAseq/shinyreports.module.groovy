@@ -47,6 +47,7 @@ shinyReports = {
 			echo "SHINYREPS_BUSTARD=${SHINYREPS_BUSTARD}"         >> $output &&
 			echo "SHINYREPS_DE_EDGER=${SHINYREPS_DE_EDGER}"       >> $output &&
 			echo "SHINYREPS_DE_DESEQ=${SHINYREPS_DE_DESEQ}"       >> $output &&
+			echo "SHINYREPS_DE_DESEQ_MM=${SHINYREPS_DE_DESEQ_MM}" >> $output &&
 			echo "SHINYREPS_SUBREAD=${SHINYREPS_SUBREAD}"         >> $output &&
 			echo "SHINYREPS_SUBREAD_SUFFIX=${SHINYREPS_SUBREAD_SUFFIX}"  >> $output &&
 			echo "SHINYREPS_SUBREAD_LOG=${SHINYREPS_SUBREAD_LOG}"        >> $output &&
