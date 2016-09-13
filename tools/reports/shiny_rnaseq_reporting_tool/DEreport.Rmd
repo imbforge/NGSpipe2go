@@ -156,11 +156,11 @@ for(i in 1:nrow(conts)) {
 ```
 
 ## Using information of reads mapping to multiple positions
-In a few gene classes, and some pairs of gene-pseudogene, which are result of duplication events, their abundance can only be estimated if reads mapping to multiple genes are taken into account. Thus, the quantification is just a rough estimation, but in some cases can give relevant information about the ratios the genes in these classes are expressed.
+In a few gene classes, as well as some of gene-pseudogene pairs, which are result of duplication events, their abundance can only be estimated if reads mapping to multiple positions are taken into account. Thus, the quantification is just a rough estimation, but in some cases can give relevant information about the ratios the genes in these classes are expressed.
 
-There are several approaches on how to deal with multimappers, and here we're adopting the rather conservative one of assigning the read randomly to one of the several genes it may come from.
+There are several approaches on how to deal with multimappers, and here we're adopting the rather conservative of randomly assigning the read to one of the several genes it may come from.
 
-Please use the information below only to answer questions about specific genes which is known to be affected by the aforementioned duplication events. In any case this analysis is conservative enough to refer to the vast majority of the genes, for which the analysis using only the uniquely mapping reads is the adequate.
+Please use the information below only to answer questions about specific genes which are known to be affected by the aforementioned duplication events. In any case, although conservative, this analysis is not meant to refer to the expression changes of the vast majority of the genes, for which the analysis using only the uniquely mapping reads is the adequate.
 
 ```{r DifferentialExpressionMM_paragraph, echo=F, results='asis', error=F, warning=F, message=F, fig.align="center"}
 for(i in 1:nrow(conts)) {
