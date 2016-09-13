@@ -45,7 +45,5 @@ DE_DESeq2_MM = {
             ${TOOL_R}/bin/Rscript ${TOOL_DESeq2}/DE_DESeq2.R $DE_DESeq2_MM_FLAGS
         ""","DE_DESeq2"
     }
-
-    forward input
 }
 
