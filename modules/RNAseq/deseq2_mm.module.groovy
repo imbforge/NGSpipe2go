@@ -39,7 +39,7 @@ DE_DESeq2_MM = {
 
             for f in $DE_DESeq2_MM_DUPRADAR_OUTDIR/*.tsv; do
                 F=\$(basename \$f) ;
-                tail -n +2 $f | cut -f1,3 | sort > "$INPUT_READS_DIR/\${F%_dupRadar.tsv}.readcounts.tsv" ;
+                tail -n +2 $f | cut -f1,3 | sort -k1,1 > "$INPUT_READS_DIR/\${F%_dupRadar.tsv}.readcounts.tsv" ;
             done &&
                 
             ${TOOL_R}/bin/Rscript ${TOOL_DESeq2}/DE_DESeq2.R $DE_DESeq2_MM_FLAGS
