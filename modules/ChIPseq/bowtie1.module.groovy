@@ -31,7 +31,7 @@ bowtie_se = {
 			echo \$(bowtie --version | grep bowtie | cut -d' ' -f3)   1>&2 ;
 			echo '/VERSION INFO' 1>&2 ;
 			
-			zcat $input | bowtie $BOWTIE_FLAGS $BOWTIE_REF - | ${TOOL_SAMTOOLS} view -bhSu - | ${TOOL_SAMTOOLS} sort -@ $BOWTIE_SAMTOOLS_THREADS -T $TMP/\$(basename $output.prefix) - > $output
+			zcat $input | bowtie $BOWTIE_FLAGS $BOWTIE_REF - | ${TOOL_SAMTOOLS} view -bhSu - | ${TOOL_SAMTOOLS} sort -@ $BOWTIE_SAMTOOLS_THREADS -O bam -T $TMP/\$(basename $output.prefix) - > $output
 		""","bowtie_se"
 	}
 }
