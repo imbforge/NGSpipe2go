@@ -30,7 +30,7 @@ extend = {
 			bedtools bamtobed -split -i $input |
 			bedtools slop -g \$CHRSIZES -l 0 -r $EXTEND_FRAGLEN -s |
 			bedtools bedtobam -ubam -g \$CHRSIZES |
-			${TOOL_SAMTOOLS} sort -@ $EXTEND_SAMTOOLS_THREADS -T $TMP/\$(basename $output.prefix) - > $output &&
+			${TOOL_SAMTOOLS} sort -@ $EXTEND_SAMTOOLS_THREADS -O bam -T $TMP/\$(basename $output.prefix) - > $output &&
 			${TOOL_SAMTOOLS} index $output
 		""","extend"
 	}
