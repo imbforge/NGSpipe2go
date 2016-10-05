@@ -293,7 +293,7 @@ DEhelper.Fastqc <- function(web=TRUE) {
     df <- as.data.frame(t(df))
     rownames(df) <- gsub(paste0("^", SHINYREPS_PREFIX), "", basename(samples))
     rownames(df) <- gsub(paste0("_fastqc$"), "", rownames(df))
-    colnames(df) <- c("Duplication", "Read qualities", "Sequence bias")
+    colnames(df) <- c("Read qualities", "Sequence bias", "GC content")
     kable(df, output=F, align="c")
 }
 
