@@ -284,9 +284,9 @@ DEhelper.Fastqc <- function(web=TRUE) {
     # construct the image url from the folder contents (skip current dir .)
     samples <- list.dirs(SHINYREPS_FASTQC_OUT, recursive=F)
     df <- sapply(samples, function(f) {
-        c(paste0("![fastqc img](", QC, "/", basename(f), "/Images/duplication_levels.png)"), 
-          paste0("![fastqc img](", QC, "/", basename(f), "/Images/per_base_quality.png)"), 
-          paste0("![fastqc img](", QC, "/", basename(f), "/Images/per_base_sequence_content.png)"))
+        c(paste0("![fastqc img](", QC, "/", basename(f), "/Images/per_base_quality.png)"), 
+          paste0("![fastqc img](", QC, "/", basename(f), "/Images/per_base_sequence_content.png)"),
+          paste0("![fastqc img](", QC, "/", basename(f), "/Images/per_sequence_gc_content.png)"))
     })
 
     # set row and column names, and output the md table
