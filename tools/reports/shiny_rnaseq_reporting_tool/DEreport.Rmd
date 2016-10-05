@@ -51,7 +51,7 @@ cat(DEhelper.Fastqc(web=F), sep="\n")
 ### Read mapping
 Mapping to the reference genome & transcriptome is performed with STAR (https://github.com/alexdobin/STAR). The program version, genome assembly and software parameters are described in the table at the end of the report.
 
-The mapping statistics below show the number and percentage of (i) input raw reads, (ii) uniquely mapped reads, (iii) reads mapping to multiple positions in the genome (multimapped), and (iv) reads not mapping to the reference genome. For the multimapped reads, one best alignment position is selected using the multi-mapper resolution tool MMR (https://github.com/ratschlab/mmr). All mapped reads are used for the production of browser coverage tracks but only uniquely mapped reads are taken into account in the DESeq differential expression analysis in order to avoid potential false-positives, however this standard analysis approach may also exclude some recently duplicated genes or gene-pseudogene pairs.
+The mapping statistics below show the number and percentage of (i) input raw reads, (ii) uniquely mapped reads, (iii) reads mapping to multiple positions in the genome (multimapped), and (iv) reads not mapping to the reference genome. For the multimapped reads, one random alignment of the best mapping positions is chosen. All mapped reads are used for the production of browser coverage tracks but only uniquely mapped reads are taken into account in the DESeq differential expression analysis in order to avoid potential false-positives, however this standard analysis approach may also exclude some recently duplicated genes or gene-pseudogene pairs.
 
 ```{r STAR_paragraph, echo=F, results='asis', error=F, warning=F, message=F}
 cat(DEhelper.STAR(), sep="\n")
