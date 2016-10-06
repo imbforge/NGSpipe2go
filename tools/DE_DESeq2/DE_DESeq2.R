@@ -34,6 +34,7 @@ library(RColorBrewer)
 library(gplots)
 library(ggplot2)
 library(ggrepel)
+library(WriteXLS)
 
 ##
 ## get arguments from the command line
@@ -138,6 +139,8 @@ res <- lapply(conts[,1],function(cont) {
     colnames(x)[2] <- "gene_name"
 
 	write.csv(x,file=paste0(out,"/",cont.name,".csv"),row.names=F)
+	WriteXLS(x,ExcelFileName=paste0(out,"/",cont.name,".xls"),row.names=F)
+	
 	res
 })
 
