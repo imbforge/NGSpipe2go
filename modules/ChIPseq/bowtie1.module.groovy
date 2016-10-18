@@ -18,6 +18,9 @@ bowtie_se = {
                        BOWTIE_MULTIMAP + " " + 
                        BOWTIE_THREADS  + " " + 
                        BOWTIE_EXTRA
+	
+	def SAMTOOLS_VIEW_FLAGS = "-bhSu " + SAMTOOLS_THREADS
+	def SAMTOOLS_SORT_FLAGS = "-O bam " + SAMTOOLS_THREADS
 
 	transform(".fastq.gz") to (".bam") {
 		exec """
@@ -31,7 +34,7 @@ bowtie_se = {
 			echo \$(bowtie --version | grep bowtie | cut -d' ' -f3)   1>&2 ;
 			echo '/VERSION INFO' 1>&2 ;
 			
-			zcat $input | bowtie $BOWTIE_FLAGS $BOWTIE_REF - | ${TOOL_SAMTOOLS} view -bhSu - | ${TOOL_SAMTOOLS} sort -@ $BOWTIE_SAMTOOLS_THREADS -O bam -T $TMP/\$(basename $output.prefix) - > $output
+			zcat $input | bowtie $BOWTIE_FLAGS $BOWTIE_REF - | ${TOOL_SAMTOOLS} view SAMTOOLS_VIEW_FLAGS - | ${TOOL_SAMTOOLS} sort SAMTOOLS_SORT_FLAGS -T $TMP/\$(basename $output.prefix) - > $output
 		""","bowtie_se"
 	}
 }
