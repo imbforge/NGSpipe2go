@@ -8,6 +8,8 @@ extend = {
 		author: "Sergi Sayols"
 
 	output.dir=MAPPED
+	
+	def SAMTOOLS_SORT_FLAGS = "-O bam" + EXTEND_SAMTOOLS_THREADS
 
 	transform(".bam") to ("_ext.bam") {
 		exec """
@@ -30,7 +32,7 @@ extend = {
 			bedtools bamtobed -split -i $input |
 			bedtools slop -g \$CHRSIZES -l 0 -r $EXTEND_FRAGLEN -s |
 			bedtools bedtobam -ubam -g \$CHRSIZES |
-			${TOOL_SAMTOOLS} sort -@ $EXTEND_SAMTOOLS_THREADS -O bam -T $TMP/\$(basename $output.prefix) - > $output &&
+			${TOOL_SAMTOOLS} sort $SAMTOOLS_SORT_FLAGS -T $TMP/\$(basename $output.prefix) - > $output &&
 			${TOOL_SAMTOOLS} index $output
 		""","extend"
 	}

@@ -19,7 +19,7 @@ load MODULE_FOLDER + "SmallRNAseq/dedup_stats.vars.groovy"
 load MODULE_FOLDER + "SmallRNAseq/dedup_stats.module.groovy"
 
 load MODULE_FOLDER + "SmallRNAseq/trim_umis.module.groovy"
-load MODULE_FOLDER + "SmallRNAseq/trim_umis.module.groovy"
+load MODULE_FOLDER + "SmallRNAseq/trim_umis.vars.groovy"
 
 load MODULE_FOLDER + "SmallRNAseq/bowtie1.vars.groovy"
 load MODULE_FOLDER + "SmallRNAseq/bowtie1.module.groovy"
@@ -58,5 +58,5 @@ load MODULE_FOLDER + "SmallRNAseq/collect_plots.vars.groovy"
 
 //MAIN PIPELINE TASK
 run {
-	"%.fastq.gz" * [ FastQC , Cutadapt + FastQQualityFilter + FilterDuplicates +TrimUMIs ] + "%.deduped_barcoded.trimmed.fastq.gz" * [ FastQC , Bowtie_se + [ BAMindexer, SelectUniqMappers + [ NucleotideSignature, PingPongSignal, PingPongPro] ] ] + "%.bam" * [ CountReads, bam2bw, SplitReadStrands + "%sense.bam" * [bam2bw] ] + [ DedupStats, MappingStatsPlot, CountReadsSummary ] + [ CollectPlots ]
+	"%.fastq.gz" * [ FastQC , Cutadapt + FastQQualityFilter + FilterDuplicates +TrimUMIs ] + "%.deduped_barcoded.trimmed.fastq.gz" * [ FastQC , Bowtie_se + [ BAMindexer, SelectUniqMappers + [ NucleotideSignature, PingPongSignal, PingPongPro] ] ] + "%.bam" * [ CountReads, Bam2bw, SplitReadStrands + "%sense.bam" * [Bam2bw] ] + [ DedupStats, MappingStatsPlot, CountReadsSummary ] + [ CollectPlots ]
 }
