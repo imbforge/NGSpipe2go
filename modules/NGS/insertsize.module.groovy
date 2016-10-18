@@ -14,16 +14,17 @@ InsertSize = {
 	transform(".bam") to ("_insersizemetrics.tsv") {
 		exec """
 			export TOOL_DEPENDENCIES=$TOOL_DEPENDENCIES &&
-			source ${TOOL_PICARD}/env.sh &&
+            source ${TOOL_JAVA}/env.sh                  &&
+            source ${TOOL_PICARD}/env.sh                &&
 			if [ -n "\$LSB_JOBID" ]; then
 				export TMPDIR=/jobdir/\${LSB_JOBID};
 			fi &&
 
 			echo 'VERSION INFO'  1>&2 ;
-			echo \$($TOOL_JAVA -jar ${TOOL_PICARD} CollectInsertSizeMetrics --version 2>&1 | cut -d'(' -f1 ) 1>&2 ;
+			echo \$(java -jar ${TOOL_PICARD}/picard.jar CollectInsertSizeMetrics --version 2>&1 | cut -d'(' -f1 ) 1>&2 ;
 			echo '/VERSION INFO' 1>&2 ;
 			
-            $TOOL_JAVA $JAVA_FLAGS -jar ${TOOL_PICARD} CollectInsertSizeMetrics $INSERTSIZE_FLAGS INPUT=$input OUTPUT=$output HISTOGRAM_FILE=${input.prefix}_insertsize_hist.pdf
+            java $JAVA_FLAGS -jar ${TOOL_PICARD}/picard.jar CollectInsertSizeMetrics $INSERTSIZE_FLAGS INPUT=$input OUTPUT=$output HISTOGRAM_FILE=${input.prefix}_insertsize_hist.pdf
 		""","InsertSize"
 	}
 }

@@ -22,10 +22,10 @@ SplitNCigarReads = {
             fi &&
 
             echo 'VERSION INFO'  1>&2 &&
-            echo \$($TOOL_JAVA -jar ${TOOL_GATK}/GenomeAnalysisTK.jar --version) 1>&2 &&
+            echo \$(java -jar ${TOOL_GATK}/GenomeAnalysisTK.jar --version) 1>&2 &&
             echo '/VERSION INFO' 1>&2 &&
 
-            $TOOL_JAVA $JAVA_FLAGS -jar ${TOOL_GATK}/GenomeAnalysisTK.jar -T SplitNCigarReads -I $input -o $output $SPLITCIGAR_FLAGS
+            java $JAVA_FLAGS -jar ${TOOL_GATK}/GenomeAnalysisTK.jar -T SplitNCigarReads -I $input -o $output $SPLITCIGAR_FLAGS
       ""","SplitNCigarReads"
    }
 }

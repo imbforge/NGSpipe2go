@@ -22,10 +22,10 @@ VariantCallHC = {
             fi &&
 
             echo 'VERSION INFO'  1>&2 &&
-            echo \$($TOOL_JAVA -jar ${TOOL_GATK}/GenomeAnalysisTK.jar --version) 1>&2 &&
+            echo \$(java -jar ${TOOL_GATK}/GenomeAnalysisTK.jar --version) 1>&2 &&
             echo '/VERSION INFO' 1>&2 &&
 
-            $TOOL_JAVA $JAVA_FLAGS -jar ${TOOL_GATK}/GenomeAnalysisTK.jar -T HaplotypeCaller -I $input -o $output --dbsnp $VCF_REF  $GATK_FLAGS
+            java $JAVA_FLAGS -jar ${TOOL_GATK}/GenomeAnalysisTK.jar -T HaplotypeCaller -I $input -o $output --dbsnp $VCF_REF  $GATK_FLAGS
 
       ""","VariantCallHC"
    }

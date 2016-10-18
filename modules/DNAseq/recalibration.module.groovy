@@ -21,17 +21,20 @@ BaseRecalibration = {
     transform (".bam") to (".recalibration.table", ".recalibrated.bam") {
         exec """
             export TOOL_DEPENDENCIES=$TOOL_DEPENDENCIES &&
+            source ${TOOL_JAVA}/env.sh                  &&
 			if [ -n "\$LSB_JOBID" ]; then
 				export TMPDIR=/jobdir/\${LSB_JOBID};
+            else
+                export TMPDIR=$TMP;
 			fi                                          &&
         
             echo 'VERSION INFO'  1>&2 &&
-            echo \$($TOOL_JAVA -jar $TOOL_GATK/GenomeAnalysisTK.jar --version) 1>&2 &&
+            echo \$(java -jar $TOOL_GATK/GenomeAnalysisTK.jar --version) 1>&2 &&
             echo '/VERSION INFO' 1>&2 &&
             
-            $TOOL_JAVA -Djava.io.tmpdir=$TMPDIR -jar $TOOL_GATK/GenomeAnalysisTK.jar -T BaseRecalibrator -nct $GATK_THREADS -R $GATK_BWA_REF -knownSites ${GATK_KNOWN_VARIANTS} -I $input -o $output1 &&
+            java -Djava.io.tmpdir=\$TMPDIR -jar $TOOL_GATK/GenomeAnalysisTK.jar -T BaseRecalibrator -nct $GATK_THREADS -R $GATK_BWA_REF -knownSites $GATK_KNOWN_VARIANTS -I $input -o $output1 &&
             
-            $TOOL_JAVA -Djava.io.tmpdir=$TMPDIR -jar $TOOL_GATK/GenomeAnalysisTK.jar -T PrintReads -nct $GATK_THREADS -R $GATK_BWA_REF -I $input -BQSR $output1 -o $output2 
+            java -Djava.io.tmpdir=\$TMPDIR -jar $TOOL_GATK/GenomeAnalysisTK.jar -T PrintReads -nct $GATK_THREADS -R $GATK_BWA_REF -I $input -BQSR $output1 -o $output2 
         ""","BaseRecalibration"
     }
     

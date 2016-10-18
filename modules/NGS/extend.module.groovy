@@ -15,12 +15,15 @@ extend = {
 		exec """
 			export TOOL_DEPENDENCIES=$TOOL_DEPENDENCIES &&
 			source ${TOOL_BEDTOOLS}/env.sh &&
+			source ${TOOL_SAMTOOLS}/env.sh &&
 			if [ -n "\$LSB_JOBID" ]; then
 				export TMPDIR=/jobdir/\${LSB_JOBID};
+            else
+                export TMPDIR=$TMP;
 			fi &&
 			
-			if [ ! -d ${TMP} ]; then
-				mkdir -p ${TMP};
+			if [ ! -d $TMP ]; then
+				mkdir -p $TMP;
 			fi &&
 			
 			echo 'VERSION INFO'  1>&2 ;
@@ -28,12 +31,12 @@ extend = {
 			echo '/VERSION INFO' 1>&2 ;
 			
 			CHRSIZES=${TMP}/\$(basename ${input.prefix}).extend.chrsizes  &&
-			${TOOL_SAMTOOLS} idxstats ${input} | cut -f1-2 > \${CHRSIZES} &&
+			samtools idxstats ${input} | cut -f1-2 > \${CHRSIZES} &&
 			bedtools bamtobed -split -i $input |
 			bedtools slop -g \$CHRSIZES -l 0 -r $EXTEND_FRAGLEN -s |
 			bedtools bedtobam -ubam -g \$CHRSIZES |
-			${TOOL_SAMTOOLS} sort $SAMTOOLS_SORT_FLAGS -T $TMP/\$(basename $output.prefix) - > $output &&
-			${TOOL_SAMTOOLS} index $output
+			samtools sort $SAMTOOLS_SORT_FLAGS -T $TMP/\$(basename $output.prefix) - > $output &&
+			samtools index $output
 		""","extend"
 	}
 }

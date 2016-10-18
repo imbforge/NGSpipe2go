@@ -3,7 +3,7 @@
 bowtie_se = {
 	doc title: "Bowtie SE alignment",
 		desc:  "Align single end reads",
-		constraints: "Only works with compressed input. Samtools multithreaded version expected (>=0.1.19).",
+		constraints: "Only works with compressed input. Samtools multithreaded version expected (>=1.2).",
 		bpipe_version: "tested with bpipe 0.9.8.7",
 		author: "Sergi Sayols"
 
@@ -19,13 +19,14 @@ bowtie_se = {
                        BOWTIE_THREADS  + " " + 
                        BOWTIE_EXTRA
 	
-	def SAMTOOLS_VIEW_FLAGS = "-bhSu " + SAMTOOLS_THREADS
+	def SAMTOOLS_VIEW_FLAGS = "-bhSu "
 	def SAMTOOLS_SORT_FLAGS = "-O bam " + SAMTOOLS_THREADS
 
 	transform(".fastq.gz") to (".bam") {
 		exec """
 			export TOOL_DEPENDENCIES=$TOOL_DEPENDENCIES &&
 			source ${TOOL_BOWTIE}/env.sh   &&
+			source ${TOOL_SAMTOOLS}/env.sh &&
 			if [ -n "\$LSB_JOBID" ]; then
 				export TMPDIR=/jobdir/\${LSB_JOBID};
 			fi                                          &&
@@ -34,7 +35,7 @@ bowtie_se = {
 			echo \$(bowtie --version | grep bowtie | cut -d' ' -f3)   1>&2 ;
 			echo '/VERSION INFO' 1>&2 ;
 			
-			zcat $input | bowtie $BOWTIE_FLAGS $BOWTIE_REF - | ${TOOL_SAMTOOLS} view $SAMTOOLS_VIEW_FLAGS - | ${TOOL_SAMTOOLS} sort $SAMTOOLS_SORT_FLAGS -T $TMP/\$(basename $output.prefix) - > $output
+			zcat $input | bowtie $BOWTIE_FLAGS $BOWTIE_REF - | samtools view $SAMTOOLS_VIEW_FLAGS - | samtools sort $SAMTOOLS_SORT_FLAGS -T $TMP/\$(basename $output.prefix) - > $output
 		""","bowtie_se"
 	}
 }

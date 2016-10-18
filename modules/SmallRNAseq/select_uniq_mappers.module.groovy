@@ -13,11 +13,11 @@ SelectUniqMappers = {
          fi &&
 
          echo 'VERSION INFO'  1>&2 &&
-         ${TOOL_SAMTOOLS} --version 1>&2 &&
+         ${TOOL_SAMTOOLS}/samtools --version 1>&2 &&
          echo '/VERSION INFO' 1>&2 &&
 
-         ${TOOL_SAMTOOLS} view -hb -q 255 $input | ${TOOL_SAMTOOLS} sort -@ $BOWTIE_THREADS - -o $output &&
-         ${TOOL_SAMTOOLS} index $output
+         ${TOOL_SAMTOOLS}/samtools view -hb -q 255 $input | ${TOOL_SAMTOOLS}/samtools sort -@ $BOWTIE_THREADS - -o $output &&
+         ${TOOL_SAMTOOLS}/samtools index $output
       ""","SelectUniqMappers"
    }
 }

@@ -15,11 +15,14 @@ VariantEval = {
         // usage parameters https://www.broadinstitute.org/gatk/gatkdocs/org_broadinstitute_gatk_tools_walkers_varianteval_VariantEval.php
         exec """
             export TOOL_DEPENDENCIES=$TOOL_DEPENDENCIES &&
+            source ${TOOL_JAVA}/env.sh                  &&
 			if [ -n "\$LSB_JOBID" ]; then
 				export TMPDIR=/jobdir/\${LSB_JOBID};
+            else
+                export TMPDIR=$TMP;
 			fi                                          &&
         
-            $TOOL_JAVA -Djava.io.tmpdir=$TMPDIR -jar $TOOL_GATK/GenomeAnalysisTK.jar -T VariantEval -R $GATK_BWA_REF -nt $GATK_THREADS --dbsnp ${GATK_KNOWN_VARIANTS} --eval $input -o $output
+            java -Djava.io.tmpdir=\$TMPDIR -jar $TOOL_GATK/GenomeAnalysisTK.jar -T VariantEval -R $GATK_BWA_REF -nt $GATK_THREADS --dbsnp ${GATK_KNOWN_VARIANTS} --eval $input -o $output
         ""","VariantEval"
     }
     

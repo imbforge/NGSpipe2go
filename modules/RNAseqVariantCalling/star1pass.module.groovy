@@ -50,8 +50,8 @@ STAR_pe = {
             export TMPDIR=/jobdir/\${LSB_JOBID};
          fi                                          &&
 
-         STAR $STAR_FLAGS --readFilesIn $inputs | samtools view -bhSu -F 256
-- | samtools sort -@ $STAR_THREADS - $EXP &&
+         STAR $STAR_FLAGS --readFilesIn $inputs | ${TOOL_SAMTOOLS}/samtools view -bhSu -F 256
+- | ${TOOL_SAMTOOLS}/samtools sort -@ $STAR_THREADS - $EXP &&
          rm ${EXP}.bam &&
 
          rm -rf ${TMP}/${EXP}

@@ -4,7 +4,7 @@ STAR_se = {
 	doc title: "STAR alignment",
 		desc:  "Align single/paired end reads",
 		constraints: "Paired end reads expected to have a _R1 _R2 suffix.",
-		bpipe_version: "tested with bpipe 0.9.9.9",
+		bpipe_version: "tested with bpipe 0.9.9",
 		author: "Sergi Sayols"
 
 	output.dir = MAPPED
@@ -67,6 +67,7 @@ STAR_se = {
 		exec """
 			export TOOL_DEPENDENCIES=$TOOL_DEPENDENCIES &&
 			source ${TOOL_STAR}/env.sh &&
+			source ${TOOL_SAMTOOLS}/env.sh &&
 			if [ -n "\$LSB_JOBID" ]; then
 				export TMPDIR=/jobdir/\${LSB_JOBID};
 			else 
@@ -83,7 +84,7 @@ STAR_se = {
 			echo \$(STAR --version) 1>&2 &&
 			echo '/VERSION INFO' 1>&2 &&
 			
-			STAR $STAR_FLAGS --readFilesIn $inputs | ${TOOL_SAMTOOLS} view $SAMTOOLS_VIEW_FLAGS - | ${TOOL_SAMTOOLS} sort $SAMTOOLS_SORT_FLAGS -T \${TMPDIR}/${OUTPUTFILE}_sort - > $output1 &&
+			STAR $STAR_FLAGS --readFilesIn $inputs | samtools view $SAMTOOLS_VIEW_FLAGS - | samtools sort $SAMTOOLS_SORT_FLAGS -T \${TMPDIR}/${OUTPUTFILE}_sort - > $output1 &&
 			
 			mv ${LOGS}/STAR_se/${OUTPUTFILE}SJ.out.tab $output.dir &&
 			ln -s ${LOGS}/STAR_se/${OUTPUTFILE}Log.final.out $output.dir
