@@ -42,22 +42,18 @@ The insights are limited and in most cases more in-depth analysis will be needed
 We follow a very straight forward QC -> adapter removal -> low quality sequence removal strategy. Next PCR duplicates are taken care of (see bellow).
 
 #### Filter Duplicates
-As piRNAs are derived from repetitive sequences, it is expected that a large number of reads will have the same sequence. To separate what are unique RNA molecules from PCR duplicates, during the library preparation Unique Molecule Identifiers (UMIs, aka barcodes) are added to the sample before PCR amplification. These UMIs are then used to collapse the duplicated reads (PCR duplicates).
+As piRNAs are derived from repetitive sequences, it is expected that a large number of reads will have the same sequence. To separate what are unique RNA molecules from PCR duplicates, during the library preparation Unique Molecule Identifiers (UMIs, aka barcodes) are added to the sample before PCR amplification. These UMIs are then used to collapse the duplicated reads (PCR duplicates). Barcodes are then removed prior to mapping.
 
-NOTE: at the end of this stage barcodes are still present in the read sequence and will be removed during mapping. In the future a stage might be included to remove these prior to mapping.
+A second QC step is done at this stage (`data/qc/fastqc`), and the number of reads filtered at each stage is quantified and plotted (`results/processed_reads/figure`). 
 
-A second QC step is done at this stage, and the number of reads filtered at each stage is quantified and plotted (link_to_folder). 
-
-An overview of filtered reads (PCR duplicates) can be found in `results/processed_reads/figure/`
 
 ### Mapping
 Mapping to the genome is performed with bowtie with the following (relevant settings):
-- **-v 0**, no mismatches allowed. Considering changes to **1** in the future.
+- **-v 2**, 2 mismatches allowed. This is allows sensitive mapping of reads in regions that might have SNPs.
 - **-M 1**, if a read has more than **1** reportable alignments, one is reported at random.
 - **--tryhard --best --strata --chunkmbs 256**, bowtie *best* mode.
-- **--trim5 4 --trim3 4** to remove the barcodes (UMIs).
 
-The choice to retain the multimapping reads was done in the interest of flexibility - a stage has been included to separate uniquely mapping reads. The rationale is that some analysis require specificity, that is as many reads as possibly, for instance to quantify the classes of transposons. In this case where exacly the read originated from is not very important, but rather which genomic feature is the piRNA targeting. Specificity, knowing **exactly** the genomic position of the element that piRNA is targeting is important to determine some features of phasing (Mohn *et al* 2015), for instance in the stage nucleotide signature.
+The choice to retain the multimapping reads was done in the interest of flexibility - a stage has been included to separate uniquely mapping reads. The rationale is that some analysis require specificity, that is as many reads as possibly, for instance to quantify the classes of transposons. In this case where **exact position** of the read originated from is not very important, but rather which genomic feature is the piRNA targeting. Specificity, knowing **exactly** the genomic position of the element that piRNA is targeting is important to determine some features of phasing (Mohn *et al* 2015), for instance in the stage nucleotide signature.
 
 **Ouputs:**
 - `results/mapped/unique`
