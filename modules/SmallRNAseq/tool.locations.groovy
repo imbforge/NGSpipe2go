@@ -1,6 +1,7 @@
 // variables containing the location of the used tools
 TOOL_DEPENDENCIES="/fsimb/groups/imb-kettinggr/common_bin" // your local tools folder
 PROJECT_DEPENDENCIES=ESSENTIAL_PROJECT + "/NGSpipe2go/tools/" // please copy the NGSpipe2Go tools to the project folder and include the location here
+TOOL_JAVA=TOOL_DEPENDENCIES + "/jdk/1.8.0_102/jre/bin/java"
 TOOL_R=TOOL_DEPENDENCIES + "/R/3.3.0/"
 TOOL_FASTQC=TOOL_DEPENDENCIES + "/FastQC/0.11.4/fastqc"
 TOOL_BOWTIE=TOOL_DEPENDENCIES + "/bowtie/0.12.8/"

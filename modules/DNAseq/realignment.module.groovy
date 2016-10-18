@@ -25,8 +25,12 @@ IndelRealignment = {
 				export TMPDIR=/jobdir/\${LSB_JOBID};
 			fi                                          &&
         
-            java -Djava.io.tmpdir=$TMPDIR -jar $TOOL_GATK/GenomeAnalysisTK.jar -T RealignerTargetCreator -nt $GATK_THREADS -R $GATK_BWA_REF -I $input -o $output1 &&
-            java -Djava.io.tmpdir=$TMPDIR -jar $TOOL_GATK/GenomeAnalysisTK.jar -T IndelRealigner -R $GATK_BWA_REF -I $input -targetIntervals $output1 -o $output2 
+            echo 'VERSION INFO'  1>&2 &&
+            echo \$($TOOL_JAVA -jar $TOOL_GATK/GenomeAnalysisTK.jar --version) 1>&2 &&
+            echo '/VERSION INFO' 1>&2 &&
+            
+            $TOOL_JAVA -Djava.io.tmpdir=$TMPDIR -jar $TOOL_GATK/GenomeAnalysisTK.jar -T RealignerTargetCreator -nt $GATK_THREADS -R $GATK_BWA_REF -I $input -o $output1 &&
+            $TOOL_JAVA -Djava.io.tmpdir=$TMPDIR -jar $TOOL_GATK/GenomeAnalysisTK.jar -T IndelRealigner -R $GATK_BWA_REF -I $input -targetIntervals $output1 -o $output2 
         ""","IndelRealignment"
     }
     
