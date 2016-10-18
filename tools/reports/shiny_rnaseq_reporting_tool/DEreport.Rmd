@@ -33,16 +33,16 @@ cat(DEhelper.Bustard(), sep="\n")
 ### Raw reads QC
 The raw sequence reads of all samples are analysed with the popular FastQC tool (http://www.bioinformatics.babraham.ac.uk/projects/fastqc/).
 
-1. The "Per Base Sequence Quality" Box-Whisker plots show the range of quality values across all base positions:
-    + The central red line is the median value
-    + The yellow box represents the inter-quartile range (25-75%)
-    + The upper and lower whiskers represent the 10% and 90% points
-    + The blue line represents the mean quality
+1. The "Read qualities" Box-Whisker plots show the range of quality values across all base positions:
+    (i) The central red line is the median value,
+    (ii) The yellow box represents the inter-quartile range (25-75%),
+    (iii) The upper and lower whiskers represent the 10% and 90% points,
+    (iv) The blue line represents the mean quality.
 The y-axis on the graph shows the Phred quality scores, which are logarithmically related to the base-calling error probabilities. The higher the score the better the base call. The background of the graph divides the y axis into very good quality calls (green), calls of reasonable quality (orange), and calls of poor quality (red). Typically, the majority of calls on all base positions fall into the green area.
 
-2. The "Per Base Sequence Content" plots show the proportion of each base (% G, A, T and C) at each position. In a random library there would be little difference between the positions of a sequence run, so the lines in this plot should run parallel with each other. But most RNA-seq libraries show sequence imbalance in the first 10-12 read positions due to RT priming biases, which should however look fairly similar in all samples.
+2. The "Sequence bias" plots show the proportion of each base (% G, A, T and C) at each position. In a random library there would be little difference between the positions of a sequence run, so the lines in this plot should run parallel with each other. But most RNA-seq libraries show sequence imbalance in the first 10-12 read positions due to RT priming biases, which should however look fairly similar in all samples.
 
-3. The "Per Sequence GC Content" plots show the GC% distribution of all reads (red lines) and the ideal normal distribution based on the data (blue lines). Typically, the red and blue lines tightly overlap and look essentially the same in all samples. An unusually shaped distribution could indicate a contaminated library.
+3. The "GC Content" plots show the GC% distribution of all reads (red lines) and the ideal normal distribution based on the data (blue lines). Typically, the red and blue lines tightly overlap and look essentially the same in all samples. An unusually shaped distribution could indicate a contaminated library.
 
 ```{r FastQC_paragraph, echo=F, results='asis', error=F, warning=F, message=F}
 cat(DEhelper.Fastqc(web=F), sep="\n")
