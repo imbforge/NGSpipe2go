@@ -54,9 +54,9 @@ STAR_se = {
                      STAR_EXTRA
 
     // samtools flags
-    def SAMTOOLS_FLAGS = "-bhSu"
+    def SAMTOOLS_VIEW_FLAGS = "-bhSu" + STAR_SAMTOOLS_THREADS
     if(STAR_FILTER_SEC == "YES") {
-        SAMTOOLS_FLAGS = " -F 256 " + SAMTOOLS_FLAGS    //remove secondary alignments
+        SAMTOOLS_VIEW_FLAGS = " -F 256 " + SAMTOOLS_VIEW_FLAGS    //remove secondary alignments
     }
 
     def SAMTOOLS_SORT_FLAGS = " -O bam " + STAR_SAMTOOLS_THREADS
@@ -83,7 +83,7 @@ STAR_se = {
 			echo \$(STAR --version) 1>&2 &&
 			echo '/VERSION INFO' 1>&2 &&
 			
-			STAR $STAR_FLAGS --readFilesIn $inputs | ${TOOL_SAMTOOLS} view $SAMTOOLS_FLAGS - | ${TOOL_SAMTOOLS} sort $SAMTOOLS_SORT_FLAGS -T \${TMPDIR}/${OUTPUTFILE}_sort - > $output1 &&
+			STAR $STAR_FLAGS --readFilesIn $inputs | ${TOOL_SAMTOOLS} view $SAMTOOLS_VIEW_FLAGS - | ${TOOL_SAMTOOLS} sort $SAMTOOLS_SORT_FLAGS -T \${TMPDIR}/${OUTPUTFILE}_sort - > $output1 &&
 			
 			mv ${LOGS}/STAR_se/${OUTPUTFILE}SJ.out.tab $output.dir &&
 			ln -s ${LOGS}/STAR_se/${OUTPUTFILE}Log.final.out $output.dir
