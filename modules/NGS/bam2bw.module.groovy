@@ -14,22 +14,29 @@ bam2bw = {
 			export TOOL_DEPENDENCIES=$TOOL_DEPENDENCIES &&
 			source ${TOOL_BEDTOOLS}/env.sh &&
 			source ${TOOL_SAMTOOLS}/env.sh &&
+			source ${TOOL_KENTUTILS}/env.sh &&
+
 			if [ -n "\$LSB_JOBID" ]; then
 				export TMPDIR=/jobdir/\${LSB_JOBID};
-            else
-                export TMPDIR=$TMP;
+            		else
+                		export TMPDIR=$TMP;
 			fi &&
 			
 			if [ ! -d ${TMPDIR} ]; then
 				mkdir -p ${TMPDIR};
 			fi &&
 			
+			echo 'VERSION INFO'  1>&2 &&
+                        echo \$(genomeCoverageBed -h 2>&1 | grep 'Version') 1>&2
+                        bedGraphToBigWig    1>&2 &&
+                        echo '/VERSION INFO' 1>&2 &&
+
 			CHRSIZES=${TMP}/\$(basename ${input.prefix}).bam2bw.chrsizes &&
 			samtools idxstats ${input} | cut -f1-2 > \${CHRSIZES} &&
 			TOTAL_MAPPED=\$( samtools flagstat $input | head -n1| cut -f1 -d" ") &&
 			SCALE=\$(echo "1000000/\$TOTAL_MAPPED" | bc -l) &&
 			genomeCoverageBed -bg -split -scale \${SCALE} -ibam ${input} -g \${CHRSIZES} > ${output.prefix}.bedgraph &&
-			${TOOL_DEPENDENCIES}/ucsc/default/bedGraphToBigWig ${output.prefix}.bedgraph \${CHRSIZES} $output &&
+			bedGraphToBigWig ${output.prefix}.bedgraph \${CHRSIZES} $output &&
 			rm \${CHRSIZES} ${output.prefix}.bedgraph
 		""","bam2bw"
 	}

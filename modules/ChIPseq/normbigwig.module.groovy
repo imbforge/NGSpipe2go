@@ -12,7 +12,7 @@ normbigwig = {
 			export TOOL_DEPENDENCIES=$TOOL_DEPENDENCIES  &&
 			source ${TOOL_DEEPTOOLS}/env.sh &&
 			source ${TOOL_R}/env.sh &&
-			source ${TOOL_UCSC}/env.sh &&
+			source ${TOOL_KENTUTILS}/env.sh &&
 			source ${TOOL_SAMTOOLS}/env.sh &&
 			if [ -n "\$LSB_JOBID" ]; then
 				export TMPDIR=/jobdir/\${LSB_JOBID};
