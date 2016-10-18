@@ -59,15 +59,14 @@ base          <- parseArgs(args,"base=",NA)    # suffix to remove from the sampl
 cwd          <- parseArgs(args,"cwd=","./")     # current working directory
 out          <- parseArgs(args,"out=","DE.DESeq2") # output filename
 
-runstr <- "Rscript DE.DESeq2.R [targets=targets.txt] [contrasts=contrasts.txt] [mmatrix=~condition] [filter=TRUE] [prefix=RE] [suffix=RE] [cwd=.] [base=] [out=DE.DESeq2]"
+runstr <- "Rscript DE.DESeq2.R [targets=targets.txt] [contrasts=contrasts.txt] [mmatrix=~condition] [gtf=] [filter=TRUE] [prefix=RE] [suffix=RE] [cwd=.] [base=] [out=DE.DESeq2]"
 if(!file.exists(ftargets))   stop(paste("File",ftargets,"does NOT exist. Run with:\n",runstr))
 if(!file.exists(fcontrasts)) stop(paste("File",fcontrasts,"does NOT exist. Run with:\n",runstr))
 if(!file.exists(cwd))        stop(paste("Dir",cwd,"does NOT exist. Run with:\n",runstr))
 if(is.na(filter.genes))      stop(paste("Filter (filter invariant genes) has to be either TRUE or FALSE. Run with:\n",runstr))
-
+if(!file.exists(gene.model)) stop(paste("GTF File:", gene.model, " does NOT exist. Run with: \n", runstr))
 
 # calculate gene lengths
-if(file.exists(gene.model)) {
     library(GenomicRanges)
     library(rtracklayer)
     gtf <- import.gff(gene.model, format="gtf", feature.type="exon")
@@ -75,9 +74,11 @@ if(file.exists(gene.model)) {
     gene.lengths <- tapply(width(gtf.flat), names(gtf.flat), sum)
     #make sure we have a gene_name column (needed as output in the report later)
     if (("gene_name" %in% colnames(mcols(gtf))) == FALSE) { gtf$gene_name <- rep("NA",length(gtf$gene_id)) }
-}
-
-
+#create a txdb object to collect the genes coordinates for later usage
+library(GenomicFeatures)
+txdb <- makeTxDbFromGFF(gene.model, format="gtf")
+genes <- genes(txdb)
+genes <- as.data.frame(genes)
 ##
 ## create the design and contrasts matrix
 ##
@@ -122,21 +123,20 @@ res <- lapply(conts[,1],function(cont) {
 	res <- results(dds, independentFiltering=filter.genes, format="DataFrame")
 
     # calculate quantification (RPKM if gene model provided, rlog transformed values otherwise)
-    if(file.exists(gene.model)) { 
         quantification <- apply(fpm(dds), 2, function(x,y) 1e3 * x / y, gene.lengths[rownames(fpm(dds))])
         res$gene_name <- gtf$gene_name[match(rownames(res),gtf$gene_id)]
-    } else { 
-        quantification <- assay(rlog(dds))
-        res$gene_name <- res$gene_name <- "NA"
-    }
-
-    # write the results
+        # write the results
 	x <- merge(res[, c("gene_name", "baseMean", "log2FoldChange", "padj")], quantification, by=0)
+	rownames(x) <- x$Row.names
+	x <- x[, -1]
+	#add the coordinates of the genes
+	x <- merge(genes[, !(colnames(genes) %in% c("gene_id"))], x, by=0)
+	
 	x <- x[order(x$padj),]
 	
 	colnames(x)[which(colnames(x) %in% c("baseMean", "log2FoldChange", "padj"))] <- mcols(res)$description[match(c("baseMean", "log2FoldChange", "padj"), colnames(res))]
 	colnames(x)[1] <- "gene_id"
-    colnames(x)[2] <- "gene_name"
+	#add the cooridnates for each gene into the columns
 
 	write.csv(x,file=paste0(out,"/",cont.name,".csv"),row.names=F)
 	WriteXLS(x,ExcelFileName=paste0(out,"/",cont.name,".xls"),row.names=F)
@@ -181,4 +181,6 @@ x <- mapply(function(res, cont) {
 }, res, conts[, 1], SIMPLIFY=FALSE)
 
 dev.off()
+#save the sessionInformation
+writeLines(capture.output(sessionInfo()),paste(out, "/DE_DESeq2_session_info.txt", sep=""))
 save.image(file=paste0(out,"/DE_DESeq2.RData"))
