@@ -263,8 +263,8 @@ DEhelper.STAR <- function() {
     colnames(x) <- gsub(paste0(SUFFIX, "$"), "", colnames(x))
     df <- data.frame(input_reads=format(x[1, ], big.mark=","), 
                      uniquely_mapped=paste0(format(x[2, ], big.mark=","), " (", format(x[3, ], nsmall=2), "%)"), 
-                     multi_mapped=paste0(format(x[4, ] + x[5, ], big.mark=","), " (", format(x[6, ] + x[7, ], nsmall=2), "%)"), 
-                     unmapped=paste0(format(x[8, ] + x[9, ] + x[10, ], nsmall=2), "%"))
+                     multi_mapped=paste0(format(x[4, ], big.mark=","), " (", format(x[6, ], nsmall=2), "%)"), 
+                     unmapped=paste0(format(x[7, ] + x[8, ] + x[9, ] + x[10, ], nsmall=2), "%"))
     kable(df, align=c("r", "r", "r", "r"), output=F)
 }
 

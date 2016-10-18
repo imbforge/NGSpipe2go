@@ -51,47 +51,49 @@ cat(DEhelper.Fastqc(web=F), sep="\n")
 ### Read mapping
 Mapping to the reference genome & transcriptome is performed with STAR (https://github.com/alexdobin/STAR). The program version, genome assembly and software parameters are described in the table at the end of the report.
 
-The mapping statistics below show the number and percentage of (i) input raw reads, (ii) uniquely mapped reads, (iii) reads mapped to multiple positions in the genome (multimapped), and (iv) reads not mapped to the reference genome. For the multimapped reads, one random alignment among the best mapping positions is chosen. While all mapped reads are used for the generation of browser coverage tracks, only uniquely mapped reads are typically taken into account in the DESeq2 differential expression analysis in order to avoid potential false-positives, however this standard analysis approach may also exclude some recently duplicated genes or gene-pseudogene pairs. To investigate the potential expression changes in such problematic genes, a side branch of DESeq2 is run on multimapping reads and the results of both branches are compared.
+The mapping statistics below show the number and percentage of (i) input raw reads, (ii) uniquely mapped reads, (iii) reads mapped to multiple positions in the genome (multimapped), and (iv) reads not mapped to the reference genome. For the multimapped reads, one random alignment among the best mapping positions is chosen. While all mapped reads are included in the generation of browser coverage tracks, only uniquely mapped reads are typically taken into account in the DESeq2 differential expression analysis in order to avoid potential false-positives. However, this standard analysis approach may also exclude some recently duplicated genes or gene-pseudogene pairs, resulting in false-negatives. To investigate the potential expression changes in such genes, a side branch of DESeq2 is run using all mapped reads and the results of both branches are compared.
 
 ```{r STAR_paragraph, echo=F, results='asis', error=F, warning=F, message=F}
 cat(DEhelper.STAR(), sep="\n")
 ``` 
 
 ### Library complexity assessment
-Measuring the fraction of duplicated reads is a common quality control step for NGS data sets, which can hint towards low library complexity due to PCR over-amplification during library preparation and/or suboptimal amount of input material. However, in RNA-seq  duplicate reads may also arise naturally due to the highly expressed (e.g. housekeeping) genes, which renders the overall read duplication rate as reported by FastQC useless. The IMB-developed tool dupRadar (http://bioconductor.org/packages/release/bioc/html/dupRadar.html) gives an informative insight into the duplication problem by graphically relating the gene expression level and the observed duplication rate. Thus, problematic samples can be easily identified by visual inspection.
+Measuring the fraction of duplicated reads is commonly used to control for excessive PCR over-amplification during library preparation and/or for suboptimal amount of input material. However, in RNA-seq duplicated reads may also arise naturally due to the highly expressed (e.g. housekeeping) genes, which makes the overall read duplication rate useless. The IMB-developed tool dupRadar (http://bioconductor.org/packages/release/bioc/html/dupRadar.html) gives an informative insight into the duplication problem by graphically relating the gene expression levels and the observed duplication rates. Thus, problematic samples can be easily identified by visual inspection.
 
 ```{r Dupradar_paragraph, echo=F, results='asis', error=F, warning=F, message=F}
 cat(DEhelper.dupRadar(web=F), sep="\n")
 ```
 
 ### Mapped reads annotation
-The mapped reads were assigned to annotated features (gene exons) using the Subread tool featureCounts (http://bioinf.wehi.edu.au/featureCounts). Listed below is also the number of un-assigned reads due to ambiguity or lack of overlap with known gene annotation, e.g. intronic reads derived from unprocessed transcripts.
+The mapped reads were assigned to annotated features (gene exons) using the Subread tool featureCounts (http://bioinf.wehi.edu.au/featureCounts). The unassigned reads are due to ambiguity (overlap with multiple features), non-unique mapping (multimap) or because no overlap is found with known exonic features (e.g. intronic reads derived from unprocessed transcripts). Typically, mRNA-seq with polyA-selection results in more exon-assigned reads compared to total RNA-seq with ribodepletion. 
 
 ```{r Subread_paragraph, echo=F, results='asis', error=F, warning=F, message=F}
 cat(DEhelper.Subread(), sep="\n")
 ```
 
 ### RNA class representation
-The plots below show the fraction of mapped reads assigned to various RNA classes. These plots help in determining if the sample prep protocol worked well and may reveal issues with rRNA contamination. 
+The following plot shows the fraction of reads assigned to various RNA classes. These plots help in determining if the sample prep protocol worked well and may reveal issues with rRNA contamination. 
 
 ```{r RNAtypes_paragraph, echo=F, results='asis', error=F, warning=F, message=F}
 cat(DEhelper.RNAtypes(web=F), sep="\n")
 ```
 
 ### Gene body coverage
-The plots below show meta-gene profiles of 5' to 3' read coverage and reveal if there is some bias due to RNA degradation or library prep protocol. polyA-selection protocols are particularly prone of producing 3' coverage bias.
+The plots below show meta-gene profiles of 5' to 3' read coverage and can reveal biases due to RNA degradation or specific library prep protocol; polyA-selection protocols are particularly prone of producing 3' coverage bias upon RNA degradation. The grey line depicts the actual read coverage and the red line shows the overall trend.
 
 ```{r GeneBodyCoverage_paragraph, echo=F, results='asis', error=F, warning=F, message=F}
 cat(DEhelper.geneBodyCov(web=F), sep="\n")
 ```
 
 ### Strand specificity 
+The table below shows the fraction of reads mapped in sense or antisense to gene exons - around 0.5 for non-stranded library prep protocols and close to 0 or 1 for strand-specific RNA-seq protocols.
 
 ```{r echo=F, results='asis', error=F, warning=F, message=F}
 cat(DEhelper.strandspecificity(), sep="\n")
 ```
 
 ### Distribution of reads on introns/exons and intergenic regions ###
+The following plots depict the fraction of reads mapped to exons, introns and intergenic regions. For mRNA-seq in well-annotated genomes the fraction of exonic reads is typically quite high, whereas for total RNA-seq intronic and intergenic reads may dominate.
 
 ```{r echo=F, results='asis', error=F, warning=F, message=F}
 cat(DEhelper.Qualimap(), sep="\n")		# sample Qualimap 
