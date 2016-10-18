@@ -16,12 +16,12 @@ AddRG = {
             fi &&
 
             echo 'VERSION INFO'  1>&2 &&
-            echo \$(${TOOL_JAVA}/java -jar ${TOOL_PICARD} AddOrReplaceReadGroups --version) 1>&2 &&
+            echo \$($TOOL_JAVA -jar $TOOL_PICARD AddOrReplaceReadGroups --version) 1>&2 &&
             echo '/VERSION INFO' 1>&2 &&
 
             PLATFORM="genomics" &&
 
-            ${TOOL_JAVA}/java ${JAVA_FLAGS} -jar ${TOOL_PICARD} AddOrReplaceReadGroups I=$input O=$output SO=coordinate RGID=${EXP} RGLB=${EXP} RGPL=illumina RGPU=${PLATFORM} RGSM=${EXP}
+            $TOOL_JAVA $JAVA_FLAGS -jar $TOOL_PICARD AddOrReplaceReadGroups I=$input O=$output SO=coordinate RGID=${EXP} RGLB=${EXP} RGPL=illumina RGPU=${PLATFORM} RGSM=${EXP}
 
       ""","AddRG"
    }

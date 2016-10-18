@@ -18,7 +18,8 @@ Bowtie_se = {
                        " --trim5 " + Integer.toString(BOWTIE_TRIMM5)  +
                        " --trim3 " + Integer.toString(BOWTIE_TRIMM3)
 
-   transform(".deduped_barcoded.fastq.gz") to (".bam") {
+   transform(".deduped_barcoded.trimmed.fastq.gz") to (".bam") {
+   branch.totalBams = output
 
       def SAMPLE_NAME = input.prefix.prefix
 
@@ -28,7 +29,7 @@ Bowtie_se = {
          fi                                          &&
 
          echo 'VERSION INFO'  1>&2 &&
-         echo \$(bowtie --version) 1>&2 &&
+         ${TOOL_BOWTIE}/bowtie --version 1>&2 &&
          echo '/VERSION INFO' 1>&2 &&
 
          zcat $input | ${TOOL_BOWTIE}/bowtie $BOWTIE_FLAGS $BOWTIE_REF - 2> ${SAMPLE_NAME}.bt.log | ${TOOL_SAMTOOLS} view -bhSu - | ${TOOL_SAMTOOLS} sort -@ $BOWTIE_THREADS - -o $output

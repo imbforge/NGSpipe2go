@@ -22,10 +22,10 @@ MarkDups = {
             fi &&
 
             echo 'VERSION INFO'  1>&2 &&
-            echo \$(${TOOL_JAVA}/java -jar ${TOOL_PICARD} MarkDuplicates --version) 1>&2 &&
+            echo \$($TOOL_JAVA -jar $TOOL_PICARD MarkDuplicates --version) 1>&2 &&
             echo '/VERSION INFO' 1>&2 &&
 
-            ${TOOL_JAVA}/java ${JAVA_FLAGS} -jar ${TOOL_PICARD} MarkDuplicates $MARKDUPS_FLAGS I=$input O=$output M=${input.prefix}_dupmetrics.tsv
+            $TOOL_JAVA $JAVA_FLAGS -jar $TOOL_PICARD MarkDuplicates $MARKDUPS_FLAGS I=$input O=$output M=${input.prefix}_dupmetrics.tsv
 
       ""","MarkDups"
    }
