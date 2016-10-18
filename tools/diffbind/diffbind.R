@@ -101,8 +101,11 @@ if(ANNOTATE) {
     lapply(result, plotDistToTSS)
 }
 
+dev.off()
+
+writeLines(capture.output(sessionInfo()),paste(OUT, "/diffbind_session_info.txt", sep=""))
+save.image(file=paste0(OUT,"/diffbind.RData"))
 result <- lapply(result, as.data.frame)
 WriteXLS("result", ExcelFileName=paste0(OUT, "/diffbind.xls"),
          SheetNames=substr(gsub("(.+)=\\((.+)\\)", "\\2", conts[,1]), 1, 31))
 
-dev.off()
