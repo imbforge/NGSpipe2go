@@ -12,10 +12,6 @@ FilterDuplicates = {
       def SAMPLE_NAME = input.prefix.prefix
 
       exec """
-         if [ -n "\$LSB_JOBID" ]; then
-            export TMPDIR=/jobdir/\${LSB_JOBID};
-         fi                                          &&
-
          nreads=\$(zcat $input | echo \$((`wc -l`/4))) &&
          echo \$nreads \$input >> dedup.stats.txt
 

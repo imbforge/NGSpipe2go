@@ -10,24 +10,20 @@ BamCoverageStrands = {
 
 	transform(".bam") to (".fwd.scaled.bw", ".rev.scaled.bw") {
      	exec """
-	if [ -n "\$LSB_JOBID" ]; then
-		export TMPDIR=/jobdir/\${LSB_JOBID};
-	fi &&
+        source ${TOOL_PYTHONENV} &&
 
-	source ${TOOL_PYTHONENV} &&
+        bamCoverage --bam $input -o $output1 \
+            --normalizeTo1x $GENOME_SIZE \
+            --binSize 10 \
+            --numberOfProcessors $ESSENTIAL_CORES \
+            --filterRNAstrand forward &&
 
-	bamCoverage --bam $input -o $output1 \
-		--normalizeTo1x $GENOME_SIZE \
-		--binSize 10 \
-		--numberOfProcessors $ESSENTIAL_CORES \
-		--filterRNAstrand forward &&
-
-	bamCoverage --bam $input -o $output1 \
-		--normalizeTo1x $GENOME_SIZE \
-		--binSize 10 \
-		--numberOfProcessors $ESSENTIAL_CORES \
-		--filterRNAstrand reverse 
-		""","BamCoverageStrands"
+        bamCoverage --bam $input -o $output1 \
+            --normalizeTo1x $GENOME_SIZE \
+            --binSize 10 \
+            --numberOfProcessors $ESSENTIAL_CORES \
+            --filterRNAstrand reverse 
+            ""","BamCoverageStrands"
 	}
 }
 

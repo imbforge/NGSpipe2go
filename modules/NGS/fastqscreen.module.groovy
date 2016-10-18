@@ -15,9 +15,6 @@ FastqScreen = {
 		exec """
 			export TOOL_DEPENDENCIES=$TOOL_DEPENDENCIES &&
 			source ${TOOL_FASTQSCREEN}/env.sh &&
-			if [ -n "\$LSB_JOBID" ]; then
-				export TMPDIR=/jobdir/\${LSB_JOBID};
-			fi &&
 			if [ ! -e "$output.prefix" ]; then
                 mkdir $output.prefix;
             fi &&

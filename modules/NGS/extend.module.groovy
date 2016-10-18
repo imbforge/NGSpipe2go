@@ -9,19 +9,13 @@ extend = {
 
 	output.dir=MAPPED
 	
-	def SAMTOOLS_SORT_FLAGS = "-O bam" + EXTEND_SAMTOOLS_THREADS
+	def SAMTOOLS_SORT_FLAGS = "-O bam " + EXTEND_SAMTOOLS_THREADS
 
 	transform(".bam") to ("_ext.bam") {
 		exec """
 			export TOOL_DEPENDENCIES=$TOOL_DEPENDENCIES &&
 			source ${TOOL_BEDTOOLS}/env.sh &&
 			source ${TOOL_SAMTOOLS}/env.sh &&
-			if [ -n "\$LSB_JOBID" ]; then
-				export TMPDIR=/jobdir/\${LSB_JOBID};
-            else
-                export TMPDIR=$TMP;
-			fi &&
-			
 			if [ ! -d $TMP ]; then
 				mkdir -p $TMP;
 			fi &&

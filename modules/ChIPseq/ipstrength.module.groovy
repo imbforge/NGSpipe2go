@@ -13,9 +13,6 @@ ipstrength = {
 		exec """
 			export TOOL_DEPENDENCIES=$TOOL_DEPENDENCIES  &&
 			source ${TOOL_R}/env.sh &&
-			if [ -n "\$LSB_JOBID" ]; then
-				export TMPDIR=/jobdir/\${LSB_JOBID};
-			fi;
 
 			touch $output;
 			if [ ! -e $IPSTRENGTH_TARGETS ]; then

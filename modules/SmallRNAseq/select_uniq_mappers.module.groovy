@@ -8,10 +8,6 @@ SelectUniqMappers = {
 
    transform(".bam") to(".unique.bam") {
       exec """
-         if [ -n "\$LSB_JOBID" ]; then
-            export TMPDIR=/jobdir/\${LSB_JOBID};
-         fi &&
-
          echo 'VERSION INFO'  1>&2 &&
          ${TOOL_SAMTOOLS}/samtools --version 1>&2 &&
          echo '/VERSION INFO' 1>&2 &&

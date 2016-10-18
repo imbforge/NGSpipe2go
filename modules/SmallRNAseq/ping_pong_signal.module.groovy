@@ -11,9 +11,6 @@ PingPongSignal = {
    produce(OUT_FOLDER + "/figure/" + SAMPLE_NAME + ".ppPlot.pdf") {
 
       exec """
-         if [ -n "\$LSB_JOBID" ]; then
-            export TMPDIR=/jobdir/\${LSB_JOBID};
-         fi &&
          source ${TOOL_PYTHONENV} &&
 
          python $PINGPONG_TOOL_PATH -b $input --minsize 19 --maxsize 35 --primary sense --outFolder $OUT_FOLDER --intervals $FEATURES_PATH

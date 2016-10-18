@@ -27,9 +27,6 @@ bowtie_se = {
 			export TOOL_DEPENDENCIES=$TOOL_DEPENDENCIES &&
 			source ${TOOL_BOWTIE}/env.sh   &&
 			source ${TOOL_SAMTOOLS}/env.sh &&
-			if [ -n "\$LSB_JOBID" ]; then
-				export TMPDIR=/jobdir/\${LSB_JOBID};
-			fi                                          &&
 			
 			echo 'VERSION INFO'  1>&2 ;
 			echo \$(bowtie --version | grep bowtie | cut -d' ' -f3)   1>&2 ;

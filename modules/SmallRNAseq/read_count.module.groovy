@@ -13,10 +13,6 @@ CountReads = {
 
 
       exec """
-         if [ -n "\$LSB_JOBID" ]; then
-            export TMPDIR=/jobdir/\${LSB_JOBID};
-         fi &&
-
          echo 'VERSION INFO'  1>&2 &&
          echo \$(${TOOL_BEDTOOLS}/bedtools --version) 1>&2 ;
          echo '/VERSION INFO'  1>&2 &&

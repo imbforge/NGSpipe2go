@@ -9,9 +9,6 @@ CatFastQ = {
    def SAMPLE = new File(input1.prefix.prefix)
    produce(SAMPLE + ".merged.fq.gz") {
       exec """
-         if [ -n "\$LSB_JOBID" ]; then
-            export TMPDIR=/jobdir/\${LSB_JOBID};
-         fi &&
 
          zcat $inputs > $output
 

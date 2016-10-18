@@ -29,15 +29,12 @@ RNAtypes = {
 		exec """
 			export TOOL_DEPENDENCIES=$TOOL_DEPENDENCIES &&
 			source ${TOOL_R}/env.sh &&
-			if [ -n "\$LSB_JOBID" ]; then
-				export TMPDIR=/jobdir/\${LSB_JOBID};
-			fi &&
 			
 			echo 'VERSION INFO'  1>&2 ;
-			echo \$(${TOOL_R}/bin/Rscript --version 2>&1 | cut -d' ' -f5) 1>&2 ;
+			echo \$(Rscript --version 2>&1 | cut -d' ' -f5) 1>&2 ;
 			echo '/VERSION INFO'  1>&2 ;
 			
-			${TOOL_R}/bin/Rscript ${TOOL_RNAtypes}/RNAtypes.R $RNAtypes_FLAGS
+			Rscript ${TOOL_RNAtypes}/RNAtypes.R $RNAtypes_FLAGS
 		""","RNAtypes"
 	}
 }

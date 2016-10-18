@@ -12,10 +12,6 @@ FastQQualityFilter = {
 
    transform(".cutadapt.fastq.gz") to (".highQ.fastq.gz") {
       exec """
-         if [ -n "\$LSB_JOBID" ]; then
-            export TMPDIR=/jobdir/\${LSB_JOBID};
-         fi &&
-
          echo 'VERSION INFO'  1>&2 &&
          echo \$(${TOOL_FASTX}/fastq_quality_filter -h 2>&1 | grep 'Toolkit') 1>&2 &&
          echo '/VERSION INFO'  1>&2 &&
