@@ -14,14 +14,8 @@ bam2bw = {
 			export TOOL_DEPENDENCIES=$TOOL_DEPENDENCIES &&
 			source ${TOOL_BEDTOOLS}/env.sh &&
 			source ${TOOL_SAMTOOLS}/env.sh &&
-			if [ -n "\$LSB_JOBID" ]; then
-				export TMPDIR=/jobdir/\${LSB_JOBID};
-            else
-                export TMPDIR=$TMP;
-			fi &&
-			
-			if [ ! -d ${TMPDIR} ]; then
-				mkdir -p ${TMPDIR};
+			if [ ! -d ${TMP} ]; then
+				mkdir -p ${TMP};
 			fi &&
 			
 			CHRSIZES=${TMP}/\$(basename ${input.prefix}).bam2bw.chrsizes &&

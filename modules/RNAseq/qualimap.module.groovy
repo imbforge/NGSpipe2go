@@ -24,9 +24,6 @@ qualimap = {
 		exec """
 			export TOOL_DEPENDENCIES=$TOOL_DEPENDENCIES &&
 			source ${TOOL_QUALIMAP}/env.sh &&
-			if [ -n "\$LSB_JOBID" ]; then
-				export TMPDIR=/jobdir/\${LSB_JOBID};
-			fi &&
 			unset DISPLAY;
 			echo $output.prefix;
 			qualimap rnaseq -bam $input -outdir ${output.prefix}_qualimap -outformat html $QUALIMAP_GENESGTF -oc $output -p $QUALIMAP_STRANDED $QUALIMAP_EXTRA

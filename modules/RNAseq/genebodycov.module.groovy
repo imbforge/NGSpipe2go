@@ -18,9 +18,6 @@ geneBodyCov = {
 		exec """
 			export TOOL_DEPENDENCIES=$TOOL_DEPENDENCIES && 
 			source ${TOOL_RSeQC}/env.sh && 
-			if [ -n "\$LSB_JOBID" ]; then 
-				export TMPDIR=/jobdir/\${LSB_JOBID}; 
-			fi &&
 			
 			echo 'VERSION INFO'  1>&2 ;
 			echo \$(python ${TOOL_RSeQC}/bin/geneBody_coverage.py --version | cut -d' ' -f2) 1>&2 ;

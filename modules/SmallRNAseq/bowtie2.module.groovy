@@ -33,10 +33,6 @@ Bowtie2_se = {
       def SAMPLE_NAME = input.prefix.prefix
 
       exec """
-         if [ -n "\$LSB_JOBID" ]; then
-            export TMPDIR=/jobdir/\${LSB_JOBID};
-         fi                                          &&
-
          echo 'VERSION INFO'  1>&2 &&
          echo \$(${TOOL_BOWTIE2}/bowtie2 --version) 1>&2 &&
          echo '/VERSION INFO' 1>&2 &&

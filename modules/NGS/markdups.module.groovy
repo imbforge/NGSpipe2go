@@ -16,9 +16,6 @@ MarkDups = {
 			export TOOL_DEPENDENCIES=$TOOL_DEPENDENCIES &&
             source ${TOOL_JAVA}/env.sh                  &&
             source ${TOOL_PICARD}/env.sh                &&
-			if [ -n "\$LSB_JOBID" ]; then
-				export TMPDIR=/jobdir/\${LSB_JOBID};
-			fi &&
 			
 			echo 'VERSION INFO'  1>&2 ;
 			echo \$(java -jar ${TOOL_PICARD}/picard.jar MarkDuplicates --version 2>&1 | cut -d'(' -f1 ) 1>&2 ;

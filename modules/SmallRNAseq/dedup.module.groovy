@@ -13,10 +13,6 @@ FilterDuplicates = {
       def LOG_FILE = REMOVE_DUP_OUTDIR + "/dedup.stats.txt"
 
       exec """
-         if [ -n "\$LSB_JOBID" ]; then
-            export TMPDIR=/jobdir/\${LSB_JOBID};
-         fi                                          &&
-
          EXP=\$(basename ${SAMPLE_NAME})
          nreads=\$(zcat $input | echo \$((`wc -l`/4))) &&
          echo \$nreads \${EXP}.highQ >> ${LOG_FILE} &&

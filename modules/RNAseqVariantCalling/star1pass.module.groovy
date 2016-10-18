@@ -46,10 +46,6 @@ STAR_pe = {
                 " --readFilesCommand zcat"
 
       exec """
-         if [ -n "\$LSB_JOBID" ]; then
-            export TMPDIR=/jobdir/\${LSB_JOBID};
-         fi                                          &&
-
          STAR $STAR_FLAGS --readFilesIn $inputs | ${TOOL_SAMTOOLS}/samtools view -bhSu -F 256
 - | ${TOOL_SAMTOOLS}/samtools sort -@ $STAR_THREADS - $EXP &&
          rm ${EXP}.bam &&

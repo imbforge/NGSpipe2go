@@ -11,10 +11,6 @@ FastxTrimmer = {
 
    transform(".fastq.gz") to (".23bp.fastq.gz") {
       exec """
-         if [ -n "\$LSB_JOBID" ]; then
-            export TMPDIR=/jobdir/\${LSB_JOBID};
-         fi &&
-
          echo 'VERSION INFO'  1>&2 &&
          echo \$(${TOOL_FASTX}/fastx_trimmer -h 2>&1 | grep 'Toolkit') 1>&2 &&
          echo '/VERSION INFO'  1>&2 &&

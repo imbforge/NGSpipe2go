@@ -33,10 +33,6 @@ subread_count = {
 		exec """
 			export TOOL_DEPENDENCIES=$TOOL_DEPENDENCIES &&
 			source ${TOOL_SUBREAD}/env.sh &&
-			export TMPDIR=. &&
-			if [ -n "\$LSB_JOBID" ]; then
-				export TMPDIR=/jobdir/\${LSB_JOBID};
-			fi &&
 			
 			echo 'VERSION INFO'  1>&2 ;
 			echo \$(featureCounts 2>&1 | grep Version | cut -d' ' -f2) 1>&2 ;

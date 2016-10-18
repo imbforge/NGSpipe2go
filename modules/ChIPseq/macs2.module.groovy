@@ -15,9 +15,6 @@ macs2 = {
 		exec """
 			export TOOL_DEPENDENCIES=$TOOL_DEPENDENCIES  &&
 			source ${TOOL_MACS2}/env.sh &&
-			if [ -n "\$LSB_JOBID" ]; then
-				export TMPDIR=/jobdir/\${LSB_JOBID};
-			fi;
 
 			touch $output;
 			if [ ! -e $MACS2_TARGETS ]; then

@@ -13,9 +13,6 @@ BAMindexer = {
 		exec """
 			export TOOL_DEPENDENCIES=$TOOL_DEPENDENCIES &&
             source ${TOOL_SAMTOOLS}/env.sh &&
-			if [ -n "\$LSB_JOBID" ]; then
-				export TMPDIR=/jobdir/\${LSB_JOBID};
-			fi &&
 			
 			echo 'VERSION INFO'  1>&2 &&
 			echo \$(samtools --version | grep samtools | cut -d' ' -f2) 1>&2 &&
