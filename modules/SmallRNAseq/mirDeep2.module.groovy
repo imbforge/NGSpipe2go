@@ -11,10 +11,6 @@ MirDeep2 = {
 
 
       exec """
-         if [ -n "\$LSB_JOBID" ]; then
-            export TMPDIR=/jobdir/\${LSB_JOBID};
-         fi                                          &&
-
          export PATH=${TOOL_DEPENDENCIES}:$PATH &&
          export PATH=${TOOL_VIENNA}:$PATH &&
          export PATH=${TOOL_RANDFOLD}:$PATH &&

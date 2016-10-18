@@ -10,10 +10,6 @@ FastQC = {
 
    transform(".fastq.gz") to ("_fastqc.zip") {
       exec """
-         if [ -n "\$LSB_JOBID" ]; then
-            export TMPDIR=/jobdir/\${LSB_JOBID};
-         fi &&
-
          echo 'VERSION INFO'  1>&2 &&
          echo \$(${TOOL_FASTQC} --version | cut -d' ' -f2) 1>&2 &&
          echo '/VERSION INFO' 1>&2 &&

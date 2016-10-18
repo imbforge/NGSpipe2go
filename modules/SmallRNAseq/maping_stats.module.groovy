@@ -9,10 +9,6 @@ MappingStatsPlot = {
 	produce(MAPPING_STATS_OUTDIR + "/figure/totalReads.pdf") {
 
       exec """
-         if [ -n "\$LSB_JOBID" ]; then
-            export TMPDIR=/jobdir/\${LSB_JOBID};
-         fi &&
-
          echo 'VERSION INFO'  1>&2 &&
          echo \$(${TOOL_R}/bin/Rscript --version 2>&1 | cut -d' ' -f5) 1>&2 &&
          echo '/VERSION INFO'  1>&2 &&

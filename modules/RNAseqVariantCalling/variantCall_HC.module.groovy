@@ -17,10 +17,6 @@ VariantCallHC = {
    transform (".rg.duprm.split.recalibrated.bam") to (".UG.vcf.gz") {
 
       exec """
-            if [ -n "\$LSB_JOBID" ]; then
-               export TMPDIR=/jobdir/\${LSB_JOBID};
-            fi &&
-
             echo 'VERSION INFO'  1>&2 &&
             echo \$(java -jar ${TOOL_GATK}/GenomeAnalysisTK.jar --version) 1>&2 &&
             echo '/VERSION INFO' 1>&2 &&

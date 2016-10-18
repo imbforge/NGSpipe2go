@@ -15,9 +15,6 @@ NucleotideSignature = {
       ) {
 
       exec """
-         if [ -n "\$LSB_JOBID" ]; then
-            export TMPDIR=/jobdir/\${LSB_JOBID};
-         fi &&
          source ${TOOL_PYTHONENV} &&
          cd $PIRNA_SIGNATURE_OUTDIR &&
 

@@ -16,14 +16,8 @@ bam2bw = {
 			source ${TOOL_SAMTOOLS}/env.sh &&
 			source ${TOOL_KENTUTILS}/env.sh &&
 
-			if [ -n "\$LSB_JOBID" ]; then
-				export TMPDIR=/jobdir/\${LSB_JOBID};
-            		else
-                		export TMPDIR=$TMP;
-			fi &&
-			
-			if [ ! -d ${TMPDIR} ]; then
-				mkdir -p ${TMPDIR};
+			if [ ! -d ${TMP} ]; then
+				mkdir -p ${TMP};
 			fi &&
 			
 			echo 'VERSION INFO'  1>&2 &&

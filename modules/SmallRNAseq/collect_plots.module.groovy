@@ -8,10 +8,6 @@ CollectPlots = {
 	produce("all_plots.pdf") {
 
       exec """
-         if [ -n "\$LSB_JOBID" ]; then
-            export TMPDIR=/jobdir/\${LSB_JOBID};
-         fi &&
-
          pdfjoin --paper a4paper --rotateoversize false --landscape \
          $COLLECT_OUTDIR/processed_reads/figure/PCRDuplicates.pdf \
          $COLLECT_OUTDIR/mapped/multimapped/figure/totalReads.pdf \

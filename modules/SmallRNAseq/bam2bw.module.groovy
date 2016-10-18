@@ -10,10 +10,6 @@ Bam2bw = {
 
 	transform(".bam") to (".scaled.bw") {
 		exec """
-			if [ -n "\$LSB_JOBID" ]; then
-				export TMPDIR=/jobdir/\${LSB_JOBID};
-			fi &&
-
 			if [ ! -d ${TMP} ]; then
 				mkdir -p ${TMP};
 			fi &&

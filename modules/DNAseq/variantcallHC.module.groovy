@@ -22,17 +22,12 @@ VariantCallHC = {
         exec """
             export TOOL_DEPENDENCIES=$TOOL_DEPENDENCIES &&
             source ${TOOL_JAVA}/env.sh                  &&
-			if [ -n "\$LSB_JOBID" ]; then
-				export TMPDIR=/jobdir/\${LSB_JOBID};
-            else
-                export TMPDIR=$TMP;
-			fi                                          &&
         
             echo 'VERSION INFO'  1>&2 ;
             echo \$(java -jar $TOOL_GATK/GenomeAnalysisTK.jar --version 1>&2) ;
             echo '/VERSION INFO' 1>&2 ;
             
-            java -Djava.io.tmpdir=\$TMPDIR -jar $TOOL_GATK/GenomeAnalysisTK.jar -T HaplotypeCaller -nct $GATK_THREADS -R $GATK_BWA_REF --dbsnp $GATK_KNOWN_VARIANTS -I $input -o $output $GATK_FLAGS
+            java -Djava.io.tmpdir=\$TMP -jar $TOOL_GATK/GenomeAnalysisTK.jar -T HaplotypeCaller -nct $GATK_THREADS -R $GATK_BWA_REF --dbsnp $GATK_KNOWN_VARIANTS -I $input -o $output $GATK_FLAGS
         ""","VariantCallHC"
     }
     

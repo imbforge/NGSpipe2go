@@ -16,12 +16,6 @@ extend = {
 			export TOOL_DEPENDENCIES=$TOOL_DEPENDENCIES &&
 			source ${TOOL_BEDTOOLS}/env.sh &&
 			source ${TOOL_SAMTOOLS}/env.sh &&
-			if [ -n "\$LSB_JOBID" ]; then
-				export TMPDIR=/jobdir/\${LSB_JOBID};
-            else
-                export TMPDIR=$TMP;
-			fi &&
-			
 			if [ ! -d $TMP ]; then
 				mkdir -p $TMP;
 			fi &&

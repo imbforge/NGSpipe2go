@@ -10,10 +10,6 @@ Bam2FastQ = {
 
    transform(".bam") to(".fq.gz") {
       exec """
-         if [ -n "\$LSB_JOBID" ]; then
-            export TMPDIR=/jobdir/\${LSB_JOBID};
-         fi &&
-
          echo 'VERSION INFO'  1>&2 &&
          echo \$(${TOOL_BEDTOOLS}/bamToFastq -h 2>&1 | grep 'Version') 1>&2 &&
          echo '/VERSION INFO' 1>&2 &&

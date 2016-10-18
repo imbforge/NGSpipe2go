@@ -13,10 +13,6 @@ TrimUMIs = {
 
 
       exec """
-         if [ -n "\$LSB_JOBID" ]; then
-            export TMPDIR=/jobdir/\${LSB_JOBID};
-         fi                                          &&
-
          export PATH=${TOOL_DEPENDENCIES}:$PATH &&
 
          echo 'VERSION INFO'  1>&2 &&

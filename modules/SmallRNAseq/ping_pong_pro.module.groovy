@@ -13,10 +13,6 @@ PingPongPro = {
             OUT_FOLDER + "/transposons.tsv") {
 
       exec """
-         if [ -n "\$LSB_JOBID" ]; then
-            export TMPDIR=/jobdir/\${LSB_JOBID};
-         fi &&
-
          ${TOOL_PINGPONGPRO} -i $input -t $FEATURES_PATH -o $OUT_FOLDER
 
       ""","PingPongPro"
