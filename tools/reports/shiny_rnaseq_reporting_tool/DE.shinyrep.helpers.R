@@ -262,8 +262,8 @@ DEhelper.STAR <- function() {
     colnames(x) <- gsub(paste0("^", SHINYREPS_PREFIX), "", colnames(x))
     colnames(x) <- gsub(paste0(SUFFIX, "$"), "", colnames(x))
     df <- data.frame(input_reads=format(x[1, ], big.mark=","), 
-                     uniq_mapped=paste0(format(x[2, ], big.mark=","), " (", format(x[3, ], nsmall=2), "%)"), 
-                     multimapped=paste0(format(x[4, ] + x[5, ], big.mark=","), " (", format(x[6, ] + x[7, ], nsmall=2), "%)"), 
+                     uniquely_mapped=paste0(format(x[2, ], big.mark=","), " (", format(x[3, ], nsmall=2), "%)"), 
+                     multi_mapped=paste0(format(x[4, ] + x[5, ], big.mark=","), " (", format(x[6, ] + x[7, ], nsmall=2), "%)"), 
                      unmapped=paste0(format(x[8, ] + x[9, ] + x[10, ], nsmall=2), "%"))
     kable(df, align=c("r", "r", "r", "r"), output=F)
 }
@@ -489,9 +489,9 @@ DEhelper.Subread <- function() {
     x <- rbind(total=x, colSums(x))
     rownames(x)[nrow(x)] <- "total"
     df <- data.frame(assigned=paste0(format(x[1, ], big.mark=","), " (", format((x[1, ]/x["total", ])*100, digits=2, nsmall=2), "%)"), 
-                     unass_ambiguous=paste0(format(x[2, ], big.mark=","), " (", format((x[2, ]/x["total", ])*100, digits=2, nsmall=2), "%)"), 
-                     unass_multimap=paste0(format(x[3, ], big.mark=","), " (", format((x[3, ]/x["total", ])*100, digits=2, nsmall=2), "%)"), 
-                     unass_nofeat=paste0(format(x[4, ], big.mark=","), " (", format((x[4, ]/x["total", ])*100, digits=2, nsmall=2), "%)"))
+                     unassigned_ambiguous=paste0(format(x[2, ], big.mark=","), " (", format((x[2, ]/x["total", ])*100, digits=2, nsmall=2), "%)"), 
+                     unassigned_multimap=paste0(format(x[3, ], big.mark=","), " (", format((x[3, ]/x["total", ])*100, digits=2, nsmall=2), "%)"), 
+                     unassigned_nofeature=paste0(format(x[4, ], big.mark=","), " (", format((x[4, ]/x["total", ])*100, digits=2, nsmall=2), "%)"))
     rownames(df) <- colnames(x)
     kable(df, align=c("r", "r", "r", "r"), output=F)
     
