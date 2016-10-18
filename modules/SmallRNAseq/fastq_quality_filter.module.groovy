@@ -10,7 +10,7 @@ FastQQualityFilter = {
              " -Q " + QUAL_FORMAT +
              FASTQ_QUALITY_FILTER_OTHER
 
-   transform(".cutadapt28to51nt.fastq.gz") to (".highQ.fastq.gz") {
+   transform(".cutadapt.fastq.gz") to (".highQ.fastq.gz") {
       exec """
          if [ -n "\$LSB_JOBID" ]; then
             export TMPDIR=/jobdir/\${LSB_JOBID};
