@@ -100,26 +100,26 @@ cat(DEhelper.Qualimap(), sep="\n")		# sample Qualimap
 ```
 
 ### Sample relatedness
-The plot below depicts sample similarity based on priniciple component analysis (PCA) with the 500 genes showing the highest variance. Overall, replicates are expected to show relatively small distances between them, while groups may show higher distances between them, depending on the magnitude of expression changes. If the samples cluster other than by group, there might be sample prep batch effects or some other unaccounted biological/technical factors in the experiment. 
+The plot below depicts sample similarity based on priniciple component analysis (PCA) with the 500 genes showing the highest variance. Overall, replicates are expected to show relatively small distances between them, while sample groups often show higher distances between them, depending on the magnitude of expression changes. If the samples cluster other than by group, there might be sample prep batch effects or some other unaccounted biological/technical factors in the experiment. 
 
 ```{r MDSplot_paragraph, echo=F, error=F, warning=F, message=F, fig.align="center"}
 DEhelper.DESeq2.MDS()		# sample MDS 
 ```
 
-Clustering the samples based on the distance calculated on the expression levels of the most variable genes reveals replicate consistency and can spot batches of samples related by other characteristics rather than condition:
+Additionally, hierarchical clustering of the samples based on the most variable genes reveals replicate consistency and can spot batches of samples related by other characteristics rather than condition:
 
 ```{r Heatmap1_paragraph, echo=F, error=F, warning=F, message=F, fig.align="center"}
 DEhelper.DESeq2.cluster()	# heatmap of top variant 'n' genes of the rlog transformed counts (normalized and stabilized)
 ```
 
-Finally, a heatmap clustogram of the Euclidean distances between the samples gives us a measure of sample similarity:
+Finally, a heatmap clustogram of the Euclidean distances between the samples gives an intuitive measure of sample similarity:
 
 ```{r Heatmap2_paragraph, echo=F, error=F, warning=F, message=F, fig.align="center"}
 DEhelper.DESeq2.corr()		# heatmap of sample to sample distances
 ```
 
 ## Differential Expression Analysis
-Pairwise differential expression analysis between the sample groups was performed with the popular R package DESeq2 (https://bioconductor.org/packages/release/bioc/html/DESeq2.html). Shown below for each comparison are (i) MA plots depicting log2 of the expression fold changes versus the mean normalised gene expression level and (ii) tables of top hits order by statistical significance (FDR, false discovery rate).
+Pairwise differential expression analysis between the sample groups was performed with the popular R package DESeq2 (https://bioconductor.org/packages/release/bioc/html/DESeq2.html). Shown below for each comparison are (i) MA plots depicting log2 of the expression fold changes versus the mean normalised gene expression level and (ii) tables of top hits order by statistical significance (FDR, false discovery rate). In this standard analysis, only uniquely mapped reads are taken into account to avoid "cross-talk" between different genes.
 
 ```{r DifferentialExpression_paragraph, echo=F, results='asis', error=F, warning=F, message=F, fig.align="center"}
 for(i in 1:nrow(conts)) {
@@ -145,7 +145,7 @@ for(i in 1:nrow(conts)) {
 	
 	
 	# and DE table
-	cat("The table contains the top 25 differentially expressed genes in terms of fold change and FDR:", fill=T)
+	cat("The table shows the top 25 differentially expressed genes with their mean expression change (log2 of Fold Change) and statistical significance (padj, FDR-adjusted P-value):", fill=T)
 	cat("", fill=T)
 	genes$baseMean       <- round(genes$baseMean, 2)
 	genes$log2FoldChange <- round(genes$log2FoldChange, 2)
@@ -156,12 +156,8 @@ for(i in 1:nrow(conts)) {
 }
 ```
 
-## Using information of reads mapping to multiple positions
-In a few gene classes, as well as some of gene-pseudogene pairs, which are result of duplication events, their abundance can only be estimated if reads mapping to multiple positions are taken into account. Thus, the quantification is just a rough estimation, but in some cases can give relevant information about the ratios the genes in these classes are expressed.
-
-There are several approaches on how to deal with multimappers, and here we're adopting the rather conservative of randomly assigning the read to one of the several genes it may come from.
-
-Please use the information below only to answer questions about specific genes which are known to be affected by the aforementioned duplication events. In any case, although conservative, this analysis is not meant to refer to the expression changes of the vast majority of the genes, for which the analysis using only the uniquely mapping reads is the adequate.
+## Additional differential expression analysis including also reads mapping to multiple positions
+For hundreds of genes in the human, mouse & other genomes, RNA-seq with short reads cannot measure expression accurately, because recently duplicated gene families, as well as some gene-pseudogene pairs, are very similar on transcript level and few reads map uniquely to only one family member. There are several approaches how to deal with multimappers (MM), here such reads are randomly assigned to one of the several genes they may come from and then the DESeq2 statistical analysis is repeated. While this modified analysis may reveal additional interesting gene hits, it may also produce false-positive findings due to potential "cross-talk" between highly similar genes (i.e. if a gene X changes expression, its pseudogene Y or paralog Z may be non-specifically affected as well). Therefore, the standard analysis using only uniquely mapping reads is more reliable for the majority of genes and should have priority.
 
 ```{r DifferentialExpressionMM_paragraph, echo=F, results='asis', error=F, warning=F, message=F, fig.align="center"}
 for(i in 1:nrow(conts)) {
