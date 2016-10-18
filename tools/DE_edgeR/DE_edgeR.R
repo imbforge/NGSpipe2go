@@ -1,7 +1,7 @@
 #####################################
 ##
 ## What: DE.edgeR.R
-## Who : Sergi Sayols
+## Who : Sergi Sayols 
 ## When: 06-10-2014
 ##
 ## Script to perform DE different conditions, based on edgeR Negative Binomial model
@@ -31,7 +31,7 @@ library(edgeR)
 library(RColorBrewer)
 library(gplots)
 library(ggplot2)
-
+library(WriteXLS)
 ##
 ## get arguments from the command line
 ##
@@ -172,6 +172,10 @@ heatmap.2(mat,trace="none",col=rev(hmcol),margin=c(13,13))
 # read in gtf
 require(rtracklayer)
 GTF <- as.data.frame(import.gff(gtf,format="gtf",feature.type="exon"))
+library(GenomicFeatures)
+txdb <- makeTxDbFromGFF(gtf, format="gtf")
+genes <- genes(txdb)
+genes <- as.data.frame(genes)
 
 for(i in 1:length(lrt)) {
         # calculating FDR and extracting gene_name
@@ -195,12 +199,20 @@ lapply(1:length(lrt),function(i) {
 	groups  <- rownames(conts)[conts[,i] != 0]	# the groups involved in this contrast
 	samples <- rownames(design)[apply(design[,groups],1,sum) > 0]	# samples belonging to the involved groups
 	x <- merge(m[,samples],lrt[[i]]$table,by=0)
+	rownames(x) <- x$Row.names
+	x <- x[, -1]
+	x <- merge(genes[, !(colnames(genes) %in% c("gene_id"))], x, by=0)
 	#x$FDR <- p.adjust(x$PValue,method="fdr")
         #x$gene_name <- GTF$gene_name[match(x$Row.names,GTF$gene_id)]
-	write.csv(x[order(x$FDR),],file=paste(out,names(lrt)[i],"csv",sep="."),row.names=F)
+	filename <- paste(out,names(lrt)[i],sep=".")
+	colnames(x)[colnames(x) == "PValue"] <- "FDR"
+	x <- x[order(x$FDR), ]
+	write.csv(x,file=paste(filename,"csv",sep="."),row.names=F)
+	WriteXLS("x",ExcelFileName=paste0(filename,".xls"),row.names=F)
 
 	invisible(0)
 })
 
 dev.off()
+writeLines(capture.output(sessionInfo()),paste(out, "_session_info.txt", sep=""))
 save.image(file=paste0(out,".RData"))		# for further reports
