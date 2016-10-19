@@ -4,6 +4,8 @@
 ##
 ##################################
 library("knitr")        # for markdown output
+library("ChIPpeakAnno")	#for peak venn diagrams
+library("RColorBrewer")
 
 ##
 ## loadGlobalVars: read configuration from bpipe vars
@@ -108,6 +110,36 @@ ChIPhelper.Peaks <- function(i=1) {
                   peaks[[i]][, "fold enrichment"], 
                   decreasing=TRUE)
     peaks[[i]][ord, ]
+}
+
+##
+## ChIPhelper.VennDiagram: shows a venn diagram per group of peaks called
+##
+ChIPhelper.VennDiagram <- function(){
+	groups <- unique(targets$group)
+	#create granges from the peaks
+	peak.ranges <- lapply(peaks, function(x){
+		  x <- GRanges(seqnames=x$chr,
+			  IRanges(x$start,
+				  end=x$end),
+			  strand="*"
+			   )
+		  
+		  })
+	peak.groups <- targets$group
+	for(group in groups){
+		cat(paste0("#### ", group), fill=T)
+		cat("\n", fill=T)
+		peak <- peak.ranges[peak.groups==group]
+		peaks.ov <- findOverlapsOfPeaks(peak)
+		makeVennDiagram(peaks.ov,
+				margin=0.1,
+				cat.fontface=rep("bold", length(peak)),
+				fill=brewer.pal(length(peak), "Accent")[1:length(peak)]
+				)
+		cat("\n", fill=T)
+	}
+
 }
 
 ##

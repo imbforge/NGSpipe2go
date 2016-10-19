@@ -118,6 +118,12 @@ cat(kable(p,row.names=T),sep="\n")
 cat("",fill=T)
 ```
 
+## Overlap of peaks per group
+
+```{r peak_venn_paragraph, echo=F,results='asis',error=F,warning=F,message=F}
+ChIPhelper.VennDiagram()
+```
+
 ## Used tools and versions for this analysis ##
 
 ```{r ToolVersions_paragraph, echo=F,results='asis',error=F,warning=F,message=F}
