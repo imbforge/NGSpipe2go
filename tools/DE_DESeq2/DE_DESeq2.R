@@ -183,4 +183,4 @@ x <- mapply(function(res, cont) {
 dev.off()
 #save the sessionInformation
 writeLines(capture.output(sessionInfo()),paste(out, "/DE_DESeq2_session_info.txt", sep=""))
-save.image(file=paste0(out,"/DE_DESeq2.RData"))
+save(rld, dds, res, conts, file=paste0(out,"/DE_DESeq2.RData"))
