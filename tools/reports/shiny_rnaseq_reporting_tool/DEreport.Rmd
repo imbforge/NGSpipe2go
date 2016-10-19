@@ -129,7 +129,7 @@ for(i in 1:nrow(conts)) {
 	cat("", fill=T)
 	
 	# MA plot
-	fdr <- if(exists("input")) { fdr <- if(is.numeric(input$slider_pval)) input$slider_pval else .01 } else .01
+	fdr <- if(exists("input")) { if(!is.null(input$slider_pval)) input$slider_pval else .01 } else .01
 	genes <- DEhelper.DESeq2.DEgenes(i)
 	cat("There are", sum(genes$padj < fdr, na.rm=T), 
 		"genes highlighted in the MA plot with corrected pvalue (Benjamini and Hochberg, FDR) <", fdr, "\n")
@@ -140,7 +140,7 @@ for(i in 1:nrow(conts)) {
 	# Volcano Plot
 	cat("##### Volcano-plot", fill=T)	
 	cat("Volcano plots are meant to facilitate an overview over all genes under investigation by combining log fold change and statistical significance. Outliers and genes with large changes should be easy to spot. As expression strength has a large effect on statistical significance it is added to the volcano plot by coloring the points.", fill=T)
-	DEhelper.DESeq2.VolcanoPlot(i)	
+	DEhelper.DESeq2.VolcanoPlot(i, fdr, web=F)
 	cat("\n", fill=T)
 	
 	
@@ -150,7 +150,7 @@ for(i in 1:nrow(conts)) {
 	genes$baseMean       <- round(genes$baseMean, 2)
 	genes$log2FoldChange <- round(genes$log2FoldChange, 2)
 	genes$padj           <- format(genes$padj, digits=3, scientific=TRUE)
-  cols <- c("gene_name", "baseMean", "log2FoldChange", "padj")
+    cols <- c("gene_name", "baseMean", "log2FoldChange", "padj")
 	cat(kable(genes[1:25, cols], row.names=T, align="r"), sep="\n")	# show only the top 25 genes
 	cat("", fill=T)
 }

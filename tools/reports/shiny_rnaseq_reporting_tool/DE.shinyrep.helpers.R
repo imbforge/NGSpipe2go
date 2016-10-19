@@ -12,6 +12,7 @@ library("ggrepel")
 library("VennDiagram")
 library("grid")
 library("knitr")        # for markdown output
+library("plotly")
 
 ##
 ## loadGlobalVars: read configuration from bpipe vars
@@ -68,7 +69,7 @@ DEhelper.DESeq2.corr <- function() {
 }
 
 ## DEhelper.MAplot: MA plots
-DEhelper.DESeq2.MAplot <- function(i=1, fdr=.05) {
+DEhelper.DESeq2.MAplot <- function(i=1, fdr=.01) {
      plotMA(res[[i]], main=conts[i, 1])    
 #    x <- mapply(function(res, cont) {
 #        plotMA(res, main=cont)
@@ -82,6 +83,34 @@ DEhelper.DESeq2.DEgenes <- function(i=1) {
                    abs(res[[i]]$log2FoldChange), 
                   decreasing=TRUE)
     res[[i]][ord, ]
+}
+
+## DEhelper.DESeq2.VolcanoPlot: Volcano plots from DEseq2 results
+DEhelper.DESeq2.VolcanoPlot <- function(i=1, fdr=.01, top=25, web=TRUE) {
+    # gather results
+    d <- as.data.frame(DEhelper.DESeq2.DEgenes(i))
+    x.limit <- max(abs(d$log2FoldChange), na.rm=T) # find the maximum spread of the x-axis
+    
+    # plotting
+    p <- ggplot(d) +
+            geom_point(mapping=aes(log2FoldChange, -log10(padj), size=log2(baseMean + 1), color=padj < fdr), alpha=.1) +
+            theme_bw() +
+            xlim(-x.limit, x.limit) +
+            ylab("-log\u2081\u2080 adj. p-value") +
+            xlab("log\u2082 fold change") + 
+            scale_color_manual(values=c("black", "red"), guide=FALSE) +
+            scale_size_continuous("mean counts (log\u2082)")
+
+    # add name of top genes
+    if(top > 0) p <- p + geom_text_repel(data=d[1:min(top, nrow(d)),],
+                                         mapping=aes(log2FoldChange, -log10(padj), label=gene_name),
+                                         color="black")
+
+    # return plot
+    if(web)
+        ggplotly(p)
+    else
+        print(p)
 }
 
 ##
@@ -531,26 +560,6 @@ DEhelper.Qualimap <- function() {
     colnames(df.names) <- c(" ", " ")
     
     kable(as.data.frame(df.names), output=F, format="markdown")
-}
-
-##
-## DEhelper.VolcanoPlot: Volcano plots from DEseq2 results
-##
-DEhelper.VolcanoPlot <- function(i=1) {
-    # get DE genes (p.adjust='BH', pval<.05)
-    data.table <- data.frame(logFC=res[[i]]$log2FoldChange, 
-                             pvalue=res[[i]]$padj, 
-                             meanExp=log2(res[[i]]$baseMean + 1)) # extract the final count, pValue and FDR data
-    x.limit <- max( c(max(data.table$logFC, na.rm = T), abs(min(data.table$logFC, na.rm = T))) ) # find the maximum spread of the x-axis
-    
-    # plotting
-    p <- ggplot(data.table, aes(logFC, -1 * log10(pvalue), colour=meanExp )) +
-            geom_point(alpha=.5) +
-            theme_bw() +
-            xlim(-1 * x.limit, x.limit) +
-            ylab("-log10( adj. p-value )") +
-            scale_colour_gradient(name="log\u2082 mean expression")
-    print(p)
 }
 
 ##
