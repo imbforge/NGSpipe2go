@@ -9,7 +9,7 @@ extend = {
 
 	output.dir=MAPPED
 	
-	def SAMTOOLS_SORT_FLAGS = "-O bam" + EXTEND_SAMTOOLS_THREADS
+	def SAMTOOLS_SORT_FLAGS = "-O bam " + EXTEND_SAMTOOLS_THREADS
 
 	transform(".bam") to ("_ext.bam") {
 		exec """
