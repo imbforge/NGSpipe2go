@@ -140,7 +140,7 @@ for(i in 1:nrow(conts)) {
 	# Volcano Plot
 	cat("##### Volcano-plot", fill=T)	
 	cat("Volcano plots are meant to facilitate an overview over all genes under investigation by combining log fold change and statistical significance. Outliers and genes with large changes should be easy to spot. As expression strength has a large effect on statistical significance it is added to the volcano plot by coloring the points.", fill=T)
-	DEhelper.VolcanoPlot(i)	
+	DEhelper.DESeq2.VolcanoPlot(i)	
 	cat("\n", fill=T)
 	
 	
