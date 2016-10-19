@@ -125,12 +125,15 @@ res <- lapply(conts[,1],function(cont) {
     # calculate quantification (RPKM if gene model provided, rlog transformed values otherwise)
         quantification <- apply(fpm(dds), 2, function(x,y) 1e3 * x / y, gene.lengths[rownames(fpm(dds))])
         res$gene_name <- gtf$gene_name[match(rownames(res),gtf$gene_id)]
+	genes <- genes[match(rownames(res), genes$gene_id), c("seqnames", "start", "end", "strand")]
+	res$chr <- as.vector(genes$seqnames)
+	res$start <- as.vector(genes$start)
+	res$end <- as.vector(genes$end)
+	res$strand <- as.vector(genes$strand)
         # write the results
-	x <- merge(res[, c("gene_name", "baseMean", "log2FoldChange", "padj")], quantification, by=0)
-	rownames(x) <- x$Row.names
-	x <- x[, -1]
+	x <- merge(res[, c("gene_name", "chr", "start", "end", "strand", "baseMean", "log2FoldChange", "padj")], quantification, by=0)
 	#add the coordinates of the genes
-	x <- merge(genes[, !(colnames(genes) %in% c("gene_id"))], x, by=0)
+	#x <- merge(genes[, !(colnames(genes) %in% c("gene_id"))], x, by=0)
 	
 	x <- x[order(x$padj),]
 	
