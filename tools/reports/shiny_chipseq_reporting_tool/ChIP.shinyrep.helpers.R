@@ -234,7 +234,7 @@ ChIPhelper.Fastqc <- function(web=TRUE) {
     x <- gsub(paste0("^", SHINYREPS_PREFIX), "", basename(samples))
     x <- gsub("_fastqc$", "", x)
     rownames(df) <- sapply(x, shorten)
-    colnames(df) <- c("Duplication", "Read qualities", "Sequence bias")
+    colnames(df) <- c("Duplication levels", "Read qualities", "Sequence bias")
     kable(df, output=F, align="c", format="markdown")
 }
 
