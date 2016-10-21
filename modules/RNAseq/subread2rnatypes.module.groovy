@@ -36,7 +36,7 @@ rnatypes = {
 	}
 	
 	// run the chunk
-	transform(".bam") to (".readcounts.tsv") {
+	transform(".bam") to ("_readcounts.tsv") {
 		exec """
 			export TOOL_DEPENDENCIES=$TOOL_DEPENDENCIES &&
 			source ${TOOL_SUBREAD}/env.sh &&
@@ -45,8 +45,10 @@ rnatypes = {
 			echo \$(featureCounts 2>&1 | grep Version | cut -d' ' -f2) 1>&2 ;
 			echo '/VERSION INFO' 1>&2 ;
 			
-			featureCounts $RNATYPES_FLAGS -o $output $input 2> ${output.prefix}_rnatypeslog.stderr
-	
+			featureCounts $RNATYPES_FLAGS -o ${output}_tmp $input 2> ${output.prefix}_rnatypeslog.stderr;
+			cut -f1,6,7 ${output}_tmp > $output;
+			rm ${output}_tmp;	
+
 		""","rnatypes"
 	}
 }
