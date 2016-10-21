@@ -54,7 +54,7 @@ STAR_se = {
                      STAR_EXTRA
 
     // samtools flags
-    def SAMTOOLS_VIEW_FLAGS = "-bhSu" + STAR_SAMTOOLS_THREADS
+    def SAMTOOLS_VIEW_FLAGS = "-bhSu " + STAR_SAMTOOLS_THREADS
     if(STAR_FILTER_SEC == "YES") {
         SAMTOOLS_VIEW_FLAGS = " -F 256 " + SAMTOOLS_VIEW_FLAGS    //remove secondary alignments
     }
