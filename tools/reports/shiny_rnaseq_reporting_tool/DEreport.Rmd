@@ -69,7 +69,7 @@ cat(DEhelper.Subread(), sep="\n")
 The following plot shows the fraction of reads assigned to various RNA classes. These plots help in determining if the sample prep protocol worked well and may reveal issues with rRNA contamination. 
 
 ```{r RNAtypes_paragraph, echo=F, results='asis', error=F, warning=F, message=F}
-cat(DEhelper.RNAtypes(web=F), sep="\n")
+DEhelper.RNAtypes()
 ```
 
 ## Gene body coverage ##

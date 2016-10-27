@@ -8,6 +8,7 @@ library("DESeq2")
 library("RColorBrewer")
 library("gplots")
 library("ggplot2")
+library("reshape2")
 library("ggrepel")
 library("VennDiagram")
 library("grid")
@@ -398,23 +399,62 @@ DEhelper.dupRadar <- function(web=TRUE) {
 }
 
 ##
-## DEhelper.RNAtypes: go through RNAtypes output dir and create a md table with
-##     the RNAtypes plots
+## DEhelper.RNAtypes: parse Subread count results for RNAtypes usage
 ##
-DEhelper.RNAtypes <- function(web=TRUE) {
+DEhelper.RNAtypes <- function() {
     
-    # logs folder
-    if(!file.exists(SHINYREPS_RNATYPES_LOG)) {
-        return("RNAtypes statistics not available")
+    FOLDER <- SHINYREPS_RNATYPES
+    SUFFIX <- paste0(SHINYREPS_RNATYPES_SUFFIX, '$')
+    
+    ### DEBUG
+    FOLDER <- "~/fsimb/groups/imb-bioinfocf/projects/cfb_internal/imbforge/test/rnaseq_161019_OD/qc/rnatypes-count/"
+    SUFFIX <- ".readcounts.tsv"
+    SUFFIX <- paste0(SUFFIX, '$')
+    SHINYREPS_PREFIX <- "Sample_imb_richly_2014_05_"
+    ### /DEBUG
+    
+    # check if folder exists
+    if(!file.exists(FOLDER)) {
+        return("Subread statistics not available")
     }
     
-    # construct the folder name, which is different for web and noweb
-    QC <- if(web) "/RNAtypes" else SHINYREPS_RNATYPES_LOG
+    # create a matrix using feature names as rownames, sample names as colnames
+    l.infiles <- list.files(FOLDER, pattern=SUFFIX, full.names = T)
+    l.counts <- lapply(l.infiles, function(f) {
+        # f <- list.files(FOLDER, pattern=SUFFIX, full.names = T)[1]
+        samplename <- basename(f)
+        samplename <- gsub(SUFFIX, "", samplename)
+        samplename <- gsub(paste0("^", SHINYREPS_PREFIX), "", samplename)
+        df.readcount <- read.table(f, header=T, sep='\t', comment.char = '#', col.names=c("Geneid","Length",samplename))
+        df.readcount$Length <- NULL
+        return(df.readcount)
+    })
     
-    # construct the image url from the folder contents (skip current dir .)
-    f <- list.files(SHINYREPS_RNATYPES_LOG, pattern="^RNAtypes.counts.per.png$")
-    paste0("![](", QC, "/", basename(f), ")")
+    # merge counts to data frame in wide format & remove "length..." columns
+    f.merge <- function(x,y) {merge(x,y,by="Geneid")}
+    df.counts <- Reduce(f.merge, l.counts)
+    rm(l.counts)
+    
+    # eradicate biotype classes that are not present (or could be summarized as "other" being <1%)
+    v.countsums <- rowSums(df.counts[-1])
+    v.relsums <- v.countsums / sum(v.countsums)
+    df.counts$Geneid[v.relsums < 0.01] <- "other"
+    
+    df.counts <- aggregate(df.counts[-1],
+                           by=list(Geneid =df.counts$Geneid),
+                           FUN=sum)
+    
+    # plot
+    df.counts.melt <- melt(df.counts, id.var="Geneid")
+    colnames(df.counts.melt) <- c("type","sample","count")
+    
+    plot <- ggplot() + 
+        geom_bar(data=df.counts.melt, aes(x=sample, y=count, fill=type), position="fill", stat="identity") + 
+        labs(x="", y="", fill="")
+    
+    return(plot)
 }
+
 
 ##
 ## DEhelper.geneBodyCov: go through geneBodyCov output dir and create a md table with

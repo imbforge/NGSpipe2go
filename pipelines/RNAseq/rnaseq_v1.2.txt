@@ -39,6 +39,9 @@ load MODULE_FOLDER + "RNAseq/qualimap.module.groovy"
 load MODULE_FOLDER + "RNAseq/rnatypes.vars.groovy"
 load MODULE_FOLDER + "RNAseq/rnatypes.module.groovy"
 
+load MODULE_FOLDER + "RNAseq/subread2rnatypes.vars.groovy"
+load MODULE_FOLDER + "RNAseq/subread2rnatypes.module.groovy"
+
 load MODULE_FOLDER + "RNAseq/edger.vars.groovy"
 load MODULE_FOLDER + "RNAseq/edger.module.groovy"
 
@@ -54,6 +57,6 @@ load MODULE_FOLDER + "RNAseq/shinyreports.vars.groovy"
 load MODULE_FOLDER + "RNAseq/shinyreports.module.groovy"
 
 run {
-	"%.fastq.gz" * [ FastQC , STAR_se + BAMindexer + [ subread_count + filter2htseq, bam2bw, inferexperiment, qualimap, MarkDups + BAMindexer + [ dupRadar , geneBodyCov2 ] ] ] + [ RNAtypes, DE_DESeq2_MM, DE_DESeq2] + collectBpipeLogs + shinyReports
+	"%.fastq.gz" * [ FastQC , STAR_se + BAMindexer + [ subread_count + filter2htseq, bam2bw, inferexperiment, qualimap, rnatypes, MarkDups + BAMindexer + [ dupRadar , geneBodyCov2 ] ] ] + [ DE_DESeq2_MM, DE_DESeq2] + collectBpipeLogs + shinyReports
 }
 
