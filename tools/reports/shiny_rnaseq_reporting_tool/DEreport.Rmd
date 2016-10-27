@@ -9,6 +9,7 @@ output:
 <div class="contentbox">
 
 ```{r Initialise, echo=F, result='hide', error=F, warning=F, message=F}
+options(stringsAsFactors=FALSE)
 source('DE.shinyrep.helpers.R')
 loadGlobalVars()
 load(SHINYREPS_DE_DESEQ, envir=.GlobalEnv)		# the outcome from the DE analysis

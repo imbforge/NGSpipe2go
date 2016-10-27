@@ -260,6 +260,11 @@ DEhelper.STARparms <- function() {
             x[2] <- shorten(x[2])
             x[c(1, 2)]
         })
+
+        # take the 1st time a parm appears re-defined (skip re-defined in index generation)
+        redefined <- redefined[, !duplicated(redefined[1, ])] 
+
+        # create a vector with the values
         x <- redefined[2, ]
         names(x) <- redefined[1, ]
         
