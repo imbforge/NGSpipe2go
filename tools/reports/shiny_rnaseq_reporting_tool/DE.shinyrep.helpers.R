@@ -13,6 +13,7 @@ library("VennDiagram")
 library("grid")
 library("knitr")        # for markdown output
 library("plotly")
+library("GeneOverlap")
 
 ##
 ## loadGlobalVars: read configuration from bpipe vars
@@ -111,6 +112,35 @@ DEhelper.DESeq2.VolcanoPlot <- function(i=1, fdr=.01, top=25, web=TRUE) {
         ggplotly(p)
     else
         print(p)
+}
+
+## DEhelper.DESeq2.ChrOverrepresentation: test if there are more genes in a chromosome than expected by chance.
+DEhelper.DESeq2.ChrOverrepresentation <- function(i=1, fdr=0.1) {
+    genes <- data.frame(res[[i]])
+    chromosomes <- unique(genes$chr)
+    universe <- length(unique(rownames(genes)))
+
+    l_res <- list()
+    for (chromosome in chromosomes){
+        de_genes <- rownames(subset(genes, padj < fdr))
+        chr_genes <- rownames(subset(genes, chr == chromosome))
+        overl <- newGeneOverlap(
+           unique(de_genes),
+           unique(chr_genes),
+           genome.size=universe)
+
+        overl <- testGeneOverlap(overl)
+        l_res[[chromosome]] <- data.frame(
+            Chromosome=chromosome,
+            TotalGenes=length(chr_genes),
+            DEGenes=length(overl@intersection),
+            PValue=overl@pval,
+            JaccardIndex=overl@Jaccard
+            )
+    }
+
+    table_fisher <- do.call("rbind", l_res)
+    return(table_fisher)
 }
 
 ##
