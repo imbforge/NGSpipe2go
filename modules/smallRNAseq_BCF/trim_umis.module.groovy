@@ -8,7 +8,7 @@ TrimUMIs = {
 	def SEQTK_FLAGS = 	" -l " + LEFT_TRIM + 
 				" -b " + RIGHT_TRIM
 
-	transform(".deduped.fastq.gz") to (".deduped.trimmed.fastq.gz") {
+	transform(".fastq.gz") to (".trimmed.fastq.gz") {
 
 		exec """
 			export TOOL_DEPENDENCIES=$TOOL_DEPENDENCIES &&
