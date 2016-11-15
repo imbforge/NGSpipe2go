@@ -32,7 +32,7 @@ ESSENTIAL_HAIRPIN_MIRNA="~/imb-git addkettinggr/genomes/Danio_rerio/Ensembl/Zv9/
 // read size to keep (added 8 bp to account for barcodes)
 MIN_LENGTH=18
 MAX_LENGTH=38
-ESSENTIAL_STRANDED="yes"
+ESSENTIAL_STRANDED="reverse"
 ESSENTIAL_PAIRED="no"
 ESSENTIAL_MISMATCHES=2
 ESSENTIAL_GENOME_SIZE=1400000000 // Taken from https://www.ncbi.nlm.nih.gov/geo/query/acc.cgi?acc=GSM1077594. Other sizes (see deppTools docs):  mm9: 2,150,570,000; hg19:2,451,960,000; dm3:121,400,000 and ce10:93,260,000
