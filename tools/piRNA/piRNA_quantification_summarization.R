@@ -18,44 +18,56 @@ ggplot <- function(...) ggplot2::ggplot(...) + scale_color_brewer(palette="Set1"
 dir.create(file.path("figure"), showWarnings = FALSE)
 
 
-files <- list.files(pattern='.counts')
-## check if file is empty
-info <- file.info(files)
-notempty <- rownames(info[!(info$size == 0), ])
 
-counts_l <- list()
-for (counts_file in notempty){
-   exp <- gsub(".counts", "", counts_file)
-   exp <- gsub('so.rg.', '', exp)
-   exp <- gsub('kh-', 'Tdrkh-', exp)
-   split_exp <- unlist(strsplit(exp, '\\.'))
-   exp <- paste(split_exp[1], split_exp[length(split_exp)], sep='.')
-   print(exp)
-   counts_tmp <- fread(counts_file) %>%
-   setnames(c('chr_read', 'start_read', 'end_read', 'name_read', 'score_read', 'strand_read', 'chr_re', 'start_re', 'end_re', 'repFamily', 'repName', 'strand_re', 'repClass'))
-   counts_tmp$exp <- exp
-   counts_l[[exp]] <- counts_tmp %>%
-      mutate(readlength = end_read - start_read) %>%
-      filter(readlength < 40) %>%
-      splitstackshape:::cSplit('exp', '.', drop=FALSE, direction='wide') %>%
-      setnames(c('exp_1', 'exp_2'), c('Sample', 'Mapping')) %>%
-      splitstackshape:::cSplit('Sample', '-', drop=FALSE, direction='wide') %>%
-      setnames(c('Sample_1', 'Sample_2', 'Sample_3', 'Sample_4'), c('Genotype1', 'Genotype2', 'Tissue', 'IP')) %>%
-      mutate(Genotype=paste(Genotype1, Genotype2, sep='-'))
+data_file = 'piRNA_quantification.RData'
+
+   if(!file.exists(data_file)){
+
+   files <- list.files(pattern='.counts')
+   ## check if file is empty
+   info <- file.info(files)
+   notempty <- rownames(info[!(info$size == 0), ])
+
+   counts_l <- list()
+   for (counts_file in notempty){
+      exp <- gsub(".counts", "", counts_file)
+      exp <- gsub('so.rg.', '', exp)
+      exp <- gsub('kh-', 'Tdrkh-', exp)
+      split_exp <- unlist(strsplit(exp, '\\.'))
+      exp <- paste(split_exp[1], split_exp[length(split_exp)], sep='.')
+      print(exp)
+      counts_tmp <- fread(counts_file) %>%
+      setnames(c('chr_read', 'start_read', 'end_read', 'name_read', 'score_read', 'strand_read', 'chr_re', 'start_re', 'end_re', 'repFamily', 'repName', 'strand_re', 'repClass'))
+      counts_tmp$exp <- exp
+      counts_l[[exp]] <- counts_tmp %>%
+         mutate(readlength = end_read - start_read) %>%
+         filter(readlength < 40) %>%
+         splitstackshape:::cSplit('exp', '.', drop=FALSE, direction='wide') %>%
+         setnames(c('exp_1', 'exp_2'), c('Sample', 'Mapping')) %>%
+         splitstackshape:::cSplit('Sample', '-', drop=FALSE, direction='wide') %>%
+         setnames(c('Sample_1', 'Sample_2', 'Sample_3', 'Sample_4', 'Sample_5'), c('Genotype1', 'Genotype2', 'Tissue', 'dev_stage', 'IP')) %>%
+         mutate(Genotype=paste(Genotype1, Genotype2, sep='-'))
+   }
+
+   counts <- data.table::rbindlist(counts_l, fill=TRUE)
+   counts[, repClass:=gsub('\\?', '', repClass)]
+   # set factor levels
+   counts[, Mapping:=relevel(Mapping, "sense")]
+
+   ## group te elements, DNA and RNA
+   retro_te_classes <- c('LTR', 'SINE', 'LINE')
+   counts[, Feature:=ifelse(repClass %in% retro_te_classes, "RNA_repeats", repClass),]
+   counts[, Feature:=ifelse(Feature %in% c("DNA", "DNA?"), "DNA_repeats", Feature),]
+   counts[, Feature:=ifelse(grepl("protein_coding", Feature), "protein_coding", Feature),]
+   counts[, Feature:=ifelse(grepl("nonsense_mediated_decay", Feature), "protein_coding", Feature),]
+   counts[, Feature:=ifelse(grepl("processed_transcript", Feature), "protein_coding", Feature),]
+   
+   save(counts, file=data_file)
+
+} else {
+   load(data_file)
 }
 
-counts <- data.table::rbindlist(counts_l, fill=TRUE)
-counts[, repClass:=gsub('\\?', '', repClass)]
-# set factor levels
-counts[, Mapping:=relevel(Mapping, "sense")]
-
-## group te elements, DNA and RNA
-retro_te_classes <- c('LTR', 'SINE', 'LINE')
-counts[, Feature:=ifelse(repClass %in% retro_te_classes, "RNA_repeats", repClass),]
-counts[, Feature:=ifelse(Feature %in% c("DNA", "DNA?"), "DNA_repeats", Feature),]
-counts[, Feature:=ifelse(grepl("protein_coding", Feature), "protein_coding", Feature),]
-counts[, Feature:=ifelse(grepl("nonsense_mediated_decay", Feature), "protein_coding", Feature),]
-counts[, Feature:=ifelse(grepl("processed_transcript", Feature), "protein_coding", Feature),]
 
 len <- counts[, list(.N), by=list(Sample, Genotype, IP, Tissue, readlength, Mapping)][order(Sample, Genotype, IP, Tissue, readlength, Mapping)]
 n_samples <- length(unique(len$Sample))

@@ -7,7 +7,10 @@ CountReadsSummary = {
 
    output.dir = COUNT_READS_OUTDIR
 
-   produce(COUNT_READS_OUTDIR + "/figure/PercentageOfFeature.pdf") {
+   produce(
+      COUNT_READS_OUTDIR + "/figure/PercentageOfFeature.pdf",
+      COUNT_READS_OUTDIR + "/piRNA_quantification.RData"
+      ) {
 
 
       exec """
