@@ -9,8 +9,8 @@ load MODULE_FOLDER + "NGS/fastqc.module.groovy"
 load MODULE_FOLDER + "DNAseq/bwa.vars.groovy"
 load MODULE_FOLDER + "DNAseq/bwa.module.groovy"
 
-load MODULE_FOLDER + "NGS/markdups.vars.groovy"
-load MODULE_FOLDER + "NGS/markdups.module.groovy"
+load MODULE_FOLDER + "NGS/rmdups.vars.groovy"
+load MODULE_FOLDER + "NGS/rmdups.module.groovy"
 
 load MODULE_FOLDER + "NGS/bamindexer.vars.groovy"
 load MODULE_FOLDER + "NGS/bamindexer.module.groovy"
@@ -37,6 +37,6 @@ load MODULE_FOLDER + "DNAseq/shinyreports.module.groovy"
 
 run {
     //"%.fastq.gz" * [ FastQC ] + "%read_*.fastq.gz" * [ BWA_pe ]
-    "%.fastq.gz" * [ FastQC ] + "%read_*.fastq.gz" * [ BWA_pe ] + "%.bam" * [ MarkDups + BAMindexer + IndelRealignment + BaseRecalibration + [ VariantCallHC, VariantCallUG ] ] + "%.vcf.gz" * [ VariantEval ] + collectBpipeLogs + shinyReports
+    "%.fastq.gz" * [ FastQC ] + "%read_*.fastq.gz" * [ BWA_pe ] + "%.bam" * [ RmDups + BAMindexer + IndelRealignment + BaseRecalibration + [ VariantCallHC, VariantCallUG ] ] + "%.vcf.gz" * [ VariantEval ] + collectBpipeLogs + shinyReports
     // "%.fastq.gz" * [ FastQC ] + "%read_*.fastq.gz" * [ BWA_pe ] + "%.bam" * [ MarkDups + IndelRealignment + BaseRecalibrate + HaplotypeCall ]
     }
