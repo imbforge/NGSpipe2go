@@ -1,6 +1,6 @@
 //vars for task macs2 from catalog ChIPseq, version 1
 MACS2_TARGETS="targets.txt" // targets file describing the samples
-MACS2_MFOLD="-m 1 30"	// range of enrichment ratio (default: 10,30)
+MACS2_MFOLD="-m 10 30"	// range of enrichment ratio (default: 10,30)
 MACS2_GSIZE="-g " + ESSENTIAL_MACS2_GSIZE // the mappable genome size
 MACS2_BWIDTH="--bw " + Integer.toString(ESSENTIAL_FRAGLEN)	  // bandwidth use for model building
 MACS2_MAPPED=MAPPED // where the bam files are stored
