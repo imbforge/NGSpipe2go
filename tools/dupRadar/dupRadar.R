@@ -51,5 +51,5 @@ dm <- analyzeDuprates(bam, gtf, stranded, (paired == "yes"), threads, autosort=F
 png(paste0(outdir, "/", gsub("\\.bam", "", basename(bam)), "_dupRadar.png"))
 duprateExpPlot(DupMat=dm)
 write.table(dm, sep="\t", quote=FALSE, row.names=FALSE,
-            file=paste0(outdir, "/", gsub("(\\.duprm|)\\.bam", "", basename(bam)), "_dupRadar.tsv")) # also remove the .duprm prefix
+            file=paste0(outdir, "/", gsub("(\\.dupmarked|)\\.bam", "", basename(bam)), "_dupRadar.tsv")) # also remove the .duprm prefix
 dev.off()
