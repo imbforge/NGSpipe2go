@@ -2,7 +2,8 @@
 title: "SHINYREPS_PROJECT"
 output:
   html_document:
-    toc: yes
+    toc: true
+    toc_float: true
     css: styles.css
 ---
 
@@ -183,7 +184,7 @@ For many genes in the human, mouse & other genomes, RNA-seq with short reads can
 
 The Venn diagrams below compare the number of differentially expressed genes without and with inclusion of the ambiguous multimapped (MM) redas.
 
-```{r DifferentialExpressionMM_paragraph, echo=F, results='asis', error=F, warning=F, message=F, fig.align="center"}
+```{r DifferentialExpressionMM_paragraph, echo=F, results='asis', error=F, warning=F, message=F, fig.align="center", fig.width=3, fig.height=3}
 for(i in 1:nrow(conts)) {
 
     fdr <- .01
