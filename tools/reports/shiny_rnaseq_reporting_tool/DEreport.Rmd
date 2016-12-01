@@ -168,7 +168,7 @@ for(i in 1:nrow(conts)) {
     cat("", fill=T)
     
     # and DE table
-    cat("The table contains contains a summary of the likelihood that there are more DE genes in a particular chromosome than expected by chance. The p-value is calculated with Fisher's exact text. This test also gives an odds ratio which represents the strength of association. If an odds ratio is equal to or less than 1, there is no association between the two lists. If the odds ratio is much larger than 1, then the association is strong. The class also calculates the Jaccard index which measures the similarity between two lists. The Jaccard index varies between 0 and 1, with 0 meaning there is no similarity between the two and 1 meaning the two are identical.", fill=T)
+    cat("The table contains contains a summary of the likelihood that there are more DE genes in a particular chromosome than expected by chance. The p-value is calculated with Fisher's exact text. Only chromosomes which show a significant overrepresentation (pval < 0.1) are presented in this table. This test also gives an odds ratio which represents the strength of association. If an odds ratio is equal to or less than 1, there is no association between the two lists. If the odds ratio is much larger than 1, then the association is strong. The class also calculates the Jaccard index which measures the similarity between two lists. The Jaccard index varies between 0 and 1, with 0 meaning there is no similarity between the two and 1 meaning the two are identical.", fill=T)
     cat("", fill=T)
     table_fisher <- DEhelper.DESeq2.ChrOverrepresentation(i, fdr)
     cat(kable(table_fisher, row.names=T, align="r"), sep="\n")
