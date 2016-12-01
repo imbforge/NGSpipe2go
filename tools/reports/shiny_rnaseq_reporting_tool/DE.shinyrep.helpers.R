@@ -116,14 +116,14 @@ DEhelper.DESeq2.VolcanoPlot <- function(i=1, fdr=.01, top=25, web=TRUE) {
 }
 
 ## DEhelper.DESeq2.ChrOverrepresentation: test if there are more genes in a chromosome than expected by chance.
-DEhelper.DESeq2.ChrOverrepresentation <- function(i=1, fdr=0.1) {
+DEhelper.DESeq2.ChrOverrepresentation <- function(i=1, fdr_de_gene=0.1, fdr_fisher_test=0.1, filter=TRUE) {
     genes <- data.frame(res[[i]])
     chromosomes <- unique(genes$chr)
     universe <- length(unique(rownames(genes)))
 
     l_res <- list()
     for (chromosome in chromosomes){
-        de_genes <- rownames(subset(genes, padj < fdr))
+        de_genes <- rownames(subset(genes, padj < fdr_de_gene))
         chr_genes <- rownames(subset(genes, chr == chromosome))
         overl <- newGeneOverlap(
            unique(de_genes),
@@ -141,6 +141,8 @@ DEhelper.DESeq2.ChrOverrepresentation <- function(i=1, fdr=0.1) {
     }
 
     table_fisher <- do.call("rbind", l_res)
+    if(filter) table_fisher <- table_fisher[table_fisher$PValue < fdr_fisher_test, ]
+
     return(table_fisher)
 }
 
