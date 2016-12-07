@@ -413,13 +413,6 @@ DEhelper.RNAtypes <- function() {
     FOLDER <- SHINYREPS_RNATYPES
     SUFFIX <- paste0(SHINYREPS_RNATYPES_SUFFIX, '$')
     
-    ### DEBUG
-    FOLDER <- "~/fsimb/groups/imb-bioinfocf/projects/cfb_internal/imbforge/test/rnaseq_161019_OD/qc/rnatypes-count/"
-    SUFFIX <- ".readcounts.tsv"
-    SUFFIX <- paste0(SUFFIX, '$')
-    SHINYREPS_PREFIX <- "Sample_imb_richly_2014_05_"
-    ### /DEBUG
-    
     # check if folder exists
     if(!file.exists(FOLDER)) {
         return("Subread statistics not available")
