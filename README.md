@@ -119,6 +119,5 @@ The Rmd file can be adjusted to your needs using your favorite text editor (well
 The Rmd files can be transformed to easily readable documents using knitr, e.g.:
     
     R usage:
-    knitr::knit2html("DEreport.Rmd") # this step is optional
-    rmarkdown::render("DEreport.md")
+    rmarkdown::render("DEreport.Rmd")
 
