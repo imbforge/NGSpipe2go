@@ -6,6 +6,7 @@ library(ggplot2)
 library(reshape2)
 library(plyr)
 library(scales)
+library(forcats)
 theme_set(theme_bw(16))
 ###############
 
@@ -54,14 +55,13 @@ names(MeltedReadCount.stacked) <- c('Name', 'Category', 'Counts')
 ##########
 ## Plot ##
 
-plotter.stacked <- ggplot(MeltedReadCount.stacked, aes(x=Name, y=Counts,fill=Category)) +
+plotter.stacked <- ggplot(MeltedReadCount.stacked, aes(x=Name, y=Counts,fill=fct_rev(Category))) +
    geom_bar(stat="identity", position="stack", width=0.7) +
    ggtitle("Deduplication Statistics") +
    theme(axis.text.x=element_text(angle=30, vjust=1, hjust=1, size=rel(0.9)), plot.title=element_text(vjust=1, size= rel(0.95)),  axis.title.x=element_text(size=rel(0.9)), axis.title.y=element_text(size=rel(0.9)), axis.text.y=element_text(size=rel(0.9))) +
-   xlab("Library ID") +
-   ylab("Total Number of Reads") +
+   labs(x="Library ID", y="Total Number of Reads", fill="Category") +
    scale_y_continuous(labels=comma) +
-   scale_fill_brewer(palette="Set1")
+   scale_fill_manual(values=c("#377EB8","#E41A1C"))
 
 ggsave(paste(output.folder,"/dedupReads.pdf",sep=""), plotter.stacked, height=7,width=10)
 ggsave(paste(output.folder,"/dedupReads.png",sep=""), plotter.stacked, height=7,width=10)

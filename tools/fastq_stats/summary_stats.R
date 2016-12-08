@@ -132,7 +132,7 @@ plotter <- ggplot(stattable, aes(x=Name, y=Counts,fill=Category)) +
    ylab("Total Number of Reads") +
    geom_text(size=3, aes(label=String), position=position_dodge(width=0.8), vjust=-0.5) +
    scale_y_continuous(labels=comma) +
-   scale_fill_brewer(palette="Set1")
+   scale_fill_manual(values=c("#984EA3","#4DAF4A","#377EB8","#E41A1C"))
 
 ggsave(paste(output.folder,"/allTrimmingStats.pdf",sep=""), plotter, height=7,width=12)
 ggsave(paste(output.folder,"/allTrimmingStats.png",sep=""), plotter, height=7,width=12)
