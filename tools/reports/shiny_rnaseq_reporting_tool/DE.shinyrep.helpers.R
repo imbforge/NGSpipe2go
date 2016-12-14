@@ -567,7 +567,7 @@ DEhelper.Subread <- function() {
                  "Unassigned_NoFeatures",
                  "Unassigned_Unmapped",
                  "Unassigned_MappingQuality",
-                 "Unassigned_FragementLength",
+                 "Unassigned_FragmentLength",
                  "Unassigned_Chimera",
                  "Unassigned_Secondary",
                  "Unassigned_Nonjunction",
