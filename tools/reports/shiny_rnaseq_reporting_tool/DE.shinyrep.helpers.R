@@ -450,7 +450,8 @@ DEhelper.RNAtypes <- function() {
     
     plot <- ggplot() + 
         geom_bar(data=df.counts.melt, aes(x=sample, y=count, fill=type), position="fill", stat="identity") + 
-        labs(x="", y="", fill="")
+        labs(x="", y="", fill="") +
+	theme(axis.text.x=element_text(angle=45, vjust=1, hjust=1)) 
     
     return(plot)
 }
