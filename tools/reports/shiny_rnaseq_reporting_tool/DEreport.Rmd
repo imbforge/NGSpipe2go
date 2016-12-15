@@ -196,11 +196,14 @@ for(i in 1:nrow(conts)) {
     # Venn comparing DE genes w/ w/o MM
     padj   <- ifelse(is.na(res  [[i]]$padj), 1, res  [[i]]$padj)
     padjMM <- ifelse(is.na(resMM[[i]]$padj), 1, resMM[[i]]$padj)
-    img <- venn.diagram(list(with_MM  =rownames(resMM[[i]])[padjMM < fdr],
-                             wihout_MM=rownames(res  [[i]])[padj   < fdr]),
-                        fill=c("green", "blue"), alpha=.3, lwd=0, filename=NULL)
-    grid.newpage()
-    grid.draw(img)
+    
+    if (sum(padj < fdr) > 0 && sum(padjMM < fdr) > 0) { 
+	    img <- venn.diagram(list(with_MM  =rownames(resMM[[i]])[padjMM < fdr],
+				     wihout_MM=rownames(res  [[i]])[padj   < fdr]),
+				fill=c("green", "blue"), alpha=.3, lwd=0, filename=NULL)
+	    grid.newpage()
+	    grid.draw(img)
+    }
     
     # the top genes in disagreement
     cat("The table contains the top genes which are differentially expressed (fdr<", fdr, ") in only one analysis:", fill=T)
