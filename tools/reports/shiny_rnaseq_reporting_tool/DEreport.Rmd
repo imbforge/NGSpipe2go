@@ -160,6 +160,7 @@ for(i in 1:nrow(conts)) {
 ## Chromosome over-representation ##
 In some experiments it is possible that there is local effect in gene expression due to for instance genetic linkage. One hint that this might be happening is if there are more affected genes in a chromosome than expected by chance. If this happens, further data exploration might be warranted. 
 
+The tables contain a summary of the likelihood that there are more DE genes in a particular chromosome than expected by chance. The p-value is calculated with Fisher's exact test. Only chromosomes which show a significant overrepresentation (pval < 0.1) are presented in this table. This test also gives an odds ratio which represents the strength of association. If an odds ratio is equal to or less than 1, there is no association between the two lists. If the odds ratio is much larger than 1, then the association is strong. The class also calculates the Jaccard index which measures the similarity between two lists. The Jaccard index varies between 0 and 1, with 0 meaning there is no similarity between the two and 1 meaning the two are identical.
 
 ```{r ChromosomeEnrichment_paragraph, echo=F, results='asis', error=F, warning=F, message=F, fig.align="center"}
 for(i in 1:nrow(conts)) {
@@ -169,11 +170,15 @@ for(i in 1:nrow(conts)) {
     cat("", fill=T)
     
     # and DE table
-    cat("The table contains contains a summary of the likelihood that there are more DE genes in a particular chromosome than expected by chance. The p-value is calculated with Fisher's exact text. Only chromosomes which show a significant overrepresentation (pval < 0.1) are presented in this table. This test also gives an odds ratio which represents the strength of association. If an odds ratio is equal to or less than 1, there is no association between the two lists. If the odds ratio is much larger than 1, then the association is strong. The class also calculates the Jaccard index which measures the similarity between two lists. The Jaccard index varies between 0 and 1, with 0 meaning there is no similarity between the two and 1 meaning the two are identical.", fill=T)
-    cat("", fill=T)
     table_fisher <- DEhelper.DESeq2.ChrOverrepresentation(i, fdr)
-    cat(kable(table_fisher, row.names=T, align="r"), sep="\n")
-    cat("", fill=T)
+
+    if (nrow(table_fisher) > 0) {
+        cat(kable(table_fisher, row.names=F, align="r"), sep="\n")
+        cat("", fill=T)
+    } else {
+        cat("No chromosome over-representation found.", fill=T)
+        cat("", fill=T)
+    }
 }
 ```
 
@@ -182,7 +187,7 @@ for(i in 1:nrow(conts)) {
 
 For many genes in the human, mouse & other genomes, RNA-seq with short reads cannot measure expression accurately because recently duplicated gene families, as well as some gene-pseudogene pairs, are very similar on transcript level and few reads map uniquely to only one family member. There are several approaches how to deal with multimapped (MM), here such reads are randomly assigned to one of the several genes they may come from and then the DESeq2 statistical analysis is repeated. While this alternative analysis may reveal additional interesting hits, which would otherwise be lost, it may also produce false-positive findings due to potential "cross-talk" between highly similar genes, i.e. if a gene X changes expression, its pseudogene Y or closely-related paralog Z may be non-specifically affected as well. Therefore, the standard analysis using only uniquely mapped reads is usually more reliable (specific) for the majority of genes and should have priority.
 
-The Venn diagrams below compare the number of differentially expressed genes without and with inclusion of the ambiguous multimapped (MM) redas.
+The Venn diagrams below compare the number of differentially expressed genes without and with inclusion of the ambiguous multimapped (MM) reads.
 
 ```{r DifferentialExpressionMM_paragraph, echo=F, results='asis', error=F, warning=F, message=F, fig.align="center", fig.width=3, fig.height=3}
 for(i in 1:nrow(conts)) {
