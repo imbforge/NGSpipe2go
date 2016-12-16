@@ -136,6 +136,7 @@ DEhelper.DESeq2.ChrOverrepresentation <- function(i=1, fdr_de_gene=0.1, fdr_fish
             TotalGenes=length(chr_genes),
             DEGenes=length(overl@intersection),
             PValue=overl@pval,
+            OddsRatio=overl@odds.ratio,
             JaccardIndex=overl@Jaccard
             )
     }
