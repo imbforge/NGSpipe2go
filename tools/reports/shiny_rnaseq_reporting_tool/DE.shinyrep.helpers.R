@@ -142,9 +142,13 @@ DEhelper.DESeq2.ChrOverrepresentation <- function(i=1, fdr_de_gene=0.1, fdr_fish
     }
 
     table_fisher <- do.call("rbind", l_res)
-    if(filter) table_fisher <- table_fisher[table_fisher$PValue < fdr_fisher_test, ]
 
-    return(table_fisher)
+    # correct pvalue for multiple testing
+    table_fisher$FDR <- p.adjust(table_fisher$PValue,method="fdr")
+
+    if(filter) table_fisher <- table_fisher[table_fisher$FDR < fdr_fisher_test, ]
+
+    return(table_fisher[c("Chromosome","TotalGenes","DEGenes","PValue","FDR","OddsRatio","JaccardIndex")])
 }
 
 ##
