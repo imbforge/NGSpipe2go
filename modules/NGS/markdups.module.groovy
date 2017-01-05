@@ -9,9 +9,9 @@ MarkDups = {
 
 	output.dir=MAPPED
 	def JAVA_FLAGS  = "-Xmx" + MARKDUPS_MAXMEM + "m"
-	def MARKDUPS_FLAGS  = "REMOVE_DUPLICATES=" + MARKDUPS_REMOVE + " ASSUME_SORTED=TRUE"
+	def MARKDUPS_FLAGS  = "REMOVE_DUPLICATES=FALSE ASSUME_SORTED=TRUE"
 
-	transform(".bam") to (".duprm.bam") {
+	transform(".bam") to (".dupmarked.bam") {
 		exec """
 			module load jdk &&
 			module load picard &&

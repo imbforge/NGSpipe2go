@@ -1,0 +1,1177 @@
+# Differential gene expression analysis
+
+```{r input data}
+tab="featureCounts_summary.txt"
+bio_file="/home/adomingu/imb-kettinggr/genomes/Caenorhabditis_elegans/Ensembl/WBcel235/Annotation/Genes/wormbaseGeneID2biotype.txt"
+```
+
+
+```{r packages}
+######################
+## packages
+######################
+libs=c(
+  "data.table",
+  "RColorBrewer",
+  "ggplot2",
+  "DESeq2",
+  "scales",
+  "pheatmap",
+  "org.Ce.eg.db"
+)
+
+lapply(libs, require, character.only=T)
+
+theme_set(theme_bw(16))
+theme_white <- function() {
+     theme_update(
+      panel.grid.major = element_blank(),
+      panel.grid.minor = element_blank()
+      )
+ }
+theme_white()
+# make a palette the default: http://stackoverflow.com/a/16437625/1274242
+ggplot <- function(...) ggplot2::ggplot(...) + scale_color_brewer(palette="Set1")
+dir.create(file.path("figure"), showWarnings = FALSE)
+
+```
+
+```{r functions}
+concat <- function(...) paste(..., sep="")
+
+df2matrix <- function(df){
+# converts a dataframe in matrix
+# using the 1st column as rownnames
+  # # test
+  # df=countdata
+  mat <- as.matrix(df[, -1])
+  rownames(mat) <- df[, 1]
+  class(mat) <- "numeric"
+  return(mat)
+}
+
+```
+
+## read count
+Reads were assigned to genomic regions using featureCounts.
+
+```{r load_counts}
+gene_features <- read.table(tab,
+   sep="\t",
+   header=T,
+   stringsAsFactors=FALSE
+)
+nc <- ncol(gene_features)
+colnames(gene_features)[1] <- "Geneid"
+## remove cols with strand, start
+countdata <- gene_features[,c(1,7:nc)]
+
+## clean RNA classes
+colnames(countdata) <- gsub(
+   ".+\\.(\\w+.2\\d\\w).bam",
+   "\\1",
+   colnames(countdata))
+
+## cleans path and adds "full" tag
+colnames(countdata) <- gsub(
+   ".+\\.(\\w+).bam",
+   "\\1.All",
+   colnames(countdata)
+   )
+
+```
+
+```{r select_biotypes}
+#exclude mi_pi_r_t_sn_sno_RNAs
+## biotype:
+bio <- read.table(bio_file,
+   sep="\t",
+   header=T,
+   stringsAsFactors=FALSE
+)
+colnames(bio) <- c("wormbase_gene", "gene_biotype")
+unique(bio$gene_biotype)
+exclude_bio <- c("miRNA", "piRNA", "rRNA", "tRNA", "snoRNA", "snRNA")
+row_keep <- subset(bio, !(bio$gene_biotype %in% exclude_bio))$wormbase_gene
+```
+
+
+## DESeq2 analysis for All small RNA types
+
+```{r select_conditions}
+smRNAclass <- "All"
+col_keep <- colnames(countdata)[c(grep(smRNAclass, colnames(countdata)))]
+```
+
+```{r prepare_deseq_object}
+## filter RNA biotypes and conditions
+countdata_S <- subset(
+    countdata, Geneid %in% row_keep,
+    select=c("Geneid", col_keep))
+
+######################
+## Convert to matrix
+######################
+countdata_m <- df2matrix(countdata_S)
+
+samples <- colnames(countdata_m)
+
+conds <- gsub(
+   "(^\\w+)_\\w+_r\\d+_\\w+.\\w+", "\\1",
+   colnames(countdata_m)
+   )
+conds <- factor(
+   gsub(
+      "(xf)\\d+", "\\1",
+      conds
+      )
+   )
+conds
+
+replicates <- factor(
+  gsub(
+   "^\\w+_\\w+_(r\\d+)_\\w+.\\w+", "\\1",
+   colnames(countdata_m)
+   )
+)
+
+coldata <- data.frame(
+  condition=conds,
+  replicate=replicates,
+  row.names=samples
+)
+coldata
+
+## create deseq object will all the data
+# in more fine-tuned analysis factors can be subseted
+
+dds <- DESeqDataSetFromMatrix(
+  countData = countdata_m,
+  colData = coldata,
+  design = ~ condition
+)
+# making sure that N2 is the first level, and thus
+# log2FC are reported as treatment over control (xf/N2)
+dds$condition <- relevel(dds$condition, "N2")
+```
+
+```{r deseq_analysis}
+## DESeq
+dds <- DESeq(dds)
+
+## conditions, echo=FALSE, results="asis
+col_data <- as.data.frame(colData(dds))
+print(col_data)
+```
+
+### QC
+
+#### Dispersion
+```{r dispersion_plot}
+plotDispEsts(dds)
+```
+
+#### Sample clustering
+
+Here we extract the counts and transformed values to use for clustering and visualization:
+- The function rlog, stands for regularized log, transforming the original count data to the log2 scale by fitting a model with a term for each sample and a prior distribution on the coefficients which is estimated from the data.
+-  Variance stabilizing transformation (vsd) is a parametric fit for the dispersion.
+
+
+```{r normalized_counts}
+# counts
+select <- order(rowMeans(counts(dds,normalized=TRUE)),decreasing=TRUE)[1:20]
+nt <- normTransform(dds) # defaults to log2(x+1)
+log2.norm.counts <- assay(nt)[select,]
+df <- as.data.frame(colData(dds)[,c("condition","replicate")])
+
+rld <- rlog(dds, blind=FALSE)
+vsd <- varianceStabilizingTransformation(dds, blind=FALSE)
+```
+
+```{r heatmap_variances}
+pheatmap(
+   log2.norm.counts,
+   cluster_rows=FALSE,
+   show_rownames=TRUE,
+   cluster_cols=FALSE,
+   annotation_col=df
+   )
+pheatmap(
+   assay(rld)[select,],
+   cluster_rows=FALSE,
+   show_rownames=TRUE,
+   cluster_cols=FALSE,
+   annotation_col=df
+   )
+pheatmap(
+   assay(vsd)[select,],
+   cluster_rows=FALSE,
+   show_rownames=TRUE,
+   cluster_cols=FALSE,
+   annotation_col=df
+   )
+```
+
+Heatmaps showing the expression data of the 20 most highly expressed genes. The data is of log2 normalized counts, from regularized log transformation  and from variance stabilizing transformation.
+
+Now we can actually cluster the samples:
+
+```{r sample_clustering}
+sampleDists <- dist(t(assay(rld)))
+sampleDistMatrix <- as.matrix(sampleDists)
+rownames(sampleDistMatrix) <- paste(rld$condition, rld$replicate, sep="-")
+colnames(sampleDistMatrix) <- NULL
+
+colors <- colorRampPalette( rev(brewer.pal(9, "Blues")) )(255)
+pheatmap(sampleDistMatrix,
+   clustering_distance_rows=sampleDists,
+   clustering_distance_cols=sampleDists,
+   col=colors)
+```
+
+#### PCA
+
+```{r pca_simple}
+plotPCA(rld, intgroup=c("condition", "replicate")) +
+   ggtitle(smRNAclass)
+```
+
+```{r pca_pretty}
+data <- plotPCA(rld, intgroup=c("condition", "replicate"), returnData=TRUE)
+percentVar <- round(100 * attr(data, "percentVar"))
+ggplot(data, aes(PC1, PC2, color=condition, shape=replicate)) +
+   geom_point(size=3) +
+   xlab(paste0("PC1: ",percentVar[1],"% variance")) +
+   ylab(paste0("PC2: ",percentVar[2],"% variance"))
+```
+
+
+### Results
+
+```{r results_extraction}
+#########################################################
+## Results
+#########################################################
+res <- results(dds)
+res <- res[order(res$padj),]
+summary(res)
+up <- sum(res$padj < 0.1 & res$log2FoldChange > 0, na.rm=TRUE)
+up_log2 <- sum(res$padj < 0.1 & res$log2FoldChange > 1, na.rm=TRUE)
+down <- sum(res$padj < 0.1 & res$log2FoldChange < 0, na.rm=TRUE)
+down_log2 <- sum(res$padj < 0.1 & res$log2FoldChange < -1, na.rm=TRUE)
+
+sum(res$padj < 0.1, na.rm=TRUE)
+```
+
+Summary contains an overview of the results. There are `r up` significantly up-regulated genes and `r down` significantly down-regulated genes. If we consider only genes with more than a 2 fold change, then `r up_log2` are up-regulated and `r down_log2` are down-regulated.
+
+
+```{r ma_plot_normalized_all}
+# variable position of labels
+x_pos <- max(res@listData$baseMean) * 0.7
+plotMA(res, main="DESeq2", ylim=c(-5,5))
+text(x=x_pos, y=2, labels=up, col="blue", cex=1.5)
+text(x=x_pos, y=-2, labels=down, col="blue", cex=1.5)
+```
+
+```{r ma_plot_not_normalized_all}
+resMLE <- results(dds, addMLE=TRUE)
+# variable position of labels
+x_pos <- max(resMLE@listData$baseMean) * 0.7
+plotMA(resMLE, MLE=TRUE, main="unshrunken LFC", ylim=c(-5,5))
+text(x=x_pos, y=2, labels=up, col="blue", cex=1.5)
+text(x=x_pos, y=-2, labels=down, col="blue", cex=1.5)
+```
+
+
+```{r biotype_information_all}
+#################################
+## add gene symbol
+res$wormbase_gene <-rownames(res)
+
+res$symbol <- mapIds(org.Ce.eg.db,
+             keys=row.names(res),
+             column="SYMBOL",
+             keytype="WORMBASE",
+             multiVals="first")
+res$type <- mapIds(org.Ce.eg.db,
+             keys=row.names(res),
+             column="GENENAME",
+             keytype="WORMBASE",
+             multiVals="first")
+
+
+idx <- match(res$wormbase_gene, bio$wormbase_gene)
+res$gene_biotype <- bio$gene_biotype[ idx ]
+
+target_file <- '~/imb-kettinggr/adomingues/projects/imb_ketting_2014_14_almeida_smallRNA_celegans/data/annotations_targets/22G/all_targets.txt'
+targets <- read.delim(target_file, header = TRUE, stringsAsFactors=FALSE)
+targets <- aggregate(targets[2], targets[-2],
+   FUN = function(X) paste(unique(X), collapse=",")
+   )
+
+res$Target_gene <- ifelse(res$symbol %in% targets$geneid, targets$exp, "unknown")
+
+fout <- paste(
+   levels(conds)[2],
+   "_",
+   levels(conds)[1],
+   "_",
+   smRNAclass,
+   "_",
+   "DESeq2_results.txt",
+   sep="")
+res_out <- as.data.frame(res)
+res_out <- data.frame(
+   wormbase_gene = res_out[ , names(res_out) == "wormbase_gene"],
+   res_out[ , !(names(res_out) == "wormbase_gene")])
+# res_out$wormbase_gene <-NULL
+
+write.table(
+   res_out,
+   file=fout,
+   sep="\t",
+   quote=FALSE,
+   row.names=FALSE,
+   col.names=TRUE)
+```
+
+
+## DESeq2 analysis for 21U small RNA types
+
+```{r main_analysis_all_21U}
+smRNAclass <- "21U"
+col_keep <- colnames(countdata)[c(grep(smRNAclass, colnames(countdata)))]
+col_keep
+## filter RNA biotypes and conditions
+countdata_S <- subset(countdata, Geneid %in% row_keep, select=c("Geneid", col_keep))
+
+######################
+## Convert to matrix
+######################
+countdata_m <- df2matrix(countdata_S)
+
+samples <- colnames(countdata_m)
+
+conds <- gsub(
+   "(^\\w+)_\\w+_r\\d+_\\w+.\\w+", "\\1",
+   colnames(countdata_m)
+   )
+conds <- factor(
+   gsub(
+      "(xf)\\d+", "\\1",
+      conds
+      )
+   )
+conds
+
+replicates <- factor(
+  gsub(
+   "^\\w+_\\w+_(r\\d+)_\\w+.\\w+", "\\1",
+   colnames(countdata_m)
+   )
+)
+
+coldata <- data.frame(
+  condition=conds,
+  replicate=replicates,
+  row.names=samples
+)
+coldata
+
+## create deseq object will all the data
+# in more fine-tuned analysis factors can be subseted
+
+dds <- DESeqDataSetFromMatrix(
+  countData = countdata_m,
+  colData = coldata,
+  design = ~ condition
+)
+# making sure that N2 is the first level, and thus
+# log2FC are reported as treatment over control (xf/N2)
+dds$condition <- relevel(dds$condition, "N2")
+## DESeq
+dds <- DESeq(dds)
+
+## conditions, echo=FALSE, results="asis
+col_data <- as.data.frame(colData(dds))
+print(col_data)
+```
+
+### QC
+
+#### Dispersion
+```{r dispersion_plot_all_21U}
+plotDispEsts(dds)
+```
+
+#### Sample clustering
+
+Here we extract the counts and transformed values to use for clustering and visualization:
+- The function rlog, stands for regularized log, transforming the original count data to the log2 scale by fitting a model with a term for each sample and a prior distribution on the coefficients which is estimated from the data.
+-  Variance stabilizing transformation (vsd) is a parametric fit for the dispersion.
+
+
+```{r normalized_counts_all_21U}
+# counts
+select <- order(rowMeans(counts(dds,normalized=TRUE)),decreasing=TRUE)[1:20]
+nt <- normTransform(dds) # defaults to log2(x+1)
+log2.norm.counts <- assay(nt)[select,]
+df <- as.data.frame(colData(dds)[,c("condition","replicate")])
+
+rld <- rlog(dds, blind=FALSE)
+vsd <- varianceStabilizingTransformation(dds, blind=FALSE)
+```
+
+```{r heatmap_variances_all_21U}
+pheatmap(
+   log2.norm.counts,
+   cluster_rows=FALSE,
+   show_rownames=TRUE,
+   cluster_cols=FALSE,
+   annotation_col=df
+   )
+```
+
+Heatmaps showing the expression data of the 20 most highly expressed genes. The data is of log2 normalized counts, from regularized log transformation  and from variance stabilizing transformation.
+
+Now we can actually cluster the samples:
+
+```{r sample_clustering_all_21U}
+sampleDists <- dist(t(assay(rld)))
+sampleDistMatrix <- as.matrix(sampleDists)
+rownames(sampleDistMatrix) <- paste(rld$condition, rld$replicate, sep="-")
+colnames(sampleDistMatrix) <- NULL
+
+colors <- colorRampPalette( rev(brewer.pal(9, "Blues")) )(255)
+pheatmap(sampleDistMatrix,
+   clustering_distance_rows=sampleDists,
+   clustering_distance_cols=sampleDists,
+   col=colors)
+```
+
+#### PCA
+
+```{r pca_simple_all_21U}
+plotPCA(rld, intgroup=c("condition", "replicate")) +
+   ggtitle(smRNAclass)
+```
+
+```{r pca_pretty_all_21U}
+data <- plotPCA(rld, intgroup=c("condition", "replicate"), returnData=TRUE)
+percentVar <- round(100 * attr(data, "percentVar"))
+ggplot(data, aes(PC1, PC2, color=condition, shape=replicate)) +
+   geom_point(size=3) +
+   xlab(paste0("PC1: ",percentVar[1],"% variance")) +
+   ylab(paste0("PC2: ",percentVar[2],"% variance")) +
+   ggtitle(smRNAclass)
+```
+
+
+### Results
+
+```{r results_extraction_all_21U}
+#########################################################
+## Results
+#########################################################
+res <- results(dds)
+res <- res[order(res$padj),]
+summary(res)
+up <- sum(res$padj < 0.1 & res$log2FoldChange > 0, na.rm=TRUE)
+up_log2 <- sum(res$padj < 0.1 & res$log2FoldChange > 1, na.rm=TRUE)
+down <- sum(res$padj < 0.1 & res$log2FoldChange < 0, na.rm=TRUE)
+down_log2 <- sum(res$padj < 0.1 & res$log2FoldChange < -1, na.rm=TRUE)
+
+sum(res$padj < 0.1, na.rm=TRUE)
+```
+
+Summary contains an overview of the results. There are `r up` significantly up-regulated genes and `r down` significantly down-regulated genes. If we consider only genes with more than a 2 fold change, then `r up_log2` are up-regulated and `r down_log2` are down-regulated.
+
+
+```{r ma_plot_normalized_all_21U}
+# variable position of labels
+x_pos <- max(res@listData$baseMean) * 0.7
+plotMA(res, main="DESeq2", ylim=c(-5,5))
+text(x=x_pos, y=2, labels=up, col="blue", cex=1.5)
+text(x=x_pos, y=-2, labels=down, col="blue", cex=1.5)
+```
+
+```{r ma_plot_not_normalized_all_21U}
+resMLE <- results(dds, addMLE=TRUE)
+# variable position of labels
+x_pos <- max(resMLE@listData$baseMean) * 0.7
+plotMA(resMLE, MLE=TRUE, main="unshrunken LFC", ylim=c(-5,5))
+text(x=x_pos, y=2, labels=up, col="blue", cex=1.5)
+text(x=x_pos, y=-2, labels=down, col="blue", cex=1.5)
+```
+
+
+```{r biotype_information_all_21U}
+#################################
+## add gene symbol
+res$wormbase_gene <-rownames(res)
+
+res$symbol <- mapIds(org.Ce.eg.db,
+             keys=row.names(res),
+             column="SYMBOL",
+             keytype="WORMBASE",
+             multiVals="first")
+res$type <- mapIds(org.Ce.eg.db,
+             keys=row.names(res),
+             column="GENENAME",
+             keytype="WORMBASE",
+             multiVals="first")
+
+
+idx <- match(res$wormbase_gene, bio$wormbase_gene)
+res$gene_biotype <- bio$gene_biotype[ idx ]
+
+target_file <- '~/imb-kettinggr/adomingues/projects/imb_ketting_2014_14_almeida_smallRNA_celegans/data/annotations_targets/22G/all_targets.txt'
+targets <- read.delim(target_file, header = TRUE, stringsAsFactors=FALSE)
+
+res$Target_gene <- ifelse(res$symbol %in% targets$geneid, targets$exp, "unknown")
+
+fout <- paste(
+   levels(conds)[2],
+   "_",
+   levels(conds)[1],
+   "_",
+   smRNAclass,
+   "_",
+   "DESeq2_results.txt",
+   sep="")
+res_out <- as.data.frame(res)
+res_out <- data.frame(
+   wormbase_gene = res_out[ , names(res_out) == "wormbase_gene"],
+   res_out[ , !(names(res_out) == "wormbase_gene")])
+# res_out$wormbase_gene <-NULL
+
+write.table(
+   res_out,
+   file=fout,
+   sep="\t",
+   quote=FALSE,
+   row.names=FALSE,
+   col.names=TRUE)
+```
+
+
+## DESeq2 analysis for 22G small RNA types
+
+```{r main_analysis_22G}
+smRNAclass <- "22G"
+col_keep <- colnames(countdata)[c(grep(smRNAclass, colnames(countdata)))]
+col_keep
+## filter RNA biotypes and conditions
+countdata_S <- subset(countdata, Geneid %in% row_keep, select=c("Geneid", col_keep))
+
+######################
+## Convert to matrix
+######################
+countdata_m <- df2matrix(countdata_S)
+
+samples <- colnames(countdata_m)
+
+conds <- gsub(
+   "(^\\w+)_\\w+_r\\d+_\\w+.\\w+", "\\1",
+   colnames(countdata_m)
+   )
+conds <- factor(
+   gsub(
+      "(xf)\\d+", "\\1",
+      conds
+      )
+   )
+conds
+
+replicates <- factor(
+  gsub(
+   "^\\w+_\\w+_(r\\d+)_\\w+.\\w+", "\\1",
+   colnames(countdata_m)
+   )
+)
+
+coldata <- data.frame(
+  condition=conds,
+  replicate=replicates,
+  row.names=samples
+)
+coldata
+
+## create deseq object will all the data
+# in more fine-tuned analysis factors can be subseted
+
+dds <- DESeqDataSetFromMatrix(
+  countData = countdata_m,
+  colData = coldata,
+  design = ~ condition
+)
+# making sure that N2 is the first level, and thus
+# log2FC are reported as treatment over control (xf/N2)
+dds$condition <- relevel(dds$condition, "N2")
+## DESeq
+dds <- DESeq(dds)
+
+## conditions, echo=FALSE, results="asis
+col_data <- as.data.frame(colData(dds))
+print(col_data)
+```
+
+### QC
+
+#### Dispersion
+```{r dispersion_plot_22G}
+plotDispEsts(dds)
+```
+
+#### Sample clustering
+
+Here we extract the counts and transformed values to use for clustering and visualization:
+- The function rlog, stands for regularized log, transforming the original count data to the log2 scale by fitting a model with a term for each sample and a prior distribution on the coefficients which is estimated from the data.
+-  Variance stabilizing transformation (vsd) is a parametric fit for the dispersion.
+
+
+```{r normalized_counts_22G}
+# counts
+select <- order(rowMeans(counts(dds,normalized=TRUE)),decreasing=TRUE)[1:20]
+nt <- normTransform(dds) # defaults to log2(x+1)
+log2.norm.counts <- assay(nt)[select,]
+df <- as.data.frame(colData(dds)[,c("condition","replicate")])
+
+rld <- rlog(dds, blind=FALSE)
+vsd <- varianceStabilizingTransformation(dds, blind=FALSE)
+```
+
+```{r heatmap_variances_22G}
+pheatmap(
+   log2.norm.counts,
+   cluster_rows=FALSE,
+   show_rownames=TRUE,
+   cluster_cols=FALSE,
+   annotation_col=df
+   )
+```
+
+Heatmaps showing the expression data of the 20 most highly expressed genes. The data is of log2 normalized counts, from regularized log transformation  and from variance stabilizing transformation.
+
+Now we can actually cluster the samples:
+
+```{r sample_clustering_22G}
+sampleDists <- dist(t(assay(rld)))
+sampleDistMatrix <- as.matrix(sampleDists)
+rownames(sampleDistMatrix) <- paste(rld$condition, rld$replicate, sep="-")
+colnames(sampleDistMatrix) <- NULL
+
+colors <- colorRampPalette( rev(brewer.pal(9, "Blues")) )(255)
+pheatmap(sampleDistMatrix,
+   clustering_distance_rows=sampleDists,
+   clustering_distance_cols=sampleDists,
+   col=colors)
+```
+
+#### PCA
+
+```{r pca_simple_22G}
+plotPCA(rld, intgroup=c("condition", "replicate")) +
+   ggtitle(smRNAclass)
+```
+
+```{r pca_pretty_22G}
+data <- plotPCA(rld, intgroup=c("condition", "replicate"), returnData=TRUE)
+percentVar <- round(100 * attr(data, "percentVar"))
+ggplot(data, aes(PC1, PC2, color=condition, shape=replicate)) +
+   geom_point(size=3) +
+   xlab(paste0("PC1: ",percentVar[1],"% variance")) +
+   ylab(paste0("PC2: ",percentVar[2],"% variance")) +
+   ggtitle(smRNAclass)
+```
+
+
+### Results
+
+```{r results_extraction_22G}
+#########################################################
+## Results
+#########################################################
+res <- results(dds)
+res <- res[order(res$padj),]
+summary(res)
+up <- sum(res$padj < 0.1 & res$log2FoldChange > 0, na.rm=TRUE)
+up_log2 <- sum(res$padj < 0.1 & res$log2FoldChange > 1, na.rm=TRUE)
+down <- sum(res$padj < 0.1 & res$log2FoldChange < 0, na.rm=TRUE)
+down_log2 <- sum(res$padj < 0.1 & res$log2FoldChange < -1, na.rm=TRUE)
+
+sum(res$padj < 0.1, na.rm=TRUE)
+```
+
+Summary contains an overview of the results. There are `r up` significantly up-regulated genes and `r down` significantly down-regulated genes. If we consider only genes with more than a 2 fold change, then `r up_log2` are up-regulated and `r down_log2` are down-regulated.
+
+
+```{r ma_plot_normalized_all_22G}
+# variable position of labels
+x_pos <- max(res@listData$baseMean) * 0.7
+plotMA(res, main="DESeq2", ylim=c(-5,5))
+text(x=x_pos, y=2, labels=up, col="blue", cex=1.5)
+text(x=x_pos, y=-2, labels=down, col="blue", cex=1.5)
+```
+
+```{r ma_plot_not_normalized_all_22G}
+resMLE <- results(dds, addMLE=TRUE)
+# variable position of labels
+x_pos <- max(resMLE@listData$baseMean) * 0.7
+plotMA(resMLE, MLE=TRUE, main="unshrunken LFC", ylim=c(-5,5))
+text(x=x_pos, y=2, labels=up, col="blue", cex=1.5)
+text(x=x_pos, y=-2, labels=down, col="blue", cex=1.5)
+```
+
+
+```{r biotype_information_22G}
+#################################
+## add gene symbol
+res$wormbase_gene <-rownames(res)
+
+res$symbol <- mapIds(org.Ce.eg.db,
+             keys=row.names(res),
+             column="SYMBOL",
+             keytype="WORMBASE",
+             multiVals="first")
+res$type <- mapIds(org.Ce.eg.db,
+             keys=row.names(res),
+             column="GENENAME",
+             keytype="WORMBASE",
+             multiVals="first")
+
+
+idx <- match(res$wormbase_gene, bio$wormbase_gene)
+res$gene_biotype <- bio$gene_biotype[ idx ]
+
+target_file <- '~/imb-kettinggr/adomingues/projects/imb_ketting_2014_14_almeida_smallRNA_celegans/data/annotations_targets/22G/all_targets.txt'
+targets <- read.delim(target_file, header = TRUE, stringsAsFactors=FALSE)
+
+res$Target_gene <- ifelse(res$symbol %in% targets$geneid, targets$exp, "unknown")
+
+fout <- paste(
+   levels(conds)[2],
+   "_",
+   levels(conds)[1],
+   "_",
+   smRNAclass,
+   "_",
+   "DESeq2_results.txt",
+   sep="")
+res_out <- as.data.frame(res)
+res_out <- data.frame(
+   wormbase_gene = res_out[ , names(res_out) == "wormbase_gene"],
+   res_out[ , !(names(res_out) == "wormbase_gene")])
+# res_out$wormbase_gene <-NULL
+
+write.table(
+   res_out,
+   file=fout,
+   sep="\t",
+   quote=FALSE,
+   row.names=FALSE,
+   col.names=TRUE)
+```
+
+
+## DESeq2 analysis for 26G small RNA types
+
+```{r main_analysis_26G}
+smRNAclass <- "26G"
+col_keep <- colnames(countdata)[c(grep(smRNAclass, colnames(countdata)))]
+col_keep
+## filter RNA biotypes and conditions
+countdata_S <- subset(countdata, Geneid %in% row_keep, select=c("Geneid", col_keep))
+
+######################
+## Convert to matrix
+######################
+countdata_m <- df2matrix(countdata_S)
+
+samples <- colnames(countdata_m)
+
+conds <- gsub(
+   "(^\\w+)_\\w+_r\\d+_\\w+.\\w+", "\\1",
+   colnames(countdata_m)
+   )
+conds <- factor(
+   gsub(
+      "(xf)\\d+", "\\1",
+      conds
+      )
+   )
+conds
+
+replicates <- factor(
+  gsub(
+   "^\\w+_\\w+_(r\\d+)_\\w+.\\w+", "\\1",
+   colnames(countdata_m)
+   )
+)
+
+coldata <- data.frame(
+  condition=conds,
+  replicate=replicates,
+  row.names=samples
+)
+coldata
+
+## create deseq object will all the data
+# in more fine-tuned analysis factors can be subseted
+
+dds <- DESeqDataSetFromMatrix(
+  countData = countdata_m,
+  colData = coldata,
+  design = ~ condition
+)
+# making sure that N2 is the first level, and thus
+# log2FC are reported as treatment over control (xf/N2)
+dds$condition <- relevel(dds$condition, "N2")
+## DESeq
+dds <- DESeq(dds)
+
+## conditions, echo=FALSE, results="asis
+col_data <- as.data.frame(colData(dds))
+print(col_data)
+```
+
+### QC
+
+#### Dispersion
+```{r dispersion_plot_26G}
+plotDispEsts(dds)
+```
+
+#### Sample clustering
+
+Here we extract the counts and transformed values to use for clustering and visualization:
+- The function rlog, stands for regularized log, transforming the original count data to the log2 scale by fitting a model with a term for each sample and a prior distribution on the coefficients which is estimated from the data.
+-  Variance stabilizing transformation (vsd) is a parametric fit for the dispersion.
+
+
+```{r normalized_counts_26G}
+# counts
+select <- order(rowMeans(counts(dds,normalized=TRUE)),decreasing=TRUE)[1:20]
+nt <- normTransform(dds) # defaults to log2(x+1)
+log2.norm.counts <- assay(nt)[select,]
+df <- as.data.frame(colData(dds)[,c("condition","replicate")])
+
+rld <- rlog(dds, blind=FALSE)
+vsd <- varianceStabilizingTransformation(dds, blind=FALSE)
+```
+
+```{r heatmap_variances_26G}
+pheatmap(
+   log2.norm.counts,
+   cluster_rows=FALSE,
+   show_rownames=TRUE,
+   cluster_cols=FALSE,
+   annotation_col=df
+   )
+```
+
+Heatmaps showing the expression data of the 20 most highly expressed genes. The data is of log2 normalized counts, from regularized log transformation  and from variance stabilizing transformation.
+
+Now we can actually cluster the samples:
+
+```{r sample_clustering_26G}
+sampleDists <- dist(t(assay(rld)))
+sampleDistMatrix <- as.matrix(sampleDists)
+rownames(sampleDistMatrix) <- paste(rld$condition, rld$replicate, sep="-")
+colnames(sampleDistMatrix) <- NULL
+
+colors <- colorRampPalette( rev(brewer.pal(9, "Blues")) )(255)
+pheatmap(sampleDistMatrix,
+   clustering_distance_rows=sampleDists,
+   clustering_distance_cols=sampleDists,
+   col=colors)
+```
+
+#### PCA
+
+```{r pca_simple_26G}
+plotPCA(rld, intgroup=c("condition", "replicate")) +
+   ggtitle(smRNAclass)
+```
+
+```{r pca_pretty_26G}
+data <- plotPCA(rld, intgroup=c("condition", "replicate"), returnData=TRUE)
+percentVar <- round(100 * attr(data, "percentVar"))
+ggplot(data, aes(PC1, PC2, color=condition, shape=replicate)) +
+   geom_point(size=3) +
+   xlab(paste0("PC1: ",percentVar[1],"% variance")) +
+   ylab(paste0("PC2: ",percentVar[2],"% variance")) +
+   ggtitle(smRNAclass)
+```
+
+
+### Results
+
+```{r results_extraction_26G}
+#########################################################
+## Results
+#########################################################
+res <- results(dds)
+res <- res[order(res$padj),]
+summary(res)
+up <- sum(res$padj < 0.1 & res$log2FoldChange > 0, na.rm=TRUE)
+up_log2 <- sum(res$padj < 0.1 & res$log2FoldChange > 1, na.rm=TRUE)
+down <- sum(res$padj < 0.1 & res$log2FoldChange < 0, na.rm=TRUE)
+down_log2 <- sum(res$padj < 0.1 & res$log2FoldChange < -1, na.rm=TRUE)
+
+sum(res$padj < 0.1, na.rm=TRUE)
+```
+
+Summary contains an overview of the results. There are `r up` significantly up-regulated genes and `r down` significantly down-regulated genes. If we consider only genes with more than a 2 fold change, then `r up_log2` are up-regulated and `r down_log2` are down-regulated.
+
+
+```{r ma_plot_normalized_all_26G}
+# variable position of labels
+x_pos <- max(res@listData$baseMean) * 0.7
+plotMA(res, main="DESeq2", ylim=c(-5,5))
+text(x=x_pos, y=2, labels=up, col="blue", cex=1.5)
+text(x=x_pos, y=-2, labels=down, col="blue", cex=1.5)
+```
+
+```{r ma_plot_not_normalized_all_26G}
+resMLE <- results(dds, addMLE=TRUE)
+# variable position of labels
+x_pos <- max(resMLE@listData$baseMean) * 0.7
+plotMA(resMLE, MLE=TRUE, main="unshrunken LFC", ylim=c(-5,5))
+text(x=x_pos, y=2, labels=up, col="blue", cex=1.5)
+text(x=x_pos, y=-2, labels=down, col="blue", cex=1.5)
+```
+
+
+```{r biotype_information_26G}
+#################################
+## add gene symbol
+res$wormbase_gene <-rownames(res)
+
+res$symbol <- mapIds(org.Ce.eg.db,
+             keys=row.names(res),
+             column="SYMBOL",
+             keytype="WORMBASE",
+             multiVals="first")
+res$type <- mapIds(org.Ce.eg.db,
+             keys=row.names(res),
+             column="GENENAME",
+             keytype="WORMBASE",
+             multiVals="first")
+
+
+idx <- match(res$wormbase_gene, bio$wormbase_gene)
+res$gene_biotype <- bio$gene_biotype[ idx ]
+
+target_file <- '~/imb-kettinggr/adomingues/projects/imb_ketting_2014_14_almeida_smallRNA_celegans/data/annotations_targets/22G/all_targets.txt'
+targets <- read.delim(target_file, header = TRUE, stringsAsFactors=FALSE)
+
+res$Target_gene <- ifelse(res$symbol %in% targets$geneid, targets$exp, "unknown")
+
+fout <- paste(
+   levels(conds)[2],
+   "_",
+   levels(conds)[1],
+   "_",
+   smRNAclass,
+   "_",
+   "DESeq2_results.txt",
+   sep="")
+res_out <- as.data.frame(res)
+res_out <- data.frame(
+   wormbase_gene = res_out[ , names(res_out) == "wormbase_gene"],
+   res_out[ , !(names(res_out) == "wormbase_gene")])
+# res_out$wormbase_gene <-NULL
+
+write.table(
+   res_out,
+   file=fout,
+   sep="\t",
+   quote=FALSE,
+   row.names=FALSE,
+   col.names=TRUE)
+```
+
+
+## miRNA: DESeq2 analysis for All small RNA types
+
+```{r select_conditions_and_miRNA}
+smRNAclass <- "All"
+col_keep <- colnames(countdata)[c(grep(smRNAclass, colnames(countdata)))]
+# unique(bio$gene_biotype)
+include_bio <- c("miRNA")
+row_keep <- subset(bio, bio$gene_biotype %in% include_bio)$wormbase_gene
+```
+
+We tested `r length(row_keep)` miRNAs.
+
+
+```{r prepare_deseq_object_miRNA}
+## filter RNA biotypes and conditions
+countdata_S <- subset(
+    countdata, Geneid %in% row_keep,
+    select=c("Geneid", col_keep))
+
+######################
+## Convert to matrix
+######################
+countdata_m <- df2matrix(countdata_S)
+
+samples <- colnames(countdata_m)
+
+conds <- gsub(
+   "(^\\w+)_\\w+_r\\d+_\\w+.\\w+", "\\1",
+   colnames(countdata_m)
+   )
+conds <- factor(
+   gsub(
+      "(xf)\\d+", "\\1",
+      conds
+      )
+   )
+conds
+
+replicates <- factor(
+  gsub(
+   "^\\w+_\\w+_(r\\d+)_\\w+.\\w+", "\\1",
+   colnames(countdata_m)
+   )
+)
+
+coldata <- data.frame(
+  condition=conds,
+  replicate=replicates,
+  row.names=samples
+)
+coldata
+
+## create deseq object will all the data
+# in more fine-tuned analysis factors can be subseted
+
+dds <- DESeqDataSetFromMatrix(
+  countData = countdata_m,
+  colData = coldata,
+  design = ~ condition
+)
+# making sure that N2 is the first level, and thus
+# log2FC are reported as treatment over control (xf/N2)
+dds$condition <- relevel(dds$condition, "N2")
+```
+
+```{r deseq_analysis_miRNA}
+## DESeq
+dds <- DESeq(dds)
+
+## conditions, echo=FALSE, results="asis
+col_data <- as.data.frame(colData(dds))
+print(col_data)
+```
+
+
+### QC
+
+#### Dispersion
+```{r dispersion_plot_miRNA}
+plotDispEsts(dds)
+```
+
+
+### Results
+
+```{r results_extraction_miRNA}
+#########################################################
+## Results
+#########################################################
+res <- results(dds)
+res <- res[order(res$padj),]
+summary(res)
+up <- sum(res$padj < 0.1 & res$log2FoldChange > 0, na.rm=TRUE)
+up_log2 <- sum(res$padj < 0.1 & res$log2FoldChange > 1, na.rm=TRUE)
+down <- sum(res$padj < 0.1 & res$log2FoldChange < 0, na.rm=TRUE)
+down_log2 <- sum(res$padj < 0.1 & res$log2FoldChange < -1, na.rm=TRUE)
+
+sum(res$padj < 0.1, na.rm=TRUE)
+```
+
+Summary contains an overview of the results. There are `r up` significantly up-regulated genes and `r down` significantly down-regulated genes. If we consider only genes with more than a 2 fold change, then `r up_log2` are up-regulated and `r down_log2` are down-regulated.
+
+
+```{r ma_plot_normalized_all_miRNA}
+# variable position of labels
+x_pos <- max(res@listData$baseMean) * 0.7
+plotMA(res, main="DESeq2", ylim=c(-5,5))
+text(x=x_pos, y=2, labels=up, col="blue", cex=1.5)
+text(x=x_pos, y=-2, labels=down, col="blue", cex=1.5)
+```
+
+```{r ma_plot_not_normalized_all_miRNA}
+resMLE <- results(dds, addMLE=TRUE)
+# variable position of labels
+x_pos <- max(resMLE@listData$baseMean) * 0.7
+plotMA(resMLE, MLE=TRUE, main="unshrunken LFC", ylim=c(-5,5))
+text(x=x_pos, y=2, labels=up, col="blue", cex=1.5)
+text(x=x_pos, y=-2, labels=down, col="blue", cex=1.5)
+```
+
+
+```{r biotype_information_miRNA}
+#################################
+## add gene symbol
+res$wormbase_gene <-rownames(res)
+
+res$symbol <- mapIds(org.Ce.eg.db,
+             keys=row.names(res),
+             column="SYMBOL",
+             keytype="WORMBASE",
+             multiVals="first")
+res$type <- mapIds(org.Ce.eg.db,
+             keys=row.names(res),
+             column="GENENAME",
+             keytype="WORMBASE",
+             multiVals="first")
+
+
+idx <- match(res$wormbase_gene, bio$wormbase_gene)
+res$gene_biotype <- bio$gene_biotype[ idx ]
+
+target_file <- '~/imb-kettinggr/adomingues/projects/imb_ketting_2014_14_almeida_smallRNA_celegans/data/annotations_targets/22G/all_targets.txt'
+targets <- read.delim(target_file, header = TRUE, stringsAsFactors=FALSE)
+targets <- aggregate(targets[2], targets[-2],
+   FUN = function(X) paste(unique(X), collapse=",")
+   )
+
+res$Target_gene <- ifelse(res$symbol %in% targets$geneid, targets$exp, "unknown")
+
+fout <- paste(
+   levels(conds)[2],
+   "_",
+   levels(conds)[1],
+   "_",
+   smRNAclass,
+   "_",
+   paste(include_bio, sep="_", collapse="_"),
+   "_",
+   "DESeq2_results.txt",
+   sep="")
+res_out <- as.data.frame(res)
+res_out <- data.frame(
+   wormbase_gene = res_out[ , names(res_out) == "wormbase_gene"],
+   res_out[ , !(names(res_out) == "wormbase_gene")])
+# res_out$wormbase_gene <-NULL
+
+write.table(
+   res_out,
+   file=fout,
+   sep="\t",
+   quote=FALSE,
+   row.names=FALSE,
+   col.names=TRUE)
+```
+
+
+
+```{r session_Info}
+sessionInfo()
+```

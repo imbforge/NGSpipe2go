@@ -1,0 +1,66 @@
+MODULE_FOLDER="project_folder/NGSpipe2go/modules/" // adjust to your projects needs
+
+load MODULE_FOLDER + "smallRNAseq_BCF/essential.vars.groovy"
+load MODULE_FOLDER + "smallRNAseq_BCF/tool.locations.groovy"
+
+load MODULE_FOLDER + "NGS/fastqc.vars.groovy"
+load MODULE_FOLDER + "NGS/fastqc.module.groovy"
+
+load MODULE_FOLDER + "smallRNAseq_BCF/cutadapt.vars.groovy"
+load MODULE_FOLDER + "smallRNAseq_BCF/cutadapt.module.groovy"
+
+load MODULE_FOLDER + "smallRNAseq_BCF/fastq_quality_filter.vars.groovy"
+load MODULE_FOLDER + "smallRNAseq_BCF/fastq_quality_filter.module.groovy"
+
+load MODULE_FOLDER + "smallRNAseq_BCF/dedup.vars.groovy"
+load MODULE_FOLDER + "smallRNAseq_BCF/dedup.module.groovy"
+
+load MODULE_FOLDER + "smallRNAseq_BCF/dedup_stats.vars.groovy"
+load MODULE_FOLDER + "smallRNAseq_BCF/dedup_stats.module.groovy"
+
+load MODULE_FOLDER + "smallRNAseq_BCF/combined_stats.vars.groovy"
+load MODULE_FOLDER + "smallRNAseq_BCF/combined_stats.module.groovy"
+
+load MODULE_FOLDER + "smallRNAseq_BCF/trim_umis.vars.groovy"
+load MODULE_FOLDER + "smallRNAseq_BCF/trim_umis.module.groovy"
+
+load MODULE_FOLDER + "smallRNAseq_BCF/bowtie1.vars.groovy"
+load MODULE_FOLDER + "smallRNAseq_BCF/bowtie1.module.groovy"
+
+load MODULE_FOLDER + "NGS/bamindexer.vars.groovy"
+load MODULE_FOLDER + "NGS/bamindexer.module.groovy"
+
+load MODULE_FOLDER + "smallRNAseq_BCF/mapping_stats.module.groovy"
+load MODULE_FOLDER + "smallRNAseq_BCF/mapping_stats.vars.groovy"
+
+load MODULE_FOLDER + "smallRNAseq_BCF/cutadapt_stats.module.groovy"
+load MODULE_FOLDER + "smallRNAseq_BCF/cutadapt_stats.vars.groovy"
+
+load MODULE_FOLDER + "smallRNAseq_BCF/fastq_quality_filter_stats.module.groovy"
+load MODULE_FOLDER + "smallRNAseq_BCF/fastq_quality_filter_stats.vars.groovy"
+
+load MODULE_FOLDER + "NGS/bam2bw.module.groovy"
+load MODULE_FOLDER + "NGS/bam2bw.vars.groovy"
+
+load MODULE_FOLDER + "smallRNAseq_BCF/subread.vars.groovy"
+load MODULE_FOLDER + "smallRNAseq_BCF/subread.module.groovy"
+
+load MODULE_FOLDER + "smallRNAseq_BCF/filter2htseq.vars.groovy"
+load MODULE_FOLDER + "smallRNAseq_BCF/filter2htseq.module.groovy"
+
+load MODULE_FOLDER + "smallRNAseq_BCF/subread2rnatypes.vars.groovy"
+load MODULE_FOLDER + "RNAseq/subread2rnatypes.module.groovy"
+
+load MODULE_FOLDER + "smallRNAseq_BCF/fastqscreen.vars.groovy"
+load MODULE_FOLDER + "smallRNAseq_BCF/fastqscreen.module.groovy"
+
+load MODULE_FOLDER + "miscellaneous/collectbpipes.module.2.groovy"
+
+load MODULE_FOLDER + "smallRNAseq_BCF/shinyreports.vars.groovy"
+load MODULE_FOLDER + "smallRNAseq_BCF/shinyreports.module.groovy"
+
+
+//MAIN PIPELINE TASK
+run {
+	"%.fastq.gz" * [ FastQC , Cutadapt ] + "%.cutadapt.fastq.gz" * [ FastQQualityFilter + FilterDuplicates + TrimUMIs + [ FastQC , Bowtie_se + BAMindexer , FastQScreen ] ] + "%.bam" * [ SubreadCount + Filter2HTSeq, bam2bw, rnatypes ] + [ CutadaptStats, FastQQualityFilterStats, DedupStats, MappingStats, CombinedStats ] + [ collectBpipeLogs + shinyReports ]
+}

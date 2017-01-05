@@ -116,14 +116,14 @@ DEhelper.DESeq2.VolcanoPlot <- function(i=1, fdr=.01, top=25, web=TRUE) {
 }
 
 ## DEhelper.DESeq2.ChrOverrepresentation: test if there are more genes in a chromosome than expected by chance.
-DEhelper.DESeq2.ChrOverrepresentation <- function(i=1, fdr=0.1) {
+DEhelper.DESeq2.ChrOverrepresentation <- function(i=1, fdr_de_gene=0.1, fdr_fisher_test=0.1, filter=TRUE) {
     genes <- data.frame(res[[i]])
     chromosomes <- unique(genes$chr)
     universe <- length(unique(rownames(genes)))
 
     l_res <- list()
     for (chromosome in chromosomes){
-        de_genes <- rownames(subset(genes, padj < fdr))
+        de_genes <- rownames(subset(genes, padj < fdr_de_gene))
         chr_genes <- rownames(subset(genes, chr == chromosome))
         overl <- newGeneOverlap(
            unique(de_genes),
@@ -136,12 +136,19 @@ DEhelper.DESeq2.ChrOverrepresentation <- function(i=1, fdr=0.1) {
             TotalGenes=length(chr_genes),
             DEGenes=length(overl@intersection),
             PValue=overl@pval,
+            OddsRatio=overl@odds.ratio,
             JaccardIndex=overl@Jaccard
             )
     }
 
     table_fisher <- do.call("rbind", l_res)
-    return(table_fisher)
+
+    # correct pvalue for multiple testing
+    table_fisher$FDR <- p.adjust(table_fisher$PValue,method="fdr")
+
+    if(filter) table_fisher <- table_fisher[table_fisher$FDR < fdr_fisher_test, ]
+
+    return(table_fisher[c("Chromosome","TotalGenes","DEGenes","PValue","FDR","OddsRatio","JaccardIndex")])
 }
 
 ##
@@ -411,13 +418,6 @@ DEhelper.RNAtypes <- function() {
     FOLDER <- SHINYREPS_RNATYPES
     SUFFIX <- paste0(SHINYREPS_RNATYPES_SUFFIX, '$')
     
-    ### DEBUG
-    FOLDER <- "~/fsimb/groups/imb-bioinfocf/projects/cfb_internal/imbforge/test/rnaseq_161019_OD/qc/rnatypes-count/"
-    SUFFIX <- ".readcounts.tsv"
-    SUFFIX <- paste0(SUFFIX, '$')
-    SHINYREPS_PREFIX <- "Sample_imb_richly_2014_05_"
-    ### /DEBUG
-    
     # check if folder exists
     if(!file.exists(FOLDER)) {
         return("Subread statistics not available")
@@ -455,7 +455,8 @@ DEhelper.RNAtypes <- function() {
     
     plot <- ggplot() + 
         geom_bar(data=df.counts.melt, aes(x=sample, y=count, fill=type), position="fill", stat="identity") + 
-        labs(x="", y="", fill="")
+        labs(x="", y="", fill="") +
+	theme(axis.text.x=element_text(angle=45, vjust=1, hjust=1)) 
     
     return(plot)
 }
@@ -583,7 +584,7 @@ DEhelper.Subread <- function() {
                  "Unassigned_NoFeatures",
                  "Unassigned_Unmapped",
                  "Unassigned_MappingQuality",
-                 "Unassigned_FragementLength",
+                 "Unassigned_FragmentLength",
                  "Unassigned_Chimera",
                  "Unassigned_Secondary",
                  "Unassigned_Nonjunction",
