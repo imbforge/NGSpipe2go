@@ -10,8 +10,7 @@ FastQC = {
 	
 	transform(".fastq.gz") to ("_fastqc.zip") {
 		exec """
-			export TOOL_DEPENDENCIES=$TOOL_DEPENDENCIES &&
-			source ${TOOL_FASTQC}/env.sh &&
+			module load fastqc &&
 			
 			echo 'VERSION INFO'  1>&2 &&
 			echo \$(fastqc --version | cut -d' ' -f2) 1>&2 &&

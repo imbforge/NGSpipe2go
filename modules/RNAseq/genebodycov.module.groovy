@@ -16,8 +16,7 @@ geneBodyCov = {
     // run the chunk
 	transform(".bam") to (".geneBodyCoverage.curves.png", ".geneBodyCoverage.r", ".geneBodyCoverage.txt") {
 		exec """
-			export TOOL_DEPENDENCIES=$TOOL_DEPENDENCIES && 
-			source ${TOOL_RSeQC}/env.sh && 
+			module load RSeQC &&
 			
 			echo 'VERSION INFO'  1>&2 ;
 			echo \$(python ${TOOL_RSeQC}/bin/geneBody_coverage.py --version | cut -d' ' -f2) 1>&2 ;

@@ -38,8 +38,7 @@ rnatypes = {
 	// run the chunk
 	transform(".bam") to ("_readcounts.tsv") {
 		exec """
-			export TOOL_DEPENDENCIES=$TOOL_DEPENDENCIES &&
-			source ${TOOL_SUBREAD}/env.sh &&
+			module load subread &&
 			
 			echo 'VERSION INFO'  1>&2 ;
 			echo \$(featureCounts 2>&1 | grep Version | cut -d' ' -f2) 1>&2 ;

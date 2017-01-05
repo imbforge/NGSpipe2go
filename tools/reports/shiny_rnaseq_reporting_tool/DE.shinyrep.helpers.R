@@ -524,6 +524,17 @@ DEhelper.strandspecificity <- function(){
 }
 
 ##
+## DEhelper.GO_Enrichment: get the GO enrichment results and display them
+##
+DEhelper.GO_Enrichment <- function(){
+
+    #csv file
+    if(!file.exists(SHINY_GO)){
+        return("GO enrichment statistics not available")
+    }
+
+
+##
 ## DEhelper.Bustard: call the perl XML interpreter and get the MD output
 ##
 DEhelper.Bustard <- function() {

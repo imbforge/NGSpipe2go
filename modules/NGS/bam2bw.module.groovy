@@ -11,10 +11,9 @@ bam2bw = {
 	
 	transform(".bam") to ("_scaled.bw") {
 		exec """
-			export TOOL_DEPENDENCIES=$TOOL_DEPENDENCIES &&
-			source ${TOOL_BEDTOOLS}/env.sh &&
-			source ${TOOL_SAMTOOLS}/env.sh &&
-			source ${TOOL_KENTUTILS}/env.sh &&
+			module load bedtools &&
+			module load samtools &&
+			module load kentUtils &&
 
 			if [ ! -d ${TMP} ]; then
 				mkdir -p ${TMP};

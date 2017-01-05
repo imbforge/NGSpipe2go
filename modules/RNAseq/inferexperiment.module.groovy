@@ -12,8 +12,10 @@ inferexperiment = {
     // run the chunk
     transform(".bam") to (input.prefix + "_inferexperiment.txt") {
 		exec """
-			export TOOL_DEPENDENCIES=$TOOL_DEPENDENCIES && 
-			source ${TOOL_RSeQC}/env.sh && 
+			module load RSeQC &&
+
+			which python;
+			echo $PYTHONPATH;
 			
 			echo 'VERSION INFO'  1>&2 ;
 			echo \$(python ${TOOL_RSeQC}/bin/infer_experiment.py --version | cut -d' ' -f2) 1>&2 ;

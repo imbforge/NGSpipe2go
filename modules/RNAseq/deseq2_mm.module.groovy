@@ -23,8 +23,7 @@ DE_DESeq2_MM = {
     // should match deseq2.module.groovy, adding a step in between to convert all dupRadar input counts to HTSeq
     produce("DE_DESeq2.RData") {
         exec """
-            export TOOL_DEPENDENCIES=$TOOL_DEPENDENCIES &&
-            source ${TOOL_R}/env.sh &&
+            module load R &&
             
             echo 'VERSION INFO'  1>&2 ;
             echo \$(${TOOL_R}/bin/Rscript --version 2>&1 | cut -d' ' -f5) 1>&2 ;

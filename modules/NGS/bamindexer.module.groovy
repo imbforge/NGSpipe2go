@@ -11,8 +11,7 @@ BAMindexer = {
 
 	transform(".bam") to(".bam.bai") {
 		exec """
-			export TOOL_DEPENDENCIES=$TOOL_DEPENDENCIES &&
-            source ${TOOL_SAMTOOLS}/env.sh &&
+			module load samtools &&
 			
 			echo 'VERSION INFO'  1>&2 &&
 			echo \$(samtools --version | grep samtools | cut -d' ' -f2) 1>&2 &&

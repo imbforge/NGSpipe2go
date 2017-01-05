@@ -65,9 +65,8 @@ STAR_se = {
     // TODO: change to latest or at least try to warn, if the genome index was created using the wrong version of STAR
 	produce(OUTPUTFILE + ".bam", OUTPUTFILE + "Log.final.out") {
 		exec """
-			export TOOL_DEPENDENCIES=$TOOL_DEPENDENCIES &&
-			source ${TOOL_STAR}/env.sh &&
-			source ${TOOL_SAMTOOLS}/env.sh &&
+			module load star && 
+			module load samtools &&
 			
 			if [ -e $TMP/$OUTPUTFILE ];
 			then

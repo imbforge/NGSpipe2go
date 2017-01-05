@@ -59,8 +59,9 @@ shinyReports = {
 			echo "SHINYREPS_DESEQ_LOGS=${SHINYREPS_DESEQ_LOGS}"          >> $output &&
 			echo "SHINYREPS_PLOTS_COLUMN=${SHINYREPS_PLOTS_COLUMN}"      >> $output &&
 			echo "SHINYREPS_INFEREXPERIMENT_LOGS=${SHINYREPS_INFEREXPERIMENT_LOGS}" >> $output &&
-			echo "SHINYREPS_QUALIMAP_LOGS=${SHINYREPS_QUALIMAP_LOGS}" >> $output
-		""","shinyReports"
+			echo "SHINYREPS_QUALIMAP_LOGS=${SHINYREPS_QUALIMAP_LOGS}" >> $output &&
+		    echo "SHINYREPS_GO_ENRICHMENT=${SHINYREPS_GO_ENRICHMENT}" >> $output >> $output
+        ""","shinyReports"
 	}
 }
 

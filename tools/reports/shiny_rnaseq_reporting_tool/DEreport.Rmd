@@ -135,14 +135,12 @@ for(i in 1:nrow(conts)) {
 		"genes highlighted in the MA plot with corrected pvalue (Benjamini and Hochberg, FDR) <", fdr, "\n")
 	DEhelper.DESeq2.MAplot(i, fdr)	# should be fine at taking the value from the UI slider
 	cat("\n", fill=T)
-
-	
+            	
 	# Volcano Plot
 	cat("##### Volcano-plot", fill=T)	
 	cat("Volcano plots are meant to facilitate an overview over all genes under investigation by combining log fold change and statistical significance. Outliers and genes with large changes should be easy to spot. As expression strength has a large effect on statistical significance it is added to the volcano plot by coloring the points.", fill=T)
 	DEhelper.DESeq2.VolcanoPlot(i, fdr, web=F)
 	cat("\n", fill=T)
-	
 	
 	# and DE table
 	cat("The table shows the top 25 differentially expressed genes with their mean expression change (log2 of Fold Change) and statistical significance (padj, FDR-adjusted P-value):", fill=T)
@@ -153,6 +151,29 @@ for(i in 1:nrow(conts)) {
     cols <- c("gene_name", "baseMean", "log2FoldChange", "padj")
 	cat(kable(genes[1:25, cols], row.names=T, align="r"), sep="\n")	# show only the top 25 genes
 	cat("", fill=T)
+}
+
+for(i in 1:nrow(conts)) {
+    # GO Enrichment Plot
+    cat("##### GO Enrichment plot", fill=T)
+    cat("Gene Ontology enrichment barplot of the differentially expressed genes ", fill=T)
+    paste0("![GO_Analysis img](", SHINYREPS_GO_ENRICHMENT, "/", conts[i,1], "_GO_Barplot.png", ")")
+    cat("\n",fill=T)
+
+    # GO enrichment network 
+    cat("Gene Ontology enrichment map of the differentially expressed genes", fill=T)
+    paste0("![GO_Analysis img](", SHINYREPS_GO_ENRICHMENT, "/", conts[i,1], "_GO_network.png",")")
+    cat("\n",fill=T)
+
+    # and GO enrichment table
+    cat("Gene Ontology enrichment table of the differentially expressed gene. The table shows the top 10 enriched biological processes", fill=T)
+    cat("",fill=T)
+    cat("####" conts[i,1])
+    paste("![GO_Analysis csv](", SHINYREPS_GO_ENRICHMENT, "/", conts[i,1], "GO_Enrichment.csv",")")
+    cols <- c("ID","Description","GeneRatio","BgRatio","pvalue","p.adjust","qvalue","geneID")
+    cat(kable(enrich[1:10,cols], row.names=T, align="r"), sep="\n") # show only the top 10 biological processes
+    cat("",fill=T)
+
 }
 ```
 

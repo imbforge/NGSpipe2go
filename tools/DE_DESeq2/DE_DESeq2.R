@@ -147,6 +147,8 @@ res <- lapply(conts[,1],function(cont) {
 	res
 })
 
+names(res) <-  gsub("=.*", "", conts[,1]) 
+
 ##
 ## Sanity check plots with all the samples together
 ##
