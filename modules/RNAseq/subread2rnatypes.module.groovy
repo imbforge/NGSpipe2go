@@ -47,7 +47,6 @@ rnatypes = {
             featureCounts $RNATYPES_FLAGS -o ${output}_tmp $input 2> ${output.prefix}_rnatypeslog.stderr;
             cut -f1,6,7 ${output}_tmp > $output;
             rm ${output}_tmp;    
->>>>>>> 8b81052d66106365c8ce12f244a2e00b28199777
 
         ""","rnatypes"
     }
