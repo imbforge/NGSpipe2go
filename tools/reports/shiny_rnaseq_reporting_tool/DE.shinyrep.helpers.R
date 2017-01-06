@@ -533,7 +533,7 @@ DEhelper.GO_Enrichment <- function(){
     if(!file.exists(SHINY_GO)){
         return("GO enrichment statistics not available")
     }
-
+}
 
 ##
 ## DEhelper.Bustard: call the perl XML interpreter and get the MD output

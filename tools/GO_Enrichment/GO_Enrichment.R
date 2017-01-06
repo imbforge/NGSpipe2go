@@ -92,27 +92,22 @@ for (i in 1:length(res)) { # looping through every element in the list
   }
   enrich <- enrichGO(entrezID[[2]], universe = uni, OrgDb = orgDb, keytype = "ENTREZID",ont="BP", readable = TRUE)
   
-  if(!(nrow(enrich)==0)){
-
   # write GO enrichment table into output file 
   write.csv(enrich, file=paste0(out, "/", gsub("=.*", "", conts[i,1]), "_GO_Enrichment.csv"), row.names=T)
-  
-  # create barplot showing GO category
-  png(file=paste0(out, "/", gsub("=.*", "", conts[i,1]), "_GO_Barplot.png"), width = 700, height = 500)
-  plot(barplot(enrich, showCategory = 10))
-  dev.off()
 
-  # create network plot for the results
-  png(file=paste0(out, "/", gsub("=.*", "", conts[i,1]), "_GO_network.png"), width = 700, height = 500)
-  plot(enrichMap(enrich))
-  dev.off()
-  } else {
-      errorstr <- "No GO enrichment result available"
-      cat(errorstr)
+  if(!(nrow(enrich)==0)){
+     
+      # create barplot showing GO category
+      png(file=paste0(out, "/", gsub("=.*", "", conts[i,1]), "_GO_Barplot.png"), width = 700, height = 500)
+      plot(barplot(enrich, showCategory = 10))
+      dev.off()
+
+      # create network plot for the results
+      png(file=paste0(out, "/", gsub("=.*", "", conts[i,1]), "_GO_network.png"), width = 700, height = 500)
+      plot(enrichMap(enrich))
+      dev.off()
   }
 }
-
 # save the sessionInformation
 writeLines(capture.output(sessionInfo()), paste(out, "/GO_Enrichment_session_info.txt", sep=""))
-save(entrezUnivID, enrich, file=paste0(out, "/GO_Enrichment.RData"))
 
