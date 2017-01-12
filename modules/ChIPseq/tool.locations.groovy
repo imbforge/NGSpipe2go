@@ -1,8 +1,8 @@
 // variables containing the location of the used tools
-TOOL_DEPENDENCIES="/fsimb/groups/imb-bioinfocf/common-data/tools" // your local tools folder
+TOOL_DEPENDENCIES="/fsimb/common/tools" // your local tools folder
 PROJECT_DEPENDENCIES=ESSENTIAL_PROJECT + "/NGSpipe2go/tools" // please copy the NGSpipe2Go tools to the project folder and include the location here
 TOOL_JAVA=TOOL_DEPENDENCIES + "/jdk/1.8.0_101"
-TOOL_R=TOOL_DEPENDENCIES + "/R/3.3.1"
+TOOL_R=TOOL_DEPENDENCIES + "/R/3.3.2"
 TOOL_FASTQC=TOOL_DEPENDENCIES + "/fastqc/0.11.5"
 TOOL_BOWTIE=TOOL_DEPENDENCIES + "bowtie/1.1.2"
 TOOL_SAMTOOLS=TOOL_DEPENDENCIES + "/samtools/1.3.1"
