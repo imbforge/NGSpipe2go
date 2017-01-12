@@ -13,9 +13,9 @@ extend = {
 
 	transform(".bam") to ("_ext.bam") {
 		exec """
-			export TOOL_DEPENDENCIES=$TOOL_DEPENDENCIES &&
-			source ${TOOL_BEDTOOLS}/env.sh &&
-			source ${TOOL_SAMTOOLS}/env.sh &&
+			module load bedtools &&
+			module load samtools &&
+
 			if [ ! -d $TMP ]; then
 				mkdir -p $TMP;
 			fi &&
