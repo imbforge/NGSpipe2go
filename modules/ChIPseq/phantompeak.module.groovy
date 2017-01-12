@@ -18,8 +18,7 @@ phantompeak = {
 
 	transform(".bam") to("_phantompeak.png") {
 		exec """
-			export TOOL_DEPENDENCIES=$TOOL_DEPENDENCIES  &&
-			source ${TOOL_R}/env.sh &&
+			module load R &&
 			
 			echo 'VERSION INFO'  1>&2 ; 
 			echo \$(${TOOL_R}/bin/Rscript --version 2>&1 | cut -d' ' -f5) 1>&2 ;

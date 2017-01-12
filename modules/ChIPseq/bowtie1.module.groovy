@@ -24,19 +24,14 @@ bowtie_se = {
 
 	transform(".fastq.gz") to (".bam") {
 		exec """
-			export TOOL_DEPENDENCIES=$TOOL_DEPENDENCIES &&
-			source ${TOOL_BOWTIE}/env.sh   &&
-			source ${TOOL_SAMTOOLS}/env.sh &&
+			module load bowtie &&
+			module load samtools &&
 			
 			echo 'VERSION INFO'  1>&2 ;
 			echo \$(bowtie --version | grep bowtie | cut -d' ' -f3)   1>&2 ;
 			echo '/VERSION INFO' 1>&2 ;
-
-            if [ ! -e $TMP ]; then
-                mkdir -p $TMP;
-            fi &&
 			
-			zcat $input | bowtie $BOWTIE_FLAGS $BOWTIE_REF - | samtools view $SAMTOOLS_VIEW_FLAGS - | samtools sort $SAMTOOLS_SORT_FLAGS -T $TMP/\$(basename $output.prefix)_bowtie1_sort - > $output
+			zcat $input | bowtie $BOWTIE_FLAGS $BOWTIE_REF - | samtools view $SAMTOOLS_VIEW_FLAGS - | samtools sort $SAMTOOLS_SORT_FLAGS -T $TMP/\$(basename $output.prefix) - > $output
 		""","bowtie_se"
 	}
 }

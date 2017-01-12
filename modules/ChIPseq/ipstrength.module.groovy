@@ -11,8 +11,7 @@ ipstrength = {
 
 	transform(".bam") to("_ipstrength.done") {
 		exec """
-			export TOOL_DEPENDENCIES=$TOOL_DEPENDENCIES  &&
-			source ${TOOL_R}/env.sh &&
+			module load R &&
 
 			touch $output;
 			if [ ! -e $IPSTRENGTH_TARGETS ]; then

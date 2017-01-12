@@ -26,9 +26,9 @@ bowtie2_pe = {
 
 	produce(OUTPUTFILE + ".bam") {
 		exec """
-			export TOOL_DEPENDENCIES=$TOOL_DEPENDENCIES &&
-			source ${TOOL_BOWTIE2}/env.sh   &&
-			source ${TOOL_SAMTOOLS}/env.sh &&
+			module load bowtie2 &&
+			module load samtools &&
+
 			if [ -n "\$LSB_JOBID" ]; then
 				export TMPDIR=/jobdir/\${LSB_JOBID};
 			fi                                          &&
