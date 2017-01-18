@@ -1,10 +1,7 @@
 sample	file	group	subject
-WT_3	ERR458885.WT.readcounts.tsv	WT	3
-shMed12_1	Sample_imb_richly_2014_05_12_mESCs_shMed12_rep_1.readcounts.tsv	shMed12	1
-shMed12_2	Sample_imb_richly_2014_05_19_mESCs_shNMC_rep_2.readcounts.tsv	shMed12	2
-shMed12_3	Sample_imb_richly_2014_05_19_mESCs_shNMC_rep_3.readcounts.tsv	shMed12	3
-shNMC_1	Sample_imb_richly_2014_05_28_mESCs_shNMC_rep_1.readcounts.tsv	shNMC	1
-shNMC_2	Sample_imb_richly_2014_05_28_mESCs_shNMC_rep_2.readcounts.tsv	shNMC	2
-shNMC_3	Sample_imb_richly_2014_05_28_mESCs_shNMC_rep_3.readcounts.tsv	shNMC	3
-
-
+KO_1	ERR458881.KO.readcounts.tsv	KO	1
+KO_2	ERR458882.KO.readcounts.tsv	KO	2
+KO_3	ERR458883.KO.readcounts.tsv	KO	3
+WT_1	ERR458885.WT.readcounts.tsv	WT	1
+WT_2	ERR458886.WT.readcounts.tsv	WT	2
+WT_3	ERR458887.WT.readcounts.tsv	WT	3
