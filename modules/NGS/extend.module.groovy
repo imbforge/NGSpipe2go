@@ -15,8 +15,8 @@ extend = {
 		exec """
             module load bedtools/${BEDTOOLS_VERSION} &&
             module load samtools/${SAMTOOLS_VERSION} &&
-		
-            if [ ! -d $TMP ]; then
+
+			if [ ! -d $TMP ]; then
 				mkdir -p $TMP;
 			fi &&
 			

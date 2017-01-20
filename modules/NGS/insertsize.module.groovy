@@ -14,7 +14,7 @@ InsertSize = {
 	transform(".bam") to ("_insersizemetrics.tsv") {
 		exec """
 		    module load picard/${PICARD_VERSION} && 
-
+            
             java $JAVA_FLAGS -jar ${TOOL_PICARD}/picard.jar CollectInsertSizeMetrics $INSERTSIZE_FLAGS INPUT=$input OUTPUT=$output HISTOGRAM_FILE=${input.prefix}_insertsize_hist.pdf
 		""","InsertSize"
 	}

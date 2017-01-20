@@ -13,8 +13,7 @@ macs2 = {
 
 	transform(".bam") to("_macs2.done") {
 		exec """
-			export TOOL_DEPENDENCIES=$TOOL_DEPENDENCIES  &&
-			source ${TOOL_MACS2}/env.sh &&
+			module load macs2 &&
 
 			touch $output;
 			if [ ! -e $MACS2_TARGETS ]; then
