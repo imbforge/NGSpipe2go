@@ -26,16 +26,13 @@ bowtie2_pe = {
 
 	produce(OUTPUTFILE + ".bam") {
 		exec """
-			module load bowtie2 &&
-			module load samtools &&
+			module load bowtie2/${BOWTIE2_VERSION} &&
+			module load samtools/${SAMTOOLS_VERSION} &&
 
 			if [ -n "\$LSB_JOBID" ]; then
 				export TMPDIR=/jobdir/\${LSB_JOBID};
 			fi                                          &&
 			
-			echo 'VERSION INFO'  1>&2 ;
-			echo \$(bowtie2 --version | grep bowtie | cut -d' ' -f3)   1>&2 ;
-			echo '/VERSION INFO' 1>&2 ;
 			base1=`basename $input1`;
 			base2=`basename $input2`;
 			zcat $input1 > \$TMPDIR/\${base1%.gz};

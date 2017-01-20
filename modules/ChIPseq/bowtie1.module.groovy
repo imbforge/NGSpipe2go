@@ -24,12 +24,8 @@ bowtie_se = {
 
 	transform(".fastq.gz") to (".bam") {
 		exec """
-			module load bowtie &&
-			module load samtools &&
-			
-			echo 'VERSION INFO'  1>&2 ;
-			echo \$(bowtie --version | grep bowtie | cut -d' ' -f3)   1>&2 ;
-			echo '/VERSION INFO' 1>&2 ;
+			module load bowtie/${BOWTIE_VERSION} &&
+			module load samtools/${SAMTOOLS_VERSION} &&
 			
 			zcat $input | bowtie $BOWTIE_FLAGS $BOWTIE_REF - | samtools view $SAMTOOLS_VIEW_FLAGS - | samtools sort $SAMTOOLS_SORT_FLAGS -T $TMP/\$(basename $output.prefix)_bowtie1_sort - > $output
 		""","bowtie_se"

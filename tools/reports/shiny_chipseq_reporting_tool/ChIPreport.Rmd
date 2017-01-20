@@ -123,34 +123,8 @@ ChIPhelper.VennDiagram()
 ```
 
 ## Used tools and versions for this analysis ##
-
-```{r ToolVersions_paragraph, echo=F,results='asis',error=F,warning=F,message=F}
-
-# this section requires an init() that loads the location to the *_LOG variables 
-
-table.content <- data.frame(  tool=c(
-									  "FastQC",
-									  "Bowtie",
-									  "Samtools",
-									  "Picard",
-									  "BEDtools",
-									  "R/IPstrength",
-									  "R/PhantomPeak",
-									  "MACS"
-									  ),
-							  version=c(
-									  Toolhelper.VersionReporter("FasQC",    SHINYREPS_FASTQC_LOG),
-									  Toolhelper.VersionReporter("Bowtie",   SHINYREPS_BOWTIE_LOG),
-									  Toolhelper.VersionReporter("Samtools", SHINYREPS_BAMINDEX_LOG),
-									  Toolhelper.VersionReporter("Picard",   SHINYREPS_MARKDUPS_LOG),
-									  Toolhelper.VersionReporter("BEDtools", SHINYREPS_EXTEND_LOG),
-									  Toolhelper.VersionReporter("R/IPstrength",  SHINYREPS_IPSTRENGTH_LOG),
-									  Toolhelper.VersionReporter("R/PhantomPeak", SHINYREPS_PHANTOM_LOG),
-									  Toolhelper.VersionReporter("MACS",     SHINYREPS_MACS2_LOG)
-									  )
-						   )
-kable(table.content)
-
+```{r ToolVersions_paragraph, echo=F, results='asis', error=F, warning=F, message=F}
+cat(Toolhelper.ToolVersions(), sep="\n")
 ```
 
 </div>

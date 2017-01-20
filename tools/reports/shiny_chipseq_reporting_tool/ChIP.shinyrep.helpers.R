@@ -368,48 +368,14 @@ ChIPhelper.Bustard <- function() {
     ret     # ret contains already MD code
 }
 
-
 ##
 ## extract tool versions
 ##
+## report version of used tools
+Toolhelper.ToolVersions <- function() {
+    ver <- read.table(file=SHINYREPS_TOOL_VERSIONS,sep="=")
+        ver$V1 <- strsplit(as.character(ver$V1),"_VERSION")
+        colnames(ver) <- c("Tool name","Version")
 
-Toolhelper.VersionReporter <- function(tool, logfolder) {
-    
-    LOG <- logfolder
-    SUFFIX <- paste0(".log", "$")
-    
-    # logs folder
-    if(!file.exists(LOG)) {
-        return(paste0(tool, " version not available"))
-    }
-    
-    x <- lapply( list.files(LOG, pattern=SUFFIX, full.names=TRUE), function(f){
-        # read all lines
-        l <- readLines(f)
-        # need to check Version number in one line lower than "VERSION INFO"
-        # e.g. FastQC v0.11.3
-        l.version <- l[ grep("^VERSION INFO", l) + 1 ]
-        
-        return(l.version)
-        
-        } )
-    
-    # x is a list of always the same content
-    r <- tryCatch(
-        {
-            if (is.null(x[[1]][1])) {
-                return("no version tag")
-            } else {
-                return(x[[1]][1])
-            }
-        }, 
-        warning = function(w) {
-            return("no version tag")
-        }, 
-        error = function(e) {
-            return("no version tag")
-        }, 
-        finally = {}
-    )
-    
+            kable(as.data.frame(ver),output=F)
 }

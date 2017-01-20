@@ -11,9 +11,9 @@ pbc = {
 
 	transform(".bam") to("_PBC.csv") {
 		exec """
-			module load R &&
+			module load R/${R_VERSION} &&
 
-			${TOOL_R}/bin/Rscript ${TOOL_ENCODEqc}/PBC.R $input && mv ${input.prefix}_PBC.csv $output.dir
+			Rscript ${TOOL_ENCODEqc}/PBC.R $input && mv ${input.prefix}_PBC.csv $output.dir
 		""","pbc"
 	}
 	

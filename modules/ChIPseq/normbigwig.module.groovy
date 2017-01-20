@@ -9,10 +9,10 @@ normbigwig = {
 
 	transform(".bam") to("_normbigwig.done") {
 		exec """
-			module load deepTools &&
-			module load R &&
-			module load kentUtils &&
-			module load samtools && 
+			module load deepTools/${DEEPTOOLS_VERSION} &&
+			module load R/${R_VERSION} &&
+			module load kentUtils/${KENTUTILS_VERSION} &&
+			module load samtools/${SAMTOOLS_VERSION} && 
 
 			if [ ! -d ${TMP} ]; then
 				mkdir -p ${TMP};
