@@ -10,11 +10,7 @@ FastQC = {
 	
 	transform(".fastq.gz") to ("_fastqc.zip") {
 		exec """
-			module load fastqc &&
-			
-			echo 'VERSION INFO'  1>&2 &&
-			echo \$(fastqc --version | cut -d' ' -f2) 1>&2 &&
-			echo '/VERSION INFO' 1>&2 &&
+			module load fastqc/${FASTQC_VERSION} &&
 			
 			fastqc $FASTQC_FLAGS -o $output.dir $input
 		""","FastQC"

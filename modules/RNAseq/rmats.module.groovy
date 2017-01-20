@@ -11,8 +11,8 @@ rMATS = {
 	// run the chunk
 	transform (".txt") to (".done") {
 		exec """
-			export TOOL_DEPENDENCIES=$TOOL_DEPENDENCIES &&
-			source ${TOOL_DEPENDENCIES}/mats/rMATS.3.0.9/env.sh &&
+			module load rmats/${RMATS_VERSION} &&
+
 			if [ -n "\$LSB_JOBID" ]; then
 				export TMPDIR=/jobdir/\${LSB_JOBID};
 			fi;
@@ -35,9 +35,9 @@ rMATS = {
 					sd_group1=`awk -v g="\${groups[1]}" 'BEGIN{OFS=""} {if (\$2 == g) print \$6}' $input | paste -sd"," -`;
 					PAIRED_ARGS="-r1 \$insert_group0 -r2 \$insert_group1 -sd1 \$sd_group0 -sd2 \$sd_group1";
 				fi;
-				python ${TOOL_DEPENDENCIES}/mats/rMATS.3.0.9/RNASeq-MATS.py -b1 \$group0 -b2 \$group1 -t \$PAIRED -gtf $RMATS_GTF -a $RMATS_ANCHOR -c $RMATS_CUTOFF -analysis $RMATS_TYPE -len $RMATS_LEN  \$PAIRED_ARGS -o $output.dir/\${input_var%_targets_rMats.txt}_rMats;
+				python ${TOOL_RMATS}/RNASeq-MATS.py -b1 \$group0 -b2 \$group1 -t \$PAIRED -gtf $RMATS_GTF -a $RMATS_ANCHOR -c $RMATS_CUTOFF -analysis $RMATS_TYPE -len $RMATS_LEN  \$PAIRED_ARGS -o $output.dir/\${input_var%_targets_rMats.txt}_rMats;
 				touch $output;
-				echo "python ${TOOL_DEPENDENCIES}/mats/rMATS.3.0.9/RNASeq-MATS.py -b1 \$group0 -b2 \$group1 -t \$PAIRED -gtf $RMATS_GTF -a $RMATS_ANCHOR -c $RMATS_CUTOFF -analysis $RMATS_TYPE -len $RMATS_LEN  \$PAIRED_ARGS -o $output.dir/\${input_var%_targets_rMats.txt}_rMats" > $output;
+				echo "python ${TOOL_RMATS}/RNASeq-MATS.py -b1 \$group0 -b2 \$group1 -t \$PAIRED -gtf $RMATS_GTF -a $RMATS_ANCHOR -c $RMATS_CUTOFF -analysis $RMATS_TYPE -len $RMATS_LEN  \$PAIRED_ARGS -o $output.dir/\${input_var%_targets_rMats.txt}_rMats" > $output;
 				""","rMATS"
 }
 

@@ -11,11 +11,7 @@ BAMindexer = {
 
 	transform(".bam") to(".bam.bai") {
 		exec """
-			module load samtools &&
-			
-			echo 'VERSION INFO'  1>&2 &&
-			echo \$(samtools --version | grep samtools | cut -d' ' -f2) 1>&2 &&
-			echo '/VERSION INFO' 1>&2 &&
+			module load samtools/${SAMTOOLS_VERSION} &&
 			
 			samtools index $input
 		""","BAMindexer"

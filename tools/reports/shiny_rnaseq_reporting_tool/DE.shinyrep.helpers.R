@@ -654,64 +654,11 @@ DEhelper.Qualimap <- function() {
 ##
 ## report version of used tools
 Toolhelper.ToolVersions <- function() {
-    table.content <- data.frame(  tool=c(
-                                          "FastQC", 
-                                          "STAR", 
-                                          "Samtools", 
-                                          "Subread", 
-                                          "Picard", 
-                                          "R/DEseq2"
-                                          ), 
-                                  version=c(
-                                          Toolhelper.VersionReporter("FastQC",   SHINYREPS_FASTQC_LOG ), 
-                                          Toolhelper.VersionReporter("STAR",     SHINYREPS_STAR_LOG ), 
-                                          Toolhelper.VersionReporter("Samtools", SHINYREPS_BAMINDEX_LOG), 
-                                          Toolhelper.VersionReporter("Subread",  SHINYREPS_SUBREAD_LOG), 
-                                          Toolhelper.VersionReporter("Picard",   SHINYREPS_BAM2BW_LOG), 
-                                          Toolhelper.VersionReporter("R/DEseq2", SHINYREPS_DESEQ_LOGS)
-                                          )
-                               )
-    kable(table.content)
+    toolList <- SHINYREPS_TOOL_VERSIONS
+    ver <- read.table(file=toolList,sep="=")
+    ver$V1 <- strsplit(as.character(ver$V1),"_VERSION")
+    colnames(ver) <- c("Tool name","Version")
+
+    kable(as.data.frame(ver),output=F)
 }
 
-## version version of one tool, knowing its log folder
-Toolhelper.VersionReporter <- function(tool, logfolder) {
-    
-    LOG <- logfolder
-    SUFFIX <- paste0(".log", "$")
-    
-    # logs folder
-    if(!file.exists(LOG)) {
-        return(paste0(tool, " version not available"))
-    }
-    
-    x <- lapply( list.files(LOG, pattern=SUFFIX, full.names=TRUE), function(f){
-        # read all lines
-        l <- readLines(f)
-        # need to check Version number in one line lower than "VERSION INFO"
-        # e.g. FastQC v0.11.3
-        l.version <- l[ grep("^VERSION INFO", l) + 1 ]
-        
-        return(l.version)
-        
-        } )
-    
-    # x is a list of always the same content
-    r <- tryCatch(
-        {
-            if (is.null(x[[1]][1])) {
-                return("no version tag")
-            } else {
-                return(x[[1]][1])
-            }
-        }, 
-        warning = function(w) {
-            return("no version tag")
-        }, 
-        error = function(e) {
-            return("no version tag")
-        }, 
-        finally = {}
-    )
-    
-}

@@ -13,16 +13,12 @@ extend = {
 
 	transform(".bam") to ("_ext.bam") {
 		exec """
-			export TOOL_DEPENDENCIES=$TOOL_DEPENDENCIES &&
-			source ${TOOL_BEDTOOLS}/env.sh &&
-			source ${TOOL_SAMTOOLS}/env.sh &&
-			if [ ! -d $TMP ]; then
+            module load bedtools/${BEDTOOLS_VERSION} &&
+            module load samtools/${SAMTOOLS_VERSION} &&
+		
+            if [ ! -d $TMP ]; then
 				mkdir -p $TMP;
 			fi &&
-			
-			echo 'VERSION INFO'  1>&2 ;
-			echo \$(bedtools --version |  cut -d' ' -f2) 1>&2 ;
-			echo '/VERSION INFO' 1>&2 ;
 			
 			CHRSIZES=${TMP}/\$(basename ${input.prefix}).extend.chrsizes  &&
 			samtools idxstats ${input} | cut -f1-2 > \${CHRSIZES} &&

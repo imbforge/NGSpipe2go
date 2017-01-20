@@ -13,12 +13,8 @@ MarkDups = {
 
 	transform(".bam") to (".dupmarked.bam") {
 		exec """
-			module load jdk &&
-			module load picard &&
-			
-			echo 'VERSION INFO'  1>&2 ;
-			echo \$(java -jar ${TOOL_PICARD}/picard.jar MarkDuplicates --version 2>&1 | cut -d'(' -f1 ) 1>&2 ;
-			echo '/VERSION INFO' 1>&2 ;
+			module load jdk/${JAVA_VERSION} &&
+			module load picard/${PICARD_VERSION} &&
 			
 			java $JAVA_FLAGS -jar ${TOOL_PICARD}/picard.jar MarkDuplicates $MARKDUPS_FLAGS INPUT=$input OUTPUT=$output METRICS_FILE=${input.prefix}_dupmetrics.tsv
 		""","MarkDups"

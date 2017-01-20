@@ -38,11 +38,7 @@ rnatypes = {
     // run the chunk
     transform(".bam") to ("_readcounts.tsv") {
         exec """
-			module load subread &&
-            
-            echo 'VERSION INFO'  1>&2 ;
-            echo \$(featureCounts 2>&1 | grep Version | cut -d' ' -f2) 1>&2 ;
-            echo '/VERSION INFO' 1>&2 ;
+			module load subread/${SUBREAD_VERSION} &&
             
             featureCounts $RNATYPES_FLAGS -o ${output}_tmp $input 2> ${output.prefix}_rnatypeslog.stderr;
             cut -f1,6,7 ${output}_tmp > $output;

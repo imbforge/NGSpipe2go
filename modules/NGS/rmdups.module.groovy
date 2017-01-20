@@ -13,13 +13,8 @@ RmDups = {
 
 	transform(".bam") to (".duprm.bam") {
 		exec """
-			export TOOL_DEPENDENCIES=$TOOL_DEPENDENCIES &&
-            source ${TOOL_JAVA}/env.sh                  &&
-            source ${TOOL_PICARD}/env.sh                &&
-			
-			echo 'VERSION INFO'  1>&2 ;
-			echo \$(java -jar ${TOOL_PICARD}/picard.jar MarkDuplicates --version 2>&1 | cut -d'(' -f1 ) 1>&2 ;
-			echo '/VERSION INFO' 1>&2 ;
+			module load java/${JAVA_VERSION} &&
+            module load picard/${PICARD_VERSION} &&
 			
 			java $JAVA_FLAGS -jar ${TOOL_PICARD}/picard.jar MarkDuplicates $MARKDUPS_FLAGS INPUT=$input OUTPUT=$output METRICS_FILE=${input.prefix}_dupmetrics.tsv
 		""","RmDups"

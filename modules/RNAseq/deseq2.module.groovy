@@ -21,13 +21,9 @@ DE_DESeq2 = {
 	// run the chunk
 	produce("DE_DESeq2.RData") {
 		exec """
-			module load R &&
+			module load R/${R_VERSION} &&
 			
-			echo 'VERSION INFO'  1>&2 ;
-			echo \$(${TOOL_R}/bin/Rscript --version 2>&1 | cut -d' ' -f5) 1>&2 ;
-			echo '/VERSION INFO'  1>&2 ;
-			
-			${TOOL_R}/bin/Rscript ${TOOL_DESeq2}/DE_DESeq2.R $DE_DESeq2_FLAGS
+			Rscript ${TOOL_DESeq2}/DE_DESeq2.R $DE_DESeq2_FLAGS
 		""","DE_DESeq2"
 	}
 }

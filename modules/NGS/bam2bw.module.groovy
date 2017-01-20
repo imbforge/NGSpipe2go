@@ -11,19 +11,14 @@ bam2bw = {
 	
 	transform(".bam") to ("_scaled.bw") {
 		exec """
-			module load bedtools &&
-			module load samtools &&
-			module load kentUtils &&
+			module load bedtools/${BEDTOOLS_VERSION} &&
+			module load samtools/${SAMTOOLS_VERSION} &&
+			module load kentUtils/${KENTUTILS_VERSION} &&
 
 			if [ ! -d ${TMP} ]; then
 				mkdir -p ${TMP};
 			fi &&
 			
-			echo 'VERSION INFO'  1>&2 &&
-                        echo \$(genomeCoverageBed -h 2>&1 | grep 'Version') 1>&2
-                        bedGraphToBigWig    1>&2 &&
-                        echo '/VERSION INFO' 1>&2 &&
-
 			CHRSIZES=${TMP}/\$(basename ${input.prefix}).bam2bw.chrsizes &&
 			samtools idxstats ${input} | cut -f1-2 > \${CHRSIZES} &&
 			TOTAL_MAPPED=\$( samtools flagstat $input | head -n1| cut -f1 -d" ") &&

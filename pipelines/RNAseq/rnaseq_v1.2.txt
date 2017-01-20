@@ -2,6 +2,7 @@ MODULE_FOLDER="/fsimb/groups/imb-bioinfocf/projects/cfb_internal/imbforge/rnaseq
 
 load MODULE_FOLDER + "RNAseq/essential.vars.groovy"
 load MODULE_FOLDER + "RNAseq/tool.locations.groovy"
+load MODULE_FOLDER + "RNAseq/tool.versions.groovy"
 
 load MODULE_FOLDER + "NGS/fastqc.vars.groovy"
 load MODULE_FOLDER + "NGS/fastqc.module.groovy"

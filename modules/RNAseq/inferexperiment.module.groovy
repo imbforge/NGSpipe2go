@@ -12,16 +12,9 @@ inferexperiment = {
     // run the chunk
     transform(".bam") to (input.prefix + "_inferexperiment.txt") {
 		exec """
-			module load RSeQC &&
+			module load RSeQC/${RSEQC_VERSION} &&
 
-			which python;
-			echo $PYTHONPATH;
-			
-			echo 'VERSION INFO'  1>&2 ;
-			echo \$(python ${TOOL_RSeQC}/bin/infer_experiment.py --version | cut -d' ' -f2) 1>&2 ;
-			echo '/VERSION INFO' 1>&2 ;
-			
-			python ${TOOL_RSeQC}/bin/infer_experiment.py -i $input $INFEREXPERIMENT_EXTRA $INFEREXPERIMENT_BED > $output
+			python ${TOOL_RSEQC}/infer_experiment.py -i $input $INFEREXPERIMENT_EXTRA $INFEREXPERIMENT_BED > $output
 		""","inferexperiment"
 	}
 

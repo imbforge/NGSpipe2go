@@ -19,12 +19,9 @@ GO_Enrichment = {
 
 	transform(".RData") to("_GO.done") {
 		exec """
-		module load R &&
+		module load R/${R_VERSION} &&
 
 		touch $output; 
-		echo 'VERSION INFO' 1>&2 ;
-		echo \$(${TOOL_GO}/bin/Rscript --version 2>&1 | cut -d' '-f5) 1>&2 ;
-		echo '/VERSION INFO'  1>&2 ;
 
 			Rscript ${TOOL_GO}/GO_Enrichment.R $GO_Enrichment_FLAGS;
 			if [ \$? -ne 0 ]; then rm $output; fi;
