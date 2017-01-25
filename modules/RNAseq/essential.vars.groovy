@@ -1,9 +1,9 @@
-ESSENTIAL_PROJECT="/fsimb/groups/imb-bioinfocf/projects/cfb_internal/imbforge/rnaseq_go_test"
-ESSENTIAL_STAR_REF="/fsimb/groups/imb-bioinfocf/common-data/star_genomes/Mus_musculus/UCSC/mm9/star2.4.2a_noGTF"
-ESSENTIAL_GENESGTF="/fsimb/common/genomes/mus_musculus/ucsc/mm9/canonical/annotation/gencode.vM1.annotation.gtf"
-ESSENTIAL_GENESBED="/fsimb/groups/imb-bioinfocf/common-data/annotation/mm9/mm9_UCSC_knownGene.bed"
+ESSENTIAL_PROJECT="/project/"
+ESSENTIAL_STAR_REF="/annotation/mm9/star_genome"
+ESSENTIAL_GENESGTF="/annotation/mm9/gencode.vM1.annotation.gtf"
+ESSENTIAL_GENESBED="/annotation/mm9/mm9_UCSC_knownGene.bed"
 ESSENTIAL_FEATURETYPE="gene_type" //gencode uses gene_type; ensemble uses gene_biotype
-ESSENTIAL_SAMPLE_PREFIX="Sample_imb_richly_2014_05_"
+ESSENTIAL_SAMPLE_PREFIX=""
 ESSENTIAL_PAIRED="no"           // paired end design
 ESSENTIAL_STRANDED="reverse"    // strandness: no|yes|reverse
 ESSENTIAL_ORG="mouse"           // UCSC organism
