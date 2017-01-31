@@ -63,7 +63,7 @@ if __name__ == '__main__':
         nucleotide_for = "G"
         nucleotide_rev = "C"
     else:
-        print("Please specify the class of piRNAs")
+        print("Please specify the class of small RNAs")
 
     piRNA_reads = 0
     other_reads = 0
