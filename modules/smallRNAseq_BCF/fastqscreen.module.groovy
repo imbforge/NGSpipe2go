@@ -34,7 +34,7 @@ FastQScreen = {
 				echo -e "DATABASE\t\${REFERENCE[0]}\t\${REFERENCE[1]}" >> $output.prefix/fastqscreen.conf;
 			done;
 
-			SAMPLENAME_BASE=\$(basename {SAMPLENAME}) &&
+			SAMPLENAME_BASE=\$(basename ${SAMPLENAME}) &&
 			fastq_screen $FASTQSCREEN_FLAGS --conf $output.prefix/fastqscreen.conf --outdir $output.prefix $input 2> $output.dir/\${SAMPLENAME_BASE}.log;
 			touch $output;
 

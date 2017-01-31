@@ -3,7 +3,7 @@ SHINYREPS_PROJECT=PROJECT	//project directory
 SHINYREPS_LOG=LOGS			//where the logs lie
 SHINYREPS_QC=QC				//where the QC lie
 SHINYREPS_RES=RESULTS		//where the results lie
-SHINYREPS_PREFIX="Sample_imb_[A-Za-z]+_\\\\\\\\d+_\\\\\\\\d+_"  //standard sample prefix
+SHINYREPS_PREFIX="Sample_imb_[A-Za-z]+_\\\\d+_\\\\d+_"  //standard sample prefix
 SHINYREPS_TARGETS="targets.txt"
 SHINYREPS_BOWTIE_LOG=LOGS + "/bowtie_se"	//where the Bowtie logs lie
 SHINYREPS_BAMINDEX_LOG=LOGS + "/BAMindexer"	//where the Samtools/BamIndexer logs lie
@@ -20,3 +20,4 @@ SHINYREPS_BUSTARD=QC + "/DemultiplexedBustardSummary.xml"	//where the bustard xm
 SHINYREPS_MACS2=RESULTS + "/macs2"	//where the MACS2 results lie
 SHINYREPS_MACS2_LOG=LOGS + "/macs2" //where the macs2 logs lie
 SHINYREPS_PLOTS_COLUMN=4            //number of columns to splits the plot grids (ipstrength, phantompeaks...). Min=2
+SHINYREPS_TOOL_VERSIONS= PROJECT + "/NGSpipe2go/modules/ChIPseq/tool.versions.groovy" //where the tool versions listed

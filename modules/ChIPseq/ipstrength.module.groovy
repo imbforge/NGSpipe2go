@@ -11,18 +11,13 @@ ipstrength = {
 
 	transform(".bam") to("_ipstrength.done") {
 		exec """
-			export TOOL_DEPENDENCIES=$TOOL_DEPENDENCIES  &&
-			source ${TOOL_R}/env.sh &&
+			module load R/${R_VERSION} &&
 
 			touch $output;
 			if [ ! -e $IPSTRENGTH_TARGETS ]; then
 				echo "Targets file $IPSTRENGTH_TARGETS doesn't exist" >> $output &&
 				exit 0;
 			fi;
-			
-			echo 'VERSION INFO'  1>&2 &&
-			echo \$(${TOOL_R}/bin/Rscript --version 2>&1 | cut -d' ' -f5) 1>&2 &&
-			echo '/VERSION INFO' 1>&2 &&
 			
 			
 			BAM=\$(basename $input) &&
@@ -34,7 +29,7 @@ ipstrength = {
 
 				if [ "\$BAM" != "\$INPUT" ]; then
 					echo "\${IPname} vs \${INPUTname}" >> $output ;
-					${TOOL_R}/bin/Rscript ${TOOL_ENCODEqc}/IPstrength.R $IPSTRENGTH_MAPPED/\$IP \$IPname $IPSTRENGTH_MAPPED/\$INPUT \$INPUTname \${IPname}.vs.\${INPUTname}_ipstrength $IPSTRENGTH_BSGENOME;
+					Rscript ${TOOL_ENCODEqc}/IPstrength.R $IPSTRENGTH_MAPPED/\$IP \$IPname $IPSTRENGTH_MAPPED/\$INPUT \$INPUTname \${IPname}.vs.\${INPUTname}_ipstrength $IPSTRENGTH_BSGENOME;
 					if [ \$? -ne 0 ]; then rm $output; fi;
 					mv \${IPname}.vs.\${INPUTname}_ipstrength* $output.dir;
 				fi;

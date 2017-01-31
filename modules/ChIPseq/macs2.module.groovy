@@ -13,18 +13,13 @@ macs2 = {
 
 	transform(".bam") to("_macs2.done") {
 		exec """
-			export TOOL_DEPENDENCIES=$TOOL_DEPENDENCIES  &&
-			source ${TOOL_MACS2}/env.sh &&
+			module load macs2/${MACS2_VERSION} &&
 
 			touch $output;
 			if [ ! -e $MACS2_TARGETS ]; then
 				echo "Targets file $MACS2_TARGETS doesn't exist" >> $output &&
 				exit 0;
 			fi;
-			
-			echo 'VERSION INFO'  1>&2 ;
-			echo \$(${TOOL_MACS2}/bin/macs2 --version  2>&1 | cut -d' ' -f2) 1>&2 ;
-			echo '/VERSION INFO' 1>&2 ;
 			
 			BAM=\$(basename $input) &&
 			grep \$BAM $MACS2_TARGETS | while read -r TARGET; do
@@ -35,7 +30,7 @@ macs2 = {
 
 				if [ "\$BAM" != "\$INPUT" ]; then
 					echo "\${IPname} vs \${INPUTname}" >> $output ;
-					${TOOL_MACS2}/bin/macs2 callpeak -t $MACS2_MAPPED/\$IP -c $MACS2_MAPPED/\$INPUT -n \${IPname}.vs.\${INPUTname}_macs2 $MACS2_FLAGS;
+					macs2 callpeak -t $MACS2_MAPPED/\$IP -c $MACS2_MAPPED/\$INPUT -n \${IPname}.vs.\${INPUTname}_macs2 $MACS2_FLAGS;
 					if [ \$? -ne 0 ]; then rm $output; fi;
 					mv \${IPname}.vs.\${INPUTname}_macs2* $output.dir;
 				fi;

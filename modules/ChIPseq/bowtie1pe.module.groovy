@@ -26,16 +26,14 @@ bowtie_pe = {
 
 	produce(OUTPUTFILE + ".bam") {
 		exec """
-			export TOOL_DEPENDENCIES=$TOOL_DEPENDENCIES &&
-			source ${TOOL_BOWTIE}/env.sh   &&
-			if [ -n "\$LSB_JOBID" ]; then
+			module load bowtie/${BOWTIE_VERSION} &&
+			
+            if [ -n "\$LSB_JOBID" ]; then
 				export TMPDIR=/jobdir/\${LSB_JOBID};
 			fi                                          &&
 			echo $output;
-			echo 'VERSION INFO'  1>&2 ;
-			echo \$(bowtie --version | grep bowtie | cut -d' ' -f3)   1>&2 ;
-			echo '/VERSION INFO' 1>&2 ;
-			base1=`basename $input1`;
+			
+            base1=`basename $input1`;
 			base2=`basename $input2`;
 			zcat $input1 > \$TMPDIR/\${base1%.gz};
 			zcat $input2 > \$TMPDIR/\${base2%.gz};

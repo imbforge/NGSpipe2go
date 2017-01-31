@@ -22,8 +22,7 @@ qualimap = {
 
 	transform(".bam") to("_counts.txt") {
 		exec """
-			export TOOL_DEPENDENCIES=$TOOL_DEPENDENCIES &&
-			source ${TOOL_QUALIMAP}/env.sh &&
+			module load qualimap/${QUALIMAP_VERSION} &&
 			unset DISPLAY;
 			echo $output.prefix;
 			qualimap rnaseq -bam $input -outdir ${output.prefix}_qualimap -outformat html $QUALIMAP_GENESGTF -oc $output -p $QUALIMAP_STRANDED $QUALIMAP_EXTRA

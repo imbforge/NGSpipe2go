@@ -13,8 +13,8 @@ FastqScreen = {
 
 	transform(".fastq.gz") to("_fastqscreen.done") {
 		exec """
-			export TOOL_DEPENDENCIES=$TOOL_DEPENDENCIES &&
-			source ${TOOL_FASTQSCREEN}/env.sh &&
+			module load fastq_screen/${FASTQSCREEN_VERSION} && 
+
 			if [ ! -e "$output.prefix" ]; then
                 mkdir $output.prefix;
             fi &&

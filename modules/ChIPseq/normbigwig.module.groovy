@@ -9,11 +9,11 @@ normbigwig = {
 
 	transform(".bam") to("_normbigwig.done") {
 		exec """
-			export TOOL_DEPENDENCIES=$TOOL_DEPENDENCIES  &&
-			source ${TOOL_DEEPTOOLS}/env.sh &&
-			source ${TOOL_R}/env.sh &&
-			source ${TOOL_KENTUTILS}/env.sh &&
-			source ${TOOL_SAMTOOLS}/env.sh &&
+			module load deepTools/${DEEPTOOLS_VERSION} &&
+			module load R/${R_VERSION} &&
+			module load kentUtils/${KENTUTILS_VERSION} &&
+			module load samtools/${SAMTOOLS_VERSION} && 
+
 			if [ ! -d ${TMP} ]; then
 				mkdir -p ${TMP};
 			fi &&

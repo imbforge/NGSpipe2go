@@ -31,4 +31,5 @@ SHINYREPS_DESEQ_LOGS=LOGS + "/DE_DESeq2" //where the DE_DESeq2 logs lie
 SHINYREPS_PLOTS_COLUMN=4L    //number of columns to splits the plot grids (dupradar, genebodycov...). Min=2L. L=integer in R
 SHINYREPS_INFEREXPERIMENT_LOGS=QC + "/inferexperiment" //where the inferexperiment logs lie
 SHINYREPS_QUALIMAP_LOGS=QC + "/qualimap" //where the qualimap output files are
-
+SHINYREPS_GO_ENRICHMENT=RESULTS + "/GO_Analysis" // where the GO enrichment results lie
+SHINYREPS_TOOL_VERSIONS=PROJECT+ "/NGSpipe2go/modules/RNAseq/tool.versions.groovy" //where the tool versions are listed

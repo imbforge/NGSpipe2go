@@ -1,7 +1,8 @@
-MODULE_FOLDER="project_folder/NGSpipe2go/modules/" // adjust to your projects needs
+MODULE_FOLDER="/project/NGSpipe2go/modules/" // adjust to your projects needs
 
 load MODULE_FOLDER + "RNAseq/essential.vars.groovy"
 load MODULE_FOLDER + "RNAseq/tool.locations.groovy"
+load MODULE_FOLDER + "RNAseq/tool.versions.groovy"
 
 load MODULE_FOLDER + "NGS/fastqc.vars.groovy"
 load MODULE_FOLDER + "NGS/fastqc.module.groovy"
@@ -33,9 +34,6 @@ load MODULE_FOLDER + "RNAseq/genebodycov2.module.groovy"
 load MODULE_FOLDER + "RNAseq/inferexperiment.vars.groovy"
 load MODULE_FOLDER + "RNAseq/inferexperiment.module.groovy"
 
-load MODULE_FOLDER + "RNAseq/qualimap.vars.groovy"
-load MODULE_FOLDER + "RNAseq/qualimap.module.groovy"
-
 load MODULE_FOLDER + "RNAseq/rnatypes.vars.groovy"
 load MODULE_FOLDER + "RNAseq/rnatypes.module.groovy"
 
@@ -51,12 +49,15 @@ load MODULE_FOLDER + "RNAseq/deseq2.module.groovy"
 load MODULE_FOLDER + "RNAseq/deseq2_mm.vars.groovy"
 load MODULE_FOLDER + "RNAseq/deseq2_mm.module.groovy"
 
+load MODULE_FOLDER + "RNAseq/GO_Enrichment.vars.groovy"
+load MODULE_FOLDER + "RNAseq/GO_Enrichment.module.groovy"
+
 load MODULE_FOLDER + "miscellaneous/collectbpipes.module.2.groovy"
 
 load MODULE_FOLDER + "RNAseq/shinyreports.vars.groovy"
 load MODULE_FOLDER + "RNAseq/shinyreports.module.groovy"
 
 run {
-	"%.fastq.gz" * [ FastQC , STAR_se + BAMindexer + [ subread_count + filter2htseq, bam2bw, inferexperiment, qualimap, rnatypes, MarkDups + BAMindexer + [ dupRadar , geneBodyCov2 ] ] ] + [ DE_DESeq2_MM, DE_DESeq2] + collectBpipeLogs + shinyReports
+	"%.fastq.gz" * [ FastQC , STAR_se + BAMindexer + [ subread_count + filter2htseq, bam2bw, inferexperiment, rnatypes, MarkDups + BAMindexer + [ dupRadar , geneBodyCov2 ] ] ] + [ DE_DESeq2_MM, DE_DESeq2 + GO_Enrichment] + collectBpipeLogs + shinyReports
 }
 
