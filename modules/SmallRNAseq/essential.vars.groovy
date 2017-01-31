@@ -15,7 +15,7 @@ ESSENTIAL_BIOTYPES_TABLE="/home/adomingu/imb-kettinggr/genomes/Caenorhabditis_el
 // read size to keep (added 8 bp to account for barcodes)
 MIN_LENGTH=26
 MAX_LENGTH=38
-ESSENTIAL_STRANDED="no"
+ESSENTIAL_STRANDED="yes"
 ESSENTIAL_PAIRED="no"
 ESSENTIAL_THREADS=4
 ESSENTIAL_MISMATCHES=0
