@@ -30,8 +30,8 @@ ESSENTIAL_FEATURES="/fsimb/groups/imb-kettinggr/genomes/Danio_rerio/Ensembl/Zv9/
 ESSENTIAL_MATURE_MIRNA="~/imb-kettinggr/genomes/Danio_rerio/Ensembl/Zv9/Annotation/SmallRNA/mature.noSpaces.fa"
 ESSENTIAL_HAIRPIN_MIRNA="~/imb-git addkettinggr/genomes/Danio_rerio/Ensembl/Zv9/Annotation/SmallRNA/hairpin.noSpaces.fa"
 // read size to keep (added 8 bp to account for barcodes)
-MIN_LENGTH=18
-MAX_LENGTH=38
+MIN_LENGTH=28
+MAX_LENGTH=45
 ESSENTIAL_STRANDED="reverse"
 ESSENTIAL_PAIRED="no"
 ESSENTIAL_MISMATCHES=2
