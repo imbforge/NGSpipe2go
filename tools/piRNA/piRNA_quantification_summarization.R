@@ -87,7 +87,6 @@ len_ip_p <- ggplot(len, aes(x=factor(readlength), y=N, color=Mapping)) +
    theme(strip.text = element_text(size = 14),
       # axis.title.y = element_text(size = 10),
       # axis.title.x = element_text(size = 10),
-      strip.text = element_text(size = 14),
       strip.text.y = element_text(size = 10),
       strip.background = element_rect(fill="white")) +
    xlab('read length') +
