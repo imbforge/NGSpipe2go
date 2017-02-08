@@ -10,7 +10,10 @@ macs2 = {
                  MACS2_GSIZE  + " " + 
                  MACS2_BWIDTH + " " + 
                  MACS2_EXTRA
-
+    	if(MACS2_PAIRED == "yes") {
+		MACS2_FALGS = MACS2_FLAGS + " " +
+			      "--format BAMPE"
+	}
 	transform(".bam") to("_macs2.done") {
 		exec """
 			module load macs2/${MACS2_VERSION} &&

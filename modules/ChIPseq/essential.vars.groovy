@@ -8,7 +8,9 @@ ESSENTIAL_FRAGLEN=200
 ESSENTIAL_READLEN=45
 ESSENTIAL_MACS2_GSIZE="mm"
 ESSENTIAL_THREADS=4
-
+ESSENTIAL_FRAGMENT_USAGE="no" // essential variable which will tell bamCoverage to reconstitute fragments to create bigwig tracks
+			      //set to yes in case of paired end DNA/ChIP sequencing usage
+ESSENTIAL_PAIRED="no"	     //relevant for MACS2 if set it will used the PE mode in MACS2 peakcalling
 //global vars that will be reused in some global vars
 PROJECT=ESSENTIAL_PROJECT
 LOGS=PROJECT + "/logs"
