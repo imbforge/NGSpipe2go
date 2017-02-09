@@ -7,11 +7,11 @@ InsertSize = {
 		bpipe_version: "tested with bpipe 0.9.8.7",
 		author: "Nastasja Kreim"
 
-	output.dir=QC
+	output.dir=INSERTSIZE_OUTDIR
 	def INSERTSIZE_FLAGS = "ASSUME_SORTED=TRUE"
 	def JAVA_FLAGS  = "-Xmx" + INSERTSIZE_MAXMEM + "m"
 
-	transform(".bam") to ("_insersizemetrics.tsv") {
+	transform(".bam") to ("_insertsizemetrics.tsv") {
 		exec """
 		    module load picard/${PICARD_VERSION} && 
             
