@@ -2,6 +2,7 @@ MODULE_FOLDER="/project/NGSpipe2go/modules/"
 
 load MODULE_FOLDER + "ChIPseq/essential.vars.groovy"
 load MODULE_FOLDER + "ChIPseq/tool.locations.groovy"
+load MODULE_FOLDER + "ChIPseq/tool.versions.groovy"
 
 load MODULE_FOLDER + "NGS/fastqc.vars.groovy"
 load MODULE_FOLDER + "NGS/fastqc.module.groovy"
