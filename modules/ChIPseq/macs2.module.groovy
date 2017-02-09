@@ -11,7 +11,7 @@ macs2 = {
                  MACS2_BWIDTH + " " + 
                  MACS2_EXTRA
     	if(MACS2_PAIRED == "yes") {
-		MACS2_FALGS = MACS2_FLAGS + " " +
+		MACS2_FLAGS = MACS2_FLAGS + " " +
 			      "--format BAMPE"
 	}
 	transform(".bam") to("_macs2.done") {
