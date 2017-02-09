@@ -1,0 +1,236 @@
+/* global settings */
+
+body {
+	background-color:#eeeeee;
+	color:#444444;
+	margin:0px;
+	font-family:arial, verdana, helvetica;
+	font-size:85%;
+}
+
+table {
+    font-size:95%;
+} 
+
+
+h1 {
+        background-color:#870322;
+        color:#eeeeee;
+        padding:5pt 0pt 5pt 12pt;
+        font-size:300%;
+	font-weight:bold;	
+	margin-top:24px;
+	margin-left:0px;
+	text-align:center;
+}
+
+h1:first-child {
+	margin-top:0;
+	margin-left:0;
+}
+
+
+h2 {
+        background-color:#eeeeee;
+        color:#555;
+        padding: 5pt 5pt 5pt 10pt;
+        margin-top:12pt; 
+        font-size:160%; 
+        font-weight:bold;
+	clear:right;
+	border-bottom-style:solid;
+	border-bottom-color:#aaaaaa;
+	border-bottom-width:1.5pt;
+}
+
+h2:first-child {
+	margin-top:0;
+	margin-left:0;
+}
+
+
+h3 {
+        background-color:#eeeeee;
+        color:#870322;
+        padding: 2pt 5pt 0pt 10pt;
+        margin-top:20pt;
+        font-size:140%; 
+        font-weight:bold; 
+  	clear:both;
+	border-bottom-style:solid;
+	border-bottom-color:#aaaaaa;
+	border-bottom-width:1.5pt;
+}
+
+h3:first-child {
+	margin-top:20;
+	margin-left:20;
+}
+
+h4 {
+	background-color:#eeeeee;
+        color:#870322;
+        padding: 2pt 5pt 0pt 10pt;
+        margin-top:20pt;
+        font-size:120%;
+        font-weight:bold;
+        clear:both;
+        border-bottom-style:solid;
+        border-bottom-color:#aaaaaa;
+        border-bottom-width:1.5pt;
+}
+
+h4:first-child {
+        margin-top:20;
+        margin-left:20;
+}
+
+h5 {
+	background-color:#eeeeee;
+        color:#870322;
+        padding: 2pt 5pt 0pt 10pt;
+        margin-top:20pt; 
+        font-size:120%;
+        font-style:italic;
+        clear:both;
+        border-bottom-style:solid;
+        border-bottom-color:#aaaaaa;
+        border-bottom-width:1.5pt;
+}       
+
+h5:first-child {
+        margin-top:20;
+        margin-left:20;
+}     
+
+
+
+/*
+ * ------------------------------------------------------
+ * class contentbox
+ *
+ */
+
+
+div.contentbox {
+	padding: 10px 15px 10px 15px;
+	text-align:left;
+	position:relative; top:0px; left:0;
+	background-color:#ffffff;
+	font-size:10pt;
+}
+
+
+div.dashedbox {
+	margin: 10px 0px 0px 0px;
+	padding: 0 15px 0 15px;
+	text-align:left;
+	padding: 16;
+	border: 1px dashed #aaa;
+}
+
+div.solidbox {
+	margin: 30px 0px 0px 0px;
+	padding: 0 15px 0 15px;
+	text-align:left;
+	padding: 16;
+	border: 1px solid #aaa;
+}
+
+
+
+
+/*
+ * ------------------------------------------------------
+ * image size settings
+ *
+ */
+
+
+
+img[alt="fastqc img"] { 
+  max-width:  260px; 
+  display: block;
+}
+
+img[alt="dupRadar img"] { 
+  max-width:  220px; 
+  display: block;
+}
+
+img[alt="RNAtypes img"] { 
+  max-width:  460px; 
+  display: block;
+}
+
+img[alt="geneBodyCov img"] { 
+  max-width:  220px; 
+  display: block;
+}
+
+
+
+/*
+ * ------------------------------------------------------
+ * print settings
+ *
+ */
+
+
+
+@media print
+{
+  h1 {
+        font-size:200%;
+	font-weight:bold;	
+	text-align:center;
+  }
+  
+  h2 {
+        font-size:120%;
+	font-weight:bold;
+	padding: 10px 5px 5px 0px;
+	margin: 10px 5px 5px 0px;	
+	border-bottom-style:none;
+  }
+  
+  h3 {
+        font-size:110%;
+	font-weight:bold;
+	padding: 15px 5px 5px 0px;
+	margin: 15px 5px 5px 0px;
+	border-bottom-style:none;
+  }
+  
+  div.contentbox {
+        padding: 0px 0px 0px 0px;
+	margin: 0px 0px 0px 0px;
+	font-size: 8pt;
+  }
+  
+  table, th, td {
+        padding: 0px;
+        border-spacing: 0px;
+        font-size: 95%;
+  }
+
+
+}
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
