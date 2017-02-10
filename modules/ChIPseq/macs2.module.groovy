@@ -32,9 +32,10 @@ macs2 = {
 				INPUTname=\$(echo \$TARGET | cut -f4 -d" ");
 
 				if [ "\$BAM" != "\$INPUT" ]; then
-					echo "\${IPname} vs \${INPUTname}" >> $output ;
-					macs2 callpeak -t $MACS2_MAPPED/\$IP -c $MACS2_MAPPED/\$INPUT -n \${IPname}.vs.\${INPUTname}_macs2 $MACS2_FLAGS;
-					if [ \$? -ne 0 ]; then rm $output; fi;
+					echo "\${IPname} vs \${INPUTname}" >> $output &&
+					echo $MACS2_FLAGS &&
+					macs2 callpeak -t $MACS2_MAPPED/\$IP -c $MACS2_MAPPED/\$INPUT -n \${IPname}.vs.\${INPUTname}_macs2 $MACS2_FLAGS &&
+					if [ \$? -ne 0 ]; then rm $output; fi &&
 					mv \${IPname}.vs.\${INPUTname}_macs2* $output.dir;
 				fi;
 			done
