@@ -29,7 +29,7 @@ SubReadCount = {
    }
 
    // run the chunk
-   produce("featureCounts_summary.txt") {
+   from("*.bam") produce("featureCounts_summary.txt") {
       exec """
          if [ -n "\$LSB_JOBID" ]; then
             export TMPDIR=/jobdir/\${LSB_JOBID};
