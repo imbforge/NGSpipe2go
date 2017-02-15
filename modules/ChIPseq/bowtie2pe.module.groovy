@@ -38,7 +38,7 @@ bowtie2_pe = {
 			zcat $input1 > \$TMPDIR/\${base1%.gz};
 			zcat $input2 > \$TMPDIR/\${base2%.gz};
 			
-			bowtie2 $BOWTIE2_FLAGS $BOWTIE2_REF -1 \$TMPDIR/\${base1%.gz} -2 \$TMPDIR/\${base2%.gz} | samtools view $SAMTOOLS_VIEW_FLAGS - | samtools sort $SAMTOOLS_SORT_FLAGS -T $TMPDIR/\${basename $output.prefix} - > $output; 
+			bowtie2 $BOWTIE2_FLAGS $BOWTIE2_REF -1 \$TMPDIR/\${base1%.gz} -2 \$TMPDIR/\${base2%.gz} | samtools view $SAMTOOLS_VIEW_FLAGS - | samtools sort $SAMTOOLS_SORT_FLAGS -T $TMPDIR/\$(basename $output.prefix) - > $output; 
 		""","bowtie2_pe"
 	}
 }

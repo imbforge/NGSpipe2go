@@ -10,7 +10,10 @@ macs2 = {
                  MACS2_GSIZE  + " " + 
                  MACS2_BWIDTH + " " + 
                  MACS2_EXTRA
-
+    	if(MACS2_PAIRED == "yes") {
+		MACS2_FLAGS = MACS2_FLAGS + " " +
+			      "--format BAMPE"
+	}
 	transform(".bam") to("_macs2.done") {
 		exec """
 			module load macs2/${MACS2_VERSION} &&
@@ -29,9 +32,10 @@ macs2 = {
 				INPUTname=\$(echo \$TARGET | cut -f4 -d" ");
 
 				if [ "\$BAM" != "\$INPUT" ]; then
-					echo "\${IPname} vs \${INPUTname}" >> $output ;
-					macs2 callpeak -t $MACS2_MAPPED/\$IP -c $MACS2_MAPPED/\$INPUT -n \${IPname}.vs.\${INPUTname}_macs2 $MACS2_FLAGS;
-					if [ \$? -ne 0 ]; then rm $output; fi;
+					echo "\${IPname} vs \${INPUTname}" >> $output &&
+					echo $MACS2_FLAGS &&
+					macs2 callpeak -t $MACS2_MAPPED/\$IP -c $MACS2_MAPPED/\$INPUT -n \${IPname}.vs.\${INPUTname}_macs2 $MACS2_FLAGS &&
+					if [ \$? -ne 0 ]; then rm $output; fi &&
 					mv \${IPname}.vs.\${INPUTname}_macs2* $output.dir;
 				fi;
 			done

@@ -2,7 +2,6 @@ MODULE_FOLDER="/project/NGSpipe2go/modules/"
 
 load MODULE_FOLDER + "ChIPseq/essential.vars.groovy"
 load MODULE_FOLDER + "ChIPseq/tool.locations.groovy"
-load MODULE_FOLDER + "ChIPseq/tool.versions.groovy"
 
 load MODULE_FOLDER + "NGS/fastqc.vars.groovy"
 load MODULE_FOLDER + "NGS/fastqc.module.groovy"
@@ -40,5 +39,7 @@ load MODULE_FOLDER + "ChIPseq/shinyreports.module.groovy"
 
 //MAIN PIPELINE TASK
 run {
-	"%.fastq.gz" * [ FastQC , bowtie_se + BAMindexer + [ extend + bam2bw , phantompeak , pbc , ipstrength , macs2 ] ] + collectBpipeLogs + shinyReports
+	//if you want to use bowtie2 as a mapper there is no way to get rid of the multi mappers you can use filbowtie2unique module to get uniquely mapping reads before further processing
+	//the fastq files should be named after the pattern <samplename>_R1.fastq.gz and <samplename>_R2.fastq.gz for Read 1 and read2
+	"%.fastq.gz" * [ FastQC ] + "%.R*.fastq.gz * [ bowtie_pe + BAMindexer + [ bamCoverage, InsertSize , phantompeak , pbc , ipstrength , macs2 ] ] + collectBpipeLogs + shinyReports
 }
