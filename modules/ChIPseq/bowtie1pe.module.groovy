@@ -39,7 +39,7 @@ bowtie_pe = {
 			base2=`basename $input2` &&
 			zcat $input1 > \$TMPDIR/\${base1%.gz} &&
 			zcat $input2 > \$TMPDIR/\${base2%.gz} &&			
-			bowtie $BOWTIE_FLAGS $BOWTIE_REF -1 $TMPDIR/\${base1%.gz} -2 $TMPDIR/\${base2%.gz} | samtools view $SAMTOOLS_VIEW_FLAGS - | samtools sort $SAMTOOLS_SORT_FLAGS -T$TMPDIR/\$(basename $output.prefix)_bowtie1_sort - > $output
+			bowtie $BOWTIE_FLAGS $BOWTIE_REF -1 $TMPDIR/\${base1%.gz} -2 $TMPDIR/\${base2%.gz} | samtools view $SAMTOOLS_VIEW_FLAGS - | samtools sort $SAMTOOLS_SORT_FLAGS -T $TMPDIR/\$(basename $output.prefix)_bowtie1_sort - > $output
 		""","bowtie_pe"
 	}
 }
