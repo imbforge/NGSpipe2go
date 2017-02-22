@@ -6,11 +6,11 @@ load MODULE_FOLDER + "ChIPseq/tool.locations.groovy"
 load MODULE_FOLDER + "NGS/fastqc.vars.groovy"
 load MODULE_FOLDER + "NGS/fastqc.module.groovy"
 
-load MODULE_FOLDER + "ChIPseq/bowtie1pe.vars.groovy"
-load MODULE_FOLDER + "ChIPseq/bowtie1pe.module.groovy"
-
 load MODULE_FOLDER + "ChIPseq/bowtie2pe.vars.groovy"
 load MODULE_FOLDER + "ChIPseq/bowtie2pe.module.groovy"
+
+load MODULE_FOLDER + "ChIPseq/filbowtie2unique.vars.groovy"
+load MODULE_FOLDER + "ChIPseq/filbowtie2unique.module.groovy"
 
 load MODULE_FOLDER + "NGS/bamindexer.vars.groovy"
 load MODULE_FOLDER + "NGS/bamindexer.module.groovy"
@@ -39,5 +39,5 @@ load MODULE_FOLDER + "ChIPseq/shinyreports_pe.module.groovy"
 
 //MAIN PIPELINE TASK
 run {
-	"%.fastq.gz" * [ FastQC ] + "%_R*.fastq.gz" * [ bowtie2_pe + BAMindexer + filbowtie2unique + BAMindexer [ bamCoverage, InsertSize, phantompeak, pbc, ipstrength, macs2 ] ] + collectBpipeLogs + shinyReports
+    "%.fastq.gz" * [ FastQC ] + "%_R*.fastq.gz" * [ bowtie2_pe + BAMindexer + filbowtie2unique + BAMindexer + [ bamCoverage, InsertSize, phantompeak, pbc, ipstrength, macs2 ] ] + collectBpipeLogs + shinyReports
 }
