@@ -11,7 +11,7 @@ bowtie_pe = {
 	def OUTPUTFILE = input1
 	int path_index = OUTPUTFILE.lastIndexOf("/")
 	OUTPUTFILE = OUTPUTFILE.substring(path_index+1)
-	OUTPUTFILE = (OUTPUTFILE =~ /.R1.fastq.gz/).replaceFirst("")
+	OUTPUTFILE = (OUTPUTFILE =~ /_R1.fastq.gz/).replaceFirst("")
 
 	def BOWTIE_FLAGS = "-q --sam "  +
                        BOWTIE_QUALS    + " " + 
