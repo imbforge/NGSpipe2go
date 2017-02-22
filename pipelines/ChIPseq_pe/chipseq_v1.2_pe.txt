@@ -31,12 +31,11 @@ load MODULE_FOLDER + "ChIPseq/macs2.module.groovy"
 
 load MODULE_FOLDER + "miscellaneous/collectbpipes.module.2.groovy"
 
-load MODULE_FOLDER + "ChIPseq/shinyreports.vars.groovy"
-load MODULE_FOLDER + "ChIPseq/shinyreports.module.groovy"
+load MODULE_FOLDER + "ChIPseq/shinyreports_pe.vars.groovy"
+load MODULE_FOLDER + "ChIPseq/shinyreports_pe.module.groovy"
 
 //MAIN PIPELINE TASK
 run {
-	//if you want to use bowtie2 as a mapper there is no way to get rid of the multi mappers you can use filbowtie2unique module to get uniquely mapping reads before further processing
-	//the fastq files should be named after the pattern <samplename>_R1.fastq.gz and <samplename>_R2.fastq.gz for Read 1 and read2
-	"%.fastq.gz" * [ FastQC ] + "%.R*.fastq.gz" * [ bowtie_pe + BAMindexer + [ bamCoverage, InsertSize , phantompeak , pbc , ipstrength , macs2 ] ] + collectBpipeLogs + shinyReports
+	//"%.fastq.gz" * [ FastQC ] + "%_R*.fastq.gz" * [ bowtie_pe + BAMindexer + [ bamCoverage, InsertSize , phantompeak , RmDups + BAMIndexer, pbc , ipstrength , macs2 ] ] + collectBpipeLogs + shinyReports
+	"%.fastq.gz" * [ FastQC ] + "%_R*.fastq.gz" * [ bowtie2_pe + BAMindexer + filbowtie2unique + BAMindexer + [ bamCoverage, InsertSize , phantompeak , RmDups + BAMIndexer, pbc , ipstrength , macs2 ] ] + collectBpipeLogs + shinyReports
 }
