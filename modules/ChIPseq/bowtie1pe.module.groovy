@@ -11,6 +11,7 @@ bowtie_pe = {
 	def OUTPUTFILE = input1
 	int path_index = OUTPUTFILE.lastIndexOf("/")
 	OUTPUTFILE = OUTPUTFILE.substring(path_index+1)
+	println(OUTPUTFILE)
 	OUTPUTFILE = (OUTPUTFILE =~ /_R1.fastq.gz/).replaceFirst("")
 
 	def BOWTIE_FLAGS = "-q --sam "  +
@@ -22,23 +23,19 @@ bowtie_pe = {
                        BOWTIE_MULTIMAP + " " + 
                        BOWTIE_THREADS  + " " + 
                        BOWTIE_EXTRA
-
 	def SAMTOOLS_VIEW_FLAGS = "-bhSu "
 	def SAMTOOLS_SORT_FLAGS = "-O bam " + SAMTOOLS_THREADS
+
 	produce(OUTPUTFILE + ".bam") {
 		exec """
-			module load bowtie/${BOWTIE_VERSION} &&
+			module load bowtie/${BOWTIE_VERSION}     &&
 			module load samtools/${SAMTOOLS_VERSION} &&			
+
             if [ -n "\$LSB_JOBID" ]; then
 				export TMPDIR=/jobdir/\${LSB_JOBID};
-			fi                                          &&
-			echo $output &&
+			fi                                       &&
 			
-            base1=`basename $input1` &&
-			base2=`basename $input2` &&
-			zcat $input1 > \$TMPDIR/\${base1%.gz} &&
-			zcat $input2 > \$TMPDIR/\${base2%.gz} &&			
-			bowtie $BOWTIE_FLAGS $BOWTIE_REF -1 $TMPDIR/\${base1%.gz} -2 $TMPDIR/\${base2%.gz} | samtools view $SAMTOOLS_VIEW_FLAGS - | samtools sort $SAMTOOLS_SORT_FLAGS -T $TMPDIR/\$(basename $output.prefix)_bowtie1_sort - > $output
+			bowtie $BOWTIE_FLAGS $BOWTIE_REF -1 $input1 -2 $input2 | samtools view $SAMTOOLS_VIEW_FLAGS - | samtools sort $SAMTOOLS_SORT_FLAGS -T $TMPDIR/\$(basename $output.prefix) - > $output
 		""","bowtie_pe"
 	}
 }

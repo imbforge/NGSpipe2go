@@ -1,5 +1,5 @@
 BOWTIE2_THREADS=" -p " + Integer.toString(ESSENTIAL_THREADS) // threads to use
-BOWTIE2_SAMTOOLS_THREADS=Integer.toString(ESSENTIAL_THREADS) // threads to use
+BOWTIE2_SAMTOOLS_THREADS=" -@ " + Integer.toString(ESSENTIAL_THREADS) // threads to use
 BOWTIE2_REF=" -x " + ESSENTIAL_BOWTIE_REF // prefix of the bowtie reference genome
 BOWTIE2_INSERT=""			// seed size. Match with fragment size, the default 20 is set by --very-sensitive
 BOWTIE2_MM_SEED="-N 1"		// number of mismatches allowed in the seed
