@@ -21,7 +21,7 @@ bowtie2_pe = {
                        BOWTIE2_THREADS  + " " + 
                        BOWTIE2_EXTRA
     def SAMTOOLS_VIEW_FLAGS = "-bhSu "
-    def SAMTOOLS_SORT_FLAGS = "-O bam " + SAMTOOLS_THREADS
+    def SAMTOOLS_SORT_FLAGS = "-O bam " + BOWTIE2_SAMTOOLS_THREADS
 
     produce(OUTPUTFILE + ".bam") {
         exec """

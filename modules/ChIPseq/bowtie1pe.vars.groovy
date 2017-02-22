@@ -9,4 +9,3 @@ BOWTIE_BEST="--best --strata --tryhard --chunkmbs 256"	// bowtie best mode, this
 BOWTIE_QUALS="--phred33-quals"	// phred33-quals. Use --phred64-quals for old sequencing runs
 BOWTIE_EXTRA="--fr"                 // extra parms to be passed to bowtie
 BOWTIE_MAPPED=MAPPED
-// samtools parameters
