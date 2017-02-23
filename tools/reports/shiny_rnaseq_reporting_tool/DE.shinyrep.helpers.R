@@ -520,7 +520,7 @@ DEhelper.strandspecificity <- function(){
     samplenames <- gsub(SHINYREPS_PREFIX, "", samplenames)
     samplenames <- gsub("_inferexperiment.txt", "", samplenames)
     colnames(strandspecifity) <- samplenames 
-    rownames(strandspecifity) <- c("sense", "antisense", "other") 
+    rownames(strandspecifity) <- c("other", "sense", "antisense") 
     kable(t(strandspecifity), output=F, align=c("l"))
 }
 
