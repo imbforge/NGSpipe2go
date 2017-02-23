@@ -72,11 +72,7 @@ DEhelper.DESeq2.corr <- function() {
 
 ## DEhelper.MAplot: MA plots
 DEhelper.DESeq2.MAplot <- function(i=1, fdr=.01) {
-     plotMA(res[[i]], main=conts[i, 1])    
-#    x <- mapply(function(res, cont) {
-#        plotMA(res, main=cont)
-#        invisible(0)
-#    }, res, conts[, 1], SIMPLIFY=FALSE)
+     plotMA(res[[i]], main=conts[i, 1], alpha=fdr)
 }
 
 ## DEhelper.DEgenes: show the DE results
