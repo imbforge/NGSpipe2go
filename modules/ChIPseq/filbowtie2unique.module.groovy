@@ -15,7 +15,7 @@ filbowtie2unique = {
 				export TMPDIR=/jobdir/\${LSB_JOBID};
 			fi                                          &&
 			
-			samtools view ${input} | grep -v XS | samtools view -bhSu -T $BOWTIE2_GENOME - | samtools sort -@ $BOWTIE2_SAMTOOLS_THREADS -T $TMPDIR/\$(basename $output.prefix) -o ${output}
+			samtools view ${input} | grep -v XS | samtools view -bhSu -T $BOWTIE2_GENOME - | samtools sort -@ $BOWTIE2_SAMTOOLS_THREADS -T $TMPDIR/\$(basename $output.prefix) -o ${output} -
 		""","filbowtie2unique"
 	}
 }

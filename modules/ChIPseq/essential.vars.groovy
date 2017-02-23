@@ -1,5 +1,6 @@
 ESSENTIAL_PROJECT="/project"
 ESSENTIAL_BOWTIE_REF="/annotation/mm9/Sequence/BowtieIndex/genome"
+ESSENTIAL_BOWTIE_GENOME="/annotation/mm9/Sequence/BowtieIndex/genome.fa"
 ESSENTIAL_CHR_SIZES=ESSENTIAL_PROJECT + "/mm9.chrom.sizes"
 ESSENTIAL_SAMPLE_PREFIX=""
 ESSENTIAL_BSGENOME="BSgenome.Mmusculus.UCSC.mm9"
