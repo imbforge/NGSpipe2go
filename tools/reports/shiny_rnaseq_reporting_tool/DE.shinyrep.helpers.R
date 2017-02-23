@@ -517,7 +517,9 @@ DEhelper.strandspecificity <- function(){
     strandspecifity <- lapply(filelist, read.table, sep=":", skip=3, header=FALSE, row.names=1, blank.lines.skip=TRUE)
     strandspecifity <- do.call(cbind, strandspecifity)
     samplenames <- basename(filelist)
-    samplenames <- gsub(SHINYREPS_PREFIX, "", samplenames)
+    if(!is.na(SHINYREPS_PREFIX)) { 
+	samplenames <- gsub(SHINYREPS_PREFIX, "", samplenames)
+    }
     samplenames <- gsub("_inferexperiment.txt", "", samplenames)
     colnames(strandspecifity) <- samplenames 
     rownames(strandspecifity) <- c("other", "sense", "antisense") 
