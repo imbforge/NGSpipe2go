@@ -122,6 +122,36 @@ The following Venn diagrams correlate the peaks called in the sample groups.
 ChIPhelper.VennDiagram()
 ```
 
+## Functional annotation of peaks ##
+
+The following plot show the feature distribution based on their chromosome region 
+
+### Feature distribution of peaks for all samples ###
+
+```{r feature_distribution_paragraph, echo=F, results='asis', error=F, warning=F, message=F}
+functionalPlot <- paste0( SHINYREPS_PEAK_ANNOTATION, "/", "ChIPseq_Feature_Distribution_Barplot.png")
+cat("![Peak_Annotation img](", functionalPlot, ")",fill=T)
+```
+
+### Distribution of TF-binding loci relative to TSS for all samples ### 
+
+```{r feature_distribution_TSS_paragraph, echo=F, results='asis', error=F, warning=F, message=F}
+    functionalPlotTSS <- paste0( SHINYREPS_PEAK_ANNOTATION, "/", "ChIPseq_Feature_Distribution_Related_to_TSS_Barplot.png")
+    cat("![Peak_Annotation img](", functionalPlotTSS, ")",fill=T)
+```
+
+### ChIP peaks coverage over Chromosomes ###  
+
+```{r peak_annotation_coverage_paragraph, echo=F, results='asis', error=F, warning=F, message=F}
+    cat(ChIPhelper.peakAnnotationCoverage(web=F),sep="\n")
+```
+
+### UpSet Plot ###
+
+```{r peak_annotation_upset_paragraph, echo=F, results='asis', error=F, warning=F, message=F}
+    cat(ChIPhelper.peakAnnotationUpSet(web=F),sep="\n")
+```
+
 ## Used tools and versions for this analysis ##
 ```{r ToolVersions_paragraph, echo=F, results='asis', error=F, warning=F, message=F}
 cat(Toolhelper.ToolVersions(), sep="\n")

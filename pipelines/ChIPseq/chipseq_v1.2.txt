@@ -33,6 +33,9 @@ load MODULE_FOLDER + "ChIPseq/pbc.module.groovy"
 load MODULE_FOLDER + "ChIPseq/macs2.vars.groovy"
 load MODULE_FOLDER + "ChIPseq/macs2.module.groovy"
 
+load MODULE_FOLDER + "ChIPseq/peak_annotation.vars.groovy"                                                                                                                    
+load MODULE_FOLDER + "ChIPseq/peak_annotation.module.groovy"               
+
 load MODULE_FOLDER + "miscellaneous/collectbpipes.module.2.groovy"
 
 load MODULE_FOLDER + "ChIPseq/shinyreports.vars.groovy"
@@ -40,5 +43,5 @@ load MODULE_FOLDER + "ChIPseq/shinyreports.module.groovy"
 
 //MAIN PIPELINE TASK
 run {
-	"%.fastq.gz" * [ FastQC , bowtie_se + BAMindexer + [ extend + bam2bw , phantompeak , pbc , ipstrength , macs2 ] ] + collectBpipeLogs + shinyReports
+	"%.fastq.gz" * [ FastQC , bowtie_se + BAMindexer + [ extend + bam2bw , phantompeak , pbc , ipstrength , macs2 ] ] + peak_annotation + collectBpipeLogs + shinyReports
 }
