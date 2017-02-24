@@ -6,11 +6,9 @@ bamCoverage = {
 		author: "Nastasja Kreim"
 
 		output.dir = BAMCOVERAGE_OUTDIR
-		BAMCOVERAGE_FLAGS = BAMCOVERAGE_CORES + " " +
-				    BAMCOVERAGE_OTHERS
+		BAMCOVERAGE_FLAGS = BAMCOVERAGE_CORES + " " + BAMCOVERAGE_OTHER
 		if( BAMCOVERAGE_FRAGMENTS == "yes") {
-			BAMCOVERAGE_FLAGS = BAMCOVERAGE_FLAGS + " " +
-					    "--extendReads"
+			BAMCOVERAGE_FLAGS = BAMCOVERAGE_FLAGS + " --extendReads"
 		}
 
 	transform(".bam") to(".bw") {
