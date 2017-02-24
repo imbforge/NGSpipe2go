@@ -17,8 +17,7 @@ bamCoverage = {
 			if [ -n "\$LSB_JOBID" ]; then
 				export TMPDIR=/jobdir/\${LSB_JOBID};
 			fi;
-			base=`basename $input`;
-			base=\${base%.bam};
+
 			bamCoverage $BAMCOVERAGE_FLAGS --bam $input -o ${output};
 		""","bamCoverage"
 	}
