@@ -1,4 +1,4 @@
-MODULE_FOLDER="/fsimb/groups/imb-bioinfocf/projects/cfb_internal/imbforge/dnaseq_module_test/NGSpipe2go/modules/" // adjust to your projects needs
+MODULE_FOLDER="project_folder/NGSpipe2go/modules/" // adjust to your projects needs
 
 load MODULE_FOLDER + "DNAseq/essential.vars.groovy"
 load MODULE_FOLDER + "DNAseq/tool.locations.groovy"
