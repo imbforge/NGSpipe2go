@@ -16,4 +16,4 @@ SHINYREPS_GATKhc_SUFFIX=".HC.vcf.gz.log"	//extension given to the GATK Haplotype
 SHINYREPS_GATKvarianteval=QC + "/GATK_varianteval" // location of GATK variantEval results
 SHINYREPS_GATKvarianteval_SUFFIX=".report"	//extension given to the GATK VariantEval output files
 SHINYREPS_RES_GATKhc_SUFFIX=".HC.vcf.gz" // extension of the GATK HaplotypeCaller output files
-
+SHINYREPS_TOOL_VERSIONS = PROJECT + "/NGSpipe2go/modules/DNAseq/tool.versions.groovy" // where the tool version listed
