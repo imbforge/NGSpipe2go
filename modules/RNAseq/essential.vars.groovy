@@ -1,11 +1,11 @@
-ESSENTIAL_PROJECT="/fsimb/groups/imb-bioinfocf/projects/soshnikova/imb_soshnikova_2015_06_dzama_RNA_Seq_REANALYSIS"
-ESSENTIAL_STAR_REF="/fsimb/groups/imb-bioinfocf/common-data/star_genomes/Mus_musculus/UCSC/mm9/star2.4.2a_noGTF/"
-ESSENTIAL_GENESGTF="/fsimb/groups/imb-bioinfocf/common-data/annotation/mm9/gencode.vM1.annotation.gtf"
-ESSENTIAL_GENESBED="/fsimb/groups/imb-bioinfocf/common-data/annotation/mm9/mm9_UCSC_knownGene.bed"
+ESSENTIAL_PROJECT="/project/"
+ESSENTIAL_STAR_REF="/annotation/mm9/star_genome"
+ESSENTIAL_GENESGTF="/annotation/mm9/gencode.vM1.annotation.gtf"
+ESSENTIAL_GENESBED="/annotation/mm9/mm9_UCSC_knownGene.bed"
 ESSENTIAL_FEATURETYPE="gene_type" //gencode uses gene_type; ensemble uses gene_biotype
 ESSENTIAL_SAMPLE_PREFIX=""
 ESSENTIAL_PAIRED="no"           // paired end design
-ESSENTIAL_STRANDED="no"         // strandness: no|yes|reverse
+ESSENTIAL_STRANDED="reverse"    // strandness: no|yes|reverse
 ESSENTIAL_ORG="mouse"           // UCSC organism
 ESSENTIAL_DB="mm9"              // UCSC assembly version
 ESSENTIAL_READLENGTH=50         // added for STAR version > 2.4.1a
