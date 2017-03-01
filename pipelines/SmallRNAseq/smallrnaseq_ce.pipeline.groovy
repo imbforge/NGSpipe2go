@@ -36,6 +36,9 @@ load MODULE_FOLDER + "SmallRNAseq/filter_smRNA_classes.vars.groovy"
 load MODULE_FOLDER + "SmallRNAseq/subread.module.groovy"
 load MODULE_FOLDER + "SmallRNAseq/subread.vars.groovy"
 
+load MODULE_FOLDER + "SmallRNAseq/htseqcount.module.groovy"
+load MODULE_FOLDER + "SmallRNAseq/htseqcount.vars.groovy"
+
 load MODULE_FOLDER + "SmallRNAseq/bamindexer.module.groovy"
 
 load MODULE_FOLDER + "SmallRNAseq/maping_stats.module.groovy"
@@ -76,6 +79,13 @@ run {
       [ FastQC, Cutadapt + FastQQualityFilter + FilterDuplicates + TrimUMIs ] +
    "%.deduped_barcoded.trimmed.fastq.gz" *
       [ FastQC, CountReadLengths, Bowtie_se + [ BAMindexer ] ] +
-   "%.bam" * [ FilterRNAClasses ] +
+   "%.bam" * 
+   		[ FilterRNAClasses +
+   		"%.bam" * 
+   			[ HTseqCount.using(GTF: ESSENTIAL_GENES),
+   			  HTseqCount.using(GTF: ESSENTIAL_TRANSPOSONS) ], SplitReadStrands + 
+   		"%sense.bam" * [Bam2bw] 
+   		] +
    SubReadCount + CountNonStrutReads
 }
+
