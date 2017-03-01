@@ -6,5 +6,6 @@ GO_Enrichment_UNIV="univ=express"
 GO_Enrichment_TYPE="type=gene_name" 
 GO_Enrichment_CATEGORY="plotCategory=5"
 GO_Enrichment_OUTDIR="out=" + RESULTS + "/GO_Analysis"
+GO_Enrichment_CORES="cores=" + Integer.toString(ESSENTIAL_THREADS) // number of cores to use
 GO_Enrichment_EXTRA=""
 
