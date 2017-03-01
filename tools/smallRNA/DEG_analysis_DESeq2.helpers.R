@@ -325,6 +325,22 @@ addTargetInfo <- function(res, target_file){
 }
 
 
+addWormbBaseAnnotations <- function(res){
+  library("biomaRt")
+  wormbase <- useMart(biomart = "parasite_mart", host = "parasite.wormbase.org")
+  wormbase <- useDataset(mart = wormbase, dataset = "wbps_gene")
+
+  bio <- getBM(
+    attributes = c("wbps_gene_id", "wormbase_gseq", "external_gene_id", "transcript_biotype"), 
+    filters="wbps_gene_id", 
+    values=deseq_res$wormbase_gene, 
+    mart=wormbase)
+  setDT(bio)
+  merge(res, bio, by.x="wormbase_gene", by.y="wbps_gene_id", all.x=TRUE)
+  return(res)
+}
+
+
 saveResults <- function(res, base_name, dir="reports/") {
   res_out <- as.data.frame(res)
   res_out <- data.frame(
