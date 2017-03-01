@@ -44,8 +44,9 @@ type <- parseArgs(args, "type=", "gene_name") # type of key to be converted into
 plotCategory <- parseArgs(args, "plotCategory=", 5, "as.numeric") # number of category to be shown in the barplot
 out <- parseArgs(args,"out=", "GO_Analysis") # output directory
 
-runstr <- "Call with: Rscript goEnrichment.R [rData=DESeq2.RData] [log2Fold=2] [pvalue=0.01] [orgDb=org.Hs.eg.db] 
-[univ=all|express] [type=gene_name|ensembl_id] [plotCategory=5] [out=GO_Analysis] "
+runstr <- paste("Call with: Rscript goEnrichment.R rData=<DESeq2.RData> [log2Fold=2]",
+                "[pvalue=0.01] [orgDb=org.Hs.eg.db] [univ=all|express] [type=gene_name|ensembl_id]",
+                "[plotCategory=5] [out=GO_Analysis]")
 if (!is.numeric(log2Fold)) stop("log2 foldchange not numeric. Run with:\n",runstr)
 if (!is.numeric(pvalue)) stop("pvalue not numeric. Run with:\n", runstr)
 if (!is.numeric(plotCategory)) stop("plotCategory not numeric. Run with:\n",runstr)
@@ -53,8 +54,8 @@ if (!require(orgDb, character.only=TRUE)) stop ("Annotation DB", orgDb, " not in
 if(!file.exists(out)) dir.create(out) 
 
 
-runstr <- paste("Call with: Rscript goEnrichment.R [rData=",rData,"] [log2Fold=",log2Fold, "] [pvalue=",pvalue,"] 
-                [orgDb=",orgDb,"] [univ=",univ,"] [plotCategory=",plotCategory,"] [type=",type,"] [out=",out,"]")
+runstr <- paste0("Called with: Rscript goEnrichment.R rData=", rData, " log2Fold=", log2Fold, " pvalue=", pvalue,
+                 "orgDb=", orgDb," univ=", univ," plotCategory=", plotCategory," type=", type," out=", out)
 cat(runstr)
 
 ##
