@@ -9,13 +9,14 @@ ESSENTIAL_PROJECT="."
 ESSENTIAL_BOWTIE_REF="/fsimb/groups/imb-kettinggr/genomes/Caenorhabditis_elegans/Ensembl/WBcel235/Sequence/BowtieIndex/genome"
 ESSENTIAL_GENOME_REF="/fsimb/groups/imb-kettinggr/genomes/Caenorhabditis_elegans/Ensembl/WBcel235/Sequence/BowtieIndex/genome.fa"
 // vars for piRNA analysis
-ESSENTIAL_GENESGTF="/fsimb/groups/imb-kettinggr/genomes/Caenorhabditis_elegans/Ensembl/WBcel235/Annotation/Genes/genes.gtf"
+ESSENTIAL_GENES="/fsimb/groups/imb-kettinggr/genomes/Caenorhabditis_elegans/Ensembl/WBcel235/Annotation/Genes/genes.gtf"
 ESSENTIAL_FEATURES="/fsimb/groups/imb-kettinggr/genomes/Caenorhabditis_elegans/Ensembl/WBcel235/Annotation/Genes/genes.gtf"
+ESSENTIAL_TRANSPOSONS="/fsimb/groups/imb-kettinggr/genomes/Caenorhabditis_elegans/Ensembl/WBcel235/Annotation/Genes/c_elegans.WS235.transposons.gtf"
 ESSENTIAL_BIOTYPES_TABLE="/fsimb/groups/imb-kettinggr/genomes/Caenorhabditis_elegans/Ensembl/WBcel235/Annotation/Genes/wormbaseGeneID2biotype.txt"
 // read size to keep (added 8 bp to account for barcodes)
 MIN_LENGTH=26
 MAX_LENGTH=38
-ESSENTIAL_STRANDED="yes"
+ESSENTIAL_STRANDED="no"
 ESSENTIAL_PAIRED="no"
 ESSENTIAL_THREADS=4
 ESSENTIAL_MISMATCHES=0

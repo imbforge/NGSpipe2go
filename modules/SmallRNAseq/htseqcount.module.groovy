@@ -7,7 +7,9 @@ HTseqCount = {
    bpipe_version: "tested with bpipe 0.9.9 beta_1",
    author: "Antonio Domingues"
 
-   output.dir  = HTSEQCOUNT_OUTDIR
+   def EXP = GTF.split("/")[-1].replaceAll(".gtf", "")
+   output.dir  = HTSEQCOUNT_OUTDIR + "/" + EXP
+   
    def HTSEQCOUNT_FLAGS = HTSEQCOUNT_FILE    + " " +
                           HTSEQCOUNT_MODE + " " +
                           HTSEQCOUNT_EXTRA    + " "
@@ -24,6 +26,7 @@ HTseqCount = {
       HTSEQCOUNT_FLAGS = "-s reverse " + HTSEQCOUNT_FLAGS
    }
 
+
    // run the chunk
    transform(".bam") to (".counts") {
       exec """
@@ -35,7 +38,7 @@ HTseqCount = {
          echo \$(htseq-count 2>&1 | grep version) 1>&2 ;
          echo '/VERSION INFO' 1>&2 ;
 
-         htseq-count $HTSEQCOUNT_FLAGS $input $HTSEQCOUNT_GENESGTF > $output 2> ${output.prefix}_htseqcountlog.stderr
+         htseq-count $HTSEQCOUNT_FLAGS $input $GTF > $output 2> ${output.prefix}_htseqcountlog.stderr
 
       ""","HTseqCount"
    }
