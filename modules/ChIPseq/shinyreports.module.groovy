@@ -50,6 +50,7 @@ shinyReports = {
 			echo "SHINYREPS_MACS2_LOG=${SHINYREPS_MACS2_LOG}"         >> $output &&
 			echo "SHINYREPS_PREFIX=${SHINYREPS_PREFIX}"   >> $output &&
 			echo "SHINYREPS_PLOTS_COLUMN=${SHINYREPS_PLOTS_COLUMN}" >> $output &&
+            echo "SHINYREPS_PEAK_ANNOTATION=${SHINYREPS_PEAK_ANNOTATION}" >> $output &&
             echo "SHINYREPS_TOOL_VERSIONS=${SHINYREPS_TOOL_VERSIONS}" >> $output
 		""","shinyReports"
 	}

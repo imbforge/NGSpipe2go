@@ -39,8 +39,9 @@ shinyReports = {
 			echo "SHINYREPS_GATKhc_SUFFIX=${SHINYREPS_GATKhc_SUFFIX}"     >> $output &&
 			echo "SHINYREPS_GATKvarianteval=${SHINYREPS_GATKvarianteval}"           >> $output &&
 			echo "SHINYREPS_GATKvarianteval_SUFFIX=${SHINYREPS_GATKvarianteval_SUFFIX}"       >> $output &&
-			echo "SHINYREPS_GATKhc_SUFFIX=${SHINYREPS_GATKhc_SUFFIX}"       >> $output
-			
+			echo "SHINYREPS_GATKhc_SUFFIX=${SHINYREPS_GATKhc_SUFFIX}"       >> $output &&
+			echo "SHINYREPS_TOOL_VERSIONS=${SHINYREPS_TOOL_VERSIONS}" >> $output 
+
 		""","shinyReports"
 	}
 }

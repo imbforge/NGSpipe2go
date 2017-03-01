@@ -18,10 +18,13 @@ VariantCallHC = {
         // usage parameters https://www.broadinstitute.org/gatk/gatkdocs/org_broadinstitute_gatk_tools_walkers_haplotypecaller_HaplotypeCaller.php
         
         exec """
-            export TOOL_DEPENDENCIES=$TOOL_DEPENDENCIES &&
-            source ${TOOL_JAVA}/env.sh                  &&
-        
-            java -Djava.io.tmpdir=\$TMP -jar $TOOL_GATK/GenomeAnalysisTK.jar -T HaplotypeCaller -nct $GATK_THREADS -R $GATK_BWA_REF --dbsnp $GATK_KNOWN_VARIANTS -I $input -o $output
+            module load jdk/${JAVA_VERSION} &&
+
+            if [ -n "\$LSB_JOBID" ]; then
+				export TMPDIR=/jobdir/\${LSB_JOBID};
+			fi                                       &&
+
+            java -Djava.io.tmpdir=$TMPDIR -jar ${TOOL_GATK}/GenomeAnalysisTK.jar -T HaplotypeCaller -nct $GATK_THREADS -R $GATK_BWA_REF --dbsnp $GATK_KNOWN_VARIANTS -I $input -o $output
         ""","VariantCallHC"
     }
 }

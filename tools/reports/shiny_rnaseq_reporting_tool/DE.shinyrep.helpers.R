@@ -72,11 +72,7 @@ DEhelper.DESeq2.corr <- function() {
 
 ## DEhelper.MAplot: MA plots
 DEhelper.DESeq2.MAplot <- function(i=1, fdr=.01) {
-     plotMA(res[[i]], main=conts[i, 1])    
-#    x <- mapply(function(res, cont) {
-#        plotMA(res, main=cont)
-#        invisible(0)
-#    }, res, conts[, 1], SIMPLIFY=FALSE)
+     plotMA(res[[i]], main=conts[i, 1], alpha=fdr)
 }
 
 ## DEhelper.DEgenes: show the DE results
@@ -517,10 +513,12 @@ DEhelper.strandspecificity <- function(){
     strandspecifity <- lapply(filelist, read.table, sep=":", skip=3, header=FALSE, row.names=1, blank.lines.skip=TRUE)
     strandspecifity <- do.call(cbind, strandspecifity)
     samplenames <- basename(filelist)
-    samplenames <- gsub(SHINYREPS_PREFIX, "", samplenames)
+    if(!is.na(SHINYREPS_PREFIX)) { 
+	samplenames <- gsub(SHINYREPS_PREFIX, "", samplenames)
+    }
     samplenames <- gsub("_inferexperiment.txt", "", samplenames)
     colnames(strandspecifity) <- samplenames 
-    rownames(strandspecifity) <- c("sense", "antisense", "other") 
+    rownames(strandspecifity) <- c("other", "sense", "antisense") 
     kable(t(strandspecifity), output=F, align=c("l"))
 }
 

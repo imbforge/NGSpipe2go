@@ -18,19 +18,14 @@ BWA_pe = {
     
 	transform(".read_1.fastq.gz", ".read_2.fastq.gz") to(".bam") {
         exec """
-            export TOOL_DEPENDENCIES=$TOOL_DEPENDENCIES &&
-			source ${TOOL_BWA}/env.sh &&
-			source ${TOOL_SAMTOOLS}/env.sh &&
-            
-			SAMPLE_NAME=\$(basename $output.prefix.prefix) &&
+            module load bwa &&
+            module load samtools && 
+			
+            SAMPLE_NAME=\$(basename $output.prefix.prefix) &&
 
 			PLATFORM="genomics" &&
 			
-			echo 'VERSION INFO'  1>&2 ;
-			echo \$(${TOOL_BWA}/bwa 2>&1 | grep Version | cut -d' ' -f2) 1>&2 ;
-			echo '/VERSION INFO' 1>&2 ;
-						
-			${TOOL_BWA}/bwa mem $BWA_FLAGS -R \"@RG\\tID:\${SAMPLE_NAME}\\tSM:\${SAMPLE_NAME}\\tPL:illumina\\tLB:\${SAMPLE_NAME}\\tPU:\${PLATFORM}\" $BWA_REF $input1 $input2 | samtools view ${SAMTOOLS_VIEW_FLAGS} - | samtools sort ${SAMTOOLS_SORT_FLAGS} -T \${TMP}/\${SAMPLE_NAME} -  > ${output} &&
+			bwa mem $BWA_FLAGS -R \"@RG\\tID:\${SAMPLE_NAME}\\tSM:\${SAMPLE_NAME}\\tPL:illumina\\tLB:\${SAMPLE_NAME}\\tPU:\${PLATFORM}\" $BWA_REF $input1 $input2 | samtools view ${SAMTOOLS_VIEW_FLAGS} - | samtools sort ${SAMTOOLS_SORT_FLAGS} -T \${TMP}/\${SAMPLE_NAME} -  > ${output} &&
 			
 			samtools flagstat ${output} 1>&2
         ""","BWA_pe"
@@ -55,19 +50,15 @@ BWA_se = {
     
 	transform(".fastq.gz") to(".bam") {
         exec """
-            export TOOL_DEPENDENCIES=$TOOL_DEPENDENCIES &&
-			source ${TOOL_BWA}/env.sh &&
-			source ${TOOL_SAMTOOLS}/env.sh &&
             
+            module load bwa &&
+            module load samtools &&
+
 			SAMPLE_NAME=\$(basename $output.prefix.prefix) &&
 
 			PLATFORM="genomics" &&
 			
-			echo 'VERSION INFO'  1>&2 ;
-			echo \$(${TOOL_BWA}/bwa 2>&1 | grep Version | cut -d' ' -f2) 1>&2 ;
-			echo '/VERSION INFO' 1>&2 ;
-						
-			${TOOL_BWA}/bwa mem $BWA_FLAGS -R \"@RG\\tID:\${SAMPLE_NAME}\\tSM:\${SAMPLE_NAME}\\tPL:illumina\\tLB:\${SAMPLE_NAME}\\tPU:\${PLATFORM}\" $BWA_REF $input | samtools view ${SAMTOOLS_VIEW_FLAGS} - | samtools sort ${SAMTOOLS_SORT_FLAGS} -T \${TMP}/\${SAMPLE_NAME} -  > ${output} &&
+			bwa mem $BWA_FLAGS -R \"@RG\\tID:\${SAMPLE_NAME}\\tSM:\${SAMPLE_NAME}\\tPL:illumina\\tLB:\${SAMPLE_NAME}\\tPU:\${PLATFORM}\" $BWA_REF $input | samtools view ${SAMTOOLS_VIEW_FLAGS} - | samtools sort ${SAMTOOLS_SORT_FLAGS} -T \${TMP}/\${SAMPLE_NAME} -  > ${output} &&
 			
 			samtools flagstat ${output} 1>&2
         ""","BWA_se"

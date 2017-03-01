@@ -69,29 +69,9 @@ Sample names end with .HC (HaplotypeCaller) and .UG (UnifiedGenotyper).
 cat(VARhelper.GATKvarianteval(),sep="\n")
 ```
 
-## Used tools and versions for this analysis
-
-```{r ToolVersions_paragraph, echo=F,results='asis',error=F,warning=F,message=F}
-
-# this section requires an init() that loads the location to the *_LOG variables 
-
-table.content <- data.frame(  tool=c(
-									  "FastQC",
-									  "BWA",
-									  "Picard",
-									  "GATK UnifiedGenotyper",
-									  "GATK HaplotypeCaller"
-									  ),
-							  version=c(
-									  Toolhelper.VersionReporter("FastQC", SHINYREPS_FASTQC_LOG),
-									  Toolhelper.VersionReporter("BWA",    SHINYREPS_BWA_LOG),
-									  Toolhelper.VersionReporter("Picard", SHINYREPS_MARKDUPS_LOG),
-									  Toolhelper.VersionReporter("GATK UnifiedGenotyper", SHINYREPS_GATKug_LOG),
-									  Toolhelper.VersionReporter("GATK HaplotypeCaller",  SHINYREPS_GATKhc_LOG)
-									  )
-						   )
-kable(table.content)
-
+##Used tools and versions for this analysis##
+```{r ToolVersions_paragraph, echo=F,results='asis', error=F, warning=F, message=F}
+cat(Toolhelper.ToolVersions(), sep="\n")
 ```
 
 </div>
