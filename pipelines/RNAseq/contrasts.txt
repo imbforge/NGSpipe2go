@@ -1,1 +1,6 @@
-KOvsWT=(KO-WT)
+Id2vsEpCAM=(Id2-EpCAM)
+Id2vsLgr5=(Id2-Lgr5)
+Id2vsId2Lgr5=(Id2-Id2Lgr5)
+EpCAMvsLgr5=(EpCAM-Lgr5)
+EpCAMvsId2Lgr5=(EpCAM-Id2Lgr5)
+Lgr5vsId2Lgr5=(Lgr5-Id2Lgr5)
