@@ -119,7 +119,7 @@ prepareCountMatrix <- function(dir="./"){
 exludeNonStructuralReads <- function(mat, annotation){
   bio <- read.table(annotation,
      sep="\t",
-     header=T,
+     header=FALSE,
      stringsAsFactors=FALSE
   )
   colnames(bio) <- c("wormbase_gene", "gene_biotype")
