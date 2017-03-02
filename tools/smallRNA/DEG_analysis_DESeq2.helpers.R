@@ -290,12 +290,13 @@ performQC <- function(dds=dds, groups, base_name, dir="reports/figure/"){
 }
 
 
-plotFancyMA <- function(res, base_name, dir="reports/figure/"){
-  up <- sum(res$padj < 0.1 & res$log2FoldChange > 0, na.rm=TRUE)
-  down <- sum(res$padj < 0.1 & res$log2FoldChange < 0, na.rm=TRUE)
+plotFancyMA <- function(res, base_name, dir="reports/figure/", fdr=0.01){
+  up <- sum(res$padj < fdr & res$log2FoldChange > 0, na.rm=TRUE)
+  down <- sum(res$padj < fdr & res$log2FoldChange < 0, na.rm=TRUE)
   x_pos <- max(res@listData$baseMean) * 0.7
+  tit <- paste("Differentially expressed genes\nFDR =", fdr)
   pdf(paste0(dir, base_name, ".MAplot.pdf"))
-  plotMA(res, main="DESeq2", ylim=c(-5,5))
+  plotMA(res, main=tit, ylim=c(-5,5))
   text(x=x_pos, y=2, labels=up, col="red", cex=1.5)
   text(x=x_pos, y=-2, labels=down, col="red", cex=1.5)
   dev.off()
