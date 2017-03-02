@@ -350,7 +350,7 @@ addWormbBaseAnnotations <- function(res){
   wormbase <- useMart(biomart = "parasite_mart", host = "parasite.wormbase.org")
   wormbase <- useDataset(mart = wormbase, dataset = "wbps_gene")
   bio <- getBM(
-    attributes = c("wbps_gene_id", "wormbase_gseq", "external_gene_id", "transcript_biotype"), 
+    attributes = c("wbps_gene_id", "wormbase_gseq", "external_gene_id", "gene_biotype"), 
     filters="wbps_gene_id", 
     values=res$wormbase_gene, 
     mart=wormbase)
@@ -359,7 +359,7 @@ addWormbBaseAnnotations <- function(res){
   idx <- match(res$wormbase_gene, bio$wbps_gene_id)
   res$gene_id <- bio$external_gene_id[ idx ]
   res$wormbase_gseq <- bio$wormbase_gseq[ idx ]
-  res$biotype <- bio$transcript_biotype[ idx ]
+  res$biotype <- bio$gene_biotype[ idx ]
   return(res)
 }
 
