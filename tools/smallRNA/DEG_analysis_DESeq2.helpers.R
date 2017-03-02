@@ -116,6 +116,23 @@ prepareCountMatrix <- function(dir="./"){
 }
 
 
+createBiotypesTable <- function(mat){
+  library("biomaRt")
+  
+  tab <- data.frame(wormbase_gene = rownames(mat))
+  wormbase <- useMart(biomart = "parasite_mart", host = "parasite.wormbase.org")
+  wormbase <- useDataset(mart = wormbase, dataset = "wbps_gene")
+  bio <- getBM(
+    attributes = c("wbps_gene_id", "gene_biotype"), 
+    filters="wbps_gene_id", 
+    values=tab$wormbase_gene, 
+    mart=wormbase)
+  idx <- match(tab$wormbase_gene, bio$wbps_gene_id)
+  tab$biotype <- bio$gene_biotype[ idx ]
+  return(tab)
+}
+
+
 exludeNonStructuralReads <- function(mat, annotation){
   bio <- read.table(annotation,
      sep="\t",
