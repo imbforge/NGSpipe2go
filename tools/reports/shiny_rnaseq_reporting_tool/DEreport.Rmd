@@ -1,5 +1,5 @@
 ---
-title: "SHINYREPS_PROJECT"
+title: "imb_soshnikova_2015_06_dzama_RNA_Seq_REANALYSIS"
 output:
   html_document:
     toc: true
@@ -153,39 +153,36 @@ for(i in 1:nrow(conts)) {
 	cat(kable(genes[1:25, cols], row.names=T, align="r"), sep="\n")	# show only the top 25 genes
 	cat("", fill=T)
 
-
     # GO Enrichment Plot
     cat("#### GO Enrichment plot", fill=T)
+
     bar <- paste0( SHINYREPS_GO_ENRICHMENT, "/", gsub("=.*", "", conts[i,1]),"_GO_Barplot.png")
+    network <- paste0(SHINYREPS_GO_ENRICHMENT, "/", gsub("=.*", "", conts[i, 1]), "_GO_network.png")
+    GOtable <- paste0(SHINYREPS_GO_ENRICHMENT, "/", gsub("=.*", "", conts[i, 1]), "_GO_Enrichment.csv")
+
+    # if there are GO enrichment results (the barplot was created)
     if(file.exists(bar)) {
-    cat("Gene Ontology enrichment barplot of the differentially expressed genes", fill=T)
-    cat("![GO_Analysis img](", bar, ")",fill=T)
-    cat("\n", fill=T)
-    
-    # GO enrichment network 
-    network <- paste0(SHINYREPS_GO_ENRICHMENT, "/", gsub("=.*", "", conts[i,1]), "_GO_network.png")
-    cat("Gene Ontology enrichment map of the differentially expressed genes",fill=T)
-    cat("![GO_Analysis img](", network,")",fill=T)
-    cat("\n", fill=T)
-   
-    # and GO enrichment table
-     GOtable <- paste0(SHINYREPS_GO_ENRICHMENT, "/", gsub("=.*", "",conts[i,1]),"_GO_Enrichment.csv")
-     cat("Gene Ontology enrichment table of the differentially expressed gene. The table shows the enriched biological proccesses \n",fill=T)
-     enrich <- read.csv(file=GOtable)
-     cols <- c("ID","Description","GeneRatio","BgRatio","pvalue","p.adjust","qvalue","geneID")
-     r <- min(10,nrow(enrich))
-     enrich <- as.data.frame(enrich)
-     if(nchar(enrich$geneID)>10){
-     enrich$geneID <- paste0(substr(enrich$geneID, 0, 35),"...")
-     } 
-     cat(kable(enrich[1:r,cols], row.names=T, align="r"), sep="\n") # show only the top min or top 10 biological processes
-      cat("\n", fill=T)
-     } else {
-      cat("no GO enrichment result available",fill=T)
-       cat("\n", fill=T)
+
+        # GO enriched terms in a barplot
+        cat("Gene Ontology enrichment barplot of the differentially expressed genes", fill=T)
+        cat("![GO_Analysis img](", bar, ")\n", fill=T)
+        
+        # network of GO enriched terms
+        cat("Gene Ontology enrichment map of the differentially expressed genes", fill=T)
+        cat("![GO_Analysis img](", network, ")\n", fill=T)
+       
+        # and table of OG enriched terms
+        cat("Gene Ontology enrichment table of the differentially expressed gene. The table shows the enriched biological proccesses:\n", fill=T)
+        enrich  <- read.csv(file=GOtable)
+        cols    <- c("ID", "Description", "GeneRatio", "BgRatio", "pvalue", "p.adjust", "qvalue", "geneID")
+        r       <- min(10, nrow(enrich))
+        enrich  <- as.data.frame(enrich)
+        enrich$geneID <- ifelse(nchar(enrich$geneID) > 10, paste0(substr(enrich$geneID, 0, 35), "..."), enrich$geneID) # shorten long lines
+        cat(kable(enrich[1:r, cols], row.names=T, align="r"), sep="\n") # show only the top min or top 10 biological processes
+        cat("\n", fill=T)
+    } else {
+        cat("no GO enrichment result available\n", fill=T)
     }
-
-
 }
 ```
 

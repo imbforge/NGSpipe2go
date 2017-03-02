@@ -5,7 +5,7 @@ filbowtie2unique = {
 		bpipe_version: "tested with bpipe 0.9.8.7",
 		author: "Nastasja Kreim"
 
-	output.dir = BOWTIE2_MAPPED
+	output.dir = FILBOWTIE2UNIQUE_MAPPED
 	
 	transform(".bam") to (".unique.bam") {
 		exec """
@@ -15,7 +15,7 @@ filbowtie2unique = {
 				export TMPDIR=/jobdir/\${LSB_JOBID};
 			fi                                          &&
 			
-			samtools view ${input} | grep -v XS | samtools view -bhSu -T $BOWTIE2_GENOME - | samtools sort -@ $BOWTIE2_SAMTOOLS_THREADS -T $TMPDIR/\$(basename $output.prefix) -o ${output} -
+			samtools view ${input} | grep -v XS | samtools view -bhSu -T $FILBOWTIE2UNIQUE_GENOME - | samtools sort $FILBOWTIE2UNIQUE_SAMTOOLS_THREADS -T $TMPDIR/\$(basename $output.prefix) -o ${output} -
 		""","filbowtie2unique"
 	}
 }
