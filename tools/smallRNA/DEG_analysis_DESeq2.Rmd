@@ -36,13 +36,9 @@ lapply(
 
 
 ```{r input data}
-tab <- "featureCounts_summary.txt"
-
 annotation <- "/home/adomingu/imb-kettinggr/genomes/Caenorhabditis_elegans/Ensembl/WBcel235/Annotation/Genes/wormbaseGeneID2biotype.txt"
 
 target_file <- '~/imb-kettinggr/adomingues/projects/imb_ketting_2014_14_almeida_smallRNA_celegans/data/annotations_targets/22G/all_targets.txt'
-
-orgDB <- org.Ce.eg.db
 
 directory <- "./"
 ```
@@ -81,7 +77,10 @@ base_name <- "all_reads_and_treatments"
 countdata_sub <- selectSamples(countdata_m, c(smRNAclass))
 dim(countdata_sub)
 dds <- runDESeq(countdata_sub, "N2")
+treatments <- unique(as.character(colData(dds)$treatment))
+cat("\n", fill=T)
 knitr::kable(colData(dds))
+cat("\n", fill=T)
 ```
 
 
@@ -114,7 +113,7 @@ There are many classes of _C. elegans_ small RNAs which can be enriched with dif
 ## Untreated samples
 
 ```{r DifferentialExpression_untreated, echo=F, results='asis', error=F, warning=F, message=F}
-for (treatment in c("untreated", "oxid", "TAP")){
+for (treatment in treatments){
   # subsection
   cat("\n", fill=T)
   cat("### QC", treatment, fill=T)  
@@ -132,9 +131,10 @@ for (treatment in c("untreated", "oxid", "TAP")){
     lib_sizes <- colData(dds)$sizeFactor
   }
 
-  cat("A brief summary of the samples analysed:\n")
+  cat("A brief summary of the samples analysed:", fill=T)
+  cat("\n", fill=T)
   print(knitr::kable(col_data))
-
+  cat("\n", fill=T)
   res <- results(dds)
 
   # ==========================================================================
@@ -188,7 +188,7 @@ for (treatment in c("untreated", "oxid", "TAP")){
   plotFancyMA(res, base_name)
 
   res <- addGeneSymbol(res)
-  res <- addWormbBaseAnnotations(res, annotation)
+  res <- addWormbBaseAnnotations(res)
   res <- addTargetInfo(res, target_file)
 
   saveResults(res, base_name)
@@ -206,7 +206,26 @@ for (treatment in c("untreated", "oxid", "TAP")){
 
 ## 21U reads
 
-```{r DifferentialExpression_21U, echo=F, results='asis', error=F, warning=F, message=F}
+```{r echo=F, results='asis', error=F, warning=F, message=F}
+cl <- c("oxid", "untreated")
+n_conds <- length(
+  grep(
+    paste(cl, collapse="|"),
+    treatments,
+    ignore.case = TRUE)
+  )
+if (n_conds < 1){
+  do_something <- FALSE
+  cat("\n", fill=T)
+  cat("The library treatments in this experiment are not adequate for an analysis of this RNA class.", paste(cl, collapse=" or "), "were expected.", fill=T)
+  cat("\n", fill=T)
+} else {
+  do_something <- TRUE
+}
+
+```
+
+```{r DifferentialExpression_21U, eval=do_something, echo=F, results='asis', error=F, warning=F, message=F}
 for (treatment in c("oxid", "untreated")){
   # subsection
   cat("\n", fill=T)
@@ -219,9 +238,10 @@ for (treatment in c("oxid", "untreated")){
   dds <- runDESeq(countdata_sub, "N2")
   col_data <- as.data.frame(colData(dds))
 
-  cat("A brief summary of the samples analysed:\n")
+  cat("A brief summary of the samples analysed:", fill=T)
+  cat("\n", fill=T)
   print(knitr::kable(col_data))
-
+  cat("\n", fill=T)
   res <- results(dds)
 
   # ==========================================================================
@@ -293,8 +313,33 @@ for (treatment in c("oxid", "untreated")){
 
 ## 22G reads
 
-```{r DifferentialExpression_22G, echo=F, results='asis', error=F, warning=F, message=F}
-for (treatment in c("TAP")){
+```{r echo=F, results='asis', error=F, warning=F, message=F}
+cl <-  c("TAP", "rpph")
+n_conds <- length(
+  grep(
+    paste(cl, collapse="|"),
+    treatments,
+    ignore.case = TRUE)
+  )
+if (n_conds < 1){
+  do_something <- FALSE
+  cat("\n", fill=T)
+  cat("The library treatments in this experiment are not adequate for an analysis of this RNA class.", paste(cl, collapse=" or "), "were expected.", fill=T)
+  cat("\n", fill=T)
+} else {
+  do_something <- TRUE
+}
+
+```
+
+
+```{r DifferentialExpression_22G, eval=do_something, echo=F, results='asis', error=F, warning=F, message=F}
+treat <- treatments[grepl(
+  paste(c("TAP", "Rpph"), collapse="|"),
+  treatments,
+  ignore.case = TRUE)]
+
+for (treatment in treat){
   # subsection
   cat("\n", fill=T)
   cat("### QC", treatment, fill=T)  
@@ -306,9 +351,10 @@ for (treatment in c("TAP")){
   dds <- runDESeq(countdata_sub, "N2")
   col_data <- as.data.frame(colData(dds))
 
-  cat("A brief summary of the samples analysed:\n")
+  cat("A brief summary of the samples analysed:", fill=T)
+  cat("\n", fill=T)
   print(knitr::kable(col_data))
-
+  cat("\n", fill=T)
   res <- results(dds)
 
   # ==========================================================================
@@ -380,7 +426,27 @@ for (treatment in c("TAP")){
 
 ## 26G reads
 
-```{r DifferentialExpression_26G, echo=F, results='asis', error=F, warning=F, message=F}
+```{r echo=F, results='asis', error=F, warning=F, message=F}
+cl <- c("oxid", "untreated")
+n_conds <- length(
+  grep(
+    paste(cl, collapse="|"),
+    treatments,
+    ignore.case = TRUE)
+  )
+if (n_conds < 1){
+  do_something <- FALSE
+  cat("\n", fill=T)
+  cat("The library treatments in this experiment are not adequate for an analysis of this RNA class.", paste(cl, collapse=" or "), "were expected.", fill=T)
+  cat("\n", fill=T)
+} else {
+  do_something <- TRUE
+}
+
+```
+
+
+```{r DifferentialExpression_26G, eval=do_something, echo=F, results='asis', error=F, warning=F, message=F}
 for (treatment in c("oxid", "untreated")){
   # subsection
   cat("\n", fill=T)
@@ -399,9 +465,10 @@ for (treatment in c("oxid", "untreated")){
     col_data <- as.data.frame(colData(dds))
   }
 
-  cat("A brief summary of the samples analysed:\n")
+  cat("A brief summary of the samples analysed:", fill=T)
+  cat("\n", fill=T)
   print(knitr::kable(col_data))
-
+  cat("\n", fill=T)
   res <- results(dds)
 
   # ==========================================================================
@@ -470,6 +537,7 @@ for (treatment in c("oxid", "untreated")){
 }
 ```
 
+# Session info
 
 ```{r session}
 sessionInfo()

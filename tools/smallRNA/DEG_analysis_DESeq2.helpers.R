@@ -154,10 +154,7 @@ runDESeq <- function(mat=countdata_sub, control="N2", size_factors=NULL){
   # returns DESeq2 object
   samples <- colnames(mat)
   conds <- factor(
-    gsub(
-       "(^\\w+)_\\w+_r\\d+_\\w+.\\w+", "\\1",
-         colnames(mat)
-     )
+    stringr::str_sub(colnames(mat), 1,2)
   )
 
   replicates <- factor(
@@ -229,10 +226,10 @@ performQC <- function(dds=dds, groups, base_name, dir="reports/figure/"){
      clustering_distance_rows=sampleDists,
      clustering_distance_cols=sampleDists,
      col=colors)
-
-  pdf(paste0(dir, base_name, ".pdf"))
+  cat("\n", fill=T)
+  # pdf(paste0(dir, base_name, ".pdf"))
   plotDispEsts(dds)
-
+  cat("\n", fill=T)
   pheatmap(
      log2.norm.counts,
      cluster_rows=FALSE,
@@ -240,7 +237,7 @@ performQC <- function(dds=dds, groups, base_name, dir="reports/figure/"){
      cluster_cols=TRUE,
      annotation_col=df
      )
-
+  cat("\n", fill=T)
   nudge <- position_nudge(y = 1.5)
   # p1 <- plotPCA(rld, intgroup=c("treatment")) +
   #    ggtitle(smRNAclass) +
@@ -261,8 +258,10 @@ performQC <- function(dds=dds, groups, base_name, dir="reports/figure/"){
      ggtitle(base_name) +
      xlab(paste0("PC1: ",percentVar[1],"% variance")) +
      ylab(paste0("PC2: ",percentVar[2],"% variance")) 
+  cat("\n", fill=T)
   print(p2)
-  dev.off()
+  cat("\n", fill=T)
+  # dev.off()
 }
 
 
@@ -279,7 +278,6 @@ plotFancyMA <- function(res, base_name, dir="reports/figure/"){
   text(x=x_pos, y=2, labels=up, col="red", cex=1.5)
   text(x=x_pos, y=-2, labels=down, col="red", cex=1.5)
 }
-
 
 
 addGeneSymbol <- function(res, orgDB=org.Ce.eg.db){
@@ -312,6 +310,23 @@ addBiotype <- function(res, annotation){
   return(res)
 }
 
+addTransposonInfo <- function(res, annotation){
+  if(length(grep("wormbase_gene", colnames(res))) == 0) {
+      res$wormbase_gene <-rownames(res)
+    } 
+  bio <- read.table(annotation,
+     sep="\t",
+     header=T,
+     stringsAsFactors=FALSE
+  )
+  
+  idx <- match(res$wormbase_gene, bio$WB.Transposon.ID)
+  res$wormbase_gseq <- bio$Sequence.parent[ idx ]
+  res$Family <- bio$Family[ idx ]
+  # res$Remark <- bio$Remark[ idx ]
+  return(res)
+}
+
 addTargetInfo <- function(res, target_file){
   targets <- read.delim(target_file, header = TRUE, stringsAsFactors=FALSE)
   targets <- aggregate(targets[2], targets[-2],
@@ -327,16 +342,24 @@ addTargetInfo <- function(res, target_file){
 
 addWormbBaseAnnotations <- function(res){
   library("biomaRt")
+  
+  if(length(grep("wormbase_gene", colnames(res))) == 0) {
+      res$wormbase_gene <-rownames(res)
+    } 
+    
   wormbase <- useMart(biomart = "parasite_mart", host = "parasite.wormbase.org")
   wormbase <- useDataset(mart = wormbase, dataset = "wbps_gene")
-
   bio <- getBM(
     attributes = c("wbps_gene_id", "wormbase_gseq", "external_gene_id", "transcript_biotype"), 
     filters="wbps_gene_id", 
-    values=deseq_res$wormbase_gene, 
+    values=res$wormbase_gene, 
     mart=wormbase)
-  setDT(bio)
-  merge(res, bio, by.x="wormbase_gene", by.y="wbps_gene_id", all.x=TRUE)
+  # setDT(bio)
+  # merge(res, bio, by.x="wormbase_gene", by.y="wbps_gene_id", all.x=TRUE)
+  idx <- match(res$wormbase_gene, bio$wbps_gene_id)
+  res$gene_id <- bio$external_gene_id[ idx ]
+  res$wormbase_gseq <- bio$wormbase_gseq[ idx ]
+  res$biotype <- bio$transcript_biotype[ idx ]
   return(res)
 }
 
