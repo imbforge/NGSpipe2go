@@ -133,12 +133,20 @@ createBiotypesTable <- function(mat){
 }
 
 
-exludeNonStructuralReads <- function(mat, annotation){
-  bio <- read.table(annotation,
-     sep="\t",
-     header=FALSE,
-     stringsAsFactors=FALSE
-  )
+excludeNonStructuralReads <- function(
+  mat,
+  annotation,
+  type=c("df", "file")
+  ){
+  if(type == "file"){
+    bio <- read.table(annotation,
+       sep="\t",
+       header=FALSE,
+       stringsAsFactors=FALSE
+    )
+  } else {
+    bio <- annotation
+  }
   colnames(bio) <- c("wormbase_gene", "gene_biotype")
   exclude_bio <- c("miRNA", "piRNA", "rRNA", "tRNA", "snoRNA", "snRNA")
   row_keep <- subset(bio, !(bio$gene_biotype %in% exclude_bio))$wormbase_gene

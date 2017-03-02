@@ -36,11 +36,9 @@ lapply(
 
 
 ```{r input data}
-annotation <- "/home/adomingu/imb-kettinggr/genomes/Caenorhabditis_elegans/Ensembl/WBcel235/Annotation/Genes/wormbaseGeneID2biotype.txt"
-
 target_file <- '~/imb-kettinggr/adomingues/projects/imb_ketting_2014_14_almeida_smallRNA_celegans/data/annotations_targets/22G/all_targets.txt'
-
 directory <- "./"
+
 ```
 
 
@@ -52,9 +50,14 @@ dim(countdata)
 ```
 
 ```{r select_biotypes, results="hide", include=FALSE}
+annotation <- createBiotypesTable(countdata)
 #exclude mi_pi_r_t_sn_sno_RNAs
 ## biotype:
-countdata_m <- exludeNonStructuralReads(countdata, annotation)
+countdata_m <- excludeNonStructuralReads(
+  countdata,
+  annotation,
+  type="df"
+  )
 dim(countdata_m)
 
 ## remove genes with very counts for performance purposes
