@@ -12,8 +12,8 @@ miRDeep2Mapper = {
 		def OUTPUTLOG_MAIN = output2.prefix
 
 		exec """
-			export TOOL_DEPENDENCIES=$TOOL_DEPENDENCIES &&
-			source ${TOOL_MIRDEEP2}/env.sh &&
+
+            module load mirdeep2/${MIRDEEP2_VERSION} &&
 
 			if [ ! -d ${TMP} ]; then
                                 mkdir -p ${TMP};

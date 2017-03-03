@@ -10,8 +10,8 @@ miRDeep2 = {
 	transform(".arf", ".fa") to (".tmp") {
 
 		exec """
-			export TOOL_DEPENDENCIES=$TOOL_DEPENDENCIES &&
-			source ${TOOL_MIRDEEP2}/env.sh &&
+
+            module load mirdeep2/${MIRDEEP2_VERSION} &&
  
 			mkdir -p $output.dir &&
 

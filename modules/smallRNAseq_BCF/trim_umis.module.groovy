@@ -11,14 +11,10 @@ TrimUMIs = {
 	transform(".fastq.gz") to (".trimmed.fastq.gz") {
 
 		exec """
-			export TOOL_DEPENDENCIES=$TOOL_DEPENDENCIES &&
-			source ${TOOL_SEQTK}/env.sh &&
 
-		        echo 'VERSION INFO'  1>&2 &&
-		        echo \$(seqtk 2>&1 | grep 'Version' | cut -d' ' -f2) 1>&2 &&
-		        echo '/VERSION INFO' 1>&2 &&
+            module load seqtk/${SEQTK_VERSION} &&
 
-		        seqtk trimfq -b ${LEFT_TRIM} -e ${RIGHT_TRIM} $input | gzip > $output
+		    seqtk trimfq -b ${LEFT_TRIM} -e ${RIGHT_TRIM} $input | gzip > $output
 
 		""","TrimUMIs"
 	}

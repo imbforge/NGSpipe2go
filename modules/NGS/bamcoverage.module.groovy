@@ -13,7 +13,7 @@ bamCoverage = {
 
 	transform(".bam") to(".bw") {
 		exec """
-			module load deepTools/$DEEPTOOLS_VERSION  &&
+			module load deepTools/${DEEPTOOLS_VERSION}  &&
 			if [ -n "\$LSB_JOBID" ]; then
 				export TMPDIR=/jobdir/\${LSB_JOBID};
 			fi;

@@ -17,13 +17,9 @@ Cutadapt = {
 		 def SAMPLENAME = input.prefix.prefix
 	
      		 exec """
-         		export TOOL_DEPENDENCIES=$TOOL_DEPENDENCIES &&
-			source ${TOOL_CUTADAPT}/env.sh &&
 
-			echo 'VERSION INFO'  1>&2 &&
-			cutadapt --version 1>&2 &&
-			echo '/VERSION INFO' 1>&2 &&
-			
+            module load cutadapt/${CUTADAPT_VERSION} &&
+        
 			SAMPLENAME_BASE=\$(basename ${SAMPLENAME}) &&
 			
 			cutadapt $ADAPTER_SEQUENCE -O $MINIMUM_OVERLAP -m $MINIMUM_LENGTH_KEEP -M $MAXIMUM_LENGTH_KEEP -o $output1 $input 2>&1 >> ${CUTADAPT_LOGDIR}/\${SAMPLENAME_BASE}.cutadapt.log &&

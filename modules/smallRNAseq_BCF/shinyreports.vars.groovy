@@ -31,5 +31,5 @@ SHINYREPS_SUBREAD=RESULTS + "/subread-count" // location of the subread counts
 SHINYREPS_SUBREAD_SUFFIX=".raw_readcounts.tsv.summary" // the extension of the subread stats file
 SHINYREPS_SUBREAD_LOG=LOGS + "/SubreadCount"	//where the Subread/FeatureCounts logs lie
 SHINYREPS_PLOTS_COLUMN=3L    //number of columns to splits the plot grids (dupradar, genebodycov...). Min=2L. L=integer in R
-
+SHINYREPS_TOOL_VERSIONS= PROJECT + "/NGSpipe2go/modules/smallRNAseq_BCF/tool.versions.groovy" //where the tool versions listed
 

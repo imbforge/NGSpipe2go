@@ -21,17 +21,21 @@ res <- list()
 for (i in 1:length(logs)){
    log <- logs[i]
    processed.reads <- system(
-      paste("grep \"Processed reads\"", log, "| awk '{print $3}'"), intern=TRUE
+      paste("grep \"Total reads processed\"", log, "| awk '{print $4}'"), intern=TRUE
       )
+   processed.reads <- gsub(",", "", processed.reads)
    trimmed.reads <- system(
-      paste("grep \"Trimmed reads\"", log, "| awk '{print $3}'"), intern=TRUE
+      paste("grep \"Reads with adapters\"", log, "| awk '{print $4}'"), intern=TRUE
       )
+   trimmed.reads <- gsub(",", "", trimmed.reads)
    tooshort.reads <- system(
-      paste("grep \"Too short reads\"", log, "| awk '{print $4}'"), intern=TRUE
+      paste("grep \"Reads that were too short\"", log, "| awk '{print $6}'"), intern=TRUE
       )
+   tooshort.reads <- gsub(",", "", tooshort.reads)
    toolong.reads <- system(
-      paste("grep \"Too long reads\"", log, "| awk '{print $4}'"), intern=TRUE
+      paste("grep \"Reads that were too long\"", log, "| awk '{print $6}'"), intern=TRUE
       )
+   toolong.reads <- gsub(",", "", toolong.reads)
 res[[log]] <- as.numeric(c(processed.reads,trimmed.reads,tooshort.reads,toolong.reads))
 
 }
