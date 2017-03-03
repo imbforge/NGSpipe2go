@@ -369,6 +369,7 @@ addTargetInfo <- function(res, target_file){
 addWormbBaseAnnotations <- function(res){
   library("biomaRt")
   
+  res <- data.frame(res)  
   if(length(grep("wormbase_gene", colnames(res))) == 0) {
       res$wormbase_gene <-rownames(res)
     } 
