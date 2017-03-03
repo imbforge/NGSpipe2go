@@ -386,7 +386,7 @@ addWormbBaseAnnotations <- function(res){
   idx <- match(res$wormbase_gene, bio$wbps_gene_id)
   res$gene_id <- bio$external_gene_id[ idx ]
   res$wormbase_gseq <- bio$wormbase_gseq[ idx ]
-  res$biotype <- bio$gene_biotype[ idx ]
+  res$gene_biotype <- bio$gene_biotype[ idx ]
   return(res)
 }
 
