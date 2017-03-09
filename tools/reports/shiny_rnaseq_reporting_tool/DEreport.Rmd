@@ -1,5 +1,5 @@
 ---
-title: "empty project"
+title: "SHINYREPS_PROJECT"
 output:
   html_document:
     toc: true
