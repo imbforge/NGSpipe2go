@@ -16,9 +16,20 @@ library("knitr")        # for markdown output
 library("plotly")
 library("GeneOverlap")
 
-##
-## loadGlobalVars: read configuration from bpipe vars
-##
+#' loadGlobalVars: read configuration from bpipe vars
+#'
+#' @param f - a file defining multiple variables for reporting to run. 
+#'
+#' @return A set of variables that are mentioned in input file, e.g.
+#'         SHINYREPS_PROJECT <- "/fsimb/groups/imb-bioinfocf/projects/butter/imb_butter_2016_10_alina_rnaseq_u2os_oe/"
+#'         SHINYREPS_ORG <- "human"
+#'         SHINYREPS_DB <- "hg38"
+#'              
+#' @description File content should be:
+#'              SHINYREPS_PROJECT=/fsimb/groups/imb-bioinfocf/projects/butter/imb_butter_2016_10_alina_rnaseq_u2os_oe/
+#'              SHINYREPS_ORG=human
+#'              SHINYREPS_DB=hg38
+#'              
 loadGlobalVars <- function(f="shinyReports.txt") {
 
     # read in the conf file
@@ -37,7 +48,22 @@ loadGlobalVars <- function(f="shinyReports.txt") {
 ##
 ## Some generic functions
 ##
-# shorten: if a text string is longer than certain length, shorten by showing the first and last characters
+
+#'
+#' shorten: if a text string is longer than certain length, shorten by showing the first and last characters
+#'
+#' @param x - a character vector
+#' @param max.len - a numeric vector of length 1 indicating the maximal length of a string to be tolerated
+#' @param ini - a numeric vector of length 1 indicating how many characters at the beginning of the string should be conserved 
+#' @param end - a numeric vector of length 1 indicating how many characters at the end of the string should be conserved 
+#'
+#' @return a character vector
+#'
+#' @examples long_string <- "This_is_a_very_long_string_and_should_be_shortened"
+#'           short_string <- shorten(long_string, max.len = 20, ini = 5, end = 9)
+#'           print(short_string)
+#'           ## [1] "This_..._shortened"
+#'           
 shorten <- function(x, max.len=40, ini=20, end=15) {
     l <- nchar(x)
     if(l > max.len) paste(substr(x, 1, ini), substr(x, (l-end), l), sep="...") else x
@@ -46,7 +72,18 @@ shorten <- function(x, max.len=40, ini=20, end=15) {
 ##
 ## DESeq2 DE analysis
 ##
-## DEhelper.MDS
+
+#' Create MDS plot from DESeq2 object. 
+#'
+#' @param dds - a DESeq2 analysis S4 object
+#' @param rld - ???
+#'
+#' @return MDS plot
+#'
+#' @description This function will use a DESeq2 differential analysis object to create an MDS plot,
+#'              which is labelled non-overlapping gene names.
+#' @return A printed plot object.
+#' 
 DEhelper.DESeq2.MDS <- function() {
     p <- plotPCA(rld, intgroup=colnames(colData(dds))[1])
     print(p + geom_text_repel(aes(label=rownames(colData(dds)))) + theme_bw())
