@@ -3,77 +3,134 @@ library('ggplot2')
 library('dplyr')
 library('scales')
 library('RColorBrewer')
+library("scales")
 
-theme_set(theme_bw(16))
-theme_white <- function() {
-     theme_update(
-      panel.grid.major = element_blank(),
-      panel.grid.minor = element_blank()
-      )
- }
-theme_white()
+
+# source("https://raw.githubusercontent.com/koundy/ggplot_theme_Publication/master/R/ggplot_theme_Publication.R")
+theme_Publication <- function(base_size=14, base_family="Helvetica") {
+      library(grid)
+      library(ggthemes)
+      (theme_foundation(base_size=base_size, base_family=base_family)
+       + theme(plot.title = element_text(face = "bold",
+                                         size = rel(1.2), hjust = 0.5),
+               text = element_text(),
+               panel.background = element_rect(colour = NA),
+               plot.background = element_rect(colour = NA),
+               panel.border = element_rect(colour = NA),
+               axis.title = element_text(face = "bold",size = rel(1)),
+               axis.title.y = element_text(angle=90,vjust =2),
+               axis.title.x = element_text(vjust = -0.2),
+               axis.text = element_text(), 
+               axis.line.x = element_line(colour="black"),
+               axis.line.y = element_line(colour="black"),
+               axis.ticks = element_line(),
+               panel.grid.major = element_line(colour="#f0f0f0"),
+               panel.grid.minor = element_blank(),
+               legend.key = element_rect(colour = NA),
+               legend.position = "bottom",
+               legend.direction = "horizontal",
+               legend.key.size= unit(0.2, "cm"),
+               legend.spacing = unit(0, "cm"),
+               legend.title = element_text(face="italic"),
+               plot.margin=unit(c(10,5,5,5),"mm"),
+               strip.background=element_rect(colour="#f0f0f0",fill="#f0f0f0"),
+               strip.text = element_text(face="bold"),
+               plot.caption=element_text(size=12)
+       ))
+      
+}
+
+
+scale_fill_Publication <- function(...){
+      library(scales)
+      discrete_scale("fill","Publication",manual_pal(values = c("#386cb0","#fdb462","#7fc97f","#ef3b2c","#662506","#a6cee3","#fb9a99","#984ea3","#ffff33")), ...)
+      
+}
+
+
+scale_colour_Publication <- function(...){
+      library(scales)
+      discrete_scale("colour","Publication",manual_pal(values = c("#386cb0","#fdb462","#7fc97f","#ef3b2c","#662506","#a6cee3","#fb9a99","#984ea3","#ffff33")), ...)
+      
+}
+
 
 dir.create(file.path("figure"), showWarnings = FALSE)
 
-len_files <- list.files(pattern='readlength.txt')
-len_l <- list()
 
-for (len_file in len_files){
-   exp <- unlist(strsplit(basename(len_file), '\\.'))[1]
-   print(exp)
-   counts_tmp <- fread(len_file) %>%
-      setnames(c('Count', 'Length'))
-   counts_tmp$Sample <- exp
-   len_l[[exp]] <- counts_tmp
+readWithFileName <- function(file_path) {
+  dt <- fread(file_path)
+  dt$file <- gsub(
+    "^([^.]*).*", "\\1",
+    basename(file_path)
+    )
+  return(dt)
 }
 
-len <- data.frame(do.call(rbind, len_l))
+directory <- "./"
+files <- list.files(directory, '.readlength.txt', recursive=TRUE)
 
-colourCount = length(unique(len$Sample))
-getPalette = colorRampPalette(brewer.pal(9, "Set1"))
+counts <- lapply(files[!grepl('family|class', files)], readWithFileName)
+counts <- rbindlist(counts, use.names=TRUE, fill=FALSE, idcol=NULL)
+
+len <- counts %>%
+   splitstackshape:::cSplit('file', '_', drop=TRUE, direction='wide')  %>%
+   setnames(c('Count', 'Length', 'Genotype', 'DevStage', 'Replicate', 'Treatment')) %>%
+   mutate(Sample=paste(Genotype, Replicate, sep="_")) %>%
+   setDT
+len
+
+## generate colors for each replicate sample:
+## http://stackoverflow.com/questions/13353213/gradient-of-n-colors-ranging-from-color-1-and-color-2
+# cols3 <- c("#c75f65", "#949b48", "#9475c5")
+# cols3 <- c("#aaa04a", "#8a5ab6", "#8d7779")
+cols3 <- c("#386cb0","#fdb462","#7fc97f","#ef3b2c","#662506","#a6cee3","#fb9a99","#984ea3","#ffff33")[1:2]
+cols <- c()
+for (col in cols3){
+colfunc <- colorRampPalette(c(col, "white"))
+   cols <- c(
+            cols,
+            colfunc(15)[c(1,5,8)]
+            )
+}
 
 
-p1 <- ggplot(len, aes(x=factor(Length), y=Count, color=Sample, fill=Sample)) +
-   geom_line(aes(group=Sample)) + geom_point() +
+ggplot(len, aes(x=factor(Length), y=Count, color=Sample)) +
+   geom_line(aes(group=Sample)) + 
+   geom_point() +
    scale_y_continuous(labels = comma) +
-   ggtitle('Read length for all mapped reads') +
-   xlab('Read length (bp)') +
-   ylab('Read count')
-ggsave('figure/AllReadsLengthDistribution.pdf', p1, width=15, height=7)
-ggsave('figure/AllReadsLengthDistribution.png', p1, width=15, height=7)
+   scale_color_manual(values=cols) +
+   facet_grid(Treatment ~ ., scales="free_y") +
+   labs(
+      x='Read length (bp)',
+      y='Number of Reads',
+      caption=paste('Source:', basename(getwd()))) +
+   # xlab('Read length (bp)') +
+   # ylab('Number of Reads') +
+   theme_Publication() 
+ggsave('figure/AllReadsLengthDistribution.pdf')
+ggsave('figure/AllReadsLengthDistribution.png')
 
-p2 <- ggplot(len, aes(x=factor(Length), y=Count, color=Sample, fill=Sample)) +
-   geom_line(aes(group=Sample)) + geom_point() +
-   facet_grid(Sample ~ ., scales="free_y") +
+## calculate percentage
+
+len <- len %>%
+   group_by(Sample, Treatment) %>%
+   mutate(Perc=Count/sum(Count)*100)
+
+# len %>%
+#    group_by(Sample, Treatment) %>%
+#    summarize(Total=sum(Perc))
+
+ggplot(len, aes(x=factor(Length), y=Perc, color=Sample)) +
+   geom_line(aes(group=Sample)) + 
+   geom_point() +
    scale_y_continuous(labels = comma) +
-   ggtitle('Read length for all mapped reads') +
-   xlab('Read length (bp)') +
-   ylab('Read count')
-ggsave('figure/AllReadsLengthDistributionSample.pdf', p2, width=15, height=7)
-ggsave('figure/AllReadsLengthDistributionSample.png', p2, width=15, height=7)
-
-# ggplot(len, aes(x=factor(Length), y=Count, color=Sample, fill=Sample)) +
-#    geom_line(aes(group=Sample)) + geom_point() +
-#    scale_y_continuous(labels = comma) +
-#    facet_grid(IP ~ ., scales="free_y") +
-#    scale_colour_manual(values=getPalette(colourCount)) +
-#    ggtitle('Read length for all mapped reads')
-# ggsave('figure/AllReadsLengthDistributionByIP.pdf', width=15, height=7)
-# ggsave('figure/AllReadsLengthDistributionByIP.png', width=15, height=7)
-
-# ggplot(len, aes(x=factor(Length), y=Count, color=Genotype, fill=Genotype)) +
-#    geom_line(aes(group=Sample)) + geom_point() +
-#    scale_y_continuous(labels = comma) +
-#    facet_grid(IP ~ ., scales="free_y")
-# ggsave('figure/AllReadsLengthDistributionByIP2.pdf', width=15, height=7)
-# ggsave('figure/AllReadsLengthDistributionByIP2.png', width=15, height=7)
-
-
-# ggplot(len, aes(x=factor(Length), y=Count, color=IP, fill=IP)) +
-#    geom_line(aes(group=Sample)) + geom_point() +
-#    scale_y_continuous(labels = comma) +
-#    facet_grid(Genotype ~ ., scales="free_y") +
-#    scale_colour_manual(values=getPalette(colourCount)) +
-#    ggtitle('Read length for all mapped reads')
-# ggsave('figure/AllReadsLengthDistributionByGenotype.pdf', width=15, height=7)
-# ggsave('figure/AllReadsLengthDistributionByGenotype.png', width=15, height=7)
+   scale_color_manual(values=cols) +
+   facet_grid(Treatment ~ ., scales="free_y") +
+   labs(
+      x='Read length (bp)',
+      y='% of Reads',
+      caption=paste('Source:', basename(getwd()))) +
+   theme_Publication()
+ggsave('figure/PercentageReadsLengthDistribution.pdf')
+ggsave('figure/PercentageReadsLengthDistribution.png')
