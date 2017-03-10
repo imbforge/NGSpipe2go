@@ -4,7 +4,7 @@ CountNonStrutReads = {
    constraints: "needs a table with gene names and biotypes",
    author: "António Domingues"
 
-   output.dir = TRACKS
+   output.dir = COUNT_NONSTRUCT_OUTDIR
 
    produce("normlization_factors.txt"){
       exec """
