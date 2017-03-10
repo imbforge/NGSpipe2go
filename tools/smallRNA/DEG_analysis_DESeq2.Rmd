@@ -46,6 +46,13 @@ directory <- "./"
 
 ```{r prepare_counts, results="hide", include=FALSE}
 countdata <- prepareCountMatrix()
+write.table(
+  countdata,
+  file="htseq_counts.matrix.txt",
+  sep="\t",
+  quote=FALSE,
+  row.names=TRUE,
+  col.names=TRUE)
 dim(countdata)
 ```
 
@@ -298,7 +305,7 @@ for (treatment in c("oxid", "untreated")){
   plotFancyMA(res, base_name)
 
   res <- addGeneSymbol(res)
-  res <- addBiotype(res, annotation)
+  res <- addWormbBaseAnnotations(res)
   res <- addTargetInfo(res, target_file)
 
   saveResults(res, base_name)
@@ -411,7 +418,7 @@ for (treatment in treat){
   plotFancyMA(res, base_name)
 
   res <- addGeneSymbol(res)
-  res <- addBiotype(res, annotation)
+  res <- addWormbBaseAnnotations(res)
   res <- addTargetInfo(res, target_file)
 
   saveResults(res, base_name)
@@ -525,7 +532,7 @@ for (treatment in c("oxid", "untreated")){
   plotFancyMA(res, base_name)
 
   res <- addGeneSymbol(res)
-  res <- addBiotype(res, annotation)
+  res <- addWormbBaseAnnotations(res)
   res <- addTargetInfo(res, target_file)
 
   saveResults(res, base_name)
