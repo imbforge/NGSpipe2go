@@ -159,8 +159,14 @@ selectSamples <- function(mat, sample_names){
   # given a vector with conditions, will select cols that match
   if (length(sample_names) > 1){
     # only those with both strings:
-    cols <- sapply(sample_names, function(x) grep(x, colnames(mat)))
-    mat <- mat[, Reduce(intersect, cols)]
+    cols <- unique(
+        c(
+          sapply(
+              sample_names, function(x) grep(x, colnames(mat))
+              )
+          )
+      )
+    mat <- mat[, cols]
   } else {
     mat <- mat[, grepl(sample_names, colnames(mat))]
   }
