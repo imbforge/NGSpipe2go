@@ -24,6 +24,9 @@ load MODULE_FOLDER + "SmallRNAseq/trim_umis.module.groovy"
 load MODULE_FOLDER + "SmallRNAseq/count_read_lengths.vars.groovy"
 load MODULE_FOLDER + "SmallRNAseq/count_read_lengths.module.groovy"
 
+load MODULE_FOLDER + "SmallRNAseq/plot_read_lengths.vars.groovy"
+load MODULE_FOLDER + "SmallRNAseq/plot_read_lengths.module.groovy"
+
 load MODULE_FOLDER + "SmallRNAseq/bowtie1.vars.groovy"
 load MODULE_FOLDER + "SmallRNAseq/bowtie1.module.groovy"
 
@@ -68,6 +71,9 @@ load MODULE_FOLDER + "SmallRNAseq/ping_pong_signal.vars.groovy"
 load MODULE_FOLDER + "SmallRNAseq/ping_pong_pro.module.groovy"
 load MODULE_FOLDER + "SmallRNAseq/ping_pong_pro.vars.groovy"
 
+load MODULE_FOLDER + "SmallRNAseq/repenrich.module.groovy"
+load MODULE_FOLDER + "SmallRNAseq/repenrich.vars.groovy"
+
 load MODULE_FOLDER + "SmallRNAseq/collect_plots.module.groovy"
 load MODULE_FOLDER + "SmallRNAseq/collect_plots.vars.groovy"
 
@@ -78,14 +84,13 @@ run {
 	"%.fastq.gz" *
       [ FastQC, Cutadapt + FastQQualityFilter + FilterDuplicates + TrimUMIs ] +
    "%.deduped_barcoded.trimmed.fastq.gz" *
-      [ FastQC, CountReadLengths, Bowtie_se + [ BAMindexer ] ] +
+      [ FastQC, CountReadLengths, RepEnrich, Bowtie_se + [ BAMindexer ] ] +
    "%.bam" * 
    		[ FilterRNAClasses +
    		"%.bam" * 
-   			[ HTseqCount.using(GTF: ESSENTIAL_GENES),
-   			  HTseqCount.using(GTF: ESSENTIAL_TRANSPOSONS) ], SplitReadStrands + 
+   			[ HTseqCount ], SplitReadStrands + 
    		"%sense.bam" * [Bam2bw] 
    		] +
-   SubReadCount + CountNonStrutReads
+   SubReadCount + CountNonStrutReads + PlotReadLengths
 }
 
