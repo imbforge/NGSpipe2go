@@ -76,27 +76,68 @@ shorten <- function(x, max.len=40, ini=20, end=15) {
 #' Create MDS plot from DESeq2 object. 
 #'
 #' @param dds - a DESeq2 analysis S4 object
-#' @param rld - ???
+#' @param rld - a rlog transformed DESeq2 object
 #'
 #' @return MDS plot
 #'
 #' @description This function will use a DESeq2 differential analysis object to create an MDS plot,
 #'              which is labelled non-overlapping gene names.
-#' @return A printed plot object.
+#' 
+#' @return A printed plot (ggplot2) object.
+#' 
+#' @examples Taken from DE_DeSeq2.R
+#'           dds <- DESeqDataSetFromHTSeqCount(sampleTable=targets,
+#'                                             directory=cwd, 
+#'                                             design=as.formula(mmatrix))
+#'           dds <- DESeq(dds)
+#'           rld <- rlog(dds)
+#'           # rld and dds are taken from environment
+#'           DEhelper.DESeq2.MDS()
 #' 
 DEhelper.DESeq2.MDS <- function() {
     p <- plotPCA(rld, intgroup=colnames(colData(dds))[1])
     print(p + geom_text_repel(aes(label=rownames(colData(dds)))) + theme_bw())
 }
 
-## DEhelper.cluster: Heatmap of top variant 'n' genes of the counts-per-milion table
+## DEhelper.cluster
+#' Heatmap of top variant 'n' genes of the counts-per-milion table.
+#'
+#' @param n - amount of transcripts/rows to be plotted
+#'            [default = 25]
+#' @param rld - rlog transformed DESeq2 object
+#'
+#' @return A plot (base plotting) object.
+#'
+#' @examples Taken from DE_DeSeq2.R
+#'           dds <- DESeqDataSetFromHTSeqCount(sampleTable=targets,
+#'                                             directory=cwd, 
+#'                                             design=as.formula(mmatrix))
+#'           dds <- DESeq(dds)
+#'           rld <- rlog(dds)
+#'           # rld is taken from environment
+#'           DEhelper.cluster(n=10)
+#'           
 DEhelper.DESeq2.cluster <- function(n=25) {
     rows <- order(apply(assay(rld), 1, sd), decreasing=TRUE)[1:n]
     hmcol  <- colorRampPalette(brewer.pal(9, "GnBu"))(100)
     heatmap.2(assay(rld)[rows, ], col=hmcol, trace="none", margin=c(10, 6), scale="none")
 }
 
-## DEhelper.corr: Heatmap of sample to sample distances
+## DEhelper.corr: 
+#' Heatmap of sample to sample distances.
+#'
+#' @param rld - rlog transformed DESeq2 object
+#' @return A plot (base plotting) object.
+#'
+#' @examples Taken from DE_DeSeq2.R
+#'           dds <- DESeqDataSetFromHTSeqCount(sampleTable=targets,
+#'                                             directory=cwd, 
+#'                                             design=as.formula(mmatrix))
+#'           dds <- DESeq(dds)
+#'           rld <- rlog(dds)
+#'           # rld is taken from environment
+#'           DEhelper.DESeq2.corr()
+#'           
 DEhelper.DESeq2.corr <- function() {
     distsRL <- dist(t(assay(rld)))
     mat <- as.matrix(distsRL)
