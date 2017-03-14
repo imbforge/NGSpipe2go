@@ -208,6 +208,7 @@ ChIPhelper.Bowtie <- function() {
           col.names=c("sample names", "all reads", "mapped (% of all)", "unmapped (% of all)", "too many map. pos. (% all)", "duplicates (% of mapped)"))
 }
 
+
 ##
 ## ChIPhelper.Fastqc: go through Fastqc output dir and create a md table with the duplication & read quals & sequence bias plots
 ##
@@ -236,6 +237,21 @@ ChIPhelper.Fastqc <- function(web=TRUE) {
     rownames(df) <- sapply(x, shorten)
     colnames(df) <- c("Duplication levels", "Read qualities", "Sequence bias")
     kable(df, output=F, align="c", format="markdown")
+}
+
+##DEhelper.insertsize: get the insertsize from the qc and display mean and sd 
+##
+DEhelper.insertsize <- function(){
+	filelist <- list.files(path=SHINYREPS_INSERTSIZE,full.names=TRUE, pattern="insertsizemetrics.tsv$")
+	insertsizes <- lapply(filelist, read.table, sep="\t", header=TRUE, nrow=1)
+	insertsizes <- do.call(rbind, insertsizes)
+	samplenames <- basename(filelist)
+	samplenames <- gsub(SHINYREPS_PREFIX, "", samplenames)
+	samplenames <- gsub("_insertsizemetrics.tsv","", samplenames)
+	rownames(insertsizes) <- samplenames 
+	insertsizes <- insertsizes[,c("MEDIAN_INSERT_SIZE","MEAN_INSERT_SIZE", "STANDARD_DEVIATION")]
+	colnames(insertsizes) <- c("Median", "Mean", "SD")
+	kable(insertsizes, output=F, align=c("l"), format="markdown")
 }
 
 ##
@@ -278,82 +294,6 @@ ChIPhelper.IPstrength<- function(web=TRUE) {
     colnames(df.names) <- rep(" ", COLUMNS)
     
     kable(as.data.frame(df.names), output=F, align="c", format="markdown")
-}
-
-##
-## ChIPhelper.peakAnnotation: go through Peak_Annotation output dir and create a md table with 
-##      the coverage plots
-##
-ChIPhelper.peakAnnotationCoverage <- function(web=TRUE) {
-  # check if peak annotation results are available
-  if(!file.exists(SHINYREPS_PEAK_ANNOTATION)){
-    return("Peak annotation results not available")  
-  }
-  
-  if(!is.integer(SHINYREPS_PLOTS_COLUMN) | SHINYREPS_PLOTS_COLUMN < 2) {
-    SHINYREPS_PLOTS_COLUMN <- 3L    # default to 3 columns
-  }
-  
-  # construct the image url from the folder contents (skip current dir .)
-  samples <- list.files(SHINYREPS_PEAK_ANNOTATION, pattern="_ChIPseq_Peaks_Coverageplot.png$")
-  COLUMNS <- min(length(samples), SHINYREPS_PLOTS_COLUMN)
-  df <- sapply(samples, function(f) {
-    paste0("![Peak_Annotation img](", SHINYREPS_PEAK_ANNOTATION, "/", basename(f), ")")
-  })
-  
-  # put sample names and output an md table of COLUMN columns
-  while(length(df) %% COLUMNS != 0) df <- c(df, "")
-  samples <- sapply(df, function(x) {
-    x <- sapply(x, function(x) gsub(paste0("^", SHINYREPS_PREFIX), "", basename(x)))
-    sapply(gsub("_ChIPseq_Peaks_Coverageplot.png)$", "", x), shorten)
-  })
-  df      <- matrix(df     , ncol=COLUMNS, byrow=T)
-  samples <- matrix(samples, ncol=COLUMNS, byrow=T)
-  
-  # add a row with the sample names
-  df.names <- matrix(sapply(1:nrow(df), function(i) { c(df[i, ], samples[i, ]) }), 
-                     ncol=COLUMNS, byrow=T)
-  colnames(df.names) <- rep(" ", COLUMNS)
-  
-  kable(as.data.frame(df.names), output=F, align="c", format="markdown")
-}
-
-##
-## ChIPhelper.peakAnnotationUpSet: go through Peak_Annotation output dir and create a md table with 
-##      the UpSet plots
-##
-ChIPhelper.peakAnnotationUpSet <- function(web=TRUE) {
-  # check if peak annotation results are available
-  if(!file.exists(SHINYREPS_PEAK_ANNOTATION)){
-    return("Peak annotation results not available")  
-  }
-  
-  if(!is.integer(SHINYREPS_PLOTS_COLUMN) | SHINYREPS_PLOTS_COLUMN < 2) {
-    SHINYREPS_PLOTS_COLUMN <- 3L    # default to 3 columns
-  }
-  
-  # construct the image url from the folder contents (skip current dir .)
-  samples <- list.files(SHINYREPS_PEAK_ANNOTATION, pattern="_ChIPseq_UpSetplot.png$")
-  COLUMNS <- min(length(samples), SHINYREPS_PLOTS_COLUMN)
-  df <- sapply(samples, function(f) {
-    paste0("![Peak_Annotation img](", SHINYREPS_PEAK_ANNOTATION, "/", basename(f), ")")
-  })
-  
-  # put sample names and output an md table of COLUMN columns
-  while(length(df) %% COLUMNS != 0) df <- c(df, "")
-  samples <- sapply(df, function(x) {
-    x <- sapply(x, function(x) gsub(paste0("^", SHINYREPS_PREFIX), "", basename(x)))
-    sapply(gsub("_ChIPseq_UpSetplot.png)$", "", x), shorten)
-  })
-  df      <- matrix(df     , ncol=COLUMNS, byrow=T)
-  samples <- matrix(samples, ncol=COLUMNS, byrow=T)
-  
-  # add a row with the sample names
-  df.names <- matrix(sapply(1:nrow(df), function(i) { c(df[i, ], samples[i, ]) }), 
-                     ncol=COLUMNS, byrow=T)
-  colnames(df.names) <- rep(" ", COLUMNS)
-  
-  kable(as.data.frame(df.names), output=F, align="c", format="markdown")
 }
 
 ##
