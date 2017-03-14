@@ -148,7 +148,7 @@ ChIPhelper.VennDiagram <- function(){
 ChIPhelper.Bowtie <- function() {
     
     # log file
-	LOG <- SHINYREPS_BOWTIE_LOG   
+    LOG <- SHINYREPS_BOWTIE_LOG
     if(!file.exists(LOG)) {
         return("Bowtie statistics not available")
     }
@@ -160,24 +160,15 @@ ChIPhelper.Bowtie <- function() {
         x <- file(paste0(LOG, "/", f))
         l <- readLines(x)
         close(x)
-
-        names = unlist(
-                  lapply(1:length(l), 
-                  function (x) sub("[^[:alpha:]]+", "", l[x] ))
-                 )
-
-
-        stats = lapply(1:length(l), 
-                     function(x){ 
-                       a = sub("^\\s+", "", l[x]); 
-                       b = sub("\\).*","\\)", a) ; 
-                       c = unlist(strsplit(b, " "))[1:2]; 
-                       d = c(c[1] , sub("[^[:digit:]]+", "", c[2])); 
-                       e = gsub(")", "", d)
-                      }
-                    )
-
-   
+        
+        stats <- sapply(c("reads processed",                    #1
+                 "reads with at least one reported alignment",  #2
+                 "reads that failed to align",                  #3
+                 "reads with alignments suppressed due to -m"), #4
+                 function(x) { 
+                     gsub("^.+: ", "", l[grep(x, l)])
+                 })
+    
         # and add the duplicates information
         f <- gsub(".bam.log", ".duprm.bam.log", f)
         dups <- if(file.exists(paste0(SHINYREPS_MARKDUPS_LOG, "/", f))) {
@@ -189,16 +180,16 @@ ChIPhelper.Bowtie <- function() {
             "not available"
         }
         
-
-        names(stats) = names
-        tmp1 = stack(stats)
-        tmp2 = subset(tmp1, ind != "")
-        tmp2$indm = paste(tmp2$ind, rep(c(1:2), length(tmp2$ind)/2, sep = ""))
-        tmp3 = subset(tmp2,values != "")
-
-        stats.return = as.character(tmp3$values)
-        names(stats.return) = tmp3$indm
-
+        stats.return <- c(
+            stats[1],                           # reads processed
+            unlist(strsplit(stats[2], " "))[1], # reads with at least one reported alignment
+            unlist(strsplit(stats[2], " "))[2], # (percentage)
+            unlist(strsplit(stats[3], " "))[1], # reads that failed to align 
+            unlist(strsplit(stats[3], " "))[2], # (percentage)
+            unlist(strsplit(stats[4], " "))[1], # reads with alignments suppressed due to -m
+            unlist(strsplit(stats[4], " "))[2]  # (percentage)
+        )
+        
         
         c(stats.return, dups)
     })
@@ -207,15 +198,14 @@ ChIPhelper.Bowtie <- function() {
     colnames(x) <- gsub(paste0("^", SHINYREPS_PREFIX), "", colnames(x))
     colnames(x) <- gsub(".bam.log$", "", colnames(x))
     df <- data.frame(sample_names=sapply(colnames(x), shorten), 
-                     input_reads=format( as.numeric(x[1, ]), big.mark=","), 
-                     paired=paste( " (", x[3, ],")", sep=""), 
-                     times0=paste( format( as.numeric(x[4, ]), big.mark=","), " (", x[5, ],")", sep=""), 
-                     time1=paste( format( as.numeric(x[6, ]), big.mark=","), " (", x[7, ], ")", sep=""), 
-                     timesg1=paste0(format(as.numeric(x[8, ]), big.mark=","), " (", x[9, ], ")", sep="")
-                     #duplicates=paste0(format(as.numeric(x[8, ]), big.mark=", "), " (", round(100 * as.numeric(x[8, ]) / as.numeric(x[2, ]), 2), "%)")
+                     input_reads=format( as.numeric(x[1, ]), big.mark=", "), 
+                     mapped=paste( format( as.numeric(x[2, ]), big.mark=", "), x[3, ], sep=" "), 
+                     failed=paste( format( as.numeric(x[4, ]), big.mark=", "), x[5, ], sep=" "), 
+                     discarded=paste( format( as.numeric(x[6, ]), big.mark=", "), x[7, ], sep=" "), 
+                     duplicates=paste0(format(as.numeric(x[8, ]), big.mark=", "), " (", round(100 * as.numeric(x[8, ]) / as.numeric(x[2, ]), 2), "%)")
                      )
     kable(df, align=c("l", "r", "r", "r", "r", "r"), output=F, format="markdown", row.names=FALSE,
-          col.names=c("sample names", "all reads", 'paired (%)', "unmapped (%)", "uniquely mapped (%)", "multiple mapped (%)"))
+          col.names=c("sample names", "all reads", "mapped (% of all)", "unmapped (% of all)", "too many map. pos. (% all)", "duplicates (% of mapped)"))
 }
 
 ##
@@ -251,6 +241,7 @@ ChIPhelper.Fastqc <- function(web=TRUE) {
 ##DEhelper.insertsize: get the insertsize from the qc and display mean and sd 
 ##
 DEhelper.insertsize <- function(){
+
 	filelist <- list.files(path=SHINYREPS_INSERTSIZE,full.names=TRUE, pattern="insertsizemetrics.tsv$")
 	insertsizes <- lapply(filelist, read.table, sep="\t", header=TRUE, nrow=1)
 	insertsizes <- do.call(rbind, insertsizes)
@@ -261,6 +252,7 @@ DEhelper.insertsize <- function(){
 	insertsizes <- insertsizes[,c("MEDIAN_INSERT_SIZE","MEAN_INSERT_SIZE", "STANDARD_DEVIATION")]
 	colnames(insertsizes) <- c("Median", "Mean", "SD")
 	kable(insertsizes, output=F, align=c("l"), format="markdown")
+
 }
 
 ##
