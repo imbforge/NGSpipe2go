@@ -1,7 +1,7 @@
 IP	IPname	INPUT	INPUTname	group
-imb_roukos_2016_04_13_CTCF_DMSO.unique.bam	CTCF_1	imb_roukos_2016_04_01_Input_DMSO.unique.bam	input_1	CTCF
-imb_roukos_2016_04_19_Top2a_DMSO.unique.bam	Top2a_1	imb_roukos_2016_04_01_Input_DMSO.unique.bam	input_1	Top2a
-imb_roukos_2016_04_25_Top2b_DMSO.unique.bam	Top2b_1	imb_roukos_2016_04_01_Input_DMSO.unique.bam	input_1	Top2b
-imb_roukos_2016_04_15_CTCF_DMSO.unique.bam	CTCF_2	imb_roukos_2016_04_03_Input_DMSO.unique.bam	input_2	CTCF
-imb_roukos_2016_04_21_Top2a_DMSO.unique.bam	Top2a_2	imb_roukos_2016_04_03_Input_DMSO.unique.bam	input_2	Top2a
-imb_roukos_2016_04_27_Top2b_DMSO.unique.bam	Top2b_2	imb_roukos_2016_04_03_Input_DMSO.unique.bam	input_2	Top2b
+KO_1.bam	KO_1	input_KO_1.bam	input_KO_1	KO
+KO_2.bam	KO_2	input_KO_2.bam	input_KO_2	KO
+KO_2.bam	KO_3	input_KO_3.bam	input_KO_3	KO
+WT_1.bam	WT_1	input_WT_1.bam	input_WT_1	WT
+WT_2.bam	WT_2	input_WT_2.bam	input_WT_2	WT
+WT_2.bam	WT_3	input_WT_3.bam	input_WT_3	WT

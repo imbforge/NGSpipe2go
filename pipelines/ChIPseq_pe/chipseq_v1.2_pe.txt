@@ -1,4 +1,4 @@
-MODULE_FOLDER="/fsimb/groups/imb-bioinfocf/projects/cfb_internal/test_projects/ChIP_seq_pe/NGSpipe2go/modules/"
+MODULE_FOLDER="/project/NGSpipe2go/modules/"
 
 load MODULE_FOLDER + "ChIPseq/essential.vars.groovy"
 load MODULE_FOLDER + "ChIPseq/tool.locations.groovy"
