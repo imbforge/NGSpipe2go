@@ -30,12 +30,8 @@ SubreadCount = {
 	// run the chunk
 	transform(".bam") to (".raw_readcounts.tsv") {
 		exec """
-			export TOOL_DEPENDENCIES=$TOOL_DEPENDENCIES &&
-			source ${TOOL_SUBREAD}/env.sh &&
-			
-			echo 'VERSION INFO'  1>&2 ;
-			echo \$(featureCounts 2>&1 | grep Version | cut -d' ' -f2) 1>&2 ;
-			echo '/VERSION INFO' 1>&2 ;
+
+            module load subread/${SUBREAD_VERSION} &&
 			
 			featureCounts $SUBREAD_FLAGS -o $output $input 2> ${output.prefix}_subreadlog.stderr
 	

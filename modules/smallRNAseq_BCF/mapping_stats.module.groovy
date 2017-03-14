@@ -9,13 +9,9 @@ MappingStats = {
 		produce(MAPPING_STATS_PLOTDIR + "/totalReads.pdf", MAPPING_STATS_PLOTDIR + "/totalReads.png") {
 
 			exec """
-				export TOOL_DEPENDENCIES=$TOOL_DEPENDENCIES &&
-				source ${TOOL_R}/env.sh &&
-				source ${TOOL_SAMTOOLS}/env.sh &&
 
-			        echo 'VERSION INFO'  1>&2 &&
-			        echo \$(Rscript --version 2>&1 | cut -d' ' -f5) 1>&2 &&
-			        echo '/VERSION INFO'  1>&2 &&
+                module load R/${R_VERSION} &&
+                module load samtools/${SAMTOOLS_VERSION} &&
 
 			 	Rscript ${MAPPING_STATS_TOOL} ${MAPPING_STATS_DATADIR} ${MAPPING_STATS_PLOTDIR} ${ESSENTIAL_SAMPLE_PREFIX}
 

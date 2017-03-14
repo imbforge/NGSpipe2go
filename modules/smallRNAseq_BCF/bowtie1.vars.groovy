@@ -1,6 +1,5 @@
 //vars for task Bowtie from catalog smallRNAseq_BCF, version 0.1
 
-BOWTIE_PATH=TOOL_BOWTIE // bowtie bin to use
 BOWTIE_THREADS=8	// threads to use
 BOWTIE_REF=ESSENTIAL_BOWTIE_REF // prefix of the bowtie reference genome
 BOWTIE_MM=1             // number of mismatches allowed

@@ -1,7 +1,8 @@
-MODULE_FOLDER="project_folder/NGSpipe2go/modules/" // adjust to your projects needs
+MODULE_FOLDER="project_folder/NGSpipe2go/modules/"  // adjust to your projects needs
 
 load MODULE_FOLDER + "smallRNAseq_BCF/essential.vars.groovy"
 load MODULE_FOLDER + "smallRNAseq_BCF/tool.locations.groovy"
+load MODULE_FOLDER + "smallRNAseq_BCF/tool.versions.groovy"
 
 load MODULE_FOLDER + "NGS/fastqc.vars.groovy"
 load MODULE_FOLDER + "NGS/fastqc.module.groovy"

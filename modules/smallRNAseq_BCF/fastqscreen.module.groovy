@@ -14,12 +14,8 @@ FastQScreen = {
 		def SAMPLENAME = output.prefix
 
 		exec """
-			export TOOL_DEPENDENCIES=$TOOL_DEPENDENCIES &&
-			source ${TOOL_FASTQSCREEN}/env.sh &&
-			
-			echo 'VERSION INFO'  1>&2 &&
-                        echo \$(fastq_screen --version | cut -d' ' -f3) 1>&2 &&
-                        echo '/VERSION INFO' 1>&2 &&
+
+            module load fastq_screen/${FASTQSCREEN_VERSION} &&
 			
 			if [ ! -e "$output.prefix" ]; then
 		                mkdir $output.prefix;
