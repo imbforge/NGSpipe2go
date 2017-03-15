@@ -173,6 +173,23 @@ DEhelper.DESeq2.MAplot <- function(i=1, fdr=.01) {
 }
 
 ## DEhelper.DEgenes: show the DE results
+#' Show the DE results ordered by adjusted pValue.
+#'
+#' @param i - iterator to select precalculated DESeq2 result of contrast from result list
+#'            [default = 1]
+#' @param res - DE Seq2 result data frame containing log2FC, pvalue, padj, gene_name, ...;
+#'              rownames(res) <- ENSEMBL gene IDs
+#'
+#' @return data frame ordered by adjusted pvalue
+#'
+#' @examples Taken from DE_DeSeq2.R
+#'           res <- lapply(conts, function(cont){
+#'              ...
+#'           })
+#'           
+#'           # res is taken from environment
+#'           DEhelper.DESeq2.DEgenes(i=2)
+#'           
 DEhelper.DESeq2.DEgenes <- function(i=1) {
     ord  <- order(-log(res[[i]]$padj), 
                    abs(res[[i]]$log2FoldChange), 
