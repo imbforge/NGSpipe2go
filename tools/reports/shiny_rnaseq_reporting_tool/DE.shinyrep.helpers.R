@@ -149,6 +149,25 @@ DEhelper.DESeq2.corr <- function() {
 }
 
 ## DEhelper.MAplot: MA plots
+#' MA plots of DESeq2 results
+#'
+#' @param i - iterator to select contrast from conts [default = 1]
+#' @param fdr - FDR cutoff [default = 0.01]
+#' @param conts - list of contrasts
+#' @param res - DE Seq2 result data frame containing log2FC, pvalue, padj, gene_name, ...;
+#'              rownames(res) <- ENSEMBL gene IDs
+#'
+#' @return MA plot with genes padj < fdr hichlighted
+#'
+#' @examples Taken from DE_DeSeq2.R
+#'           res <- lapply(conts, function(cont){
+#'              ...
+#'           })
+#'           
+#'           conts <- c("shMed12vsshNMC=(shMed12-shNMC)")
+#'           # res & conts are taken from environment
+#'           DEhelper.DESeq2.MAplot()
+#'           
 DEhelper.DESeq2.MAplot <- function(i=1, fdr=.01) {
      plotMA(res[[i]], main=conts[i, 1], alpha=fdr)
 }
