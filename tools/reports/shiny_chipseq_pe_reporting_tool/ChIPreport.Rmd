@@ -37,7 +37,7 @@ cat(ChIPhelper.Fastqc(web=F),sep="\n")
 
 ## Read mapping ##
 
-Mapping to the reference genome was done using the established NGS mapping tool Bowtie (http://bowtie-bio.sourceforge.net/index.shtml). The mapping statistics show the total number of reads delivered to the aligner ("all reads"), the number of uniquely mapping reads ("mapped"), the reads that failed to align ("unmapped"), the number of reads discarded because of mapping to multiple positions ("too many map. pos.") and the number of duplicate reads ("duplicates") amongst the uniquely mapped reads:
+Mapping to the reference genome was done using the established NGS mapping tool Bowtie2 (http://bowtie-bio.sourceforge.net/bowtie2). The mapping statistics show the total number of reads delivered to the aligner ("all reads"), the percentage of paired-end (PE) reads ("paired"), the number of PE reads which are failed to align concordantly ("unmapped"), the number of PE reads which have a unique alignment ("uniquely mapped") and the number of PE reads which are mapped to multiple places ("multiple mapped"):
 
 ```{r Bowtie_paragraph, echo=F,results='asis',error=F,warning=F,message=F}
 cat(ChIPhelper.Bowtie(),sep="\n")

@@ -12,17 +12,17 @@ shinyReports = {
 	produce("shinyReports.txt") {
 		exec """
 			
-			cp ${MODULE_FOLDER}/../tools/reports/shiny_chipseq_reporting_tool/server.R ${REPORTS}                &&
-			cp ${MODULE_FOLDER}/../tools/reports/shiny_chipseq_reporting_tool/ui.R ${REPORTS}                    &&
-			cp ${MODULE_FOLDER}/../tools/reports/shiny_chipseq_reporting_tool/ChIP.shinyrep.helpers.R ${REPORTS} &&
-			cp ${MODULE_FOLDER}/../tools/reports/shiny_chipseq_reporting_tool/bustard.pl ${REPORTS}              &&
-			cp ${MODULE_FOLDER}/../tools/reports/shiny_chipseq_reporting_tool/BustardSummary.toMD.xsl ${REPORTS} &&
-			cp ${MODULE_FOLDER}/../tools/reports/shiny_rnaseq_reporting_tool/styles.css ${REPORTS}               &&
+			cp ${MODULE_FOLDER}/../tools/reports/shiny_chipseq_pe_reporting_tool/server.R ${REPORTS}                &&
+			cp ${MODULE_FOLDER}/../tools/reports/shiny_chipseq_pe_reporting_tool/ui.R ${REPORTS}                    &&
+			cp ${MODULE_FOLDER}/../tools/reports/shiny_chipseq_pe_reporting_tool/ChIP.shinyrep.helpers.R ${REPORTS} &&
+			cp ${MODULE_FOLDER}/../tools/reports/shiny_chipseq_pe_reporting_tool/bustard.pl ${REPORTS}              &&
+			cp ${MODULE_FOLDER}/../tools/reports/shiny_chipseq_pe_reporting_tool/BustardSummary.toMD.xsl ${REPORTS} &&
+			cp ${MODULE_FOLDER}/../tools/reports/shiny_rnaseq_pe_reporting_tool/styles.css ${REPORTS}               &&
 			
 			if [ -e "${REPORTS}/DEreport.Rmd" ]; then
 				echo 'DEreport.Rmd already exists. Older copy will be kept and not overwritten';
 			else
-				cp ${MODULE_FOLDER}/../tools/reports/shiny_chipseq_reporting_tool/ChIPreport.Rmd ${REPORTS};
+				cp ${MODULE_FOLDER}/../tools/reports/shiny_chipseq_pe_reporting_tool/ChIPreport.Rmd ${REPORTS};
 			fi &&
 			
 	
