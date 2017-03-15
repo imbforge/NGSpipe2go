@@ -198,6 +198,27 @@ DEhelper.DESeq2.DEgenes <- function(i=1) {
 }
 
 ## DEhelper.DESeq2.VolcanoPlot: Volcano plots from DEseq2 results
+#' Produce volcano plots from DEseq2 results.
+#'
+#' @param i - integer, iterator to determine which contrast's DESeq2 result to plot
+#' @param fdr - float, FDR cut off of genes to be highlighted
+#' @param top - integer, count of genes to be labelled in Volcano plot
+#' @param web - boolean
+#' @param res - DE Seq2 result data frame containing log2FC, pvalue, padj, gene_name, ...;
+#'              rownames(res) <- ENSEMBL gene IDs
+#'
+#'
+#' @return ggplotly object, if web = TRUE
+#'         printed ggplot2 object, if web = FALSE
+#'
+#' @examples Taken from DE_DeSeq2.R
+#'           res <- lapply(conts, function(cont){
+#'              ...
+#'           })
+#'           
+#'           # res is taken from environment
+#'           DEhelper.DESeq2.VolcanoPlot(i = 1, fdr = 0.01, top = 20, web = FALSE)
+#'           
 DEhelper.DESeq2.VolcanoPlot <- function(i=1, fdr=.01, top=25, web=TRUE) {
     # gather results
     d <- as.data.frame(DEhelper.DESeq2.DEgenes(i))
