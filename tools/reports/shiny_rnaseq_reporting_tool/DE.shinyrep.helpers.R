@@ -247,6 +247,26 @@ DEhelper.DESeq2.VolcanoPlot <- function(i=1, fdr=.01, top=25, web=TRUE) {
 }
 
 ## DEhelper.DESeq2.ChrOverrepresentation: test if there are more genes in a chromosome than expected by chance.
+#' Test if there are more genes in a chromosome than expected by chance.
+#'
+#' @param i - integer, iterator to determine which contrast's DESeq2 result to select
+#' @param fdr_de_gene - FDR cut-off to determine differentially expressed genes
+#' @param fdr_fisher_test - FDR cut-off to determine significantly overrepresented genes on chromosome
+#' @param filter - boolean, apply fdr_fisher_test TRUE/FALSE
+#' @param res - DE Seq2 result data frame containing log2FC, pvalue, padj, gene_name, ...;
+#'              rownames(res) <- ENSEMBL gene IDs
+#'
+#' @return data frame - with biased chromosome, gene count, pvalue and Jaccard index
+#'                    - or empty if no bias is found
+#'
+#' @examples Taken from DE_DeSeq2.R
+#'           res <- lapply(conts, function(cont){
+#'              ...
+#'           })
+#'           
+#'           # res is taken from environment
+#'           table_fisher <- DEhelper.DESeq2.ChrOverrepresentation(i = 1, fdr_de_gene = 0.1, fdr_fisher_test = 0.1, filter = TRUE)
+#'           
 DEhelper.DESeq2.ChrOverrepresentation <- function(i=1, fdr_de_gene=0.1, fdr_fisher_test=0.1, filter=TRUE) {
     genes <- data.frame(res[[i]])
     chromosomes <- unique(genes$chr)
