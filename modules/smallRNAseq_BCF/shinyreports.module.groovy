@@ -55,7 +55,8 @@ shinyReports = {
 			echo "SHINYREPS_SUBREAD=${SHINYREPS_SUBREAD}"         >> $output &&
 			echo "SHINYREPS_SUBREAD_SUFFIX=${SHINYREPS_SUBREAD_SUFFIX}"  >> $output &&
 			echo "SHINYREPS_SUBREAD_LOG=${SHINYREPS_SUBREAD_LOG}"        >> $output &&
-			echo "SHINYREPS_PLOTS_COLUMN=${SHINYREPS_PLOTS_COLUMN}"      >> $output 
+			echo "SHINYREPS_PLOTS_COLUMN=${SHINYREPS_PLOTS_COLUMN}"      >> $output &&
+            echo "SHINYREPS_TOOL_VERSIONS=${SHINYREPS_TOOL_VERSIONS}"  >> $output 
 		""","shinyReports"
 	}
 }

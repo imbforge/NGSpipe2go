@@ -8,12 +8,8 @@ FastQQualityFilterStats = {
 		produce(REMOVE_LOWQUAL_PLOTDIR + "/qualityFilteredReads.pdf", REMOVE_LOWQUAL_PLOTDIR + "/qualityFilteredReads.png") {
 
 			exec """
-				export TOOL_DEPENDENCIES=$TOOL_DEPENDENCIES &&
-				source ${TOOL_R}/env.sh &&
 
-			        echo 'VERSION INFO'  1>&2 &&
-			        echo \$(Rscript --version 2>&1 | cut -d' ' -f5) 1>&2 &&
-				echo '/VERSION INFO'  1>&2 &&
+            module load R/${R_VERSION} && 
 
 			        Rscript ${QUALITY_FILTER_PLOT_TOOL} ${REMOVE_LOWQUAL_DATADIR} ${REMOVE_LOWQUAL_PLOTDIR} ${ESSENTIAL_SAMPLE_PREFIX} 
 

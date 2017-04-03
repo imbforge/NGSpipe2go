@@ -23,12 +23,8 @@ FastQQualityFilter = {
 		def SAMPLENAME = input.prefix.prefix	
 
       		exec """
-		         export TOOL_DEPENDENCIES=$TOOL_DEPENDENCIES &&
-		         source ${TOOL_FASTX}/env.sh &&
 
-		         echo 'VERSION INFO'  1>&2 &&
-		         echo \$(fastq_quality_filter -h 2>&1 | grep 'Toolkit' | cut -d' ' -f5) 1>&2 &&
-		         echo '/VERSION INFO'  1>&2 &&
+            module load fastx_toolkit/${FASTX_TOOLKIT_VERSION} &&
 
 			 SAMPLENAME_BASE=\$(basename ${SAMPLENAME}) &&
 

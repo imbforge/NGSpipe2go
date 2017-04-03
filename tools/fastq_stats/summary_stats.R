@@ -25,14 +25,17 @@ res <- list()
 for (i in 1:length(logs.cutadapt)){
    log <- logs.cutadapt[i]
    processed.reads <- system(
-      paste("grep \"Processed reads\"", log, "| awk '{print $3}'"), intern=TRUE
+      paste("grep \"Total reads processed\"", log, "| awk '{print $4}'"), intern=TRUE
       )
+   processed.reads <- gsub(",", "", processed.reads)
    trimmed.reads <- system(
-      paste("grep \"Trimmed reads\"", log, "| awk '{print $3}'"), intern=TRUE
+      paste("grep \"Reads with adapters\"", log, "| awk '{print $4}'"), intern=TRUE
       )
+   trimmed.reads <- gsub(",", "", trimmed.reads)
    tooshort.reads <- system(
-      paste("grep \"Too short reads\"", log, "| awk '{print $4}'"), intern=TRUE
+      paste("grep \"Reads that were too short\"", log, "| awk '{print $6}'"), intern=TRUE
       )
+   tooshort.reads <- gsub(",", "", tooshort.reads)
    ## Trimmed also includes the reads, which are too short and, thus, not kept. correct that.
    trimmed.reads <- as.numeric(trimmed.reads) - as.numeric(tooshort.reads)
 
