@@ -21,6 +21,7 @@ ESSENTIAL_READLENGTH=51      // actual read length in original raw data (incl. i
 ESSENTIAL_MINADAPTEROVERLAP=5 // minimal overlap with adapter
 ESSENTIAL_MINREADLENGTH=26   // remaining read length plus UMIs (2x4) 
 ESSENTIAL_UMI_LENGTH=8       // (2x4bp)
+ESSENTIAL_ADAPTER_SEQUENCE="TGGAATTCTCGGGTGCCAAGG" // needed for cutadapt adapter trimming
 
 // vars for mirDeep2
 ESSENTIAL_MATURE_MIRNA="/data/mus_musculus/gencode/release-M10_GRCm38.p4/full/annotation/miRBase_release21/mmu_mature_oneID.fa"
@@ -34,6 +35,6 @@ REPORTS=PROJECT + "/reports"
 RESULTS=PROJECT + "/results"
 PROCESSED=PROJECT + "/rawdata_processed"
 MAPPED=PROJECT + "/mapped"
-TMP="/tmp"
+TMP=PROJECT + "/tmp"
 TRACKS=PROJECT + "/tracks"
 
