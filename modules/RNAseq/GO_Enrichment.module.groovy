@@ -9,8 +9,9 @@ GO_Enrichment = {
     output.dir = GO_Enrichment_OUTDIR.replaceFirst("out=", "")
     def GO_Enrichment_FLAGS = GO_Enrichment_RDATA.replaceFirst("out=", "") + "/DE_DESeq2.RData " + 
                 GO_Enrichment_LOG2FOLD + " " + 
-                GO_Enrichment_PVALUE + " " +
+                GO_Enrichment_PADJ + " " +
                 GO_Enrichment_ORGDB + " " +
+                GO_Enrichment_ORG + " " +
                 GO_Enrichment_UNIV + " " +
                 GO_Enrichment_TYPE + " " +
                 GO_Enrichment_CATEGORY + " " +
