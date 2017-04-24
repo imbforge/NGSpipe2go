@@ -20,9 +20,9 @@ strandBigWig = {
 	transform(".bam") to(".fwd.bw", ".rev.bw") {
 		exec """
 			export TOOL_DEPENDENCIES=$TOOL_DEPENDENCIES  &&
-			module load deepTools &&
-			module load samtools &&
-			module load kentUtils &&
+			module load deepTools/DEEPTOOLS_VERSION &&
+			module load samtools/SAMTOOLS_VERSION &&
+			module load kentUtils/KENTUTILS_VERSION &&
 			if [ -n "\$LSB_JOBID" ]; then
 				export TMPDIR=/jobdir/\${LSB_JOBID};
 			fi;
@@ -30,8 +30,8 @@ strandBigWig = {
 			echo \$base &&
 			CHRSIZES=${TMPDIR}/\${base}.bam2bw.chrsizes &&
 			samtools idxstats ${input} | cut -f1-2 > \${CHRSIZES} &&
-			bamCoverage --numberOfProcessors $STRANDSPECIFICBIGWIG_CORES --filterRNAStrand $FORWARD $STRANDSPECIFICBIGWIG_OTHER -b  $input -o \${TMPDIR}/\${base}.fwd.bedgraph &&
-			bamCoverage --numberOfProcessors $STRANDSPECIFICBIGWIG_CORES --filterRNAStrand $REVERSE $STRANDSPECIFICBIGWIG_OTHER -b $input -o \${TMPDIR}/\${base}.rev.bedgraph&&
+			bamCoverage --numberOfProcessors $STRANDSPECIFICBIGWIG_CORES --filterRNAstrand $FORWARD $STRANDSPECIFICBIGWIG_OTHER -b  $input -o \${TMPDIR}/\${base}.fwd.bedgraph &&
+			bamCoverage --numberOfProcessors $STRANDSPECIFICBIGWIG_CORES --filterRNAstrand $REVERSE $STRANDSPECIFICBIGWIG_OTHER -b $input -o \${TMPDIR}/\${base}.rev.bedgraph&&
 			
 			awk 'BEGIN {OFS="\t"; FS="\t"}{print \$1,\$2, \$3,"-"\$4}' \${TMPDIR}/\${base}.rev.bedgraph > \${TMPDIR}/\${base}.rev.bedgraph_neg &&
 			mv $TMPDIR/\${base}.rev.bedgraph_neg $TMPDIR/\${base}.rev.bedgraph &&
