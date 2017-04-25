@@ -20,13 +20,13 @@ strandBigWig = {
 	transform(".bam") to(".fwd.bw", ".rev.bw") {
 		exec """
 			export TOOL_DEPENDENCIES=$TOOL_DEPENDENCIES  &&
-			module load deepTools/DEEPTOOLS_VERSION &&
-			module load samtools/SAMTOOLS_VERSION &&
-			module load kentUtils/KENTUTILS_VERSION &&
+			module load deepTools/$DEEPTOOLS_VERSION &&
+			module load samtools/$SAMTOOLS_VERSION &&
+			module load kentUtils/$KENTUTILS_VERSION &&
 			if [ -n "\$LSB_JOBID" ]; then
 				export TMPDIR=/jobdir/\${LSB_JOBID};
 			fi;
-			base=(basename $input.prefix) &&
+			base=\$(basename $input.prefix) &&
 			echo \$base &&
 			CHRSIZES=${TMPDIR}/\${base}.bam2bw.chrsizes &&
 			samtools idxstats ${input} | cut -f1-2 > \${CHRSIZES} &&
