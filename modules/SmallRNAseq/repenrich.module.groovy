@@ -1,7 +1,7 @@
 RepEnrich = {
     doc title: "Quantification of Transposons",
         desc:  "Quantifies transposon expression/targeting using RepEnrich. First does unique mapping to the genome keeping the multimapped reads in a fastq file (--max). Both the uniquely mapped and multimapping reads are then used for repEnrich. Intermediate results are removed.",
-        constraints: "Only works with compressed input. Samtools multithreaded version expected (>=0.1.19).",
+        constraints: "BedTools <= 2.23.0",
         bpipe_version: "tested with bpipe 0.9.8.7",
         author: "Antonio Domingues"
 
@@ -29,7 +29,7 @@ RepEnrich = {
         zcat $input | ${TOOL_BOWTIE}/bowtie $BOWTIE_FLAGS --max ${MULTI} $BOWTIE_REF - 2> $output1 | ${TOOL_SAMTOOLS}/samtools view -bhSu - | ${TOOL_SAMTOOLS}/samtools sort -@ $BOWTIE_THREADS - -o ${UNIQ} &&
         ${TOOL_SAMTOOLS}/samtools index ${UNIQ} &&
 
-        python ${TOOL_REPENRICH}/RepEnrich.py ${REPEAT_MASKER} $output.dir ${SAMPLE_NAME} ${REPEAT_REF} ${MULTI} ${UNIQ} --cpus ${BOWTIE_THREADS} --is_bed ${REPENRICH_BED} &&
+        python ${TOOL_REPENRICH}/RepEnrich.py ${REPEAT_MASKER} $output.dir ${SAMPLE_NAME} ${REPEAT_REF} ${MULTI} ${UNIQ} --cpus ${REPENRICH_CORES} --is_bed ${REPENRICH_BED} &&
 
         rm ${MULTI} ${UNIQ}
 
