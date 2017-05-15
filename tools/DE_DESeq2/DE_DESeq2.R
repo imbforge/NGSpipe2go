@@ -15,7 +15,7 @@
 ## contrasts=contrasts.txt  # file describing the contrasts
 ## mmatrix=~condition       # model matrix. Wrapper constrained to always use an intercept in the model
 ## gtf=gene_model.gtf       # gene model in gtf format, for rpkm calculation
-## filter=TRUE              # filter invariant genes? Always TRUE (DESeq2 default)
+## filter=TRUE              # perform automatic independent filtering of lowly expressed genes to maximise power
 ## prefix=RE                # prefix to remove from the sample name
 ## suffix=RE                # suffix to remove from the sample name (usually _readcounts.tsv)
 ## base=                    # base level for comparisons
@@ -56,7 +56,7 @@ ftargets     <- parseArgs(args,"targets=","targets.txt")     # file describing t
 fcontrasts   <- parseArgs(args,"contrasts=","contrasts.txt") # file describing the contrasts
 mmatrix      <- parseArgs(args,"mmatrix=","~condition")      # model matrix
 gene.model   <- parseArgs(args,"gtf=","")       # gtf gene model
-filter.genes <- parseArgs(args,"filter=",TRUE,convert="as.logical") # filter invariant genes?
+filter.genes <- parseArgs(args,"filter=",TRUE,convert="as.logical") # automatic independent filtering
 pre          <- parseArgs(args,"prefix=","")    # prefix to remove from the sample name
 suf          <- parseArgs(args,"suffix=","_readcounts.tsv")    # suffix to remove from the sample name
 base         <- parseArgs(args,"base=",NA)      # base level
@@ -67,7 +67,7 @@ runstr <- "Rscript DE.DESeq2.R [targets=targets.txt] [contrasts=contrasts.txt] [
 if(!file.exists(ftargets))   stop(paste("File",ftargets,"does NOT exist. Run with:\n",runstr))
 if(!file.exists(fcontrasts)) stop(paste("File",fcontrasts,"does NOT exist. Run with:\n",runstr))
 if(!file.exists(cwd))        stop(paste("Dir",cwd,"does NOT exist. Run with:\n",runstr))
-if(is.na(filter.genes))      stop(paste("Filter (filter invariant genes) has to be either TRUE or FALSE. Run with:\n",runstr))
+if(is.na(filter.genes))      stop(paste("Filter genes has to be either TRUE or FALSE. Run with:\n",runstr))
 if(!file.exists(gene.model)) stop(paste("GTF File:", gene.model, " does NOT exist. Run with: \n", runstr))
 
 ##
@@ -126,7 +126,7 @@ res <- lapply(conts[,1],function(cont) {
     # create DESeq object
     dds <- DESeq(dds)
     colData(dds)[["group"]] <- if(!is.na(base) & any(base %in% this_targets$group)) relevel(colData(dds)[["group"]], base) else relevel(colData(dds)[["group"]], factors[2])
-    res <- results(dds, independentFiltering=filter.genes, format="DataFrame")
+    res <- results(dds, independentFiltering=filter.genes, addMLE=TRUE, format="DataFrame")
 
     # calculate quantification (RPKM if gene model provided, rlog transformed values otherwise)
     quantification <- apply(fpm(dds), 2, function(x, y) 1e3 * x / y, gene.lengths[rownames(fpm(dds))])
@@ -136,12 +136,12 @@ res <- lapply(conts[,1],function(cont) {
     res$start  <- genes$start[i]
     res$end    <- genes$end[i]
     res$strand <- genes$strand[i]
-
+    
     # write the results
-    x <- merge(res[, c("gene_name", "chr", "start", "end", "strand", "baseMean", "log2FoldChange", "padj")], quantification, by=0)
+    x <- merge(res[, c("gene_name", "chr", "start", "end", "strand", "baseMean", "log2FoldChange", "lfcMLE", "padj")], quantification, by=0)
     x <- x[order(x$padj),]
     
-    colnames(x)[which(colnames(x) %in% c("baseMean", "log2FoldChange", "padj"))] <- mcols(res)$description[match(c("baseMean", "log2FoldChange", "padj"), colnames(res))]
+    colnames(x)[which(colnames(x) %in% c("baseMean", "log2FoldChange", "lfcMLE", "padj"))] <- mcols(res)$description[match(c("baseMean", "log2FoldChange", "lfcMLE", "padj"), colnames(res))]
     colnames(x)[1] <- "gene_id"
 
     write.csv(x, file=paste0(out, "/", cont.name, ".csv"), row.names=F)
@@ -184,7 +184,7 @@ plot(p + geom_text_repel(aes(label=rownames(colData(dds)))) + theme_bw())
 
 # MA plot
 x <- mapply(function(res, cont) {
-    plotMA(res, main=cont)
+    plotMA(res, main=cont, ylim=c(-3,3))
     invisible(0)
 }, res, conts[, 1], SIMPLIFY=FALSE)
 

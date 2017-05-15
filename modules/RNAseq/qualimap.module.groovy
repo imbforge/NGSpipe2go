@@ -8,13 +8,13 @@ qualimap = {
 	output.dir = QUALIMAP_OUTDIR
 	// no|yes|reverse
 	if(QUALIMAP_STRANDED == "no") {
-		QUALIMAP_STRANDED = "non-strand-specific"
+		QUALIMAP_PROTOCOL = "non-strand-specific"
 	}
 	else if (QUALIMAP_STRANDED == "yes") {
-		QUALIMAP_STRANDED = "strand-specific-forward"
+		QUALIMAP_PROTOCOL = "strand-specific-forward"
 	}
 	else {
-		QUALIMAP_STRANDED = "strand-specific-reverse"
+		QUALIMAP_PROTOCOL = "strand-specific-reverse"
 	}
 	if(QUALIMAP_PAIRED == "yes"){
 		QUALIMAP_EXTRA = QUALIMAP_EXTRA + " -pe"
@@ -25,7 +25,7 @@ qualimap = {
 			module load qualimap/${QUALIMAP_VERSION} &&
 			unset DISPLAY;
 			echo $output.prefix;
-			qualimap rnaseq -bam $input -outdir ${output.prefix}_qualimap -outformat html $QUALIMAP_GENESGTF -oc $output -p $QUALIMAP_STRANDED $QUALIMAP_EXTRA
+			qualimap rnaseq -bam $input -outdir ${output.prefix}_qualimap -outformat html $QUALIMAP_GENESGTF -oc $output -p $QUALIMAP_PROTOCOL $QUALIMAP_EXTRA
 		""","qualimap"
 	}
 
