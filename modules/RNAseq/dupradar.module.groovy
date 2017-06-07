@@ -21,8 +21,7 @@ dupRadar = {
 			module load subread/${SUBREAD_VERSION} &&
 
 			if [ -n "\$SLURM_JOBID" ]; then
-				export TMPDIR=/jobdir/\${SLURM_JOBID} &&	
-                       		mkdir ${TMPDIR};
+				export TMPDIR=/jobdir/\${SLURM_JOBID};
 			fi &&
 
 			base=`basename $input` &&
@@ -30,8 +29,7 @@ dupRadar = {
 	    then
 	    	     echo "We are resorting and doing the repair\n" &&
 		     repair -i $input -T $THREADS -o \${TMPDIR}/\${base} &&
-		     Rscript ${TOOL_DUPRADAR}/dupRadar.R bam=\${TMPDIR}/\${base} $DUPRADAR_FLAGS &&	
-                     rm -rf ${TMPDIR};	
+		     Rscript ${TOOL_DUPRADAR}/dupRadar.R bam=\${TMPDIR}/\${base} $DUPRADAR_FLAGS;	
 	    else		
 			Rscript ${TOOL_DUPRADAR}/dupRadar.R bam=$input $DUPRADAR_FLAGS;
 	    fi
