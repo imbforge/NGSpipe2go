@@ -20,13 +20,11 @@ STAR_Fusion = {
             module load STAR-Fusion/${STARFUSION_VERSION} &&
 
             if [ -n "\$SLURM_JOBID" ]; then
-                export TMPDIR=/jobdir/\${SLURM_JOBID} &&
-                mkdir ${TMPDIR};
+                export TMPDIR=/jobdir/\${SLURM_JOBID};
 			
             fi                                       &&
 
-	    STAR-Fusion $STARFUSION_FLAGS --tmpdir $TMPDIR/\$(basename $output.prefix) --left_fq $input1 --right_fq $input2 --output_dir $output.prefix &&
-            rm -rf ${TMPDIR};
+	    STAR-Fusion $STARFUSION_FLAGS --tmpdir $TMPDIR/\$(basename $output.prefix) --left_fq $input1 --right_fq $input2 --output_dir $output.prefix;
             touch $output;		
           
         ""","STAR_Fusion"
