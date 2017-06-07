@@ -33,16 +33,14 @@ subread_count = {
         exec """
 	     module load subread/${SUBREAD_VERSION} &&
 			if [ -n "\$SLURM_JOBID" ]; then
-				export TMPDIR=/jobdir/\${SLURM_JOBID} &&
-                                mkdir ${TMPDIR};
+				export TMPDIR=/jobdir/\${SLURM_JOBID};
 			fi &&
 			base=`basename $input` &&
             if [[ "$SUBREAD_PAIRED" == "yes" ]]; 
 	    then
 	    	     echo "We are resorting and doing the repair\n" &&
 		     repair -i $input $SUBREAD_CORES -o \${TMPDIR}/\${base} &&
-	    	     featureCounts $SUBREAD_FLAGS -o $output \${TMPDIR}/\${base} 2> ${output.prefix}_subreadlog.stderr &&
-                     rm -rf ${TMPDIR};
+	    	     featureCounts $SUBREAD_FLAGS -o $output \${TMPDIR}/\${base} 2> ${output.prefix}_subreadlog.stderr;
 	    else
 	    featureCounts $SUBREAD_FLAGS -o $output $input 2> ${output.prefix}_subreadlog.stderr;
 	    fi 
