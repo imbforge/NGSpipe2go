@@ -40,16 +40,14 @@ rnatypes = {
         exec """
 			module load subread/${SUBREAD_VERSION} &&
 			if [ -n "\$SLURM_JOBID" ]; then
-				export TMPDIR=/jobdir/\${SLURM_JOBID} &&
-                                mkdir ${TMPDIR};
+				export TMPDIR=/jobdir/\${SLURM_JOBID};
 			fi &&
 			base=`basename $input` &&
             		if [[ "$RNATYPES_PAIRED" == "yes" ]];
 	    		then            
 	    			echo "We are resorting and doing the repair\n" &&
 				repair -i $input $RNATYPES_CORES -o \${TMPDIR}/\${base} &&
-            			featureCounts $RNATYPES_FLAGS -o ${output}_tmp \${TMPDIR}/\${base} 2> ${output.prefix}_rnatypeslog.stderr &&
-                                rm -rf ${TMPDIR};
+            			featureCounts $RNATYPES_FLAGS -o ${output}_tmp \${TMPDIR}/\${base} 2> ${output.prefix}_rnatypeslog.stderr;
 	    		else
             			featureCounts $RNATYPES_FLAGS -o ${output}_tmp $input 2> ${output.prefix}_rnatypeslog.stderr;
 			fi &&
