@@ -18,12 +18,10 @@ VariantEval = {
             module load jdk/${JAVA_VERSION} &&
 
             if [ -n "\$SLURM_JOBID" ]; then
-				export TMPDIR=/jobdir/\${SLURM_JOBID} &&
-                       		mkdir ${TMPDIR};
+				export TMPDIR=/jobdir/\${SLURM_JOBID};
 			fi                                       &&
 
-            java -Djava.io.tmpdir=$TMPDIR -jar ${TOOL_GATK}/GenomeAnalysisTK.jar -T VariantEval -R $GATK_BWA_REF -nt $GATK_THREADS --dbsnp ${GATK_KNOWN_VARIANTS} --eval $input -o $output &&
-            rm -rf ${TMPDIR};
+            java -Djava.io.tmpdir=$TMPDIR -jar ${TOOL_GATK}/GenomeAnalysisTK.jar -T VariantEval -R $GATK_BWA_REF -nt $GATK_THREADS --dbsnp ${GATK_KNOWN_VARIANTS} --eval $input -o $output;
         ""","VariantEval"
     }
     
