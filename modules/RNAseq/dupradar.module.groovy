@@ -19,15 +19,19 @@ dupRadar = {
 		exec """
 			module load R/${R_VERSION} &&
 			module load subread/${SUBREAD_VERSION} &&
-			if [ -n "\$LSB_JOBID" ]; then
-				export TMPDIR=/jobdir/\${LSB_JOBID};
+
+			if [ -n "\$SLURM_JOBID" ]; then
+				export TMPDIR=/jobdir/\${SLURM_JOBID} &&	
+                       		mkdir ${TMPDIR};
 			fi &&
+
 			base=`basename $input` &&
             if [[ "$DUPRADAR_PAIRED" == "paired=yes" ]];
 	    then
 	    	     echo "We are resorting and doing the repair\n" &&
 		     repair -i $input -T $THREADS -o \${TMPDIR}/\${base} &&
-		     Rscript ${TOOL_DUPRADAR}/dupRadar.R bam=\${TMPDIR}/\${base} $DUPRADAR_FLAGS;
+		     Rscript ${TOOL_DUPRADAR}/dupRadar.R bam=\${TMPDIR}/\${base} $DUPRADAR_FLAGS &&	
+                     rm -rf ${TMPDIR};	
 	    else		
 			Rscript ${TOOL_DUPRADAR}/dupRadar.R bam=$input $DUPRADAR_FLAGS;
 	    fi
