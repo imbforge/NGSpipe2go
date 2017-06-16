@@ -13,8 +13,9 @@ rMATS = {
 		exec """
 			module load rmats/${RMATS_VERSION} &&
 
-			if [ -n "\$LSB_JOBID" ]; then
-				export TMPDIR=/jobdir/\${LSB_JOBID};
+			if [ -n "\$SLURM_JOBID" ]; then
+				export TMPDIR=/jobdir/\${SLURM_JOBID} &&
+                       		mkdir ${TMPDIR};
 			fi;
 				input_var=`basename $input`;
 				postfix=$RMATS_POSTFIX
@@ -37,7 +38,8 @@ rMATS = {
 				fi;
 				python ${TOOL_RMATS}/RNASeq-MATS.py -b1 \$group0 -b2 \$group1 -t \$PAIRED -gtf $RMATS_GTF -a $RMATS_ANCHOR -c $RMATS_CUTOFF -analysis $RMATS_TYPE -len $RMATS_LEN  \$PAIRED_ARGS -o $output.dir/\${input_var%_targets_rMats.txt}_rMats;
 				touch $output;
-				echo "python ${TOOL_RMATS}/RNASeq-MATS.py -b1 \$group0 -b2 \$group1 -t \$PAIRED -gtf $RMATS_GTF -a $RMATS_ANCHOR -c $RMATS_CUTOFF -analysis $RMATS_TYPE -len $RMATS_LEN  \$PAIRED_ARGS -o $output.dir/\${input_var%_targets_rMats.txt}_rMats" > $output;
+				echo "python ${TOOL_RMATS}/RNASeq-MATS.py -b1 \$group0 -b2 \$group1 -t \$PAIRED -gtf $RMATS_GTF -a $RMATS_ANCHOR -c $RMATS_CUTOFF -analysis $RMATS_TYPE -len $RMATS_LEN  \$PAIRED_ARGS -o $output.dir/\${input_var%_targets_rMats.txt}_rMats" > $output &&
+                       		rm -rf ${TMPDIR};
 				""","rMATS"
 }
 
