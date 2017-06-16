@@ -21,10 +21,10 @@ do
   mkdir -p ${LOGS}/${JOB}
  fi
 
- if [ -e ${PROJECT}/.bpipe/commandtmp/${ID}/${ID}.err ]; 
+ if [ -e ${PROJECT}/.bpipe/commandtmp/${ID}/cmd.err ]; 
  then
-  echo "${PROJECT}/.bpipe/commandtmp/${ID}/${ID}.err --> ${LOGS}/${JOB}/${FILE}.log"
-  cp -v ${PROJECT}/.bpipe/commandtmp/${ID}/${ID}.err ${LOGS}/${JOB}/${FILE}.log
-  # cp -v ${PROJECT}/.bpipe/commandtmp/${ID}/${ID}.out ${LOGS}/${JOB}/${FILE}.out
+  echo "${PROJECT}/.bpipe/commandtmp/${ID}/cmd.err --> ${LOGS}/${JOB}/${FILE}.log"
+  cp -v ${PROJECT}/.bpipe/commandtmp/${ID}/cmd.err ${LOGS}/${JOB}/${FILE}.log
+  # cp -v ${PROJECT}/.bpipe/commandtmp/${ID}/cmd.out ${LOGS}/${JOB}/${FILE}.out
  fi
 done 
