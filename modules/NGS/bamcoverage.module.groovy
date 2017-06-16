@@ -14,13 +14,11 @@ bamCoverage = {
 	transform(".bam") to(".bw") {
 		exec """
 			module load deepTools/${DEEPTOOLS_VERSION}  &&
-			if [ -n "\$SLURM_JOBID" ]; then
-				export TMPDIR=/jobdir/\${SLURM_JOBID} &&
-                       		mkdir ${TMPDIR};
+			if [ -n "\$LSB_JOBID" ]; then
+				export TMPDIR=/jobdir/\${LSB_JOBID};
 			fi;
 
-			bamCoverage $BAMCOVERAGE_FLAGS --bam $input -o ${output} &&
-                    	rm -rf ${TMPDIR};
+			bamCoverage $BAMCOVERAGE_FLAGS --bam $input -o ${output};
 		""","bamCoverage"
 	}
 }

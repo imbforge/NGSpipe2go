@@ -31,13 +31,11 @@ bowtie_pe = {
 			module load bowtie/${BOWTIE_VERSION}     &&
 			module load samtools/${SAMTOOLS_VERSION} &&			
 
-            if [ -n "\$SLURM_JOBID" ]; then
-				export TMPDIR=/jobdir/\${SLURM_JOBID} &&
-                       		mkdir ${TMPDIR};
+            if [ -n "\$LSB_JOBID" ]; then
+				export TMPDIR=/jobdir/\${LSB_JOBID};
 			fi                                       &&
 			
-			bowtie $BOWTIE_FLAGS $BOWTIE_REF -1 $input1 -2 $input2 | samtools view $SAMTOOLS_VIEW_FLAGS - | samtools sort $SAMTOOLS_SORT_FLAGS -T $TMPDIR/\$(basename $output.prefix) - > $output &&
-                        rm -rf ${TMPDIR};
+			bowtie $BOWTIE_FLAGS $BOWTIE_REF -1 $input1 -2 $input2 | samtools view $SAMTOOLS_VIEW_FLAGS - | samtools sort $SAMTOOLS_SORT_FLAGS -T $TMPDIR/\$(basename $output.prefix) - > $output
 		""","bowtie_pe"
 	}
 }
