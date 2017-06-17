@@ -23,14 +23,12 @@ IndelRealignment = {
        
             module load jdk/${JAVA_VERSION} &&
             
-            if [ -n "\$SLURM_JOBID" ]; then
-				export TMPDIR=/jobdir/\${SLURM_JOBID} &&
-                       		mkdir ${TMPDIR};
+            if [ -n "\$LSB_JOBID" ]; then
+				export TMPDIR=/jobdir/\${LSB_JOBID};
 			fi                           &&
 
             java -Djava.io.tmpdir=$TMPDIR -jar ${TOOL_GATK}/GenomeAnalysisTK.jar -T RealignerTargetCreator -nt $GATK_THREADS -R $GATK_BWA_REF -I $input -o $output1 &&
-            java -Djava.io.tmpdir=$TMPDIR -jar ${TOOL_GATK}/GenomeAnalysisTK.jar -T IndelRealigner -R $GATK_BWA_REF -I $input -targetIntervals $output1 -o $output2 &&
-            rm -rf ${TMPDIR};
+            java -Djava.io.tmpdir=$TMPDIR -jar ${TOOL_GATK}/GenomeAnalysisTK.jar -T IndelRealigner -R $GATK_BWA_REF -I $input -targetIntervals $output1 -o $output2 
         ""","IndelRealignment"
     }
     
