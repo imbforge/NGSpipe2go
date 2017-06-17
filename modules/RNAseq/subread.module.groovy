@@ -37,7 +37,7 @@ subread_count = {
             else
                 export TMPDIR=/tmp;
             fi &&
-            base=$(basename $input) &&
+            base=\$(basename $input) &&
             if [[ "$SUBREAD_PAIRED" == "yes" ]]; then
                 echo "We are resorting and doing the repair\n" &&
                 repair -i $input $SUBREAD_CORES -o \${TMPDIR}/\${base} &&
