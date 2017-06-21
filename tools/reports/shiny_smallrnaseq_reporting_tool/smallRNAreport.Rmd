@@ -9,6 +9,10 @@ output:
 <div class="contentbox">
 
 ```{r Initialise, echo=F, result='hide', error=F, warning=F, message=F}
+require(rmarkdown)
+require(knitr)
+require(Cairo)                                                    
+knitr::opts_chunk[['set']](dev='CairoPNG')
 options(stringsAsFactors=FALSE)
 source('smallRNA.shinyrep.helpers.R')
 loadGlobalVars()
