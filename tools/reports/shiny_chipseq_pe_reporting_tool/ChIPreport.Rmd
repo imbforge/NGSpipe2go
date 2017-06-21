@@ -75,20 +75,6 @@ The plot is useful to detect several forms of biases:
 * Under-sequencing produces curves close to the x-axis for a large percentage of bins since no reads were aligned on this bins. 
 * Sequencing bias towards a small set of specific regions produces curves shifted towards the y-axis for a large percentage of bins.
 
-## Cross-correlation analysis ##
-
-**Cross-correlation**
-A measure of enrichment derived without dependence on prior determination of enriched regions. Forward and reverse strand read coverage signal tracks are computed (number of unique mapping read starts at each base in the genome on the + and - strand counted separately). The forward and reverse tracks are shifted towards and away from each other by incremental distances and for each shift, the Pearson correlation coefficient is computed. In this way, a cross-correlation profile is computed, representing the correlation between forward and reverse strand coverage at different shifts. The highest cross-correlation value is obtained at a strand shift equal to the predominant fragment length in the dataset as a result of clustering/enrichment of relative fixed-size fragments around the binding sites of the target factor or feature.
-
-**Normalized Strand Cross-correlation coefficient (NSC):**
-The NSC is the ratio of the maximal cross-correlation value (which occurs at strand shift equal to fragment length) divided by the background cross-correlation (minimum cross-correlation value over all possible strand shifts). Higher values indicate more enrichment, values less than 1.1 are relatively low NSC scores, and the minimum possible value is 1 (no enrichment). This score is sensitive to technical effects; for example, high-quality antibodies such as H3K4me3 and CTCF score well for all cell types and ENCODE production groups, and variation in enrichment in particular IPs is detected as stochastic variation. This score is also sensitive to biological effects; narrow marks score higher than broad marks (H3K4me3 vs H3K36me3, H3K27me3) for all cell types and ENCODE production groups, and features present in some individual cells, but not others, in a population are expected to have lower scores.
-
-**Relative Strand Cross-correlation coefficient (RSC):**
-The RSC is the ratio of the fragment-length cross-correlation value minus the background cross-correlation value, divided by the phantom-peak cross-correlation value minus the background cross-correlation value. The minimum possible value is 0 (no signal), highly enriched experiments have values greater than 1.
-
-```{r PhantomPeak_paragraph, echo=F,results='asis',error=F,warning=F,message=F}
-cat(ChIPhelper.PhantomPeak(web=F),sep="\n")
-```
 
 ## ChIP-seq peaks ##
 
@@ -128,6 +114,36 @@ The following Venn diagrams correlate the peaks called in the sample groups.
 
 ```{r peak_venn_paragraph, echo=F,results='asis',error=F,warning=F,message=F}
 ChIPhelper.VennDiagram()
+```
+
+## Functional annotation of peaks ##
+
+The following plot show the feature distribution based on their chromosome region 
+
+### Feature distribution of peaks for all samples ###
+
+```{r feature_distribution_paragraph, echo=F, results='asis', error=F, warning=F, message=F}
+functionalPlot <- paste0( SHINYREPS_PEAK_ANNOTATION, "/", "ChIPseq_Feature_Distribution_Barplot.png")
+cat("![Peak_Annotation img](", functionalPlot, ")",fill=T)
+```
+
+### Distribution of TF-binding loci relative to TSS for all samples ### 
+
+```{r feature_distribution_TSS_paragraph, echo=F, results='asis', error=F, warning=F, message=F}
+    functionalPlotTSS <- paste0( SHINYREPS_PEAK_ANNOTATION, "/", "ChIPseq_Feature_Distribution_Related_to_TSS_Barplot.png")
+    cat("![Peak_Annotation img](", functionalPlotTSS, ")",fill=T)
+```
+
+### ChIP peaks coverage over Chromosomes ###  
+
+```{r peak_annotation_coverage_paragraph, echo=F, results='asis', error=F, warning=F, message=F}
+    cat(ChIPhelper.peakAnnotationCoverage(web=F),sep="\n")
+```
+
+### UpSet Plot ###
+
+```{r peak_annotation_upset_paragraph, echo=F, results='asis', error=F, warning=F, message=F}
+    cat(ChIPhelper.peakAnnotationUpSet(web=F),sep="\n")
 ```
 
 ## Used tools and versions for this analysis ##
