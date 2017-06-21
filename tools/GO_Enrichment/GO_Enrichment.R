@@ -76,7 +76,7 @@ processContrast <-  function(x) {
     library(clusterProfiler)
     library(ReactomePA)
 
-    calculateGoEnrichment <-  function(de.genes, univ.genes) {
+    calculateGoEnrichment <-  function(de.genes, univ.genes, suffix) {
         # convert to entrezID downregulated/univers genes
         getEntrezId <- function(genes) {
             bitr(genes, fromType=if(type == "gene_name") "SYMBOL" else "ENSEMBL", toType="ENTREZID", OrgDb=orgDb[org])
@@ -97,35 +97,35 @@ processContrast <-  function(x) {
       
         if(nrow(enriched) > 0) {
             # create barplot showing GO category
-            png(file=paste0(out, "/", contrast, "_GO_Barplot_downregulated_genes.png"), width=700, height=500)
+            png(file=paste0(out, "/", contrast, "_GO_Barplot_", suffix, "_genes.png"), width=700, height=500)
             plot(barplot(enriched, showCategory=plotCategory))
             dev.off()
       
             # create network plot for the results
-            png(file=paste0(out, "/", contrast, "_GO_network_downregulated_genes.png"), width=700, height=500)
+            png(file=paste0(out, "/", contrast, "_GO_network_", suffix, "_genes.png"), width=700, height=500)
             plot(enrichMap(enriched))
             dev.off()
         }
 
         if(nrow(enrichedKEGG) > 0) {
             # create barplot showing Pathway terms
-            png(file=paste0(out, "/", contrast, "_KEGG_Barplot_downregulated_genes.png"), width=700, height=500)
+            png(file=paste0(out, "/", contrast, "_KEGG_Barplot_", suffix, "_genes.png"), width=700, height=500)
             plot(barplot(enrichedKEGG, showCategory=plotCategory))
             dev.off()
       
             # create network plot for the results
-            png(file=paste0(out, "/", contrast, "_KEGG_network_downregulated_genes.png"), width=700, height=500)
+            png(file=paste0(out, "/", contrast, "_KEGG_network_", suffix, "_genes.png"), width=700, height=500)
             plot(enrichMap(enrichedKEGG))
             dev.off()
         }
         
         if(nrow(enrichedReactome) > 0) {
             # create barplot showing Pathway terms
-            png(file=paste0(out, "/", contrast, "_Reactome_Barplot_downregulated_genes.png"), width=700, height=500)
+            png(file=paste0(out, "/", contrast, "_Reactome_Barplot_", suffix, "_genes.png"), width=700, height=500)
             plot(barplot(enrichedReactome, showCategory=plotCategory))
             dev.off()
             # create network plot for the results
-            png(file=paste0(out, "/", contrast, "_Reactome_network_downregulated_genes.png"), width=700, height=500)
+            png(file=paste0(out, "/", contrast, "_Reactome_network_", suffix, "_genes.png"), width=700, height=500)
             plot(enrichMap(enrichedReactome))
             dev.off()
         }
@@ -155,13 +155,13 @@ processContrast <-  function(x) {
     if(sum(up) == 0)
         writeLines("No upregulated genes found!", paste0(out, "/", contrast, "_GO_Enrichment_upregulated_genes.csv"))
     else
-        calculateGoEnrichment(resultData[up, genes], resultData[, genes])
+        calculateGoEnrichment(resultData[up, genes], resultData[, genes], "up")
 
     # GO and Pathway enrichment analysis for the downregulated genes
     if(sum(down) == 0)
         writeLines("No downregulated genes found!", paste0(out, "/", contrast, "_GO_Enrichment_downregulated_genes.csv"))
     else
-        calculateGoEnrichment(resultData[down, genes], resultData[, genes])
+        calculateGoEnrichment(resultData[down, genes], resultData[, genes], "down")
 
     invisible(0)
 }
