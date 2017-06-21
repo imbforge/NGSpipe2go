@@ -91,9 +91,9 @@ processContrast <-  function(x) {
                                           universe=entrezUnivId[[2]])
 
         # write GO and Pathway enrichment tables into output file 
-        write.csv(enriched, file=paste0(out, "/", contrast, "_GO_Enrichment_downregulated_genes.csv"))
-        write.csv(enrichedKEGG, file=paste0(out, "/", contrast, "_KEGG_Pathway_Enrichment_downregulated_genes.csv"))
-        write.csv(enrichedReactome, file=paste0(out, "/", contrast, "_Reactome_Pathway_Enrichment_downregulated_genes.csv"))
+        write.csv(enriched, file=paste0(out, "/", contrast, "_GO_Enrichment_", suffix, "_genes.csv"))
+        write.csv(enrichedKEGG, file=paste0(out, "/", contrast, "_KEGG_Pathway_Enrichment_", suffix, "_genes.csv"))
+        write.csv(enrichedReactome, file=paste0(out, "/", contrast, "_Reactome_Pathway_Enrichment_", suffix, "_genes.csv"))
       
         if(nrow(enriched) > 0) {
             # create barplot showing GO category
