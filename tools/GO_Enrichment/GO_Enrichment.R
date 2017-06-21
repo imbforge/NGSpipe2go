@@ -84,20 +84,14 @@ processContrast <-  function(x) {
         entrezDeId   <- getEntrezId(de.genes)
         entrezUnivId <- getEntrezId(univ.genes)
         
-        enriched <- enrichGO(entrezDeId[[2]], OrgDb=orgDb[org], keytype="ENTREZID", ont="BP", readable=TRUE,
-                             universe=if(univ == "all") orgDb[org] else entrezUnivId[[2]])
-
-        enrichedDAVID <- enrichDAVID(entrezDeId[[2]], idType = "ENTREZ_GENE_ID", annotation = "GOTERM_BP_ALL", 
-                                     david.user = "g.petrosino@imb-mainz.de")
-        
-        enrichedKEGG <- enrichKEGG(entrezDeId[[2]], org, universe = entrezUnivId[[2]])
-
+        enriched         <- enrichGO(entrezDeId[[2]], OrgDb=orgDb[org], keytype="ENTREZID", ont="BP", readable=TRUE,
+                                     universe=if(univ == "all") orgDb[org] else entrezUnivId[[2]])
+        enrichedKEGG     <- enrichKEGG(entrezDeId[[2]], org, universe=entrezUnivId[[2]])
         enrichedReactome <- enrichPathway(entrezDeId[[2]], org, readable=TRUE, 
-                                         universe = entrezUnivId[[2]])
+                                          universe=entrezUnivId[[2]])
 
         # write GO and Pathway enrichment tables into output file 
         write.csv(enriched, file=paste0(out, "/", contrast, "_GO_Enrichment_downregulated_genes.csv"))
-        write.csv(enrichedDAVID, file=paste0(out, "/", contrast, "_DAVID_GO_Enrichment_downregulated_genes.csv"))
         write.csv(enrichedKEGG, file=paste0(out, "/", contrast, "_KEGG_Pathway_Enrichment_downregulated_genes.csv"))
         write.csv(enrichedReactome, file=paste0(out, "/", contrast, "_Reactome_Pathway_Enrichment_downregulated_genes.csv"))
       
@@ -110,18 +104,6 @@ processContrast <-  function(x) {
             # create network plot for the results
             png(file=paste0(out, "/", contrast, "_GO_network_downregulated_genes.png"), width=700, height=500)
             plot(enrichMap(enriched))
-            dev.off()
-        }
-
-        if(nrow(enrichedDAVID) > 0) {
-            # create barplot showing GO category
-            png(file=paste0(out, "/", contrast, "_DAVID_GO_Barplot_downregulated_genes.png"), width=700, height=500)
-            plot(barplot(enrichedDAVID, showCategory=plotCategory))
-            dev.off()
-      
-            # create network plot for the results
-            png(file=paste0(out, "/", contrast, "_DAVID_GO_network_downregulated_genes.png"), width=700, height=500)
-            plot(enrichMap(enrichedDAVID))
             dev.off()
         }
 
