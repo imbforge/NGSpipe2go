@@ -33,11 +33,10 @@ Bowtie2_se = {
       def SAMPLE_NAME = input.prefix.prefix
 
       exec """
-         echo 'VERSION INFO'  1>&2 &&
-         echo \$(${TOOL_BOWTIE2}/bowtie2 --version) 1>&2 &&
-         echo '/VERSION INFO' 1>&2 &&
+         module load bowtie2/${BOWTIE2_VERSION} &&
+         module load samtools/${SAMTOOLS_VERSION} &&
 
-         zcat $input | ${TOOL_BOWTIE2}/bowtie2 $BOWTIE2_FLAGS -x $BOWTIE2_REF -U - 2> ${SAMPLE_NAME}.bt.log | ${TOOL_SAMTOOLS}/samtools view -bhSu - | ${TOOL_SAMTOOLS}/samtools sort -@ $BOWTIE2_THREADS - -o $output
+         zcat $input | bowtie2 $BOWTIE2_FLAGS -x $BOWTIE2_REF -U - 2> ${SAMPLE_NAME}.bt.log | samtools view -bhSu - | samtools sort -@ $BOWTIE2_THREADS - -o $output
       ""","Bowtie2_se"
    }
 }

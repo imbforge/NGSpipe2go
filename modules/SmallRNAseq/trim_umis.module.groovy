@@ -13,13 +13,9 @@ TrimUMIs = {
 
 
       exec """
-         export PATH=${TOOL_DEPENDENCIES}:$PATH &&
+         module load seqtk/${SEQTK_VERSION} &&
 
-         echo 'VERSION INFO'  1>&2 &&
-         echo \$(${TOOL_SEQTK} 2>&1 | grep 'Version') 1>&2 &&
-         echo '/VERSION INFO' 1>&2 &&
-
-         ${TOOL_SEQTK} trimfq -b ${LEFT_TRIM} -e ${RIGHT_TRIM} $input | ${TOOL_SEQTK} seq -L 15 - | gzip > $output
+         seqtk trimfq -b ${LEFT_TRIM} -e ${RIGHT_TRIM} $input | seqtk seq -L 15 - | gzip > $output
 
 		""","TrimUMIs"
 	}

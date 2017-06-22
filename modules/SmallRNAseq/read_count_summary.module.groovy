@@ -14,12 +14,10 @@ CountReadsSummary = {
 
 
       exec """
-         echo 'VERSION INFO'  1>&2 &&
-         echo \$(${TOOL_R}/bin/Rscript --version 2>&1 | cut -d' ' -f5) 1>&2 &&
-         echo '/VERSION${TOOL_R}/bin/Rscript INFO'  1>&2 &&
+         module load R/${R_VERSION} &&
 
          cd $COUNT_READS_OUTDIR &&
-         ${TOOL_R}/bin/Rscript $AGREGATE_SCRIPT
+         Rscript $AGREGATE_SCRIPT
 
       ""","CountReadsSummary"
    }

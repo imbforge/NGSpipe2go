@@ -11,11 +11,9 @@ FastxTrimmer = {
 
    transform(".fastq.gz") to (".23bp.fastq.gz") {
       exec """
-         echo 'VERSION INFO'  1>&2 &&
-         echo \$(${TOOL_FASTX}/fastx_trimmer -h 2>&1 | grep 'Toolkit') 1>&2 &&
-         echo '/VERSION INFO'  1>&2 &&
+         module load fastx_toolkit/${FASTX_VERSION} &&
 
-         zcat $input | ${TOOL_FASTX}/fastx_trimmer $FASTQ_TRIMMER_FLAGS -o $output
+         zcat $input | fastx_trimmer $FASTQ_TRIMMER_FLAGS -o $output
       ""","FastxTrimmer"
    }
 }

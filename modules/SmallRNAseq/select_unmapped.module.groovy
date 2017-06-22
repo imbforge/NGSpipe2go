@@ -8,12 +8,11 @@ SelectUnMapped = {
 
    transform(".bam") to(".unmapped.bam") {
       exec """
-         echo 'VERSION INFO'  1>&2 &&
-         ${TOOL_SAMTOOLS}/samtools --version 1>&2 &&
-         echo '/VERSION INFO' 1>&2 &&
+         module load samtools/${SAMTOOLS_VERSION} &&
 
-         ${TOOL_SAMTOOLS}/samtools view -hb -f 4 $input | ${TOOL_SAMTOOLS}/samtools sort -@ $BOWTIE_THREADS - -o $output &&
-         ${TOOL_SAMTOOLS}/samtools index $output
+         samtools view -hb -f 4 $input | samtools sort -@ $BOWTIE_THREADS - -o $output &&
+         samtools index $output
+         
       ""","SelectUnMapped"
    }
 }

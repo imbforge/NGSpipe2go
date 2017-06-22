@@ -13,7 +13,10 @@ PingPongPro = {
             OUT_FOLDER + "/transposons.tsv") {
 
       exec """
-         ${TOOL_PINGPONGPRO} -i $input -t $FEATURES_PATH -o $OUT_FOLDER
+
+         module load pingpongpro/${PINGPONGPRO_VERSION} &&
+
+         pingpongpro -i $input -t $FEATURES_PATH -o $OUT_FOLDER
 
       ""","PingPongPro"
    }

@@ -1,5 +1,4 @@
 MULTIMAP_OUT_DIR=BOWTIE2_MAPPED
-BOWTIE2_PATH=TOOL_BOWTIE2 // bowtie2 bin to use
 BOWTIE2_THREADS=8			// threads to use
 BOWTIE2_REF=ESSENTIAL_BOWTIE2_REF // prefix of the bowtie2 reference genome
 BOWTIE2_SEED_MM=6             // number of mismatches allowed in seed

@@ -10,10 +10,12 @@ MirDeep2Mapper = {
 
 
       exec """
-         export PATH=${TOOL_DEPENDENCIES}:$PATH &&
-         export PATH=${TOOL_MIRDEEP2}:$PATH &&
+        module load mirdeep2/${MIRDEEP2_VERSION} &&
+		if [ ! -d ${TMP} ]; then
+                mkdir -p ${TMP};
+        fi &&
 
-         ${TOOL_MIRDEEP2}/mapper.pl $input -e -p $GENOME_REF -s $output2.fa -t $output1 -h -m -i -j -o 8 1>&2 ${output2.prefix}.mapper.log
+         mapper.pl $input -e -p $GENOME_REF -s $output2.fa -t $output1 -h -m -i -j -o 8 1>&2 ${output2.prefix}.mapper.log
 
 		""","MirDeep2Mapper"
 	}
