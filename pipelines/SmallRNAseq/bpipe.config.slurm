@@ -109,6 +109,18 @@ commands {
       memory="2"
       options="--job-name=bam2bw"
    }
+   Bam2bwStrand {
+      walltime="01:00:00"
+      procs="1"
+      memory="2"
+      options="--job-name=Bam2bwStrand"
+   }
+   Bam2bwStrandPE {
+      walltime="01:00:00"
+      procs="1"
+      memory="2"
+      options="--job-name=Bam2bwStrandPE"
+   }
    CatFastQ {
       queue="long"
       procs="1"
