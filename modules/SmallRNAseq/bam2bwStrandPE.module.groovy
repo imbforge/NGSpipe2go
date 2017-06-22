@@ -6,8 +6,18 @@ Bam2bwStrandPE = {
 
 	def EXP = input.split("/")[-1].replaceAll(".bam", "")
 	output.dir=BAMCOVSTRANDSPE_OUTDIR
+    //this might be confusing regarding the reverse and forward
+    //setting but according to the deeptools manual it has to be like
+    //that. 
+        if(ESSENTIAL_STRANDED == "yes") {
+        FORWARD="rev"
+        REVERSE="fwd"
+    } else if(ESSENTIAL_STRANDED == "reverse") {
+        FORWARD="fwd"
+        REVERSE="rev"
+    }
 
-	transform(".bam") to (".fwd_pe.scaled.bw", ".rev_pe.scaled.bw")  {
+	transform(".bam") to (".scaled.fwd.bw", ".scaled.rev.bw")  {
 		exec """
 			module load bedtools/${BEDTOOLS_VERSION} &&
 			module load samtools/${SAMTOOLS_VERSION} &&
@@ -41,11 +51,11 @@ Bam2bwStrandPE = {
 			samtools merge -f ${TMP}/${EXP}.rev.bam ${TMP}/${EXP}.rev1.bam ${TMP}/${EXP}.rev2.bam &&
 			samtools index ${TMP}/${EXP}.rev.bam &&
 
-			genomeCoverageBed -bg -split -scale \${SCALE} -ibam ${TMP}/${EXP}.fwd.bam -g \${CHRSIZES} > ${output1.prefix}.bedgraph &&
-			bedGraphToBigWig ${output1.prefix}.bedgraph \${CHRSIZES} $output1 &&
+			genomeCoverageBed -bg -split -scale \${SCALE} -ibam ${TMP}/${EXP}.${FORWARD}.bam -g \${CHRSIZES} > ${output1.prefix}.bedgraph &&
+			bedGraphToBigWig ${output1.prefix}.bedgraph \${CHRSIZES} ${output1} &&
 			
-			genomeCoverageBed -bg -split -scale \${SCALE} -ibam ${TMP}/${EXP}.rev.bam -g \${CHRSIZES} > ${output2.prefix}.bedgraph &&
-			bedGraphToBigWig ${output2.prefix}.bedgraph \${CHRSIZES} $output2 &&
+			genomeCoverageBed -bg -split -scale \${SCALE} -ibam ${TMP}/${EXP}.${REVERSE}.bam -g \${CHRSIZES} > ${output2.prefix}.bedgraph &&
+			bedGraphToBigWig ${output2.prefix}.bedgraph \${CHRSIZES} ${output2} &&
 
 			rm ${CHRSIZES} ${output1.prefix}.bedgraph ${output2.prefix}.bedgraph ${TMP}/${EXP}.*.bam 
 
