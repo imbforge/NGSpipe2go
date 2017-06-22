@@ -1,5 +1,4 @@
 GO_Enrichment = {
-
     doc title: "GO_Enrichment",
         desc: "Gene Ontology enrichment analysis",
         constraints: "",

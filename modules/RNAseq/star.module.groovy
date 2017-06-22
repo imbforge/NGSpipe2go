@@ -1,35 +1,35 @@
 //rule for task STAR_se from catalog RNAseq, version 1
 //desc: Align single end reads
 STAR_se = {
-	doc title: "STAR alignment",
-		desc:  "Align single/paired end reads",
-		constraints: "Paired end reads expected to have a _R1 _R2 suffix.",
-		bpipe_version: "tested with bpipe 0.9.9",
-		author: "Sergi Sayols"
+    doc title: "STAR alignment",
+        desc:  "Align single/paired end reads",
+        constraints: "Paired end reads expected to have a _R1 _R2 suffix.",
+        bpipe_version: "tested with bpipe 0.9.9",
+        author: "Sergi Sayols"
 
-	output.dir = MAPPED
+    output.dir = MAPPED
 
-	// create the TMP folder if it doesn't exists
-	F_TMP = new File(TMP)
-	if(! F_TMP.exists()) { 
-		F_TMP.mkdirs()
-	}
-	// create the LOGS/STAR folder if it doesn't exists
-	F_LOG = new File(LOGS + "/STAR_se")
-	if(! F_LOG.exists()) {
-		F_LOG.mkdirs()
-	}
-	
+    // create the TMP folder if it doesn't exists
+    F_TMP = new File(TMP)
+    if(! F_TMP.exists()) { 
+        F_TMP.mkdirs()
+    }
+    // create the LOGS/STAR folder if it doesn't exists
+    F_LOG = new File(LOGS + "/STAR_se")
+    if(! F_LOG.exists()) {
+        F_LOG.mkdirs()
+    }
+    
     // calculate name of the sample being processed (added paired end support)
-	def OUTPUTFILE = input1
-	int path_index = OUTPUTFILE.lastIndexOf("/")
-	OUTPUTFILE = OUTPUTFILE.substring(path_index+1)
+    def OUTPUTFILE = input1
+    int path_index = OUTPUTFILE.lastIndexOf("/")
+    OUTPUTFILE = OUTPUTFILE.substring(path_index+1)
 
     if(ESSENTIAL_PAIRED == "yes") {
-		OUTPUTFILE = (OUTPUTFILE =~ /_R1.fastq.gz/).replaceFirst("")
-	} else {
-		OUTPUTFILE = (OUTPUTFILE =~ /.fastq.gz/).replaceFirst("")
-	}
+        OUTPUTFILE = (OUTPUTFILE =~ /_R1.fastq.gz/).replaceFirst("")
+    } else {
+        OUTPUTFILE = (OUTPUTFILE =~ /.fastq.gz/).replaceFirst("")
+    }
 
     // star flags
     def STAR_FLAGS = "--runMode alignReads "        +
@@ -61,23 +61,23 @@ STAR_se = {
 
     def SAMTOOLS_SORT_FLAGS = " -O bam " + STAR_SAMTOOLS_THREADS
 
-	// code chunk
+    // code chunk
     // TODO: change to latest or at least try to warn, if the genome index was created using the wrong version of STAR
-	produce(OUTPUTFILE + ".bam", OUTPUTFILE + "Log.final.out") {
-		exec """
-			module load star/${STAR_VERSION} && 
-			module load samtools/${SAMTOOLS_VERSION} &&
-			
-			if [ -e $TMP/$OUTPUTFILE ];
-			then
-				echo 'removing old STAR tmp folder';
-				rm -r $TMP/$OUTPUTFILE*;
-			fi &&
-			
+    produce(OUTPUTFILE + ".bam", OUTPUTFILE + "Log.final.out") {
+        exec """
+            module load star/${STAR_VERSION} && 
+            module load samtools/${SAMTOOLS_VERSION} &&
+            
+            if [ -e $TMP/$OUTPUTFILE ];
+            then
+                echo 'removing old STAR tmp folder';
+                rm -r $TMP/$OUTPUTFILE*;
+            fi &&
+            
             STAR $STAR_FLAGS --readFilesIn $inputs | samtools view $SAMTOOLS_VIEW_FLAGS - | samtools sort $SAMTOOLS_SORT_FLAGS -T ${TMP}/${OUTPUTFILE}_sort - > $output1 &&
-			
-			mv ${LOGS}/STAR_se/${OUTPUTFILE}SJ.out.tab $output.dir &&
-			ln -s ${LOGS}/STAR_se/${OUTPUTFILE}Log.final.out $output.dir
-		""","STAR_se"
-	}
+            
+            mv ${LOGS}/STAR_se/${OUTPUTFILE}SJ.out.tab $output.dir &&
+            ln -s ${LOGS}/STAR_se/${OUTPUTFILE}Log.final.out $output.dir
+        ""","STAR_se"
+    }
 }

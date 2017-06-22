@@ -24,7 +24,6 @@ DE_DESeq2_MM = {
     produce("DE_DESeq2.RData") {
         exec """
             module load R/${R_VERSION} &&
-            
 
             if [[ ! -e "$INPUT_READS_DIR" ]]; then
                 mkdir "$INPUT_READS_DIR";
@@ -34,7 +33,7 @@ DE_DESeq2_MM = {
                 F=\$(basename \$f) ;
                 tail -n +2 $f | cut -f1,3 | sort -k1,1 > "$INPUT_READS_DIR/\${F%_dupRadar.tsv}.readcounts.tsv" ;
             done &&
-                
+
             Rscript ${TOOL_DESeq2}/DE_DESeq2.R $DE_DESeq2_MM_FLAGS
         ""","DE_DESeq2"
     }
