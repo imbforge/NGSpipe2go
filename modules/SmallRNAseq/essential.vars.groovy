@@ -15,11 +15,13 @@ ESSENTIAL_TRANSPOSONS="/fsimb/groups/imb-kettinggr/genomes/Caenorhabditis_elegan
 ESSENTIAL_REPEAT_MASKER="/fsimb/groups/imb-kettinggr/genomes/Caenorhabditis_elegans/Ensembl/WBcel235/Sequence/repeatMasker/c_elegans.Wb235.ce11.repeatMasker.noSimpleLow.bed"
 ESSENTIAL_REPEAT_REF="/fsimb/groups/imb-kettinggr/genomes/Caenorhabditis_elegans/Ensembl/WBcel235/Sequence/repEnrichNoSimpleLow"
 ESSENTIAL_BIOTYPES_TABLE="/fsimb/groups/imb-kettinggr/genomes/Caenorhabditis_elegans/Ensembl/WBcel235/Annotation/Genes/wormbaseGeneID2biotype.txt"
-REPENRICH_BED="TRUE" // teh annotation was prepared as bed file.
+ESSENTIAL_ORG=""           // UCSC organism
+ESSENTIAL_DB="" 
+REPENRICH_BED="TRUE" // the annotation was prepared as bed file.
 // read size to keep (added 8 bp to account for barcodes)
 MIN_LENGTH=26
 MAX_LENGTH=38
-ESSENTIAL_STRANDED="no"
+ESSENTIAL_STRANDED="reverse"
 ESSENTIAL_PAIRED="no"
 ESSENTIAL_THREADS=4
 ESSENTIAL_MISMATCHES=0
@@ -36,6 +38,8 @@ ESSENTIAL_MATURE_MIRNA="/fsimb/groups/imb-kettinggr/genomes/Danio_rerio/Ensembl/
 ESSENTIAL_HAIRPIN_MIRNA="~/imb-git addkettinggr/genomes/Danio_rerio/Ensembl/Zv9/Annotation/SmallRNA/hairpin.noSpaces.fa"
 ESSENTIAL_REPEAT_MASKER="/home/adomingu/imb-kettinggr/genomes/Danio_rerio/Ensembl/Zv9/Sequence/repeatMasker/danRer7.noSimpleLow.fa.out"
 ESSENTIAL_REPEAT_REF="/home/adomingu/imb-kettinggr/genomes/Danio_rerio/Ensembl/Zv9/Sequence/repEnrichNoSimpleLow"
+ESSENTIAL_ORG="zebrafish"           // UCSC organism
+ESSENTIAL_DB="danRer7" 
 REPENRICH_BED="FALSE" 
 ESSENTIAL_THREADS=4
 // read size to keep (added 8 bp to account for barcodes)
