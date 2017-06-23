@@ -8,18 +8,18 @@ RepEnrich = {
     def SAMPLE_NAME = input.split("/")[-1].replaceAll(".deduped_barcoded.trimmed.fastq.gz", "")
     output.dir = REPENR_OUT_DIR + "/" + SAMPLE_NAME
 
-    def BOWTIE_FLAGS = " -q --sam -t"  +
-                    " "   + BOWTIE_QUALS    +
-                    " "   + BOWTIE_BEST     +
-                    " -p " + Integer.toString(BOWTIE_THREADS) +
-                    " -m " + Integer.toString(BOWTIE_MULTIMAP) 
+    def REPENRICH_FLAGS = " -q --sam -t"  +
+                    " "   + REPENRICH_QUALS    +
+                    " "   + REPENRICH_BEST     +
+                    " -p " + Integer.toString(REPENRICH_THREADS) +
+                    " -m " + Integer.toString(REPENRICH_MULTIMAP) 
 
     produce (
             SAMPLE_NAME + ".bt.log",  
             SAMPLE_NAME + "_fraction_counts.txt") {
 
     exec """
-        module load RepEnrich/0.1 &&
+        module load RepEnrich/${REPENRICH_VERSION} &&
         module load bowtie/${BOWTIE_VERSION} &&
         module load bedtools/2.23.0 &&
         module load samtools/${SAMTOOLS_VERSION} &&
@@ -27,12 +27,12 @@ RepEnrich = {
         MULTI=${SAMPLE_NAME}".multimap.fastq" 
         UNIQ=${SAMPLE_NAME}".bam"
 
-        zcat $input | bowtie $BOWTIE_FLAGS --max ${MULTI} $BOWTIE_REF - 2> $output1 | samtools view -bhSu - | samtools sort -@ $BOWTIE_THREADS - -o ${UNIQ} &&
-        samtools index ${UNIQ} &&
+        zcat $input | bowtie $REPENRICH_FLAGS --max $output.dir/${MULTI} $REPENRICH_REF - 2> $output1 | samtools view -bhSu - | samtools sort -@ $REPENRICH_THREADS - -o $output.dir/${UNIQ} &&
+        samtools index $output.dir/${UNIQ} &&
 
-        python RepEnrich.py ${REPEAT_MASKER} $output.dir ${SAMPLE_NAME} ${REPEAT_REF} ${MULTI} ${UNIQ} --cpus ${REPENRICH_CORES} --is_bed ${REPENRICH_BED} &&
+        RepEnrich.py ${REPEAT_MASKER} $output.dir ${SAMPLE_NAME} ${REPEAT_REF} $output.dir/${MULTI} $output.dir/${UNIQ} --cpus ${REPENRICH_THREADS} --is_bed ${REPENRICH_BED} &&
 
-        rm ${MULTI} ${UNIQ}
+        rm $output.dir/${MULTI} $output.dir/${UNIQ}
 
         ""","RepEnrich"
     }
