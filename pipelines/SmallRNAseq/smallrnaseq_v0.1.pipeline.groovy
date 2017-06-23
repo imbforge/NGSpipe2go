@@ -56,7 +56,19 @@ load MODULE_FOLDER + "SmallRNAseq/ping_pong_pro.vars.groovy"
 load MODULE_FOLDER + "SmallRNAseq/collect_plots.module.groovy"
 load MODULE_FOLDER + "SmallRNAseq/collect_plots.vars.groovy"
 
+load MODULE_FOLDER + "SmallRNAseq/repenrich.module.groovy"
+load MODULE_FOLDER + "SmallRNAseq/repenrich.vars.groovy"
+
+
 //MAIN PIPELINE TASK
 run {
-	"%.fastq.gz" * [ FastQC , Cutadapt + FastQQualityFilter + FilterDuplicates +TrimUMIs ] + "%.deduped_barcoded.trimmed.fastq.gz" * [ FastQC , Bowtie_se + [ BAMindexer, SelectUniqMappers + [ NucleotideSignature, PingPongSignal, PingPongPro] ] ] + "%.bam" * [ CountReads, Bam2bw, SplitReadStrands + "%sense.bam" * [Bam2bw] ] + [ DedupStats, MappingStatsPlot, CountReadsSummary ] + [ CollectPlots ]
+	"%.fastq.gz" * 
+	[ FastQC , Cutadapt + FastQQualityFilter + FilterDuplicates + TrimUMIs ] +
+	"%.deduped_barcoded.trimmed.fastq.gz" * 
+	[ FastQC, RepEnrich, Bowtie_se + [ BAMindexer, SelectUniqMappers + [ NucleotideSignature, PingPongSignal, PingPongPro] ] ] +
+	"%.bam" *
+	[ CountReads, Bam2bw, SplitReadStrands +
+		"%sense.bam" * [Bam2bw] ] +
+	[ DedupStats, MappingStatsPlot, CountReadsSummary ] +
+	[ CollectPlots ]
 }
