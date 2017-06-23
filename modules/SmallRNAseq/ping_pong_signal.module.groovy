@@ -10,7 +10,8 @@ PingPongSignal = {
    produce(OUT_FOLDER + "/figure/" + SAMPLE_NAME + ".ppPlot.pdf") {
 
       exec """
-
+         module load R/${R_VERSION} &&
+         
          python $PINGPONG_TOOL_PATH -b $input --minsize 19 --maxsize 35 --primary sense --outFolder $OUT_FOLDER --intervals $FEATURES_PATH
 
       ""","PingPongSignal"

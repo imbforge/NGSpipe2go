@@ -11,13 +11,10 @@ CountNonStrutReads = {
 
          module load R/${R_VERSION} &&
          
-         if [ -n "\$LSB_JOBID" ]; then
-            export TMPDIR=/jobdir/\${LSB_JOBID};
-         fi &&
-
-         cd $output.dir
+         cd $output.dir &&
 
          Rscript $COUNT_NONSTRUCT_TOOL_PATH $input $ESSENTIAL_BIOTYPES_TABLE
+         
       ""","CountNonStrutReads"
    }
 }

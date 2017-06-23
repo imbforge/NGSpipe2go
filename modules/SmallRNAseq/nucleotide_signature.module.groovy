@@ -15,6 +15,7 @@ NucleotideSignature = {
       ) {
 
       exec """
+         module load R/${R_VERSION} &&
          cd $PIRNA_SIGNATURE_OUTDIR &&
 
          python $PIRNA_SIGNATURE_TOOL_PATH -f $FASTA_PATH -b $input -u 20 -d 20 -g danRer7 -i $FEATURES_PATH -o $OUT_FOLDER
