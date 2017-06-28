@@ -84,11 +84,10 @@ processContrast <-  function(x) {
         entrezDeId   <- getEntrezId(de.genes)
         entrezUnivId <- getEntrezId(univ.genes)
         
-        enriched         <- enrichGO(entrezDeId[[2]], OrgDb=orgDb[org], keytype="ENTREZID", ont="BP", readable=TRUE,
-                                     universe=if(univ == "all") orgDb[org] else entrezUnivId[[2]])
-        enrichedKEGG     <- enrichKEGG(entrezDeId[[2]], org, universe=entrezUnivId[[2]])
-        enrichedReactome <- enrichPathway(entrezDeId[[2]], org, readable=TRUE, 
-                                          universe=entrezUnivId[[2]])
+        enriched         <- enrichGO(entrezDeId$ENTREZID, OrgDb=orgDb[org], keytype="ENTREZID", ont="BP", readable=TRUE,
+                                     universe=if(univ == "all") orgDb[org] else entrezUnivId$ENTREZID)
+        enrichedKEGG     <- enrichKEGG(entrezDeId$ENTREZID, org, universe=entrezUnivId$ENTREZID)
+        enrichedReactome <- enrichPathway(entrezDeId$ENTREZID, org, readable=TRUE, universe=entrezUnivId$ENTREZID)
 
         # write GO and Pathway enrichment tables into output file 
         write.csv(enriched, file=paste0(out, "/", contrast, "_GO_Enrichment_", suffix, "_genes.csv"))
