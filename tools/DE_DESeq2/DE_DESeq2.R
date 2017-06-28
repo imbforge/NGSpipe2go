@@ -124,8 +124,8 @@ res <- lapply(conts[,1],function(cont) {
                                       design=as.formula(mmatrix))
 
     # create DESeq object
-    dds <- DESeq(dds)
-    colData(dds)[["group"]] <- if(!is.na(base) & any(base %in% this_targets$group)) relevel(colData(dds)[["group"]], base) else relevel(colData(dds)[["group"]], factors[2])
+    dds <- DESeq(dds, betaPrior=TRUE)
+    colData(dds)[["group"]] <- if(!is.na(base) && any(base %in% this_targets$group)) relevel(colData(dds)[["group"]], base) else relevel(colData(dds)[["group"]], factors[2])
     res <- results(dds, independentFiltering=filter.genes, addMLE=TRUE, format="DataFrame")
 
     # calculate quantification (RPKM if gene model provided, rlog transformed values otherwise)
