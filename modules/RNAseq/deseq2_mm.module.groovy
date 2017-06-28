@@ -16,7 +16,6 @@ DE_DESeq2_MM = {
                              DE_DESeq2_MM_CWD       + " " +
                              DE_DESeq2_MM_OUTDIR    + " " +
                              DE_DESeq2_MM_GENES     + " " +
-                             DE_DESeq2_MM_BASE      + " " +
                              DE_DESeq2_MM_EXTRA
 
     // run the chunk

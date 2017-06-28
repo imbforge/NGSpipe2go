@@ -135,10 +135,10 @@ res <- lapply(conts[,1],function(cont) {
     res$strand <- genes$strand[i]
     
     # write the results
-    x <- merge(res[, c("gene_name", "chr", "start", "end", "strand", "baseMean", "log2FoldChange", "lfcMLE", "padj")], quantification, by=0)
+    x <- merge(res[, c("gene_name", "chr", "start", "end", "strand", "baseMean", "log2FoldChange", "padj")], quantification, by=0)
     x <- x[order(x$padj),]
     
-    colnames(x)[which(colnames(x) %in% c("baseMean", "log2FoldChange", "lfcMLE", "padj"))] <- mcols(res)$description[match(c("baseMean", "log2FoldChange", "lfcMLE", "padj"), colnames(res))]
+    colnames(x)[which(colnames(x) %in% c("baseMean", "log2FoldChange", "padj"))] <- mcols(res)$description[match(c("baseMean", "log2FoldChange", "padj"), colnames(res))]
     colnames(x)[1] <- "gene_id"
 
     write.csv(x, file=paste0(out, "/", cont.name, ".csv"), row.names=F)
