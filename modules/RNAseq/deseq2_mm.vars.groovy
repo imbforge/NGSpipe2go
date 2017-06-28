@@ -8,6 +8,5 @@ DE_DESeq2_MM_DUPRADAR_OUTDIR=DUPRADAR_OUTDIR.replaceFirst("outdir=", "") //where
 DE_DESeq2_MM_CWD="cwd=" + RESULTS + "/subread-count_MM"  //directory where the .tsv files with the gene counts are located
 DE_DESeq2_MM_OUTDIR="out=" + RESULTS + "/DE_DESeq2_MM"   //output filename base pattern. If you change it here, change it also in the module file
 DE_DESeq2_MM_GENES=DE_DESeq2_GENES           //gtf file to calculate RPKM
-DE_DESeq2_MM_BASE=DE_DESeq2_BASE             //base level log2foldchanges should be calulated for e.g. wt or control has to be a group id within the targets file
 DE_DESeq2_MM_EXTRA=DE_DESeq2_EXTRA           //extra parms to sent to the tool
 
