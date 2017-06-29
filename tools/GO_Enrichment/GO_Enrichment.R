@@ -80,7 +80,7 @@ processContrast <-  function(x) {
     calculateGoEnrichment <-  function(de.genes, univ.genes, suffix) {
         # convert to entrezID downregulated/univers genes
         getEntrezId <- function(genes) {
-            bitr(genes, fromType=if(type == "gene_name") "SYMBOL" else "ENSEMBL", toType="ENTREZID", OrgDb=orgDb[org])
+            bitr(toupper(genes), fromType=if(type == "gene_name") "SYMBOL" else "ENSEMBL", toType="ENTREZID", OrgDb=orgDb[org])
         }
         entrezDeId   <- getEntrezId(de.genes)
         entrezUnivId <- getEntrezId(univ.genes)
