@@ -21,6 +21,7 @@
 ############################################################################
 options(stringsAsFactors=FALSE)
 library(DESeq2)
+library(Cairo)
 library(parallel)
 
 # suported organisms
@@ -96,35 +97,35 @@ processContrast <-  function(x) {
       
         if(nrow(enriched) > 0) {
             # create barplot showing GO category
-            png(file=paste0(out, "/", contrast, "_GO_Barplot_", suffix, "_genes.png"), width=700, height=500)
+            CairoPNG(file=paste0(out, "/", contrast, "_GO_Barplot_", suffix, "_genes.png"), width=700, height=500)
             plot(barplot(enriched, showCategory=plotCategory))
             dev.off()
       
             # create network plot for the results
-            png(file=paste0(out, "/", contrast, "_GO_network_", suffix, "_genes.png"), width=700, height=500)
+            CairoPNG(file=paste0(out, "/", contrast, "_GO_network_", suffix, "_genes.png"), width=700, height=500)
             plot(enrichMap(enriched))
             dev.off()
         }
 
         if(nrow(enrichedKEGG) > 0) {
             # create barplot showing Pathway terms
-            png(file=paste0(out, "/", contrast, "_KEGG_Barplot_", suffix, "_genes.png"), width=700, height=500)
+            CairoPNG(file=paste0(out, "/", contrast, "_KEGG_Barplot_", suffix, "_genes.png"), width=700, height=500)
             plot(barplot(enrichedKEGG, showCategory=plotCategory))
             dev.off()
       
             # create network plot for the results
-            png(file=paste0(out, "/", contrast, "_KEGG_network_", suffix, "_genes.png"), width=700, height=500)
+            CairoPNG(file=paste0(out, "/", contrast, "_KEGG_network_", suffix, "_genes.png"), width=700, height=500)
             plot(enrichMap(enrichedKEGG))
             dev.off()
         }
         
         if(nrow(enrichedReactome) > 0) {
             # create barplot showing Pathway terms
-            png(file=paste0(out, "/", contrast, "_Reactome_Barplot_", suffix, "_genes.png"), width=700, height=500)
+            CairoPNG(file=paste0(out, "/", contrast, "_Reactome_Barplot_", suffix, "_genes.png"), width=700, height=500)
             plot(barplot(enrichedReactome, showCategory=plotCategory))
             dev.off()
             # create network plot for the results
-            png(file=paste0(out, "/", contrast, "_Reactome_network_", suffix, "_genes.png"), width=700, height=500)
+            CairoPNG(file=paste0(out, "/", contrast, "_Reactome_network_", suffix, "_genes.png"), width=700, height=500)
             plot(enrichMap(enrichedReactome))
             dev.off()
         }
