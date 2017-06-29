@@ -21,7 +21,6 @@
 ############################################################################
 options(stringsAsFactors=FALSE)
 library(DESeq2)
-library(Cairo)
 library(parallel)
 
 # suported organisms
@@ -76,6 +75,7 @@ processContrast <-  function(x) {
 
     library(clusterProfiler)
     library(ReactomePA)
+    library(Cairo)
 
     calculateGoEnrichment <-  function(de.genes, univ.genes, suffix) {
         # convert to entrezID downregulated/univers genes
