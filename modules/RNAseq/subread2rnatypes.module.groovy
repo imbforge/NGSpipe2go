@@ -1,9 +1,5 @@
 //rule for task feature_count from Subread package, version 1
 //desc: Counting reads in features with featureCounts
-
-// example content of env.sh
-// export PATH=${TOOL_DEPENDENCIES}/subread/1.5.0/bin:$PATH
-
 rnatypes = {
     doc title: "subread_count",
     desc:  "Counting gene biotypes in features with feature-count out of the subread package",
@@ -39,11 +35,12 @@ rnatypes = {
     transform(".bam") to ("_readcounts.tsv") {
         exec """
             module load subread/${SUBREAD_VERSION} &&
-            if [ -n "\$LSB_JOBID" ]; then
-                export TMPDIR=/jobdir/\${LSB_JOBID};
+            if [ -n "\$SLURM_JOBID" ]; then
+                export TMPDIR=/jobdir/\${SLURM_JOBID};
             fi &&
             base=`basename $input` &&
-            if [[ "$RNATYPES_PAIRED" == "yes" ]]; then            
+            if [[ "$RNATYPES_PAIRED" == "yes" ]];
+            then            
                 echo "We are resorting and doing the repair\n" &&
                 repair -i $input $RNATYPES_CORES -o \${TMPDIR}/\${base} &&
                 featureCounts $RNATYPES_FLAGS -o ${output}_tmp \${TMPDIR}/\${base} 2> ${output.prefix}_rnatypeslog.stderr;
@@ -51,7 +48,7 @@ rnatypes = {
                 featureCounts $RNATYPES_FLAGS -o ${output}_tmp $input 2> ${output.prefix}_rnatypeslog.stderr;
             fi &&
             cut -f1,6,7 ${output}_tmp > $output &&
-            rm ${output}_tmp;    
+            rm ${output}_tmp
         ""","rnatypes"
     }
 }

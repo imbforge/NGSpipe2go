@@ -9,7 +9,7 @@ subread_count = {
     
     output.dir  = SUBREAD_OUTDIR
     def SUBREAD_FLAGS = "--donotsort" +  " " + 
-                SUBREAD_CORES    + " " +
+                        SUBREAD_CORES    + " " +
                         SUBREAD_GENESGTF + " " +
                         SUBREAD_EXTRA    + " "
     
@@ -32,19 +32,18 @@ subread_count = {
     transform(".bam") to (".raw_readcounts.tsv") {
         exec """
             module load subread/${SUBREAD_VERSION} &&
-            if [ -n "\$LSB_JOBID" ]; then
-                export TMPDIR=/jobdir/\${LSB_JOBID};
-            else
-                export TMPDIR=/tmp;
+            if [ -n "\$SLURM_JOBID" ]; then
+                export TMPDIR=/jobdir/\${SLURM_JOBID};
             fi &&
-            base=\$(basename $input) &&
-            if [[ "$SUBREAD_PAIRED" == "yes" ]]; then
+            base=`basename $input` &&
+            if [[ "$SUBREAD_PAIRED" == "yes" ]]; 
+            then
                 echo "We are resorting and doing the repair\n" &&
                 repair -i $input $SUBREAD_CORES -o \${TMPDIR}/\${base} &&
                 featureCounts $SUBREAD_FLAGS -o $output \${TMPDIR}/\${base} 2> ${output.prefix}_subreadlog.stderr;
             else
                 featureCounts $SUBREAD_FLAGS -o $output $input 2> ${output.prefix}_subreadlog.stderr;
-            fi 
+            fi
         ""","subread_count"
     }
 }

@@ -63,7 +63,7 @@ a freshly loaded version from the GitHub releases
 
 or the most recent development version from the GitHub repository
 
-    git clone https://github.com/imbforge/NGSpipe2go.git project_folder/NGSpipe2go
+    git clone -b slurm https://github.com/imbforge/NGSpipe2go.git project_folder/NGSpipe2go
 
 ### Select the NGSpipe2go you run ###
 

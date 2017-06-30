@@ -5,18 +5,17 @@ filbowtie2unique = {
         bpipe_version: "tested with bpipe 0.9.8.7",
         author: "Nastasja Kreim"
 
-    output.dir = FILBOWTIE2UNIQUE_MAPPED
-    
-    transform(".bam") to (".unique.bam") {
-        exec """
-            module load samtools/${SAMTOOLS_VERSION} &&
-
-            if [ -n "\$LSB_JOBID" ]; then
-                export TMPDIR=/jobdir/\${LSB_JOBID};
-            fi                                          &&
-            
-            samtools view ${input} | grep -v XS | samtools view -bhSu -T $FILBOWTIE2UNIQUE_GENOME - | samtools sort $FILBOWTIE2UNIQUE_SAMTOOLS_THREADS -T $TMPDIR/\$(basename $output.prefix) -o ${output} -
-        ""","filbowtie2unique"
-    }
+	output.dir = FILBOWTIE2UNIQUE_MAPPED
+	
+	transform(".bam") to (".unique.bam") {
+		exec """
+			module load samtools/${SAMTOOLS_VERSION} &&
+            if [ -n "\$SLURM_JOBID" ]; then
+				export TMPDIR=/jobdir/\${SLURM_JOBID};
+			fi                                          &&
+			
+			samtools view -f 2 ${input} | grep -v "XS:i:" | samtools view -bhSu -T $FILBOWTIE2UNIQUE_GENOME - | samtools sort $FILBOWTIE2UNIQUE_SAMTOOLS_THREADS -T $TMPDIR/\$(basename $output.prefix) -o ${output} -;
+		""","filbowtie2unique"
+	}
 }
 

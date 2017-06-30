@@ -23,8 +23,8 @@ strandBigWig = {
 			module load deepTools/$DEEPTOOLS_VERSION &&
 			module load samtools/$SAMTOOLS_VERSION &&
 			module load kentUtils/$KENTUTILS_VERSION &&
-			if [ -n "\$LSB_JOBID" ]; then
-				export TMPDIR=/jobdir/\${LSB_JOBID};
+			if [ -n "\$SLURM_JOBID" ]; then
+				export TMPDIR=/jobdir/\${SLURM_JOBID};
 			fi;
 			base=\$(basename $input.prefix) &&
 			echo \$base &&
