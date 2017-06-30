@@ -23,7 +23,6 @@ VariantCallUG = {
         exec """
            
             module load jdk/${JAVA_VERSION} &&
-
             if [ -n "\$SLURM_JOBID" ]; then
 				export TMPDIR=/jobdir/\${SLURM_JOBID};
 			fi                                       &&

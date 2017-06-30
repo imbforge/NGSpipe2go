@@ -8,11 +8,10 @@ Cutadapt = {
 
    transform(".fastq.gz") to (".cutadapt.fastq.gz") {
       exec """
-         echo 'VERSION INFO'  1>&2 &&
-         ${TOOL_CUTADAPT} --version 1>&2 &&
-         echo '/VERSION INFO' 1>&2 &&
 
-         ${TOOL_CUTADAPT} $ADAPTER_SEQUENCE -O $MINIMUM_OVERLAP -m $MINIMUM_LENGTH_KEEP -M $MAXIMUM_LENGTH_KEEP -o $output $input 2>&1 >> ${FASTQ_QUALITY_FILTER_OUTDIR}/cutadapt.log
+          module load cutadapt/${CUTADAPT_VERSION} &&
+
+         cutadapt $ADAPTER_SEQUENCE -O $MINIMUM_OVERLAP -m $MINIMUM_LENGTH_KEEP -M $MAXIMUM_LENGTH_KEEP -o $output $input 2>&1 >> ${FASTQ_QUALITY_FILTER_OUTDIR}/cutadapt.log
       ""","Cutadapt"
    }
 }

@@ -11,6 +11,10 @@ output:
 
 ```{r Initialise, echo=F, result='hide', error=F, warning=F, message=F}
 options(stringsAsFactors=FALSE)
+require(rmarkdown)
+require(knitr)
+require(Cairo)                                                    
+knitr::opts_chunk[['set']](dev='CairoPNG')
 source('DE.shinyrep.helpers.R')
 loadGlobalVars()
 load(SHINYREPS_DE_DESEQ, envir=.GlobalEnv)		# the outcome from the DE analysis
@@ -156,9 +160,9 @@ for(i in 1:nrow(conts)) {
     # GO Enrichment Plot
     cat("#### GO Enrichment plot", fill=T)
 
-    GO_bar_up     <- paste0(SHINYREPS_GO_ENRICHMENT, "/", gsub("=.*", "", conts[i,1]),"_GO_Barplot_upregulated_genes.png")
-    GO_network_up <- paste0(SHINYREPS_GO_ENRICHMENT, "/", gsub("=.*", "", conts[i, 1]), "_GO_network_upregulated_genes.png")
-    GO_table_up   <- paste0(SHINYREPS_GO_ENRICHMENT, "/", gsub("=.*", "", conts[i, 1]), "_GO_Enrichment_upregulated_genes.csv")
+    GO_bar_up     <- paste0(SHINYREPS_GO_ENRICHMENT, "/", gsub("=.*", "", conts[i,1]),"_GO_Barplot_up_genes.png")
+    GO_network_up <- paste0(SHINYREPS_GO_ENRICHMENT, "/", gsub("=.*", "", conts[i, 1]), "_GO_network_up_genes.png")
+    GO_table_up   <- paste0(SHINYREPS_GO_ENRICHMENT, "/", gsub("=.*", "", conts[i, 1]), "_GO_Enrichment_up_genes.csv")
     
     # if there are GO enrichment results (the barplot was created)
     if(file.exists(GO_bar_up)) {
@@ -186,9 +190,9 @@ for(i in 1:nrow(conts)) {
     }
 
 
-    GO_bar_down     <- paste0(SHINYREPS_GO_ENRICHMENT, "/", gsub("=.*", "", conts[i,1]),"_GO_Barplot_downregulated_genes.png")
-    GO_network_down <- paste0(SHINYREPS_GO_ENRICHMENT, "/", gsub("=.*", "", conts[i, 1]), "_GO_network_downregulated_genes.png")
-    GO_table_down   <- paste0(SHINYREPS_GO_ENRICHMENT, "/", gsub("=.*", "", conts[i, 1]), "_GO_Enrichment_downregulated_genes.csv")
+    GO_bar_down     <- paste0(SHINYREPS_GO_ENRICHMENT, "/", gsub("=.*", "", conts[i,1]),"_GO_Barplot_down_genes.png")
+    GO_network_down <- paste0(SHINYREPS_GO_ENRICHMENT, "/", gsub("=.*", "", conts[i, 1]), "_GO_network_down_genes.png")
+    GO_table_down   <- paste0(SHINYREPS_GO_ENRICHMENT, "/", gsub("=.*", "", conts[i, 1]), "_GO_Enrichment_down_genes.csv")
     
     # if there are GO enrichment results (the barplot was created)
     if(file.exists(GO_bar_down)) {
@@ -219,9 +223,9 @@ for(i in 1:nrow(conts)) {
     # Pathway Enrichment Plot
     cat("#### Pathway Enrichment plot", fill=T)
 
-    Pathway_bar_up     <- paste0(SHINYREPS_GO_ENRICHMENT, "/", gsub("=.*", "", conts[i,1]),"_Reactome_Barplot_upregulated_genes.png")
-    Pathway_network_up <- paste0(SHINYREPS_GO_ENRICHMENT, "/", gsub("=.*", "", conts[i, 1]), "_Reactome_network_upregulated_genes.png")
-    Pathway_table_up   <- paste0(SHINYREPS_GO_ENRICHMENT, "/", gsub("=.*", "", conts[i, 1]), "_Reactome_Pathway_Enrichment_upregulated_genes.csv")
+    Pathway_bar_up     <- paste0(SHINYREPS_GO_ENRICHMENT, "/", gsub("=.*", "", conts[i,1]),"_Reactome_Barplot_up_genes.png")
+    Pathway_network_up <- paste0(SHINYREPS_GO_ENRICHMENT, "/", gsub("=.*", "", conts[i, 1]), "_Reactome_network_up_genes.png")
+    Pathway_table_up   <- paste0(SHINYREPS_GO_ENRICHMENT, "/", gsub("=.*", "", conts[i, 1]), "_Reactome_Pathway_Enrichment_up_genes.csv")
    
     # if there are Pathway enrichment results (the barplot was created)
     if(file.exists(Pathway_bar_up)) {
@@ -248,11 +252,9 @@ for(i in 1:nrow(conts)) {
         cat("no Pathway enrichment results of the up-regulated genes available\n", fill=T)
     }
 
-
-
-    Pathway_bar_down     <- paste0(SHINYREPS_GO_ENRICHMENT, "/", gsub("=.*", "", conts[i,1]),"_Reactome_Barplot_downregulated_genes.png")
-    Pathway_network_down <- paste0(SHINYREPS_GO_ENRICHMENT, "/", gsub("=.*", "", conts[i, 1]), "_Reactome_network_downregulated_genes.png")
-    Pathway_table_down   <- paste0(SHINYREPS_GO_ENRICHMENT, "/", gsub("=.*", "", conts[i, 1]), "_Reactome_Pathway_Enrichment_downregulated_genes.csv")
+    Pathway_bar_down     <- paste0(SHINYREPS_GO_ENRICHMENT, "/", gsub("=.*", "", conts[i,1]),"_Reactome_Barplot_down_genes.png")
+    Pathway_network_down <- paste0(SHINYREPS_GO_ENRICHMENT, "/", gsub("=.*", "", conts[i, 1]), "_Reactome_network_down_genes.png")
+    Pathway_table_down   <- paste0(SHINYREPS_GO_ENRICHMENT, "/", gsub("=.*", "", conts[i, 1]), "_Reactome_Pathway_Enrichment_down_genes.csv")
    
     # if there are Pathway enrichment results (the barplot was created)
     if(file.exists(Pathway_bar_down)) {

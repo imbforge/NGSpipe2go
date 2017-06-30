@@ -1,6 +1,5 @@
 MULTIMAP_OUT_DIR=MULTI_MAPPED
-BOWTIE_PATH=TOOL_BOWTIE // bowtie bin to use
-BOWTIE_THREADS=8			// threads to use
+BOWTIE_THREADS=ESSENTIAL_THREADS			// threads to use
 BOWTIE_REF=ESSENTIAL_BOWTIE_REF // prefix of the bowtie reference genome
 BOWTIE_MM=ESSENTIAL_MISMATCHES             // number of mismatches allowed
 BOWTIE_MULTIMAP=1       // discard reads mapping to more than MULTIMAP positions

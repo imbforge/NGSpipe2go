@@ -18,7 +18,6 @@
 ## filter=TRUE              # perform automatic independent filtering of lowly expressed genes to maximise power
 ## prefix=RE                # prefix to remove from the sample name
 ## suffix=RE                # suffix to remove from the sample name (usually _readcounts.tsv)
-## base=                    # base level for comparisons
 ## cwd=.                    # current working directory where the files .tsv files are located
 ## out=DE.DESeq2            # prefix filename for output
 ##
@@ -59,7 +58,6 @@ gene.model   <- parseArgs(args,"gtf=","")       # gtf gene model
 filter.genes <- parseArgs(args,"filter=",TRUE,convert="as.logical") # automatic independent filtering
 pre          <- parseArgs(args,"prefix=","")    # prefix to remove from the sample name
 suf          <- parseArgs(args,"suffix=","_readcounts.tsv")    # suffix to remove from the sample name
-base         <- parseArgs(args,"base=",NA)      # base level
 cwd          <- parseArgs(args,"cwd=","./")     # current working directory
 out          <- parseArgs(args,"out=","DE.DESeq2") # output filename
 
@@ -125,8 +123,7 @@ res <- lapply(conts[,1],function(cont) {
 
     # create DESeq object
     dds <- DESeq(dds)
-    colData(dds)[["group"]] <- if(!is.na(base) & any(base %in% this_targets$group)) relevel(colData(dds)[["group"]], base) else relevel(colData(dds)[["group"]], factors[2])
-    res <- results(dds, independentFiltering=filter.genes, addMLE=TRUE, format="DataFrame")
+    res <- results(dds, independentFiltering=filter.genes, format="DataFrame")
 
     # calculate quantification (RPKM if gene model provided, rlog transformed values otherwise)
     quantification <- apply(fpm(dds), 2, function(x, y) 1e3 * x / y, gene.lengths[rownames(fpm(dds))])
@@ -138,10 +135,10 @@ res <- lapply(conts[,1],function(cont) {
     res$strand <- genes$strand[i]
     
     # write the results
-    x <- merge(res[, c("gene_name", "chr", "start", "end", "strand", "baseMean", "log2FoldChange", "lfcMLE", "padj")], quantification, by=0)
+    x <- merge(res[, c("gene_name", "chr", "start", "end", "strand", "baseMean", "log2FoldChange", "padj")], quantification, by=0)
     x <- x[order(x$padj),]
     
-    colnames(x)[which(colnames(x) %in% c("baseMean", "log2FoldChange", "lfcMLE", "padj"))] <- mcols(res)$description[match(c("baseMean", "log2FoldChange", "lfcMLE", "padj"), colnames(res))]
+    colnames(x)[which(colnames(x) %in% c("baseMean", "log2FoldChange", "padj"))] <- mcols(res)$description[match(c("baseMean", "log2FoldChange", "padj"), colnames(res))]
     colnames(x)[1] <- "gene_id"
 
     write.csv(x, file=paste0(out, "/", cont.name, ".csv"), row.names=F)

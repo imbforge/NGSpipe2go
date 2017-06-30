@@ -10,11 +10,9 @@ FastQC = {
 
    transform(".fastq.gz") to ("_fastqc.zip") {
       exec """
-         echo 'VERSION INFO'  1>&2 &&
-         echo \$(${TOOL_FASTQC} --version | cut -d' ' -f2) 1>&2 &&
-         echo '/VERSION INFO' 1>&2 &&
+         module load fastqc/${FASTQC_VERSION} &&
 
-         ${TOOL_FASTQC} $FASTQC_FLAGS -o $output.dir $input
+         fastqc $FASTQC_FLAGS -o $output.dir $input
       ""","FastQC"
    }
    forward input

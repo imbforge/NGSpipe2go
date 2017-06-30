@@ -11,15 +11,11 @@ MirDeep2 = {
 
 
       exec """
-         export PATH=${TOOL_DEPENDENCIES}:$PATH &&
-         export PATH=${TOOL_VIENNA}:$PATH &&
-         export PATH=${TOOL_RANDFOLD}:$PATH &&
-         export PERL5LIB=$PERL5LIB:/fsimb/groups/imb-kettinggr/common_bin/mirdeep2_0_0_7/lib/ &&
-         export PATH=${TOOL_MIRDEEP2}:$PATH &&
+         module load mirdeep2/${MIRDEEP2_VERSION} &&
 
          cd $output.dir &&
 
-         ${TOOL_MIRDEEP2}/miRDeep2.pl $input2 $GENOME_SEQ $input1 $MATURE_MIRNA none $HAIRPIN_MIRNA -t zebrafish -c -d -v -r ${EXP} -z "."${EXP} 2> ${EXP}.report.log &&
+         miRDeep2.pl $input2 $GENOME_SEQ $input1 $MATURE_MIRNA none $HAIRPIN_MIRNA -t zebrafish -c -d -v -r ${EXP} -z "."${EXP} 2> ${EXP}.report.log &&
 
          touch ${EXP}.tmp
 

@@ -11,11 +11,10 @@
 ## rData=DE_DESeq2.RData    # differentially expressed gene result from DESeq2
 ## log2Fold=2               # log2 foldchange parameter to filter out gene list
 ## padj=0.01                # padj parameter to filter out gene list
-## orgDb=org.Hs.eg.db       # genome wide annotation database for human
-## organism="human"         # organism  	 	
+## organism="human"         # organism. Currently, one of human, mouse, fly, worm, yeast
 ## univ=all                 # universe to enrich with DE genes
 ## type=gene_name           # type of key to be converted into Entrez ID
-## plotCategory=10          # number of category to be shown in the barplot
+## plotCategory=10          # number of categories to be shown in the barplot
 ## out=GO_Analysis          # output directory
 ## cores=1                  # number of cores to use
 ##
@@ -24,7 +23,12 @@ options(stringsAsFactors=FALSE)
 library(DESeq2)
 library(parallel)
 
-
+# suported organisms
+orgDb <- c(human="org.Hs.eg.db",
+           mouse="org.Mm.eg.db",
+           fly  ="org.Dm.eg.db",
+           worm ="org.Ce.eg.db",
+           yeast="org.Sc.eg.db")
 
 ##
 # get arguments from the command line
@@ -36,10 +40,9 @@ parseArgs <- function(args,string,default=NULL,convert="as.character") {
 }
 
 args     <- commandArgs(T)
-rData    <- parseArgs(args,"rData=") # result DESeq2.RData
+rData    <- parseArgs(args, "rData=") # result DESeq2.RData
 log2Fold <- parseArgs(args, "log2Fold=", 0, "as.numeric") # log2 foldchange parameter for filtering out gene list
 padj     <- parseArgs(args, "padj=", 0.01, "as.numeric") # padj parameter for filtering gene list
-orgDb    <- parseArgs(args, "orgDb=", "org.Hs.eg.db") # genome wide annotation for human
 org      <- parseArgs(args, "organism=", "human") # organism  	 	
 univ     <- parseArgs(args, "univ=", "all") # universe to compare with DE genes
 type     <- parseArgs(args, "type=", "gene_name") # type of key to be converted into entrez id
@@ -48,18 +51,19 @@ out      <- parseArgs(args,"out=", "GO_Analysis") # output directory
 cores    <- parseArgs(args, "cores=", 1, "as.numeric") # number of category to be shown in the barplot
 
 runstr <- paste("Call with: Rscript goEnrichment.R rData=<DESeq2.RData> [log2Fold=2]",
-                "[padj=0.01] [orgDb=org.Hs.eg.db] [org=human] [univ=all|express] [type=gene_name|ensembl_id]",
+                "[padj=0.01] [org=human] [univ=all|expressed] [type=gene_name|ensembl_id]",
                 "[plotCategory=10] [out=GO_Analysis] [cores=1]")
 if (!is.numeric(log2Fold)) stop("log2 foldchange not numeric. Run with:\n",runstr)
 if (!is.numeric(padj)) stop("padj not numeric. Run with:\n", runstr)
 if (!is.numeric(plotCategory)) stop("plotCategory not numeric. Run with:\n",runstr)
-if (!require(orgDb, character.only=TRUE)) stop ("Annotation DB", orgDb, " not installed\n")
+if (!(univ %in% c("all", "expressed"))) stop("univ must be one of 'all|expressed'")
+if (!(org %in% names(orgDb))) stop("Organism must be one of", paste(names(orgDb), collapse=", "))
+if (!require(orgDb[org], character.only=TRUE)) stop ("Annotation DB", orgDb[org], " not installed\n")
 if (!file.exists(out)) dir.create(out) 
 
 runstr <- paste0("Called with: Rscript goEnrichment.R rData=", rData, " log2Fold=", log2Fold, " padj=", padj,
-                 " orgDb=", orgDb," org=", org," univ=", univ," plotCategory=", plotCategory," type=", type," out=", out, " cores=", cores)
+                 " org=", org," univ=", univ," plotCategory=", plotCategory," type=", type," out=", out, " cores=", cores)
 cat(runstr)
-
 
 ##
 # gene ontology enrichment and plots
@@ -67,10 +71,65 @@ cat(runstr)
 load(rData) # load the RData
 res <- lapply(res, as.data.frame, row.names=NULL)
 
-calculateGoEnrichment <-  function(x) {
+processContrast <-  function(x) {
 
     library(clusterProfiler)
     library(ReactomePA)
+    library(Cairo)
+
+    calculateGoEnrichment <-  function(de.genes, univ.genes, suffix) {
+        # convert to entrezID downregulated/univers genes
+        getEntrezId <- function(genes) {
+            bitr(toupper(genes), fromType=if(type == "gene_name") "SYMBOL" else "ENSEMBL", toType="ENTREZID", OrgDb=orgDb[org])
+        }
+        entrezDeId   <- getEntrezId(de.genes)
+        entrezUnivId <- getEntrezId(univ.genes)
+        
+        enriched         <- enrichGO(entrezDeId$ENTREZID, OrgDb=orgDb[org], keytype="ENTREZID", ont="BP", readable=TRUE,
+                                     universe=if(univ == "all") orgDb[org] else entrezUnivId$ENTREZID)
+        enrichedKEGG     <- enrichKEGG(entrezDeId$ENTREZID, org, universe=entrezUnivId$ENTREZID)
+        enrichedReactome <- enrichPathway(entrezDeId$ENTREZID, org, readable=TRUE, universe=entrezUnivId$ENTREZID)
+
+        # write GO and Pathway enrichment tables into output file 
+        write.csv(enriched, file=paste0(out, "/", contrast, "_GO_Enrichment_", suffix, "_genes.csv"))
+        write.csv(enrichedKEGG, file=paste0(out, "/", contrast, "_KEGG_Pathway_Enrichment_", suffix, "_genes.csv"))
+        write.csv(enrichedReactome, file=paste0(out, "/", contrast, "_Reactome_Pathway_Enrichment_", suffix, "_genes.csv"))
+      
+        if(nrow(enriched) > 0) {
+            # create barplot showing GO category
+            CairoPNG(file=paste0(out, "/", contrast, "_GO_Barplot_", suffix, "_genes.png"), width=700, height=500)
+            plot(barplot(enriched, showCategory=plotCategory))
+            dev.off()
+      
+            # create network plot for the results
+            CairoPNG(file=paste0(out, "/", contrast, "_GO_network_", suffix, "_genes.png"), width=700, height=500)
+            plot(enrichMap(enriched))
+            dev.off()
+        }
+
+        if(nrow(enrichedKEGG) > 0) {
+            # create barplot showing Pathway terms
+            CairoPNG(file=paste0(out, "/", contrast, "_KEGG_Barplot_", suffix, "_genes.png"), width=700, height=500)
+            plot(barplot(enrichedKEGG, showCategory=plotCategory))
+            dev.off()
+      
+            # create network plot for the results
+            CairoPNG(file=paste0(out, "/", contrast, "_KEGG_network_", suffix, "_genes.png"), width=700, height=500)
+            plot(enrichMap(enrichedKEGG))
+            dev.off()
+        }
+        
+        if(nrow(enrichedReactome) > 0) {
+            # create barplot showing Pathway terms
+            CairoPNG(file=paste0(out, "/", contrast, "_Reactome_Barplot_", suffix, "_genes.png"), width=700, height=500)
+            plot(barplot(enrichedReactome, showCategory=plotCategory))
+            dev.off()
+            # create network plot for the results
+            CairoPNG(file=paste0(out, "/", contrast, "_Reactome_network_", suffix, "_genes.png"), width=700, height=500)
+            plot(enrichMap(enrichedReactome))
+            dev.off()
+        }
+    }
 
     # unzip res/contrast
     resultData <- x[[1]]
@@ -89,175 +148,31 @@ calculateGoEnrichment <-  function(x) {
     resultData <- resultData[resultData[, colexpression] > 0, ]
     
     # Separate enrichment analysis of GO terms and pathways for up- and downregulated genes
-    up <- resultData[, colpadj] < padj & (resultData[, colfc]) > log2Fold
+    up   <- resultData[, colpadj] < padj & (resultData[, colfc]) > log2Fold
     down <- resultData[, colpadj] < padj & (resultData[, colfc]) < log2Fold
 
-
     # GO and Pathway enrichment analysis for the upregulated genes
-    if(sum(up) == 0) {
+    if(sum(up) == 0)
         writeLines("No upregulated genes found!", paste0(out, "/", contrast, "_GO_Enrichment_upregulated_genes.csv"))
-        return()
-    }
-
-    # convert to entrezID DE upregulated/univers genes
-    getEntrezId <- function(genes) {
-        bitr(genes, fromType=if(type == "gene_name") "SYMBOL" else "ENSEMBL", toType="ENTREZID", OrgDb=orgDb)
-    }
-    entrezDeId   <- getEntrezId(resultData[up, genes])
-    entrezUnivId <- getEntrezId(resultData[  , genes])
-    
-    enriched <- enrichGO(entrezDeId[[2]], OrgDb=orgDb, keytype="ENTREZID", ont="BP", readable=TRUE,
-                         universe=if(univ == "all") orgDb else entrezUnivId[[2]])
-    
-    enrichedDAVID <- enrichDAVID(entrezDeId[[2]], idType = "ENTREZ_GENE_ID", annotation = "GOTERM_BP_ALL", 
-                                 david.user = "g.petrosino@imb-mainz.de")
-
-    enrichedKEGG <- enrichKEGG(entrezDeId[[2]], org, universe = entrezUnivId[[2]])
-
-    enrichedReactome <- enrichPathway(entrezDeId[[2]], org, readable=TRUE, 
-									 universe = entrezUnivId[[2]])
-
-    # write GO and Pathway enrichment tables into output file 
-    write.csv(enriched, file=paste0(out, "/", contrast, "_GO_Enrichment_upregulated_genes.csv"), row.names=T)
-    write.csv(enrichedDAVID, file=paste0(out, "/", contrast, "_DAVID_GO_Enrichment_upregulated_genes.csv"), row.names=T)
-    write.csv(enrichedKEGG, file=paste0(out, "/", contrast, "_KEGG_Pathway_Enrichment_upregulated_genes.csv"), row.names=T)
-    write.csv(enrichedReactome, file=paste0(out, "/", contrast, "_Reactome_Pathway_Enrichment_upregulated_genes.csv"), row.names=T)
-
-    if(nrow(enriched) > 0) {
-        # create barplot showing GO category
-        png(file=paste0(out, "/", contrast, "_GO_Barplot_upregulated_genes.png"), width=700, height=500)
-        plot(barplot(enriched, showCategory=plotCategory))
-        dev.off()
-  
-        # create network plot for the results
-        png(file=paste0(out, "/", contrast, "_GO_network_upregulated_genes.png"), width=700, height=500)
-        plot(enrichMap(enriched))
-        dev.off()
-    }
-
-    if(nrow(enrichedDAVID) > 0) {
-        # create barplot showing GO category
-        png(file=paste0(out, "/", contrast, "_DAVID_GO_Barplot_upregulated_genes.png"), width=700, height=500)
-        plot(barplot(enrichedDAVID, showCategory=plotCategory))
-        dev.off()
-  
-        # create network plot for the results
-        png(file=paste0(out, "/", contrast, "_DAVID_GO_network_upregulated_genes.png"), width=700, height=500)
-        plot(enrichMap(enrichedDAVID))
-        dev.off()
-    }
-
-    if(nrow(enrichedKEGG) > 0) {
-        # create barplot showing Pathway terms
-        png(file=paste0(out, "/", contrast, "_KEGG_Barplot_upregulated_genes.png"), width=700, height=500)
-        plot(barplot(enrichedKEGG, showCategory=plotCategory))
-        dev.off()
-  
-        # create network plot for the results
-        png(file=paste0(out, "/", contrast, "_KEGG_network_upregulated_genes.png"), width=700, height=500)
-        plot(enrichMap(enrichedKEGG))
-        dev.off()
-    }
-    
-    if(nrow(enrichedReactome) > 0) {
-        # create barplot showing Pathway terms
-        png(file=paste0(out, "/", contrast, "_Reactome_Barplot_upregulated_genes.png"), width=700, height=500)
-        plot(barplot(enrichedReactome, showCategory=plotCategory))
-        dev.off()
-        # create network plot for the results
-        png(file=paste0(out, "/", contrast, "_Reactome_network_upregulated_genes.png"), width=700, height=500)
-        plot(enrichMap(enrichedReactome))
-        dev.off()
-    }
-
-
+    else
+        calculateGoEnrichment(resultData[up, genes], resultData[, genes], "up")
 
     # GO and Pathway enrichment analysis for the downregulated genes
-    if(sum(down) == 0) {
+    if(sum(down) == 0)
         writeLines("No downregulated genes found!", paste0(out, "/", contrast, "_GO_Enrichment_downregulated_genes.csv"))
-        return()
-    }
-    # convert to entrezID downregulated/univers genes
-    getEntrezId <- function(genes) {
-        bitr(genes, fromType=if(type == "gene_name") "SYMBOL" else "ENSEMBL", toType="ENTREZID", OrgDb=orgDb)
-    }
-    entrezDeId   <- getEntrezId(resultData[down, genes])
-    entrezUnivId <- getEntrezId(resultData[  , genes])
-    
-    enriched <- enrichGO(entrezDeId[[2]], OrgDb=orgDb, keytype="ENTREZID", ont="BP", readable=TRUE,
-                         universe=if(univ == "all") orgDb else entrezUnivId[[2]])
+    else
+        calculateGoEnrichment(resultData[down, genes], resultData[, genes], "down")
 
-    enrichedDAVID <- enrichDAVID(entrezDeId[[2]], idType = "ENTREZ_GENE_ID", annotation = "GOTERM_BP_ALL", 
-                                 david.user = "g.petrosino@imb-mainz.de")
-    
-    enrichedKEGG <- enrichKEGG(entrezDeId[[2]], org, universe = entrezUnivId[[2]])
-
-    enrichedReactome <- enrichPathway(entrezDeId[[2]], org, readable=TRUE, 
-									 universe = entrezUnivId[[2]])
-
-    # write GO and Pathway enrichment tables into output file 
-    write.csv(enriched, file=paste0(out, "/", contrast, "_GO_Enrichment_downregulated_genes.csv"), row.names=T)
-    write.csv(enrichedDAVID, file=paste0(out, "/", contrast, "_DAVID_GO_Enrichment_downregulated_genes.csv"), row.names=T)
-    write.csv(enrichedKEGG, file=paste0(out, "/", contrast, "_KEGG_Pathway_Enrichment_downregulated_genes.csv"), row.names=T)
-    write.csv(enrichedReactome, file=paste0(out, "/", contrast, "_Reactome_Pathway_Enrichment_downregulated_genes.csv"), row.names=T)
-  
-    if(nrow(enriched) > 0) {
-        # create barplot showing GO category
-        png(file=paste0(out, "/", contrast, "_GO_Barplot_downregulated_genes.png"), width=700, height=500)
-        plot(barplot(enriched, showCategory=plotCategory))
-        dev.off()
-  
-        # create network plot for the results
-        png(file=paste0(out, "/", contrast, "_GO_network_downregulated_genes.png"), width=700, height=500)
-        plot(enrichMap(enriched))
-        dev.off()
-    }
-
-    if(nrow(enrichedDAVID) > 0) {
-        # create barplot showing GO category
-        png(file=paste0(out, "/", contrast, "_DAVID_GO_Barplot_downregulated_genes.png"), width=700, height=500)
-        plot(barplot(enrichedDAVID, showCategory=plotCategory))
-        dev.off()
-  
-        # create network plot for the results
-        png(file=paste0(out, "/", contrast, "_DAVID_GO_network_downregulated_genes.png"), width=700, height=500)
-        plot(enrichMap(enrichedDAVID))
-        dev.off()
-    }
-
-    if(nrow(enrichedKEGG) > 0) {
-        # create barplot showing Pathway terms
-        png(file=paste0(out, "/", contrast, "_KEGG_Barplot_downregulated_genes.png"), width=700, height=500)
-        plot(barplot(enrichedKEGG, showCategory=plotCategory))
-        dev.off()
-  
-        # create network plot for the results
-        png(file=paste0(out, "/", contrast, "_KEGG_network_downregulated_genes.png"), width=700, height=500)
-        plot(enrichMap(enrichedKEGG))
-        dev.off()
-    }
-    
-    if(nrow(enrichedReactome) > 0) {
-        # create barplot showing Pathway terms
-        png(file=paste0(out, "/", contrast, "_Reactome_Barplot_downregulated_genes.png"), width=700, height=500)
-        plot(barplot(enrichedReactome, showCategory=plotCategory))
-        dev.off()
-        # create network plot for the results
-        png(file=paste0(out, "/", contrast, "_Reactome_network_downregulated_genes.png"), width=700, height=500)
-        plot(enrichMap(enrichedReactome))
-        dev.off()
-    }
-
+    invisible(0)
 }
-
 
 if(cores > 1) {
     cl <- makeCluster(cores)
     clusterExport(cl, c("log2Fold", "padj", "orgDb", "org", "univ", "type", "plotCategory", "out"))
-    parLapply(cl, zipup(res, names(res)), calculateGoEnrichment)
+    parLapply(cl, zipup(res, names(res)), processContrast)
     stopCluster(cl)
 } else {
-    lapply(zipup(res, names(res)), calculateGoEnrichment)
+    lapply(zipup(res, names(res)), processContrast)
 }
 
 # save the sessionInformation

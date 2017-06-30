@@ -8,6 +8,9 @@ PlotReadLengths = {
 
    produce("figure/PercentageReadsLengthDistribution.pdf"){
       exec """
+
+         module load R/${R_VERSION} &&
+         
          if [ -n "\$LSB_JOBID" ]; then
             export TMPDIR=/jobdir/\${LSB_JOBID};
          fi &&

@@ -9,12 +9,10 @@ MappingStatsPlot = {
 	produce(MAPPING_STATS_OUTDIR + "/figure/totalReads.pdf") {
 
       exec """
-         echo 'VERSION INFO'  1>&2 &&
-         echo \$(${TOOL_R}/bin/Rscript --version 2>&1 | cut -d' ' -f5) 1>&2 &&
-         echo '/VERSION INFO'  1>&2 &&
+         module load R/${R_VERSION} &&
 
          cd ${MAPPING_STATS_OUTDIR} &&
-			${TOOL_R}/bin/Rscript ${MAPPING_STATS_TOOL}
+		 Rscript ${MAPPING_STATS_TOOL}
 
 		""","MappingStatsPlot"
 	}

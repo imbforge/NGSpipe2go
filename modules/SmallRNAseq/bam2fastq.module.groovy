@@ -3,19 +3,14 @@
 Bam2FastQ = {
    doc title: "Bam2FastQ",
       desc:  "Call bedtools to create a new BAM with only the reads mapped to the genome.",
-
       author: "Antonio Domingues"
 
    output.dir = FQ_OUT_DIR
 
    transform(".bam") to(".fq.gz") {
       exec """
-         echo 'VERSION INFO'  1>&2 &&
-         echo \$(${TOOL_BEDTOOLS}/bamToFastq -h 2>&1 | grep 'Version') 1>&2 &&
-         echo '/VERSION INFO' 1>&2 &&
-
-         ${TOOL_BEDTOOLS}/bamToFastq -i $input | gzip > $output
-
+         module load bedtools/${BEDTOOLS_VERSION} &&
+         bamToFastq -i $input | gzip > $output
       ""","Bam2FastQ"
    }
 }

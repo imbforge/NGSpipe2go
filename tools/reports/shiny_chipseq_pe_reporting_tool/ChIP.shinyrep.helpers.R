@@ -219,6 +219,68 @@ ChIPhelper.Bowtie <- function() {
 }
 
 ##
+## ChIPhelper.BOWTIE2PE: parse bowtie2 paired end mapping log files and create a md table
+##
+ChIPhelper.Bowtie2PE <- function() {
+    
+    # log file
+    LOG <- SHINYREPS_BOWTIE_LOG
+    if(!file.exists(LOG)) {
+        return("Bowtie statistics not available")
+    }
+    
+    # look for the lines containing the strings
+    # and get the values associated with this strings
+    x <- sapply(list.files(LOG), function(f) {
+        
+        x <- file(paste0(LOG, "/", f))
+        l <- readLines(x)
+        close(x)
+        
+	stat.lines <- c("were paired",
+			"aligned concordantly exactly 1 time",
+			"aligned concordantly >1 times",
+			"aligned concordantly 0 times$",
+			"aligned discordantly 1 time",
+			"aligned exactly 1 time",
+			"aligned >1 times",
+			"aligned 0 times$",
+			"overall alignment rate")
+			
+	stats <- sapply(l[sapply(stat.lines, grep, x=l)], 
+                 function(x) { 
+                     sub("^\\s+", "", gsub(" \\(.*", "", x))
+                 })	
+	#recount the percentages for the stats
+	stat.all <- stats[9]
+	stats <- as.numeric(stats[-9])
+	# and add the duplicates information
+        f <- gsub(".bam.log", ".unique.dupmarked.bam.log", f)
+        dups <- if(file.exists(paste0(SHINYREPS_MARKDUPS_LOG, "/", f))) {
+            x <- file(paste0(SHINYREPS_MARKDUPS_LOG, "/", f))
+            l <- readLines(x)
+            close(x)
+            gsub(".+Marking (\\d+) records as duplicates.+", "\\1", l[grep("Marking \\d+ records as duplicates", l)])
+        } else {
+            "not available"
+        }
+        
+        dups <- paste0(dups, " (", format(as.numeric(dups)/as.numeric(stats[2])*100, digits=2), "%)") 
+   	stats.percent <- paste0("(", format((stats/stats[1])*100, digits=2), "%)")
+	stats <- paste0(format(stats, big.mark=","), " ", stats.percent)
+        stats <- c(stats, stat.all)
+	stat.lines <- gsub("\\$", "", stat.lines)
+	names(stats) <- stat.lines
+        c(stats, duplicates=dups)
+    })
+
+    # set row and column names, and output the md table
+    colnames(x) <- gsub(paste0("^", SHINYREPS_PREFIX), "", colnames(x))
+    colnames(x) <- gsub(".bam.log$", "", colnames(x))
+    rownames(x)[1] <- "all reads"
+    kable(t(x), align=c(rep("r",10)), output=F, format="markdown", row.names=T)
+}
+##
 ## ChIPhelper.Fastqc: go through Fastqc output dir and create a md table with the duplication & read quals & sequence bias plots
 ##
 ChIPhelper.Fastqc <- function(web=TRUE) {
@@ -303,6 +365,82 @@ ChIPhelper.IPstrength<- function(web=TRUE) {
     colnames(df.names) <- rep(" ", COLUMNS)
     
     kable(as.data.frame(df.names), output=F, align="c", format="markdown")
+}
+
+##
+## ChIPhelper.peakAnnotation: go through Peak_Annotation output dir and create a md table with 
+##      the coverage plots
+##
+ChIPhelper.peakAnnotationCoverage <- function(web=TRUE) {
+  # check if peak annotation results are available
+  if(!file.exists(SHINYREPS_PEAK_ANNOTATION)){
+    return("Peak annotation results not available")  
+  }
+  
+  if(!is.integer(SHINYREPS_PLOTS_COLUMN) | SHINYREPS_PLOTS_COLUMN < 2) {
+    SHINYREPS_PLOTS_COLUMN <- 3L    # default to 3 columns
+  }
+  
+  # construct the image url from the folder contents (skip current dir .)
+  samples <- list.files(SHINYREPS_PEAK_ANNOTATION, pattern="_ChIPseq_Peaks_Coverageplot.png$")
+  COLUMNS <- min(length(samples), SHINYREPS_PLOTS_COLUMN)
+  df <- sapply(samples, function(f) {
+    paste0("![Peak_Annotation img](", SHINYREPS_PEAK_ANNOTATION, "/", basename(f), ")")
+  })
+  
+  # put sample names and output an md table of COLUMN columns
+  while(length(df) %% COLUMNS != 0) df <- c(df, "")
+  samples <- sapply(df, function(x) {
+    x <- sapply(x, function(x) gsub(paste0("^", SHINYREPS_PREFIX), "", basename(x)))
+    sapply(gsub("_ChIPseq_Peaks_Coverageplot.png)$", "", x), shorten)
+  })
+  df      <- matrix(df     , ncol=COLUMNS, byrow=T)
+  samples <- matrix(samples, ncol=COLUMNS, byrow=T)
+  
+  # add a row with the sample names
+  df.names <- matrix(sapply(1:nrow(df), function(i) { c(df[i, ], samples[i, ]) }), 
+                     ncol=COLUMNS, byrow=T)
+  colnames(df.names) <- rep(" ", COLUMNS)
+  
+  kable(as.data.frame(df.names), output=F, align="c", format="markdown")
+}
+
+##
+## ChIPhelper.peakAnnotationUpSet: go through Peak_Annotation output dir and create a md table with 
+##      the UpSet plots
+##
+ChIPhelper.peakAnnotationUpSet <- function(web=TRUE) {
+  # check if peak annotation results are available
+  if(!file.exists(SHINYREPS_PEAK_ANNOTATION)){
+    return("Peak annotation results not available")  
+  }
+  
+  if(!is.integer(SHINYREPS_PLOTS_COLUMN) | SHINYREPS_PLOTS_COLUMN < 2) {
+    SHINYREPS_PLOTS_COLUMN <- 3L    # default to 3 columns
+  }
+  
+  # construct the image url from the folder contents (skip current dir .)
+  samples <- list.files(SHINYREPS_PEAK_ANNOTATION, pattern="_ChIPseq_UpSetplot.png$")
+  COLUMNS <- min(length(samples), SHINYREPS_PLOTS_COLUMN)
+  df <- sapply(samples, function(f) {
+    paste0("![Peak_Annotation img](", SHINYREPS_PEAK_ANNOTATION, "/", basename(f), ")")
+  })
+  
+  # put sample names and output an md table of COLUMN columns
+  while(length(df) %% COLUMNS != 0) df <- c(df, "")
+  samples <- sapply(df, function(x) {
+    x <- sapply(x, function(x) gsub(paste0("^", SHINYREPS_PREFIX), "", basename(x)))
+    sapply(gsub("_ChIPseq_UpSetplot.png)$", "", x), shorten)
+  })
+  df      <- matrix(df     , ncol=COLUMNS, byrow=T)
+  samples <- matrix(samples, ncol=COLUMNS, byrow=T)
+  
+  # add a row with the sample names
+  df.names <- matrix(sapply(1:nrow(df), function(i) { c(df[i, ], samples[i, ]) }), 
+                     ncol=COLUMNS, byrow=T)
+  colnames(df.names) <- rep(" ", COLUMNS)
+  
+  kable(as.data.frame(df.names), output=F, align="c", format="markdown")
 }
 
 ##

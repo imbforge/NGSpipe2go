@@ -31,13 +31,12 @@ SubReadCount = {
    // run the chunk
    from("*.bam") produce("featureCounts_summary.txt") {
       exec """
+
+         module load subread/${SUBREAD_VERSION} &&
+
          if [ -n "\$LSB_JOBID" ]; then
             export TMPDIR=/jobdir/\${LSB_JOBID};
          fi &&
-
-         echo 'VERSION INFO'  1>&2 ;
-         echo \$(featureCounts 2>&1 | grep Version | cut -d' ' -f2) 1>&2 ;
-         echo '/VERSION INFO' 1>&2 ;
 
          featureCounts $SUBREAD_FLAGS -o $output $inputs 2> ${output.prefix}_subreadlog.stderr
 

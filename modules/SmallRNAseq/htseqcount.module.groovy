@@ -35,9 +35,6 @@ HTseqCount = {
             export TMPDIR=/jobdir/\${LSB_JOBID};
          fi &&
 
-         echo 'VERSION INFO'  1>&2 ;
-         echo \$(htseq-count 2>&1 | grep version) 1>&2 ;
-         echo '/VERSION INFO' 1>&2 ;
 
          htseq-count $HTSEQCOUNT_FLAGS $input $HTSEQCOUNT_GENESGTF > $output 2> ${output.prefix}_htseqcountlog.stderr
 

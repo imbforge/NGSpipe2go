@@ -12,11 +12,9 @@ FastQQualityFilter = {
 
    transform(".cutadapt.fastq.gz") to (".highQ.fastq.gz") {
       exec """
-         echo 'VERSION INFO'  1>&2 &&
-         echo \$(${TOOL_FASTX}/fastq_quality_filter -h 2>&1 | grep 'Toolkit') 1>&2 &&
-         echo '/VERSION INFO'  1>&2 &&
+         module load fastx_toolkit/${FASTX_VERSION} &&
 
-         zcat $input | ${TOOL_FASTX}/fastq_quality_filter $FASTQ_QUALITY_FILTER_FLAGS -o $output
+         zcat $input | fastq_quality_filter $FASTQ_QUALITY_FILTER_FLAGS -o $output
       ""","FastQQualityFilter"
    }
 }

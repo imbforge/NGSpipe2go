@@ -12,7 +12,6 @@ FilterRNAClasses = {
          if [ -n "\$LSB_JOBID" ]; then
             export TMPDIR=/jobdir/\${LSB_JOBID};
          fi &&
-         source ${TOOL_PYTHONENV} &&
 
          python $FILTER_CLASSES_TOOL_PATH -i $input -c 21U -o $output1 &&
          python $FILTER_CLASSES_TOOL_PATH -i $input -c 22G -o $output2 &&

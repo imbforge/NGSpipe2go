@@ -1,0 +1,7 @@
+REPENR_OUT_DIR=RESULTS + "/repEnrich"
+BOWTIE_RE_OTHER="-t -m 1 -q --sam "
+REPEAT_REF=ESSENTIAL_REPEAT_REF
+REPEAT_MASKER=ESSENTIAL_REPEAT_MASKER
+REPENRICH_CORES=Integer.toString(ESSENTIAL_THREADS)
+REPENRICH_BED="FALSE" // TRUE for custom repeat annotations
+                      // 

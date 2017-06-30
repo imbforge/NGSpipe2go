@@ -1,18 +1,17 @@
 //rule for task rMats from catalog miscellaneous, version 1
 //desc: preform RMats analysis for the contrast target files as produced by PREMATS
 rMATS = {
-	doc title: "rMats Wrapper for alternative splicing evencts",
-		desc:  "Differential expression analysis for alternative splicing events",
-		constraints: "",
-		author: "Nastasja Kreim"
+    doc title: "rMats Wrapper for alternative splicing evencts",
+        desc:  "Differential expression analysis for alternative splicing events",
+        constraints: "",
+        author: "Nastasja Kreim"
 
-	output.dir = RMATS_OUTDIR
-	
-	// run the chunk
-	transform (".txt") to (".done") {
-		exec """
-			module load rmats/${RMATS_VERSION} &&
-
+    output.dir = RMATS_OUTDIR
+    
+    // run the chunk
+    transform (".txt") to (".done") {
+        exec """
+            module load rmats/${RMATS_VERSION} &&
 			if [ -n "\$SLURM_JOBID" ]; then
 				export TMPDIR=/jobdir/\${SLURM_JOBID};
 			fi;
@@ -39,7 +38,6 @@ rMATS = {
 				touch $output;
 				echo "python ${TOOL_RMATS}/RNASeq-MATS.py -b1 \$group0 -b2 \$group1 -t \$PAIRED -gtf $RMATS_GTF -a $RMATS_ANCHOR -c $RMATS_CUTOFF -analysis $RMATS_TYPE -len $RMATS_LEN  \$PAIRED_ARGS -o $output.dir/\${input_var%_targets_rMats.txt}_rMats" > $output;
 				""","rMATS"
-}
-
+        }
 }
 
