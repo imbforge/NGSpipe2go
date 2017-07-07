@@ -14,7 +14,7 @@ filbowtie2unique = {
 				export TMPDIR=/jobdir/\${SLURM_JOBID};
 			fi                                          &&
 			
-			samtools view -f 2 ${input} | grep -v "XS:i:" | samtools view -bhSu -T $FILBOWTIE2UNIQUE_GENOME - | samtools sort $FILBOWTIE2UNIQUE_SAMTOOLS_THREADS -T $TMPDIR/\$(basename $output.prefix) -o ${output} -;
+			samtools view -f 2 $FILBOWTIE2UNIQUE_SAMTOOLS_MAPQ -bhu ${input} | samtools sort $FILBOWTIE2UNIQUE_SAMTOOLS_THREADS -T $TMPDIR/\$(basename $output.prefix) -o ${output} -;
 		""","filbowtie2unique"
 	}
 }
