@@ -240,11 +240,9 @@ ChIPhelper.Bowtie2PE <- function() {
 	stat.lines <- c("were paired",
 			"aligned concordantly exactly 1 time",
 			"aligned concordantly >1 times",
-			"aligned concordantly 0 times$",
 			"aligned discordantly 1 time",
 			"aligned exactly 1 time",
 			"aligned >1 times",
-			"aligned 0 times$",
 			"overall alignment rate")
 			
 	stats <- sapply(l[sapply(stat.lines, grep, x=l)], 
@@ -252,32 +250,29 @@ ChIPhelper.Bowtie2PE <- function() {
                      sub("^\\s+", "", gsub(" \\(.*", "", x))
                  })	
 	#recount the percentages for the stats
-	stat.all <- stats[9]
-	stats <- as.numeric(stats[-9])
+	stat.all <- stats[grep("overall alignment rate", names(stats))]
+	stat.all <- gsub("overall alignment rate", "", stat.all)
+	stats <- as.numeric(stats[!grepl("overall alignment rate", stats)])
 	# and add the duplicates information
-        f <- gsub(".bam.log", ".unique.dupmarked.bam.log", f)
-        dups <- if(file.exists(paste0(SHINYREPS_MARKDUPS_LOG, "/", f))) {
-            x <- file(paste0(SHINYREPS_MARKDUPS_LOG, "/", f))
-            l <- readLines(x)
-            close(x)
-            gsub(".+Marking (\\d+) records as duplicates.+", "\\1", l[grep("Marking \\d+ records as duplicates", l)])
-        } else {
-            "not available"
-        }
-        
-        dups <- paste0(dups, " (", format(as.numeric(dups)/as.numeric(stats[2])*100, digits=2), "%)") 
    	stats.percent <- paste0("(", format((stats/stats[1])*100, digits=2), "%)")
 	stats <- paste0(format(stats, big.mark=","), " ", stats.percent)
         stats <- c(stats, stat.all)
 	stat.lines <- gsub("\\$", "", stat.lines)
-	names(stats) <- stat.lines
-        c(stats, duplicates=dups)
-    })
+	stat.names <- c("# pairs",
+			"unique",
+			"multi",
+			"discordantly",
+			"single unique",
+			"single multi",
+			"overall align. rate")
+	names(stats) <- stat.names
+	return(stats)    
+})
 
     # set row and column names, and output the md table
     colnames(x) <- gsub(paste0("^", SHINYREPS_PREFIX), "", colnames(x))
     colnames(x) <- gsub(".bam.log$", "", colnames(x))
-    rownames(x)[1] <- "all reads"
+    rownames(x)[1] <- "all pairs"
     kable(t(x), align=c(rep("r",10)), output=F, format="markdown", row.names=T)
 }
 ##
