@@ -98,35 +98,35 @@ processContrast <-  function(x) {
         if(nrow(enriched) > 0) {
             # create barplot showing GO category
             CairoPNG(file=paste0(out, "/", contrast, "_GO_Barplot_", suffix, "_genes.png"), width=700, height=500)
-            plot(barplot(enriched, showCategory=plotCategory))
+            print(barplot(enriched, showCategory=plotCategory))
             dev.off()
       
             # create network plot for the results
             CairoPNG(file=paste0(out, "/", contrast, "_GO_network_", suffix, "_genes.png"), width=700, height=500)
-            plot(enrichMap(enriched))
+            print(enrichMap(enriched))
             dev.off()
         }
 
         if(nrow(enrichedKEGG) > 0) {
             # create barplot showing Pathway terms
             CairoPNG(file=paste0(out, "/", contrast, "_KEGG_Barplot_", suffix, "_genes.png"), width=700, height=500)
-            plot(barplot(enrichedKEGG, showCategory=plotCategory))
+            print(barplot(enrichedKEGG, showCategory=plotCategory))
             dev.off()
       
             # create network plot for the results
             CairoPNG(file=paste0(out, "/", contrast, "_KEGG_network_", suffix, "_genes.png"), width=700, height=500)
-            plot(enrichMap(enrichedKEGG))
+            print(enrichMap(enrichedKEGG))
             dev.off()
         }
         
         if(nrow(enrichedReactome) > 0) {
             # create barplot showing Pathway terms
             CairoPNG(file=paste0(out, "/", contrast, "_Reactome_Barplot_", suffix, "_genes.png"), width=700, height=500)
-            plot(barplot(enrichedReactome, showCategory=plotCategory))
+            print(barplot(enrichedReactome, showCategory=plotCategory))
             dev.off()
             # create network plot for the results
             CairoPNG(file=paste0(out, "/", contrast, "_Reactome_network_", suffix, "_genes.png"), width=700, height=500)
-            plot(enrichMap(enrichedReactome))
+            print(enrichMap(enrichedReactome))
             dev.off()
         }
     }
