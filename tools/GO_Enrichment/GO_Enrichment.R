@@ -28,7 +28,7 @@ orgDb <- c(human="org.Hs.eg.db",
            mouse="org.Mm.eg.db",
            fly  ="org.Dm.eg.db",
            worm ="org.Ce.eg.db",
-           yeast="org.Sc.eg.db")
+           yeast="org.Sc.sgd.db")
 
 ##
 # get arguments from the command line
