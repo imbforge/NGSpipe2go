@@ -34,7 +34,7 @@ DE_DESeq2_MM = {
             done &&
 
             Rscript ${TOOL_DESeq2}/DE_DESeq2.R $DE_DESeq2_MM_FLAGS
-        ""","DE_DESeq2"
+        ""","DE_DESeq2_MM"
     }
 }
 
