@@ -7,9 +7,6 @@ load MODULE_FOLDER + "RNAseq/tool.versions.groovy"
 load MODULE_FOLDER + "NGS/fastqc.vars.groovy"
 load MODULE_FOLDER + "NGS/fastqc.module.groovy"
 
-load MODULE_FOLDER + "RNAseq/starfusion.vars.groovy"
-load MODULE_FOLDER + "RNAseq/starfusion.module.groovy"
-
 load MODULE_FOLDER + "RNAseq/star.vars.groovy"
 load MODULE_FOLDER + "RNAseq/star.module.groovy"
 
