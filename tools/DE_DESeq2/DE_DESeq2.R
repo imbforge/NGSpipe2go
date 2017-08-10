@@ -121,6 +121,9 @@ res <- lapply(conts[,1],function(cont) {
                                       directory=cwd, 
                                       design=as.formula(mmatrix))
 
+    # relevel to make sure the comparison is done in the right direction (B vs A and not A vs B)
+    dds$group <- relevel(dds$group, factors[2])
+
     # create DESeq object
     dds <- DESeq(dds)
     res <- results(dds, independentFiltering=filter.genes, format="DataFrame")
