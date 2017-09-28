@@ -43,5 +43,5 @@ load MODULE_FOLDER + "ChIPseq/shinyreports_pe.module.groovy"
 
 //MAIN PIPELINE TASK
 run {
-    "%.fastq.gz" * [ FastQC ] + "%_R*.fastq.gz" * [ bowtie2_pe + BAMindexer + filbowtie2unique + BAMindexer + [ MarkDups + BAMindexer, bamCoverage, InsertSize, pbc, ipstrength, macs2 ] ] + peak_annotation + collectBpipeLogs + shinyReports
+    "%.fastq.gz" * [ FastQC ] + "%.R*.fastq.gz" * [ bowtie2_pe + BAMindexer + filbowtie2unique + BAMindexer + [ MarkDups + BAMindexer, bamCoverage, InsertSize, pbc, ipstrength, macs2 ] ] + peak_annotation + collectBpipeLogs + shinyReports
 }

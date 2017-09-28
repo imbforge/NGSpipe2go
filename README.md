@@ -105,7 +105,11 @@ Adjust the information found in the following files:
 
 We suggest to put the input files to a folder, e.g. project_folder/rawdata.
 
-To start running the pipeline (tested for bpipe-0.9.8.7)
+Load the bpipe module 
+
+    module load bpipe/0.9.9.3.slurm
+
+To start running the pipeline 
 
     bpipe run rnaseq_v1.2.txt rawdata/*.fastq.gz
 or

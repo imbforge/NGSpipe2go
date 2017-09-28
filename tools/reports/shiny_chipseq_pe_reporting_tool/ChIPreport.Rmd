@@ -41,7 +41,8 @@ cat(ChIPhelper.Fastqc(web=F),sep="\n")
 
 ## Read mapping ##
 
-Mapping to the reference genome was done using the established NGS mapping tool Bowtie2 (http://bowtie-bio.sourceforge.net/bowtie2). The mapping statistics show the total number of reads delivered to the aligner ("all reads"), the percentage of paired-end (PE) reads ("paired"), the number of PE reads which are failed to align concordantly ("unmapped"), the number of PE reads which have a unique alignment ("uniquely mapped") and the number of PE reads which are mapped to multiple places ("multiple mapped"):
+Mapping to the reference genome was done using the established NGS mapping tool Bowtie2 (http://bowtie-bio.sourceforge.net/bowtie2). 
+The mapping statistics show the total number of reads delivered to the aligner ("all pairs"), the number of read pairs mapping concordantly to one location  ("unique"), the number of read pairs mapping concordantly to multiple locations ("multi"), the number of read pairs mapping discordantly to one location ("discordantly"), the number of reads pairs where only one reads maps to one location ("single unique"), the number of read pairs where only one read maps to multiple locations ("single multi") and the overall alignment rate (this is based on the amount of pairs aligned, read pairs in which only one read is mapped are taken into account as half a pair). Percentages are based on the amount of pairs sequenced "all pairs".
 
 ```{r Bowtie_paragraph, echo=F,results='asis',error=F,warning=F,message=F}
 cat(ChIPhelper.Bowtie2PE(),sep="\n")
@@ -59,7 +60,7 @@ cat(DEhelper.insertsize(), sep="\n")
 
 The PBC (PCR bottleneck coefficient) is an approximate measure of library complexity. Provisionally, 0-0.5 is severe bottlenecking, 0.5-0.8 is moderate bottlenecking, 0.8-0.9 is mild bottlenecking, while 0.9-1.0 is no bottlenecking.
 
-Very low values can indicate a technical problem, such as PCR bias, or a biological finding, such as a very rare genomic feature. Nuclease-based assays (DNase, MNase) detecting features with base-pair resolution (transcription factor footprints, positioned nucleosomes) are expected to recover the same read multiple times, resulting in a lower PBC score for these assays. Note that the most complex library, random DNA, would approach 1.0, thus the very highest values can indicate technical problems with libraries. Some common numbers from ENCODE datasets are: 82% for TF ChIP, 89% for His ChIP, 77% for DNase, 98% for FAIRE, and 97% for control ENCODE datasets have no or mild bottlenecking.
+Low values can indicate a technical problem, such as library complexity bottleneck. Nuclease-based assays (DNase, MNase) detecting features with base-pair resolution (transcription factor footprints, positioned nucleosomes) are expected to recover the same read multiple times, resulting in a lower PBC score for these assays. Note that the most complex library, random DNA, would approach 1.0, thus the very highest values can indicate technical problems with libraries. Some common numbers from ENCODE datasets are: 82% for TF ChIPs, 89% for Histone ChIPs, 77% for DNase, 98% for FAIRE, and 97% for control ENCODE datasets with no or mild bottlenecking.
 
 ```{r PBC_paragraph, echo=F,results='asis',error=F,warning=F,message=F}
 cat(ChIPhelper.PBC(),sep="\n")
@@ -82,7 +83,7 @@ The plot is useful to detect several forms of biases:
 
 ## ChIP-seq peaks ##
 
-The number of peaks called at the default fasle-disovery rate (FDR) cutoff of 1% by MACS2 (https://github.com/taoliu/MACS/) in the different comparisons is shown below.
+The number of peaks called at the default fasle-disovery rate (FDR) cutoff of 5% by MACS2 (https://github.com/taoliu/MACS/) in the different comparisons is shown below.
 
 ```{r PeakCall_paragraph, echo=F,results='asis',error=F,warning=F,message=F}
 peaks <- ChIPhelper.init("readPeaks")

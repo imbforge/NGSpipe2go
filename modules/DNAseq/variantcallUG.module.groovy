@@ -23,12 +23,11 @@ VariantCallUG = {
         exec """
            
             module load jdk/${JAVA_VERSION} &&
-
-            if [ -n "\$LSB_JOBID" ]; then
-				export TMPDIR=/jobdir/\${LSB_JOBID};
+            if [ -n "\$SLURM_JOBID" ]; then
+				export TMPDIR=/jobdir/\${SLURM_JOBID};
 			fi                                       &&
 
-            java -Djava.io.tmpdir=$TMPDIR -jar ${TOOL_GATK}/GenomeAnalysisTK.jar -T UnifiedGenotyper -nt $GATK_THREADS -nct $GATK_THREADS -R $GATK_BWA_REF -glm BOTH -I $input -o $output $GATK_FLAGS
+            java -Djava.io.tmpdir=$TMPDIR -jar ${TOOL_GATK}/GenomeAnalysisTK.jar -T UnifiedGenotyper -nt $GATK_THREADS -nct $GATK_THREADS -R $GATK_BWA_REF -glm BOTH -I $input -o $output $GATK_FLAGS;
         ""","VariantCallUG"
     }
     

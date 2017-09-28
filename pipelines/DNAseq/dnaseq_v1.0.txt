@@ -28,6 +28,9 @@ load MODULE_FOLDER + "DNAseq/variantcallHC.module.groovy"
 load MODULE_FOLDER + "DNAseq/variantcallUG.vars.groovy"
 load MODULE_FOLDER + "DNAseq/variantcallUG.module.groovy"
 
+load MODULE_FOLDER + "DNAseq/variantfuseHC.vars.groovy"
+load MODULE_FOLDER + "DNAseq/variantfuseHC.module.groovy"
+
 load MODULE_FOLDER + "DNAseq/varianteval.vars.groovy"
 load MODULE_FOLDER + "DNAseq/varianteval.module.groovy"
 
@@ -38,6 +41,6 @@ load MODULE_FOLDER + "DNAseq/shinyreports.module.groovy"
 
 run {
     //"%.fastq.gz" * [ FastQC ] + "%read_*.fastq.gz" * [ BWA_pe ]
-    "%.fastq.gz" * [ FastQC ] + "%read_*.fastq.gz" * [ BWA_pe ] + "%.bam" * [ RmDups + BAMindexer + IndelRealignment + BaseRecalibration + [ VariantCallHC, VariantCallUG ] ] + "%.vcf.gz" * [ VariantEval ] + collectBpipeLogs + shinyReports
+    "%.fastq.gz" * [ FastQC ] + "%_R*.fastq.gz" * [ BWA_pe ] + "%.bam" * [ RmDups + BAMindexer + IndelRealignment + BaseRecalibration + [ VariantCallHC, VariantCallUG, VariantFuseHC ] ] + "%.vcf.gz" * [ VariantEval ] + collectBpipeLogs + shinyReports
     // "%.fastq.gz" * [ FastQC ] + "%read_*.fastq.gz" * [ BWA_pe ] + "%.bam" * [ MarkDups + IndelRealignment + BaseRecalibrate + HaplotypeCall ]
     }

@@ -11,7 +11,7 @@ bowtie2_pe = {
     def OUTPUTFILE = input1
     int path_index = OUTPUTFILE.lastIndexOf("/")
     OUTPUTFILE = OUTPUTFILE.substring(path_index+1)
-    OUTPUTFILE = (OUTPUTFILE =~ /_R1.fastq.gz/).replaceFirst("")
+    OUTPUTFILE = (OUTPUTFILE =~ /.R1.fastq.gz/).replaceFirst("")
 
 
     def BOWTIE2_FLAGS = "-q "  +
@@ -27,13 +27,14 @@ bowtie2_pe = {
         exec """
             module load bowtie2/${BOWTIE2_VERSION}   &&
             module load samtools/${SAMTOOLS_VERSION} &&
-
-            if [ -n "\$LSB_JOBID" ]; then
-                export TMPDIR=/jobdir/\${LSB_JOBID};
+            if [ -n "\$SLURM_JOBID" ]; then
+                export TMPDIR=/jobdir/\${SLURM_JOBID};
             fi                                       &&
             
-            bowtie2 $BOWTIE2_FLAGS $BOWTIE2_REF -1 $input1 -2 $input2 | samtools view $SAMTOOLS_VIEW_FLAGS - | samtools sort $SAMTOOLS_SORT_FLAGS -T $TMPDIR/\$(basename $output.prefix) - > $output; 
+            bowtie2 $BOWTIE2_FLAGS $BOWTIE2_REF -1 $input1 -2 $input2 | samtools view $SAMTOOLS_VIEW_FLAGS - | samtools sort $SAMTOOLS_SORT_FLAGS -T $TMPDIR/\$(basename $output.prefix) - > $output;
         ""","bowtie2_pe"
     }
 }
+
+
 
