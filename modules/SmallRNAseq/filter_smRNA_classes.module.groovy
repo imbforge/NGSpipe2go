@@ -9,13 +9,16 @@ FilterRNAClasses = {
    transform(".bam") to (".21U.bam", ".22G.bam", ".26G.bam"){
 
       exec """
-         if [ -n "\$LSB_JOBID" ]; then
-            export TMPDIR=/jobdir/\${LSB_JOBID};
-         fi &&
+         module load bedtools/${BEDTOOLS_VERSION} &&
+         module load htseq/${HTSEQ_VERSION} &&
 
-         python $FILTER_CLASSES_TOOL_PATH -i $input -c 21U -o $output1 &&
-         python $FILTER_CLASSES_TOOL_PATH -i $input -c 22G -o $output2 &&
-         python $FILTER_CLASSES_TOOL_PATH -i $input -c 26G -o $output3
+         python $FILTER_CLASSES_TOOL_PATH -i $input -m 21 -M 21 -o stdout | intersectBed -a stdin -b $FILTER_CLASSES_21U_REF -s > $output1 &&
+         python $FILTER_CLASSES_TOOL_PATH -i $input -m 20 -M 23 -o stdout | intersectBed -a stdin -b $FILTER_CLASSES_22G_REF -S > $output2 &&
+         python $FILTER_CLASSES_TOOL_PATH -i $input -m 26 -M 26 -o stdout | intersectBed -a stdin -b $FILTER_CLASSES_26G_REF -S > $output3 &&
+
+         samtools index $output1 &&
+         samtools index $output2 &&
+         samtools index $output3
 
       ""","FilterRNAClasses"
    }
