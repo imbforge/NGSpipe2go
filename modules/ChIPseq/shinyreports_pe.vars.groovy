@@ -21,4 +21,5 @@ SHINYREPS_MACS2=RESULTS + "/macs2"	//where the MACS2 results lie
 SHINYREPS_MACS2_LOG=LOGS + "/macs2" //where the macs2 logs lie
 SHINYREPS_PLOTS_COLUMN=4            //number of columns to splits the plot grids (ipstrength, phantompeaks...). Min=2
 SHINYREPS_INSERTSIZE=QC + "/insertsize" //where the insertsize statistics are found
+SHINYREPS_PEAK_ANNOTATION=RESULTS + "/Peak_Annotation" // where the peak annotation results lie
 SHINYREPS_TOOL_VERSIONS= PROJECT + "/NGSpipe2go/modules/ChIPseq/tool.versions.groovy" //where the tool versions listed
