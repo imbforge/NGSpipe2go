@@ -55,9 +55,6 @@ scale_colour_Publication <- function(...){
 }
 
 
-dir.create(file.path("figure"), showWarnings = FALSE)
-
-
 readWithFileName <- function(file_path) {
   dt <- fread(file_path)
   dt$file <- gsub(
@@ -67,8 +64,19 @@ readWithFileName <- function(file_path) {
   return(dt)
 }
 
-directory <- "./"
-files <- list.files(directory, '.readlength.txt', recursive=TRUE)
+args <- commandArgs(trailingOnly = TRUE)
+# directory <- "./"
+input_dir <- args[1]
+output_dir <- args[1]
+
+files <- list.files(
+  input_dir,
+  '.readlength.txt',
+  recursive=TRUE,
+  full.names=TRUE
+  )
+out_fig_path <- paste0(output_dir, "/figure")
+dir.create(file.path(out_fig_path), showWarnings = TRUE)
 
 counts <- lapply(files[!grepl('family|class', files)], readWithFileName)
 counts <- rbindlist(counts, use.names=TRUE, fill=FALSE, idcol=NULL)
@@ -108,8 +116,8 @@ ggplot(len, aes(x=factor(Length), y=Count, color=Sample)) +
    # xlab('Read length (bp)') +
    # ylab('Number of Reads') +
    theme_Publication() 
-ggsave('figure/AllReadsLengthDistribution.pdf')
-ggsave('figure/AllReadsLengthDistribution.png')
+ggsave(paste0(out_fig_path, '/AllReadsLengthDistribution.pdf'))
+ggsave(paste0(out_fig_path, '/AllReadsLengthDistribution.png'))
 
 ## calculate percentage
 
@@ -132,5 +140,5 @@ ggplot(len, aes(x=factor(Length), y=Perc, color=Sample)) +
       y='% of Reads',
       caption=paste('Source:', basename(getwd()))) +
    theme_Publication()
-ggsave('figure/PercentageReadsLengthDistribution.pdf')
-ggsave('figure/PercentageReadsLengthDistribution.png')
+ggsave(paste0(out_fig_path, '/PercentageReadsLengthDistribution.pdf'))
+ggsave(paste0(out_fig_path, '/PercentageReadsLengthDistribution.png'))

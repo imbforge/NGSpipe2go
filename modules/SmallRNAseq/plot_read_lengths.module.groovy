@@ -1,23 +1,17 @@
 PlotReadLengths = {
-   doc title: "PlotReadLengths",
-   desc: "Summarizes the number of non-structural reads for each the libraries. It uses the output from featureCounts",
-   constraints: "needs a table with gene names and biotypes",
-   author: "António Domingues"
+    doc title: "PlotReadLengths",
+    desc: "Plots the read length distribution of libraries (fastq).",
+    constraints: "none",
+    author: "António Domingues"
 
-   output.dir = CUTADAPT_OUTDIR
+    output.dir = PLOT_READ_LENGTH_OUTDIR
 
-   produce("figure/PercentageReadsLengthDistribution.pdf"){
-      exec """
+    produce(PLOT_READ_LENGTH_OUTDIR + "/figure/PercentageReadsLengthDistribution.pdf"){
+        
+        exec """
+            module load R/${R_VERSION} &&
+            Rscript $PLOT_READ_LENGTH_TOOL_PATH $PLOT_READ_LENGTH_OUTDIR
 
-         module load R/${R_VERSION} &&
-         
-         if [ -n "\$LSB_JOBID" ]; then
-            export TMPDIR=/jobdir/\${LSB_JOBID};
-         fi &&
-
-         cd $output.dir
-
-         Rscript $PLOT_NONSTRUCT_TOOL_PATH 
       ""","PlotReadLengths"
-   }
+    }
 }
