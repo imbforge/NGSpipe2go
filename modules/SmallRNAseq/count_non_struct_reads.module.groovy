@@ -6,14 +6,18 @@ CountNonStrutReads = {
 
    output.dir = COUNT_NONSTRUCT_OUTDIR
 
-   produce("normlization_factors.txt"){
+   from("*.counts") produce(COUNT_NONSTRUCT_OUTDIR + "/normalization_factors.txt"){
       exec """
 
          module load R/${R_VERSION} &&
          
+         if [ -n "\$LSB_JOBID" ]; then
+            export TMPDIR=/jobdir/\${LSB_JOBID};
+         fi &&
+
          cd $output.dir &&
 
-         Rscript $COUNT_NONSTRUCT_TOOL_PATH $input $ESSENTIAL_BIOTYPES_TABLE
+         Rscript $COUNT_NONSTRUCT_TOOL_PATH $ESSENTIAL_BIOTYPES_TABLE $inputs
          
       ""","CountNonStrutReads"
    }
