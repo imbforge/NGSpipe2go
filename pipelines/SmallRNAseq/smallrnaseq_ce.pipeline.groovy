@@ -82,11 +82,12 @@ load MODULE_FOLDER + "SmallRNAseq/collect_bams.module.groovy"
 //MAIN PIPELINE TASK
 run {
    "%.fastq.gz" *
-    	[ FastQC, Cutadapt + FastQQualityFilter + FilterDuplicates + TrimUMIs ] +
+      [ FastQC, Cutadapt + FastQQualityFilter + FilterDuplicates + TrimUMIs ] +
    "%.deduped_barcoded.trimmed.fastq.gz" *
-    	[ FastQC, CountReadLengths, Bowtie_se + [ BAMindexer ] ] +
+      [ FastQC, CountReadLengths, Bowtie_se + [ BAMindexer ] ] +
    "%.bam" *
-   		[ FilterRNAClasses, HTseqCount ] +
-   	CountNonStrutReads +
-   	"%.bam" * [ Bam2bw ]           
+         [ FilterRNAClasses, HTseqCount ] +
+      CountNonStrutReads +
+      "%.bam" * [ Bam2bw ] +
+      [  MappingStatsPlot, PlotReadLengths ]           
 }
