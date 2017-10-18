@@ -18,7 +18,7 @@ dir.create(file.path("figure"), showWarnings = FALSE)
 stats <- read.delim('dedup.stats.txt', sep=" ", header=FALSE)
 stats <- subset(stats, !grepl('\\*', stats$V2))
 stats$Condition <- factor(gsub('(\\w+)\\..+', '\\1', stats$V2))
-stats$Reads <- factor(ifelse(grepl('unique', stats$V2), 'Filtered', 'Original'), levels = c("Original", "Filtered"))
+stats$Reads <- factor(ifelse(grepl('unique', stats$V2), 'Unique', 'Original'), levels = c("Original", "Unique"))
 colnames(stats)[1:2] <- c('Nreads', 'File')
 
 stats_wide <- tidyr::spread(stats[,c(1,3:4)], Reads, Nreads)
