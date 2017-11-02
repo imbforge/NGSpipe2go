@@ -68,7 +68,7 @@ scale_colour_Publication <- function(...){
 
 publication_colors <- c("#386cb0","#fdb462","#7fc97f","#ef3b2c","#662506","#a6cee3","#fb9a99","#984ea3","#ffff33")
 
-dir.create(file.path("figure"), showWarnings = FALSE)
+# dir.create(file.path("figure"), showWarnings = FALSE)
 
 # ==========================================================================
 # Read coverage data and parse file name
@@ -133,7 +133,7 @@ counts_rpm[, Exp:=NULL,]
 cov_minus  <- counts_rpm[Mapping == strand] 
 
 p_cov <- ggplot(cov_minus, aes(x=Pos, y=RPM, colour=Replicate)) +
-	geom_line() +
+	geom_line(size = 1) +
 	geom_vline(xintercept=highl_lines, linetype="dotted", colour="gray") +
 	facet_wrap( ~ Strain, ncol=1) +
 	theme_Publication() +
@@ -177,8 +177,8 @@ final <- tracks(
   xlim=genes
   ) 
 # print(final)
-ggsave(paste0("figure/coverage.replicates.pdf"), final, width = 10, height=n_conds*2.5)
-ggsave(paste0("figure/coverage.replicates.png"), final, width = 10, height=n_conds*2.5)
+ggsave(paste0("coverage.replicates.pdf"), final, width = 10, height=n_conds*2.5)
+ggsave(paste0("coverage.replicates.png"), final, width = 10, height=n_conds*2.5)
 
 
 # ==========================================================================
@@ -189,7 +189,7 @@ counts_cond <- counts_rpm[,list(Mean_reps=mean(RPM), SD=sd(RPM)), by=c('Pos', 'S
 
 p_cov_sd <- ggplot(counts_cond, aes(x=Pos, y=Mean_reps)) +
 	geom_ribbon(aes(ymin=Mean_reps-SD, ymax=Mean_reps+SD), fill="black", alpha=0.2) +
-	geom_line(colour="black") +
+	geom_line(colour="black", size = 1) +
 	geom_vline(xintercept=highl_lines, linetype="dotted", colour="gray", size=1) +
 	facet_wrap( ~ Strain, ncol=1) +
 	theme_Publication() +
@@ -211,5 +211,5 @@ final <- tracks(
   xlim=genes
   )
 # print(final)
-ggsave(paste0("figure/coverage.SD.pdf"), final, width = 10, height=n_conds*2.5)
-ggsave(paste0("figure/coverage.SD.png"), final, width = 10, height=n_conds*2.5)
+ggsave(paste0("coverage.SD.pdf"), final, width = 10, height=n_conds*2.5)
+ggsave(paste0("coverage.SD.png"), final, width = 10, height=n_conds*2.5)
