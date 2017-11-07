@@ -10,14 +10,14 @@ Bam2bwStrandPE = {
     //setting but according to the deeptools manual it has to be like
     //that. 
         if(ESSENTIAL_STRANDED == "yes") {
-        FORWARD="rev"
-        REVERSE="fwd"
+        FORWARD="antisense"
+        REVERSE="sense"
     } else if(ESSENTIAL_STRANDED == "reverse") {
-        FORWARD="fwd"
-        REVERSE="rev"
+        FORWARD="sense"
+        REVERSE="antisense"
     }
 
-	transform(".bam") to (".scaled.fwd.bw", ".scaled.rev.bw")  {
+	transform(".bam") to (".scaled.sense.bw", ".scaled.antisense.bw")  {
 		exec """
 			module load bedtools/${BEDTOOLS_VERSION} &&
 			module load samtools/${SAMTOOLS_VERSION} &&
@@ -27,29 +27,31 @@ Bam2bwStrandPE = {
 				mkdir -p ${TMP};
 			fi &&
 			
-			CHRSIZES=${TMP}/\$(basename ${input.prefix}).bam2bw.chrsizes &&
-			samtools idxstats ${input} | cut -f1-2 > \${CHRSIZES} &&
-			TOTAL_MAPPED=\$( samtools flagstat $input | head -n1| cut -f1 -d" ") &&
 
+			CHRSIZES=${TMP}/\$(basename ${input.prefix}).bam2bw.chrsizes &&
+			samtools idxstats ${input} | cut -f1-2 > ${CHRSIZES} &&
+
+			TOTAL_MAPPED=\$( samtools flagstat $input | head -n1| cut -f1 -d" ") &&
 			SCALE=\$(echo "1000000/\$TOTAL_MAPPED" | bc -l) &&
 
-			samtools view -b -f 128 -F 16 $input > ${TMP}/${EXP}.fwd1.bam &&
-			samtools index ${TMP}/${EXP}.fwd1.bam &&
 
-			samtools view -b -f 80 $input > ${TMP}/${EXP}.fwd2.bam &&
-			samtools index ${TMP}/${EXP}.fwd2.bam &&
+			samtools view -b -f 128 -F 16 $input > ${TMP}/${EXP}.sense1.bam &&
+			samtools index ${TMP}/${EXP}.sense1.bam &&
 
-			samtools merge -f ${TMP}/${EXP}.fwd.bam ${TMP}/${EXP}.fwd1.bam ${TMP}/${EXP}.fwd2.bam &&
-			samtools index ${TMP}/${EXP}.fwd.bam &&
+			samtools view -b -f 80 $input > ${TMP}/${EXP}.sense2.bam &&
+			samtools index ${TMP}/${EXP}.sense2.bam &&
 
-			samtools view -b -f 144 $input > ${TMP}/${EXP}.rev1.bam &&
-			samtools index ${TMP}/${EXP}.rev1.bam &&
+			samtools merge -f ${TMP}/${EXP}.sense.bam ${TMP}/${EXP}.sense1.bam ${TMP}/${EXP}.sense2.bam &&
+			samtools index ${TMP}/${EXP}.sense.bam &&
 
-			samtools view -b -f 64 -F 16 $input > ${TMP}/${EXP}.rev2.bam &&
-			samtools index ${TMP}/${EXP}.rev2.bam &&
+			samtools view -b -f 144 $input > ${TMP}/${EXP}.antisense1.bam &&
+			samtools index ${TMP}/${EXP}.antisense1.bam &&
+
+			samtools view -b -f 64 -F 16 $input > ${TMP}/${EXP}.antisense2.bam &&
+			samtools index ${TMP}/${EXP}.antisense2.bam &&
 	
-			samtools merge -f ${TMP}/${EXP}.rev.bam ${TMP}/${EXP}.rev1.bam ${TMP}/${EXP}.rev2.bam &&
-			samtools index ${TMP}/${EXP}.rev.bam &&
+			samtools merge -f ${TMP}/${EXP}.antisense.bam ${TMP}/${EXP}.antisense1.bam ${TMP}/${EXP}.antisense2.bam &&
+			samtools index ${TMP}/${EXP}.antisense.bam &&
 
 			genomeCoverageBed -bg -split -scale \${SCALE} -ibam ${TMP}/${EXP}.${FORWARD}.bam -g \${CHRSIZES} > ${output1.prefix}.bedgraph &&
 			bedGraphToBigWig ${output1.prefix}.bedgraph \${CHRSIZES} ${output1} &&
@@ -62,4 +64,3 @@ Bam2bwStrandPE = {
 		""","Bam2bwStrandPE"
 	}
 }
-
