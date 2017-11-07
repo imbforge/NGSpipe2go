@@ -76,7 +76,7 @@ files <- list.files(
   full.names=TRUE
   )
 out_fig_path <- paste0(output_dir, "/figure")
-dir.create(file.path(out_fig_path), showWarnings = TRUE)
+dir.create(file.path(out_fig_path), showWarnings = FALSE)
 
 counts <- lapply(files[!grepl('family|class', files)], readWithFileName)
 counts <- rbindlist(counts, use.names=TRUE, fill=FALSE, idcol=NULL)
