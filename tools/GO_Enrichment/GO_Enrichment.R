@@ -85,7 +85,7 @@ processContrast <-  function(x) {
         entrezDeId   <- getEntrezId(de.genes)
         entrezUnivId <- getEntrezId(univ.genes)
         
-        enriched         <- enrichGO(entrezDeId$ENTREZID, OrgDb=orgDb[org], keytype="ENTREZID", ont="BP", readable=TRUE,
+        enriched         <- enrichGO(entrezDeId$ENTREZID, OrgDb=orgDb[org], keyType="ENTREZID", ont="BP", readable=TRUE,
                                      universe=if(univ == "all") orgDb[org] else entrezUnivId$ENTREZID)
         enrichedKEGG     <- enrichKEGG(entrezDeId$ENTREZID, org, universe=entrezUnivId$ENTREZID)
         enrichedReactome <- enrichPathway(entrezDeId$ENTREZID, org, readable=TRUE, universe=entrezUnivId$ENTREZID)
