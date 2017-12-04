@@ -78,3 +78,5 @@ plotter <- ggplot(stattable, aes(x=Name, y=Counts,fill=Reads)) +
    scale_fill_brewer(palette="Set1")
 
 ggsave(outputname, plotter, height=7,width=10)
+outputname <- 'figure/totalReads.png'
+ggsave(outputname, plotter, height=7,width=10)
