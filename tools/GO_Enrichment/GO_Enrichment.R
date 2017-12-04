@@ -80,12 +80,12 @@ processContrast <-  function(x) {
     calculateGoEnrichment <-  function(de.genes, univ.genes, suffix) {
         # convert to entrezID downregulated/univers genes
         getEntrezId <- function(genes) {
-            bitr(toupper(genes), fromType=if(type == "gene_name") "SYMBOL" else "ENSEMBL", toType="ENTREZID", OrgDb=orgDb[org])
+            bitr(genes, fromType=if(type == "gene_name") "SYMBOL" else "ENSEMBL", toType="ENTREZID", OrgDb=orgDb[org])
         }
         entrezDeId   <- getEntrezId(de.genes)
         entrezUnivId <- getEntrezId(univ.genes)
         
-        enriched         <- enrichGO(entrezDeId$ENTREZID, OrgDb=orgDb[org], keytype="ENTREZID", ont="BP", readable=TRUE,
+        enriched         <- enrichGO(entrezDeId$ENTREZID, OrgDb=orgDb[org], keyType="ENTREZID", ont="BP", readable=TRUE,
                                      universe=if(univ == "all") orgDb[org] else entrezUnivId$ENTREZID)
         enrichedKEGG     <- enrichKEGG(entrezDeId$ENTREZID, org, universe=entrezUnivId$ENTREZID)
         enrichedReactome <- enrichPathway(entrezDeId$ENTREZID, org, readable=TRUE, universe=entrezUnivId$ENTREZID)
@@ -107,7 +107,7 @@ processContrast <-  function(x) {
             dev.off()
         }
 
-        if(nrow(enrichedKEGG) > 0) {
+        if(!is.null(enrichedKEGG)) {
             # create barplot showing Pathway terms
             CairoPNG(file=paste0(out, "/", contrast, "_KEGG_Barplot_", suffix, "_genes.png"), width=700, height=500)
             print(barplot(enrichedKEGG, showCategory=plotCategory))
@@ -119,7 +119,7 @@ processContrast <-  function(x) {
             dev.off()
         }
         
-        if(nrow(enrichedReactome) > 0) {
+        if(!is.null(enrichedReactome)) {
             # create barplot showing Pathway terms
             CairoPNG(file=paste0(out, "/", contrast, "_Reactome_Barplot_", suffix, "_genes.png"), width=700, height=500)
             print(barplot(enrichedReactome, showCategory=plotCategory))

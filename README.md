@@ -80,12 +80,6 @@ or
     ln -s project_folder/NGSpipe2go/modules/ChIPseq/tool.locations.groovy project_folder/
 
 
-In case of RNAseq experiments you need to define which files belong to which groups (targets.txt) and which comparisons (contrasts.txt) to perform.
-
-    ln -s project_folder/NGSpipe2go/tools/DE_DESeq2/targets.txt project_folder/
-    ln -s project_folder/NGSpipe2go/tools/DE_DESeq2/contrasts.txt project_folder/
-
-
 ### Modify NGSpipe2go to your needs ###
 
 Adjust the information found in the following files:

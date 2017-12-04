@@ -26,7 +26,7 @@ STAR_se = {
     OUTPUTFILE = OUTPUTFILE.substring(path_index+1)
 
     if(ESSENTIAL_PAIRED == "yes") {
-        OUTPUTFILE = (OUTPUTFILE =~ /_R1.fastq.gz/).replaceFirst("")
+        OUTPUTFILE = (OUTPUTFILE =~ /.R1.fastq.gz/).replaceFirst("")
     } else {
         OUTPUTFILE = (OUTPUTFILE =~ /.fastq.gz/).replaceFirst("")
     }
