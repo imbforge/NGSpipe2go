@@ -6,7 +6,9 @@ MappingStatsPlot = {
 
    MAPPING_STATS_TOOL = MAPPING_STATS_TOOL_PATH + "/mapping_stats_bowtie1.R"
 
-	produce(MAPPING_STATS_OUTDIR + "/figure/totalReads.pdf") {
+	produce(
+        MAPPING_STATS_OUTDIR + "/figure/totalReads.pdf",
+        MAPPING_STATS_OUTDIR + "/figure/totalReads.png") {
 
       exec """
          module load R/${R_VERSION} &&
