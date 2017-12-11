@@ -98,7 +98,7 @@ processContrast <-  function(x) {
         write.csv(as.data.frame(enrichedReactome),
                   file=paste0(out, "/", contrast, "_Reactome_Pathway_Enrichment_", suffix, "_genes.csv"))
       
-        if(nrow(enriched) > 0) {
+        if(!is.null(enriched) && nrow(enriched) > 0) {
             # create barplot showing GO category
             CairoPNG(file=paste0(out, "/", contrast, "_GO_Barplot_", suffix, "_genes.png"), width=700, height=500)
             print(barplot(enriched, showCategory=plotCategory))
@@ -110,7 +110,7 @@ processContrast <-  function(x) {
             dev.off()
         }
 
-        if(nrow(enrichedKEGG)> 0) {
+        if(!is.null(enrichedKEGG) && nrow(enrichedKEGG)> 0) {
             # create barplot showing Pathway terms
             CairoPNG(file=paste0(out, "/", contrast, "_KEGG_Barplot_", suffix, "_genes.png"), width=700, height=500)
             print(barplot(enrichedKEGG, showCategory=plotCategory))
@@ -122,7 +122,7 @@ processContrast <-  function(x) {
             dev.off()
         }
         
-        if(nrow(enrichedReactome) > 0) {
+        if(!is.null(enrichedReactome) && nrow(enrichedReactome) > 0) {
             # create barplot showing Pathway terms
             CairoPNG(file=paste0(out, "/", contrast, "_Reactome_Barplot_", suffix, "_genes.png"), width=700, height=500)
             print(barplot(enrichedReactome, showCategory=plotCategory))
