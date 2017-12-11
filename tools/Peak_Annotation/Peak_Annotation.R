@@ -20,6 +20,7 @@ library(ChIPseeker)
 library(clusterProfiler)
 library(GenomicFeatures)
 library(WriteXLS)
+library(Cairo)
 
 ##
 # get arguments from the command line
@@ -65,25 +66,25 @@ filename <- strsplit(basename(peakFiles), "_macs2_peaks.xls") # take the filenam
 names(peakAnno) <- filename
 
 # create barplot showing the feature distribution
-png(file=paste0(out, "/ChIPseq_Feature_Distribution_Barplot.png"), width = 700, height = 500)
+CairoPNG(file=paste0(out, "/ChIPseq_Feature_Distribution_Barplot.png"), width = 700, height = 500)
 plot(plotAnnoBar(peakAnno))
 dev.off()
 
 # create barplot showing the feature distribution related to TSS
-png(file=paste0(out, "/ChIPseq_Feature_Distribution_Related_to_TSS_Barplot.png"), width = 700, height = 500)
+CairoPNG(file=paste0(out, "/ChIPseq_Feature_Distribution_Related_to_TSS_Barplot.png"), width = 700, height = 500)
 plot(plotDistToTSS(peakAnno))
 dev.off()
 
 # create upsetplot 
 for(i in 1:length(peakAnno)){
-  png(file=paste0(out, "/", filename[[i]], "_ChIPseq_UpSetplot.png"), width = 700, height = 500)
+  CairoPNG(file=paste0(out, "/", filename[[i]], "_ChIPseq_UpSetplot.png"), width = 700, height = 500)
   upsetplot(peakAnno[[i]])
   dev.off()
 }
 
 # create ChIP peaks coverage plot
 for(i in 1:length(peakAnno)){
-  png(file=paste0(out, "/", filename[[i]], "_ChIPseq_Peaks_Coverageplot.png"), width = 700, height = 500)
+  CairoPNG(file=paste0(out, "/", filename[[i]], "_ChIPseq_Peaks_Coverageplot.png"), width = 700, height = 500)
   plot(covplot(peaks[[i]],weightCol="X.log10.pvalue."))
   dev.off()
 }
