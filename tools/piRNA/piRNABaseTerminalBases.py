@@ -275,9 +275,10 @@ if __name__ == '__main__':
     up = args.upstream
     down = args.downstream
     out_folder = args.outFolder
-    if args.genome is not None:
+    if args.genome is not None and not "none":
         chromsizes = pybedtools.chromsizes(args.genome)
     else:
+        print 'Retrieving custom chromosome lengths ' + timeStamp()
         chromsizes = get_chrom_lengths(inbam)
 
     exp_name = os.path.split(inbam)[1].split(".")[0] + os.path.split(inbed)[1].split(".")[0]
