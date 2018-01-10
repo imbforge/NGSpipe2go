@@ -28,7 +28,7 @@ SHINYREPS_BAM2BW_LOG=LOGS + "/bam2bw"        	//where the Bam2BW logs lie
 SHINYREPS_MARKDUPS_LOG=LOGS + "/MarkDups"	//where the picard MarkDuplicates logs lie
 SHINYREPS_EDGER_LOGS=""                  //where the DE_edgeR logs lie
 SHINYREPS_DESEQ_LOGS=LOGS + "/DE_DESeq2" //where the DE_DESeq2 logs lie
-SHINYREPS_PLOTS_COLUMN=4L    //number of columns to splits the plot grids (dupradar, genebodycov...). Min=2L. L=integer in R
+SHINYREPS_PLOTS_COLUMN=3L    //number of columns to splits the plot grids (dupradar, genebodycov...). Min=2L. L=integer in R
 SHINYREPS_INFEREXPERIMENT_LOGS=QC + "/inferexperiment" //where the inferexperiment logs lie
 SHINYREPS_QUALIMAP_LOGS=QC + "/qualimap" //where the qualimap output files are
 SHINYREPS_GO_ENRICHMENT=RESULTS + "/GO_Analysis" // where the GO enrichment results lie

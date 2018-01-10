@@ -531,10 +531,11 @@ DEhelper.dupRadar <- function(web=TRUE) {
         return("DupRadar statistics not available")
     }
 
-    if(!is.integer(SHINYREPS_PLOTS_COLUMN) | SHINYREPS_PLOTS_COLUMN < 2) {
-        SHINYREPS_PLOTS_COLUMN <- 4L    # default to 4 columns
+    SHINYREPS_PLOTS_COLUMN <- tryCatch(as.integer(SHINYREPS_PLOTS_COLUMN),error=function(e){3})
+    if(SHINYREPS_PLOTS_COLUMN < 2) {
+        SHINYREPS_PLOTS_COLUMN <- 3L    # default to 4 columns
     }
-    
+
     # construct the folder name, which is different for web and noweb
     QC <- if(web) "/dupRadar" else SHINYREPS_DUPRADAR_LOG
     
@@ -624,8 +625,9 @@ DEhelper.geneBodyCov <- function(web=TRUE) {
         return("geneBodyCov statistics not available")
     }
     
-    if(!is.integer(SHINYREPS_PLOTS_COLUMN) | SHINYREPS_PLOTS_COLUMN < 2) {
-        SHINYREPS_PLOTS_COLUMN <- 4L    # default to 4 columns
+    SHINYREPS_PLOTS_COLUMN <- tryCatch(as.integer(SHINYREPS_PLOTS_COLUMN),error=function(e){3})
+    if(SHINYREPS_PLOTS_COLUMN < 2) {
+        SHINYREPS_PLOTS_COLUMN <- 3L    # default to 3 columns
     }
     
     # construct the folder name, which is different for web and noweb
