@@ -98,6 +98,9 @@ cat(DEhelper.strandspecificity(), sep="\n")
 
 The following plots depict the fraction of reads mapped to exons, introns and intergenic regions. For mRNA-seq in well-annotated genomes the fraction of exonic reads is typically quite high, whereas for total RNA-seq intronic and intergenic reads may dominate.
 
+Please note that reads overlapping an exon as well as an intron/intergenic region are counted differently by the tools used in this section (QualiMap) and the tool used for assignment of reads in section “Mapped reads annotation” (featureCounts). In the latter, all reads overlapping an exon by at least one base pair are considered exonic, while in the current section only reads fully located in exons are considered exonic and all reads overlapping an intron or intergenic region by at least on bp are considered intronic/intergenic. Thus, numbers do not fully agree between those two sections.
+
+
 ```{r echo=F, results='asis', error=F, warning=F, message=F}
 cat(DEhelper.Qualimap(), sep="\n")		# sample Qualimap 
 ```
