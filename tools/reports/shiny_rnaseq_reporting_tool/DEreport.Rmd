@@ -137,6 +137,7 @@ for(i in 1:nrow(conts)) {
 	cat("", fill=T)
 	
 	# MA plot
+	cat("##### MA-plot", fill=T)
 	fdr <- if(exists("input")) { if(!is.null(input$slider_pval)) input$slider_pval else .01 } else .01
 	genes <- DEhelper.DESeq2.DEgenes(i)
 	cat("There are", sum(genes$padj < fdr, na.rm=T), 
@@ -151,7 +152,9 @@ for(i in 1:nrow(conts)) {
 	cat("\n", fill=T)
 	
 	# and DE table
-	cat("The table shows the top 25 differentially expressed genes with their mean expression change (log2 of Fold Change) and statistical significance (padj, FDR-adjusted P-value):", fill=T)
+	cat("##### Top 25 DE genes", fill=T)
+        cat("", fill=T)
+	cat("The table shows the top 25 differentially expressed genes with their mean expression change (log2 of fold change) and statistical significance (padj, FDR-adjusted p-value):", fill=T)
 	cat("", fill=T)
 	genes$baseMean       <- round(genes$baseMean, 2)
 	genes$log2FoldChange <- round(genes$log2FoldChange, 2)
@@ -160,129 +163,138 @@ for(i in 1:nrow(conts)) {
 	cat(kable(genes[1:25, cols], row.names=T, align="r"), sep="\n")	# show only the top 25 genes
 	cat("", fill=T)
 
-    # GO Enrichment Plot
-    cat("#### GO Enrichment plot", fill=T)
+}
+```
 
-    GO_bar_up     <- paste0(SHINYREPS_GO_ENRICHMENT, "/", gsub("=.*", "", conts[i,1]),"_GO_Barplot_up_genes.png")
-    GO_network_up <- paste0(SHINYREPS_GO_ENRICHMENT, "/", gsub("=.*", "", conts[i, 1]), "_GO_network_up_genes.png")
-    GO_table_up   <- paste0(SHINYREPS_GO_ENRICHMENT, "/", gsub("=.*", "", conts[i, 1]), "_GO_Enrichment_up_genes.csv")
+
+## Enrichment Analysis ##
+
+```{r Enrichment_paragraph, echo=F, results='asis', error=F, warning=F, message=F, fig.align="center"}
+
+for(i in 1:nrow(conts)) {
+
+        # subsection
+        cat("### ", conts[i, 1], fill=T)
+        cat("", fill=T)
+
+	# GO Enrichment Plot
+	# up-regulated genes
+	cat("#### GO terms enriched in up-regulated genes (Biological Process, BP)", fill=T)
+
+	#cat("##### Biological Process (BP)", fill=T)
+
+    	GO_bar_up     <- paste0(SHINYREPS_GO_ENRICHMENT, "/", gsub("=.*", "", conts[i,1]),"_GO_Barplot_up_genes.png")
+    	GO_table_up   <- paste0(SHINYREPS_GO_ENRICHMENT, "/", gsub("=.*", "", conts[i, 1]), "_GO_Enrichment_up_genes.csv")
     
-    # if there are GO enrichment results (the barplot was created)
-    if(file.exists(GO_bar_up)) {
+	# if there are GO enrichment results (the barplot was created)
+    	if(file.exists(GO_bar_up)) {
 
-        # GO enriched terms in a barplot
-        cat("Gene Ontology enrichment barplot of the up-regulated genes with FDR < 0.01.", fill=T)
-        cat("![GO_Analysis img](", GO_bar_up, ")\n", fill=T)
+        	# GO enriched terms in a barplot
+        	cat("Gene Ontology enrichment barplot of the up-regulated genes with FDR < 0.01.", fill=T)
+        	cat("![GO_Analysis img](", GO_bar_up, ")\n", fill=T)
         
-        # network of GO enriched terms
-        cat("Gene Ontology enrichment map of the up-regulated genes with FDR < 0.01.", fill=T)
-        cat("![GO_Analysis img](", GO_network_up, ")\n", fill=T)
-       
-        # and table of OG enriched terms
-        cat("Gene Ontology enrichment table of the up-regulated genes with FDR < 0.01. The table shows the enriched biological proccesses:\n", fill=T)
-        enrich  <- read.csv(file=GO_table_up)
-        cols    <- c("ID", "Description", "GeneRatio", "BgRatio", "pvalue", "p.adjust", "qvalue", "geneID")
-        r       <- min(10, nrow(enrich))
-        enrich  <- as.data.frame(enrich)
-        enrich$geneID <- ifelse(nchar(enrich$geneID) > 10, paste0(substr(enrich$geneID, 0, 35), "..."), enrich$geneID) # shorten long lines
-        cat(kable(enrich[1:r, cols], row.names=T, align="r"), sep="\n") # show only the top min or top 10 biological processes
-        cat("\n", fill=T)
+        	# and table of OG enriched terms
+        	cat("Gene Ontology enrichment table of the up-regulated genes with FDR < 0.01. The table shows the enriched biological proccesses:\n", fill=T)
+        	enrich  <- read.csv(file=GO_table_up)
+        	cols    <- c("ID", "Description", "GeneRatio", "BgRatio", "pvalue", "p.adjust", "qvalue", "geneID")
+        	r       <- min(10, nrow(enrich))
+        	enrich  <- as.data.frame(enrich)
+        	enrich$geneID <- ifelse(nchar(enrich$geneID) > 10, paste0(substr(enrich$geneID, 0, 35), "..."), enrich$geneID) # shorten long lines
+        	cat(kable(enrich[1:r, cols], row.names=T, align="r"), sep="\n") # show only the top min or top 10 biological processes
+        	cat("\n", fill=T)
 
-    } else {
-        cat("no GO enrichment results of the up-regulated genes available\n", fill=T)
-    }
+    	} else {
+        	cat("no GO enrichment results of the up-regulated genes available\n", fill=T)
+    	}
 
+	
+	# GO Enrichment Plot
+    	# down-regulated genes
+    	cat("#### GO terms enriched in down-regulated genes (Biological Process, BP)", fill=T)
 
-    GO_bar_down     <- paste0(SHINYREPS_GO_ENRICHMENT, "/", gsub("=.*", "", conts[i,1]),"_GO_Barplot_down_genes.png")
-    GO_network_down <- paste0(SHINYREPS_GO_ENRICHMENT, "/", gsub("=.*", "", conts[i, 1]), "_GO_network_down_genes.png")
-    GO_table_down   <- paste0(SHINYREPS_GO_ENRICHMENT, "/", gsub("=.*", "", conts[i, 1]), "_GO_Enrichment_down_genes.csv")
+    	#cat("##### Biological Process (BP)", fill=T)
+	
+    	GO_bar_down     <- paste0(SHINYREPS_GO_ENRICHMENT, "/", gsub("=.*", "", conts[i,1]),"_GO_Barplot_down_genes.png")
+    	GO_table_down   <- paste0(SHINYREPS_GO_ENRICHMENT, "/", gsub("=.*", "", conts[i, 1]), "_GO_Enrichment_down_genes.csv")
     
-    # if there are GO enrichment results (the barplot was created)
-    if(file.exists(GO_bar_down)) {
+	# if there are GO enrichment results (the barplot was created)
+    	if(file.exists(GO_bar_down)) {
 
-        # GO enriched terms in a barplot
-        cat("Gene Ontology enrichment barplot of the down-regulated genes with FDR < 0.01.", fill=T)
-        cat("![GO_Analysis img](", GO_bar_down, ")\n", fill=T)
+        	# GO enriched terms in a barplot
+        	cat("Gene Ontology enrichment barplot of the down-regulated genes with FDR < 0.01.", fill=T)
+        	cat("![GO_Analysis img](", GO_bar_down, ")\n", fill=T)
         
-        # network of GO enriched terms
-        cat("Gene Ontology enrichment map of the down-regulated genes with FDR < 0.01.", fill=T)
-        cat("![GO_Analysis img](", GO_network_down, ")\n", fill=T)
-       
-        # and table of OG enriched terms
-        cat("Gene Ontology enrichment table of the down-regulated genes with FDR < 0.01. The table shows the enriched biological proccesses:\n", fill=T)
-        enrich  <- read.csv(file=GO_table_down)
-        cols    <- c("ID", "Description", "GeneRatio", "BgRatio", "pvalue", "p.adjust", "qvalue", "geneID")
-        r       <- min(10, nrow(enrich))
-        enrich  <- as.data.frame(enrich)
-        enrich$geneID <- ifelse(nchar(enrich$geneID) > 10, paste0(substr(enrich$geneID, 0, 35), "..."), enrich$geneID) # shorten long lines
-        cat(kable(enrich[1:r, cols], row.names=T, align="r"), sep="\n") # show only the top min or top 10 biological processes
-        cat("\n", fill=T)
+        	# and table of OG enriched terms
+        	cat("Gene Ontology enrichment table of the down-regulated genes with FDR < 0.01. The table shows the enriched biological proccesses:\n", fill=T)
+        	enrich  <- read.csv(file=GO_table_down)
+        	cols    <- c("ID", "Description", "GeneRatio", "BgRatio", "pvalue", "p.adjust", "qvalue", "geneID")
+        	r       <- min(10, nrow(enrich))
+        	enrich  <- as.data.frame(enrich)
+        	enrich$geneID <- ifelse(nchar(enrich$geneID) > 10, paste0(substr(enrich$geneID, 0, 35), "..."), enrich$geneID) # shorten long lines
+        	cat(kable(enrich[1:r, cols], row.names=T, align="r"), sep="\n") # show only the top min or top 10 biological processes
+        	cat("\n", fill=T)
 
-    } else {
-        cat("no GO enrichment results of the down-regulated genes available\n", fill=T)
-    }
+    	} else {
+        	cat("no GO enrichment results of the down-regulated genes available\n", fill=T)
+    	}
 
 
-    # Pathway Enrichment Plot
-    cat("#### Pathway Enrichment plot", fill=T)
+        # Pathway Enrichment Plot
+        # up-regulated genes
+        cat("#### Pathways enriched in up-regulated genes", fill=T)
 
-    Pathway_bar_up     <- paste0(SHINYREPS_GO_ENRICHMENT, "/", gsub("=.*", "", conts[i,1]),"_Reactome_Barplot_up_genes.png")
-    Pathway_network_up <- paste0(SHINYREPS_GO_ENRICHMENT, "/", gsub("=.*", "", conts[i, 1]), "_Reactome_network_up_genes.png")
-    Pathway_table_up   <- paste0(SHINYREPS_GO_ENRICHMENT, "/", gsub("=.*", "", conts[i, 1]), "_Reactome_Pathway_Enrichment_up_genes.csv")
+    	Pathway_bar_up     <- paste0(SHINYREPS_GO_ENRICHMENT, "/", gsub("=.*", "", conts[i,1]),"_Reactome_Barplot_up_genes.png")
+    	Pathway_table_up   <- paste0(SHINYREPS_GO_ENRICHMENT, "/", gsub("=.*", "", conts[i, 1]), "_Reactome_Pathway_Enrichment_up_genes.csv")
    
-    # if there are Pathway enrichment results (the barplot was created)
-    if(file.exists(Pathway_bar_up)) {
+    	# if there are Pathway enrichment results (the barplot was created)
+    	if(file.exists(Pathway_bar_up)) {
 
-        # Pathways enriched in a barplot
-        cat("Pathway enrichment barplot of the up-regulated genes with FDR < 0.01.", fill=T)
-        cat("![GO_Analysis img](", Pathway_bar_up, ")\n", fill=T)
+        	# Pathways enriched in a barplot
+        	cat("Pathway enrichment barplot of the up-regulated genes with FDR < 0.01.", fill=T)
+        	cat("![GO_Analysis img](", Pathway_bar_up, ")\n", fill=T)
         
-        # network of Pathways enriched
-        cat("Pathway enrichment map of the up-regulated genes with FDR < 0.01.", fill=T)
-        cat("![GO_Analysis img](", Pathway_network_up, ")\n", fill=T)
-       
-        # and table of Pathways enriched
-        cat("Pathways enrichment table of the up-regulated genes with FDR < 0.01:\n", fill=T)
-        enrich  <- read.csv(file=Pathway_table_up)
-        cols    <- c("ID", "Description", "GeneRatio", "BgRatio", "pvalue", "p.adjust", "qvalue", "geneID")
-        r       <- min(10, nrow(enrich))
-        enrich  <- as.data.frame(enrich)
-        enrich$geneID <- ifelse(nchar(enrich$geneID) > 10, paste0(substr(enrich$geneID, 0, 35), "..."), enrich$geneID) # shorten long lines
-        cat(kable(enrich[1:r, cols], row.names=T, align="r"), sep="\n") # show only the top min or top 10 pathways
-        cat("\n", fill=T)
+        	# and table of Pathways enriched
+        	cat("Pathways enrichment table of the up-regulated genes with FDR < 0.01:\n", fill=T)
+        	enrich  <- read.csv(file=Pathway_table_up)
+        	cols    <- c("ID", "Description", "GeneRatio", "BgRatio", "pvalue", "p.adjust", "qvalue", "geneID")
+        	r       <- min(10, nrow(enrich))
+        	enrich  <- as.data.frame(enrich)
+        	enrich$geneID <- ifelse(nchar(enrich$geneID) > 10, paste0(substr(enrich$geneID, 0, 35), "..."), enrich$geneID) # shorten long lines
+        	cat(kable(enrich[1:r, cols], row.names=T, align="r"), sep="\n") # show only the top min or top 10 pathways
+        	cat("\n", fill=T)
 
-    } else {
-        cat("no Pathway enrichment results of the up-regulated genes available\n", fill=T)
-    }
+    	} else {
+        	cat("no Pathway enrichment results of the up-regulated genes available\n", fill=T)
+   	}
 
-    Pathway_bar_down     <- paste0(SHINYREPS_GO_ENRICHMENT, "/", gsub("=.*", "", conts[i,1]),"_Reactome_Barplot_down_genes.png")
-    Pathway_network_down <- paste0(SHINYREPS_GO_ENRICHMENT, "/", gsub("=.*", "", conts[i, 1]), "_Reactome_network_down_genes.png")
-    Pathway_table_down   <- paste0(SHINYREPS_GO_ENRICHMENT, "/", gsub("=.*", "", conts[i, 1]), "_Reactome_Pathway_Enrichment_down_genes.csv")
+
+	# Pathway Enrichment Plot
+    	# down-regulated genes
+    	cat("#### Pathways enriched in down-regulated genes", fill=T)
+
+    	Pathway_bar_down     <- paste0(SHINYREPS_GO_ENRICHMENT, "/", gsub("=.*", "", conts[i,1]),"_Reactome_Barplot_down_genes.png")
+    	Pathway_table_down   <- paste0(SHINYREPS_GO_ENRICHMENT, "/", gsub("=.*", "", conts[i, 1]), "_Reactome_Pathway_Enrichment_down_genes.csv")
    
-    # if there are Pathway enrichment results (the barplot was created)
-    if(file.exists(Pathway_bar_down)) {
+    	# if there are Pathway enrichment results (the barplot was created)
+    	if(file.exists(Pathway_bar_down)) {
 
-        # Pathways enriched in a barplot
-        cat("Pathway enrichment barplot of the down-regulated genes with FDR < 0.01.", fill=T)
-        cat("![GO_Analysis img](", Pathway_bar_down, ")\n", fill=T)
+        	# Pathways enriched in a barplot
+        	cat("Pathway enrichment barplot of the down-regulated genes with FDR < 0.01.", fill=T)
+        	cat("![GO_Analysis img](", Pathway_bar_down, ")\n", fill=T)
         
-        # network of Pathways enriched
-        cat("Pathway enrichment map of the down-regulated genes with FDR < 0.01.", fill=T)
-        cat("![GO_Analysis img](", Pathway_network_down, ")\n", fill=T)
-       
-        # and table of Pathways enriched
-        cat("Pathways enrichment table of the down-regulated genes with FDR < 0.01:\n", fill=T)
-        enrich  <- read.csv(file=Pathway_table_down)
-        cols    <- c("ID", "Description", "GeneRatio", "BgRatio", "pvalue", "p.adjust", "qvalue", "geneID")
-        r       <- min(10, nrow(enrich))
-        enrich  <- as.data.frame(enrich)
-        enrich$geneID <- ifelse(nchar(enrich$geneID) > 10, paste0(substr(enrich$geneID, 0, 35), "..."), enrich$geneID) # shorten long lines
-        cat(kable(enrich[1:r, cols], row.names=T, align="r"), sep="\n") # show only the top min or top 10 pathways
-        cat("\n", fill=T)
+        	# and table of Pathways enriched
+        	cat("Pathways enrichment table of the down-regulated genes with FDR < 0.01:\n", fill=T)
+        	enrich  <- read.csv(file=Pathway_table_down)
+        	cols    <- c("ID", "Description", "GeneRatio", "BgRatio", "pvalue", "p.adjust", "qvalue", "geneID")
+        	r       <- min(10, nrow(enrich))
+        	enrich  <- as.data.frame(enrich)
+        	enrich$geneID <- ifelse(nchar(enrich$geneID) > 10, paste0(substr(enrich$geneID, 0, 35), "..."), enrich$geneID) # shorten long lines
+        	cat(kable(enrich[1:r, cols], row.names=T, align="r"), sep="\n") # show only the top min or top 10 pathways
+        	cat("\n", fill=T)
 
-    } else {
-        cat("no Pathway enrichment results of the down-regulated genes available\n", fill=T)
-    }
+    	} else {
+        	cat("no Pathway enrichment results of the down-regulated genes available\n", fill=T)
+    	}
 
 }
 ```
