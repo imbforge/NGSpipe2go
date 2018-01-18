@@ -127,7 +127,7 @@ DEhelper.DESeq2.corr()		# heatmap of sample to sample distances
 
 ## Differential Expression Analysis ##
 
-Pairwise differential expression analysis between the sample groups was performed with the popular R package DESeq2 (https://bioconductor.org/packages/release/bioc/html/DESeq2.html). Shown below for each comparison are (i) MA plots depicting log2 of the expression fold changes versus the mean normalised gene expression level and (ii) tables of top hits order by statistical significance (FDR, false discovery rate). In this standard analysis, only uniquely mapped reads are taken into account to avoid "cross-talk" between different genes.
+Pairwise differential expression analysis between the experimental groups is performed with the popular R/Bioconductor package DESeq2 (https://bioconductor.org/packages/release/bioc/html/DESeq2.html). Default DESeq2 analysis includes an independent filtering procedure for lowly expressed genes which is meant to ameliorate the multiple testing problem thereby maximising the statistical power to detect differentially expressed genes (DEGs). In this standard analysis only uniquely mapped reads are taken into account to avoid "cross-talk" between different genes.
 
 ```{r DifferentialExpression_paragraph, echo=F, results='asis', error=F, warning=F, message=F, fig.align="center"}
 for(i in 1:nrow(conts)) {
@@ -137,24 +137,24 @@ for(i in 1:nrow(conts)) {
 	cat("", fill=T)
 	
 	# MA plot
-	cat("##### MA-plot", fill=T)
+	cat("##### MA plot", fill=T)
 	fdr <- if(exists("input")) { if(!is.null(input$slider_pval)) input$slider_pval else .01 } else .01
 	genes <- DEhelper.DESeq2.DEgenes(i)
-	cat("There are", sum(genes$padj < fdr, na.rm=T), 
-		"genes highlighted in the MA plot with corrected pvalue (Benjamini and Hochberg, FDR) <", fdr, "\n")
+	cat("MA plot showing expression fold change vs. mean expression level of all annotated genes. There are", sum(genes$padj < fdr, na.rm=T), 
+		"genes highlighted in the MA plot with corrected pvalue (Benjamini and Hochberg, FDR) <", fdr, ":", "\n")
 	DEhelper.DESeq2.MAplot(i, fdr)	# should be fine at taking the value from the UI slider
 	cat("\n", fill=T)
             	
 	# Volcano Plot
-	cat("##### Volcano-plot", fill=T)	
-	cat("Volcano plots are meant to facilitate an overview over all genes under investigation by combining log fold change and statistical significance. Outliers and genes with large changes should be easy to spot. As expression strength has a large effect on statistical significance it is added to the volcano plot by coloring the points.", fill=T)
+	cat("##### Volcano plot", fill=T)	
+	cat("Volcano plot of all DESeq2-tested genes depicting their expression fold change vs. statistical significance:", "\n", "\n")
 	DEhelper.DESeq2.VolcanoPlot(i, fdr, web=F)
 	cat("\n", fill=T)
 	
 	# and DE table
-	cat("##### Top 25 DE genes", fill=T)
+	cat("##### Top hits", fill=T)
         cat("", fill=T)
-	cat("The table shows the top 25 differentially expressed genes with their mean expression change (log2 of fold change) and statistical significance (padj, FDR-adjusted p-value):", fill=T)
+	cat("The table shows the top 25 DEGs with their mean expression change (log2 of fold change) and statistical significance (padj, FDR-adjusted p-value):", fill=T)
 	cat("", fill=T)
 	genes$baseMean       <- round(genes$baseMean, 2)
 	genes$log2FoldChange <- round(genes$log2FoldChange, 2)
@@ -165,7 +165,6 @@ for(i in 1:nrow(conts)) {
 
 }
 ```
-
 
 ## Enrichment Analysis ##
 
