@@ -141,20 +141,20 @@ for(i in 1:nrow(conts)) {
 	fdr <- if(exists("input")) { if(!is.null(input$slider_pval)) input$slider_pval else .01 } else .01
 	genes <- DEhelper.DESeq2.DEgenes(i)
 	cat("MA plot showing expression fold change vs. mean expression level of all annotated genes. There are", sum(genes$padj < fdr, na.rm=T), 
-		"genes highlighted in the MA plot with corrected pvalue (Benjamini and Hochberg, FDR) <", fdr, ":", "\n")
+		"genes highlighted in the MA plot with corrected pvalue (Benjamini and Hochberg, FDR) <", fdr, ".", "\n")
 	DEhelper.DESeq2.MAplot(i, fdr)	# should be fine at taking the value from the UI slider
 	cat("\n", fill=T)
             	
 	# Volcano Plot
 	cat("##### Volcano plot", fill=T)	
-	cat("Volcano plot of all DESeq2-tested genes depicting their expression fold change vs. statistical significance:", "\n", "\n")
+	cat("Volcano plot of all DESeq2-tested genes depicting their expression fold change vs. statistical significance. The FDR < 0.01 hits are highlighted.", "\n", "\n")
 	DEhelper.DESeq2.VolcanoPlot(i, fdr, web=F)
 	cat("\n", fill=T)
 	
 	# and DE table
 	cat("##### Top hits", fill=T)
         cat("", fill=T)
-	cat("The table shows the top 25 DEGs with their mean expression change (log2 of fold change) and statistical significance (padj, FDR-adjusted p-value):", fill=T)
+	cat("The table below shows the top 25 DEGs with their mean normalised counts (baseMean), expression change (log2FoldChange) and statistical significance (padj = FDR-adjusted p-value). The complete DESeq2 results table including RPKM-normalised expression data for all genes in each sample is available in CSV and Excel formats.", fill=T)
 	cat("", fill=T)
 	genes$baseMean       <- round(genes$baseMean, 2)
 	genes$log2FoldChange <- round(genes$log2FoldChange, 2)
