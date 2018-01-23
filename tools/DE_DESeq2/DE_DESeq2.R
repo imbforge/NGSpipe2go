@@ -103,7 +103,7 @@ genes <- as.data.frame(genes(txdb))
 ##
 ## DESeq analysis: right now it only allows simple linear models with pairwise comparisons
 ##
-res <- lapply(conts[,1],function(cont) {
+pairwise.dds.and.res <- lapply(conts[,1],function(cont) {
 
     # parse the formula in cont, get contrasts from resultNames(dds) and create a vector with coefficients
     cont.name <- gsub("(.+)=(.+)","\\1",cont)
@@ -147,10 +147,16 @@ res <- lapply(conts[,1],function(cont) {
     write.csv(x, file=paste0(out, "/", cont.name, ".csv"), row.names=F)
     WriteXLS(x, ExcelFileName=paste0(out, "/", cont.name, ".xls"), row.names=F)
     
-    res
+    list(dds,res)
 })
 
+## separate pairwise PCAs to a list
+pairwise.dds <- lapply(pairwise.dds.and.res,function(x){return(x[[1]])})
+
+## separate results to a list
+res <- lapply(pairwise.dds.and.res,function(x){return(x[[2]])})
 names(res) <-  gsub("=.*", "", conts[,1]) 
+
 
 ##
 ## Sanity check plots with all the samples together
@@ -191,4 +197,4 @@ x <- mapply(function(res, cont) {
 dev.off()
 #save the sessionInformation
 writeLines(capture.output(sessionInfo()),paste(out, "/DE_DESeq2_session_info.txt", sep=""))
-save(rld, dds, res, conts, file=paste0(out,"/DE_DESeq2.RData"))
+save(rld, pairwise.dds, dds, res, conts, file=paste0(out,"/DE_DESeq2.RData"))

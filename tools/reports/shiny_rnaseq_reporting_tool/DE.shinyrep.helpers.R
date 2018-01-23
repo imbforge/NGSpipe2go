@@ -99,6 +99,33 @@ DEhelper.DESeq2.MDS <- function() {
     print(p + geom_text_repel(aes(label=rownames(colData(dds)))) + theme_bw())
 }
 
+
+#' Create (pairwise) MDS plot from DESeq2 object.
+#'
+#' @param pairwise.dds - a list of DESeq2 analysis S4 objects
+#' @param i - index of the list element to be plotted
+#'
+#' @return MDS plot
+#'
+#' @description This function will use a DESeq2 differential analysis object to create an MDS plot,
+#'              which is labelled non-overlapping gene names.
+#'
+#' @return A printed plot (ggplot2) object.
+#'
+#' @examples Taken from DE_DESeq2.R
+#'           pairwise.dds <- lapply(conts[,1],function(cont) {
+#'                       ...
+#'           })
+#'           # pairwise.dds are taken from environment
+#'           DEhelper.DESeq2.pairwisePCA(i)
+#'
+DEhelper.DESeq2.pairwisePCA <- function(i=1) {
+    pairwise.rld <- rlog(pairwise.dds[[i]])
+    p <- plotPCA(pairwise.rld, intgroup=colnames(colData(pairwise.dds[[i]]))[1])
+    print(p + geom_text_repel(aes(label=rownames(colData(pairwise.dds[[i]])))) + theme_bw())
+}
+
+
 ## DEhelper.cluster
 #' Heatmap of top variant 'n' genes of the counts-per-milion table.
 #'
