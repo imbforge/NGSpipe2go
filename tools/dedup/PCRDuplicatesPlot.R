@@ -23,7 +23,7 @@ colnames(stats)[1:2] <- c('Nreads', 'File')
 
 stats_wide <- tidyr::spread(stats[,c(1,3:4)], Reads, Nreads)
 stats_wide$Percentage <- paste(
-   round(stats_wide$Filtered / stats_wide$Original * 100,1),
+   round(stats_wide$Unique / stats_wide$Original * 100,1),
    '%',
    sep=''
 )
