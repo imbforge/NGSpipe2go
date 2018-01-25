@@ -43,7 +43,8 @@ ESSENTIAL_MATURE_MIRNA="/fsimb/groups/imb-kettinggr/genomes/Danio_rerio/Ensembl/
 ESSENTIAL_HAIRPIN_MIRNA="~/imb-git addkettinggr/genomes/Danio_rerio/Ensembl/Zv9/Annotation/SmallRNA/hairpin.noSpaces.fa"
 ESSENTIAL_REPEAT_MASKER="/home/adomingu/imb-kettinggr/genomes/Danio_rerio/Ensembl/Zv9/Sequence/repeatMasker/danRer7.noSimpleLow.fa.out"
 ESSENTIAL_REPEAT_REF="/home/adomingu/imb-kettinggr/genomes/Danio_rerio/Ensembl/Zv9/Sequence/repEnrichNoSimpleLow"
-REPENRICH_BED="FALSE" 
+REPENRICH_BED="FALSE"
+ESSENTIAL_DB="zv9" 
 ESSENTIAL_THREADS=4
 // read size to keep (added 8 bp to account for barcodes)
 MIN_LENGTH=28
