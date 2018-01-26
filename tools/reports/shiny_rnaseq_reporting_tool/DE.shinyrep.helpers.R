@@ -253,13 +253,13 @@ DEhelper.DESeq2.VolcanoPlot <- function(i=1, fdr=.01, top=25, web=TRUE) {
     
     # plotting
     p <- ggplot(d) +
-            geom_point(mapping=aes(log2FoldChange, -log10(padj), size=log10(baseMean+10), color=padj < fdr), alpha=0.1) +
+            geom_point(mapping=aes(log2FoldChange, -log10(padj), size=log10(baseMean+1), color=padj < fdr), alpha=0.1) +
             theme_bw() +
             xlim(-x.limit, x.limit) +
             ylab("-log10 adj. p-value") +
             xlab("log2 fold change") + 
             scale_color_manual(values=c("black", "red"), guide=FALSE) +
-            scale_size_continuous("normalised counts (log10)")
+            scale_size_continuous("mean norm. counts (log10)")
 
     # add name of top genes
     if(top > 0) p <- p + geom_text_repel(data=d[1:min(top, nrow(d)),],
