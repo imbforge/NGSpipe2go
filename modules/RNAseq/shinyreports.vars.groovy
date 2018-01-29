@@ -2,6 +2,7 @@
 SHINYREPS_PROJECT=PROJECT	//project directory
 SHINYREPS_ORG=ESSENTIAL_ORG	//UCSC organism
 SHINYREPS_DB=ESSENTIAL_DB	//UCSC assembly version
+SHINYREPS_PAIRED=ESSENTIAL_PAIRED // paired-end data [yes|no]
 SHINYREPS_LOG=LOGS			//where the logs lie
 SHINYREPS_QC=QC				//where the QC lie
 SHINYREPS_RES=RESULTS		//where the results lie
@@ -32,4 +33,5 @@ SHINYREPS_PLOTS_COLUMN=3L    //number of columns to splits the plot grids (dupra
 SHINYREPS_INFEREXPERIMENT_LOGS=QC + "/inferexperiment" //where the inferexperiment logs lie
 SHINYREPS_QUALIMAP_LOGS=QC + "/qualimap" //where the qualimap output files are
 SHINYREPS_GO_ENRICHMENT=RESULTS + "/GO_Analysis" // where the GO enrichment results lie
+SHINYREPS_INSERTSIZE=QC + "/insertsize" //where the insertsize statistics are found
 SHINYREPS_TOOL_VERSIONS=PROJECT+ "/NGSpipe2go/modules/RNAseq/tool.versions.groovy" //where the tool versions are listed
