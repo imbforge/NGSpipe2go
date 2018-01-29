@@ -54,6 +54,12 @@ The mapping statistics below show the number and percentage of (i) input raw rea
 cat(DEhelper.STAR(), sep="\n")
 ``` 
 
+## Insert Size (for PE data only) ##
+
+```{r echo=F,results='asis',error=F,warning=F,message=F}
+cat(DEhelper.insertsize(), sep="\n")
+```
+
 ## Library complexity assessment ##
 
 Measuring the fraction of duplicated reads is commonly used to control for excessive PCR over-amplification during library preparation and/or for suboptimal amount of input material. However, in RNA-seq duplicated reads may also arise naturally due to the highly expressed (e.g. housekeeping) genes, which makes the overall read duplication rate useless. The IMB-developed tool dupRadar (http://bioconductor.org/packages/release/bioc/html/dupRadar.html) gives an informative insight into the duplication problem by graphically relating the gene expression levels and the observed duplication rates. Thus, problematic samples can be easily identified by visual inspection.
