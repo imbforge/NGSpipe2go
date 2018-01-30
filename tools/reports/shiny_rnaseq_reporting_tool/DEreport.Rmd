@@ -356,6 +356,7 @@ for(i in 1:nrow(conts)) {
     padj   <- ifelse(is.na(res  [[i]]$padj), 1, res  [[i]]$padj)
     padjMM <- ifelse(is.na(resMM[[i]]$padj), 1, resMM[[i]]$padj)
     if (sum(padj < fdr) > 0 && sum(padjMM < fdr) > 0) { 
+        futile.logger::flog.threshold(futile.logger::ERROR, name = "VennDiagramLogger")  # to get rid of Venn plot logs
         img <- venn.diagram(list(with_MM  =rownames(resMM[[i]])[padjMM < fdr],
                                  wihout_MM=rownames(res  [[i]])[padj   < fdr]),
                                  fill=c("red", "blue"), filename=NULL, alpha=0.3, lwd=0,
