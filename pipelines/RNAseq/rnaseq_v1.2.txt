@@ -1,4 +1,4 @@
-MODULE_FOLDER="/project/NGSpipe2go/modules/" // adjust to your projects needs
+MODULE_FOLDER="./NGSpipe2go/modules/"    // may need adjustment for some projects
 
 load MODULE_FOLDER + "RNAseq/essential.vars.groovy"
 load MODULE_FOLDER + "RNAseq/tool.locations.groovy"
@@ -13,6 +13,9 @@ load MODULE_FOLDER + "RNAseq/star.module.groovy"
 load MODULE_FOLDER + "NGS/bamindexer.vars.groovy"
 load MODULE_FOLDER + "NGS/bamindexer.module.groovy"
 
+load MODULE_FOLDER + "NGS/insertsize.module.groovy"
+load MODULE_FOLDER + "NGS/insertsize.vars.groovy"
+
 load MODULE_FOLDER + "RNAseq/subread.vars.groovy"
 load MODULE_FOLDER + "RNAseq/subread.module.groovy"
 
@@ -22,8 +25,8 @@ load MODULE_FOLDER + "RNAseq/filter2htseq.module.groovy"
 load MODULE_FOLDER + "NGS/bam2bw.vars.groovy"
 load MODULE_FOLDER + "NGS/bam2bw.module.groovy"
 
-load MODULE_FOLDER + "NGS/markdups.vars.groovy"
-load MODULE_FOLDER + "NGS/markdups.module.groovy"
+load MODULE_FOLDER + "NGS/bamcoverage.module.groovy"
+load MODULE_FOLDER + "NGS/bamcoverage.vars.groovy"
 
 load MODULE_FOLDER + "NGS/markdups2.vars.groovy"
 load MODULE_FOLDER + "NGS/markdups2.module.groovy"
@@ -43,9 +46,6 @@ load MODULE_FOLDER + "RNAseq/rnatypes.module.groovy"
 load MODULE_FOLDER + "RNAseq/subread2rnatypes.vars.groovy"
 load MODULE_FOLDER + "RNAseq/subread2rnatypes.module.groovy"
 
-load MODULE_FOLDER + "RNAseq/edger.vars.groovy"
-load MODULE_FOLDER + "RNAseq/edger.module.groovy"
-
 load MODULE_FOLDER + "RNAseq/deseq2.vars.groovy"
 load MODULE_FOLDER + "RNAseq/deseq2.module.groovy"
 
@@ -60,7 +60,12 @@ load MODULE_FOLDER + "miscellaneous/collectbpipes.module.2.groovy"
 load MODULE_FOLDER + "RNAseq/shinyreports.vars.groovy"
 load MODULE_FOLDER + "RNAseq/shinyreports.module.groovy"
 
-run {
-	"%.fastq.gz" * [ FastQC , STAR_se + BAMindexer + [ subread_count + filter2htseq, bam2bw, inferexperiment, rnatypes, MarkDups2 + BAMindexer + [ dupRadar , geneBodyCov2 ] ] ] + [ DE_DESeq2_MM, DE_DESeq2 + GO_Enrichment] + collectBpipeLogs + shinyReports
-}
+//
+// Typical workflow for SR data (default):
+//
+run { "%.fastq.gz" * [ FastQC , STAR_se + BAMindexer + [ subread_count + filter2htseq , bam2bw , inferexperiment , rnatypes , MarkDups2 + BAMindexer + [ dupRadar , geneBodyCov2 ] ] ] + [ DE_DESeq2_MM , DE_DESeq2 + GO_Enrichment] + collectBpipeLogs + shinyReports }
 
+//
+// Typical workflow for PE data (optional):
+//
+// run { "%.fastq.gz" * [ FastQC ] + "%.R*.fastq.gz" * [ STAR_se + BAMindexer + [ subread_count + filter2htseq , bamCoverage , InsertSize , inferexperiment , rnatypes , MarkDups2 + BAMindexer + [ dupRadar , geneBodyCov2 ] ] ] + [ DE_DESeq2_MM , DE_DESeq2 + GO_Enrichment] + collectBpipeLogs + shinyReports }
