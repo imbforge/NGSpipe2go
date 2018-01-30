@@ -337,11 +337,11 @@ for(i in 1:nrow(conts)) {
 
 ## Additional analysis including multimapped reads ##
 
-For many genes in the human, mouse & other genomes, RNA-seq with short reads cannot measure expression accurately because recently duplicated gene families, as well as some gene-pseudogene pairs, are very similar on transcript level and few reads map uniquely to only one family member.
+For many genes in the human, mouse and other genomes, RNA-seq with short reads cannot accurately measure expression because recently duplicated gene families and gene-pseudogene pairs have very similar transcript sequences, which results in mostly ambiguous or multimapped reads. 
 
-There are several approaches how to deal with multimapped (MM) reads. Here such reads are randomly assigned to one of the several genes they may come from and then the DESeq2 statistical analysis is repeated. While this alternative analysis may reveal additional interesting hits, which would otherwise be lost, it may also produce false-positive findings due to potential cross-talk between highly similar genes, i.e. if a gene X changes expression, its pseudogene Y or closely-related paralog Z could be non-specifically affected as well. Therefore, the standard analysis using only uniquely mapped reads is usually more reliable for the majority of genes and should have priority.
+There are several approaches how to deal with multimapped reads, here they are randomly assigned to one of the possible source genes followed by DESeq2 statistical assessment. While this alternative analysis may reveal additional interesting hits, it may also produce false-positive findings due to potential cross-talk between highly similar genes, i.e. if a gene X changes expression, its pseudogene Y or closely-related paralog Z could be non-specifically affected as well. Therefore, the standard DESeq2 analysis using only uniquely mapped reads is considered more reliable for the majority of genes and should have priority.
 
-The Venn diagrams below compare the number of differentially expressed genes without and with inclusion of the ambiguous multimapped (MM) reads.
+The Venn diagrams below compare the number of differentially expressed genes detected with and without inclusion of the ambiguous multimapped (MM) reads.
 
 ```{r DifferentialExpressionMM_paragraph, echo=F, results='asis', error=F, warning=F, message=F, fig.align="center", fig.width=3, fig.height=3}
 for(i in 1:nrow(conts)) {
@@ -358,17 +358,17 @@ for(i in 1:nrow(conts)) {
     if (sum(padj < fdr) > 0 && sum(padjMM < fdr) > 0) { 
         img <- venn.diagram(list(with_MM  =rownames(resMM[[i]])[padjMM < fdr],
                                  wihout_MM=rownames(res  [[i]])[padj   < fdr]),
-                            fill=c("green", "blue"), alpha=.3, lwd=0, filename=NULL)
+                                 fill=c("red", "blue"), filename=NULL, alpha=0.3, lwd=0,
+                                 margin=0.1, height=1200, ext.pos=180, ext.length = 0.8, cat.dist=0.1)
         grid.newpage()
         grid.draw(img)
     }
     
     # the top genes in disagreement
-    cat("The table contains the top genes which are differentially expressed (fdr<", fdr, ") in only one analysis:", fill=T)
+    cat("The table below shows the top genes which are differentially expressed (FDR <", fdr, ") in only one analysis.", fill=T)
     cat("", fill=T)
     disagree   <- setdiff(rownames(res  [[i]])[padj   < fdr], rownames(resMM[[i]])[padjMM < fdr])
     disagreeMM <- setdiff(rownames(resMM[[i]])[padjMM < fdr], rownames(res  [[i]])[padj   < fdr])
-
     tables <- lapply(list(disagree, disagreeMM), function(genes) {
         out <- data.frame(name       =resMM[[i]][genes, "gene_name"],
                           baseMean   =round (res[[i]][genes, "baseMean"], 2),
@@ -383,13 +383,13 @@ for(i in 1:nrow(conts)) {
     })
 
     # output result
-    cat("Without multimappers only:", fill=T)
-    cat("", fill=T)
-    cat(kable(tables[[1]], row.names=T, align="r"), sep="\n")    # show max 25 genes
-    cat("", fill=T)
     cat("With multimappers only:", fill=T)
     cat("", fill=T)
     cat(kable(tables[[2]], row.names=T, align="r"), sep="\n")    # show max 25 genes
+    cat("", fill=T)
+    cat("Without multimappers only:", fill=T)
+    cat("", fill=T)
+    cat(kable(tables[[1]], row.names=T, align="r"), sep="\n")    # show max 25 genes
     cat("", fill=T)
 }
 ```
