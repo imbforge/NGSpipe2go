@@ -1,4 +1,3 @@
-library(shinyIncubator)	# the progress bar
 library(rmarkdown)	# for the report generator
 library(knitr)		# for the report generator
 source("DE.shinyrep.helpers.R")		# helper functions to generate the plots

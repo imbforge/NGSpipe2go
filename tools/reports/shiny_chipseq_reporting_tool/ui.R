@@ -1,10 +1,8 @@
-library(shinyIncubator)	# the progress bar
 library(markdown)		# display md tables (for the mapping and fastqc stats)
 source("ChIP.shinyrep.helpers.R")	# helper functions to display the stats
 loadGlobalVars()
 
 shinyUI(fluidPage(
-	progressInit(),
 	titlePanel("ChIP peakcalling with MACS2"),
 	sidebarLayout(
 		sidebarPanel(
