@@ -25,10 +25,10 @@ macs2 = {
             
             BAM=\$(basename $input) &&
             grep \$BAM $MACS2_TARGETS | while read -r TARGET; do
-                IP=\$(       echo \$TARGET | cut -f1 -d" ") &&
-                IPname=\$(   echo \$TARGET | cut -f2 -d" ") &&
-                INPUT=\$(    echo \$TARGET | cut -f3 -d" ") &&
-                INPUTname=\$(echo \$TARGET | cut -f4 -d" ");
+                IP=\$(       echo $TARGET | tr '\t' ' ' | cut -f1 -d" ") &&
+                IPname=\$(   echo $TARGET | tr '\t' ' ' | cut -f2 -d" ") &&
+                INPUT=\$(    echo $TARGET | tr '\t' ' ' | cut -f3 -d" ") &&
+                INPUTname=\$(echo $TARGET | tr '\t' ' ' | cut -f4 -d" ");
 
                 if [ "\$BAM" != "\$INPUT" ]; then
                     echo "\${IPname} vs \${INPUTname}" >> $output &&
