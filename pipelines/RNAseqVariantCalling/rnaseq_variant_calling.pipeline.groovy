@@ -1,4 +1,4 @@
-MODULE_FOLDER="NGSpipe2go/modules/" // adjust to your projects needs
+MODULE_FOLDER="./NGSpipe2go/modules/" // adjust to your projects needs
 
 load MODULE_FOLDER + "RNAseqVariantCalling/essential.vars.groovy"
 load MODULE_FOLDER + "RNAseqVariantCalling/tool.locations.groovy"
