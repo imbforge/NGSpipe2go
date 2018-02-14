@@ -2,7 +2,7 @@
 
 # NGSpipe2go #
 
-A set of NGS data analysis tools and pipelines developed and utilised at the Institute of Molecular Biology gGmbH in Mainz (https://www.imb.de/). Currently NGSpipe2go contains bpipe-based pipelines for QC, processing, analysis and visualisation of RNA-seq, ChIP-seq and DNA-seq data.
+A set of NGS data analysis tools and pipelines developed and utilised at the Institute of Molecular Biology gGmbH in Mainz (https://www.imb.de/).
 
 ## Prerequisites ##
 ### RNA-seq pipeline ###
@@ -10,112 +10,93 @@ A set of NGS data analysis tools and pipelines developed and utilised at the Ins
 - FastQC
 - STAR
 - Samtools
-- Subread package
-- Picard tools
-- BED tools
-- UCSC tool set
+- Bedtools
+- Subread
+- Picard
+- UCSC utilities
 - RSeQC
-- EdgeR
 - DEseq2
-- dupRadar (*)
-
-(*) is provided via another project from imbforge
+- dupRadar (provided by another project from imbforge)
 
 #### Files required ####
-- targets.txt (+) (*)
-- contrasts.txt (+) (*)
-- raw reads or mapped data
-
-(+) files are needed to run the EdgeR and DEseq2 modules.
-
-(*) examples provided within this project
+- targets.txt (sample names)
+- contrasts.txt (pairwise comparisons)
+- raw reads (.fastq.gz) or mapped data (.bam)
 
 ### ChIP-seq pipeline ###
 #### Programs required ####
 - FastQC
-- Bowtie 1
+- Bowtie
 - Samtools
-- BED tools
-- Picard tools
-- UCSC tool set
-- encodeChIPqc (*)
+- Bedtools
+- Picard
+- UCSC utilities
 - MACS2
-
-(*) is provided via another project from imbforge
+- ChIPSeeker
+- encodeChIPqc (provided by another project from imbforge)
 
 #### Files required ####
-- targets.txt (*)
-- raw reads or mapped data
+- targets.txt (sample names)
+- raw reads (.fastq.gz) or mapped data (.bam)
 
-(*) example provided within this project
+## NGSpipe2go preparations ##
 
-## Preparations to run ##
+### Put NGSpipe2go into the project dir ###
+NGS projects should be run in a consistant and reproducible way, hence NGSpipe2go asks you to copy all tools into the project folder, which will ensure that you always use the same program versions at a later time point. This can be done either from a local NGSpipe2go copy, a version from the GitHub releases (https://github.com/imbforge/NGSpipe2go/releases) or using the most recent development version from the GitHub repository
 
-### Get NGSpipe2go to your project ###
-NGS projects should be run in a consistant and reproducible way, hence NGSpipe2go asks you to copy all tools into the project folder, which will ensure that you always use the same program versions at a later time point.
-This can be done either from a local copy you created before:
+    git clone https://github.com/imbforge/NGSpipe2go.git <project_dir>/NGSpipe2go
 
-    cp -r github/NGSpipe2go/ project_folder/
+### Choose one of the pipelines ###
 
-a freshly loaded version from the GitHub releases
+Select a pipeline to run and make symlinks in the main project dir, e.g. for RNA-seq project
 
-    https://github.com/imbforge/NGSpipe2go/releases
+    ln -s NGSpipe2go/pipelines/RNAseq/* .
+    ln -s NGSpipe2go/modules/RNAseq/essential.vars.groovy .
+    ln -s NGSpipe2go/modules/RNAseq/tool.locations.groovy .
 
-or the most recent development version from the GitHub repository
+or for single-read (SR) ChIP-seq project
 
-    git clone https://github.com/imbforge/NGSpipe2go.git project_folder/NGSpipe2go
+    ln -s NGSpipe2go/pipelines/ChIPseq/* .
+    ln -s NGSpipe2go/modules/ChIPseq/essential.vars.groovy .
+    ln -s NGSpipe2go/modules/ChIPseq/tool.locations.groovy .
+    
+or for paired-end (PE) ChIP-seq project
 
-### Select the NGSpipe2go you run ###
+    ln -s NGSpipe2go/pipelines/ChIPseq_pe/* .
+    ln -s NGSpipe2go/modules/ChIPseq_pe/essential.vars.groovy .
+    ln -s NGSpipe2go/modules/ChIPseq_pe/tool.locations.groovy .
 
-Select a pipeline to run and make it available in the main project.
+### Customise NGSpipe2go to your needs ###
 
-    ln -s project_folder/NGSpipe2go/pipelines/RNAseq/* project_folder/
-    ln -s project_folder/NGSpipe2go/modules/RNAseq/essential.vars.groovy project_folder/
-    ln -s project_folder/NGSpipe2go/modules/RNAseq/tool.locations.groovy project_folder/
+Adjust the project-specific information in the following files:
 
-or 
+- *essential.vars.groovy* specifies the main project variables like project dir and reference genome
+- *<name>.pipeline.grovy* describes the pipeline steps and the location of the respective modules
+- *targets.txt* and *contrasts.txt* contain the sample names and the differential group comparisons
 
-    ln -s project_folder/NGSpipe2go/pipelines/ChIPseq/* project_folder/
-    ln -s project_folder/NGSpipe2go/modules/ChIPseq/essential.vars.groovy project_folder/
-    ln -s project_folder/NGSpipe2go/modules/ChIPseq/tool.locations.groovy project_folder/
+## Run a pipeline ##
 
+Put the input files into own folder <project_dir>/rawdata
 
-### Modify NGSpipe2go to your needs ###
-
-Adjust the information found in the following files:
-
-- Project_folder needs to be entered in essential.vars.groovy (+)
-- Folder information in the recently linked rnaseq- or chipseq pipeline file, e.g. rnaseq_v1.2.txt (+)
-- Folder information in project_folder/NGSpipe2go/modules/RNAseq/tool.locations or project_folder/NGSpipe2go/modules/ChIPseq/tool.locations (*)
-- Compute requirements for the used queueing system according to the project data (Whole genome data might need more compute resources than a low coverage ChIPseq experiment) (*)
-- File and sample descriptions in targets.txt (+)
-- Comparison descriptions in contrasts.txt (+) 
-
-(*) these steps need to be done once for the setup of NGSpipe2go
-
-(+) these steps need to be repeated for each project to be run
-
-## Run ##
-
-We suggest to put the input files to a folder, e.g. project_folder/rawdata.
-
-Load the bpipe module 
+Load the bpipe module customised for the Slurm job manager
 
     module load bpipe/0.9.9.3.slurm
 
-To start running the pipeline 
+Start running the pipeline of choice
 
-    bpipe run rnaseq_v1.2.txt rawdata/*.fastq.gz
+    bpipe run rnaseq.pipeline.groovy rawdata/*.fastq.gz
 or
 
-    bpipe run chipseq_v1.2.txt rawdata/*.fastq.gz
+    bpipe run chipseq.pipeline.groovy rawdata/*.fastq.gz
+    
+or
 
-## Report ##
+    bpipe run chipseq_pe.pipeline.groovy rawdata/*.fastq.gz
 
-The final result of the provided pipelines will be saved in project/reports.
-The Rmd file can be adjusted to your needs using your favorite text editor (well except MS word).
-The Rmd files can be transformed to easily readable documents using knitr, e.g.:
+## Compile a project report ##
+
+The final result of the provided pipelines will be saved in ./reports.
+The Rmd file can be further customised using a text editor and then converted into HTML report using knitr
     
     R usage:
     rmarkdown::render("DEreport.Rmd")
-
