@@ -1,4 +1,4 @@
-MODULE_FOLDER="/project/NGSpipe2go/modules/"
+MODULE_FOLDER="./NGSpipe2go/modules/"
 
 load MODULE_FOLDER + "ChIPseq/essential.vars.groovy"
 load MODULE_FOLDER + "ChIPseq/tool.locations.groovy"
@@ -43,5 +43,8 @@ load MODULE_FOLDER + "ChIPseq/shinyreports_pe.module.groovy"
 
 //MAIN PIPELINE TASK
 run {
-    "%.fastq.gz" * [ FastQC ] + "%.R*.fastq.gz" * [ bowtie2_pe + BAMindexer + filbowtie2unique + BAMindexer + [ MarkDups + BAMindexer, bamCoverage, InsertSize, pbc, ipstrength, macs2 ] ] + peak_annotation + collectBpipeLogs + shinyReports
+    "%.fastq.gz" * [ FastQC ] + "%.R*.fastq.gz" * 
+    [ bowtie2_pe + BAMindexer + filbowtie2unique + BAMindexer + 
+    [ MarkDups + BAMindexer, bamCoverage, InsertSize, pbc, ipstrength, macs2 ] ] + 
+    peak_annotation + collectBpipeLogs + shinyReports
 }
