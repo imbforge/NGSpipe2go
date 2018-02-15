@@ -1,9 +1,9 @@
-//rule for task STAR_se from catalog RNAseq, version 1
-//desc: Align single end reads
-STAR_se = {
+//rule for task STAR from catalog RNAseq
+//desc: Align single- or pair-end reads
+STAR = {
     doc title: "STAR alignment",
         desc:  "Align single/paired end reads",
-        constraints: "Paired end reads expected to have a _R1 _R2 suffix.",
+        constraints: "Paired end reads expected to have .R1 and .R2 suffix.",
         bpipe_version: "tested with bpipe 0.9.9",
         author: "Sergi Sayols"
 
@@ -15,7 +15,7 @@ STAR_se = {
         F_TMP.mkdirs()
     }
     // create the LOGS/STAR folder if it doesn't exists
-    F_LOG = new File(LOGS + "/STAR_se")
+    F_LOG = new File(LOGS + "/STAR")
     if(! F_LOG.exists()) {
         F_LOG.mkdirs()
     }
@@ -38,7 +38,7 @@ STAR_se = {
                      "--outSAMattributes Standard " +
                      "--outSJfilterReads Unique "   +
                      "--readFilesCommand zcat "     +
-                     "--outFileNamePrefix " + LOGS + "/STAR_se/" + OUTPUTFILE + " " +
+                     "--outFileNamePrefix " + LOGS + "/STAR/" + OUTPUTFILE + " " +
                      "--outTmpDir " + TMP + "/" + OUTPUTFILE + " " +
                      STAR_UNMAPPED_BAM + " " +
                      STAR_UNMAPPED_OUT + " " +
@@ -76,8 +76,8 @@ STAR_se = {
             
             STAR $STAR_FLAGS --readFilesIn $inputs | samtools view $SAMTOOLS_VIEW_FLAGS - | samtools sort $SAMTOOLS_SORT_FLAGS -T ${TMP}/${OUTPUTFILE}_sort - > $output1 &&
             
-            mv ${LOGS}/STAR_se/${OUTPUTFILE}SJ.out.tab $output.dir &&
-            ln -s ${LOGS}/STAR_se/${OUTPUTFILE}Log.final.out $output.dir
-        ""","STAR_se"
+            mv ${LOGS}/STAR/${OUTPUTFILE}SJ.out.tab $output.dir &&
+            ln -s ${LOGS}/STAR/${OUTPUTFILE}Log.final.out $output.dir
+        ""","STAR"
     }
 }
