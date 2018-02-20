@@ -10,6 +10,9 @@ load MODULE_FOLDER + "NGS/fastqc.module.groovy"
 load MODULE_FOLDER + "RNAseq/star.vars.groovy"
 load MODULE_FOLDER + "RNAseq/star.module.groovy"
 
+load MODULE_FOLDER + "NGS/filterchromosomes.vars.groovy"
+load MODULE_FOLDER + "NGS/filterchromosomes.module.groovy"
+
 load MODULE_FOLDER + "NGS/bamindexer.vars.groovy"
 load MODULE_FOLDER + "NGS/bamindexer.module.groovy"
 

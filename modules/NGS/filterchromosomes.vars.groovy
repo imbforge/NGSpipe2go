@@ -1,0 +1,3 @@
+//rule for task filterChr from catalog NGS, version 1
+FILTER_CHR_THREADS=ESSENTIAL_THREADS
+FILTER_CHR_FILE=ESSENTIAL_FILTER_CHR
