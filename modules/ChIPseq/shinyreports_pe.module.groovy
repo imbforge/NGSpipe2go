@@ -16,7 +16,7 @@ shinyReports = {
             cp ${MODULE_FOLDER}/../tools/reports/shiny_chipseq_pe_reporting_tool/ChIP.shinyrep.helpers.R ${REPORTS} &&
             cp ${MODULE_FOLDER}/../tools/reports/shiny_chipseq_pe_reporting_tool/bustard.pl ${REPORTS}              &&
             cp ${MODULE_FOLDER}/../tools/reports/shiny_chipseq_pe_reporting_tool/BustardSummary.toMD.xsl ${REPORTS} &&
-            cp ${MODULE_FOLDER}/../tools/reports/shiny_chipseq_pe_reporting_tool/styles.css ${REPORTS}               &&
+            cp ${MODULE_FOLDER}/../tools/reports/shiny_rnaseq_pe_reporting_tool/styles.css ${REPORTS}               &&
             
             if [ -e "${REPORTS}/DEreport.Rmd" ]; then
                 echo 'DEreport.Rmd already exists. Older copy will be kept and not overwritten';
@@ -47,9 +47,11 @@ shinyReports = {
             echo "SHINYREPS_BUSTARD=${SHINYREPS_BUSTARD}" >> $output &&
             echo "SHINYREPS_MACS2=${SHINYREPS_MACS2}"     >> $output &&
             echo "SHINYREPS_MACS2_LOG=${SHINYREPS_MACS2_LOG}"         >> $output &&
+            echo "SHINYREPS_BLACKLIST_FILTER=${SHINYREPS_BLACKLIST_FILTER}"         >> $output &&            
             echo "SHINYREPS_PREFIX=${SHINYREPS_PREFIX}"   >> $output &&
             echo "SHINYREPS_PLOTS_COLUMN=${SHINYREPS_PLOTS_COLUMN}" >> $output &&
             echo "SHINYREPS_PEAK_ANNOTATION=${SHINYREPS_PEAK_ANNOTATION}" >> $output &&
+            echo "SHINYREPS_GREAT=${SHINYREPS_GREAT}" >> $output &&
             echo "SHINYREPS_TOOL_VERSIONS=${SHINYREPS_TOOL_VERSIONS}" >> $output
         ""","shinyReports"
     }

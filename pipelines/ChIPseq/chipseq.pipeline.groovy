@@ -33,8 +33,14 @@ load MODULE_FOLDER + "ChIPseq/pbc.module.groovy"
 load MODULE_FOLDER + "ChIPseq/macs2.vars.groovy"
 load MODULE_FOLDER + "ChIPseq/macs2.module.groovy"
 
-load MODULE_FOLDER + "ChIPseq/peak_annotation.vars.groovy"                                                                                                                    
+load MODULE_FOLDER + "ChIPseq/blacklist_filter.vars.groovy"
+load MODULE_FOLDER + "ChIPseq/blacklist_filter.module.groovy"
+
+load MODULE_FOLDER + "ChIPseq/peak_annotation.vars.groovy"
 load MODULE_FOLDER + "ChIPseq/peak_annotation.module.groovy"               
+
+load MODULE_FOLDER + "ChIPseq/GREAT.vars.groovy"
+load MODULE_FOLDER + "ChIPseq/GREAT.module.groovy"             
 
 load MODULE_FOLDER + "miscellaneous/collectbpipes.module.2.groovy"
 

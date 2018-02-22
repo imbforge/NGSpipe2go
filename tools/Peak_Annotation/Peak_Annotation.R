@@ -20,7 +20,6 @@ library(ChIPseeker)
 library(clusterProfiler)
 library(GenomicFeatures)
 library(WriteXLS)
-library(Cairo)
 
 ##
 # get arguments from the command line
@@ -46,6 +45,15 @@ cat(runstr)
 if (!is.numeric(regionTSS)) stop("regionTSS not numeric. Run with:\n",runstr)
 
 peakFiles <-list.files(peakData,pattern=".xls", full.names = TRUE) # list of the full path of the .xls file 
+
+if(length(list.files(peakData,pattern="_macs2_blacklist_filtered_peaks.xls")) > 0) {
+      peakFiles <-list.files(peakData,pattern="_macs2_blacklist_filtered_peaks.xls", full.names = TRUE)
+      filename <- strsplit(basename(peakFiles), "_macs2_blacklist_filtered_peaks.xls") # take the filenames and put it as names for the plots	
+} else {
+      peakFiles <-list.files(peakData,pattern="_macs2_peaks.xls", full.names = TRUE)
+      filename <- strsplit(basename(peakFiles), "_macs2_peaks.xls") # take the filenames and put it as names for the plots     
+}
+
 peaks <- lapply(peakFiles, readPeakFile) # read all the xls files using 'readPeakFile' function
 
 if(transcriptType!="Bioconductor"){ # check the input format for the transcript annotation
@@ -62,36 +70,35 @@ if(orgDb!=""){ # check if genome wide annotation should be used
   peakAnno <- lapply(peakFiles, annotatePeak, TxDb=txdb, tssRegion=c(-regionTSS,regionTSS))  
 }
 
-filename <- strsplit(basename(peakFiles), "_macs2_peaks.xls") # take the filenames and put it as names for the plots
 names(peakAnno) <- filename
 
 # create barplot showing the feature distribution
-CairoPNG(file=paste0(out, "/ChIPseq_Feature_Distribution_Barplot.png"), width = 700, height = 500)
+png(file=paste0(out, "/ChIPseq_Feature_Distribution_Barplot.png"), width = 700, height = 500)
 plot(plotAnnoBar(peakAnno))
 dev.off()
 
 # create barplot showing the feature distribution related to TSS
-CairoPNG(file=paste0(out, "/ChIPseq_Feature_Distribution_Related_to_TSS_Barplot.png"), width = 700, height = 500)
+png(file=paste0(out, "/ChIPseq_Feature_Distribution_Related_to_TSS_Barplot.png"), width = 700, height = 500)
 plot(plotDistToTSS(peakAnno))
 dev.off()
 
 # create upsetplot 
 for(i in 1:length(peakAnno)){
-  CairoPNG(file=paste0(out, "/", filename[[i]], "_ChIPseq_UpSetplot.png"), width = 700, height = 500)
+  png(file=paste0(out, "/", filename[[i]], "_ChIPseq_UpSetplot.png"), width = 700, height = 500)
   upsetplot(peakAnno[[i]])
   dev.off()
 }
 
 # create ChIP peaks coverage plot
 for(i in 1:length(peakAnno)){
-  CairoPNG(file=paste0(out, "/", filename[[i]], "_ChIPseq_Peaks_Coverageplot.png"), width = 700, height = 500)
+  png(file=paste0(out, "/", filename[[i]], "_ChIPseq_Peaks_Coverageplot.png"), width = 700, height = 500)
   plot(covplot(peaks[[i]],weightCol="X.log10.pvalue."))
   dev.off()
 }
 
 # create xls output contains the peak annotation
 outputData <- lapply(peakAnno, as.data.frame)
-WriteXLS("outputData", ExcelFileName=paste0(out, "/Peak_Annotation.xls"))
+WriteXLS("outputData", ExcelFileName=paste0(out, "/Peak_Annotation.xlsx"))
 
 # save the sessionInformation
 writeLines(capture.output(sessionInfo()), paste(out, "/ChIPseq_Peak_Annotation_session_info.txt", sep=""))

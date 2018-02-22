@@ -19,7 +19,13 @@ SHINYREPS_PHANTOM_LOG=LOGS + "/phantompeak" //where the PhantomPeak/R logs lie
 SHINYREPS_BUSTARD=QC + "/DemultiplexedBustardSummary.xml"	//where the bustard xml file lies
 SHINYREPS_MACS2=RESULTS + "/macs2"	//where the MACS2 results lie
 SHINYREPS_MACS2_LOG=LOGS + "/macs2" //where the macs2 logs lie
+SHINYREPS_BLACKLIST_FILTER=RESULTS + "/macs2/peaks_detected_table.csv" //where the BlackList Filter module file lie
 SHINYREPS_PLOTS_COLUMN=4            //number of columns to splits the plot grids (ipstrength, phantompeaks...). Min=2
 SHINYREPS_INSERTSIZE=QC + "/insertsize" //where the insertsize statistics are found
 SHINYREPS_PEAK_ANNOTATION=RESULTS + "/Peak_Annotation" // where the peak annotation results lie
+SHINYREPS_GREAT=RESULTS + "/GREAT_analysis" // where the GO enrichment results lie
 SHINYREPS_TOOL_VERSIONS= PROJECT + "/NGSpipe2go/modules/ChIPseq/tool.versions.groovy" //where the tool versions listed
+
+
+
+

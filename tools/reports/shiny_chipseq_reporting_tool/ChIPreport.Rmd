@@ -88,7 +88,18 @@ cat(ChIPhelper.PhantomPeak(web=F),sep="\n")
 
 ## ChIP-seq peaks ##
 
-The number of peaks called at the default fasle-disovery rate (FDR) cutoff of 5% by MACS2 (https://github.com/taoliu/MACS/) in the different comparisons is shown below.
+The number of peaks called at the default false-discovery rate (FDR) cutoff of 5% by MACS2 (https://github.com/taoliu/MACS/) in the different comparisons is shown below.
+
+The ENCODE consortium empirically identified 'blacklist regions' (BRs) for some species and genome versions. These blacklist regions are often found at specific types of repeats (eg. centromeres, telomeres and satellite repeats) and are troublesome for high throughput sequencing aligners. These regions also confuse peak callers and result in spurious signal. Therefore, it is suggested to check the amount of peaks overlapping these regions and remove them for the downstream analysis. The table shows total number of peaks detected by MACS2, the number of peaks without overlapping the blacklist regions and the percentage of peaks overlapping these regions.  
+
+Note that these blacklists are applicable to human (hg38 and hg19), mouse (mm10 and mm9), worm (ce10) and fly (dm3) genomes.
+
+
+```{r BLACKLISTFILTER_paragraph, echo=F,results='asis',error=F,warning=F,message=F}
+cat(ChIPhelper.BLACKLISTFILTER(),sep="\n")
+```
+
+The table shows number of peaks detected in each chromosome for all the samples. 
 
 ```{r PeakCall_paragraph, echo=F,results='asis',error=F,warning=F,message=F}
 peaks <- ChIPhelper.init("readPeaks")
@@ -154,6 +165,87 @@ cat("![Peak_Annotation img](", functionalPlot, ")",fill=T)
 
 ```{r peak_annotation_upset_paragraph, echo=F, results='asis', error=F, warning=F, message=F}
     cat(ChIPhelper.peakAnnotationUpSet(web=F),sep="\n")
+```
+
+## Enrichment Analysis ##
+
+Enrichment Analysis is carried out using GREAT (http://great.stanford.edu). It assigns each gene a regulatory domain consisting of basal domain that extends 5 kb upstream and 1 kb downstream from its transcription start site, and and an extension up to the basal regulatory domain of the nearest upstream and downstream genes within 1 Mb. GREAT performs both the binomial test over genomic regions and the hypergeometric test over genes to provide an accurate picture of annotation enrichments for genomic regions. The ontology terms reported below are ranked by the binomial FDR q-value.   
+
+Note that GREAT supports recent assemblies of the well-annotated human (UCSC hg19 and UCSC hg18), mouse (UCSC mm9) and zebrafish (UCSC danRer7) genomes.
+
+```{r Enrichment_paragraph, echo=F, results='asis', error=F, warning=F, message=F, fig.align="center"}
+
+for(i in 1:length(levels(targets$group))) {
+
+        # subsection
+        cat("### ", levels(targets$group)[i], fill=T)
+        cat("", fill=T)
+
+	# GO Enrichment Plot
+
+	cat("#### GO terms enriched (Biological Process, BP)", fill=T)
+
+	#cat("##### Biological Process (BP)", fill=T)
+
+    	GO_bar     <- paste0(SHINYREPS_GREAT, "/", gsub("=.*", "", levels(targets$group)[i]),"_GO_Barplot.png")
+    	GO_table   <- paste0(SHINYREPS_GREAT, "/", gsub("=.*", "", levels(targets$group)[i]), "_GO_Enrichment.csv")
+    
+	# if there are GO enrichment results (the barplot was created)
+    	if(file.exists(GO_bar)) {
+
+        	# GO enriched terms in a barplot
+        	cat("Listed are the top five enriched GO terms (BP) found using peaks with FDR < 0.01 detected in all replicates.", fill=T)
+        	cat("![GREAT_analysis img](", GO_bar, ")\n", fill=T)
+        
+        	# and table of GO enriched terms
+        	cat("The table shows the top 10 enriched GO terms (BP):\n", fill=T)
+        	enrich  <- read.csv(file=GO_table, row.names=1)
+        	r       <- min(10, nrow(enrich))
+        	enrich  <- as.data.frame(enrich)
+            enrich  <- cbind(enrich[1], enrich[2], enrich[8], enrich[9], enrich[6], enrich[5], enrich[7])
+            colnames(enrich) <- c("GO ID","Term Name", "Binom Raw P-value", "Binom FDR Q-Val", "Binom Fold Enrichment", "Binom Observed Region Hits", "Binom Region Set Coverage" )
+            #colnames(enrich)  <- gsub("GO.Biological.Process.", "",  colnames(enrich))
+            #colnames(enrich)  <- gsub("\\.", " ", colnames(enrich))
+        	cat(kable(enrich[1:r,], row.names=T, align="r"),  sep="\n") # show only the top min or top 10 biological processes
+
+        	cat("\n", fill=T)
+
+    	} else {
+        	cat("no GO enrichment results available\n", fill=T)
+    	}
+
+
+
+        # Pathway Enrichment Plot
+        # up-regulated genes
+        cat("#### Pathways enriched (Molecular Signatures Database, MSigDB)", fill=T)
+
+    	Pathway_bar     <- paste0(SHINYREPS_GREAT, "/", gsub("=.*", "", levels(targets$group)[i]),"_MSigDB_Pathway_Barplot.png")
+    	Pathway_table   <- paste0(SHINYREPS_GREAT, "/", gsub("=.*", "", levels(targets$group)[i]), "_MSigDB_Pathway_Enrichment.csv")
+   
+    	# if there are Pathway enrichment results (the barplot was created)
+    	if(file.exists(Pathway_bar)) {
+
+        	# Pathways enriched in a barplot
+        	cat("Listed are the top five enriched MSigDB Pathways found using peaks with FDR < 0.01 detected in all replicates.", fill=T)
+        	cat("![GREAT_analysis img](", Pathway_bar, ")\n", fill=T)
+        
+        	# and table of Pathways enriched
+        	cat("The table shows the top 10 enriched MSigDB Pathways:\n", fill=T)
+        	enrich  <- read.csv(file=Pathway_table, row.names=1)
+        	r       <- min(10, nrow(enrich))
+        	enrich  <- as.data.frame(enrich)
+        	enrich$MSigDB.Pathway.ID <- ifelse(nchar(as.character(enrich$MSigDB.Pathway.ID)) > 10, paste0(substr(enrich$MSigDB.Pathway.ID, 0, 15), "..."), enrich$MSigDB.Pathway.ID) # shorten long lines
+            enrich  <- cbind(enrich[1], enrich[2], enrich[8], enrich[9], enrich[6], enrich[5], enrich[7])
+            colnames(enrich) <- c("Pathway ID","Term Name", "Binom Raw P-value", "Binom FDR Q-Val", "Binom Fold Enrichment", "Binom Observed Region Hits", "Binom Region Set Coverage" )
+            #colnames(enrich)  <- gsub("\\.", " ", colnames(enrich))
+        	cat(kable(enrich[1:r,], row.names=T, align="r", format="markdown"), sep="\n") # show only the top min or top 10 pathways
+        	cat("\n", fill=T)
+
+    	} else {
+        	cat("no Pathway enrichment results available\n", fill=T)
+   	    }
+}
 ```
 
 ## Used tools and versions for this analysis ##

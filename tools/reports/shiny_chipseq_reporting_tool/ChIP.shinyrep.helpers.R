@@ -56,16 +56,29 @@ ChIPhelper.init <- function(task) {
         if(!file.exists(SHINYREPS_MACS2)) {
             return("MACS2 results not available")
         }
-        comparisons <- paste0(targets$IPname, ".vs.", targets$INPUTname, "_macs2_peaks.xls")
+            if(length(paste0(targets$IPname, ".vs.", targets$INPUTname,"_macs2_blacklist_filtered_peaks.xls")) > 0) {
+                 comparisons <- paste0(targets$IPname, ".vs.", targets$INPUTname, "_macs2_blacklist_filtered_peaks.xls")  
+            } else {
+                 comparisons <- paste0(targets$IPname, ".vs.", targets$INPUTname, "_macs2_peaks.xls")
+            }
         exist <- sapply(paste0(SHINYREPS_MACS2, "/", comparisons), file.exists)
         targets <- targets[exist, ]
 
         # and return the tables
-        peaks <- lapply(paste0(SHINYREPS_MACS2, "/", targets$IPname, ".vs.", targets$INPUTname, "_macs2_peaks.xls"), function(x) {
-            x <- tryCatch(read.delim(x, comment.char="#"), error=function(e) as.data.frame(matrix(ncol=10)))
-            colnames(x) <- c("chr", "start", "end", "length", "summit", "tags", "-log10 pval", "fold enrichment", "-log10 FDR", "name")
-            x[order(x$chr, x$start, x$end), c(-7, -10)]
-        })
+            if(length(paste0(SHINYREPS_MACS2, "/", targets$IPname, ".vs.", targets$INPUTname,"_macs2_blacklist_filtered_peaks.xls")) > 0) {
+                 peaks <- lapply(paste0(SHINYREPS_MACS2, "/", targets$IPname, ".vs.", targets$INPUTname, "_macs2_blacklist_filtered_peaks.xls"), function(x) {
+                     x <- tryCatch(read.delim(x, comment.char="#"), error=function(e) as.data.frame(matrix(ncol=10)))
+                     colnames(x) <- c("chr", "start", "end", "length", "summit", "tags", "-log10 pval", "fold enrichment", "-log10 FDR", "name")
+                     x[order(x$chr, x$start, x$end), c(-7, -10)]
+                 })
+            } else {
+                 peaks <- lapply(paste0(SHINYREPS_MACS2, "/", targets$IPname, ".vs.", targets$INPUTname, "_macs2_peaks.xls"), function(x) {
+                     x <- tryCatch(read.delim(x, comment.char="#"), error=function(e) as.data.frame(matrix(ncol=10)))
+                     colnames(x) <- c("chr", "start", "end", "length", "summit", "tags", "-log10 pval", "fold enrichment", "-log10 FDR", "name")
+                     x[order(x$chr, x$start, x$end), c(-7, -10)]
+                 })
+            }
+
         names(peaks) <- paste0(targets$IPname, " vs. ", targets$INPUTname)
 
         return(peaks)
@@ -94,11 +107,22 @@ ChIPhelper.ComparisonsFromTargets <- function() {
     
     # get the comparisons and clean the names
     x <- read.delim(TARGETS)
-    comparisons <- paste0(x$IPname, ".vs.", x$INPUTname, "_macs2_peaks.xls")
+
+    if(length(paste0(x$IPname, ".vs.", x$INPUTname,"_macs2_blacklist_filtered_peaks.xls")) > 0) {
+         comparisons <- paste0(x$IPname, ".vs.", x$INPUTname, "_macs2_blacklist_filtered_peaks.xls")  
+    } else {
+         comparisons <- paste0(x$IPname, ".vs.", x$INPUTname, "_macs2_peaks.xls")
+    }
+
     exist <- sapply(paste0(SHINYREPS_MACS2, "/", comparisons), file.exists)
     comparisons <- gsub(".vs.", " vs. ", comparisons)
-    comparisons <- gsub("_macs2_peaks.xls", "", comparisons)
-    
+
+    if(length(paste0(x$IPname, ".vs.", x$INPUTname,"_macs2_blacklist_filtered_peaks.xls")) > 0) {
+         comparisons <- gsub("_macs2_blacklist_filtered_peaks.xls", "", comparisons)  
+    } else {
+         comparisons <- gsub("_macs2_peaks.xls", "", comparisons)
+    }
+   
     return(comparisons[exist])
 }
 
@@ -455,3 +479,33 @@ Toolhelper.ToolVersions <- function() {
 
             kable(as.data.frame(ver),output=F)
 }
+
+##
+## ChIPhelper.BLACKLISTFILTER: go through MACS2 output dir and show BlackList 
+##     Filter module file
+##
+ChIPhelper.BLACKLISTFILTER <- function() {
+    
+    # logs folder
+    if(!file.exists(SHINYREPS_BLACKLIST_FILTER)) {
+        return("Peaks overlapping blacklist regions not available")
+    }
+    
+    # construct the image url from the folder contents (skip current dir .)
+    samples <- read.csv(SHINYREPS_BLACKLIST_FILTER, row.names=1)
+    colnames(samples) <- c("# peaks with MACS2", "# peaks wo overlapping with BRs", "% peaks overlapping BRs")
+    kable(samples, output=F, format="markdown")
+}
+
+
+##
+## ChIPhelper.GREAT: get the GO enrichment results and display them
+##
+ChIPhelper.GREAT <- function(){
+
+    #csv file
+    if(!file.exists(SHINYREPS_GREAT)){
+        return("GREAT analysis not available")
+    }
+}
+
