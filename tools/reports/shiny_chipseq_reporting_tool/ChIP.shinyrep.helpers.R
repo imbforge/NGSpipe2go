@@ -56,7 +56,7 @@ ChIPhelper.init <- function(task) {
         if(!file.exists(SHINYREPS_MACS2)) {
             return("MACS2 results not available")
         }
-            if(length(paste0(targets$IPname, ".vs.", targets$INPUTname,"_macs2_blacklist_filtered_peaks.xls")) > 0) {
+            if(file.exists(paste0(targets$IPname, ".vs.", targets$INPUTname,"_macs2_blacklist_filtered_peaks.xls"))[1]) {
                  comparisons <- paste0(targets$IPname, ".vs.", targets$INPUTname, "_macs2_blacklist_filtered_peaks.xls")  
             } else {
                  comparisons <- paste0(targets$IPname, ".vs.", targets$INPUTname, "_macs2_peaks.xls")
@@ -65,7 +65,7 @@ ChIPhelper.init <- function(task) {
         targets <- targets[exist, ]
 
         # and return the tables
-            if(length(paste0(SHINYREPS_MACS2, "/", targets$IPname, ".vs.", targets$INPUTname,"_macs2_blacklist_filtered_peaks.xls")) > 0) {
+            if(file.exists(paste0(SHINYREPS_MACS2, "/", targets$IPname, ".vs.", targets$INPUTname,"_macs2_blacklist_filtered_peaks.xls"))[1]) {
                  peaks <- lapply(paste0(SHINYREPS_MACS2, "/", targets$IPname, ".vs.", targets$INPUTname, "_macs2_blacklist_filtered_peaks.xls"), function(x) {
                      x <- tryCatch(read.delim(x, comment.char="#"), error=function(e) as.data.frame(matrix(ncol=10)))
                      colnames(x) <- c("chr", "start", "end", "length", "summit", "tags", "-log10 pval", "fold enrichment", "-log10 FDR", "name")
@@ -90,6 +90,7 @@ ChIPhelper.init <- function(task) {
            readPeaks=readPeaks())
 }
 
+
 ##
 ## ChIPhelper.ComparisonsFromTargets: get te comparisons performed by MACS2 from the targets file
 ##
@@ -108,7 +109,7 @@ ChIPhelper.ComparisonsFromTargets <- function() {
     # get the comparisons and clean the names
     x <- read.delim(TARGETS)
 
-    if(length(paste0(x$IPname, ".vs.", x$INPUTname,"_macs2_blacklist_filtered_peaks.xls")) > 0) {
+    if(file.exists(paste0(x$IPname, ".vs.", x$INPUTname,"_macs2_blacklist_filtered_peaks.xls"))[1]) {
          comparisons <- paste0(x$IPname, ".vs.", x$INPUTname, "_macs2_blacklist_filtered_peaks.xls")  
     } else {
          comparisons <- paste0(x$IPname, ".vs.", x$INPUTname, "_macs2_peaks.xls")
@@ -117,7 +118,7 @@ ChIPhelper.ComparisonsFromTargets <- function() {
     exist <- sapply(paste0(SHINYREPS_MACS2, "/", comparisons), file.exists)
     comparisons <- gsub(".vs.", " vs. ", comparisons)
 
-    if(length(paste0(x$IPname, ".vs.", x$INPUTname,"_macs2_blacklist_filtered_peaks.xls")) > 0) {
+    if(file.exists(paste0(x$IPname, ".vs.", x$INPUTname,"_macs2_blacklist_filtered_peaks.xls"))[1]) {
          comparisons <- gsub("_macs2_blacklist_filtered_peaks.xls", "", comparisons)  
     } else {
          comparisons <- gsub("_macs2_peaks.xls", "", comparisons)
