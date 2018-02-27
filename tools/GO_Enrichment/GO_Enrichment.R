@@ -23,12 +23,13 @@ options(stringsAsFactors=FALSE)
 library(DESeq2)
 library(parallel)
 
-# suported organisms
+# supported organisms
 orgDb <- c(human="org.Hs.eg.db",
            mouse="org.Mm.eg.db",
            fly  ="org.Dm.eg.db",
            worm ="org.Ce.eg.db",
-           yeast="org.Sc.sgd.db")
+           yeast="org.Sc.sgd.db",
+           zebrafish="org.Dr.eg.db")
 
 ##
 # get arguments from the command line
