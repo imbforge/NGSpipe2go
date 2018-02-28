@@ -836,17 +836,18 @@ DEhelper.Qualimap <- function() {
 ##
 DEhelper.insertsize <- function(){
 
-	filelist <- list.files(path=SHINYREPS_INSERTSIZE,full.names=TRUE, pattern="insertsizemetrics.tsv$")
-	insertsizes <- lapply(filelist, read.table, sep="\t", header=TRUE, nrow=1)
-	insertsizes <- do.call(rbind, insertsizes)
-	samplenames <- basename(filelist)
-	samplenames <- gsub(SHINYREPS_PREFIX, "", samplenames)
-	samplenames <- gsub("_insertsizemetrics.tsv","", samplenames)
-	rownames(insertsizes) <- samplenames 
-	insertsizes <- insertsizes[,c("MEDIAN_INSERT_SIZE","MEAN_INSERT_SIZE", "STANDARD_DEVIATION")]
-	colnames(insertsizes) <- c("Median", "Mean", "SD")
-	kable(insertsizes, output=F, align=c("l"), format="markdown")
-
+	if (SHINYREPS_PAIRED == "yes") {
+		filelist <- list.files(path=SHINYREPS_INSERTSIZE,full.names=TRUE, pattern="insertsizemetrics.tsv$")
+		insertsizes <- lapply(filelist, read.table, sep="\t", header=TRUE, nrow=1)
+		insertsizes <- do.call(rbind, insertsizes)
+		samplenames <- basename(filelist)
+		samplenames <- gsub(SHINYREPS_PREFIX, "", samplenames)
+		samplenames <- gsub("_insertsizemetrics.tsv","", samplenames)
+		rownames(insertsizes) <- samplenames 
+		insertsizes <- insertsizes[,c("MEDIAN_INSERT_SIZE","MEAN_INSERT_SIZE", "STANDARD_DEVIATION")]
+		colnames(insertsizes) <- c("Median", "Mean", "SD")
+		kable(insertsizes, output=F, align=c("l"), format="markdown")
+	}
 }
 		      
 ##		      

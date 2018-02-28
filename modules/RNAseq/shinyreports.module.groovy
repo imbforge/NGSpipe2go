@@ -31,6 +31,7 @@ shinyReports = {
             echo "SHINYREPS_ORG=${SHINYREPS_ORG}"         >> $output &&
             echo "SHINYREPS_DB=${SHINYREPS_DB}"           >> $output &&
             echo "SHINYREPS_LOG=${SHINYREPS_LOG}"         >> $output &&
+            echo "SHINYREPS_PAIRED=${SHINYREPS_PAIRED}"   >> $output &&
             echo "SHINYREPS_QC=${SHINYREPS_QC}"           >> $output &&
             echo "SHINYREPS_RES=${SHINYREPS_RES}"         >> $output &&
             echo "SHINYREPS_PREFIX=${SHINYREPS_PREFIX}"   >> $output &&
