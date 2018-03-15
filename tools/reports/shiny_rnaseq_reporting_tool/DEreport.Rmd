@@ -147,8 +147,9 @@ for(i in 1:nrow(conts)) {
 	cat("### ", conts[i, 1], fill=T)	
 	cat("", fill=T)
 	
-	# PCA
-	cat("##### pairwise PCA", fill=T)
+	# pairwise PCA plot 
+	cat("##### PCA plot", fill=T)
+	cat("Priniciple component analysis (PCA) plot with only the samples of the compared groups.", "\n", "\n")
         DEhelper.DESeq2.pairwisePCA(i)
         cat("\n", fill=T)
 
