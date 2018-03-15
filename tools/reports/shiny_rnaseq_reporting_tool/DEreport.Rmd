@@ -54,10 +54,15 @@ The mapping statistics below show the number and percentage of (i) input raw rea
 cat(DEhelper.STAR(), sep="\n")
 ``` 
 
-## Insert Size (for PE data only) ##
+## Insert Size (for paired-end sequencing) ##
 
 ```{r echo=F,results='asis',error=F,warning=F,message=F}
-cat(DEhelper.insertsize(), sep="\n")
+
+if (!file.exists(SHINYREPS_INSERTSIZE)) {
+	cat("Insert size data not available.")
+	} else {
+	cat(DEhelper.insertsize(), sep="\n")
+	}
 ```
 
 ## Library complexity assessment ##
