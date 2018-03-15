@@ -402,13 +402,13 @@ for(i in 1:nrow(conts)) {
 
 ## Used tools and versions for this analysis ##
 
-Mapping was performed with STAR using the following parameters:
+Read mapping was performed with STAR using the following parameters:
 
 ```{r STAR_parameters_paragraph, echo=F, results='asis', error=F, warning=F, message=F}
 cat(DEhelper.STARparms(), sep="\n")
 ``` 
 
-R was used for statistical analysis using the following packages and versions:
+The following tools were also used for data processing:
 
 ```{r ToolVersions_paragraph, echo=F, results='asis', error=F, warning=F, message=F}
 cat(Toolhelper.ToolVersions(), sep="\n")
