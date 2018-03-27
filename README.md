@@ -63,8 +63,8 @@ or for single-read (SR) ChIP-seq project
 or for paired-end (PE) ChIP-seq project
 
     ln -s NGSpipe2go/pipelines/ChIPseq_pe/* .
-    ln -s NGSpipe2go/modules/ChIPseq_pe/essential.vars.groovy .
-    ln -s NGSpipe2go/modules/ChIPseq_pe/tool.locations.groovy .
+    ln -s NGSpipe2go/modules/ChIPseq/essential.vars.groovy .
+    ln -s NGSpipe2go/modules/ChIPseq/tool.locations.groovy .
 
 ### Customise NGSpipe2go to your needs ###
 
