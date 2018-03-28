@@ -130,6 +130,11 @@ pairwise.dds.and.res <- lapply(conts[,1],function(cont) {
 
     # calculate quantification (RPKM if gene model provided, rlog transformed values otherwise)
     quantification <- apply(fpm(dds), 2, function(x, y) 1e3 * x / y, gene.lengths[rownames(fpm(dds))])
+
+    # add comment "robustRPKM" to columns, such that it's clear what the value represents
+    colnames(quantification) <- paste0(colnames(quantification),".robustRPKM")
+
+    # extract the gene_name and genomic coordinates of each gene
     res$gene_name <- gtf$gene_name[match(rownames(res), gtf$gene_id)]
     i <- match(rownames(res), genes$gene_id)
     res$chr    <- genes$seqnames[i]
@@ -169,6 +174,30 @@ dds <- DESeqDataSetFromHTSeqCount(sampleTable=targets,
                                   design=as.formula(mmatrix))
 dds <- DESeq(dds)
 rld <- rlog(dds)
+
+## quantify all samples at the same time (necessary to get unique FPM per sample per gene, since robust FPMs
+## depend on all samples in the data frame, not just on individual samples
+
+# quantify
+quantification <- as.data.frame(apply(fpm(dds,robust=TRUE), 2, function(x, y) 1e3 * x / y, gene.lengths[rownames(fpm(dds,robust=TRUE))]))
+
+# add comment "robustRPKM" to columns, such that it's clear what the value represents
+names(quantification) <- paste0(names(quantification),".robustRPKM")
+
+# extract the gene_name and genomic coordinates of each gene
+names.df <- data.frame(gene_name=gtf$gene_name[match(rownames(quantification), gtf$gene_id)],row.names=rownames(quantification))
+i <- match(rownames(names.df), genes$gene_id)
+names.df$chr    <- genes$seqnames[i]
+names.df$start  <- genes$start[i]
+names.df$end    <- genes$end[i]
+names.df$strand <- genes$strand[i]
+
+# merge location and quantification
+quantification.names.df <- merge(names.df,quantification,by=0)
+colnames(quantification.names.df)[1] <- "gene_id"
+
+write.csv(quantification.names.df, file=paste0(out, "/allSamples.robustRPKM.csv"), row.names=F)
+WriteXLS(quantification.names.df, ExcelFileName=paste0(out, "/allSamples.robustRPKM.xls"), row.names=F)
 
 # sample to sample distance heatmap
 distsRL <- dist(t(assay(rld)))
