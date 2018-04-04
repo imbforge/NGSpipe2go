@@ -5,23 +5,23 @@ FilterDuplicates = {
          (ii) convert the filtered data back to FastQ format. NOTE: the random barcodes are still present, will be removed during mapping.""",
 		author: "Antonio Domingues"
 
-	output.dir = REMOVE_DUP_OUTDIR
+   output.dir = REMOVE_DUP_OUTDIR
 
-	transform(".highQ.fastq.gz") to (".deduped_barcoded.fastq.gz") {
+   transform(".highQ.fastq.gz") to (".deduped_barcoded.fastq.gz") {
 
       def SAMPLE_NAME = input.prefix.prefix.prefix
-      def LOG_FILE = REMOVE_DUP_OUTDIR + "/dedup.stats.txt"
 
       exec """
          EXP=\$(basename ${SAMPLE_NAME})
+
          nreads=\$(zcat $input | echo \$((`wc -l`/4))) &&
-         echo \$nreads \${EXP}.highQ >> ${LOG_FILE} &&
+         echo \$nreads \${EXP}.highQ > \${REMOVE_DUP_OUTDIR}/\${EXP}.dedup.stats.txt &&
 
-			zcat $input | paste -d, - - - - | sort -u -t, -k2,2 | tr ',' '\\n' | gzip > $output &&
+         zcat $input | paste -d, - - - - | sort -u -t, -k2,2 | tr ',' '\\n' | gzip > $output &&
 
-         nreads=\$(zcat $output | echo \$((`wc -l`/4))) &&
-         echo \$nreads ${EXP}.unique >> ${LOG_FILE}
+         ureads=\$(zcat $output | echo \$((`wc -l`/4))) &&
+         echo \$nreads ${EXP}.unique >> \${REMOVE_DUP_OUTDIR}/\${EXP}.dedup.stats.txt
 
-		""","FilterDuplicates"
-	}
+      ""","FilterDuplicates"
+   }
 }
