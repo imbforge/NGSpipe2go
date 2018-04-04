@@ -15,13 +15,13 @@ FilterDuplicates = {
          EXP=\$(basename ${SAMPLE_NAME})
 
          nreads=\$(zcat $input | echo \$((`wc -l`/4))) &&
-         echo \$nreads \${EXP}.highQ > \${REMOVE_DUP_OUTDIR}/\${EXP}.dedup_stats.txt &&
+         echo \$nreads \${EXP}.highQ > ${REMOVE_DUP_OUTDIR}/${EXP}.dedup_stats.log &&
 
          zcat $input | paste -d, - - - - | sort -u -t, -k2,2 | tr ',' '\\n' | gzip > $output &&
 
          ureads=\$(zcat $output | echo \$((`wc -l`/4))) &&
-         echo \$nreads ${EXP}.unique >> \${REMOVE_DUP_OUTDIR}/\${EXP}.dedup_stats.txt
-
+         echo \$nreads ${EXP}.unique >> ${REMOVE_DUP_OUTDIR}/${EXP}.dedup_stats.log
+         
       ""","FilterDuplicates"
    }
 }
