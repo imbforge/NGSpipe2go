@@ -20,7 +20,7 @@ FilterDuplicates = {
          zcat $input | paste -d, - - - - | sort -u -t, -k2,2 | tr ',' '\\n' | gzip > $output &&
 
          ureads=\$(zcat $output | echo \$((`wc -l`/4))) &&
-         echo \$nreads ${EXP}.unique >> ${REMOVE_DUP_OUTDIR}/${EXP}.dedup_stats.log
+         echo \$ureads ${EXP}.unique >> ${REMOVE_DUP_OUTDIR}/${EXP}.dedup_stats.log
          
       ""","FilterDuplicates"
    }
