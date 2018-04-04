@@ -1,21 +1,59 @@
+# ==========================================================================
+# Libraries
+# ==========================================================================
+library('data.table')
 library('ggplot2')
-library("scales")
-theme_set(theme_bw(16))
-theme_white <- function() {
-     theme_update(
-      panel.grid.major = element_blank(),
-      panel.grid.minor = element_blank()
-      )
- }
-theme_white()
-# make a palette the default: http://stackoverflow.com/a/16437625/1274242
-ggplot <- function(...) ggplot2::ggplot(...) + scale_fill_brewer(palette="Set1")
+library('dplyr')
+library('scales')
+library('RColorBrewer')
+library('argparser')
+library("makeitprettier")
 
-dir.create(file.path("figure"), showWarnings = FALSE)
+# ==========================================================================
+# Arguments
+# ==========================================================================
+# Create a parser
+p <- arg_parser("Plots QC results of PCR suplicate removal. Log files should be in the format ")
+
+# Add command line arguments
+p <- add_argument(p,
+   "--inputDir",
+   help="Input directory",
+   type="character"
+   )
+
+p <- add_argument(p,
+   "--outputDir",
+   help="Output directory",
+   type="character"
+   )
+
+p <- add_argument(p,
+   "--projectPrefix",
+   help="Name to be used in plots/files",
+   type="character",
+   default = ""
+   )
 
 
+# Parse the command line arguments
+argv <- parse_args(p)
+input_dir <- argv$inputDir
+output_dir <- argv$outputDir
+prefix <- argv$projectPrefix
 
-stats <- read.delim('dedup.stats.txt', sep=" ", header=FALSE)
+files <- list.files(
+  input_dir,
+  '.dedup_stats.log',
+  recursive=TRUE,
+  full.names=TRUE
+  )
+out_fig_path <- paste0(output_dir, "/figure")
+dir.create(file.path(out_fig_path), showWarnings = FALSE)
+
+stats <- lapply(files, fread)
+stats <- rbindlist(stats, use.names=TRUE, fill=FALSE, idcol=NULL)
+
 stats <- subset(stats, !grepl('\\*', stats$V2))
 stats$Condition <- factor(gsub('(\\w+)\\..+', '\\1', stats$V2))
 stats$Reads <- factor(ifelse(grepl('unique', stats$V2), 'Unique', 'Original'), levels = c("Original", "Unique"))
@@ -34,11 +72,13 @@ stats$Percentage <- ifelse(stats$Reads == 'Original', '', stats$Percentage)
 
 stats_p <- ggplot(stats, aes(y=Nreads, x=Condition, fill=Reads)) +
    geom_bar(stat='identity', position=position_dodge()) +
-   theme(axis.text.x = element_text(angle = 45, hjust = 1)) +
    ggtitle('Putative PCR duplicates') +
    ylab('Number of reads') +
    scale_y_continuous(labels = comma) +
-   geom_text(aes(label = Percentage, vjust = -.5), size=4)
+   geom_text(aes(label = Percentage, vjust = -.5), size=4) +
+   scale_fill_prettier() +
+   coord_flip() +
+   theme_poster()
 
-ggsave('figure/PCRDuplicates.pdf', stats_p, width=10, height=7)
-ggsave('figure/PCRDuplicates.png', stats_p, width=10, height=7)
+ggsave('figure/PCRDuplicates_test.pdf', stats_p, width=10, height=7)
+ggsave('figure/PCRDuplicates_test.png', stats_p, width=10, height=7)
