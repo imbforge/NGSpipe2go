@@ -1,4 +1,4 @@
-sample	file	group	subject
+sample	file	group	replicate
 KO_1	ERR458881.KO.readcounts.tsv	KO	1
 KO_2	ERR458882.KO.readcounts.tsv	KO	2
 KO_3	ERR458883.KO.readcounts.tsv	KO	3
