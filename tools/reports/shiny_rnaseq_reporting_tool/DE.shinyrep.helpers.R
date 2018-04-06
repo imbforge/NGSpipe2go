@@ -15,6 +15,8 @@ library("grid")
 library("knitr")        # for markdown output
 library("plotly")
 library("GeneOverlap")
+library("pheatmap")
+library("viridis")
 
 #' loadGlobalVars: read configuration from bpipe vars
 #'
@@ -96,7 +98,10 @@ shorten <- function(x, max.len=40, ini=20, end=15) {
 #' 
 DEhelper.DESeq2.MDS <- function() {
     p <- plotPCA(rld, intgroup=colnames(colData(dds))[1])
-    print(p + geom_text_repel(aes(label=rownames(colData(dds)))) + theme_bw())
+    print(p + 
+          scale_color_manual(values=brewer.pal(9,"Set1")[1:length(levels(colData(dds)[,"group"]))]) +
+          geom_text_repel(aes(label=rownames(colData(dds)))) + 
+          theme_bw())
 }
 
 
@@ -120,9 +125,11 @@ DEhelper.DESeq2.MDS <- function() {
 #'           DEhelper.DESeq2.pairwisePCA(i)
 #'
 DEhelper.DESeq2.pairwisePCA <- function(i=1) {
-    pairwise.rld <- rlog(pairwise.dds[[i]])
-    p <- plotPCA(pairwise.rld, intgroup=colnames(colData(pairwise.dds[[i]]))[1])
-    print(p + geom_text_repel(aes(label=rownames(colData(pairwise.dds[[i]])))) + theme_bw())
+    p <- plotPCA(rlog(pairwise.dds[[i]]), intgroup=colnames(colData(pairwise.dds[[i]]))[1])
+    print(p + 
+          scale_color_manual(values=brewer.pal(9,"Set1")[1:2]) + 
+          geom_text_repel(aes(label=rownames(colData(pairwise.dds[[i]])))) + 
+          theme_bw())
 }
 
 
@@ -130,7 +137,7 @@ DEhelper.DESeq2.pairwisePCA <- function(i=1) {
 #' Heatmap of top variant 'n' genes of the counts-per-milion table.
 #'
 #' @param n - amount of transcripts/rows to be plotted
-#'            [default = 25]
+#'            [default = 40]
 #' @param rld - rlog transformed DESeq2 object
 #'
 #' @return A plot (base plotting) object.
@@ -144,11 +151,278 @@ DEhelper.DESeq2.pairwisePCA <- function(i=1) {
 #'           # rld is taken from environment
 #'           DEhelper.cluster(n=10)
 #'           
-DEhelper.DESeq2.cluster <- function(n=25) {
-    rows <- order(apply(assay(rld), 1, sd), decreasing=TRUE)[1:n]
-    hmcol  <- colorRampPalette(brewer.pal(9, "GnBu"))(100)
-    heatmap.2(assay(rld)[rows, ], col=hmcol, trace="none", margin=c(10, 6), scale="none")
+#DEhelper.DESeq2.cluster <- function(n=25) {
+#    rows <- order(apply(assay(rld), 1, sd), decreasing=TRUE)[1:n]
+#    hmcol  <- colorRampPalette(brewer.pal(9, "GnBu"))(100)
+#    heatmap.2(assay(rld)[rows, ], col=hmcol, trace="none", margin=c(10, 6), scale="none")
+#}
+DEhelper.DESeq2.cluster.sd <- function(n=40) {
+        
+        # extract assay and over-write gene_id in rownames with gene_name
+        assay.rld <- assay(rld)
+        rownames(assay.rld) <- gtf$gene_name[match(rownames(assay(rld)), gtf$gene_id)]
+
+        # pick top n most variable genes
+        select.highestSD <- order(apply(assay.rld,1,sd),decreasing=TRUE)[1:n]
+
+        # set color scheme
+        col <- colorRampPalette(brewer.pal(9,"GnBu"))(255)
+
+        # extract information for legend
+	if (length(add_factors)==0) {
+	        legend.df <- data.frame(group=colData(rld)[,c("group")],row.names=rownames(colData(rld)))
+	} else {
+        	legend.df <- as.data.frame(colData(rld)[,c("group",add_factors)])
+	}
+
+        # fix group colors for legend and possible first additional factor if available
+        if (length(add_factors)==0) {
+                legend_colors <- list(group = setNames(brewer.pal(9,"Set1")[1:length(unique(colData(rld)[,"group"]))],
+                                                       unique(colData(rld)[,"group"])))
+        } else {
+                if (length(unique(colData(rld)[,add_factors[1]])) <= 8) {
+                        mypalette <- brewer.pal(8,"Dark2")[1:length(unique(colData(rld)[,add_factors[1]]))]
+                } else {
+                        mypalette <- colorRampPalette(brewer.pal(8,"Dark2"))(length(unique(colData(rld)[,add_factors[1]])))
+                }
+                legend_colors <- list(group = setNames(brewer.pal(9,"Set1")[1:length(unique(colData(rld)[,"group"]))],
+                                                       unique(colData(rld)[,"group"])),
+                                      subject = setNames(mypalette,
+                                                         unique(colData(rld)[,add_factors[1]])))
+                names(legend_colors) <- c("group",add_factors[1])
+        }
+
+        # plot heatmap
+        pheatmap(assay.rld[select.highestSD,],         
+                 cluster_rows=TRUE,
+                 cluster_cols=TRUE,
+                 show_rownames=TRUE,
+                 annotation_col=legend.df,
+                 annotation_colors=legend_colors,
+                 color=col,
+                 border_color=NA,
+                 main=paste("Normalized expression values of",n,"most variable genes"),
+		 fontsize_row=5,
+                 fontsize=6,
+                 treeheight_row=20,
+                 treeheight_col=20,
+		 annotation_names_col=FALSE)
 }
+
+
+## DEhelper.DESeq2.cluster.sd.pairwise
+#' Heatmap of top variant 'n' genes of the regularized log transformed counts-per-milion table
+#' in a pairwise comparison of two groups
+#'
+#' @param i - iterator to select contrast from conts [default = 1]
+#' @param n - amount of transcripts/rows to be plotted
+#'            [default = 40]
+#' @param pairwise.dds - DESeq2 object
+#'
+#' @return A plot (base plotting) object.
+#'
+#' @examples Taken from DE_DeSeq2.R
+#'           dds <- DESeqDataSetFromHTSeqCount(sampleTable=targets,
+#'                                             directory=cwd, 
+#'                                             design=as.formula(mmatrix))
+#'           dds <- DESeq(dds)
+#'           DEhelper.DESeq2.cluster.sd.pairwise(i=1,n=10)
+#'           
+DEhelper.DESeq2.cluster.sd.pairwise <- function(i=1,n=40) {
+
+        # extract assay and over-write gene_id in rownames with gene_name
+        assay.rld <- assay(rlog(pairwise.dds[[i]]))
+        rownames(assay.rld) <- gtf$gene_name[match(rownames(assay(pairwise.dds[[i]])), gtf$gene_id)]
+
+        # pick top n most variable genes
+        select.highestSD <- order(apply(assay.rld,1,sd),decreasing=TRUE)[1:n]
+
+        # set color scheme
+        col <- colorRampPalette(brewer.pal(9,"GnBu"))(255)
+
+        # extract information for legend
+        if (length(add_factors)==0) {
+                legend.df <- data.frame(group=colData(pairwise.dds[[i]])[,c("group")],row.names=rownames(colData(pairwise.dds[[i]])))
+        } else {
+                legend.df <- as.data.frame(colData(pairwise.dds[[i]])[,c("group",add_factors)])
+        }
+
+        # fix group colors for legend and possible first additional factor if available
+        if (length(add_factors)==0) {
+                legend_colors <- list(group = setNames(brewer.pal(9,"Set1")[1:length(unique(colData(pairwise.dds[[i]])[,"group"]))],
+                                                       unique(colData(pairwise.dds[[1]])[,"group"])))
+        } else {
+                if (length(unique(colData(pairwise.dds[[i]])[,add_factors[1]])) <= 8) {
+                        mypalette <- brewer.pal(8,"Dark2")[1:length(unique(colData(pairwise.dds[[i]])[,add_factors[1]]))]
+                } else {
+                        mypalette <- colorRampPalette(brewer.pal(8,"Dark2"))(length(unique(colData(pairwise.dds[[i]])[,add_factors[1]])))
+                }
+                legend_colors <- list(group = setNames(brewer.pal(9,"Set1")[1:length(unique(colData(pairwise.dds[[i]])[,"group"]))],
+                                                       unique(colData(pairwise.dds[[i]])[,"group"])),
+                                      subject = setNames(mypalette,
+                                                         unique(colData(pairwise.dds[[i]])[,add_factors[1]])))
+                names(legend_colors) <- c("group",add_factors[1])
+        }
+
+        # plot heatmap
+        pheatmap(assay.rld[select.highestSD,],
+                 cluster_rows=TRUE,
+                 cluster_cols=TRUE,
+                 show_rownames=TRUE,
+                 annotation_col=legend.df,
+                 annotation_colors=legend_colors,
+                 color=col,
+                 border_color=NA,
+                 main=paste("Normalized expression values of",n,"most variable genes"),
+                 fontsize_row=5,
+                 fontsize=6,
+                 treeheight_row=20,
+                 treeheight_col=20,
+		 annotation_names_col=FALSE)
+}
+
+## DEhelper.DESeq2.cluster.mean
+#' Heatmap of top 'n' highest mean genes of the regularized log transformed counts-per-milion table.
+#'
+#' @param n - amount of transcripts/rows to be plotted
+#'            [default = 40]
+#' @param rld - rlog transformed DESeq2 object
+#'
+#' @return A plot (base plotting) object.
+#'
+#' @examples Taken from DE_DeSeq2.R
+#'           dds <- DESeqDataSetFromHTSeqCount(sampleTable=targets,
+#'                                             directory=cwd, 
+#'                                             design=as.formula(mmatrix))
+#'           dds <- DESeq(dds)
+#'           rld <- rlog(dds)
+#'           # rld is taken from environment
+#'           DEhelper.DESeq2.cluster.mean(n=10)
+#'           
+DEhelper.DESeq2.cluster.mean <- function(n=40) {
+
+        # extract assay and over-write gene_id in rownames with gene_name
+        assay.rld <- assay(rld)
+        rownames(assay.rld) <- gtf$gene_name[match(rownames(assay(rld)), gtf$gene_id)]
+
+        # pick top n most variable genes
+        select.highestMean <- order(rowMeans(assay.rld),decreasing=TRUE)[1:n]
+
+        # set color scheme
+	col <- rev(heat.colors(255))
+
+	# extract information for legend
+        if (length(add_factors)==0) {
+                legend.df <- data.frame(group=colData(rld)[,c("group")],row.names=rownames(colData(rld)))
+        } else {
+                legend.df <- as.data.frame(colData(rld)[,c("group",add_factors)])
+        }
+
+        # fix group colors for legend and possible first additional factor if available
+        if (length(add_factors)==0) {
+                legend_colors <- list(group = setNames(brewer.pal(9,"Set1")[1:length(unique(colData(rld)[,"group"]))],
+                                                       unique(colData(rld)[,"group"])))
+        } else {
+                if (length(unique(colData(rld)[,add_factors[1]])) <= 8) {
+                        mypalette <- brewer.pal(8,"Dark2")[1:length(unique(colData(rld)[,add_factors[1]]))]
+                } else {
+                        mypalette <- colorRampPalette(brewer.pal(8,"Dark2"))(length(unique(colData(rld)[,add_factors[1]])))
+                }
+                legend_colors <- list(group = setNames(brewer.pal(9,"Set1")[1:length(unique(colData(rld)[,"group"]))],
+                                                       unique(colData(rld)[,"group"])),
+                                      subject = setNames(mypalette,
+                                                         unique(colData(rld)[,add_factors[1]])))
+                names(legend_colors) <- c("group",add_factors[1])
+        }
+
+        # plot heatmap
+        pheatmap(assay.rld[select.highestMean,],
+                 cluster_rows=FALSE,
+                 cluster_cols=TRUE,
+                 show_rownames=TRUE,
+                 annotation_col=legend.df,
+                 annotation_colors=legend_colors,
+                 col=col,
+                 border_color=NA,
+                 main=paste("Normalized expression values of",n,"genes with highest mean"),
+                 fontsize_row=5,
+                 fontsize=6,
+                 treeheight_row=20,
+                 treeheight_col=20,
+		 annotation_names_col=FALSE)
+}
+
+## DEhelper.DESeq2.cluster.mean.pairwise
+#' Heatmap of top 'n' highest mean genes of the regularized log transformed counts-per-milion table
+#' in a pairwise comparison of two groups
+#'
+#' @param i - iterator to select contrast from conts [default = 1]
+#' @param n - amount of transcripts/rows to be plotted
+#'            [default = 40]
+#' @param pairwise.dds - DESeq2 object
+#'
+#' @return A plot (base plotting) object.
+#'
+#' @examples Taken from DE_DeSeq2.R
+#'           dds <- DESeqDataSetFromHTSeqCount(sampleTable=targets,
+#'                                             directory=cwd, 
+#'                                             design=as.formula(mmatrix))
+#'           dds <- DESeq(dds)
+#'           DEhelper.DESeq2.cluster.mean.pairwise(n=10)
+#'           
+DEhelper.DESeq2.cluster.mean.pairwise <- function(i=1,n=40) {
+
+        # extract assay and over-write gene_id in rownames with gene_name
+        assay.rld <- assay(rlog(pairwise.dds[[i]]))
+        rownames(assay.rld) <- gtf$gene_name[match(rownames(assay(pairwise.dds[[i]])), gtf$gene_id)]
+
+        # pick top n most variable genes
+        select.highestMean <- order(rowMeans(assay.rld),decreasing=TRUE)[1:n]
+
+        # set color scheme
+	col <- rev(heat.colors(255))
+
+        # extract information for legend
+        if (length(add_factors)==0) {
+                legend.df <- data.frame(group=colData(pairwise.dds[[i]])[,c("group")],row.names=rownames(colData(pairwise.dds[[i]])))
+        } else {
+                legend.df <- as.data.frame(colData(pairwise.dds[[i]])[,c("group",add_factors)])
+        }
+
+        # fix group colors for legend and possible first additional factor if available
+        if (length(add_factors)==0) {
+                legend_colors <- list(group = setNames(brewer.pal(9,"Set1")[1:length(unique(colData(pairwise.dds[[i]])[,"group"]))],
+                                                       unique(colData(pairwise.dds[[1]])[,"group"])))
+        } else {
+                if (length(unique(colData(pairwise.dds[[i]])[,add_factors[1]])) <= 8) {
+                        mypalette <- brewer.pal(8,"Dark2")[1:length(unique(colData(pairwise.dds[[i]])[,add_factors[1]]))]
+                } else {
+                        mypalette <- colorRampPalette(brewer.pal(8,"Dark2"))(length(unique(colData(pairwise.dds[[i]])[,add_factors[1]])))
+                }
+                legend_colors <- list(group = setNames(brewer.pal(9,"Set1")[1:length(unique(colData(pairwise.dds[[i]])[,"group"]))],
+                                                       unique(colData(pairwise.dds[[i]])[,"group"])),
+                                      subject = setNames(mypalette,
+                                                         unique(colData(pairwise.dds[[i]])[,add_factors[1]])))
+                names(legend_colors) <- c("group",add_factors[1])
+        }
+
+        # plot heatmap
+        pheatmap(assay.rld[select.highestMean,],
+                 cluster_rows=FALSE,
+                 cluster_cols=TRUE,
+                 show_rownames=TRUE,
+                 annotation_col=legend.df,
+                 annotation_colors=legend_colors,
+                 col=col,
+                 border_color=NA,
+                 main=paste("Normalized expression value of",n,"genes with highest mean"),
+                 fontsize_row=5,
+                 fontsize=6,
+                 treeheight_row=20,
+                 treeheight_col=20,
+		 annotation_names_col=FALSE)
+}
+
 
 ## DEhelper.corr: 
 #' Heatmap of sample to sample distances.
@@ -165,15 +439,142 @@ DEhelper.DESeq2.cluster <- function(n=25) {
 #'           # rld is taken from environment
 #'           DEhelper.DESeq2.corr()
 #'           
+#DEhelper.DESeq2.corr <- function() {
+#    distsRL <- dist(t(assay(rld)))
+#    mat <- as.matrix(distsRL)
+#    hc  <- hclust(distsRL)
+#    hmcol <- colorRampPalette(brewer.pal(9, "GnBu"))(100)
+#    heatmap.2(mat, Rowv=as.dendrogram(hc), 
+#              symm=TRUE, trace="none", 
+#              col = rev(hmcol), margin=c(13, 13))
+#}
 DEhelper.DESeq2.corr <- function() {
-    distsRL <- dist(t(assay(rld)))
-    mat <- as.matrix(distsRL)
-    hc  <- hclust(distsRL)
-    hmcol <- colorRampPalette(brewer.pal(9, "GnBu"))(100)
-    heatmap.2(mat, Rowv=as.dendrogram(hc), 
-              symm=TRUE, trace="none", 
-              col = rev(hmcol), margin=c(13, 13))
+
+        # extract assay and over-write gene_id in rownames with gene_name
+        assay.rld <- assay(rld)
+        rownames(assay.rld) <- gtf$gene_name[match(rownames(assay(rld)), gtf$gene_id)]
+
+        # extract sample to sample distances
+        sampleDists <- dist(t(assay.rld))
+        sampleDistMatrix <- as.matrix(sampleDists)
+        
+        # set color scheme
+	col <- plasma(255)
+
+        # extract information for legend
+        if (length(add_factors)==0) {
+                legend.df <- data.frame(group=colData(rld)[,c("group")],row.names=rownames(colData(rld)))
+        } else {
+                legend.df <- as.data.frame(colData(rld)[,c("group",add_factors)])
+        }
+
+        # fix group colors for legend and possible first additional factor if available
+        if (length(add_factors)==0) {
+                legend_colors <- list(group = setNames(brewer.pal(9,"Set1")[1:length(unique(colData(rld)[,"group"]))],
+                                                       unique(colData(rld)[,"group"])))
+        } else {
+                if (length(unique(colData(rld)[,add_factors[1]])) <= 8) {
+                        mypalette <- brewer.pal(8,"Dark2")[1:length(unique(colData(rld)[,add_factors[1]]))]
+                } else {
+                        mypalette <- colorRampPalette(brewer.pal(8,"Dark2"))(length(unique(colData(rld)[,add_factors[1]])))
+                }
+                legend_colors <- list(group = setNames(brewer.pal(9,"Set1")[1:length(unique(colData(rld)[,"group"]))],
+                                                       unique(colData(rld)[,"group"])),
+                                      subject = setNames(mypalette,
+                                                         unique(colData(rld)[,add_factors[1]])))
+                names(legend_colors) <- c("group",add_factors[1])
+        }
+	
+	# sample to sample distance heatmap w/ 0's on diagonal set to NA
+	# since they otherwise shift the scale too much
+	sampleDistMatrix.diagNA <- sampleDistMatrix
+	sampleDistMatrix.diagNA[sampleDistMatrix.diagNA==0] <- NA
+
+        # plot heatmap
+        pheatmap(sampleDistMatrix.diagNA,
+                 clustering_distance_rows=sampleDists,
+                 clustering_distance_cols=sampleDists,
+                 annotation_col=legend.df,
+                 annotation_colors=legend_colors,
+                 col=col,
+                 border_color=NA,
+                 fontsize=6,
+                 treeheight_row=20,
+                 treeheight_col=20,
+		 annotation_names_col=FALSE)
 }
+
+## DEhelper.corr.pairwise: 
+#' Heatmap of sample to sample distances (in a pairwise comparison).
+#'
+#' @param i - iterator to select contrast from conts [default = 1]
+#' @param pairwise.dds - DESeq2 object
+#' @return A plot (base plotting) object.
+#'
+#' @examples Taken from DE_DeSeq2.R
+#'           dds <- DESeqDataSetFromHTSeqCount(sampleTable=targets,
+#'                                             directory=cwd, 
+#'                                             design=as.formula(mmatrix))
+#'           dds <- DESeq(dds)
+#'           DEhelper.DESeq2.corr.pairwise()
+#'           
+DEhelper.DESeq2.corr.pairwise <- function(i=1) {
+
+        # extract assay and over-write gene_id in rownames with gene_name
+        assay.rld <- assay(rlog(pairwise.dds[[i]]))
+        rownames(assay.rld) <- gtf$gene_name[match(rownames(assay(pairwise.dds[[i]])), gtf$gene_id)]
+
+        # extract sample to sample distances
+        sampleDists <- dist(t(assay.rld))
+        sampleDistMatrix <- as.matrix(sampleDists)
+
+        # set color scheme
+	col <- plasma(255)
+        
+        # extract information for legend
+        if (length(add_factors)==0) {
+                legend.df <- data.frame(group=colData(pairwise.dds[[i]])[,c("group")],row.names=rownames(colData(pairwise.dds[[i]])))
+        } else {
+                legend.df <- as.data.frame(colData(pairwise.dds[[i]])[,c("group",add_factors)])
+        }
+
+        # fix group colors for legend and possible first additional factor if available
+        if (length(add_factors)==0) {
+                legend_colors <- list(group = setNames(brewer.pal(9,"Set1")[1:length(unique(colData(pairwise.dds[[i]])[,"group"]))],
+                                                       unique(colData(pairwise.dds[[1]])[,"group"])))
+        } else {
+                if (length(unique(colData(pairwise.dds[[i]])[,add_factors[1]])) <= 8) {
+                        mypalette <- brewer.pal(8,"Dark2")[1:length(unique(colData(pairwise.dds[[i]])[,add_factors[1]]))]
+                } else {
+                        mypalette <- colorRampPalette(brewer.pal(8,"Dark2"))(length(unique(colData(pairwise.dds[[i]])[,add_factors[1]])))
+                }
+                legend_colors <- list(group = setNames(brewer.pal(9,"Set1")[1:length(unique(colData(pairwise.dds[[i]])[,"group"]))],
+                                                       unique(colData(pairwise.dds[[i]])[,"group"])),
+                                      subject = setNames(mypalette,
+                                                         unique(colData(pairwise.dds[[i]])[,add_factors[1]])))
+                names(legend_colors) <- c("group",add_factors[1])
+        }
+
+	# sample to sample distance heatmap w/ 0's on diagonal set to NA
+	# since they otherwise shift the scale too much
+	sampleDistMatrix.diagNA <- sampleDistMatrix
+	sampleDistMatrix.diagNA[sampleDistMatrix.diagNA==0] <- NA
+
+        # plot heatmap
+        pheatmap(sampleDistMatrix.diagNA,
+                 clustering_distance_rows=sampleDists,
+                 clustering_distance_cols=sampleDists,
+                 annotation_col=legend.df,
+                 annotation_colors=legend_colors,
+                 col=col,
+                 border_color=NA,
+                 fontsize=6,
+                 treeheight_row=20,
+                 treeheight_col=20,
+		 annotation_names_col=FALSE)
+}
+
+
 
 ## DEhelper.MAplot: MA plots
 #' MA plots of DESeq2 results

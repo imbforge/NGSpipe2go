@@ -124,16 +124,22 @@ The plot below depicts sample similarity based on priniciple component analysis 
 DEhelper.DESeq2.MDS()		# sample MDS 
 ```
 
-Additionally, hierarchical clustering of the samples based on the most variable genes reveals replicate consistency and can spot batches of samples related by other characteristics rather than condition:
-
-```{r Heatmap1_paragraph, echo=F, error=F, warning=F, message=F, fig.align="center"}
-DEhelper.DESeq2.cluster()	# heatmap of top variant 'n' genes of the rlog transformed counts (normalized and stabilized)
-```
-
-Finally, a heatmap clustogram of the Euclidean distances between the samples gives an intuitive measure of sample similarity:
+A heatmap clustogram of the Euclidean distances between the samples gives an intuitive measure of sample similarity (similarities of samples to themselves (diagonal) are set to NA):
 
 ```{r Heatmap2_paragraph, echo=F, error=F, warning=F, message=F, fig.align="center"}
-DEhelper.DESeq2.corr()		# heatmap of sample to sample distances
+DEhelper.DESeq2.corr()          # heatmap of sample to sample distances
+```
+
+Additionally, hierarchical clustering of the samples based on the most variable genes reveals replicate consistency and can spot batches of samples related by other characteristics rather than condition.
+
+```{r Heatmap1_paragraph_sd, echo=F, error=F, warning=F, message=F, fig.align="center"}
+DEhelper.DESeq2.cluster.sd()	# heatmap of top variant 'n' genes of the rlog transformed counts (normalized and stabilized)
+```
+
+Finally, a hierarchical clustering of the samples based on the genes with the highest average expression is shown below.
+
+```{r Heatmap1_paragraph_mean, echo=F, error=F, warning=F, message=F, fig.align="center"}
+DEhelper.DESeq2.cluster.mean()    # heatmap of top variant 'n' genes of the rlog transformed counts (normalized and stabilized)
 ```
 
 ## Differential Expression Analysis ##
@@ -151,6 +157,16 @@ for(i in 1:nrow(conts)) {
 	cat("##### PCA plot", fill=T)
 	cat("Priniciple component analysis (PCA) plot with the samples of the two analysed groups.", "\n", "\n")
         DEhelper.DESeq2.pairwisePCA(i)
+        cat("\n", fill=T)
+
+	# Sample to sample distance
+        cat("##### Sample to sample distance (diagonal set to NA)", fill=T)
+        DEhelper.DESeq2.corr.pairwise(i)
+        cat("\n", fill=T)
+
+        # most variable genes
+        cat("##### Most variable genes", fill=T)
+        DEhelper.DESeq2.cluster.sd.pairwise(i,40)
         cat("\n", fill=T)
 
 	# MA plot
