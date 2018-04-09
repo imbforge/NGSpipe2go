@@ -100,3 +100,5 @@ The Rmd file can be further customised using a text editor and then converted in
     
     R usage:
     rmarkdown::render("DEreport.Rmd")
+    or
+    rmarkdown::render("ChIPreport.Rmd")
