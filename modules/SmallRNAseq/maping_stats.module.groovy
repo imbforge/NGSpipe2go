@@ -4,11 +4,9 @@ MappingStatsPlot = {
       constraints: "Bam files produced by Bowtie 1.x. Might not work for other mappers/versions.",
 		author: "Antonio Domingues"
 
-   MAPPING_STATS_TOOL = MAPPING_STATS_TOOL_PATH + "/mapping_stats_bowtie1.R"
-
 	produce(
-        MAPPING_STATS_OUTDIR + "/figure/totalReads.pdf",
-        MAPPING_STATS_OUTDIR + "/figure/totalReads.png") {
+        MAPPING_STATS_PLOTDIR + "/totalReads.pdf",
+        MAPPING_STATS_PLOTDIR + "/totalReads.png") {
 
       exec """
          module load R/${R_VERSION} &&
