@@ -152,8 +152,8 @@ processContrast <-  function(x) {
     resultData <- resultData[resultData[, colexpression] > 0, ]
     
     # Separate enrichment analysis of GO terms and pathways for up- and downregulated genes
-    up   <- resultData[, colpadj] < padj & (resultData[, colfc]) > log2Fold
-    down <- resultData[, colpadj] < padj & (resultData[, colfc]) < log2Fold
+    up   <- resultData[, colpadj] < padj & (resultData[, colfc]) > abs(log2Fold)
+    down <- resultData[, colpadj] < padj & (resultData[, colfc]) < -abs(log2Fold)
 
     # GO and Pathway enrichment analysis for the upregulated genes
     if(sum(up) == 0)
