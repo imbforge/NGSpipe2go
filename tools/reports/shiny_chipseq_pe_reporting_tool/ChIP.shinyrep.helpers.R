@@ -156,7 +156,7 @@ ChIPhelper.VennDiagram <- function(){
 		peak <- peak.ranges[peak.groups==group]
 		peaks.ov <- findOverlapsOfPeaks(peak)
 		makeVennDiagram(peaks.ov,
-				margin=0.1,
+				margin=0.5, cat.default.pos="outer"
 				cat.fontface=rep("bold", length(peak)),
 				fill=brewer.pal(length(peak), "Accent")[1:length(peak)]
 				)
@@ -355,7 +355,7 @@ ChIPhelper.IPstrength<- function(web=TRUE) {
     }
     
     if(!is.integer(SHINYREPS_PLOTS_COLUMN) | SHINYREPS_PLOTS_COLUMN < 2) {
-        SHINYREPS_PLOTS_COLUMN <- 4L    # default to 4 columns
+        SHINYREPS_PLOTS_COLUMN <- 3L    # default to 3 columns
     }
     
     # construct the folder name, which is different for web and noweb
