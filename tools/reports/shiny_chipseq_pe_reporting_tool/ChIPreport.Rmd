@@ -2,7 +2,8 @@
 title: "SHINYREPS_PROJECT"
 output:
   html_document:
-    toc: yes
+    toc: true
+    toc_float: true
     css: styles.css
 ---
 
