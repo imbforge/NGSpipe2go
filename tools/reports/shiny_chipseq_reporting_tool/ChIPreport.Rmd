@@ -2,7 +2,8 @@
 title: "SHINYREPS_PROJECT"
 output:
   html_document:
-    toc: yes
+    toc: true
+    toc_float: true
     css: styles.css
 ---
 
@@ -59,17 +60,17 @@ cat(ChIPhelper.PBC(),sep="\n")
 
 ## IPstrength ##
 
-To estimate the IP strength, we attempt to decompose the population of IP reads into two distinct components: those pulled down by the antibody, and background.
-
-```{r IPstrength_paragraph, echo=F,results='asis',error=F,warning=F,message=F}
-cat(ChIPhelper.IPstrength(web=F),sep="\n")
-```
-
-The plot is useful to detect several forms of biases:
+To estimate the IP strength, we attempt to decompose the population of IP reads into two distinct components: those pulled down by the antibody, and background. The enrichment plot is useful to detect several forms of biases:
 
 * The distance between the two curves depends on the enrichment of the IP versus the input; close curves suggest weak or diffuse enrichment.
 * Under-sequencing produces curves close to the x-axis for a large percentage of bins since no reads were aligned on this bins. 
 * Sequencing bias towards a small set of specific regions produces curves shifted towards the y-axis for a large percentage of bins.
+
+For more details see Fig.2 of the CHANCE paper (https://doi.org/10.1186/gb-2012-13-10-r98).
+
+```{r IPstrength_paragraph, echo=F,results='asis',error=F,warning=F,message=F}
+cat(ChIPhelper.IPstrength(web=F),sep="\n")
+```
 
 ## Cross-correlation analysis ##
 
@@ -88,7 +89,6 @@ cat(ChIPhelper.PhantomPeak(web=F),sep="\n")
 
 ## ChIP-seq peaks ##
 
-The number of peaks called at the default false-discovery rate (FDR) cutoff of 5% by MACS2 (https://github.com/taoliu/MACS/) in the different comparisons is shown below.
 
 The ENCODE consortium empirically identified 'blacklist regions' (BRs) for some species and genome versions. These blacklist regions are often found at specific types of repeats (eg. centromeres, telomeres and satellite repeats) and are troublesome for high throughput sequencing aligners. These regions also confuse peak callers and result in spurious signal. Therefore, it is suggested to check the amount of peaks overlapping these regions and remove them for the downstream analysis. The table shows total number of peaks detected by MACS2, the number of peaks without overlapping the blacklist regions and the percentage of peaks overlapping these regions.  
 
@@ -99,7 +99,7 @@ Note that these blacklists are applicable to human (hg38 and hg19), mouse (mm10 
 cat(ChIPhelper.BLACKLISTFILTER(),sep="\n")
 ```
 
-The table shows number of peaks detected in each chromosome for all the samples. 
+The number of peaks called at the default false-discovery rate (FDR) cutoff of 5% by MACS2 (https://github.com/taoliu/MACS/) in the different comparisons is shown below.
 
 ```{r PeakCall_paragraph, echo=F,results='asis',error=F,warning=F,message=F}
 peaks <- ChIPhelper.init("readPeaks")
