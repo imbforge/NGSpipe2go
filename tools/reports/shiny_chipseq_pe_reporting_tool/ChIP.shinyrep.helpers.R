@@ -156,7 +156,7 @@ ChIPhelper.VennDiagram <- function(){
 		peak <- peak.ranges[peak.groups==group]
 		peaks.ov <- findOverlapsOfPeaks(peak)
 		makeVennDiagram(peaks.ov,
-				margin=0.5, cat.default.pos="outer"
+				margin=0.5, cat.default.pos="outer",
 				cat.fontface=rep("bold", length(peak)),
 				fill=brewer.pal(length(peak), "Accent")[1:length(peak)]
 				)
