@@ -16,6 +16,7 @@
 ## out=                                             # output directory
 ############################################################################
 options(stringsAsFactors=FALSE)
+options(bitmapType='cairo')
 library(ChIPseeker)
 library(clusterProfiler)
 library(GenomicFeatures)
