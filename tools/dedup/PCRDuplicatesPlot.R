@@ -13,7 +13,7 @@ library("makeitprettier")
 # Arguments
 # ==========================================================================
 # Create a parser
-p <- arg_parser("Plots QC results of PCR suplicate removal. Log files should be in the format ")
+p <- arg_parser("Plots QC results of PCR duplicate removal. Log files should be in the format ")
 
 # Add command line arguments
 p <- add_argument(p,
