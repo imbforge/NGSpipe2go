@@ -1,0 +1,4 @@
+//vars for task MarkDups from catalog NGS, version 1
+DOWNSAMPLE_AMOUNT=100000
+DOWNSAMPLE_SEED=1
+DOWNSAMPLED=MAPPED
