@@ -25,8 +25,8 @@ PREMATS = {
                 contrast=\${groups[0]};
                 tmp=\${groups[1]};
                 groups=(\${tmp//-/ });
-                groups[0]=`echo \${groups[0]} | sed 's/(group//g'`;
-                groups[1]=`echo \${groups[1]} | sed 's/group//g' | sed 's/)//g'`;
+                groups[0]=`echo \${groups[0]} | sed 's/(//g'`;
+                groups[1]=`echo \${groups[1]} | sed 's/)//g'`;
                 groups=`echo \${groups[0]} \${groups[1]}`;
                 echo \${groups[0]} \${groups[1]};
                 awk -v G="\$groups" 'BEGIN { split(G, g, / /)} { if( \$2 == g[1] || \$2 == g[2] ) print \$0 }' $PREMATS_TARGETS > $output.dir/\${contrast}_targets_rMats.txt;
