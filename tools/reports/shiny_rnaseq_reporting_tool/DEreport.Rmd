@@ -54,6 +54,14 @@ The mapping statistics below show the number and percentage of (i) input raw rea
 cat(DEhelper.STAR(), sep="\n")
 ``` 
 
+## UCSC Genome Browser tracks ##
+
+To view the tracks in the UCSC Genome Browser, navigate to the [UCSC Genome Browser Track Hub page](https://genome-euro.ucsc.edu/cgi-bin/hgHubConnect) and enter the following line into the `URL` field:
+
+```{r Trackhub, echo=F, results='asis', error=F, warning=F, message=F}
+cat(DEhelper.Trackhub(), sep="\n")
+```
+
 ## Insert Size (for paired-end sequencing) ##
 
 ```{r echo=F,results='asis',error=F,warning=F,message=F}

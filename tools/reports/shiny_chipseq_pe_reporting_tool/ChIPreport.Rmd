@@ -50,6 +50,14 @@ A read pair that aligns with the expected relative mate orientation (typically "
 cat(ChIPhelper.Bowtie2PE(),sep="\n")
 ```
 
+## UCSC Genome Browser tracks ##
+
+To view the tracks in the UCSC Genome Browser, navigate to the [UCSC Genome Browser Track Hub page](https://genome-euro.ucsc.edu/cgi-bin/hgHubConnect) and enter the following line into the `URL` field:
+
+```{r Trackhub, echo=F, results='asis', error=F, warning=F, message=F}
+cat(ChIPhelper.Trackhub(), sep="\n")
+```
+
 ## Insert Size ##
 
 ```{r echo=F,results='asis',error=F,warning=F,message=F}

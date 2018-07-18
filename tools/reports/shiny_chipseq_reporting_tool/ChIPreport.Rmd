@@ -48,6 +48,14 @@ Mapping to the reference genome was done using the established NGS mapping tool 
 cat(ChIPhelper.Bowtie(),sep="\n")
 ```
 
+## UCSC Genome Browser tracks ##
+
+To view the tracks in the UCSC Genome Browser, navigate to the [UCSC Genome Browser Track Hub page](https://genome-euro.ucsc.edu/cgi-bin/hgHubConnect) and enter the following line into the `URL` field:
+
+```{r Trackhub, echo=F, results='asis', error=F, warning=F, message=F}
+cat(ChIPhelper.Trackhub(), sep="\n")
+```
+
 ## PCR bottleneck coefficient ##
 
 The PBC (PCR bottleneck coefficient) is an approximate measure of library complexity. Provisionally, 0-0.5 is severe bottlenecking, 0.5-0.8 is moderate bottlenecking, 0.8-0.9 is mild bottlenecking, while 0.9-1.0 is no bottlenecking.

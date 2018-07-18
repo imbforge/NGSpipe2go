@@ -510,3 +510,23 @@ ChIPhelper.GREAT <- function(){
     }
 }
 
+
+##
+## ChIPhelper.Trackhub: display the UCSC trackhub URL
+##
+ChIPhelper.Trackhub <- function() {
+    
+    # output file with trackhub URL
+    if(!file.exists(SHINYREPS_TRACKHUB_DONE)) {
+        return("UCSC GB Trackhub URL file not available")
+    }
+    
+    # Trackhub URL is second line of file
+    url <- scan(SHINYREPS_TRACKHUB_DONE, skip=1, nlines=1, what='character')
+    if (grepl("hub.txt", url)) {
+        return(url)
+    } else {
+        return("UCSC GB Trackhub URL not available")
+    }
+}
+

@@ -2,6 +2,7 @@ ESSENTIAL_PROJECT="/project/"
 ESSENTIAL_STAR_REF="/annotation/mm9/star_genome"
 ESSENTIAL_GENESGTF="/annotation/mm9/gencode.vM1.annotation.gtf"
 ESSENTIAL_GENESBED="/annotation/mm9/mm9_UCSC_knownGene.bed"
+ESSENTIAL_CHROMSIZES="/annotation/mm9/mm9.chrom.sizes"  // chromosome sizes file
 ESSENTIAL_FEATURETYPE="gene_type" //gencode uses gene_type; ensemble uses gene_biotype
 ESSENTIAL_SAMPLE_PREFIX=""
 ESSENTIAL_PAIRED="no"           // paired end design

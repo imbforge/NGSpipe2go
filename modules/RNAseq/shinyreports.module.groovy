@@ -62,6 +62,7 @@ shinyReports = {
             echo "SHINYREPS_QUALIMAP_LOGS=${SHINYREPS_QUALIMAP_LOGS}" >> $output &&
             echo "SHINYREPS_INSERTSIZE=${SHINYREPS_INSERTSIZE}" >> $output &&
             echo "SHINYREPS_GO_ENRICHMENT=${SHINYREPS_GO_ENRICHMENT}" >> $output &&
+            echo "SHINYREPS_TRACKHUB_DONE=${SHINYREPS_TRACKHUB_DONE}" >> $output &&
             echo "SHINYREPS_TOOL_VERSIONS=${SHINYREPS_TOOL_VERSIONS}" >> $output
         ""","shinyReports"
     }

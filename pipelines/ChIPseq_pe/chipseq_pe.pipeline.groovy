@@ -25,6 +25,12 @@ load MODULE_FOLDER + "NGS/insertsize.module.groovy"
 load MODULE_FOLDER + "NGS/bamcoverage.vars.groovy"
 load MODULE_FOLDER + "NGS/bamcoverage.module.groovy"
 
+load MODULE_FOLDER + "NGS/trackhub_config.vars.groovy"
+load MODULE_FOLDER + "NGS/trackhub_config.module.groovy"
+
+load MODULE_FOLDER + "NGS/trackhub.vars.groovy"
+load MODULE_FOLDER + "NGS/trackhub.module.groovy"
+
 load MODULE_FOLDER + "ChIPseq/ipstrength.vars.groovy"
 load MODULE_FOLDER + "ChIPseq/ipstrength.module.groovy"
 
@@ -52,6 +58,8 @@ run {
     "%.fastq.gz" * [ FastQC ] + "%.R*.fastq.gz" * 
     [ bowtie2_pe + BAMindexer + filbowtie2unique + BAMindexer + 
     [ MarkDups + BAMindexer, bamCoverage, InsertSize, pbc, ipstrength, macs2 ] ] + 
-    peak_annotation + collectBpipeLogs + shinyReports
+    peak_annotation +
+//    trackhub_config + trackhub + 
+    collectBpipeLogs + shinyReports
 }
 

@@ -52,6 +52,7 @@ shinyReports = {
             echo "SHINYREPS_PLOTS_COLUMN=${SHINYREPS_PLOTS_COLUMN}" >> $output &&
             echo "SHINYREPS_PEAK_ANNOTATION=${SHINYREPS_PEAK_ANNOTATION}" >> $output &&
             echo "SHINYREPS_GREAT=${SHINYREPS_GREAT}" >> $output &&
+            echo "SHINYREPS_TRACKHUB_DONE=${SHINYREPS_TRACKHUB_DONE}" >> $output &&
             echo "SHINYREPS_TOOL_VERSIONS=${SHINYREPS_TOOL_VERSIONS}" >> $output
         ""","shinyReports"
     }

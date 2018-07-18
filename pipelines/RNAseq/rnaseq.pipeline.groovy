@@ -31,6 +31,12 @@ load MODULE_FOLDER + "NGS/bam2bw.module.groovy"
 load MODULE_FOLDER + "NGS/bamcoverage.module.groovy"
 load MODULE_FOLDER + "NGS/bamcoverage.vars.groovy"
 
+load MODULE_FOLDER + "NGS/trackhub_config.vars.groovy"
+load MODULE_FOLDER + "NGS/trackhub_config.module.groovy"
+
+load MODULE_FOLDER + "NGS/trackhub.vars.groovy"
+load MODULE_FOLDER + "NGS/trackhub.module.groovy"
+
 load MODULE_FOLDER + "NGS/markdups2.vars.groovy"
 load MODULE_FOLDER + "NGS/markdups2.module.groovy"
 
@@ -71,9 +77,10 @@ run { "%.fastq.gz" *
 [ subread_count + filter2htseq , bam2bw , inferexperiment , rnatypes , MarkDups2 + BAMindexer + 
 [ dupRadar , geneBodyCov2 ] ] ] + 
 [ DE_DESeq2_MM , DE_DESeq2 + GO_Enrichment] + 
+//trackhub_config + trackhub +
 collectBpipeLogs + shinyReports }
 
 //
 // Typical workflow for PE data (optional):
 //
-// run { "%.fastq.gz" * [ FastQC ] + "%.R*.fastq.gz" * [ STAR + BAMindexer + [ subread_count + filter2htseq , bamCoverage , InsertSize , inferexperiment , rnatypes , MarkDups2 + BAMindexer + [ dupRadar , geneBodyCov2 ] ] ] + [ DE_DESeq2_MM , DE_DESeq2 + GO_Enrichment] + collectBpipeLogs + shinyReports }
+// run { "%.fastq.gz" * [ FastQC ] + "%.R*.fastq.gz" * [ STAR + BAMindexer + [ subread_count + filter2htseq , bamCoverage , InsertSize , inferexperiment , rnatypes , MarkDups2 + BAMindexer + [ dupRadar , geneBodyCov2 ] ] ] + [ DE_DESeq2_MM , DE_DESeq2 + GO_Enrichment] + trackhub_config + trackhub + collectBpipeLogs + shinyReports }

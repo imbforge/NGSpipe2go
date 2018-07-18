@@ -22,6 +22,12 @@ load MODULE_FOLDER + "NGS/extend.module.groovy"
 load MODULE_FOLDER + "NGS/bam2bw.vars.groovy"
 load MODULE_FOLDER + "NGS/bam2bw.module.groovy"
 
+load MODULE_FOLDER + "NGS/trackhub_config.vars.groovy"
+load MODULE_FOLDER + "NGS/trackhub_config.module.groovy"
+
+load MODULE_FOLDER + "NGS/trackhub.vars.groovy"
+load MODULE_FOLDER + "NGS/trackhub.module.groovy"
+
 load MODULE_FOLDER + "ChIPseq/ipstrength.vars.groovy"
 load MODULE_FOLDER + "ChIPseq/ipstrength.module.groovy"
 
@@ -51,5 +57,7 @@ load MODULE_FOLDER + "ChIPseq/shinyreports.module.groovy"
 run {
 	"%.fastq.gz" * 
 	[ FastQC , bowtie_se + BAMindexer + [ extend + bam2bw , phantompeak , pbc , ipstrength , macs2 ] ] + 
-	peak_annotation + collectBpipeLogs + shinyReports
+	peak_annotation +
+//	trackhub_config + trackhub + 
+        collectBpipeLogs + shinyReports
 }
