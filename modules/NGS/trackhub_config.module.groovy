@@ -17,7 +17,7 @@ trackhub_config = {
         "TRACKHUB_TRACKSDIR=" + TRACKHUB_TRACKSDIR + " " +
         "TRACKHUB_CONFIG=" + TRACKHUB_CONFIG
 
-    produce(ESSENTIAL_PROJECT + "/trackhub.yaml") {
+    produce(TRACKHUB_CONFIG) {
         exec """
            module load R/${R_VERSION} &&
            Rscript ${TOOL_TRACKHUB}/Configure_Trackhub.R $trackhub_FLAGS;
