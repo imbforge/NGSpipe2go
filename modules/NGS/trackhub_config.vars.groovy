@@ -1,11 +1,9 @@
 //vars for task trackhub, version 1
-TRACKHUB_FTPURLBASE="http://imbc1.imb.uni-mainz.de/public"  // public FTP base URL
+TRACKHUB_FTPURLBASE="https://hpc1.imb.uni-mainz.de/public"  // public FTP base URL
 TRACKHUB_FTPBASE="/fsimb/services/ftp/public/"  // public FTP root folder
 TRACKHUB_UCSCCFG="/fsimb/common/tools/ucsc/config/"  // folder with UCSC tools configuration files (e.g. narrowPeak.as/broadPeak.as)
-////TRACKHUB_CHROMSIZES="/fsimb/common/genomes/mus_musculus/ucsc/mm10/full/annotation/ChromInfo.txt"  // chromosome sizes file
-TRACKHUB_CHROMSIZES=ESSENTIAL_CHROMSIZES  // chromosome sizes file
 TRACKHUB_TARGETS=ESSENTIAL_PROJECT + "/targets.txt"  // targets file describing the samples for ChIP-seq
-TRACKHUB_PEAKSDIR=RESULTS + "/macs2"  // location of peak files for ChIP-seq
+TRACKHUB_PEAKSDIR=RESULTS + "/macs2"  // location of peak files for ChIP-seq (comment out if no peak files)
 TRACKHUB_TRACKSDIR=TRACKS  // location of track files for putting into trackhub
 TRACKHUB_CONFIG=ESSENTIAL_PROJECT + "/trackhub.yaml"  // trackhub configuration file
 

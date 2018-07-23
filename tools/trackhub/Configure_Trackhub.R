@@ -44,15 +44,15 @@ parseArgs <- function(args,string,default=NULL,convert="as.character") {
 args <- commandArgs(T)
 ESSENTIAL_PROJECT   <- parseArgs(args,"ESSENTIAL_PROJECT=","")                           # main project folder
 ESSENTIAL_DB        <- parseArgs(args,"ESSENTIAL_DB=","")                                # UCSC assembly (e.g. mm9, hg19)
-ESSENTIAL_CHROMSIZES   <- parseArgs(args,"ESSENTIAL_CHROMSIZES=","")                       # chromosome sizes file
+ESSENTIAL_CHROMSIZES   <- parseArgs(args,"ESSENTIAL_CHROMSIZES=","")                     # chromosome sizes file
 TRACKHUB_TRACKSDIR  <- parseArgs(args,"TRACKHUB_TRACKSDIR=",paste0(ESSENTIAL_PROJECT,"/tracks"))  # project tracks folder
 TRACKHUB_CONFIG     <- parseArgs(args,"TRACKHUB_CONFIG=",paste0(ESSENTIAL_PROJECT,"/trackhub.yaml"))  # trackhub configuration file
 TRACKHUB_TARGETS    <- parseArgs(args,"TRACKHUB_TARGETS=",paste0(ESSENTIAL_PROJECT,"/targets.txt"))  # file with sample info
 TRACKHUB_FTPBASE    <- parseArgs(args,"TRACKHUB_FTPBASE=","")                            # Public FTP root folder
 TRACKHUB_FTPURLBASE <- parseArgs(args,"TRACKHUB_FTPURLBASE=","")                         # Public FTP root URL
 TRACKHUB_UCSCCFG    <- parseArgs(args,"TRACKHUB_UCSCCFG=","")                            # UCSC configuration files folder
-ESSENTIAL_STRANDED  <- parseArgs(args,"ESSENTIAL_STRANDED=","no")                         # set to "yes" for stranded RNA-seq
-TRACKHUB_PEAKSDIR   <- parseArgs(args,"TRACKHUB_PEAKSDIR=",paste0(ESSENTIAL_PROJECT,"/results/macs2")) # ChIP-seq peaks dir
+ESSENTIAL_STRANDED  <- parseArgs(args,"ESSENTIAL_STRANDED=","no")                        # set to "yes" for stranded RNA-seq
+TRACKHUB_PEAKSDIR   <- parseArgs(args,"TRACKHUB_PEAKSDIR=","")                           # ChIP-seq peaks dir
 
 
 runstr <- paste0("Call with: Rscript Configure_Trackhub.R ESSENTIAL_PROJECT=",ESSENTIAL_PROJECT,
@@ -70,13 +70,9 @@ runstr <- paste0("Call with: Rscript Configure_Trackhub.R ESSENTIAL_PROJECT=",ES
 
 if(ESSENTIAL_PROJECT == "")     stop(paste("ESSENTIAL_PROJECT is required. Run with:\n",runstr,"\n"))
 if(ESSENTIAL_DB == "")          stop(paste("ESSENTIAL_DB (genome assembly) is required. Run with:\n",runstr,"\n"))
-if(ESSENTIAL_CHROMSIZES == "")  stop(paste("ESSENTIAL_CHROMSIZES is required. Run with:\n",runstr,"\n"))
 
 # Echo run command for logging purposes
 cat(runstr)
-
-
-setwd(TRACKHUB_TRACKSDIR)
 
 
 # Hierarchical list of configuration variables
@@ -89,21 +85,23 @@ cfg$Global$TRACKHUB_FTPURLBASE <- TRACKHUB_FTPURLBASE
 cfg$Global$TRACKHUB_FTPBASE <- TRACKHUB_FTPBASE
 cfg$Global$TRACKHUB_UCSCCFG <- TRACKHUB_UCSCCFG
 cfg$Global$TRACKHUB_ASSEMBLY <- ESSENTIAL_DB
-cfg$Global$TRACKHUB_CHROMSIZES <- ESSENTIAL_CHROMSIZES
 cfg$Global$TRACKHUB_TRACKSDIR <- TRACKHUB_TRACKSDIR
-cfg$Global$TRACKHUB_TARGETS <- TRACKHUB_TARGETS
-cfg$Global$TRACKHUB_PEAKSDIR <- TRACKHUB_PEAKSDIR
+if ( TRACKHUB_PEAKSDIR != "" ) {
+  if ( ESSENTIAL_CHROMSIZES != "" ) {
+    cfg$Global$TRACKHUB_PEAKSDIR <- TRACKHUB_PEAKSDIR
+    cfg$Global$TRACKHUB_CHROMSIZES <- ESSENTIAL_CHROMSIZES
+  } else {
+    stop("ESSENTIAL_CHROMSIZES is also required if TRACKHUB_PEAKSDIR is given.\n")
+  }
+}
+
+# Set track FTP location-related variables (for FTP folder creation & FTP URL construction)
+cfg$Global$TRACKHUB_PROJECT <- basename(ESSENTIAL_PROJECT)
+cfg$Global$TRACKHUB_GROUP <- basename(dirname(ESSENTIAL_PROJECT))
 
 
 # Tracks
 cfg$Tracks <- list()
-
-
-# Read in targets file and check whether this is a ChIP-seq or RNA-seq experiment
-
-
-PROJECT <- basename(ESSENTIAL_PROJECT)
-GROUP <- basename(dirname(ESSENTIAL_PROJECT))
 
 
 ## Create the trackhub files

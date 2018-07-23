@@ -602,7 +602,7 @@ ChIPhelper.Trackhub <- function() {
     }
     
     # Trackhub URL is second line of file
-    url <- scan(SHINYREPS_TRACKHUB_DONE, skip=1, nlines=1, what='character')
+    url <- scan(SHINYREPS_TRACKHUB_DONE, skip=0, nlines=1, what='character')
     if (grepl("hub.txt", url)) {
         return(url)
     } else {
