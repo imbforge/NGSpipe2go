@@ -19,6 +19,9 @@ load MODULE_FOLDER + "NGS/markdups.module.groovy"
 load MODULE_FOLDER + "NGS/bamindexer.vars.groovy"
 load MODULE_FOLDER + "NGS/bamindexer.module.groovy"
 
+load MODULE_FOLDER + "NGS/bamqc.vars.groovy"
+load MODULE_FOLDER + "NGS/bamqc.module.groovy"
+
 load MODULE_FOLDER + "NGS/insertsize.vars.groovy"
 load MODULE_FOLDER + "NGS/insertsize.module.groovy"
 
@@ -56,7 +59,7 @@ load MODULE_FOLDER + "ChIPseq/shinyreports_pe.module.groovy"
 //MAIN PIPELINE TASK
 run {
     "%.fastq.gz" * [ FastQC ] + "%.R*.fastq.gz" * 
-    [ bowtie2_pe + BAMindexer + filbowtie2unique + BAMindexer + 
+    [ bowtie2_pe + BAMindexer + BamQC + filbowtie2unique + BAMindexer + 
     [ MarkDups + BAMindexer, bamCoverage, InsertSize, pbc, ipstrength, macs2 ] ] + 
     peak_annotation +
 //    trackhub_config + trackhub + 
