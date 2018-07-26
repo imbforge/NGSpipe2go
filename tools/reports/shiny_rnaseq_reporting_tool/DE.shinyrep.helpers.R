@@ -915,8 +915,10 @@ DEhelper.STAR <- function() {
     df <- data.frame(input_reads=format(x[1, ], big.mark=","), 
                      uniquely_mapped=paste0(format(x[2, ], big.mark=","), " (", format(x[3, ], nsmall=2), "%)"), 
                      multi_mapped=paste0(format(x[4, ], big.mark=","), " (", format(x[6, ], nsmall=2), "%)"), 
-                     unmapped=paste0(format(x[7, ] + x[8, ] + x[9, ] + x[10, ], nsmall=2), "%"))
-    kable(df, align=c("r", "r", "r", "r"), output=F)
+                     too_many_loci=paste0(format(x[7,],nsmall=2), "%"),
+                     unmapped=paste0(format( x[8, ] + x[9, ] + x[10, ], nsmall=2), "%")
+                     )
+    kable(df, align=c("r", "r", "r", "r","r"), output=F)
 }
 
 ##
