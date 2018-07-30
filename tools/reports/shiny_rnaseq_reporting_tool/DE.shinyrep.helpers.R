@@ -100,7 +100,7 @@ DEhelper.DESeq2.MDS <- function() {
     p <- plotPCA(rld, intgroup=colnames(colData(dds))[1])
     print(p + 
           scale_color_manual(values=brewer.pal(9,"Set1")[1:length(levels(colData(dds)[,"group"]))]) +
-          geom_text_repel(aes(label=rownames(colData(dds)))) + 
+          geom_text_repel(aes(label=rownames(colData(dds))), show.legend=FALSE) + 
           theme_bw())
 }
 
@@ -128,7 +128,7 @@ DEhelper.DESeq2.pairwisePCA <- function(i=1) {
     p <- plotPCA(rlog(pairwise.dds[[i]]), intgroup=colnames(colData(pairwise.dds[[i]]))[1])
     print(p + 
           scale_color_manual(values=brewer.pal(9,"Set1")[1:2]) + 
-          geom_text_repel(aes(label=rownames(colData(pairwise.dds[[i]])))) + 
+          geom_text_repel(aes(label=rownames(colData(pairwise.dds[[i]]))), show.legend=FALSE) + 
           theme_bw())
 }
 

@@ -304,7 +304,7 @@ p <- plotPCA(rld, intgroup=colnames(colData(dds))[1])
 #plot(p + geom_text_repel(aes(label=rownames(colData(dds)))) + theme_bw())
 plot(p + 
      scale_color_manual(values=brewer.pal(9,"Set1")[1:length(levels(colData(dds)[,"group"]))]) +
-     geom_text_repel(aes(label=rownames(colData(dds)))) + 
+     geom_text_repel(aes(label=rownames(colData(dds))), show.legend=FALSE) + 
      theme_bw())
 
 
