@@ -1,5 +1,5 @@
 //rule for task STAR from catalog RNAseq
-//desc: Align single- or pair-end reads
+//desc: Align single- or paired-end RNAseq reads
 STAR = {
     doc title: "STAR alignment",
         desc:  "Align single/paired end reads",
@@ -41,14 +41,9 @@ STAR = {
                      "--outFileNamePrefix " + LOGS + "/STAR/" + OUTPUTFILE + " " +
                      "--outTmpDir " + TMP + "/" + OUTPUTFILE + " " +
                      STAR_UNMAPPED_BAM + " " +
-                     STAR_UNMAPPED_OUT + " " +
-                     STAR_MAXRAM   + " " +
-                     STAR_BUFSIZE  + " " +
                      STAR_REF      + " " +
                      STAR_THREADS  + " " +
                      STAR_MM       + " " +
-                     STAR_MULTIMAP + " " +
-                     STAR_MININTRO + " " +
                      STAR_OVERHANG + " " +
                      STAR_GTF      + " " +
                      STAR_EXTRA
@@ -56,13 +51,13 @@ STAR = {
     // samtools flags
     def SAMTOOLS_VIEW_FLAGS = "-bhSu " + STAR_SAMTOOLS_THREADS
     if(STAR_FILTER_SEC == "YES") {
-        SAMTOOLS_VIEW_FLAGS = " -F 256 " + SAMTOOLS_VIEW_FLAGS    //remove secondary alignments
+        SAMTOOLS_VIEW_FLAGS = " -F 256 " + SAMTOOLS_VIEW_FLAGS    // remove secondary alignments (256 or 0x100)
     }
 
     def SAMTOOLS_SORT_FLAGS = " -O bam " + STAR_SAMTOOLS_THREADS
 
     // code chunk
-    // TODO: change to latest or at least try to warn, if the genome index was created using the wrong version of STAR
+    // TODO: warn if the genome index was created using another version of STAR?
     produce(OUTPUTFILE + ".bam", OUTPUTFILE + "Log.final.out") {
         exec """
             module load star/${STAR_VERSION} && 
