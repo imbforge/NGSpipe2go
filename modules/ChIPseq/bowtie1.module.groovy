@@ -27,6 +27,10 @@ bowtie_se = {
             module load bowtie/${BOWTIE_VERSION} &&
             module load samtools/${SAMTOOLS_VERSION} &&
 
+            if [ ! -d ${TMP} ]; then
+                     mkdir -p ${TMP};
+            fi &&
+
             zcat $input | bowtie $BOWTIE_FLAGS $BOWTIE_REF - | samtools view $SAMTOOLS_VIEW_FLAGS - | samtools sort $SAMTOOLS_SORT_FLAGS -T $TMP/\$(basename $output.prefix)_bowtie1_sort - > $output
         ""","bowtie_se"
     }
