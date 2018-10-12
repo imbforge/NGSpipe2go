@@ -1,5 +1,5 @@
 // local settings
-STAR_MM = "--outFilterMismatchNoverLmax 0.04"		// max. percentage of mismatches in the alignment (4% used by ENCODE)
+STAR_MM = "--outFilterMismatchNoverLmax 0.04 --outFilterMismatchNmax 999" // max. percentage of mismatches in the alignment (4% used by ENCODE)
 STAR_UNMAPPED_BAM = "--outSAMunmapped Within"		// report unmapped reads to bam file? (choices: Within, None)
 
 // settings imported from essential vars
