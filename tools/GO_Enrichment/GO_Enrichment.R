@@ -90,7 +90,12 @@ processContrast <-  function(x) {
                                      universe=if(univ == "all") orgDb[org] else entrezUnivId$ENTREZID)
         enrichedKEGG     <- enrichKEGG(entrezDeId$ENTREZID, org, universe=entrezUnivId$ENTREZID)
         enrichedReactome <- enrichPathway(entrezDeId$ENTREZID, org, readable=TRUE, universe=entrezUnivId$ENTREZID)
-
+                                   
+        # filter enriched results by gene count
+        enriched         <- gsfilter(enriched, by = "Count", min = 2)
+        enrichedKEGG     <- gsfilter(enrichedKEGG, by = "Count", min = 2)
+        enrichedReactome <- gsfilter(enrichedReactome, by = "Count", min = 2)
+                                   
         # write GO and Pathway enrichment tables into output file 
         write.csv(as.data.frame(enriched),
                   file=paste0(out, "/", contrast, "_GO_Enrichment_", suffix, "_genes.csv"))
