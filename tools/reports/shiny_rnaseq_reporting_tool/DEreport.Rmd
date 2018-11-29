@@ -52,6 +52,8 @@ The mapping statistics below show the number and percentage of: (i) input raw re
 
 While both unique and multi-mapped reads are included in the generation of browser coverage tracks, only uniquely mapped reads are typically taken into account in the DESeq2 differential expression analysis in order to avoid potential false-positives. However, this standard analysis approach may also exclude some recently duplicated genes or gene-pseudogene pairs, resulting in false-negatives. To investigate the potential expression changes in such genes, a side branch of DESeq2 is run using all mapped reads and the results of both branches are compared.
 
+The browser tracks are generated using bamCoverage tool in [deepTools](https://deeptools.readthedocs.io/en/develop/) and they are normalized using the Counts Per Million mapped reads (CPM) method. The CPM formula is: CPM  = number of reads per bin (20 bp) / number of mapped reads (in millions).
+
 ```{r STAR_paragraph, echo=F, results='asis', error=F, warning=F, message=F}
 cat(DEhelper.STAR(), sep="\n")
 ``` 
