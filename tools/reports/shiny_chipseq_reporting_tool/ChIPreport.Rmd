@@ -42,7 +42,7 @@ cat(ChIPhelper.Fastqc(web=F),sep="\n")
 
 ## Read mapping ##
 
-Mapping to the reference genome was done using the established NGS mapping tool Bowtie (http://bowtie-bio.sourceforge.net/index.shtml). The mapping statistics show the total number of reads delivered to the aligner ("all reads"), the number of uniquely mapping reads ("mapped"), the reads that failed to align ("unmapped"), the number of reads discarded because of mapping to multiple positions ("too many map. pos.") and the number of duplicate reads ("duplicates") amongst the uniquely mapped reads:
+Mapping to the reference genome was done using the established NGS mapping tool Bowtie (http://bowtie-bio.sourceforge.net/index.shtml). The mapping statistics show the total number of reads delivered to the aligner ("all reads"), the number of uniquely mapping reads ("mapped"), the reads that failed to align ("unmapped"), the number of reads discarded because of mapping to multiple positions ("too many map. pos.") and the number of duplicate reads ("duplicates") amongst the uniquely mapped reads. The browser tracks are generated using bamCoverage tool in [deepTools](https://deeptools.readthedocs.io/en/develop/) and they are normalized using the Counts Per Million mapped reads (CPM) method. The CPM formula is: CPM  = number of reads per bin (20 bp) / number of mapped reads (in millions).
 
 ```{r Bowtie_paragraph, echo=F,results='asis',error=F,warning=F,message=F}
 cat(ChIPhelper.Bowtie(),sep="\n")
