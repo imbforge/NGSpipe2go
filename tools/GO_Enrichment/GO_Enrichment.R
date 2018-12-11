@@ -75,6 +75,7 @@ res <- lapply(res, as.data.frame, row.names=NULL)
 processContrast <-  function(x) {
 
     library(clusterProfiler)
+    library(DOSE)
     library(ReactomePA)
     library(Cairo)
 
