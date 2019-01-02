@@ -76,10 +76,11 @@ Adjust the project-specific information in the following files:
 
 ## Run a pipeline ##
 
-Put the input files into own folder <project_dir>/rawdata
+Copy the input FastQ files into own folder <project_dir>/rawdata
 
-Load the bpipe module customised for the Slurm job manager
+Using GNU Screen (for persistence) load the bpipe module customised for the Slurm job manager
 
+    screen
     module load bpipe/0.9.9.3.slurm
 
 Start running the pipeline of choice
