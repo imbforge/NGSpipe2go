@@ -1,0 +1,3 @@
+barcode col row group plate 
+GGAAGAA A 1 group1  1
+CAGAGAA B 2 group1  2
