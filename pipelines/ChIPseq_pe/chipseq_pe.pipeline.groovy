@@ -13,6 +13,9 @@ load MODULE_FOLDER + "ChIPseq/bowtie2pe.module.groovy"
 load MODULE_FOLDER + "ChIPseq/filbowtie2unique.vars.groovy"
 load MODULE_FOLDER + "ChIPseq/filbowtie2unique.module.groovy"
 
+load MODULE_FOLDER + "NGS/rmdups.vars.groovy"
+load MODULE_FOLDER + "NGS/rmdups.module.groovy"
+
 load MODULE_FOLDER + "NGS/markdups.vars.groovy"
 load MODULE_FOLDER + "NGS/markdups.module.groovy"
 
@@ -56,13 +59,28 @@ load MODULE_FOLDER + "miscellaneous/collectbpipes.module.2.groovy"
 load MODULE_FOLDER + "ChIPseq/shinyreports_pe.vars.groovy"
 load MODULE_FOLDER + "ChIPseq/shinyreports_pe.module.groovy"
 
-//MAIN PIPELINE TASK
+
+// standard PE workflow using deduplicated BAM files of MapQ filtered (~ unique) reads
+// assumes that duplicated library fragments are unwanted PCR artifacts
+// discards multimapping reads as habitually done in most ChIP-seq studies
+//
 run {
     "%.fastq.gz" * [ FastQC ] + "%.R*.fastq.gz" * 
-    [ bowtie2_pe + BAMindexer + BamQC + filbowtie2unique + BAMindexer + 
-    [ MarkDups + BAMindexer, bamCoverage, InsertSize, pbc, ipstrength, macs2 ] ] + 
-    peak_annotation +
-//    trackhub_config + trackhub + 
-    collectBpipeLogs + shinyReports
+    [ bowtie2_pe + BAMindexer + BamQC + filbowtie2unique + BAMindexer + RmDups + BAMindexer +
+    [ bamCoverage, InsertSize, ipstrength, ipstrength, macs2 ] ]  + 
+    // trackhub_config + trackhub +
+    peak_annotation + collectBpipeLogs + shinyReports
+}
+
+// alternative PE workflow using the unfiltered BAM files
+// may be preferable when studying some types of repetetive regions
+// make sure to have ESSENTIAL_DUP="auto" for MACS2 peak calling
+//
+// run {
+//    "%.fastq.gz" * [ FastQC ] + "%.R*.fastq.gz" * 
+//    [ bowtie2_pe + BAMindexer + BamQC + 
+//    [ MarkDups + BAMindexer, bamCoverage, InsertSize, ipstrength, macs2 ] ] + 
+//    // trackhub_config + trackhub +
+//    peak_annotation + collectBpipeLogs + shinyReports
 }
 
