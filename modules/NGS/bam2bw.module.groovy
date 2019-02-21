@@ -23,8 +23,7 @@ bam2bw = {
 			samtools idxstats ${input} | cut -f1-2 > \${CHRSIZES} &&
 			TOTAL_MAPPED=\$( samtools flagstat $input | head -n1| cut -f1 -d" ") &&
 			SCALE=\$(echo "1000000/\$TOTAL_MAPPED" | bc -l) &&
-			genomeCoverageBed -bg -split -scale \${SCALE} -ibam ${input} -g \${CHRSIZES} > ${output.prefix}.bedgraph &&
-			bedGraphToBigWig ${output.prefix}.bedgraph \${CHRSIZES} $output &&
+                        genomeCoverageBed -bg -split -scale \${SCALE} -ibam ${input} | sortBed -i -  > ${output.prefix}.bedgraph &&			bedGraphToBigWig ${output.prefix}.bedgraph \${CHRSIZES} $output &&
 			rm \${CHRSIZES} ${output.prefix}.bedgraph
 		""","bam2bw"
 	}
