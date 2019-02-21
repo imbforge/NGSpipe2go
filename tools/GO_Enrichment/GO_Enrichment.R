@@ -113,7 +113,7 @@ processContrast <-  function(x) {
       
             # create network plot for the results
             CairoPNG(file=paste0(out, "/", contrast, "_GO_network_", suffix, "_genes.png"), width=700, height=500)
-            print(enrichMap(enriched))
+            print(emapplot(enriched))
             dev.off()
         }
 
@@ -125,7 +125,7 @@ processContrast <-  function(x) {
       
             # create network plot for the results
             CairoPNG(file=paste0(out, "/", contrast, "_KEGG_network_", suffix, "_genes.png"), width=700, height=500)
-            print(enrichMap(enrichedKEGG))
+            print(emapplot(enrichedKEGG))
             dev.off()
         }
         
@@ -136,7 +136,7 @@ processContrast <-  function(x) {
             dev.off()
             # create network plot for the results
             CairoPNG(file=paste0(out, "/", contrast, "_Reactome_network_", suffix, "_genes.png"), width=700, height=500)
-            print(enrichMap(enrichedReactome))
+            print(emapplot(enrichedReactome))
             dev.off()
         }
     }
