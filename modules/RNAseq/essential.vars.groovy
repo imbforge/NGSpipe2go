@@ -13,6 +13,8 @@ ESSENTIAL_READLENGTH=50         // added for STAR version > 2.4.1a
 ESSENTIAL_THREADS=4             // number of threads for parallel tasks
 ESSENTIAL_FRAGMENT_USAGE="no"   //should fragments be reconstituted? should always be no for rnaseq
 ESSENTIAL_FILTER_CHR=""         //chromosomes to include in post-mapping analysis.
+ESSENTIAL_BAMCOVERAGE="--smoothLength 60 --binSize 20 --normalizeUsing CPM" // Add smooth length (larger than the binSize),
+// size of bins (in bases)  and method to normalize the number of reads per bin to generate bigwig file.
 
 //global vars
 PROJECT=ESSENTIAL_PROJECT
