@@ -51,6 +51,7 @@ A set of NGS data analysis tools and pipelines developed and utilised at the Ins
 
 #### Files required ####
 - raw reads (.fastq.gz) or mapped data (.bam)
+
 GATK requires chromosomes in bam files to be karyotypically ordered. 
 
 ## NGSpipe2go preparations ##
