@@ -21,6 +21,11 @@ ESSENTIAL_STRANDED="no"       // strandness: no|yes|reverse
 
 ESSENTIAL_DUP="auto" // relevant for MACS2 it instructs macs2 to use its auto function to keep duplicate marked reads
 //global vars that will be reused in some global vars
+
+ESSENTIAL_BAMCOVERAGE="--smoothLength 60 --binSize 20 --normalizeUsing CPM" // Add smooth length (larger than the binSize),
+// size of bins (in bases)  and method to normalize the number of reads per bin to generate bigwig file.
+
+
 PROJECT=ESSENTIAL_PROJECT
 LOGS=PROJECT + "/logs"
 MAPPED=PROJECT + "/mapped"
