@@ -39,6 +39,21 @@ A set of NGS data analysis tools and pipelines developed and utilised at the Ins
 - targets.txt (sample names)
 - raw reads (.fastq.gz) or mapped data (.bam)
 
+### DNA-seq pipeline ###
+#### Programs required ####
+- FastQC
+- BWA
+- Samtools
+- Bedtools
+- Picard
+- dupRadar (provided by another project from imbforge)
+- GATK
+
+#### Files required ####
+- raw reads (.fastq.gz) or mapped data (.bam)
+
+GATK requires chromosomes in bam files to be karyotypically ordered. 
+
 ## NGSpipe2go preparations ##
 
 ### Put NGSpipe2go into the project dir ###
