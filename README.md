@@ -86,7 +86,7 @@ or for paired-end (PE) ChIP-seq project
 Adjust the project-specific information in the following files:
 
 - *essential.vars.groovy* specifies the main project variables like project dir and reference genome
-- *<name>.pipeline.grovy* describes the pipeline steps and the location of the respective modules
+- *<name>.pipeline.groovy* describes the pipeline steps and the location of the respective modules
 - *targets.txt* and *contrasts.txt* contain the sample names and the differential group comparisons
 
 ## Run a pipeline ##
