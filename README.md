@@ -52,7 +52,7 @@ A set of NGS data analysis tools and pipelines developed and utilised at the Ins
 #### Files required ####
 - raw reads (.fastq.gz) or mapped data (.bam)
 
-GATK requires chromosomes in bam files to be karyotypically ordered. 
+GATK requires chromosomes in bam files to be karyotypically ordered. Best you use an ordered genome fasta file as reference for the pipeline (assigned in *essential.vars.groovy*, see below).
 
 ## NGSpipe2go preparations ##
 
