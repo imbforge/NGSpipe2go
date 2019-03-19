@@ -86,33 +86,35 @@ or for paired-end (PE) ChIP-seq project
 Adjust the project-specific information in the following files:
 
 - *essential.vars.groovy* specifies the main project variables like project dir and reference genome
-- *<name>.pipeline.groovy* describes the pipeline steps and the location of the respective modules
+- *xxx.pipeline.groovy* describes the pipeline steps and the location of the respective modules
 - *targets.txt* and *contrasts.txt* contain the sample names and the differential group comparisons
+- *tool.location.groovy* and *bpipe.config* specify the paths and resource allocation for the tools
+
+Additional software parameters can be customised in the *xxx.vars.groovy* files accompanying each bpipe module.
 
 ## Run a pipeline ##
 
-Copy the input FastQ files into own folder <project_dir>/rawdata
+Copy the input FastQ files into the <project_dir>/rawdata folder.
 
-Using GNU Screen (for persistence) load the bpipe module customised for the Slurm job manager
+Using GNU Screen (for persistence) load the bpipe module customised for the Slurm job manager, e.g.
 
     screen
-    module load bpipe/0.9.9.3.slurm
+    module load bpipe/0.9.9.5.slurm
 
-Start running the pipeline of choice
+Start running the pipeline of choice, e.g.
 
     bpipe run rnaseq.pipeline.groovy rawdata/*.fastq.gz
-or
 
-    bpipe run chipseq.pipeline.groovy rawdata/*.fastq.gz
-    
 or
+    bpipe run chipseq.pipeline.groovy rawdata/*.fastq.gz    
 
+or
     bpipe run chipseq_pe.pipeline.groovy rawdata/*.fastq.gz
 
 ## Compile a project report ##
 
-The final result of the provided pipelines will be saved in ./reports.
-The Rmd file can be further customised using a text editor and then converted into HTML report using knitr
+The final result of the provided pipelines will be saved in the ./reports folder.
+The Rmd file can be edited or customised using a text editor and then converted into HTML report using knitr
     
     R usage:
     rmarkdown::render("DEreport.Rmd")
