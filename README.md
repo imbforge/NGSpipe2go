@@ -106,9 +106,11 @@ Start running the pipeline of choice, e.g.
     bpipe run rnaseq.pipeline.groovy rawdata/*.fastq.gz
 
 or
+
     bpipe run chipseq.pipeline.groovy rawdata/*.fastq.gz    
 
 or
+
     bpipe run chipseq_pe.pipeline.groovy rawdata/*.fastq.gz
 
 ## Compile a project report ##
