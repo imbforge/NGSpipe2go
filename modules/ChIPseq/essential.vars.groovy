@@ -1,31 +1,24 @@
-ESSENTIAL_PROJECT="/project"
-ESSENTIAL_BOWTIE_REF="/annotation/mm9/Sequence/BowtieIndex/genome"
-ESSENTIAL_BOWTIE_GENOME="/annotation/mm9/Sequence/BowtieIndex/genome.fa"
-ESSENTIAL_CHROMSIZES="/annotation/mm9/mm9.chrom.sizes"  // chromosome sizes file
-ESSENTIAL_SAMPLE_PREFIX=""
-ESSENTIAL_BLACKLIST="/annotation/mm9/consensusBlacklist.bed" 
-// Note that blacklist regions are applicable to human (hg38 and hg19), mouse (mm10 and mm9), worm (ce10) and fly (dm3) genomes.
-ESSENTIAL_BSGENOME="BSgenome.Mmusculus.UCSC.mm9"
-ESSENTIAL_TXDB="TxDb.Mmusculus.UCSC.mm9.knownGene" // it's not mandatory, but dont forget it if you wanna annotate your peaks
-ESSENTIAL_ANNODB="org.Mm.eg.db"                    // it's not mandatory, but dont forget it if you wanna annotate your peaks
-ESSENTIAL_FRAGLEN=200
-ESSENTIAL_READLEN=45
-ESSENTIAL_MACS2_GSIZE="mm"
-ESSENTIAL_THREADS=4
-ESSENTIAL_DB="mm9"             // UCSC assembly version for GREAT analysis. Note that GREAT only supports human (UCSC hg19 and UCSC hg18), 
-                               // mouse (UCSC mm9) and zebrafish (UCSC danRer7) genomes.    
-ESSENTIAL_FRAGMENT_USAGE="no" // essential variable which will tell bamCoverage to reconstitute fragments to create bigwig tracks
-			      //set to yes in case of paired end DNA/ChIP sequencing usage
-ESSENTIAL_PAIRED="no"	      //relevant for MACS2 if set it will used the PE mode in MACS2 peakcalling
-ESSENTIAL_STRANDED="no"       // strandness: no|yes|reverse
+ESSENTIAL_PROJECT=".../project"   // full project directory path
+ESSENTIAL_BOWTIE_REF=".../genome"  // full path to reference index files (base name) needed for Bowtie (SR data) or Bowtie2 (PE data)
+ESSENTIAL_BOWTIE_GENOME=".../genome.fa"  // full path to the reference genome FASTA file
+ESSENTIAL_CHROMSIZES=".../mm9.chrom.sizes"  // chromosome sizes file of the reference genome
+ESSENTIAL_SAMPLE_PREFIX=""  // sample prefix to be trimmed in the results and reports
+ESSENTIAL_BLACKLIST=".../consensusBlacklist.bed"  // optional blacklist regions for human (hg38 and hg19), mouse (mm10 and mm9), worm (ce10) or fly (dm3)
+ESSENTIAL_BSGENOME="BSgenome.Mmusculus.UCSC.mm9"  // Bioconductor genome reference used by some modules
+ESSENTIAL_TXDB="TxDb.Mmusculus.UCSC.mm9.knownGene" // needed for peak annotation
+ESSENTIAL_ANNODB="org.Mm.eg.db"                    // needed for peak annotation
+ESSENTIAL_READLEN=42  // read length
+ESSENTIAL_FRAGLEN=200   // mean length of library inserts and also minimum peak size called by MACS2
+ESSENTIAL_DUP="auto"  // how MACS2 deals with duplicated reads or fragments ("auto", "no" or 1)
+ESSENTIAL_MACS2_GSIZE="mm"  // mappable genome size for MACS2 (use approx. number or "hs" for human, "mm" for mouse, "ce" for worm, "dm" for fly)
+ESSENTIAL_THREADS=4   // number of threads for parallel tasks
+ESSENTIAL_DB="mm9"  // UCSC assembly version for GREAT analysis (only for UCSC hg19, hg18, mm9 and danRer7)
+ESSENTIAL_FRAGMENT_USAGE="yes" // "no" for SR data; "yes" for PE data to make bigWig tracks with reconstituted fragments
+ESSENTIAL_PAIRED="yes"   // to perform MACS2 peak calling in SR mode ("no") or PE mode ("yes") 
+ESSENTIAL_STRANDED="no"  // library prep protocol strandness: no|yes|reverse
+ESSENTIAL_BAMCOVERAGE="--smoothLength 60 --binSize 20 --normalizeUsing CPM"  // binning, smoothing and normalisation options for making bigWig tracks
 
-ESSENTIAL_DUP="auto" // relevant for MACS2 it instructs macs2 to use its auto function to keep duplicate marked reads
 //global vars that will be reused in some global vars
-
-ESSENTIAL_BAMCOVERAGE="--smoothLength 60 --binSize 20 --normalizeUsing CPM" // Add smooth length (larger than the binSize),
-// size of bins (in bases)  and method to normalize the number of reads per bin to generate bigwig file.
-
-
 PROJECT=ESSENTIAL_PROJECT
 LOGS=PROJECT + "/logs"
 MAPPED=PROJECT + "/mapped"
