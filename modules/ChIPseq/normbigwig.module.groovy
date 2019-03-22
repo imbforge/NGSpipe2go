@@ -34,7 +34,7 @@ normbigwig = {
                     samtools idxstats ${input} | cut -f1-2 > \${CHRSIZES} &&
                     bamCompare -b1 $input -b2 $NORMBIGWIG_MAPPED/$INPUT --numberOfProcessors $NORMBIGWIG_THREADS $NORMBIGWIG_OTHER --outFileName $TMP/\${BAM%.bam}_\${INPUTname}_norm.bedgraph &&
                     sort -k1,1 -k2,2n  $TMP/\${BAM%.bam}_\${INPUTname}_norm.bedgraph >  $TMP/\${BAM%.bam}_\${INPUTname}_norm.bedgraph.sorted && 
-                    bedGraphToBigWig \${TMP}/\${BAM%.bam}_\${INPUTname}_norm.bedgraph.sorted $CHRSIZES  $output.dir/\${BAM%.bam}_\${INPUTname}_norm.bw;
+                    bedGraphToBigWig ${TMP}/\${BAM%.bam}_\${INPUTname}_norm.bedgraph.sorted $CHRSIZES  $output.dir/\${BAM%.bam}_\${INPUTname}_norm.bw;
                     if [ \$? -ne 0 ]; then rm $output; fi;
                 fi;
             done
