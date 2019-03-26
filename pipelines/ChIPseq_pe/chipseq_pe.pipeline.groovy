@@ -82,5 +82,5 @@ run {
 //    [ MarkDups + BAMindexer, bamCoverage, InsertSize, ipstrength, macs2 ] ] + 
 //    // trackhub_config + trackhub +
 //    peak_annotation + collectBpipeLogs + shinyReports
-}
+//}
 
