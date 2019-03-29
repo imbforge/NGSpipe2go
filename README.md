@@ -8,7 +8,7 @@ A set of NGS data analysis tools and pipelines developed and utilised at the Ins
 
 ## Prerequisites ##
 ### RNA-seq pipeline ###
-A flowchart for the RNA-seq pipeline is given [here](resources/NGSpipe2go_RNAseq_pipeline.png).
+A flowchart for the RNA-seq pipeline is given [here](resources/NGSpipe2go_RNAseq_pipeline.pdf).
 #### Programs required ####
 - FastQC
 - STAR
