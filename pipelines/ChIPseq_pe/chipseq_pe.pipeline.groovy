@@ -67,7 +67,7 @@ load MODULE_FOLDER + "ChIPseq/shinyreports_pe.module.groovy"
 run {
     "%.fastq.gz" * [ FastQC ] + "%.R*.fastq.gz" * 
     [ bowtie2_pe + BAMindexer + BamQC + filbowtie2unique + BAMindexer + RmDups + BAMindexer +
-    [ bamCoverage, InsertSize, ipstrength, ipstrength, macs2 ] ]  + 
+    [ bamCoverage, InsertSize, ipstrength, macs2 ] ]  + 
     // trackhub_config + trackhub +
     peak_annotation + collectBpipeLogs + shinyReports
 }
