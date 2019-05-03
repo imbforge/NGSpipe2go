@@ -44,6 +44,7 @@ ESSENTIAL_FEATURES="/fsimb/groups/imb-kettinggr/genomes/Danio_rerio/Ensembl/Zv10
 ESSENTIAL_GENES="/fsimb/groups/imb-kettinggr/genomes/Danio_rerio/Ensembl/Zv10/Annotation/Genes/pipeline/Danio_rerio_and_repeat_masker.GRCz10.80.chr.gtf"
 ESSENTIAL_REPEAT_MASKER="/home/adomingu/imb-kettinggr/genomes/Danio_rerio/Ensembl/Zv10/Sequence/repeatMasker/danRer10.noSimpleLow.fa.out"
 ESSENTIAL_REPEAT_REF="/home/adomingu/imb-kettinggr/genomes/Danio_rerio/Ensembl/Zv10/Sequence/repEnrichNoSimpleLow"
+ESSENTIAL_ADAPTER_SEQUENCE="AGATCGGAAGAGCACACGTCT"
 REPENRICH_BED="FALSE" 
 ESSENTIAL_THREADS=8
 // read size to keep (added 8 bp to account for barcodes)
