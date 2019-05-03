@@ -2,10 +2,10 @@
 //desc: Base quality recalibration provided by GATK
 VariantCallHC = {
     
-    doc title: "GATK Base Quality Recalibration",
-	desc:  "Recalibrate Base Qualities in BAM files, using GATK",
+    doc title: "GATK Variant Calling HC",
+	desc:  "Call variants in BAM files using GATK HaplotypeCaller",
 	constraints: "Requires BWA ( paramteter -M ) produced BAM file, with correct chromosome order and ReadGroup attached.",
-	bpipe_version: "tested with bpipe 0.9.8.7",
+	bpipe_version: "tested with bpipe 0.9.9.3.slurm",
 	author: "Oliver Drechsel"
 
 	output.dir = RESULTS

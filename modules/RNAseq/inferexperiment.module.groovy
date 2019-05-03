@@ -13,7 +13,7 @@ inferexperiment = {
         exec """
             module load RSeQC/${RSEQC_VERSION} &&
 
-            python ${TOOL_RSEQC}/infer_experiment.py -i $input $INFEREXPERIMENT_EXTRA $INFEREXPERIMENT_BED > $output
+            infer_experiment.py -i $input $INFEREXPERIMENT_EXTRA $INFEREXPERIMENT_BED > $output
         ""","inferexperiment"
     }
 

@@ -1,0 +1,5 @@
+STRINGTIE_OUT=RESULTS + "/stringtie"
+STRINGTIE_GTF="-G " + ESSENTIAL_GENESGTF 
+STRINGTIE_STRANDED=ESSENTIAL_STRANDED //--rf (fr-friststrand) --fr (fr-secondstrand)
+STRINGTIE_THREADS= "-p " + Integer.toString(ESSENTIAL_THREADS)
+STRINGTIE_EXTRA="-f 0.1 -B -e"

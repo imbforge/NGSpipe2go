@@ -1,14 +1,14 @@
 macs2 = {
     doc title: "MACS2",
         desc:  "MACS2 wrapper",
-        constraints: "Only performs treatment versus control peakcalling",
+        constraints: "Only performs treatment versus control peak calling",
         bpipe_version: "tested with bpipe 0.9.8.7",
         author: "Sergi Sayols"
 
     output.dir = RESULTS + "/macs2"
-    MACS2_FLAGS= MACS2_MFOLD  + " " + 
-                 MACS2_GSIZE  + " " + 
+    MACS2_FLAGS= MACS2_GSIZE  + " " + 
                  MACS2_BWIDTH + " " + 
+                 MACS2_MINLEN + " " +         
                  MACS2_EXTRA
     if(MACS2_PAIRED == "yes") {
     MACS2_FLAGS = MACS2_FLAGS + " " + "--format BAMPE"

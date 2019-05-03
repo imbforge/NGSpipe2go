@@ -34,4 +34,5 @@ SHINYREPS_INFEREXPERIMENT_LOGS=QC + "/inferexperiment" //where the inferexperime
 SHINYREPS_QUALIMAP_LOGS=QC + "/qualimap" //where the qualimap output files are
 SHINYREPS_GO_ENRICHMENT=RESULTS + "/GO_Analysis" // where the GO enrichment results lie
 SHINYREPS_INSERTSIZE=QC + "/insertsize" //where the insertsize statistics are found
+SHINYREPS_TRACKHUB_DONE=PROJECT + "/trackhub.done" // contains trackhub URL
 SHINYREPS_TOOL_VERSIONS=PROJECT+ "/NGSpipe2go/modules/RNAseq/tool.versions.groovy" //where the tool versions are listed

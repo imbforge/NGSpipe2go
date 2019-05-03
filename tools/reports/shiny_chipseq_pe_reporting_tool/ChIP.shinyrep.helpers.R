@@ -156,8 +156,8 @@ ChIPhelper.VennDiagram <- function(){
 		peak <- peak.ranges[peak.groups==group]
 		peaks.ov <- findOverlapsOfPeaks(peak)
 		makeVennDiagram(peaks.ov,
-				margin=0.1,
-				cat.fontface=rep("bold", length(peak)),
+				margin=0.25, cat.default.pos="outer", cat.dist=0.15,
+				cat.fontface=rep("bold", length(peak)), 
 				fill=brewer.pal(length(peak), "Accent")[1:length(peak)]
 				)
 		cat("\n", fill=T)
@@ -355,7 +355,7 @@ ChIPhelper.IPstrength<- function(web=TRUE) {
     }
     
     if(!is.integer(SHINYREPS_PLOTS_COLUMN) | SHINYREPS_PLOTS_COLUMN < 2) {
-        SHINYREPS_PLOTS_COLUMN <- 4L    # default to 4 columns
+        SHINYREPS_PLOTS_COLUMN <- 3L    # default to 3 columns
     }
     
     # construct the folder name, which is different for web and noweb
@@ -587,6 +587,26 @@ ChIPhelper.GREAT <- function(){
     #csv file
     if(!file.exists(SHINYREPS_GREAT)){
         return("GREAT analysis not available")
+    }
+}
+
+
+##
+## ChIPhelper.Trackhub: display the UCSC trackhub URL
+##
+ChIPhelper.Trackhub <- function() {
+    
+    # output file with trackhub URL
+    if(!file.exists(SHINYREPS_TRACKHUB_DONE)) {
+        return("UCSC GB Trackhub URL file not available")
+    }
+    
+    # Trackhub URL is second line of file
+    url <- scan(SHINYREPS_TRACKHUB_DONE, skip=0, nlines=1, what='character')
+    if (grepl("hub.txt", url)) {
+        return(url)
+    } else {
+        return("UCSC GB Trackhub URL not available")
     }
 }
 

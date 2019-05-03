@@ -75,6 +75,7 @@ res <- lapply(res, as.data.frame, row.names=NULL)
 processContrast <-  function(x) {
 
     library(clusterProfiler)
+    library(DOSE)
     library(ReactomePA)
     library(Cairo)
 
@@ -90,7 +91,12 @@ processContrast <-  function(x) {
                                      universe=if(univ == "all") orgDb[org] else entrezUnivId$ENTREZID)
         enrichedKEGG     <- enrichKEGG(entrezDeId$ENTREZID, org, universe=entrezUnivId$ENTREZID)
         enrichedReactome <- enrichPathway(entrezDeId$ENTREZID, org, readable=TRUE, universe=entrezUnivId$ENTREZID)
-
+                                   
+        # filter enriched results by gene count
+        enriched         <- gsfilter(enriched, by = "Count", min = 2)
+        enrichedKEGG     <- gsfilter(enrichedKEGG, by = "Count", min = 2)
+        enrichedReactome <- gsfilter(enrichedReactome, by = "Count", min = 2)
+                                   
         # write GO and Pathway enrichment tables into output file 
         write.csv(as.data.frame(enriched),
                   file=paste0(out, "/", contrast, "_GO_Enrichment_", suffix, "_genes.csv"))
@@ -107,7 +113,7 @@ processContrast <-  function(x) {
       
             # create network plot for the results
             CairoPNG(file=paste0(out, "/", contrast, "_GO_network_", suffix, "_genes.png"), width=700, height=500)
-            print(enrichMap(enriched))
+            print(emapplot(enriched))
             dev.off()
         }
 
@@ -119,7 +125,7 @@ processContrast <-  function(x) {
       
             # create network plot for the results
             CairoPNG(file=paste0(out, "/", contrast, "_KEGG_network_", suffix, "_genes.png"), width=700, height=500)
-            print(enrichMap(enrichedKEGG))
+            print(emapplot(enrichedKEGG))
             dev.off()
         }
         
@@ -130,7 +136,7 @@ processContrast <-  function(x) {
             dev.off()
             # create network plot for the results
             CairoPNG(file=paste0(out, "/", contrast, "_Reactome_network_", suffix, "_genes.png"), width=700, height=500)
-            print(enrichMap(enrichedReactome))
+            print(emapplot(enrichedReactome))
             dev.off()
         }
     }
@@ -152,8 +158,8 @@ processContrast <-  function(x) {
     resultData <- resultData[resultData[, colexpression] > 0, ]
     
     # Separate enrichment analysis of GO terms and pathways for up- and downregulated genes
-    up   <- resultData[, colpadj] < padj & (resultData[, colfc]) > log2Fold
-    down <- resultData[, colpadj] < padj & (resultData[, colfc]) < log2Fold
+    up   <- resultData[, colpadj] < padj & (resultData[, colfc]) > abs(log2Fold)
+    down <- resultData[, colpadj] < padj & (resultData[, colfc]) < -abs(log2Fold)
 
     # GO and Pathway enrichment analysis for the upregulated genes
     if(sum(up) == 0)

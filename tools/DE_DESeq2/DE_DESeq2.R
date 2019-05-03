@@ -38,6 +38,8 @@ library(WriteXLS)
 library(GenomicRanges)
 library(rtracklayer)
 library(GenomicFeatures)
+library(pheatmap)
+library(viridis)
 
 ##
 ## get arguments from the command line
@@ -130,7 +132,7 @@ pairwise.dds.and.res <- lapply(conts[,1],function(cont) {
 
     # calculate quantification (RPKM if gene model provided, rlog transformed values otherwise)
     quantification <- apply(fpm(dds), 2, function(x, y) 1e3 * x / y, gene.lengths[rownames(fpm(dds))])
-
+    
     # add comment "robustRPKM" to columns, such that it's clear what the value represents
     colnames(quantification) <- paste0(colnames(quantification),".robustRPKM")
 
@@ -199,23 +201,112 @@ colnames(quantification.names.df)[1] <- "gene_id"
 write.csv(quantification.names.df, file=paste0(out, "/allSamples.robustRPKM.csv"), row.names=F)
 WriteXLS(quantification.names.df, ExcelFileName=paste0(out, "/allSamples.robustRPKM.xls"), row.names=F)
 
+# extract rlog assay and change to user friendly gene identifiers
+assay.rld <- assay(rld)
+rownames(assay.rld) <- gtf$gene_name[match(rownames(assay(rld)), gtf$gene_id)]
+
+# extract information for legend
+#legend.df <- as.data.frame(colData(rld)[,c("group","subject")])
+if (length(add_factors)==0) {
+	legend.df <- data.frame(group=colData(rld)[,c("group")],row.names=rownames(colData(rld)))
+} else {
+	legend.df <- as.data.frame(colData(rld)[,c("group",add_factors)])
+}
+
+# fix group colors for legend and possible first additional factor if available
+        if (length(add_factors)==0) {
+                legend_colors <- list(group = setNames(brewer.pal(9,"Set1")[1:length(unique(colData(rld)[,"group"]))],
+                                                       unique(colData(rld)[,"group"])))
+        } else {
+                if (length(unique(colData(rld)[,add_factors[1]])) <= 8) {
+                        mypalette <- brewer.pal(8,"Dark2")[1:length(unique(colData(rld)[,add_factors[1]]))]
+                } else {
+                        mypalette <- colorRampPalette(brewer.pal(8,"Dark2"))(length(unique(colData(rld)[,add_factors[1]])))
+                }
+                legend_colors <- list(group = setNames(brewer.pal(9,"Set1")[1:length(unique(colData(rld)[,"group"]))],
+                                                       unique(colData(rld)[,"group"])),
+                                      subject = setNames(mypalette,
+                                                         unique(colData(rld)[,add_factors[1]])))
+                names(legend_colors) <- c("group",add_factors[1])
+        }
+
 # sample to sample distance heatmap
-distsRL <- dist(t(assay(rld)))
-mat <- as.matrix(distsRL)
-hc <- hclust(distsRL)
-hmcol  <- colorRampPalette(brewer.pal(9, "GnBu"))(100)
-heatmap.2(mat, Rowv=as.dendrogram(hc),
-          symm=TRUE, trace="none",
-          col = rev(hmcol), margin=c(13, 13))
+sampleDists <- dist(t(assay.rld))
+sampleDistMatrix <- as.matrix(sampleDists)
+pheatmap(sampleDistMatrix,
+         clustering_distance_rows=sampleDists,
+         clustering_distance_cols=sampleDists,
+         annotation_col=legend.df,
+         annotation_colors=legend_colors,
+         col=plasma(255),
+         border_color=NA,
+         main="Sample to sample distances",
+         fontsize=6,
+	 treeheight_row=20,
+         treeheight_col=20,
+         annotation_names_col=FALSE)
+
+# sample to sample distance heatmap w/ 0's on diagonal set to NA
+# since they otherwise shift the scale too much
+sampleDistMatrix.diagNA <- sampleDistMatrix
+sampleDistMatrix.diagNA[sampleDistMatrix.diagNA==0] <- NA
+pheatmap(sampleDistMatrix.diagNA,
+         clustering_distance_rows=sampleDists,
+         clustering_distance_cols=sampleDists,
+         annotation_col=legend.df,
+         annotation_colors=legend_colors,
+         col=plasma(255),
+         border_color=NA,
+         main="Sample to sample distances (diagonal set to NA)",
+         fontsize=6,
+         treeheight_row=20,
+         treeheight_col=20,
+ 	 annotation_names_col=FALSE)
 
 # heatmap of the top variant genes
-rows <- order(apply(assay(rld), 1, sd), decreasing=TRUE)[1:25]
-hmcol  <- colorRampPalette(brewer.pal(9, "GnBu"))(100)
-heatmap.2(assay(rld)[rows,],col=hmcol,trace="none",margin=c(10,6),scale="none")
+select.highestSD <- order(apply(assay.rld,1,sd),decreasing=TRUE)[1:40]
+pheatmap(assay.rld[select.highestSD,], 
+         cluster_rows=TRUE, 
+         cluster_cols=TRUE, 
+         show_rownames=TRUE, 
+         annotation_col=legend.df,
+         annotation_colors=legend_colors,
+         color=colorRampPalette(brewer.pal(9,"GnBu"))(255),
+         border_color=NA, 
+         main="Normalized expression values of 40 most variable genes",
+	 fontsize=6,
+         fontsize_col=10,
+         fontsize_row=6,
+	 treeheight_row=20,
+         treeheight_col=20,
+         annotation_names_col=FALSE)
+
+# heatmap of top mean genes
+select.highestMean <- order(rowMeans(assay.rld), decreasing=TRUE)[1:40]
+pheatmap(assay.rld[select.highestMean,], 
+         cluster_rows=FALSE, 
+         cluster_cols=TRUE,
+         show_rownames=TRUE, 
+         annotation_col=legend.df,
+         annotation_colors=legend_colors,
+         col=rev(heat.colors(255)),
+         border_color=NA, 
+         main="Normalized expression values of 40 genes with highest mean",
+	 fontsize=6,
+         fontsize_col=10,
+         fontsize_row=6,
+	 treeheight_row=20,
+         treeheight_col=20,
+         annotation_names_col=FALSE)
 
 # PCA, group based on the first factor (column 3 in targets)
 p <- plotPCA(rld, intgroup=colnames(colData(dds))[1])
-plot(p + geom_text_repel(aes(label=rownames(colData(dds)))) + theme_bw())
+#plot(p + geom_text_repel(aes(label=rownames(colData(dds)))) + theme_bw())
+plot(p + 
+     scale_color_manual(values=brewer.pal(9,"Set1")[1:length(levels(colData(dds)[,"group"]))]) +
+     geom_text_repel(aes(label=rownames(colData(dds))), show.legend=FALSE) + 
+     theme_bw())
+
 
 # MA plot
 x <- mapply(function(res, cont) {
@@ -226,4 +317,4 @@ x <- mapply(function(res, cont) {
 dev.off()
 #save the sessionInformation
 writeLines(capture.output(sessionInfo()),paste(out, "/DE_DESeq2_session_info.txt", sep=""))
-save(rld, pairwise.dds, dds, res, conts, file=paste0(out,"/DE_DESeq2.RData"))
+save(dds, rld, res, pairwise.dds, conts, gtf, add_factors, file=paste0(out,"/DE_DESeq2.RData"))

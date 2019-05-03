@@ -33,7 +33,7 @@ threads  <- parseArgs(args, "threads=", 1, "as.integer") # number of threads to 
 
 runstr <- "Call with: Rscript dupRadar.R bam=<file.bam> gtf=<genes.gtf> stranded=[no|yes|reverse] paired=[no|yes] outdir=./ threads=1\n"
 if(length(args) == 0) { cat(runstr); quit(save="no") }
-if(any(grepl("-h|--help", args))) { cat(runstr); quit(save="no") }
+if(any(grepl("^-h|^--help", args))) { cat(runstr); quit(save="no") }
 if(is.na(bam)) { cat(runstr); quit(save="no") }
 if(is.na(gtf)) { cat(runstr); quit(save="no") }
 if(is.na(stranded) | !(grepl("no|yes|reverse", stranded))) stop("Stranded has to be no|yes|reverse")

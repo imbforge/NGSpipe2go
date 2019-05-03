@@ -48,11 +48,23 @@ cat(DEhelper.Fastqc(web=F), sep="\n")
 
 Mapping to the reference genome & transcriptome is performed with STAR (https://github.com/alexdobin/STAR). The program version, genome assembly and software parameters are described in the table at the end of the report.
 
-The mapping statistics below show the number and percentage of (i) input raw reads, (ii) uniquely mapped reads, (iii) reads mapped to multiple positions in the genome (multimapped), and (iv) reads not mapped to the reference genome. For the multimapped reads, one random alignment among the best mapping positions is chosen. While all mapped reads are included in the generation of browser coverage tracks, only uniquely mapped reads are typically taken into account in the DESeq2 differential expression analysis in order to avoid potential false-positives. However, this standard analysis approach may also exclude some recently duplicated genes or gene-pseudogene pairs, resulting in false-negatives. To investigate the potential expression changes in such genes, a side branch of DESeq2 is run using all mapped reads and the results of both branches are compared.
+The mapping statistics below show the number and percentage of: (i) input raw reads, (ii) uniquely mapped reads, (iii) multi-mapped reads aligning equally well to multiple (up to 20) positions in the genome, (iv) reads that align to too many (>20) genome loci are discarded, (v) unmapped reads. For the multimapped reads, one random alignment among the best mapping positions is retained. 
+
+While both unique and multi-mapped reads are included in the generation of browser coverage tracks, only uniquely mapped reads are typically taken into account in the DESeq2 differential expression analysis in order to avoid potential false-positives. However, this standard analysis approach may also exclude some recently duplicated genes or gene-pseudogene pairs, resulting in false-negatives. To investigate the potential expression changes in such genes, a side branch of DESeq2 is run using all mapped reads and the results of both branches are compared.
+
+The browser tracks are generated using bamCoverage tool in [deepTools](https://deeptools.readthedocs.io/en/develop/) and they are normalized using the Counts Per Million mapped reads (CPM) method. The CPM formula is: CPM  = number of reads per bin (20 bp) / number of mapped reads (in millions).
 
 ```{r STAR_paragraph, echo=F, results='asis', error=F, warning=F, message=F}
 cat(DEhelper.STAR(), sep="\n")
 ``` 
+
+## UCSC Genome Browser tracks ##
+
+To view the tracks in the UCSC Genome Browser, navigate to the [UCSC Genome Browser Track Hub page](https://genome-euro.ucsc.edu/cgi-bin/hgHubConnect) and enter the following line into the `URL` field:
+
+```{r Trackhub, echo=F, results='asis', error=F, warning=F, message=F}
+cat(DEhelper.Trackhub(), sep="\n")
+```
 
 ## Insert Size (for paired-end sequencing) ##
 
@@ -124,16 +136,22 @@ The plot below depicts sample similarity based on priniciple component analysis 
 DEhelper.DESeq2.MDS()		# sample MDS 
 ```
 
-Additionally, hierarchical clustering of the samples based on the most variable genes reveals replicate consistency and can spot batches of samples related by other characteristics rather than condition:
-
-```{r Heatmap1_paragraph, echo=F, error=F, warning=F, message=F, fig.align="center"}
-DEhelper.DESeq2.cluster()	# heatmap of top variant 'n' genes of the rlog transformed counts (normalized and stabilized)
-```
-
-Finally, a heatmap clustogram of the Euclidean distances between the samples gives an intuitive measure of sample similarity:
+A heatmap clustogram of the Euclidean distances between the samples gives an intuitive measure of sample similarity (similarities of samples to themselves (diagonal) are set to NA):
 
 ```{r Heatmap2_paragraph, echo=F, error=F, warning=F, message=F, fig.align="center"}
-DEhelper.DESeq2.corr()		# heatmap of sample to sample distances
+DEhelper.DESeq2.corr()          # heatmap of sample to sample distances
+```
+
+Additionally, hierarchical clustering of the samples based on the most variable genes reveals replicate consistency and can spot batches of samples related by other characteristics rather than condition.
+
+```{r Heatmap1_paragraph_sd, echo=F, error=F, warning=F, message=F, fig.align="center"}
+DEhelper.DESeq2.cluster.sd()	# heatmap of top variant 'n' genes of the rlog transformed counts (normalized and stabilized)
+```
+
+Finally, a hierarchical clustering of the samples based on the genes with the highest average expression is shown below.
+
+```{r Heatmap1_paragraph_mean, echo=F, error=F, warning=F, message=F, fig.align="center"}
+DEhelper.DESeq2.cluster.mean()    # heatmap of top variant 'n' genes of the rlog transformed counts (normalized and stabilized)
 ```
 
 ## Differential Expression Analysis ##
@@ -151,6 +169,16 @@ for(i in 1:nrow(conts)) {
 	cat("##### PCA plot", fill=T)
 	cat("Priniciple component analysis (PCA) plot with the samples of the two analysed groups.", "\n", "\n")
         DEhelper.DESeq2.pairwisePCA(i)
+        cat("\n", fill=T)
+
+	# Sample to sample distance
+        cat("##### Sample to sample distance (diagonal set to NA)", fill=T)
+        DEhelper.DESeq2.corr.pairwise(i)
+        cat("\n", fill=T)
+
+        # most variable genes
+        cat("##### Most variable genes", fill=T)
+        DEhelper.DESeq2.cluster.sd.pairwise(i,40)
         cat("\n", fill=T)
 
 	# MA plot

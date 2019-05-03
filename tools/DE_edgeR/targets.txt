@@ -1,7 +1,0 @@
-sample	file	group	subject
-KO_1	ERR458881.KO.readcounts.tsv	KO	1
-KO_2	ERR458882.KO.readcounts.tsv	KO	2
-KO_3	ERR458883.KO.readcounts.tsv	KO	3
-WT_1	ERR458885.WT.readcounts.tsv	WT	1
-WT_2	ERR458886.WT.readcounts.tsv	WT	2
-WT_3	ERR458887.WT.readcounts.tsv	WT	3

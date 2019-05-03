@@ -2,6 +2,7 @@ ESSENTIAL_PROJECT="/project/"
 ESSENTIAL_STAR_REF="/annotation/mm9/star_genome"
 ESSENTIAL_GENESGTF="/annotation/mm9/gencode.vM1.annotation.gtf"
 ESSENTIAL_GENESBED="/annotation/mm9/mm9_UCSC_knownGene.bed"
+ESSENTIAL_CHROMSIZES="/annotation/mm9/mm9.chrom.sizes"  // chromosome sizes file
 ESSENTIAL_FEATURETYPE="gene_type" //gencode uses gene_type; ensemble uses gene_biotype
 ESSENTIAL_SAMPLE_PREFIX=""
 ESSENTIAL_PAIRED="no"           // paired end design
@@ -12,6 +13,8 @@ ESSENTIAL_READLENGTH=50         // added for STAR version > 2.4.1a
 ESSENTIAL_THREADS=4             // number of threads for parallel tasks
 ESSENTIAL_FRAGMENT_USAGE="no"   //should fragments be reconstituted? should always be no for rnaseq
 ESSENTIAL_FILTER_CHR=""         //chromosomes to include in post-mapping analysis.
+ESSENTIAL_BAMCOVERAGE="--smoothLength 60 --binSize 20 --normalizeUsing CPM" // Add smooth length (larger than the binSize),
+// size of bins (in bases)  and method to normalize the number of reads per bin to generate bigwig file.
 
 //global vars
 PROJECT=ESSENTIAL_PROJECT
