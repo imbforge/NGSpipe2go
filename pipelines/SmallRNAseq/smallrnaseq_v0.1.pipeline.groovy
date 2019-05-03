@@ -62,13 +62,13 @@ load MODULE_FOLDER + "SmallRNAseq/repenrich.vars.groovy"
 
 //MAIN PIPELINE TASK
 run {
-	"%.fastq.gz" * 
-	[ FastQC , Cutadapt + FastQQualityFilter + FilterDuplicates + TrimUMIs ] +
-	"%.deduped_barcoded.trimmed.fastq.gz" * 
-	[ FastQC, RepEnrich, Bowtie_se + [ BAMindexer, SelectUniqMappers + [ NucleotideSignature, PingPongSignal, PingPongPro] ] ] +
-	"%.bam" *
-	[ CountReads, Bam2bw, SplitReadStrands +
-		"%sense.bam" * [Bam2bw] ] +
-	[ DedupStats, MappingStatsPlot, CountReadsSummary ] +
-	[ CollectPlots ]
+    "%.fastq.gz" * 
+    [ FastQC , Cutadapt + FastQQualityFilter + FilterDuplicates + TrimUMIs ] +
+    "%.deduped_barcoded.trimmed.fastq.gz" * 
+    [ FastQC, RepEnrich, Bowtie_se + [ BAMindexer, SelectUniqMappers + [ NucleotideSignature, PingPongSignal, PingPongPro] ] ] +
+    "%.bam" *
+    [ CountReads, Bam2bw, SplitReadStrands +
+        "%sense.bam" * [Bam2bw] ] +
+    [ DedupStats, MappingStatsPlot, CountReadsSummary ] +
+    [ CollectPlots ]
 }
