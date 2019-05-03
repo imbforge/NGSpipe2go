@@ -1,19 +1,28 @@
-PingPongSignal = {
-   doc title: "Ping-Pong signal",
-         desc:  "Calculates the 10bp overlap frequency of read pairs, known as ping-pong. Outputs a plot with the signal and z-score.",
-         constraints: "",
+PingPongPro = {
+   doc title: "PingPongPro",
+         desc: "Calculates the ping-signal for each input transposon (genomic feature)",
+         constraints: "Requires PingPongPro http://sourceforge.net/projects/pingpongpro/",
          author: "Antonio Domingues"
 
-   output.dir = PINGPONG_OUTDIR
+   output.dir = PINGPONGPRO_OUTDIR
    def SAMPLE_NAME = input.split("/")[-1].replaceAll(".bam", "")
-   def OUT_FOLDER = output.dir + "/" + SAMPLE_NAME
-   produce(OUT_FOLDER + "/figure/" + SAMPLE_NAME + ".ppPlot.pdf") {
+   def FEATURES_NAME = FEATURES_PATH.split("/")[-1].replaceAll(".bed", "")
+   def OUTNAME = SAMPLE_NAME + "." + FEATURES_NAME
+   def OUT_FOLDER = output.dir + "/" + OUTNAME
+   def out1 = OUT_FOLDER + "/ping-pong_signatures.tsv"
+   def out2 = OUT_FOLDER + "/transposons.tsv"
+
+   produce(
+           out1,
+           out2
+            ){
 
       exec """
-         module load R/${R_VERSION} &&
-         
-         python $PINGPONG_TOOL_PATH -b $input --minsize 19 --maxsize 35 --primary sense --outFolder $OUT_FOLDER --intervals $FEATURES_PATH
 
-      ""","PingPongSignal"
+         module load pingpongpro/${PINGPONGPRO_VERSION} &&
+
+         pingpongpro -i $input -t $FEATURES_PATH -o $OUT_FOLDER
+
+      ""","PingPongPro"
    }
 }
