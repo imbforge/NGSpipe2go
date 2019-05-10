@@ -49,9 +49,6 @@ load MODULE_FOLDER + "RNAseq/genebodycov2.module.groovy"
 load MODULE_FOLDER + "RNAseq/inferexperiment.vars.groovy"
 load MODULE_FOLDER + "RNAseq/inferexperiment.module.groovy"
 
-load MODULE_FOLDER + "RNAseq/rnatypes.vars.groovy"
-load MODULE_FOLDER + "RNAseq/rnatypes.module.groovy"
-
 load MODULE_FOLDER + "RNAseq/subread2rnatypes.vars.groovy"
 load MODULE_FOLDER + "RNAseq/subread2rnatypes.module.groovy"
 
