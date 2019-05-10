@@ -68,8 +68,12 @@ STAR = {
                 echo 'removing old STAR tmp folder';
                 rm -r $TMP/$OUTPUTFILE*;
             fi &&
+
+            if [ -n "\$SLURM_JOBID" ]; then
+                export TMPDIR=/jobdir/\${SLURM_JOBID};
+            fi &&
             
-            STAR $STAR_FLAGS --readFilesIn $inputs | samtools view $SAMTOOLS_VIEW_FLAGS - | samtools sort $SAMTOOLS_SORT_FLAGS -T ${TMP}/${OUTPUTFILE}_sort - > $output1 &&
+            STAR $STAR_FLAGS --readFilesIn $inputs | samtools view $SAMTOOLS_VIEW_FLAGS - | samtools sort $SAMTOOLS_SORT_FLAGS -T \${TMPDIR}/${OUTPUTFILE}_sort - > $output1 &&
             
             mv ${LOGS}/STAR/${OUTPUTFILE}SJ.out.tab $output.dir &&
             ln -s ${LOGS}/STAR/${OUTPUTFILE}Log.final.out $output.dir
