@@ -31,7 +31,7 @@ library(edgeR)
 library(RColorBrewer)
 library(gplots)
 library(ggplot2)
-library(WriteXLS)
+library(openxlsx)
 ##
 ## get arguments from the command line
 ##
@@ -208,7 +208,7 @@ lapply(1:length(lrt),function(i) {
 	colnames(x)[colnames(x) == "PValue"] <- "FDR"
 	x <- x[order(x$FDR), ]
 	write.csv(x,file=paste(filename,"csv",sep="."),row.names=F)
-	WriteXLS("x",ExcelFileName=paste0(filename,".xls"),row.names=F)
+	write.xlsx(x,file=paste(filename,"xlsx",sep="."),row.names=F)
 
 	invisible(0)
 })

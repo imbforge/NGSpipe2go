@@ -34,7 +34,7 @@ library(RColorBrewer)
 library(gplots)
 library(ggplot2)
 library(ggrepel)
-library(WriteXLS)
+library(openxlsx)
 library(GenomicRanges)
 library(rtracklayer)
 library(GenomicFeatures)
@@ -152,7 +152,7 @@ pairwise.dds.and.res <- lapply(conts[,1],function(cont) {
     colnames(x)[1] <- "gene_id"
 
     write.csv(x, file=paste0(out, "/", cont.name, ".csv"), row.names=F)
-    WriteXLS(x, ExcelFileName=paste0(out, "/", cont.name, ".xls"), row.names=F)
+    write.xlsx(x, file=paste0(out, "/", cont.name, ".xlsx"), row.names=F)
     
     list(dds,res)
 })
@@ -199,7 +199,7 @@ quantification.names.df <- merge(names.df,quantification,by=0)
 colnames(quantification.names.df)[1] <- "gene_id"
 
 write.csv(quantification.names.df, file=paste0(out, "/allSamples.robustRPKM.csv"), row.names=F)
-WriteXLS(quantification.names.df, ExcelFileName=paste0(out, "/allSamples.robustRPKM.xls"), row.names=F)
+write.xlsx(quantification.names.df, file=paste0(out, "/allSamples.robustRPKM.xlsx"), row.names=F)
 
 # extract rlog assay and change to user friendly gene identifiers
 assay.rld <- assay(rld)
