@@ -22,7 +22,8 @@
 ######################################
 options(stringsAsFactors=FALSE)
 library(DiffBind)
-library(WriteXLS)
+library(openxlsx)
+##library(WriteXLS)
 
 ##
 ## get arguments from the command line
@@ -106,6 +107,8 @@ dev.off()
 writeLines(capture.output(sessionInfo()),paste(OUT, "/diffbind_session_info.txt", sep=""))
 save.image(file=paste0(OUT,"/diffbind.RData"))
 result <- lapply(result, as.data.frame)
-WriteXLS("result", ExcelFileName=paste0(OUT, "/diffbind.xls"),
-         SheetNames=substr(gsub("(.+)=\\((.+)\\)", "\\2", conts[,1]), 1, 31))
+names(result) <- substr(gsub("(.+)=\\((.+)\\)", "\\2", conts[,1]), 1, 31)
+write.xlsx(result, file=paste0(OUT, "/diffbind.xlsx"))
+##WriteXLS("result", ExcelFileName=paste0(OUT, "/diffbind.xls"),
+##         SheetNames=substr(gsub("(.+)=\\((.+)\\)", "\\2", conts[,1]), 1, 31))
 

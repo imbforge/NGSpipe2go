@@ -20,7 +20,7 @@ options(bitmapType='cairo')
 library(ChIPseeker)
 library(clusterProfiler)
 library(GenomicFeatures)
-library(WriteXLS)
+library(openxlsx)
 
 ##
 # get arguments from the command line
@@ -99,7 +99,7 @@ for(i in 1:length(peakAnno)){
 
 # create xls output contains the peak annotation
 outputData <- lapply(peakAnno, as.data.frame)
-WriteXLS("outputData", ExcelFileName=paste0(out, "/Peak_Annotation.xlsx"))
+write.xlsx("outputData", file=paste0(out, "/Peak_Annotation.xlsx"))
 
 # save the sessionInformation
 writeLines(capture.output(sessionInfo()), paste(out, "/ChIPseq_Peak_Annotation_session_info.txt", sep=""))
