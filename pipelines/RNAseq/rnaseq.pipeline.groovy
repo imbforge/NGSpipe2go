@@ -71,7 +71,7 @@ load MODULE_FOLDER + "RNAseq/shinyreports.module.groovy"
 //
 run { "%.fastq.gz" * 
 [ FastQC , STAR + BAMindexer + 
-[ subread_count + filter2htseq , bam2bw , inferexperiment , rnatypes , MarkDups2 + BAMindexer + 
+[ subread_count + filter2htseq , bam2bw , inferexperiment , subread2rnatypes , MarkDups2 + BAMindexer + 
 [ dupRadar , geneBodyCov2 ] ] ] + 
 [ DE_DESeq2_MM , DE_DESeq2 + GO_Enrichment] + 
 //trackhub_config + trackhub +
@@ -80,4 +80,4 @@ collectBpipeLogs + shinyReports }
 //
 // Typical workflow for PE data (optional):
 //
-// run { "%.fastq.gz" * [ FastQC ] + "%.R*.fastq.gz" * [ STAR + BAMindexer + [ subread_count + filter2htseq , bamCoverage , InsertSize , inferexperiment , rnatypes , MarkDups2 + BAMindexer + [ dupRadar , geneBodyCov2 ] ] ] + [ DE_DESeq2_MM , DE_DESeq2 + GO_Enrichment] + trackhub_config + trackhub + collectBpipeLogs + shinyReports }
+// run { "%.fastq.gz" * [ FastQC ] + "%.R*.fastq.gz" * [ STAR + BAMindexer + [ subread_count + filter2htseq , bamCoverage , InsertSize , inferexperiment , subread2rnatypes , MarkDups2 + BAMindexer + [ dupRadar , geneBodyCov2 ] ] ] + [ DE_DESeq2_MM , DE_DESeq2 + GO_Enrichment] + trackhub_config + trackhub + collectBpipeLogs + shinyReports }

@@ -1,8 +1,8 @@
 //rule for task feature_count from Subread package, version 1
 //desc: Counting reads in features with featureCounts
-rnatypes = {
-    doc title: "subread_count",
-    desc:  "Counting gene biotypes in features with feature-count out of the subread package",
+subread2rnatypes = {
+    doc title: "subread2rnatypes",
+    desc:  "Counting gene biotypes in features with featureCounts of the subread package",
     constraints: """Default: strand specific counting.""",
     bpipe_version: "tested with bpipe 0.9.8.7",
     author: "Oliver Drechsel"
@@ -49,6 +49,6 @@ rnatypes = {
             fi &&
             cut -f1,6,7 ${output}_tmp > $output &&
             rm ${output}_tmp
-        ""","rnatypes"
+        ""","subread2rnatypes"
     }
 }
