@@ -28,7 +28,7 @@ Bowtie2_se = {
                        " --trim5 " + Integer.toString(BOWTIE2_TRIMM5)  +
                        " --trim3 " + Integer.toString(BOWTIE2_TRIMM3)
 
-   transform(".deduped_barcoded.fastq.gz") to (".bam") {
+   transform(".cutadapt.highQ.deduped.trimmed.fastq.gz") to (".bam") {
 
       def SAMPLE_NAME = input.prefix.prefix
 

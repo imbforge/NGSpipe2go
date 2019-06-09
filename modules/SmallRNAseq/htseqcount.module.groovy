@@ -31,10 +31,6 @@ HTseqCount = {
    // run the chunk
    transform(".bam") to (".counts") {
       exec """
-         if [ -n "\$LSB_JOBID" ]; then
-            export TMPDIR=/jobdir/\${LSB_JOBID};
-         fi &&
-
 
          htseq-count $HTSEQCOUNT_FLAGS $input $HTSEQCOUNT_GENESGTF > $output 2> ${output.prefix}_htseqcountlog.stderr
 

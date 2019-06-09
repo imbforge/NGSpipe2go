@@ -6,7 +6,7 @@ MirDeep2Mapper = {
 
 	output.dir = MIR_MAPPER_OUTDIR
 
-	transform(".deduped_barcoded.trimmed.fastq") to (".arf", ".fa") {
+	transform(".cutadapt.highQ.deduped.trimmed.fastq") to (".arf", ".fa") {
 
 
       exec """

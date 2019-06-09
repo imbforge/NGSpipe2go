@@ -7,20 +7,26 @@ FilterDuplicates = {
 
    output.dir = REMOVE_DUP_OUTDIR
 
-   transform(".highQ.fastq.gz") to (".deduped_barcoded.fastq.gz") {
+   // create the log folder if it doesn't exists
+   def REMOVE_DUP_LOGDIR = new File( REMOVE_DUP_OUTDIR + "/logs")
+   if (!REMOVE_DUP_LOGDIR.exists()) {
+          REMOVE_DUP_LOGDIR.mkdirs()
+   }       
 
-      def SAMPLE_NAME = input.prefix.prefix.prefix
+   transform(".fastq.gz") to (".deduped.fastq.gz") {
+
+      def SAMPLE_NAME = input.prefix.prefix
 
       exec """
          EXP=\$(basename ${SAMPLE_NAME})
 
          nreads=\$(zcat $input | echo \$((`wc -l`/4))) &&
-         echo \$nreads \${EXP}.highQ > ${REMOVE_DUP_OUTDIR}/${EXP}.dedup_stats.log &&
+         echo \$nreads \${EXP}.highQ > ${REMOVE_DUP_LOGDIR}/${EXP}.dedup_stats.txt &&
 
          zcat $input | paste -d, - - - - | sort -u -t, -k2,2 | tr ',' '\\n' | gzip > $output &&
 
          ureads=\$(zcat $output | echo \$((`wc -l`/4))) &&
-         echo \$ureads ${EXP}.unique >> ${REMOVE_DUP_OUTDIR}/${EXP}.dedup_stats.log
+         echo \$ureads ${EXP}.unique >> ${REMOVE_DUP_LOGDIR}/${EXP}.dedup_stats.txt
          
       ""","FilterDuplicates"
    }

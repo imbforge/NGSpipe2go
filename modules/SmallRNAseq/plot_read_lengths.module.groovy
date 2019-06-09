@@ -5,8 +5,10 @@ PlotReadLengths = {
     author: "António Domingues"
 
     output.dir = PLOT_READ_LENGTH_OUTDIR
+    OUT_PLOT_DIR = PLOT_READ_LENGTH_OUTDIR + "/" + "plots"
+    OUT_PLOT = OUT_PLOT_DIR + "/PercentageReadsLengthDistribution.pdf"
 
-    produce(PLOT_READ_LENGTH_OUTDIR + "/figure/PercentageReadsLengthDistribution.pdf"){
+    produce(OUT_PLOT){
         
         exec """
             module load R/${R_VERSION} &&

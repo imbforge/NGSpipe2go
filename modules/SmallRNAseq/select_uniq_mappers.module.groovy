@@ -10,7 +10,7 @@ SelectUniqMappers = {
       exec """
          module load samtools/${SAMTOOLS_VERSION} &&
 
-         samtools view -hb -q 255 $input | samtools sort -@ $BOWTIE_THREADS - -o $output &&
+         samtools view -hb -q 255 $input | samtools sort -@ $ESSENTIAL_THREADS - -o $output &&
          samtools index $output
       ""","SelectUniqMappers"
    }

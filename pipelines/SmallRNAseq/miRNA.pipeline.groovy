@@ -30,5 +30,5 @@ load MODULE_FOLDER + "SmallRNAseq/mirDeep2.module.groovy"
 
 //MAIN PIPELINE TASK
 run {
-	"%.fastq.gz" * [ FastQC , Cutadapt + FastQQualityFilter + FilterDuplicates + TrimUMIs ] + "%.deduped_barcoded.trimmed.fastq" * [ FastQC + MirDeep2Mapper + MirDeep2] + [ DedupStats ]
+	"%.fastq.gz" * [ FastQC , Cutadapt + FastQQualityFilter + FilterDuplicates + TrimUMIs ] + "%.trimmed.fastq" * [ FastQC + MirDeep2Mapper + MirDeep2] + [ DedupStats ]
 }

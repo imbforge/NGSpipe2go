@@ -9,7 +9,7 @@ TrimUMIs = {
    def SEQTK_FLAGS = " -l " + LEFT_TRIM +
                        " -b " + RIGHT_TRIM
 
-	transform(".deduped_barcoded.fastq.gz") to (".deduped_barcoded.trimmed.fastq.gz") {
+	transform(".fastq.gz") to (".trimmed.fastq.gz") {
 
 
       exec """

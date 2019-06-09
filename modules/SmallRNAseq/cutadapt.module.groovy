@@ -5,6 +5,13 @@ Cutadapt = {
       author: "Antonio Domingues"
 
    output.dir = CUTADAPT_OUTDIR
+
+      // create the log folder if it doesn't exists
+   def CUTADAPT_LOGDIR = new File( CUTADAPT_OUTDIR + "/logs")
+   if (!CUTADAPT_LOGDIR.exists()) {
+      CUTADAPT_LOGDIR.mkdirs()
+   }
+   
    def EXP = input.split("/")[-1].replaceAll(".fastq.gz", "")
 
    transform(".fastq.gz") to (".cutadapt.fastq.gz",".cutadapt_discarded.fastq.gz") {
@@ -12,7 +19,7 @@ Cutadapt = {
 
          module load cutadapt/${CUTADAPT_VERSION} &&
 
-         cutadapt $ADAPTER_SEQUENCE -O $MINIMUM_OVERLAP -m $MINIMUM_LENGTH_KEEP -M $MAXIMUM_LENGTH_KEEP -o $output1 --too-long-output $output2 $input 2>&1 >> ${CUTADAPT_OUTDIR}/${EXP}.cutadapt.log
+         cutadapt $ADAPTER_SEQUENCE -O $MINIMUM_OVERLAP -m $MINIMUM_LENGTH_KEEP -M $MAXIMUM_LENGTH_KEEP -o $output1 --too-long-output $output2 $input 2>&1 >> ${CUTADAPT_LOGDIR}/${EXP}.cutadapt.log
          
       ""","Cutadapt"
    }

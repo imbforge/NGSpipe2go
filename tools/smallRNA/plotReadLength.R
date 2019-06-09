@@ -1,58 +1,10 @@
 library('data.table')
 library('ggplot2')
 library('dplyr')
+library("makeitprettier")
 library('scales')
 library('RColorBrewer')
 library("scales")
-
-
-# source("https://raw.githubusercontent.com/koundy/ggplot_theme_Publication/master/R/ggplot_theme_Publication.R")
-theme_Publication <- function(base_size=14, base_family="Helvetica") {
-      library(grid)
-      library(ggthemes)
-      (theme_foundation(base_size=base_size, base_family=base_family)
-       + theme(plot.title = element_text(face = "bold",
-                                         size = rel(1.2), hjust = 0.5),
-               text = element_text(),
-               panel.background = element_rect(colour = NA),
-               plot.background = element_rect(colour = NA),
-               panel.border = element_rect(colour = NA),
-               axis.title = element_text(face = "bold",size = rel(1)),
-               axis.title.y = element_text(angle=90,vjust =2),
-               axis.title.x = element_text(vjust = -0.2),
-               axis.text = element_text(), 
-               axis.line.x = element_line(colour="black"),
-               axis.line.y = element_line(colour="black"),
-               axis.ticks = element_line(),
-               panel.grid.major = element_line(colour="#f0f0f0"),
-               panel.grid.minor = element_blank(),
-               legend.key = element_rect(colour = NA),
-               legend.position = "bottom",
-               legend.direction = "horizontal",
-               legend.key.size= unit(0.2, "cm"),
-               legend.spacing = unit(0, "cm"),
-               legend.title = element_text(face="italic"),
-               plot.margin=unit(c(10,5,5,5),"mm"),
-               strip.background=element_rect(colour="#f0f0f0",fill="#f0f0f0"),
-               strip.text = element_text(face="bold"),
-               plot.caption=element_text(size=12)
-       ))
-      
-}
-
-
-scale_fill_Publication <- function(...){
-      library(scales)
-      discrete_scale("fill","Publication",manual_pal(values = c("#386cb0","#fdb462","#7fc97f","#ef3b2c","#662506","#a6cee3","#fb9a99","#984ea3","#ffff33")), ...)
-      
-}
-
-
-scale_colour_Publication <- function(...){
-      library(scales)
-      discrete_scale("colour","Publication",manual_pal(values = c("#386cb0","#fdb462","#7fc97f","#ef3b2c","#662506","#a6cee3","#fb9a99","#984ea3","#ffff33")), ...)
-      
-}
 
 
 readWithFileName <- function(file_path) {
@@ -65,7 +17,6 @@ readWithFileName <- function(file_path) {
 }
 
 args <- commandArgs(trailingOnly = TRUE)
-# directory <- "./"
 input_dir <- args[1]
 output_dir <- args[1]
 
@@ -75,70 +26,58 @@ files <- list.files(
   recursive=TRUE,
   full.names=TRUE
   )
-out_fig_path <- paste0(output_dir, "/figure")
+out_fig_path <- paste0(output_dir, "/plots")
 dir.create(file.path(out_fig_path), showWarnings = FALSE)
 
 counts <- lapply(files[!grepl('family|class', files)], readWithFileName)
 counts <- rbindlist(counts, use.names=TRUE, fill=FALSE, idcol=NULL)
 
 len <- counts %>%
-   splitstackshape:::cSplit('file', '_', drop=TRUE, direction='wide')  %>%
-   setnames(c('Count', 'Length', 'Genotype', 'DevStage', 'Replicate', 'Treatment')) %>%
-   mutate(Sample=paste(Genotype, Replicate, sep="_")) %>%
-   setDT
+   setDT() %>%
+   setnames(c("V1", "V2"), c("Count", "Length")) %>%
+   .[, Sample := gsub("\\..*", "", basename(as.character(file)))] %>%
+   .[]
 len
-
-## generate colors for each replicate sample:
-## http://stackoverflow.com/questions/13353213/gradient-of-n-colors-ranging-from-color-1-and-color-2
-# cols3 <- c("#c75f65", "#949b48", "#9475c5")
-# cols3 <- c("#aaa04a", "#8a5ab6", "#8d7779")
-cols3 <- c("#386cb0","#fdb462","#7fc97f","#ef3b2c","#662506","#a6cee3","#fb9a99","#984ea3","#ffff33")[1:2]
-cols <- c()
-for (col in cols3){
-colfunc <- colorRampPalette(c(col, "white"))
-   cols <- c(
-            cols,
-            colfunc(15)[c(1,5,8)]
-            )
-}
 
 
 ggplot(len, aes(x=factor(Length), y=Count, color=Sample)) +
    geom_line(aes(group=Sample)) + 
-   geom_point() +
+   geom_point(size = 2) +
    scale_y_continuous(labels = comma) +
-   scale_color_manual(values=cols) +
-   facet_grid(Treatment ~ ., scales="free_y") +
+   scale_color_prettier() +
    labs(
       x='Read length (bp)',
-      y='Number of Reads',
-      caption=paste('Source:', basename(getwd()))) +
-   # xlab('Read length (bp)') +
-   # ylab('Number of Reads') +
-   theme_Publication() 
-ggsave(paste0(out_fig_path, '/AllReadsLengthDistribution.pdf'))
-ggsave(paste0(out_fig_path, '/AllReadsLengthDistribution.png'))
+      y='Number of Reads'
+      ) +
+   theme_redl(base_size = 18) 
+  
+save_plot(
+  paste0(out_fig_path, '/AllReadsLengthDistribution'),
+  save_data = TRUE,
+  width = 10,
+  height = 7
+)
 
 ## calculate percentage
 
 len <- len %>%
-   group_by(Sample, Treatment) %>%
+   group_by(Sample) %>%
    mutate(Perc=Count/sum(Count)*100)
-
-# len %>%
-#    group_by(Sample, Treatment) %>%
-#    summarize(Total=sum(Perc))
 
 ggplot(len, aes(x=factor(Length), y=Perc, color=Sample)) +
    geom_line(aes(group=Sample)) + 
-   geom_point() +
+   geom_point(size = 2) +
    scale_y_continuous(labels = comma) +
-   scale_color_manual(values=cols) +
-   facet_grid(Treatment ~ ., scales="free_y") +
+   scale_color_prettier() +
    labs(
       x='Read length (bp)',
-      y='% of Reads',
-      caption=paste('Source:', basename(getwd()))) +
-   theme_Publication()
-ggsave(paste0(out_fig_path, '/PercentageReadsLengthDistribution.pdf'))
-ggsave(paste0(out_fig_path, '/PercentageReadsLengthDistribution.png'))
+      y='% of Reads in library'
+      ) +
+   theme_redl(base_size = 18) 
+  
+save_plot(
+  paste0(out_fig_path, '/PercentageReadsLengthDistribution'),
+  save_data = TRUE,
+  width = 10,
+  height = 7
+)

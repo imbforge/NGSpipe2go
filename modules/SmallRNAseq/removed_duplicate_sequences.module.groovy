@@ -7,7 +7,7 @@ FilterDuplicates = {
 
 	output.dir = REMOVE_DUP_OUTDIR
 
-	transform(".highQ.fastq.gz") to (".deduped_barcoded.fastq.gz") {
+	transform(".fastq.gz") to (".deduped.fastq.gz") {
 
       def SAMPLE_NAME = input.prefix.prefix
 

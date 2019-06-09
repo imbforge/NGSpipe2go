@@ -24,10 +24,6 @@ BamCoverageStrandsRPKM = {
             export TOOL_DEPENDENCIES=$TOOL_DEPENDENCIES  &&
             module load deepTools/$DEEPTOOLS_VERSION &&
             module load samtools/$SAMTOOLS_VERSION &&
-            
-            if [ -n "\$LSB_JOBID" ]; then
-                export TMPDIR=/jobdir/\${LSB_JOBID};
-            fi;
 
             TOTAL_MAPPED=\$( samtools flagstat $input | head -n1 | cut -f1 -d" ") &&
             SCALE=\$(echo "1000000/\$TOTAL_MAPPED" | bc -l) &&

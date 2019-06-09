@@ -10,10 +10,6 @@ PerformDEGAnalaysis = {
       exec """
 
          module load R/${R_VERSION} &&
-         
-         if [ -n "\$LSB_JOBID" ]; then
-            export TMPDIR=/jobdir/\${LSB_JOBID};
-         fi &&
 
          cd $output.dir &&
          ln -s $DEG_SCRIPT . &&

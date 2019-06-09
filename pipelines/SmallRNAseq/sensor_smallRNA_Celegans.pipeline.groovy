@@ -15,8 +15,8 @@ load MODULE_FOLDER + "SmallRNAseq/fastq_quality_filter.module.groovy"
 load MODULE_FOLDER + "SmallRNAseq/dedup.vars.groovy"
 load MODULE_FOLDER + "SmallRNAseq/dedup.module.groovy"
 
-load MODULE_FOLDER + "SmallRNAseq/dedup_stats.vars.groovy"
-load MODULE_FOLDER + "SmallRNAseq/dedup_stats.module.groovy"
+load MODULE_FOLDER + "smallRNAseq_BCF/dedup_stats.vars.groovy"
+load MODULE_FOLDER + "smallRNAseq_BCF/dedup_stats.module.groovy"
 
 load MODULE_FOLDER + "SmallRNAseq/trim_umis.vars.groovy"
 load MODULE_FOLDER + "SmallRNAseq/trim_umis.module.groovy"
@@ -32,6 +32,9 @@ load MODULE_FOLDER + "SmallRNAseq/bowtie1.module.groovy"
 
 load MODULE_FOLDER + "SmallRNAseq/select_uniq_mappers.module.groovy"
 load MODULE_FOLDER + "SmallRNAseq/select_uniq_mappers.vars.groovy"
+
+load MODULE_FOLDER + "smallRNAseq_BCF/mapping_stats.module.groovy"
+load MODULE_FOLDER + "smallRNAseq_BCF/mapping_stats.vars.groovy"
 
 load MODULE_FOLDER + "SmallRNAseq/filter_smRNA_classes.module.groovy"
 load MODULE_FOLDER + "SmallRNAseq/filter_smRNA_classes.vars.groovy"
@@ -74,20 +77,53 @@ load MODULE_FOLDER + "SmallRNAseq/ping_pong_pro.vars.groovy"
 load MODULE_FOLDER + "SmallRNAseq/repenrich.module.groovy"
 load MODULE_FOLDER + "SmallRNAseq/repenrich.vars.groovy"
 
-load MODULE_FOLDER + "SmallRNAseq/collect_plots.module.groovy"
-load MODULE_FOLDER + "SmallRNAseq/collect_plots.vars.groovy"
+load MODULE_FOLDER + "SmallRNAseq/sensor_coverage.module.groovy"
+load MODULE_FOLDER + "SmallRNAseq/sensor_coverage.vars.groovy"
+
+load MODULE_FOLDER + "SmallRNAseq/plot_sensor_coverage.module.groovy"
+load MODULE_FOLDER + "SmallRNAseq/plot_sensor_coverage.vars.groovy"
 
 load MODULE_FOLDER + "SmallRNAseq/collect_bams.module.groovy"
 
+load MODULE_FOLDER + "smallRNAseq_BCF/fastqscreen.vars.groovy"
+load MODULE_FOLDER + "smallRNAseq_BCF/fastqscreen.module.groovy"
+
+load MODULE_FOLDER + "smallRNAseq_BCF/subread.vars.groovy"
+load MODULE_FOLDER + "smallRNAseq_BCF/subread.module.groovy"
+
+load MODULE_FOLDER + "smallRNAseq_BCF/filter2htseq.vars.groovy"
+load MODULE_FOLDER + "smallRNAseq_BCF/filter2htseq.module.groovy"
+
+load MODULE_FOLDER + "smallRNAseq_BCF/cutadapt_stats.module.groovy"
+load MODULE_FOLDER + "smallRNAseq_BCF/cutadapt_stats.vars.groovy"
+
+load MODULE_FOLDER + "smallRNAseq_BCF/fastq_quality_filter_stats.module.groovy"
+load MODULE_FOLDER + "smallRNAseq_BCF/fastq_quality_filter_stats.vars.groovy"
+
+load MODULE_FOLDER + "smallRNAseq_BCF/combined_stats.vars.groovy"
+load MODULE_FOLDER + "smallRNAseq_BCF/combined_stats.module.groovy"
+
+load MODULE_FOLDER + "smallRNAseq_BCF/subread2rnatypes.vars.groovy"
+load MODULE_FOLDER + "RNAseq/subread2rnatypes.module.groovy"
+
+load MODULE_FOLDER + "miscellaneous/collectbpipes.module.2.groovy"
+
+load MODULE_FOLDER + "smallRNAseq_BCF/shinyreports.vars.groovy"
+load MODULE_FOLDER + "smallRNAseq_BCF/shinyreports.module.groovy"
+
 //MAIN PIPELINE TASK
 run {
-   "%.fastq.gz" *
-      [ FastQC, Cutadapt + FastQQualityFilter + FilterDuplicates + TrimUMIs ] +
-   "%.deduped_barcoded.trimmed.fastq.gz" *
-      [ FastQC, CountReadLengths, Bowtie_se + [ BAMindexer ] ] +
    "%.bam" *
-         [ FilterRNAClasses, HTseqCount ] +
-      CountNonStrutReads +
-      "%.bam" * [ Bam2bw ] +
-      [  MappingStatsPlot, PlotReadLengths ]           
+   		[ HTseqCount ] +
+    CountNonStrutReads +
+   	"%.bam" * 
+        [ FilterRNAClasses ] +
+    "%.bam" *
+            [ Bam2bw, SensorCoverage ] +
+    [ PlotSensorCoverage ]
 }
+
+
+/*//MAIN PIPELINE TASK
+ run { "%.bam" * [ FilterRNAClasses, HTseqCount ] +
+    [ CountNonStrutReads , "%.22G.bam" * [ Bam2bw, SensorCoverage + PlotSensorCoverage ] ] }*/

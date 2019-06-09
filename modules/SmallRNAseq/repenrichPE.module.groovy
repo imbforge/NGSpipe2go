@@ -31,7 +31,7 @@ RepEnrichPE = {
         echo "Mapping:" &&
 
 
-        bowtie -p $REPENRICH_CORES $BOWTIE_RE_OTHER --max $output.dir/${EXP}".multimap.fastq"  $ESSENTIAL_BOWTIE_REF -1 $INPUT_TMP1 -2 $INPUT_TMP2 2> $output1 | samtools view -bhSu - | samtools sort -@ $REPENRICH_CORES -o $output.dir/${EXP}".bam" -T ${EXP} - &&
+        bowtie -p $REPENRICH_ESSENTIAL_THREADS $BOWTIE_RE_OTHER --max $output.dir/${EXP}".multimap.fastq"  $ESSENTIAL_BOWTIE_REF -1 $INPUT_TMP1 -2 $INPUT_TMP2 2> $output1 | samtools view -bhSu - | samtools sort -@ $REPENRICH_ESSENTIAL_THREADS -o $output.dir/${EXP}".bam" -T ${EXP} - &&
         samtools index $output.dir/${EXP}".bam" &&
 
         echo "Repeat counting:" &&

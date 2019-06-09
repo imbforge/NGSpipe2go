@@ -1,5 +1,6 @@
 REPENR_OUT_DIR=RESULTS + "/repEnrich"
-REPENRICH_THREADS=ESSENTIAL_THREADS			// threads to use
+REPENRICH_THREADS=16			// threads to use
+REPENRICH_ESSENTIAL_THREADS=ESSENTIAL_THREADS            // threads to use
 REPENRICH_REF=ESSENTIAL_BOWTIE_REF // prefix of the bowtie reference genome
 REPENRICH_MM=ESSENTIAL_MISMATCHES             // number of mismatches allowed
 REPENRICH_MULTIMAP=1       // discard reads mapping to more than MULTIMAP positions
