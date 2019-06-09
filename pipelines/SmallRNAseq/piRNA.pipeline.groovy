@@ -99,7 +99,7 @@ run {
     "%.trimmed.fastq.gz" * 
     [ FastQC, FastQScreen, RepEnrich, Bowtie_se + [ BAMindexer, SelectUniqMappers + [ NucleotideSignature, PingPongSignal, PingPongPro] ] ] +
     "%.bam" *
-    [ SubreadCount + Filter2HTSeq, CountReads, CountMappedReads, Bam2bw, rnatypes, SplitReadStrands +
+    [ SubreadCount + Filter2HTSeq, CountReads, CountMappedReads, Bam2bw, subread2rnatypes, SplitReadStrands +
         "%sense.bam" * [Bam2bw] ] +
     [ CutadaptStats, FastQQualityFilterStats, DedupStats, MappingStats, CombinedStats, AggregateMappedCounts, CountReadsSummary ] +
     [ collectBpipeLogs + shinyReports ]
