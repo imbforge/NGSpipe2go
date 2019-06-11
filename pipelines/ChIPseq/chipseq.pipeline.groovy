@@ -19,6 +19,9 @@ load MODULE_FOLDER + "NGS/bamqc.module.groovy"
 load MODULE_FOLDER + "NGS/rmdups.vars.groovy"
 load MODULE_FOLDER + "NGS/rmdups.module.groovy"
 
+load MODULE_FOLDER + "NGS/markdups.vars.groovy"
+load MODULE_FOLDER + "NGS/markdups.module.groovy"
+
 load MODULE_FOLDER + "NGS/extend.vars.groovy"
 load MODULE_FOLDER + "NGS/extend.module.groovy"
 
@@ -62,7 +65,7 @@ load MODULE_FOLDER + "ChIPseq/shinyreports.module.groovy"
 //MAIN PIPELINE TASK
 run {
 	"%.fastq.gz" * 
-	[ FastQC , bowtie_se + BAMindexer + BamQC + [ extend + bamCoverage , phantompeak , pbc , ipstrength , macs2 ] ] + 
+	[ FastQC , bowtie_se + BAMindexer + MarkDups + BAMindexer + BamQC + [ extend + bamCoverage , phantompeak , pbc , ipstrength , macs2 ] ] + 
 	peak_annotation +
 //	trackhub_config + trackhub + 
         collectBpipeLogs + shinyReports
