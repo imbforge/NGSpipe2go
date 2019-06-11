@@ -195,7 +195,7 @@ ChIPhelper.Bowtie <- function() {
                  })
     
         # and add the duplicates information
-        f <- gsub(".bam.log", ".duprm.bam.log", f)
+        f <- gsub(".bam.log", ".dupmarked.bam.log", f)
         dups <- if(file.exists(paste0(SHINYREPS_MARKDUPS_LOG, "/", f))) {
             x <- file(paste0(SHINYREPS_MARKDUPS_LOG, "/", f))
             l <- readLines(x)
