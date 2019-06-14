@@ -34,20 +34,11 @@ subread_count = {
     transform(".bam") to (".featureCounts.bam", ".raw_readcounts.tsv") {
         exec """
             module load subread/${SUBREAD_VERSION} &&
-            if [ -n "\$SLURM_JOBID" ]; then
-                export TMPDIR=/jobdir/\${SLURM_JOBID};
-            fi &&
+            module load samtools/${SAMTOOLS_VERSION} &&
+            featureCounts $SUBREAD_FLAGS -o $output2 $input 2> ${output.prefix}_subreadlog.stderr &&
             base=`basename $input` &&
-            if [[ "$SUBREAD_PAIRED" == "yes" ]]; 
-            then
-                echo "We are resorting and doing the repair\n" &&
-                repair -i $input $SUBREAD_CORES -o \${TMPDIR}/\${base} &&
-                featureCounts $SUBREAD_FLAGS -o $output2 \${TMPDIR}/\${base} 2> ${output.prefix}_subreadlog.stderr &&
-               samtools sort \${TMPDIR}/\${base}.featureCounts.bam > $output1;
-            else
-                featureCounts $SUBREAD_FLAGS -o $output2 $input 2> ${output.prefix}_subreadlog.stderr &&
-                mv ${output.prefix.prefix}.bam.featureCounts.bam $output1;
-            fi
+            samtools sort ${output.dir}/\${base}.featureCounts.bam > $output1 &&
+			rm ${output.dir}/\${base}.featureCounts.bam;
         ""","subread_count"
     }
 }

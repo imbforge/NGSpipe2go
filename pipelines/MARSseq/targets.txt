@@ -1,3 +1,7 @@
-barcode col row group plate 
-GGAAGAA A 1 group1  1
-CAGAGAA B 2 group1  2
+sample	barcode	pool	row	col	cells	group
+poolA_A01_1c_Neg	GGAAGAA	poolA	A	1	1c	Neg
+poolA_C01_1c_Pos	CAGAGAA	poolA	C	1	1c	Pos
+poolA_E01_1c_Neg	ACCAGAA	poolA	E	1	1c	Neg
+poolA_G01_1c_Pos	CCAGGAA	poolA	G	1	1c	Pos
+poolA_E09_10c_Neg	GACTTCA	poolA	E	9	10c	Neg
+poolA_G09_0c_Pos	CGCGATA	poolA	G	9	0c	Pos

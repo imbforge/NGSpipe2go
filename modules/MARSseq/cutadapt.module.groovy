@@ -7,7 +7,7 @@ Cutadapt = {
 	output.dir = CUTADAPT_OUTDIR
 
 	// create the log folder if it doesn't exists
-	def CUTADAPT_LOGDIR = new File( CUTADAPT_OUTDIR + "/logs")
+	def CUTADAPT_LOGDIR = new File( LOGS + "/Cutadapt")
 	if (!CUTADAPT_LOGDIR.exists()) {
 		CUTADAPT_LOGDIR.mkdirs()
 	}
@@ -34,7 +34,7 @@ Cutadapt = {
         
 			SAMPLENAME_BASE=\$(basename ${SAMPLENAME}) &&
 			
-			cutadapt $CUTADAPT_FLAGS --too-short-output=${CUTADAPT_DISCARDED_DIR}/${SAMPLENAME_BASE}.cutadapt_discarded.fastq.gz --output=$output $input 2>&1 >> ${CUTADAPT_LOGDIR}/\${SAMPLENAME_BASE}.cutadapt.log 
+			cutadapt $CUTADAPT_FLAGS --too-short-output=${CUTADAPT_DISCARDED_DIR}/${SAMPLENAME_BASE}.cutadapt_discarded.fastq.gz --output=$output $input 2>&1 >> ${CUTADAPT_LOGDIR}/${SAMPLENAME_BASE}.cutadapt.log --info-file=${CUTADAPT_LOGDIR}/${SAMPLENAME_BASE}.cutadapt.info
 			
 		""","Cutadapt"
 	}
