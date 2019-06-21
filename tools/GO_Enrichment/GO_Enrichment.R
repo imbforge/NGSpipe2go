@@ -78,20 +78,30 @@ processContrast <-  function(x) {
     library(DOSE)
     library(ReactomePA)
     library(Cairo)
+    library(ggplot2)
 
-    calculateGoEnrichment <-  function(de.genes, univ.genes, suffix) {
+    calculateGoEnrichment <-  function(de.genes, univ.genes, de.genes.lfc, suffix) {
         # convert to entrezID downregulated/univers genes
         getEntrezId <- function(genes) {
-            bitr(genes, fromType=if(type == "gene_name") "SYMBOL" else "ENSEMBL", toType="ENTREZID", OrgDb=orgDb[org])
+            bitr( genes, fromType=if(type == "gene_name") "SYMBOL" else "ENSEMBL", toType="ENTREZID", OrgDb=orgDb[org])
         }
         entrezDeId   <- getEntrezId(de.genes)
         entrezUnivId <- getEntrezId(univ.genes)
+
+        # merge entrezID and log2 foldchange
+        entrezDeIdLfc <- merge(x = entrezDeId, y = de.genes.lfc[ , c(type, "log2FoldChange")], by.x=if(type == "gene_name") "SYMBOL" else "ENSEMBL",  by.y= type)
+        entrezDeIdLfc <- entrezDeIdLfc[!duplicated(entrezDeIdLfc[,1]),]
+        rownames(entrezDeIdLfc) <- entrezDeIdLfc$ENTREZID
+        entrezDeIdLfc[,1] <- NULL
+        entrezDeIdLfc$ENTREZID <- NULL
+        entrezDeIdLfc <- apply(t(entrezDeIdLfc), 2,as.numeric)
+
         
         enriched         <- enrichGO(entrezDeId$ENTREZID, OrgDb=orgDb[org], keyType="ENTREZID", ont="BP", readable=TRUE,
                                      universe=if(univ == "all") orgDb[org] else entrezUnivId$ENTREZID)
         enrichedKEGG     <- enrichKEGG(entrezDeId$ENTREZID, org, universe=entrezUnivId$ENTREZID)
         enrichedReactome <- enrichPathway(entrezDeId$ENTREZID, org, readable=TRUE, universe=entrezUnivId$ENTREZID)
-                                   
+             
         # filter enriched results by gene count
         enriched         <- gsfilter(enriched, by = "Count", min = 2)
         enrichedKEGG     <- gsfilter(enrichedKEGG, by = "Count", min = 2)
@@ -104,23 +114,29 @@ processContrast <-  function(x) {
                   file=paste0(out, "/", contrast, "_KEGG_Pathway_Enrichment_", suffix, "_genes.csv"))
         write.csv(as.data.frame(enrichedReactome),
                   file=paste0(out, "/", contrast, "_Reactome_Pathway_Enrichment_", suffix, "_genes.csv"))
-      
+
+
         if(!is.null(enriched) && nrow(enriched) > 0) {
             # create barplot showing GO category
             CairoPNG(file=paste0(out, "/", contrast, "_GO_Barplot_", suffix, "_genes.png"), width=700, height=500)
-            print(barplot(enriched, showCategory=plotCategory))
+            print(barplot(enriched, showCategory=plotCategory) + ylab("Number of genes"))
             dev.off()
       
             # create network plot for the results
             CairoPNG(file=paste0(out, "/", contrast, "_GO_network_", suffix, "_genes.png"), width=700, height=500)
             print(emapplot(enriched))
             dev.off()
+
+            # create cnetplot for the results
+            CairoPNG(file=paste0(out, "/", contrast, "_GO_cnetplot_", suffix, "_genes.png"), width=1200, height=800)
+            print(cnetplot(enriched, categorySize="pvalue", foldChange=entrezDeIdLfc))
+            dev.off()
         }
 
         if(!is.null(enrichedKEGG) && nrow(enrichedKEGG)> 0) {
             # create barplot showing Pathway terms
             CairoPNG(file=paste0(out, "/", contrast, "_KEGG_Barplot_", suffix, "_genes.png"), width=700, height=500)
-            print(barplot(enrichedKEGG, showCategory=plotCategory))
+            print(barplot(enrichedKEGG, showCategory=plotCategory) + ylab("Number of genes"))
             dev.off()
       
             # create network plot for the results
@@ -132,7 +148,7 @@ processContrast <-  function(x) {
         if(!is.null(enrichedReactome) && nrow(enrichedReactome) > 0) {
             # create barplot showing Pathway terms
             CairoPNG(file=paste0(out, "/", contrast, "_Reactome_Barplot_", suffix, "_genes.png"), width=700, height=500)
-            print(barplot(enrichedReactome, showCategory=plotCategory))
+            print(barplot(enrichedReactome, showCategory=plotCategory) + ylab("Number of genes"))
             dev.off()
             # create network plot for the results
             CairoPNG(file=paste0(out, "/", contrast, "_Reactome_network_", suffix, "_genes.png"), width=700, height=500)
@@ -140,7 +156,7 @@ processContrast <-  function(x) {
             dev.off()
         }
     }
-
+                                     
     # unzip res/contrast
     resultData <- x[[1]]
     contrast   <- x[[2]]
@@ -165,13 +181,13 @@ processContrast <-  function(x) {
     if(sum(up) == 0)
         writeLines("No upregulated genes found!", paste0(out, "/", contrast, "_GO_Enrichment_upregulated_genes.csv"))
     else
-        calculateGoEnrichment(resultData[up, genes], resultData[, genes], "up")
+        calculateGoEnrichment(resultData[up, genes], resultData[, genes], resultData[up, cbind(genes,colfc)], "up")
 
     # GO and Pathway enrichment analysis for the downregulated genes
     if(sum(down) == 0)
         writeLines("No downregulated genes found!", paste0(out, "/", contrast, "_GO_Enrichment_downregulated_genes.csv"))
     else
-        calculateGoEnrichment(resultData[down, genes], resultData[, genes], "down")
+        calculateGoEnrichment(resultData[down, genes], resultData[, genes], resultData[down, cbind(genes,colfc)], "down")
 
     invisible(0)
 }
