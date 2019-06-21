@@ -228,6 +228,7 @@ for(i in 1:nrow(conts)) {
 	#cat("##### Biological Process (BP)", fill=T)
 
     	GO_bar_up     <- paste0(SHINYREPS_GO_ENRICHMENT, "/", gsub("=.*", "", conts[i,1]),"_GO_Barplot_up_genes.png")
+        GO_cnet_up    <- paste0(SHINYREPS_GO_ENRICHMENT, "/", gsub("=.*", "", conts[i,1]),"_GO_cnetplot_up_genes.png")
     	GO_table_up   <- paste0(SHINYREPS_GO_ENRICHMENT, "/", gsub("=.*", "", conts[i, 1]), "_GO_Enrichment_up_genes.csv")
     
 	# if there are GO enrichment results (the barplot was created)
@@ -236,7 +237,11 @@ for(i in 1:nrow(conts)) {
         	# GO enriched terms in a barplot
         	cat("Gene Ontology enrichment barplot of the up-regulated genes with FDR < 0.01.", fill=T)
         	cat("![GO_Analysis img](", GO_bar_up, ")\n", fill=T)
-        
+
+        	# GO enriched terms in a cnetplot
+        	cat("The Gene-Concept Network plot of the up-regulated genes with FDR < 0.01. This plot depicts the linkages of genes and biological concepts (GO terms) as a network.", fill=T)
+            cat("![GO_Analysis img](", GO_cnet_up, ")\n", fill=T)
+
         	# and table of OG enriched terms
         	cat("Gene Ontology enrichment table of the up-regulated genes with FDR < 0.01. The table shows the enriched biological proccesses:\n", fill=T)
         	enrich  <- read.csv(file=GO_table_up)
@@ -259,6 +264,7 @@ for(i in 1:nrow(conts)) {
     	#cat("##### Biological Process (BP)", fill=T)
 	
     	GO_bar_down     <- paste0(SHINYREPS_GO_ENRICHMENT, "/", gsub("=.*", "", conts[i,1]),"_GO_Barplot_down_genes.png")
+        GO_cnet_down      <- paste0(SHINYREPS_GO_ENRICHMENT, "/", gsub("=.*", "", conts[i,1]),"_GO_cnetplot_down_genes.png")
     	GO_table_down   <- paste0(SHINYREPS_GO_ENRICHMENT, "/", gsub("=.*", "", conts[i, 1]), "_GO_Enrichment_down_genes.csv")
     
 	# if there are GO enrichment results (the barplot was created)
@@ -267,6 +273,10 @@ for(i in 1:nrow(conts)) {
         	# GO enriched terms in a barplot
         	cat("Gene Ontology enrichment barplot of the down-regulated genes with FDR < 0.01.", fill=T)
         	cat("![GO_Analysis img](", GO_bar_down, ")\n", fill=T)
+
+        	# GO enriched terms in a cnetplot
+        	cat("The Gene-Concept Network plot of the down-regulated genes with FDR < 0.01. This plot depicts the linkages of genes and biological concepts (GO terms) as a network.", fill=T)
+            cat("![GO_Analysis img](", GO_cnet_down, ")\n", fill=T)
         
         	# and table of OG enriched terms
         	cat("Gene Ontology enrichment table of the down-regulated genes with FDR < 0.01. The table shows the enriched biological proccesses:\n", fill=T)
