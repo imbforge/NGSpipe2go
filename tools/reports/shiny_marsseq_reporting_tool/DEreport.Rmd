@@ -100,6 +100,7 @@ The y-axis on the graph shows the Phred quality scores, which are logarithmicall
 3. The "GC Content" plots show the GC% distribution of all reads (red lines) and the ideal normal distribution based on the data (blue lines). Typically, the red and blue lines tightly overlap and look essentially the same in all samples. An unusually shaped distribution could indicate a contaminated library.
 
 ```{r FastQC_paragraph1, echo=F, results='asis', error=F, warning=F, message=F}
+##### parameters to set:
 # Select samples for which you would like to include fastqc results in the report. For single cell RNA-Seq with many cells, 
 # you may want to restrict the total number of plots. If you provide a regular expression in 'samplePattern' only those 
 # filenames will be included which match this expression, e.g. setting samplePattern="R1" yields only those fastq 
@@ -108,18 +109,34 @@ The y-axis on the graph shows the Phred quality scores, which are logarithmicall
 # If you want to exclude samples according to the given certain pattern (instead of including), set exclude=T. 
 # This is e.g. for excluding the trimmed fastq files which contain "cutadapt" in the file name (see below). 
 # If you set argument 'maxno', the maximum sample number will be restricted accordingly to the first 'maxno' plots. 
+samplePattern="R1"
+excludePattern=F  # default FALSE
+maxno=NULL # default NULL
+##### 
 
-cat(DEhelper.Fastqc(web=F, samplePattern="R1"), sep="\n")
+cat(DEhelper.Fastqc(web=F, samplePattern=samplePattern, exclude=excludePattern, maxno=maxno), sep="\n")
 # These options also apply for the helper functions following below
 ```
 
 
 ## Adapter trimming
 
-The following plot shows the amount of reads trimmed for the selected adapter sequences as well as polyA/polyT sequences.  as well as the amount filtered due to a length of less than 30bp after trimming.
+The following plot shows the amount of reads trimmed for the selected adapter sequences as well as polyA/polyT sequences. Additionally, it shows the amount of reads removed due to a length of less than 30 bases after trimming.
 
 ```{r cutadapt, echo=F, results='asis', error=F, warning=F, message=F}
-DEhelper.cutadapt(samplePattern=NULL, colorByFactor=NULL)
+##### parameters to set:
+# define subset of cutadapt log files if desired. samplePattern=NULL (default) includes all files.
+samplePattern=NULL
+# define categories of targets.txt to be used for dot color in the plot (one plot per element of colorByFactor will be created). 
+# The function will try to map the data from targets$sample to the cutadapt log file names (for this, the unique part of 
+# targets$sample must be a substring of file name). If you have cutadapt log files from pooled fastq files but cell-wise 
+# information in targets.txt as in MARS-Seq, you may provide another customized targets object in 'targetsdf'. 
+# Otherwise pruned file names will be used by default.
+colorByFactor = NULL # NULL by default
+targetsdf=targets
+#####
+
+DEhelper.cutadapt(samplePattern=samplePattern, colorByFactor=colorByFactor, targetsdf=targetsdf)
 ```
 
 
@@ -166,16 +183,24 @@ apping to the reference genome & transcriptome is performed with STAR (https://g
 
 The mapping statistics below show the number and percentage of: (i) input raw reads, (ii) uniquely mapped reads, (iii) multi-mapped reads aligning equally well to multiple (up to 20) positions in the genome, (iv) reads that align to too many (>20) genome loci are discarded, (v) unmapped reads. For the multimapped reads, one random alignment among the best mapping positions is retained. 
 
-If plot.groupwise is set TRUE, the mapping characteristics are plotted seperatedly for the grouping variabtles given in targets.txt.
-
 While both unique and multi-mapped reads are included in the generation of browser coverage tracks, only uniquely mapped reads are typically taken into account in the differential expression analysis in order to avoid potential false-positives. However, this standard analysis approach may also exclude some recently duplicated genes or gene-pseudogene pairs, resulting in false-negatives. To investigate the potential expression changes in such genes, a side branch of DESeq2 may be used for using all mapped reads.
 
 The browser tracks are generated using bamCoverage tool in [deepTools](https://deeptools.readthedocs.io/en/develop/) and they are normalized using the Counts Per Million mapped reads (CPM) method. The CPM formula is: CPM  = number of reads per bin (20 bp) / number of mapped reads (in millions).
 
 ```{r mapping_stats, fig.height=10, fig.width=12, results='asis', message=FALSE, warning=FALSE}
-cat(DEhelper.STAR(plot.groupwise=F), sep="\n")
-#group.vars, targets und targets.prefix wird gebraucht in groupwise plotting --> ändern wie in cutadapt! 
+##### parameters to set:
+# define subset of Star log files if desired. samplePattern=NULL (default) includes all files.
+samplePattern=NULL
+# define categories of targets.txt to be used for dot color in the summary plot (one plot per element of colorByFactor will be created). 
+# The function will try to map the data from targets$sample to the cutadapt log file names (for this, the unique part of 
+# targets$sample must be a substring of file name). If you have cutadapt log files from pooled fastq files but cell-wise 
+# information in targets.txt as in MARS-Seq, you may provide another customized targets object in 'targetsdf'. 
+# Otherwise pruned file names will be used by default.
+colorByFactor = NULL # NULL by default
+targetsdf=targets
+#####
 
+DEhelper.STAR(samplePattern=samplePattern, targetsdf=targetsdf, colorByFactor=F)
 ```
 
 
@@ -317,7 +342,8 @@ qc.plots.violin <- lapply(c("Lib.size", "total_features_by_counts", "pct_counts_
       geom_quasirandom() +
       scale_fill_hue(l=40, c=40) +
       ylab(ylabel) +
-      xlab(separation)
+      xlab(separation) +
+      theme(axis.text.x=element_text(angle=45, vjust=1, hjust=1))
     plot(p)
     return(p)
   })
@@ -345,7 +371,7 @@ kable(highest.lib.size,
 
 ```
 
-## Count distrbution per plate position
+## Count distribution per plate position
 
 The plots below visualise the count data distribution (not log-transformed) via plate position for the categories 'total_features_by_counts_endogenous', 'total_counts' and 'pct_counts_Mt' indicated by spot size. 0-cell and 10-cell controls are indicated in blue and orange, respectively. Symbol shape is defined by custom grouping. For each category the plates are plotted row-wise with plate number in increasing order.
 
@@ -464,7 +490,7 @@ qc.drop$pass <- !apply(qc.drop, 1, any)
 
 These quality metrics are summarized in a PCA:
 
-```{r pca1, fig.height=11, fig.width=15}
+```{r pca1, fig.height=8, fig.width=10}
 ##### parameters to set:
 # define QC metrics to be used for PCA
 qcmetrics = c("pct_counts_in_top_100_features", "total_features_by_counts", "pct_counts_feature_control", "total_features_by_counts_feature_control", "log10_total_counts_endogenous", "log10_total_counts_feature_control")
@@ -531,14 +557,14 @@ sce <- sce[, qc.drop$pass]
 }
 
 # overview of remaining cells after QC filtering
-knitr::kable(table(colData(sce)[, annoFactors]), caption="Amount of cells remaining after QC filtering") %>% kable_styling()
+knitr::kable(table(colData(sce)[, annoFactors, drop=F]), col.names=c(annoFactors, "cell count"), caption="Amount of cells remaining after QC filtering") %>% kable_styling()
 
 # filter out control wells with 0 or 10 cells
 sce <- sce[, colData(sce)$cells == "1c"]
 sce$wells <- gsub("_S[0-9]+$", "", gsub("_1c", "", colnames(sce)))
 
 # overview of remaining cells after removing control wells 
-knitr::kable(table(colData(sce)[, annoFactors]), caption="Amount of cells remaining after filtering for control wells (0c/10c)") %>% kable_styling() 
+knitr::kable(table(colData(sce)[, annoFactors, drop=F]), col.names=c(annoFactors, "cell count"), caption="Amount of cells remaining after filtering for control wells (0c/10c)") %>% kable_styling() 
 
 ```
 
@@ -676,10 +702,7 @@ We check whether there are technical factors that contribute substantially to th
 explanatoryVariables <- c("plate", "group", "log10_total_counts")
 #####
 
-sce.tmp <- sce
-sce.tmp <- calculateQCMetrics(sce.tmp, exprs_values = "counts", feature_controls=list(Mt=row.names(sce.tmp) %in% mito.genes))
-
-plotExplanatoryVariables(sce.tmp, variables=explanatoryVariables, exprs_values = "logcounts") + fontsize
+plotExplanatoryVariables(sce, variables=explanatoryVariables, exprs_values = "logcounts") + fontsize
 
 ```
 
@@ -838,7 +861,7 @@ for(type in names(hvg.list)){
     if(type=="all"){
     plot(
       plotExpression(tmp.sce, 
-                     gtf$gene_name[match(rownames(hvg)[1:10], gtf$gene_id)],
+                     na.omit(gtf$gene_name[match(rownames(hvg), gtf$gene_id)])[1:10],
                      colour_by=dotcol,
                      shape_by=dotshape) + 
         ggtitle("Top 10 HGVs for all cells") +
@@ -848,7 +871,7 @@ for(type in names(hvg.list)){
       }else{ # if it desired later to subset this plot for subgroups of cells
       
     plot(plotExpression(tmp.sce, 
-                        gtf$gene_name[match(rownames(hvg)[1:10], gtf$gene_id)],
+                        na.omit(gtf$gene_name[match(rownames(hvg), gtf$gene_id)])[1:10],
                         colour_by=dotcol,
                         shape_by=dotshape) +
            scale_fill_hue(c=40, l=50, name=dotcol)+ 
