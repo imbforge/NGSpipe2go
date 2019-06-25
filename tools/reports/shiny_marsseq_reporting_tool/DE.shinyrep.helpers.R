@@ -1099,6 +1099,7 @@ DEhelper.RNAtypes <- function(...) {
     # merge counts to data frame in wide format & remove "length..." columns
     f.merge <- function(x,y) {merge(x,y,by="Geneid")}
     df.counts <- Reduce(f.merge, l.counts)
+    df.counts$Geneid[df.counts$Geneid==""] <- "not annotated"
     rm(l.counts)
     
     # eradicate biotype classes that are not present (or could be summarized as "other" being <1%)
@@ -1232,6 +1233,7 @@ x <- sapply(x, function(f) {
 # set row and column names
 x.df <- as.data.frame(t(x)) 
 colnames(x.df) <- c("total.reads", "trimmed","tooshort")
+x.df$total.reads <- gsub(",", "", x.df$total.reads)
 x.df <- as.data.frame(lapply(x.df, as.numeric))
 
 #reduce size of file names 
@@ -1241,35 +1243,38 @@ if(!is.na(SHINYREPS_PREFIX)) {row.names(x.df) <- gsub(SHINYREPS_PREFIX, "", row.
 x.df$filename <- factor(row.names(x.df))
 
 
-# passing the different factors given in targetsdf to x.df which was created from filenames (if 1 cell per file)
-if(!is.null(colorByFactor) ) {
+# passing the different factors given in targetsdf to x.df which was created from cutadapt logfile names (if 1 cell per file)
+if(!is.null(colorByFactor) && nrow(x.df) == nrow(targetsdf)) { # if targets object fits in length, add information to x.df
   
-  # if(nrow(x.df) != nrow(targetsdf)) {
-  #   stop("\nThe number of loaded files does not match with the row number of the targetsdf file. Perhaps your fastq files are pooled and you may provide an alternative targetsdf or set colorByFactor=NULL to use filename for coloring.")
-  # }
-  
-  targetsdf$samplemod <- gsub(lcSuffix(targetsdf$sample ), "", targetsdf$sample ) # produce shortened sample name
+
+  targetsdf$samplemod <- gsub(lcSuffix(targetsdf$sample ), "", targetsdf$sample ) # shorten filename suffix
   if(!is.na(SHINYREPS_PREFIX)) {targetsdf$samplemod  <- gsub(SHINYREPS_PREFIX, "", targetsdf$samplemod)}
+  targetsdf$samplemod <- gsub(lcPrefix(targetsdf$sample ), "", targetsdf$sample ) # shorten filename prefix
   
   
-  index <- as.numeric(sapply(rownames(x.df), function(x) grep(x, targetsdf$sample, ignore.case = T))) # grep for shortened file names in sample names
-  if(nrow(x.df) != length(index)) {
-    stop("\nThere seem to be ambiguous sample names. Can't assign them uniquely to fastq files")
-  }
+  #index <- as.numeric(sapply(x.df$filename, function(x) grep(x, targetsdf$samplemod, ignore.case = T))) # grep for shortened file names in sample names
+  # x.df <- cbind(x.df, targetsdf[index, , drop=F ]) 
+  index <- as.numeric(sapply(targetsdf$samplemod, function(x) grep(x, x.df$filename, ignore.case = T))) # grep for sample name in shortened file names
+      if(nrow(x.df) != length(index) || any(is.na(index))) {
+        stop("\nThere seem to be ambiguous sample names in targets. Can't assign them uniquely to cutadapt logfile names")
+      }
   
-  x.df <- cbind(x.df, targetsdf[index, , drop=F ]) 
-    x.df <- x.df[,!apply(x.df,2, function(x) any(is.na(x))), drop=F] # remove NA columns from unsuccessful matching
+  targetsdf$filename <- x.df$filename[index]
+  x.df <- merge(x.df, targetsdf, by="filename")
+  x.df <- x.df[order(rownames(x.df)),, drop=F]
+  x.df <- x.df[,!apply(x.df,2, function(x) any(is.na(x))), drop=F] # remove NA columns from unsuccessful matching
  
   if(any(!colorByFactor %in% colnames(x.df))) {
     if(all(!colorByFactor %in% colnames(x.df))) {
       cat("\nNone of the column names given in colorByFactor is available. Perhaps sample names are not part of fastq file names? Using filename instead.")
       colorByFactor <- "filename"
-    } else {
+    } else { # one plot each element of colorByFactor
       cat("\n", colorByFactor[!colorByFactor %in% colnames(x.df)], "not available. Using", colorByFactor[colorByFactor %in% colnames(x.df)], "instead.")
       colorByFactor <- colorByFactor[colorByFactor %in% colnames(x.df)]
          }
      }
   } else {
+    # if colorByFactor == NULL or targets does not fit to number of files
     colorByFactor <- "filename"
   }
 
@@ -1300,7 +1305,9 @@ violin.list <- lapply(colorByFactor, create.violin, x.melt=x.melt) # "colorByFac
 for(i in 1:length(violin.list)){
   plot(violin.list[[i]])
   }
-kable(x.df[,c("total.reads", "trimmed","tooshort")], output=F, format="markdown", align=c("l")) %>% kable_styling()
+
+#kable(x.df[,c("total.reads", "trimmed","tooshort")], output=F, format="markdown", align=c("l")) %>% kable_styling()
+DT::datatable(x.df[,c("total.reads", "trimmed","tooshort")])
 }
 
 
