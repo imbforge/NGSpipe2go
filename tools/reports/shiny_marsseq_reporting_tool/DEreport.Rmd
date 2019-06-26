@@ -119,13 +119,13 @@ cat(DEhelper.Fastqc(web=F, samplePattern=samplePattern, exclude=excludePattern, 
 ```
 
 
-## Adapter trimming
+## Adapter trimming with Cutadapt
 
 The following plot shows the amount of reads trimmed for the selected adapter sequences as well as polyA/polyT sequences. Additionally, it shows the amount of reads removed due to a length of less than 30 bases after trimming.
 
 ```{r cutadapt, echo=F, results='asis', error=F, warning=F, message=F}
 ##### parameters to set:
-# define subset of cutadapt log files if desired. samplePattern=NULL (default) includes all files.
+# define subset of cutadapt log files if desired (samplePattern=NULL (default) includes all files).
 samplePattern=NULL
 # define categories of targets.txt to be used for dot color in the plot (one plot per element of colorByFactor will be created). 
 # The function will try to map the data from targets$sample to the cutadapt log file names (for this, the unique part of 
@@ -202,6 +202,32 @@ targetsdf=targets
 
 DEhelper.STAR(samplePattern=samplePattern, targetsdf=targetsdf, colorByFactor=colorByFactor)
 ```
+
+
+## Read de-duplication and counting with UMI-tools
+
+UMI-tools counts the mapped reads obtained after de-duplication. As input UMI-tools uses the uniquely mapped reads from STAR as well as as the multimapped reads (but not those which are mapped to too many loci).
+
+```{r umicount, echo=F, results='asis', error=F, warning=F, message=F}
+##### parameters to set:
+# define subset of umicount log files if desired (samplePattern=NULL (default) includes all files).
+samplePattern=NULL
+# define categories of targets.txt to be used for dot color in the plot (one plot per element of colorByFactor will be created). 
+# The function will try to map the data from targets$sample to the umicount log file names (for this, the unique part of 
+# targets$sample must be a substring of the file name). If you have umi-tools log files from pooled fastq files but cell-wise 
+# information in targets.txt as in MARS-Seq, you may provide another customized targets object in 'targetsdf'. 
+# Otherwise pruned file names will be used by default.
+colorByFactor = NULL # NULL by default
+targetsdf=targets
+#####
+
+DEhelper.umicount(samplePattern=samplePattern, colorByFactor=colorByFactor, targetsdf=targetsdf)
+```
+
+
+
+
+
 
 
 # Low-level analysis of single-cell RNAseq data
