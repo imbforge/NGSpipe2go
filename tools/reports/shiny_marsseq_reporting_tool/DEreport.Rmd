@@ -200,7 +200,7 @@ colorByFactor = NULL # NULL by default
 targetsdf=targets
 #####
 
-DEhelper.STAR(samplePattern=samplePattern, targetsdf=targetsdf, colorByFactor=F)
+DEhelper.STAR(samplePattern=samplePattern, targetsdf=targetsdf, colorByFactor=colorByFactor)
 ```
 
 
@@ -289,7 +289,7 @@ annoFactors <- group.vars # default is group.vars
 NMADS=2 
 #####
 
-sce.noQCmetrics <- sce # store unmodified sce
+if(!exists("sce.noQCmetrics")) {sce.noQCmetrics <- sce} # store unmodified sce
 
 # define mitochondrial genes as control features
 is.mito  <- row.names(sce) %in% mito.genes
@@ -408,7 +408,8 @@ qc.data <- colData(sce)
 qc.data$Lib.Size.million <- qc.data$total_counts/1e6
 qc.data <- as.data.frame(qc.data)
 
-annoFactors <- rlang::ensym(annoFactors)
+if(!is.null(annoFactors)) {annoFactors <- rlang::ensym(annoFactors)} 
+
 lib.size.scatter <- ggplot(qc.data, aes(x=total_features_by_counts, 
                                         y=Lib.Size.million,
                                         color=!!annoFactors)) +
@@ -440,7 +441,8 @@ threshold_pct_counts_Mt = 50 # upper threshold 50
 NMADS =2 # number of absolute deviations from median. Only relevant if type_of_threshold = "relative".
 #####
 
-# sce.beforefiltMincount <- sce
+if(!exists("sce.beforefiltMincount")) {sce.beforefiltMincount <- sce}
+
 # Before we apply QC filters we remove all the cells which hardly have any counts 
 min_readcount <- 100
 count.drop <- sce$total_counts < min_readcount
@@ -517,7 +519,9 @@ df$rm      <- paste(df$libsize.word,df$feature.word,df$mito.word,sep="+")
 df$rm.nice <- sub("^\\+","",sub("\\+$","",gsub("\\+\\+","\\+",df$rm)))
 df.kept <- subset(pca, !(libsize | feature | mito))
 
-annoFactors.name <- rlang::ensym(annoFactors)
+if(!is.null(annoFactors)) {annoFactors.name <- rlang::ensym(annoFactors)} else {
+  annoFactors.name <- NULL}
+  
 plotReducedDim(pca.sce, use_dimred="PCA_coldata", by_exprs_values = "counts", shape_by=annoFactors) +
   geom_point(data=df, aes(x=PC1, y=PC2, color=rm.nice, shape=!!annoFactors.name), size=3)+
   geom_point(data=df.kept, aes(x=PC1, y=PC2, color="kept", shape=!!annoFactors.name), size=3) +
@@ -541,7 +545,7 @@ Removed samples/cells:
 annoFactors <- c("group", "pool")
 #####
 
-#sce.before.QCfilt <- sce
+if(!exists("sce.before.QCfilt")) {sce.before.QCfilt <- sce}
 
 # output overview of remaining cells and table of removed cells
 j <- c("total_counts", "total_features_by_counts", "pct_counts_Mt", annoFactors) 
@@ -578,8 +582,6 @@ annoFactors <- c("group", "pool")
 #####
 
 plotPCAfromQCmetrics(sce, qcmetrics, anno=annoFactors)
-
-
 ```
 
 
@@ -625,7 +627,7 @@ Size factors can be calculated with DESeq2 or edgeR, but these methods do not wo
 annoFactors <- c("group", "pool")
 #####
 
-sce.nonorm <- sce
+if(!exists("sce.nonorm")) {sce.nonorm <- sce}
 high.ave <- rowData(sce)$ave.count >= 0.1
 
 cat("\nSummary size factors")
@@ -721,7 +723,7 @@ org ="mouse"
 annoFactors <- "group"
 #####
 
-# sce.no.ccp <- sce
+if(!exists("sce.no.ccp")) {sce.no.ccp <- sce}
 set.seed(100)
 
 # load mm.pairs: "mouse_cycle_markers.rds" or "human_cycle_markers.rds"
@@ -916,7 +918,7 @@ names(hvg.cor.list) <- names(hvg.list)
 ```{r hvg_pca, echo=F, error=F, warning=F, message=F}
 ##### parameters to set:
 # define up to 2 categories to be indicated in the plot by color and shape.
-annoFactors <- c("group", "pool")
+annoFactors <- c("pool", "group") # 
 #####
 
 
@@ -935,22 +937,18 @@ hvg.cor.list <- lapply(names(hvg.cor.list), function(type){
   cat(paste("number of genes part of min 1 significant correlation:", length(top.hvg), "\n"))
   if(type=="all"){
     sce.tmp <- sce
-  p <- plotPCA(sce.tmp,  rerun = T, 
-        colour_by=dotcol, shape_by = dotshape,
+  p <- plotPCA(sce.tmp, rerun = T, 
+        colour_by=dotcol, shape_by = dotshape, point_size=3,
         run_args=list(ntop=nrow(sce.tmp), feature_set=top.hvg)) +  # feature_set overwrites ntop
-     scale_color_discrete(guide=F) +
-     geom_point(aes(color=colour_by, shape=shape_by), size=3)+
-    scale_color_hue(c=40, l=50, name=dotcol) +
+         # scale_color_hue(c=40, l=50, name=dotcol) +
     ggtitle(paste("PCA of top correlated HVGs"))
 
   }else{
     sce.tmp <- sce[, sce$type==type]
-    p <- plotPCA(sce.tmp,  rerun = T, 
-        colour_by=dotcol, shape_by = dotshape,
+    p <- plotPCA(sce.tmp, rerun = T, 
+        colour_by=dotcol, shape_by = dotshape, point_size=3,
         run_args=list(ntop=nrow(sce.tmp), feature_set=top.hvg)) +  
-     scale_fill_discrete(guide=F) +
-     geom_point(aes(color=colour_by, shape=shape_by), size=3)+
-    scale_color_hue(c=40, l=50, name=dotcol) +
+         # scale_color_hue(c=40, l=50, name=dotcol) +
     ggtitle(paste("PCA of top highly correlated genes", type, "group"))
 
   }
