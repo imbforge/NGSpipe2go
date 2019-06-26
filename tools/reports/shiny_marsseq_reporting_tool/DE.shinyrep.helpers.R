@@ -885,7 +885,7 @@ DEhelper.STARparms <- function() {
 ##
 ## DEhelper.STAR: parse STAR log files and create a md table
 ##
-DEhelper.STAR <- function(plot.groupwise=F, samplePattern=NULL, exclude=F) {
+DEhelper.STAR <- function(colorByFactor=NULL, targetsdf=targets, ...) {
     
     # log file
     LOG <- SHINYREPS_STAR_LOG
@@ -898,7 +898,7 @@ DEhelper.STAR <- function(plot.groupwise=F, samplePattern=NULL, exclude=F) {
     # and get the values associated with this strings
     x <- list.files(LOG, pattern=SUFFIX)
     # select subset of samples for fastqc figures (e.g. merged singlecell pools) or use all samples for samplePattern=NULL
-    x <- selectSampleSubset(x, samplePattern, exclude)
+    x <- selectSampleSubset(x, ...)
     
     x <- sapply(x, function(f) {
         f <- file(paste0(LOG, "/", f))
@@ -923,6 +923,7 @@ DEhelper.STAR <- function(plot.groupwise=F, samplePattern=NULL, exclude=F) {
     colnames(x) <- gsub(paste0("^", SHINYREPS_PREFIX), "", colnames(x))
     colnames(x) <- gsub(paste0(SUFFIX, "$"), "", colnames(x))
     colnames(x) <- gsub(lcSuffix(colnames(x)), "", colnames(x)) # remove longest common suffix
+    colnames(x) <- gsub(lcPrefix(colnames(x)), "", colnames(x)) # remove longest common prefix
     df <- data.frame(input_reads=format(x[1, ], big.mark=","), 
                      uniquely_mapped=paste0(format(x[2, ], big.mark=","), " (", format(x[3, ], nsmall=2), "%)"), 
                      multi_mapped=paste0(format(x[4, ], big.mark=","), " (", format(x[6, ], nsmall=2), "%)"), 
@@ -930,63 +931,84 @@ DEhelper.STAR <- function(plot.groupwise=F, samplePattern=NULL, exclude=F) {
                      unmapped=paste0(format( x[8, ] + x[9, ] + x[10, ], nsmall=2), "%")
                      )
   
-  if(plot.groupwise) {
-    ## prepare groupwise plots
+    df.stacked <- data.frame(filename = gsub("\\.R[12]\\.*$", "", rownames(df)),
+                             input = x[1, ],
+                             unique = x[2, ],
+                             unique_perc = 100*(x[2, ]/x[1, ]),
+                             multi_perc = 100*(x[4, ]/x[1, ]),
+                             mapped_perc = 100*((x[4, ]+x[2, ]) / x[1, ]))
+    
+## prepare groupwise plots
+  if(!is.null(colorByFactor) && nrow(df.stacked) == nrow(targetsdf)) {
     # we want to plot the input reads and the mapped and the multi mapped reads numbers into different plots with different axises separated by one feature
     # we want to plot the same thing as percentages of the total
     # we have to plot per feature and then rearrange
     # we add one plot for the color value where we plot the percentages and color them according to the amount of input reads
+  
+    targetsdf$samplemod <- gsub(lcSuffix(targetsdf$sample ), "", targetsdf$sample ) # shorten filename suffix
+    if(!is.na(SHINYREPS_PREFIX)) {targetsdf$samplemod  <- gsub(SHINYREPS_PREFIX, "", targetsdf$samplemod)}
+    targetsdf$samplemod <- gsub(lcPrefix(targetsdf$sample ), "", targetsdf$sample ) # shorten filename prefix
     
-    df.stacked <- data.frame(Sample = gsub("\\.R[12]\\.*$", "", rownames(df)),
-                                    input = x[1, ],
-                                    unique = x[2, ],
-                                    unique_perc = 100*(x[2, ]/x[1, ]),
-                                    multi_perc = 100*(x[4, ]/x[1, ]),
-                                    mapped_perc = 100*((x[4, ]+x[2, ]) / x[1, ]))
-    df.stacked <- cbind(df.stacked, targets[match(df.stacked$Sample, targets$prefix), group.vars, drop=F ]) 
+    index <- as.numeric(sapply(targetsdf$samplemod, function(x) grep(x, df.stacked$filename, ignore.case = T))) # grep for sample name in shortened file names
+    if((nrow(df.stacked) != length(index)) || any(is.na(index))) {
+      stop("\nThere seem to be ambiguous sample names in targets. Can't assign them uniquely to STAR logfile names")
+    }
     
-    df.melt       <- melt(df.stacked, id.vars=c(group.vars, "Sample"), variable.name="map_feature")
+    if(any(!colorByFactor %in% colnames(targetsdf))) {
+      if(all(!colorByFactor %in% colnames(targetsdf))) {
+        cat("\nNone of the column names given in colorByFactor is available. Perhaps sample names are not part of fastq file names? Using filename instead.\n")
+        colorByFactor <- "filename"
+      } else { # one plot each element of colorByFactor
+        cat("\n", colorByFactor[!colorByFactor %in% colnames(targetsdf)], "not available. Using", colorByFactor[colorByFactor %in% colnames(targetsdf)], "\n")
+        colorByFactor <- colorByFactor[colorByFactor %in% colnames(targetsdf)]
+      }
+    }
+
+    targetsdf$filename <- df.stacked$filename[index]
+    df.stacked <- merge(df.stacked, targetsdf[,unique(c("filename", colorByFactor)), drop=F], by="filename")
+    df.stacked <- df.stacked[order(rownames(df.stacked)),, drop=F]
+    df.stacked <- df.stacked[,!apply(df.stacked,2, function(x) any(is.na(x))), drop=F] # remove NA columns from unsuccessful matching
     
-    df.tmp <- df.melt[grepl("per", df.melt$map_feature),]
-    df.tmp$input <- df.stacked$input[match(df.tmp$Sample, rownames(df))]
-    # now we should add plots which overlap the separation after group with the amount sequenced /percentages
+  } else {
+    # if colorByFactor == NULL or targets does not fit to number of files
+    colorByFactor <- "filename"
+  } # end groupwise plots
     
-    #now we have to add the input amount to the individual ones
-    p.input <- ggplot(df.tmp, aes(group, value, color=log10(input)))+
-      geom_quasirandom() +
-      scale_color_viridis() +
-      ylab("% of input reads") +
-      facet_wrap(~map_feature, scales="free")
-    plot(p.input)
-    group.vars.2plot <- group.vars[!(group.vars %in% c("row", "col", "replicate"))] # remove unnecessary group.vars
-    map.feature.plots <- lapply(group.vars.2plot, function(color.value){
-      #the individual we split accordingly with the different uniuq /multi mapped
-      p <- ggplot(df.melt[!grepl("per", df.melt$map_feature),],
+    
+    # melt data frame for plotting
+    df.melt  <- melt(df.stacked, id.vars=unique(c(colorByFactor, "filename")), variable.name="map_feature")
+   
+    map.feature.plots <- lapply(colorByFactor, function(color.value){
+      p <- ggplot(df.melt[!grepl("(perc)|(unique)", df.melt$map_feature),],
                   aes_string("map_feature", "value", color=color.value)) +
         geom_quasirandom() +
         scale_color_brewer(type= "qual", palette=2)  + # FR changed palette: scale_color_brewer(palette="Paired")+
         facet_wrap(~map_feature, scales="free") +
         scale_y_log10() +
+        xlab(NULL) + 
         ylab("# Reads")
-      p.perc <- ggplot(df.melt[grepl("per", df.melt$map_feature),],
+      p.perc <- ggplot(df.melt[grepl("perc", df.melt$map_feature),],
                        aes_string("map_feature", "value", color=color.value)) +
         geom_quasirandom() +
         scale_color_brewer(type= "qual", palette=2)  + # FR changed palette: scale_color_brewer(palette="Paired")+
         facet_wrap(~map_feature, scales="free") +
-        ylab("% of input reads")
-      return(list(p, p.perc))
+        xlab(NULL) + 
+        guides(color="none") +
+        ylab("% of input reads")  
+        # theme(axis.text.x=element_text(angle=45, vjust=1, hjust=1))
+      return(list(p.perc,p))
     })
     
     for(i in 1:length(map.feature.plots)){
-      grid.arrange(grobs=map.feature.plots[[i]], ncol=2)
+      grid.arrange(grobs=map.feature.plots[[i]], layout_matrix= matrix(c(1,2), nrow=1)) 
     }
     
-  } # end if plot.groupwise
-    
-  # return(kable(df, format="markdown", align=c("r", "r", "r", "r","r"), output=F)) # FR: format="markdown"
-  return(kable(df, format="markdown", output=F) %>% kable_styling())
+    DT::datatable(df, options = list(pageLength= 20))
+    #return(kable(df, format="markdown", output=F) %>% kable_styling())
 }
 
+	       
+	       
 ##
 ## DEhelper.Fastqc: go through Fastqc output dir and create a md table with the duplication & read quals & sequence bias plots
 ##
@@ -1307,7 +1329,7 @@ for(i in 1:length(violin.list)){
   }
 
 #kable(x.df[,c("total.reads", "trimmed","tooshort")], output=F, format="markdown", align=c("l")) %>% kable_styling()
-DT::datatable(x.df[,c("total.reads", "trimmed","tooshort")])
+DT::datatable(x.df[,c("total.reads", "trimmed","tooshort")], options = list(pageLength= 20))
 }
 
 
