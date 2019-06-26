@@ -17,7 +17,7 @@ geneBodyCov = {
         exec """
             module load RSeQC/${RSEQC_VERSION} &&
             
-            python ${TOOL_RSEQC}/geneBody_coverage.py -i $input -o ${output3.prefix.prefix} $GENEBODYCOV_FLAGS
+            geneBody_coverage.py -i $input -o ${output3.prefix.prefix} $GENEBODYCOV_FLAGS
         ""","geneBodyCov"
     }
     forward input
