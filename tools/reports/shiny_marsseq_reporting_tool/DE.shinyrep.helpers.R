@@ -1199,7 +1199,7 @@ DEhelper.geneBodyCov <- function(web=TRUE, ...) {
 }
 
 ##
-##DEhelper.strandspecifity: get the strandspecifity from the qc and display them
+##DEhelper.strandspecificity: get the strandspecificity from the qc and display them
 ##
 DEhelper.strandspecificity <- function(samplePattern=NULL, ...){
 
@@ -1241,6 +1241,7 @@ x <- selectSampleSubset(x, ...)
 
 x <- sapply(x, function(f) { 
   total.reads <- system(paste("grep \"Total reads processed\"", f, "| awk '{print $4}'"), intern=TRUE)
+  total.reads <- gsub(",", "", total.reads)
   
   trimmed.reads.perc <- system(paste("grep \"Reads with adapters\"", f, "| awk '{print $5}'"), intern=TRUE)
   trimmed.reads.perc <- gsub("\\(|\\)|\\%", "", trimmed.reads.perc)
@@ -1248,14 +1249,18 @@ x <- sapply(x, function(f) {
   tooshort.reads.perc <- system(paste("grep \"Reads that were too short\"", f, "| awk '{print $7}'"), intern=TRUE)
   tooshort.reads.perc <- gsub("\\(|\\)|\\%", "", tooshort.reads.perc)
   
+  # trimming of each adapter
+  adapters <- system(paste("grep Sequence:", f, "| awk '{print $9}'"), intern=T)
+  adapters.perc <- round(100*(as.numeric(adapters) / as.numeric(total.reads)),2)
+  names(adapters.perc) <- gsub(" *=== *", "", system(paste("grep \"=== Adapter\"", f), intern=T))
+  
   ## add trimmed reads for each adapter here
-  return(c(total.reads, trimmed.reads.perc,tooshort.reads.perc))
+  return(c(total.reads, trimmed.reads.perc, tooshort.reads.perc, adapters.perc))
 })
 
 # set row and column names
 x.df <- as.data.frame(t(x)) 
-colnames(x.df) <- c("total.reads", "trimmed","tooshort")
-x.df$total.reads <- gsub(",", "", x.df$total.reads)
+colnames(x.df)[1:3] <- c("total.reads", "trimmed","tooshort")
 x.df <- as.data.frame(lapply(x.df, as.numeric))
 
 #reduce size of file names 
@@ -1285,7 +1290,8 @@ if(!is.null(colorByFactor) && nrow(x.df) == nrow(targetsdf)) { # if targets obje
   x.df <- merge(x.df, targetsdf, by="filename")
   x.df <- x.df[order(rownames(x.df)),, drop=F]
   x.df <- x.df[,!apply(x.df,2, function(x) any(is.na(x))), drop=F] # remove NA columns from unsuccessful matching
- 
+  rownames(x.df) <- x.df$filename
+  
   if(any(!colorByFactor %in% colnames(x.df))) {
     if(all(!colorByFactor %in% colnames(x.df))) {
       cat("\nNone of the column names given in colorByFactor is available. Perhaps sample names are not part of fastq file names? Using filename instead.")
@@ -1301,35 +1307,38 @@ if(!is.null(colorByFactor) && nrow(x.df) == nrow(targetsdf)) { # if targets obje
   }
 
 # melt data frame for plotting
-x.melt <- melt(x.df, measure.vars=c("trimmed", "tooshort"),
+x.melt <- melt(x.df, measure.vars=c("trimmed", "tooshort", grep("Adapter", colnames(x.df), value=T)),
                #id.vars=group.vars,
                variable="reads")
-#everything which is not a value should be a factor
+# everything which is not a value should be a factor
 
-#now we do a violin plot of the trimmed/too_short/etc. ones and color it
+# now we do a violin plot of the trimmed/too_short/etc. ones and color it
 # according to the different factors given in colorByFactor 
-
 create.violin <- function(x.melt, color.value){
   ylab <- "% reads"
   p <- ggplot(x.melt, aes_string(x="reads",
                                  y="value",
                                  color=color.value ))+
     geom_quasirandom() +
-    scale_color_brewer(type= "qual", palette=2)  +    # FR replaced color palette: scale_color_brewer(palette="Paired")
+    scale_color_brewer(type= "qual", palette=2)  +    # replaced color palette: scale_color_brewer(palette="Paired")
     ylab(ylab) +
     xlab("") +
     scale_y_continuous( breaks=seq(0, max(x.melt$value), 10),
-                        limits = c(0, max(x.melt$value))) 
+                        limits = c(0, max(x.melt$value))) + 
+    theme(axis.text.x=element_text(angle=45, vjust=1, hjust=1)) 
+  
   return(p)
 }
-violin.list <- lapply(colorByFactor, create.violin, x.melt=x.melt) # "colorByFactor" submitted as color.value
+
+# one plot for each element of colorByFactor
+violin.list <- lapply(colorByFactor, create.violin, x.melt=x.melt) # "colorByFactor" is submitted as color.value
 
 for(i in 1:length(violin.list)){
   plot(violin.list[[i]])
   }
 
 #kable(x.df[,c("total.reads", "trimmed","tooshort")], output=F, format="markdown", align=c("l")) %>% kable_styling()
-DT::datatable(x.df[,c("total.reads", "trimmed","tooshort")], options = list(pageLength= 20))
+DT::datatable(x.df[,c("total.reads", "trimmed","tooshort", grep("Adapter", colnames(x.df), value=T))], options = list(pageLength= 20))
 }
 
 
@@ -1389,7 +1398,8 @@ if(!is.null(colorByFactor) && nrow(x.df) == nrow(targetsdf)) { # if targets obje
   x.df <- merge(x.df, targetsdf, by="filename")
   x.df <- x.df[order(rownames(x.df)),, drop=F]
   x.df <- x.df[,!apply(x.df,2, function(x) any(is.na(x))), drop=F] # remove NA columns from unsuccessful matching
-  
+  rownames(x.df) <- x.df$filename
+
   if(any(!colorByFactor %in% colnames(x.df))) {
     if(all(!colorByFactor %in% colnames(x.df))) {
       cat("\nNone of the column names given in colorByFactor is available. Perhaps sample names are not part of fastq file names? Using filename instead.")
