@@ -29,7 +29,7 @@ source("DE.shinyrep.helpers.R")
 
 # load required packages
 attach_packages(c("rmarkdown", "knitr", "Cairo", "gplots", "ggplot2", "plotly", "RColorBrewer", "ggrepel", "parallel",
-                  "grid", "gridExtra", "rtracklayer", "scater", "scran", "ggbeeswarm", "dplyr", "tidyr", "forcats",
+                  "grid", "gridExtra", "rtracklayer", "scater", "scran", "scde", "ggbeeswarm", "dplyr", "tidyr", "forcats",
                   "scales", "kableExtra", "reshape2", "M3Drop", "vipor", "corrplot", "limma", "pheatmap",
                   "VennDiagram", "edgeR", "DESeq2", "GeneOverlap", "viridis", "Biobase"))
 
@@ -204,9 +204,9 @@ DEhelper.STAR(samplePattern=samplePattern, targetsdf=targetsdf, colorByFactor=co
 ```
 
 
-## Read de-duplication and counting with UMI-tools
+## Read de-duplication and feature counting with UMI-tools
 
-UMI-tools counts the mapped reads obtained after de-duplication. As input UMI-tools uses the uniquely mapped reads from STAR as well as as the multimapped reads (but not those which are mapped to too many loci).
+UMI-tools counts the mapped reads per feature obtained after de-duplication. UMI-tools uses the uniquely mapped reads from STAR as well as as the multimapped reads (but not those which are mapped to too many loci) as input reads.
 
 ```{r umicount, echo=F, results='asis', error=F, warning=F, message=F}
 ##### parameters to set:
@@ -587,14 +587,15 @@ sce <- sce[, qc.drop$pass]
 }
 
 # overview of remaining cells after QC filtering
-knitr::kable(table(colData(sce)[, annoFactors, drop=F]), col.names=c(annoFactors, "cell count"), caption="Amount of cells remaining after QC filtering") %>% kable_styling()
+colnames_table <- if(length(annoFactors)==1) {c(annoFactors, "cell count")} else {NA}
+knitr::kable(table(colData(sce)[, annoFactors, drop=F]), col.names=colnames_table, caption="Amount of cells remaining after QC filtering") %>% kable_styling()
 
 # filter out control wells with 0 or 10 cells
 sce <- sce[, colData(sce)$cells == "1c"]
 sce$wells <- gsub("_S[0-9]+$", "", gsub("_1c", "", colnames(sce)))
 
 # overview of remaining cells after removing control wells 
-knitr::kable(table(colData(sce)[, annoFactors, drop=F]), col.names=c(annoFactors, "cell count"), caption="Amount of cells remaining after filtering for control wells (0c/10c)") %>% kable_styling() 
+knitr::kable(table(colData(sce)[, annoFactors, drop=F]), col.names=colnames_table, caption="Amount of cells remaining after filtering for control wells (0c/10c)") %>% kable_styling() 
 
 ```
 
@@ -687,7 +688,7 @@ sce <- normalize(sce) # adds normalized logcounts matrix
 ```
 
 
-### Normalized log2-expression of top50 genes with highest average expression:
+### Normalized log2-expression of top50 genes with highest average expression
 
 ```{r plot_violin_top50, fig.width=12, fig.height=10}
 ##### parameters to set:
@@ -718,9 +719,9 @@ plotExpression(tmp.sce, top.sce.aver.size$SYMBOL[26:50], colour_by=dotcol, shape
 ```
 
 
-## Checking for confounding factors ##
+## Checking for confounding factors 
 
-### Identify explanatory variables ##
+### Identify explanatory variables 
 
 We check whether there are technical factors that contribute substantially to the heterogeneity of gene expression. If so, the factor may need to be regressed out to ensure that it does not inflate the variances or introduce spurious correlations.
 
@@ -893,7 +894,7 @@ for(type in names(hvg.list)){
                      colour_by=dotcol,
                      shape_by=dotshape) + 
         ggtitle("Top 10 HGVs for all cells") +
-        scale_color_hue(c=40, l=50, name="plate") +
+        scale_color_hue(c=40, l=50, name= dotcol) +
         facet_grid(~colour_by))
     
       }else{ # if it desired later to subset this plot for subgroups of cells
@@ -909,7 +910,7 @@ for(type in names(hvg.list)){
 }
 ```
 
-## Identify correlated HVGs ###
+## Identify correlated HVGs
 
 Another useful procedure is to identify the HGVs that are highly correlated with one another. This distinguishes between HVGs caused by random noise and those involved in driving systematic differences between sub-populations. Correlations between genes are quantified by computing Spearman's rho, which accomodates non-linear relationships in the expression value. Gene pairs with significantly large positive or negative values of rho are identified using the correlatePairs function. 
 
@@ -939,7 +940,7 @@ names(hvg.cor.list) <- names(hvg.list)
 
 # Using correlated HVGs for further data exploration
 
-## PCA based on significantly correlated HVGs:
+## PCA based on significantly correlated HVGs
 
 ```{r hvg_pca, echo=F, error=F, warning=F, message=F}
 ##### parameters to set:
@@ -990,7 +991,7 @@ for(type in names(hvg.cor.list)){
 
 ```
 
-## Identification of sub-populations with t-SNE ###
+## Identification of sub-populations with t-SNE 
 
 Another widely used approach is the t-stochastic neighbour embedding (t-SNE) method (Van der Maaten & Hinton, 2008). t-SNE  tends  to  work  better  than  PCA  for  separating  cells  in  more  diverse  populations.  This  is  because  the former can directly capture non-linear relationships in high-dimensional space, whereas the latter must represent them (suboptimally) as linear components. However, this improvement comes at the cost of more computational effort and complexity. In particular, 
 t-SNE is a stochastic method, so users should run the algorithm several times to ensure that the results are representative, and then set a seed to ensure that the chosen results are reproducible. It is also advisable to test different settings of the “perplexity” parameter as this will affect the distribution of points in the low-dimensional space.
@@ -1046,7 +1047,7 @@ for(type in names(hvg.cor.list)){
 ```
 
 
-### Identification of sub-populations with UMAP ###
+## Identification of sub-populations with UMAP 
 
 Identification of sub-populations with UMAP plots (uniform manifold approximation and projection) to identify structure based on the sig. correlated HVG genes:
 
