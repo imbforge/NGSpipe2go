@@ -121,7 +121,7 @@ cat(DEhelper.Fastqc(web=F, samplePattern=samplePattern, exclude=excludePattern, 
 
 ## Adapter trimming with Cutadapt
 
-The following plot shows the amount of reads trimmed for the selected adapter sequences as well as polyA/polyT sequences. Additionally, it shows the amount of reads removed due to a length of less than 30 bases after trimming.
+The following plot shows the amount of reads trimmed for the selected adapter sequences including polyA/polyT sequences if specified. The column "tooshort" gives the percentage of reads removed due to a length of less than 30 bases after trimming. Additionally to the column "trimmed" which is for all adapters combined, there are columns for every single adapter giving the percentage of reads trimmed for this adapter.
 
 ```{r cutadapt, echo=F, results='asis', error=F, warning=F, message=F}
 ##### parameters to set:
