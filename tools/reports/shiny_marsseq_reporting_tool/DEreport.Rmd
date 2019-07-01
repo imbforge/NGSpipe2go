@@ -65,10 +65,12 @@ mito.genes <- read.delim(paste0(SHINYREPS_PROJECT,"/mouse_mito_genes_Ensembl.txt
 
 
 ## load targets file for all cells. Columns required: "sample", "barcode", "row", "col", "cells", "group"
-targets <- read.delim("../targets.txt", sep=",")
-# targets <- read.delim(SHINYREPS_TARGET)
+targets <- read.delim(SHINYREPS_TARGET)
 group.vars <- colnames(targets)[!colnames(targets) %in% c("sample", "barcode", "row", "col")] 
 targets[,group.vars] <- lapply(targets[,group.vars], factor)
+
+# print targets file
+DT::datatable(targets, caption="targets file (sample sheet) used for analysis")
 
 ```
 
@@ -1106,6 +1108,31 @@ for(type in names(hvg.cor.list)){
 }
 
 ```
+
+
+
+# Used tools and versions for this analysis ##
+
+Read mapping was performed with STAR using the following parameters:
+
+```{r STAR_parameters_paragraph, echo=F, results='asis', error=F, warning=F, message=F}
+cat(DEhelper.STARparms(), sep="\n")
+``` 
+
+
+The following tools were used for data processing:
+
+```{r ToolVersions_paragraph, echo=F, results='asis', error=F, warning=F, message=F}
+cat(Toolhelper.ToolVersions(), sep="\n")
+```
+
+
+R session info:
+
+```{r R_sessionInfo, echo=F, results='asis', error=F, warning=F, message=F}
+sessionInfo()
+```
+
 
 
 </div>
