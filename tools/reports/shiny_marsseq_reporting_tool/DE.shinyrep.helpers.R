@@ -1626,7 +1626,7 @@ Toolhelper.ToolVersions <- function() {
     ver$V1 <- strsplit(as.character(ver$V1),"_VERSION")
     colnames(ver) <- c("Tool name","Version")
 
-    kable(as.data.frame(ver),output=F)
+    kable(as.data.frame(ver),output=F) %>% kable_styling()
 }
 
 
@@ -1655,21 +1655,17 @@ plotPCAfromQCmetrics <- function(sce, metrics, anno){
     dotshape <- anno[2]} else {
       dotshape <- NULL}
   
-  #plotPCA(sce.corrected.colnames, run_args=list(pca_data_input="coldata",exprs_values="counts"), colour_by="type") +
-  pca.sce <- runPCA(sce, use_coldata=TRUE, selected_variables = metrics) # FR: include selected_variables 
+  pca.sce <- runPCA(sce, use_coldata=TRUE, selected_variables = metrics)  
   pca <- as.data.frame(pca.sce@reducedDims)
-  rownames(pca) <- rownames(colData(pca.sce)) # FR: add rownames
-  pca <- cbind(pca, qc.drop[match(rownames(pca), rownames(qc.drop)), ])
+  rownames(pca) <- rownames(colData(pca.sce)) 
   pca <- cbind(pca, as.data.frame(colData(sce)[match(rownames(pca), colnames(sce)), unique(c("cells",anno)), drop=F]))
   
-  p_allGroups <-  plotReducedDim(pca.sce, use_dimred="PCA_coldata", colour_by=dotcol, shape_by=dotshape) +
-    geom_text_repel(aes(x=PC1, y=PC2, label=cells), subset(pca, cells %in% c("0c", "10c"))) +
-    scale_fill_discrete(guide=F) +
-    geom_point(aes(color=colour_by), size=3)+
-    scale_color_brewer(palette = "Dark2", name=dotcol) +
-    #  scale_alpha_manual(values=1) + 
-    theme_bw()
-  
+  p_allGroups <-  plotReducedDim(pca.sce, use_dimred="PCA_coldata", colour_by=dotcol, shape_by=dotshape, point_size=3) +
+    geom_text_repel(aes(x=PC1, y=PC2, label=cells), subset(pca, cells %in% c("0c", "10c")))  
+    # scale_color_manual(dotcol, 
+    #                  values=c("grey50","#E41A1C","#377EB8","#4DAF4A","#FF7F00","#984EA3","#FFFF33","#A65628","#F781BF"), 
+    #                  guide="legend")  # color scheme as in QC PCA plot
+    
   plot(p_allGroups)
   }
 
