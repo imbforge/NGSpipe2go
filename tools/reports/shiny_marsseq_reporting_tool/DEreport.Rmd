@@ -533,7 +533,7 @@ pca.sce <- runPCA(sce, use_coldata=TRUE, selected_variables = qcmetrics)
 pca <- as.data.frame(pca.sce@reducedDims)
 rownames(pca) <- rownames(colData(pca.sce)) 
 pca <- cbind(pca, qc.drop[match(rownames(pca), rownames(qc.drop)), ])
-pca <- cbind(pca, as.data.frame(colData(sce)[match(rownames(pca), colnames(sce)), c(group.vars, "cells")]))
+pca <- cbind(pca, as.data.frame(colData(sce)[match(rownames(pca), colnames(sce)), unique(c(annoFactors, "cells")), drop=F]))
 
 ## extract all dropped samples
 #df <- subset(pca, libsize | feature | mito | libsize.high)
@@ -547,7 +547,12 @@ df$rm      <- paste(df$libsize.word,df$feature.word,df$mito.word,sep="+")
 df$rm.nice <- sub("^\\+","",sub("\\+$","",gsub("\\+\\+","\\+",df$rm)))
 df.kept <- subset(pca, !(libsize | feature | mito))
 
-if(!is.null(annoFactors)) {annoFactors.name <- rlang::ensym(annoFactors)} else {
+if(!is.null(annoFactors)) {
+  if(length(annoFactors) !=1) {annoFactors <- annoFactors[1]} # just 1 annoFactor can be illustrated
+  if(annoFactors %in% c("group", "group_name")) {
+      annoFactors.name <- paste0(annoFactors, ".1")} # the terms "group" and "group_name" are occupied by runPCA
+  annoFactors.name <- rlang::ensym(annoFactors.name)
+  } else {
   annoFactors.name <- NULL}
   
 plotReducedDim(pca.sce, use_dimred="PCA_coldata", by_exprs_values = "counts", shape_by=annoFactors) +
@@ -679,7 +684,7 @@ summary(sizeFactors(sce))
 
 to.plot <- data.frame(sizeFactors=sizeFactors(sce),
                  total_counts=sce$total_counts/1e6,
-                 colData(sce)[,annoFactors])
+                 colData(sce)[,annoFactors, drop=F])
 ggplot(to.plot, aes(x=sizeFactors, 
                     y=total_counts,
                     color=!!dotcol, shape=!!dotshape))+
