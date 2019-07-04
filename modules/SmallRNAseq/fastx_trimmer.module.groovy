@@ -5,9 +5,9 @@ FastxTrimmer = {
 		author: "Antonio Domingues"
 
 	output.dir = FASTQ_TRIMMER_OUTDIR
-   FASTQ_TRIMMER_FLAGS= " -f "   + FIRST_BASE  +
-                        " -l "   + LAST_BASE  +
-                        FASTQ_TRIMMER_OTHER
+   def FASTQ_TRIMMER_FLAGS= " -f "   + FIRST_BASE  +
+                            " -l "   + LAST_BASE  +
+                            FASTQ_TRIMMER_OTHER
 
    transform(".fastq.gz") to (".23bp.fastq.gz") {
       exec """

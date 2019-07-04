@@ -8,7 +8,7 @@ HTseqCount = {
    author: "Antonio Domingues"
 
    def EXP = HTSEQCOUNT_GENESGTF.split("/")[-1].replaceAll(".gtf", "")
-   HTSEQCOUNT_OUT = HTSEQCOUNT_OUTDIR + "/" + EXP
+   def HTSEQCOUNT_OUT = HTSEQCOUNT_OUTDIR + "/" + EXP
    output.dir  = HTSEQCOUNT_OUT 
    
    def HTSEQCOUNT_FLAGS = HTSEQCOUNT_FILE    + " " +

@@ -7,9 +7,9 @@ PlotSensorCoverage = {
     output.dir = PLOT_SENSOR_COVERAGE_OUTDIR
 
     if(NORMALIZATION_TO_NONSTRUCT == "yes") {
-        FACS = TRACKS + "/normalization_factors.txt"
+        def FACS = TRACKS + "/normalization_factors.txt"
     } else {
-        FACS = ""
+        def FACS = ""
     }
 
     from("*22G.minus.cov") produce(

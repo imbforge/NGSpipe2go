@@ -6,7 +6,7 @@ DE_DESeq2_MM = {
         author: "Sergi Sayols"
 
     output.dir = DE_DESeq2_MM_OUTDIR.replaceFirst("out=", "")
-    INPUT_READS_DIR = DE_DESeq2_MM_CWD.replaceFirst("cwd=", "")
+    def INPUT_READS_DIR = DE_DESeq2_MM_CWD.replaceFirst("cwd=", "")
     def DE_DESeq2_MM_FLAGS = DE_DESeq2_MM_TARGETS   + " " + 
                              DE_DESeq2_MM_CONTRASTS + " " +
                              DE_DESeq2_MM_MMATRIX   + " " +

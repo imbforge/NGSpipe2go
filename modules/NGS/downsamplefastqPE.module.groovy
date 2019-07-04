@@ -6,7 +6,7 @@ DownsamplefastqPE = {
 		author: "Nastasja Kreim"
 
 		output.dir = DOWNSAMPLE_OUTDIR
-    ArrayList OUTPUTFILES = new ArrayList()
+    def OUTPUTFILES = new ArrayList()
     inputs.eachWithIndex { item, index -> 
         path_index = item.lastIndexOf("/")
         item = item.substring(path_index+1)

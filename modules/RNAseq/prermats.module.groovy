@@ -6,8 +6,8 @@ PREMATS = {
 
     output.dir = PREMATS_OUTDIR
     //read in the contrasts file 
-    ArrayList contrasts = new ArrayList()
-    File f = new File(PREMATS_CONTRASTS)
+    def contrasts = new ArrayList()
+    def f = new File(PREMATS_CONTRASTS)
     f.eachLine { line -> contrasts.add(line) }
     //try to replace the contrast lines by the first part
     contrasts.eachWithIndex { item, index -> 

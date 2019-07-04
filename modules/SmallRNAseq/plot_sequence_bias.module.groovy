@@ -5,8 +5,8 @@ PlotSequenceBias = {
     author: "António Domingues"
 
     output.dir = PLOT_BIAS_OUTDIR
-    OUT_PLOT_DIR = PLOT_BIAS_OUTDIR + "/" + "figure"
-    OUT_PLOT = OUT_PLOT_DIR + "/nucleotide_bias_read_length.normalized.pdf"
+    def OUT_PLOT_DIR = PLOT_BIAS_OUTDIR + "/" + "figure"
+    def OUT_PLOT = OUT_PLOT_DIR + "/nucleotide_bias_read_length.normalized.pdf"
 
     from("*.nuc_bias.txt") produce(OUT_PLOT){
         

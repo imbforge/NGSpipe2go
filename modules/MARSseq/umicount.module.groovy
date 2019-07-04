@@ -7,11 +7,11 @@ umicount = {
         bpipe_version: "tested with bpipe 0.9.9.3",
         author: "Nastasja Kreim"
 
-    	// create the log folder if it doesn't exists
-	def UMICOUNT_LOGDIR = new File( LOGS + "/umicount")
-	if (!UMICOUNT_LOGDIR.exists()) {
-		UMICOUNT_LOGDIR.mkdirs()
-	}
+  	// create the log folder if it doesn't exists
+  	def UMICOUNT_LOGDIR = new File( LOGS + "/umicount")
+  	if (!UMICOUNT_LOGDIR.exists()) {
+  		UMICOUNT_LOGDIR.mkdirs()
+  	}
     
     def UMICOUNT_FLAGS =    UMICOUNT_LOG + " " +
                             UMICOUNT_PARAM + " " +
@@ -19,7 +19,7 @@ umicount = {
     output.dir = UMICOUNT_OUTDIR
     if(ESSENTIAL_PAIRED == "yes"){
       UMICOUNT_FLAGS = UMICOUNT_FLAGS + " --paired"
-   }
+    }
     
     // run the chunk
     transform(".bam\$") to (".umicount.tsv.gz") {

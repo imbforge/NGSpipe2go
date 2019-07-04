@@ -5,8 +5,8 @@ PlotReadLengths = {
     author: "António Domingues"
 
     output.dir = PLOT_READ_LENGTH_OUTDIR
-    OUT_PLOT_DIR = PLOT_READ_LENGTH_OUTDIR + "/" + "plots"
-    OUT_PLOT = OUT_PLOT_DIR + "/PercentageReadsLengthDistribution.pdf"
+    def OUT_PLOT_DIR = PLOT_READ_LENGTH_OUTDIR + "/" + "plots"
+    def OUT_PLOT = OUT_PLOT_DIR + "/PercentageReadsLengthDistribution.pdf"
 
     produce(OUT_PLOT){
         

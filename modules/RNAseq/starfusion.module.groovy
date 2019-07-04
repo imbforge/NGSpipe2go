@@ -12,8 +12,8 @@ STAR_Fusion = {
     OUTPUTFILE = OUTPUTFILE.substring(path_index+1)
     OUTPUTFILE = (OUTPUTFILE =~ /_R1.fastq.gz/).replaceFirst("")
 
-    STARFUSION_FLAGS = STARFUSION_THREADS + " " +
-	               STARFUSION_GENOME_LIB
+    def STARFUSION_FLAGS = STARFUSION_THREADS + " " +
+                           STARFUSION_GENOME_LIB
 
     produce(OUTPUTFILE + "_starfusion.done") {
         exec """

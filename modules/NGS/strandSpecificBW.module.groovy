@@ -9,12 +9,12 @@ strandBigWig = {
 	//this might be confusing regarding the reverse and forward
 	//setting but according to the deeptools manual it has to be like
 	//that. 
-    	if(ESSENTIAL_STRANDED == "yes") {
-		FORWARD="reverse"
-		REVERSE="forward"
+ 	if(ESSENTIAL_STRANDED == "yes") {
+		def FORWARD="reverse"
+		def REVERSE="forward"
 	} else if(ESSENTIAL_STRANDED == "reverse") {
-		FORWARD="forward"
-		REVERSE="reverse"
+		def FORWARD="forward"
+		def REVERSE="reverse"
 	}
 
 	transform(".bam") to(".fwd.bw", ".rev.bw") {

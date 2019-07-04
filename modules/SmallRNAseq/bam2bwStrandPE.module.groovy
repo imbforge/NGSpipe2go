@@ -10,11 +10,11 @@ Bam2bwStrandPE = {
     //setting but according to the deeptools manual it has to be like
     //that. 
         if(ESSENTIAL_STRANDED == "yes") {
-        FORWARD="antisense"
-        REVERSE="sense"
+        def FORWARD="antisense"
+        def REVERSE="sense"
     } else if(ESSENTIAL_STRANDED == "reverse") {
-        FORWARD="sense"
-        REVERSE="antisense"
+        def FORWARD="sense"
+        def REVERSE="antisense"
     }
 
 	transform(".bam") to (".scaled.sense.bw", ".scaled.antisense.bw")  {

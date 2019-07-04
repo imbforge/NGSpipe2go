@@ -14,10 +14,10 @@ FastQQualityFilter = {
 
     def EXP = input.split("/")[-1].replaceAll(".cutadapt.fastq.gz", "")
 
-    FASTQ_QUALITY_FILTER_FLAGS = " -q "   + MIN_QUAL  +
-                                 " -p "   + MIN_PERCENT  +
-                                 " -Q " + QUAL_FORMAT +
-                                 FASTQ_QUALITY_FILTER_OTHER
+    def FASTQ_QUALITY_FILTER_FLAGS = " -q "   + MIN_QUAL  +
+                                     " -p "   + MIN_PERCENT  +
+                                     " -Q " + QUAL_FORMAT +
+                                     FASTQ_QUALITY_FILTER_OTHER
 
     transform(".fastq.gz") to (".highQ.fastq.gz") {
 

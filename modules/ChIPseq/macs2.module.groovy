@@ -6,10 +6,10 @@ macs2 = {
         author: "Sergi Sayols"
 
     output.dir = RESULTS + "/macs2"
-    MACS2_FLAGS= MACS2_GSIZE  + " " + 
-                 MACS2_BWIDTH + " " + 
-                 MACS2_MINLEN + " " +         
-                 MACS2_EXTRA
+    def MACS2_FLAGS= MACS2_GSIZE  + " " + 
+                     MACS2_BWIDTH + " " + 
+                     MACS2_MINLEN + " " +         
+                     MACS2_EXTRA
     if(MACS2_PAIRED == "yes") {
     MACS2_FLAGS = MACS2_FLAGS + " " + "--format BAMPE"
     }

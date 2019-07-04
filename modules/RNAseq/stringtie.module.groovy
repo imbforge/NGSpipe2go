@@ -10,7 +10,7 @@ StringTie = {
     output.dir = STRINGTIE_OUT
 
     // create the LOGS/STRING_TIE folder if it doesn't exists
-    F_LOG = new File(LOGS + "/STRING_TIE")
+    def F_LOG = new File(LOGS + "/STRING_TIE")
     if(! F_LOG.exists()) {
         F_LOG.mkdirs()
     }

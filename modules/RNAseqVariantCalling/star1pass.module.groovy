@@ -9,12 +9,12 @@ STAR_pe = {
    output.dir = OUTDIR
 
    // create the TMP folder if it doesn't exists
-   F_TMP = new File(TMP)
+   def F_TMP = new File(TMP)
    if(! F_TMP.exists()) {
       F_TMP.mkdirs()
    }
    // create the LOGS/STAR folder if it doesn't exists
-   F_LOG = new File(LOGS + "/STAR_1stPass")
+   def F_LOG = new File(LOGS + "/STAR_1stPass")
    if(! F_LOG.exists()) {
       F_LOG.mkdirs()
    }

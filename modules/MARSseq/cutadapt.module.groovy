@@ -13,16 +13,16 @@ Cutadapt = {
 	}
 	
 	// create the discarded folder if it doesn't exists
-        def CUTADAPT_DISCARDED_DIR = new File( CUTADAPT_OUTDIR + "/discarded")
-        if (!CUTADAPT_DISCARDED_DIR.exists()) {
-                CUTADAPT_DISCARDED_DIR.mkdirs()
-        }    
-        CUTADAPT_FLAGS = CUTADAPT_ADAPTER_SEQUENCE + 
-                         " " + CUTADAPT_POLYA + 
-                         " " + CUTADAPT_MINIMUM_OVERLAP +
-                         " " + CUTADAPT_MINIMUM_LENGTH_KEEP +
-                         " " + CUTADAPT_ERRORRATE +
-                         " " + CUTADAPT_EXTRA
+  def CUTADAPT_DISCARDED_DIR = new File( CUTADAPT_OUTDIR + "/discarded")
+  if (!CUTADAPT_DISCARDED_DIR.exists()) {
+          CUTADAPT_DISCARDED_DIR.mkdirs()
+  }    
+  def CUTADAPT_FLAGS = CUTADAPT_ADAPTER_SEQUENCE + 
+                       " " + CUTADAPT_POLYA + 
+                       " " + CUTADAPT_MINIMUM_OVERLAP +
+                       " " + CUTADAPT_MINIMUM_LENGTH_KEEP +
+                       " " + CUTADAPT_ERRORRATE +
+                       " " + CUTADAPT_EXTRA
 
 	transform(".fastq.gz") to (".cutadapt.fastq.gz") {
 

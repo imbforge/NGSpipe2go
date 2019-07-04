@@ -8,7 +8,7 @@ MergeBam = {
    author: "Antonio Domingues"
 
    output.dir  = MERGEDBAMS_OUTDIR
-   EXP = input1.split("/")[-1].replaceAll(".bam", "").replaceAll("_rep\\d+", "")
+   def EXP = input1.split("/")[-1].replaceAll(".bam", "").replaceAll("_rep\\d+", "")
 
    // run the chunk
    produce(EXP + ".merged.bam") {

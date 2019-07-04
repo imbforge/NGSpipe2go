@@ -10,11 +10,9 @@ AddUMIBarcodeToFastq = {
     int path_index = OUTPUTFILE.lastIndexOf("/")
     OUTPUTFILE = OUTPUTFILE.substring(path_index+1)
     OUTPUTFILE = (OUTPUTFILE =~ /.R1.fastq.gz/).replaceFirst("")
-    ADDUMIBARCODE_FLAGS =        ADDUMIBARCODE_BCPATTERN + 
-                                  " " +  ADDUMIBARCODE_BARCODELIST +
-                                  " " +  ADDUMIBARCODE_EXTRA
-
-
+    def ADDUMIBARCODE_FLAGS = ADDUMIBARCODE_BCPATTERN + 
+                              " " +  ADDUMIBARCODE_BARCODELIST +
+                              " " +  ADDUMIBARCODE_EXTRA
 
   produce(OUTPUTFILE + ".umibarcode.fastq.gz"){
     exec """
