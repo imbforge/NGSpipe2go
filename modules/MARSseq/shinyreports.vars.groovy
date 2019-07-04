@@ -13,6 +13,7 @@ SHINYREPS_STARparms_SUFFIX="Log.out"	//extension given to the STAR log files
 SHINYREPS_FASTQC_OUT=FASTQC_OUTDIR		//where the Fastqc output lie
 SHINYREPS_FASTQC_LOG=LOGS + "/FastQC"		//where the Fastqc logs lie
 SHINYREPS_BAMINDEX_LOG=LOGS + "/BAMindexer"	//where the Samtools/BamIndexer logs lie
+SHINYREPS_DUPRADAR_LOG=QC + "/dupRadar" //where dupRadar results lie
 SHINYREPS_RNATYPES_LOG=LOGS + "/RNAtypes"	//where the RNAtypes logs lie
 SHINYREPS_RNATYPES=RNATYPES_OUTDIR	//where the RNAtypes count results lie
 SHINYREPS_RNATYPES_SUFFIX="counts.tsv" // the extension of the subread results files
