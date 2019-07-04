@@ -26,11 +26,20 @@ load MODULE_FOLDER + "NGS/bamindexer.module.groovy"
 load MODULE_FOLDER + "MARSseq/subread.vars.groovy"
 load MODULE_FOLDER + "MARSseq/subread.module.groovy"
 
+load MODULE_FOLDER + "NGS/markdups2.vars.groovy"
+load MODULE_FOLDER + "NGS/markdups2.module.groovy"
+
+load MODULE_FOLDER + "RNAseq/dupradar.vars.groovy"
+load MODULE_FOLDER + "RNAseq/dupradar.module.groovy"
+
 load MODULE_FOLDER + "RNAseq/genebodycov2.vars.groovy"
 load MODULE_FOLDER + "RNAseq/genebodycov2.module.groovy"
 
 load MODULE_FOLDER + "RNAseq/inferexperiment.vars.groovy"
 load MODULE_FOLDER + "RNAseq/inferexperiment.module.groovy"
+
+load MODULE_FOLDER + "RNAseq/qualimap.module.groovy"
+load MODULE_FOLDER + "RNAseq/qualimap.vars.groovy"
 
 load MODULE_FOLDER + "RNAseq/subread2rnatypes.vars.groovy"
 load MODULE_FOLDER + "RNAseq/subread2rnatypes.module.groovy"
@@ -48,7 +57,7 @@ load MODULE_FOLDER + "MARSseq/shinyreports.module.groovy"
 // Typical workflow for MARS-Seq data:
 //
 run { "%.fastq.gz" *  [ FastQC ] + "%.R*.fastq.gz" * [ AddUMIBarcodeToFastq + Cutadapt + FastQC + STAR + BAMindexer + 
-[ subread_count + BAMindexer + umicount , bam2bw , inferexperiment , subread2rnatypes, geneBodyCov2 ]] +
+[ subread_count + BAMindexer + umicount , bam2bw , inferexperiment , subread2rnatypes, qualimap, geneBodyCov2 ]] +
 //trackhub_config + trackhub +
 collectBpipeLogs + shinyReports
 }
