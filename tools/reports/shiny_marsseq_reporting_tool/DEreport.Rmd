@@ -643,7 +643,7 @@ The plot below shows the most highly expressed genes (based on un-normalized mea
 tmp.sce <- sce
 rownames(tmp.sce) <- rowData(sce)$SYMBOL
 fontsize <- theme(axis.text=element_text(size=6), axis.title=element_text(size=10))
-plotQC(tmp.sce, type = "highest-expression", n=50) + fontsize
+plotHighestExprs(tmp.sce, n=50) + fontsize
 rm(tmp.sce)
 ```
 
@@ -1115,7 +1115,6 @@ for(type in names(hvg.cor.list)){
 ```
 
 
-
 # Used tools and versions for this analysis ##
 
 Read mapping was performed with STAR using the following parameters:
@@ -1139,35 +1138,6 @@ sessionInfo()
 ```
 
 
-
 </div>
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
 
 
