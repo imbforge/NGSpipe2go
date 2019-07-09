@@ -1047,46 +1047,47 @@ DEhelper.Fastqc <- function(web=TRUE, ...) {
 ## DEhelper.dupRadar: go through dupRadar output dir and create a md table with
 ##     the duplication plots
 ##
-DEhelper.dupRadar <- function(web=TRUE, samplePattern=NULL, exclude=F) {
-    
-    # logs folder
-    if(!file.exists(SHINYREPS_DUPRADAR_LOG)) {
-        return("DupRadar statistics not available")
-    }
-
-    SHINYREPS_PLOTS_COLUMN <- tryCatch(as.integer(SHINYREPS_PLOTS_COLUMN),error=function(e){3})
-    if(SHINYREPS_PLOTS_COLUMN < 2) {
-        SHINYREPS_PLOTS_COLUMN <- 3L    # default to 4 columns
-    }
-
-    # construct the folder name, which is different for web and noweb
-    QC <- if(web) "/dupRadar" else SHINYREPS_DUPRADAR_LOG
-    
-    # construct the image url from the folder contents (skip current dir .)
-    samples <- list.files(SHINYREPS_DUPRADAR_LOG, pattern=".png$")
-
-    # select subset of samples for fastqc figures (e.g. merged singlecell pools) or use all samples for samplePattern=NULL
-    samples <- selectSampleSubset(samples, samplePattern, exclude)
-    
-    df <- sapply(samples, function(f) {
-        paste0("![dupRadar img](", QC, "/", basename(f), ")")
-    })
-    
-    # put sample names and output an md table of SHINYREPS_PLOTS_COLUMN columns
-    while(length(df) %% SHINYREPS_PLOTS_COLUMN != 0) df <- c(df, "")
-    samples <- sapply(df, function(x) {
-        x <- sapply(x, function(x) gsub(paste0("^", SHINYREPS_PREFIX), "", basename(x)))
-        gsub("_dupRadar.png)", "", x)
-    })
-    df      <- matrix(df     , ncol=SHINYREPS_PLOTS_COLUMN, byrow=T)
-    samples <- matrix(samples, ncol=SHINYREPS_PLOTS_COLUMN, byrow=T)
-    
-    # add a row with the sample names
-    df.names <- matrix(sapply(1:nrow(df), function(i) { c(df[i, ], samples[i, ]) }), 
-                       ncol=SHINYREPS_PLOTS_COLUMN, byrow=T)
-    colnames(df.names) <- rep(" ", SHINYREPS_PLOTS_COLUMN)
-    
-    kable(as.data.frame(df.names), align="c", output=F, format="markdown")
+DEhelper.dupRadar <- function(web=TRUE, ...) {
+  
+  # logs folder
+  if(!file.exists(SHINYREPS_DUPRADAR_LOG)) {
+    return("DupRadar statistics not available")
+  }
+  
+  SHINYREPS_PLOTS_COLUMN <- tryCatch(as.integer(SHINYREPS_PLOTS_COLUMN),error=function(e){3})
+  if(SHINYREPS_PLOTS_COLUMN < 2) {
+    SHINYREPS_PLOTS_COLUMN <- 3L    # default to 4 columns
+  }
+  
+  # construct the folder name, which is different for web and noweb
+  QC <- if(web) "/dupRadar" else SHINYREPS_DUPRADAR_LOG
+  
+  # construct the image url from the folder contents (skip current dir .)
+  samples <- list.files(SHINYREPS_DUPRADAR_LOG, pattern=".png$")
+  
+  # select subset of samples for fastqc figures (e.g. merged singlecell pools) or use all samples for samplePattern=NULL
+  samples <- selectSampleSubset(samples, ...)
+  
+  df <- sapply(samples, function(f) {
+    paste0("![dupRadar img](", QC, "/", basename(f), ")")
+  })
+  
+  # put sample names and output an md table of SHINYREPS_PLOTS_COLUMN columns
+  while(length(df) %% SHINYREPS_PLOTS_COLUMN != 0) df <- c(df, "")
+  samples <- sapply(df, function(x) {
+    x <- sapply(x, function(x) gsub(paste0("^", SHINYREPS_PREFIX), "", basename(x)))
+  })
+  samples <- gsub(lcSuffix(samples), "", samples)
+  
+  df      <- matrix(df     , ncol=SHINYREPS_PLOTS_COLUMN, byrow=T)
+  samples <- matrix(samples, ncol=SHINYREPS_PLOTS_COLUMN, byrow=T)
+  
+  # add a row with the sample names
+  df.names <- matrix(sapply(1:nrow(df), function(i) { c(df[i, ], samples[i, ]) }), 
+                     ncol=SHINYREPS_PLOTS_COLUMN, byrow=T)
+  colnames(df.names) <- rep(" ", SHINYREPS_PLOTS_COLUMN)
+  
+  kable(as.data.frame(df.names), align="c", output=F, format="markdown") %>% kable_styling()
 }
 
 ##
@@ -1545,37 +1546,42 @@ DEhelper.Subread <- function() {
 ##
 ## extract the intron/exon and intergenic regions from the qualimap report
 ##
-DEhelper.Qualimap <- function() {
-    
-    # logs folder
-    if(!file.exists(SHINYREPS_QUALIMAP_LOGS)) {
-        return("Read distribution statistics not available")
-    }  
-    
-    QC <- SHINYREPS_QUALIMAP_LOGS    
-    # construct the image url from the folder contents (skip current dir .)
-    samples <- list.files(QC, pattern="Reads.*.png$", recursive=T, full.names=T)
-    if(length(samples) == 0) {
-        return("Qualimap report not available")
-    }
-    df <- sapply(samples, function(f) {
-        paste0("![alt text](", f, ")")
-    })
-    
-    samples <- list.files(QC, pattern="Reads.*.png$", recursive=T, full.names=F)
-    # put sample names and output an md table of 4 columns
-    while(length(df) %% 2 != 0) df <- c(df, "")
-    samples <-gsub(paste0("^", SHINYREPS_PREFIX), "", gsub("/.*", "", dirname(samples)))
-    samples <- gsub("_counts_qualimap", "", samples)
-    while(length(samples) %% 2 != 0) samples <- c(samples, "")
-    df      <- matrix(df     , ncol=2, byrow=T)
-    samples <- matrix(samples, ncol=2, byrow=T)
-    
-    # add a row with the sample names
-    df.names <- matrix(sapply(1:nrow(df), function(i) { c(df[i, ], samples[i, ]) }), ncol=2, byrow=T)
-    colnames(df.names) <- c(" ", " ")
-    
-    kable(as.data.frame(df.names), output=F, format="markdown")
+DEhelper.Qualimap <- function(...) {
+  
+  # logs folder
+  if(!file.exists(SHINYREPS_QUALIMAP_LOGS)) {
+    return("Read distribution statistics not available")
+  }  
+  
+  QC <- SHINYREPS_QUALIMAP_LOGS    
+  # construct the image url from the folder contents (skip current dir .)
+  samples <- list.files(QC, pattern="Reads.*.png$", recursive=T, full.names=T)
+  samples <- selectSampleSubset(samples, ...)
+  if(length(samples) == 0) {
+    return("Qualimap report not available")
+  }
+  df <- sapply(samples, function(f) {
+    paste0("![alt text](", f, ")")
+  })
+  
+  samples <- list.files(QC, pattern="Reads.*.png$", recursive=T, full.names=F)
+  samples <- selectSampleSubset(samples, ...)
+  # put sample names and output an md table of 4 columns
+  while(length(df) %% 2 != 0) df <- c(df, "")
+  samples <-gsub(paste0("^", SHINYREPS_PREFIX), "", gsub("/.*", "", dirname(samples)))
+  #samples <- gsub("_counts_qualimap", "", samples)
+  samples  <- gsub(lcSuffix(samples), "", samples )
+  
+  
+  while(length(samples) %% 2 != 0) samples <- c(samples, "")
+  df      <- matrix(df     , ncol=2, byrow=T)
+  samples <- matrix(samples, ncol=2, byrow=T)
+  
+  # add a row with the sample names
+  df.names <- matrix(sapply(1:nrow(df), function(i) { c(df[i, ], samples[i, ]) }), ncol=2, byrow=T)
+  colnames(df.names) <- c(" ", " ")
+  
+  kable(as.data.frame(df.names), output=F, format="markdown")
 }
 
 ##

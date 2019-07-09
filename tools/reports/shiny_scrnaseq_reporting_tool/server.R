@@ -1,6 +1,6 @@
 library(rmarkdown)	# for the report generator
 library(knitr)		# for the report generator
-source("DE.shinyrep.helpers.R")		# helper functions to generate the plots
+source("sc.shinyrep.helpers.R")		# helper functions to generate the plots
 
 # things that will run only once per session
 # always in the global environment to ensure access (could be placed in global.R also)
@@ -97,7 +97,7 @@ shinyServer(function(input,output,session) {
 	##
 	output$button_download <- downloadHandler(
 		filename <- function() {
-			paste("DEreport",
+			paste("sc.report",
 				  switch(input$radio_format,HTML="html",PDF="pdf",Word="docx"),
 				  sep=".")
 		},
@@ -105,13 +105,13 @@ shinyServer(function(input,output,session) {
 
 			# temporarily switch to the temp dir, in case you do not have write permission to the cwd
 			# COMMENTED OUT: if we change the directory, we cannot access the included .md files anymore
-#			src <- normalizePath("DEreport.Rmd")
+#			src <- normalizePath("sc.report.Rmd")
 #			owd <- setwd(tempdir())
 #			on.exit(setwd(owd))
-#			file.copy(src,"DEreport.Rmd")
+#			file.copy(src,"sc.report.Rmd")
 			
 			# render the file
-			out <- render(paste0(SHINYREPS_PROJECT,"/report/DEreport.Rmd"), {
+			out <- render(paste0(SHINYREPS_PROJECT,"/reports/sc.report.Rmd"), {
 					switch(input$radio_format,
 						   HTML=html_document(),
 						   PDF=pdf_document(),

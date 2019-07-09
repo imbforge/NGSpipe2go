@@ -1,10 +1,10 @@
-ESSENTIAL_PROJECT="/fsimb/groups/imb-bioinfocf/projects/cfb_internal/scRNA_MARSseq_test/"
+ESSENTIAL_PROJECT="/your_project_folder/"
 ESSENTIAL_STAR_REF="/fsimb/common/genomes/mus_musculus/ensembl/grcm38/canonical/index/star_ERCC/2.5.2b/"
 ESSENTIAL_GENESGTF="/fsimb/common/genomes/mus_musculus/ensembl/grcm38/canonical/annotation/Mus_musculus.GRCm38.88+ERCC92.gtf"
 ESSENTIAL_GENESBED="/fsimb/common/genomes/mus_musculus/ensembl/grcm38/canonical/annotation/Mus_musculus.GRCm38.89.bed"
 ESSENTIAL_CHROMSIZES=""  // chromosome sizes file
 ESSENTIAL_FEATURETYPE="gene_biotype" //gencode uses gene_type; ensemble uses gene_biotype
-ESSENTIAL_SAMPLE_PREFIX="test_"
+ESSENTIAL_SAMPLE_PREFIX=""
 ESSENTIAL_PAIRED="no"           // paired end design
 ESSENTIAL_STRANDED="yes"    // strandness: no|yes|reverse
 ESSENTIAL_ORG="mouse"           // UCSC organism

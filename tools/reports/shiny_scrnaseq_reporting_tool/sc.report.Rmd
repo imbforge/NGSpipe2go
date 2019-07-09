@@ -19,13 +19,13 @@ Enter project description here
 
 	1. bpipe call: bpipe run marsseq.pipeline.groovy rawdata/*.fastq.gz
 	2. bpipe command: run { "%.fastq.gz" *  [ FastQC ] + "%.R*.fastq.gz" * [ AddUMIBarcodeToFastq + Cutadapt + FastQC + STAR + BAMindexer + 
-[ subread_count + BAMindexer + umicount , bam2bw , inferexperiment , subread2rnatypes, geneBodyCov2 ]] + collectBpipeLogs + shinyReports
+[ subread_count + BAMindexer + umicount , bamCoverage , inferexperiment , rnatypes, qualimap, geneBodyCov2 ]] + collectBpipeLogs + shinyReports
 
 
 ```{r setup, echo=F, result='hide', error=F, warning=F, message=F}
 
 # source helper functions
-source("DE.shinyrep.helpers.R")
+source("sc.shinyrep.helpers.R")
 
 # load required packages
 attach_packages(c("rmarkdown", "knitr", "Cairo", "gplots", "ggplot2", "plotly", "RColorBrewer", "ggrepel", "parallel",
@@ -609,7 +609,7 @@ knitr::kable(table(colData(sce)[, annoFactors, drop=F]), col.names=colnames_tabl
 
 ### Replotting the PCA after filtering
 
-```{r pca2, fig.height=6, fig.width=8}
+```{r pca2, fig.height=8, fig.width=10}
 ##### parameters to set:
 # define up to 2 categories to be indicated in the PCA plot by color and shape.
 annoFactors <- c("group", "pool")

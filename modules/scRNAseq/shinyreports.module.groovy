@@ -11,21 +11,21 @@ shinyReports = {
     
     produce("shinyReports.txt") {
         exec """
-            cp ${MODULE_FOLDER}/../tools/reports/shiny_marsseq_reporting_tool/server.R ${REPORTS}                &&
-            cp ${MODULE_FOLDER}/../tools/reports/shiny_marsseq_reporting_tool/ui.R ${REPORTS}                    &&
-            cp ${MODULE_FOLDER}/../tools/reports/shiny_marsseq_reporting_tool/DE.shinyrep.helpers.R ${REPORTS}   &&
-            cp ${MODULE_FOLDER}/../tools/reports/shiny_marsseq_reporting_tool/bustard.pl ${REPORTS}              &&
-            cp ${MODULE_FOLDER}/../tools/reports/shiny_marsseq_reporting_tool/BustardSummary.toMD.xsl ${REPORTS} &&
-            cp ${MODULE_FOLDER}/../tools/reports/shiny_marsseq_reporting_tool/styles.css ${REPORTS}              &&
+            cp ${MODULE_FOLDER}/../tools/reports/shiny_scrnaseq_reporting_tool/server.R ${REPORTS}                &&
+            cp ${MODULE_FOLDER}/../tools/reports/shiny_scrnaseq_reporting_tool/ui.R ${REPORTS}                    &&
+            cp ${MODULE_FOLDER}/../tools/reports/shiny_scrnaseq_reporting_tool/sc.shinyrep.helpers.R ${REPORTS}   &&
+            cp ${MODULE_FOLDER}/../tools/reports/shiny_scrnaseq_reporting_tool/bustard.pl ${REPORTS}              &&
+            cp ${MODULE_FOLDER}/../tools/reports/shiny_scrnaseq_reporting_tool/BustardSummary.toMD.xsl ${REPORTS} &&
+            cp ${MODULE_FOLDER}/../tools/reports/shiny_scrnaseq_reporting_tool/styles.css ${REPORTS}              &&
             
-            if [ -e "${REPORTS}/DEreport.Rmd" ]; then
-                echo 'DEreport.Rmd already exists. Older copy will be kept and not overwritten';
+            if [ -e "${REPORTS}/sc.report.Rmd" ]; then
+                echo 'sc.report.Rmd already exists. Older copy will be kept and not overwritten';
             else
-                cp ${MODULE_FOLDER}/../tools/reports/shiny_marsseq_reporting_tool/DEreport.Rmd ${REPORTS};
+                cp ${MODULE_FOLDER}/../tools/reports/shiny_scrnaseq_reporting_tool/sc.report.Rmd ${REPORTS};
             fi &&
             
             PROJECT=\$(basename ${SHINYREPS_PROJECT})                            &&
-            sed -i "2,2s/SHINYREPS_PROJECT/\${PROJECT}/" ${REPORTS}/DEreport.Rmd &&
+            sed -i "2,2s/SHINYREPS_PROJECT/\${PROJECT}/" ${REPORTS}/sc.report.Rmd &&
             
             echo "SHINYREPS_PROJECT=${SHINYREPS_PROJECT}" >  $output &&
             echo "SHINYREPS_ORG=${SHINYREPS_ORG}"         >> $output &&
@@ -41,6 +41,7 @@ shinyReports = {
             echo "SHINYREPS_FASTQC_OUT=${SHINYREPS_FASTQC_OUT}"     >> $output &&
             echo "SHINYREPS_FASTQC_LOG=${SHINYREPS_FASTQC_LOG}"     >> $output &&
             echo "SHINYREPS_BAMINDEX_LOG=${SHINYREPS_BAMINDEX_LOG}"     >> $output &&
+            echo "SHINYREPS_DUPRADAR_LOG=${SHINYREPS_DUPRADAR_LOG}" >> $output &&
             echo "SHINYREPS_RNATYPES_LOG=${SHINYREPS_RNATYPES_LOG}" >> $output &&
             echo "SHINYREPS_RNATYPES=${SHINYREPS_RNATYPES}" >> $output &&
             echo "SHINYREPS_RNATYPES_SUFFIX=${SHINYREPS_RNATYPES_SUFFIX}" >> $output &&
