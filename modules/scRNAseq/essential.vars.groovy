@@ -13,7 +13,8 @@ ESSENTIAL_READLENGTH=70         // added for STAR version > 2.4.1a
 ESSENTIAL_THREADS=4             // number of threads for parallel tasks
 ESSENTIAL_FRAGMENT_USAGE="no"   //should fragments be reconstituted? should always be no for rnaseq
 ESSENTIAL_FILTER_CHR=""         //chromosomes to include in post-mapping analysis.
-//Maybe add
+ESSENTIAL_BAMCOVERAGE="--binSize 1 --skipNonCoveredRegions --normalizeUsing CPM" // NO smoothing should be done for RNAseq
+//Barcodes
 ESSENTIAL_WHITELIST="single_cell_barcodes_whitelist.csv" //the barcode list should be a list of valid barcodes separated by newline
 ESSENTIAL_BCPATTERN="CCCCCCCNNNNNNNN" //barcode pattern as it is present in MARS-Seq data. 
                                      //C stands for Cellbarcode and N is part of the random barcode
