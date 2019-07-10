@@ -57,7 +57,7 @@ load MODULE_FOLDER + "scRNAseq/shinyreports.module.groovy"
 // Typical workflow for MARS-Seq data:
 //
 run { "%.fastq.gz" *  [ FastQC ] + "%.R*.fastq.gz" * [ AddUMIBarcodeToFastq + Cutadapt + FastQC + STAR + BAMindexer + 
-[ subread_count + BAMindexer + umicount , bamCoverage , inferexperiment , rnatypes, qualimap, geneBodyCov2 ]] +
+[ subread_count + BAMindexer + umicount , bamCoverage , inferexperiment , subread2rnatypes , qualimap, geneBodyCov2 ]] +
 //trackhub_config + trackhub +
 collectBpipeLogs + shinyReports
 }
