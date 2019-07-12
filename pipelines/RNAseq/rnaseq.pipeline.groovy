@@ -71,7 +71,7 @@ load MODULE_FOLDER + "RNAseq/shinyreports.module.groovy"
 //
 run { "%.fastq.gz" * 
 [ FastQC , STAR + BAMindexer + 
-[ subread_count + filter2htseq , bam2bw , inferexperiment , subread2rnatypes , MarkDups2 + BAMindexer + 
+[ subread_count + filter2htseq , bamCoverage , inferexperiment , subread2rnatypes , MarkDups2 + BAMindexer + 
 [ dupRadar , geneBodyCov2 ] ] ] + 
 [ DE_DESeq2_MM , DE_DESeq2 + GO_Enrichment] + 
 //trackhub_config + trackhub +
