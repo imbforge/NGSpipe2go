@@ -886,65 +886,67 @@ DEhelper.STARparms <- function() {
 ## DEhelper.STAR: parse STAR log files and create a md table
 ##
 DEhelper.STAR <- function(colorByFactor=NULL, targetsdf=targets, ...) {
-    
-    # log file
-    LOG <- SHINYREPS_STAR_LOG
-    SUFFIX <- paste0(SHINYREPS_STAR_SUFFIX, '$')
-    if(!file.exists(LOG)) {
-        return("STAR statistics not available")
-    }
-    
-    # look for the lines containing the strings
-    # and get the values associated with this strings
-    x <- list.files(LOG, pattern=SUFFIX)
-    # select subset of samples for fastqc figures (e.g. merged singlecell pools) or use all samples for samplePattern=NULL
-    x <- selectSampleSubset(x, ...)
-    
-    x <- sapply(x, function(f) {
-        f <- file(paste0(LOG, "/", f))
-        l <- readLines(f)
-        close(f)
-        
-        sapply(c("Number of input reads",
-                 "Uniquely mapped reads number",
-                 "Uniquely mapped reads %",
-                 "Number of reads mapped to multiple loci",
-                 "Number of reads mapped to too many loci",
-                 "% of reads mapped to multiple loci",
-                 "% of reads mapped to too many loci",
-                 "% of reads unmapped: too many mismatches",
-                 "% of reads unmapped: too short",
-                 "% of reads unmapped: other"), function(x) {
-                     as.numeric(gsub("%", "", gsub(".+\\|\t(.+)", "\\1", l[grep(x, l)])))
-                 })    
-    })
-    
-    # set row and column names, and output the md table
-    colnames(x) <- gsub(paste0("^", SHINYREPS_PREFIX), "", colnames(x))
-    colnames(x) <- gsub(paste0(SUFFIX, "$"), "", colnames(x))
-    colnames(x) <- gsub(lcSuffix(colnames(x)), "", colnames(x)) # remove longest common suffix
-    colnames(x) <- gsub(lcPrefix(colnames(x)), "", colnames(x)) # remove longest common prefix
-    df <- data.frame(input_reads=format(x[1, ], big.mark=","), 
-                     uniquely_mapped=paste0(format(x[2, ], big.mark=","), " (", format(x[3, ], nsmall=2), "%)"), 
-                     multi_mapped=paste0(format(x[4, ], big.mark=","), " (", format(x[6, ], nsmall=2), "%)"), 
-                     too_many_loci=paste0(format(x[7,],nsmall=2), "%"),
-                     unmapped=paste0(format( x[8, ] + x[9, ] + x[10, ], nsmall=2), "%")
-                     )
   
-    df.stacked <- data.frame(filename = gsub("\\.R[12]\\.*$", "", rownames(df)),
-                             input = x[1, ],
-                             unique = x[2, ],
-                             unique_perc = 100*(x[2, ]/x[1, ]),
-                             multi_perc = 100*(x[4, ]/x[1, ]),
-                             mapped_perc = 100*((x[4, ]+x[2, ]) / x[1, ]))
+  # log file
+  LOG <- SHINYREPS_STAR_LOG
+  SUFFIX <- paste0(SHINYREPS_STAR_SUFFIX, '$')
+  if(!file.exists(LOG)) {
+    return("STAR statistics not available")
+  }
+  
+  # look for the lines containing the strings
+  # and get the values associated with this strings
+  x <- list.files(LOG, pattern=SUFFIX, full.names = T)
+  
+  # select subset of samples for fastqc figures (e.g. merged singlecell pools) or use all samples for samplePattern=NULL
+  x <- selectSampleSubset(x, ...)
+  
+  x <- sapply(x, function(f) {
+    f <- file(f)
+    l <- readLines(f)
+    close(f)
     
-## prepare groupwise plots
+    sapply(c("Number of input reads",
+             "Uniquely mapped reads number",
+             "Uniquely mapped reads %",
+             "Number of reads mapped to multiple loci",
+             "Number of reads mapped to too many loci",
+             "% of reads mapped to multiple loci",
+             "% of reads mapped to too many loci",
+             "% of reads unmapped: too many mismatches",
+             "% of reads unmapped: too short",
+             "% of reads unmapped: other"), function(x) {
+               as.numeric(gsub("%", "", gsub(".+\\|\t(.+)", "\\1", l[grep(x, l)])))
+             })    
+  })
+  
+  # set row and column names, and output the md table
+  colnames(x) <- basename(colnames(x))
+  colnames(x) <- gsub(paste0("^", SHINYREPS_PREFIX), "", colnames(x))
+  colnames(x) <- gsub(paste0(SUFFIX, "$"), "", colnames(x))
+  colnames(x) <- gsub(lcSuffix(colnames(x)), "", colnames(x)) # remove longest common suffix
+  colnames(x) <- gsub(lcPrefix(colnames(x)), "", colnames(x)) # remove longest common prefix
+  df <- data.frame(input_reads=format(x[1, ], big.mark=","), 
+                   uniquely_mapped=paste0(format(x[2, ], big.mark=","), " (", format(x[3, ], nsmall=2), "%)"), 
+                   multi_mapped=paste0(format(x[4, ], big.mark=","), " (", format(x[6, ], nsmall=2), "%)"), 
+                   too_many_loci=paste0(format(x[7,],nsmall=2), "%"),
+                   unmapped=paste0(format( x[8, ] + x[9, ] + x[10, ], nsmall=2), "%")
+  )
+  
+  df.stacked <- data.frame(filename = gsub("\\.R[12]\\.*$", "", rownames(df)),
+                           input = x[1, ],
+                           unique = x[2, ],
+                           unique_perc = 100*(x[2, ]/x[1, ]),
+                           multi_perc = 100*(x[4, ]/x[1, ]),
+                           mapped_perc = 100*((x[4, ]+x[2, ]) / x[1, ]))
+  
+  ## prepare groupwise plots
   if(!is.null(colorByFactor) && nrow(df.stacked) == nrow(targetsdf)) {
     # we want to plot the input reads and the mapped and the multi mapped reads numbers into different plots with different axises separated by one feature
     # we want to plot the same thing as percentages of the total
     # we have to plot per feature and then rearrange
     # we add one plot for the color value where we plot the percentages and color them according to the amount of input reads
-  
+    
     targetsdf$samplemod <- gsub(lcSuffix(targetsdf$sample ), "", targetsdf$sample ) # shorten filename suffix
     if(!is.na(SHINYREPS_PREFIX)) {targetsdf$samplemod  <- gsub(SHINYREPS_PREFIX, "", targetsdf$samplemod)}
     targetsdf$samplemod <- gsub(lcPrefix(targetsdf$sample ), "", targetsdf$sample ) # shorten filename prefix
@@ -963,7 +965,7 @@ DEhelper.STAR <- function(colorByFactor=NULL, targetsdf=targets, ...) {
         colorByFactor <- colorByFactor[colorByFactor %in% colnames(targetsdf)]
       }
     }
-
+    
     targetsdf$filename <- df.stacked$filename[index]
     df.stacked <- merge(df.stacked, targetsdf[,unique(c("filename", colorByFactor)), drop=F], by="filename")
     df.stacked <- df.stacked[order(rownames(df.stacked)),, drop=F]
@@ -973,38 +975,38 @@ DEhelper.STAR <- function(colorByFactor=NULL, targetsdf=targets, ...) {
     # if colorByFactor == NULL or targets does not fit to number of files
     colorByFactor <- "filename"
   } # end groupwise plots
-    
-    
-    # melt data frame for plotting
-    df.melt  <- melt(df.stacked, id.vars=unique(c(colorByFactor, "filename")), variable.name="map_feature")
-   
-    map.feature.plots <- lapply(colorByFactor, function(color.value){
-      p <- ggplot(df.melt[!grepl("(perc)|(unique)", df.melt$map_feature),],
-                  aes_string("map_feature", "value", color=color.value)) +
-        geom_quasirandom() +
-        scale_color_brewer(type= "qual", palette=2)  + # FR changed palette: scale_color_brewer(palette="Paired")+
-        facet_wrap(~map_feature, scales="free") +
-        scale_y_log10() +
-        xlab(NULL) + 
-        ylab("# Reads")
-      p.perc <- ggplot(df.melt[grepl("perc", df.melt$map_feature),],
-                       aes_string("map_feature", "value", color=color.value)) +
-        geom_quasirandom() +
-        scale_color_brewer(type= "qual", palette=2)  + # FR changed palette: scale_color_brewer(palette="Paired")+
-        facet_wrap(~map_feature, scales="free") +
-        xlab(NULL) + 
-        guides(color="none") +
-        ylab("% of input reads")  
-        # theme(axis.text.x=element_text(angle=45, vjust=1, hjust=1))
-      return(list(p.perc,p))
-    })
-    
-    for(i in 1:length(map.feature.plots)){
-      grid.arrange(grobs=map.feature.plots[[i]], layout_matrix= matrix(c(1,2), nrow=1)) 
-    }
-    
-    DT::datatable(df, options = list(pageLength= 20))
-    #return(kable(df, format="markdown", output=F) %>% kable_styling())
+  
+  
+  # melt data frame for plotting
+  df.melt  <- melt(df.stacked, id.vars=unique(c(colorByFactor, "filename")), variable.name="map_feature")
+  
+  map.feature.plots <- lapply(colorByFactor, function(color.value){
+    p <- ggplot(df.melt[!grepl("(perc)|(unique)", df.melt$map_feature),],
+                aes_string("map_feature", "value", color=color.value)) +
+      geom_quasirandom() +
+      scale_color_brewer(type= "qual", palette=2)  + # FR changed palette: scale_color_brewer(palette="Paired")+
+      facet_wrap(~map_feature, scales="free") +
+      scale_y_log10() +
+      xlab(NULL) + 
+      ylab("# Reads")
+    p.perc <- ggplot(df.melt[grepl("perc", df.melt$map_feature),],
+                     aes_string("map_feature", "value", color=color.value)) +
+      geom_quasirandom() +
+      scale_color_brewer(type= "qual", palette=2)  + # FR changed palette: scale_color_brewer(palette="Paired")+
+      facet_wrap(~map_feature, scales="free") +
+      xlab(NULL) + 
+      guides(color="none") +
+      ylab("% of input reads")  
+    # theme(axis.text.x=element_text(angle=45, vjust=1, hjust=1))
+    return(list(p.perc,p))
+  })
+  
+  for(i in 1:length(map.feature.plots)){
+    grid.arrange(grobs=map.feature.plots[[i]], layout_matrix= matrix(c(1,2), nrow=1)) 
+  }
+  
+  DT::datatable(df, options = list(pageLength= 20))
+  #return(kable(df, format="markdown", output=F) %>% kable_styling())
 }
 
 	       
@@ -1013,34 +1015,34 @@ DEhelper.STAR <- function(colorByFactor=NULL, targetsdf=targets, ...) {
 ## DEhelper.Fastqc: go through Fastqc output dir and create a md table with the duplication & read quals & sequence bias plots
 ##
 DEhelper.Fastqc <- function(web=TRUE, ...) {
-    
-    # logs folder
-    if(!file.exists(SHINYREPS_FASTQC_OUT)) {
-        return("Fastqc statistics not available")
-    }
-    
-    # construct the folder name, which is different for web and noweb
-    QC <- if(web) "/fastqc" else SHINYREPS_FASTQC_OUT
-    
-    # construct the image url from the folder contents (skip current dir .)
-    samples <- list.dirs(SHINYREPS_FASTQC_OUT, recursive=F)
-    
-    # select subset of samples for fastqc figures (e.g. merged singlecell pools) or use all samples for samplePattern=NULL
-    samples <- selectSampleSubset(samples, ...)
-    
-    df <- sapply(samples, function(f) {
-        c(paste0("![fastqc img](", QC, "/", basename(f), "/Images/per_base_quality.png)"), 
-          paste0("![fastqc img](", QC, "/", basename(f), "/Images/per_base_sequence_content.png)"),
-          paste0("![fastqc img](", QC, "/", basename(f), "/Images/per_sequence_gc_content.png)"))
-    })
-
-    # set row and column names, and output the md table
-    df <- as.data.frame(t(df))
-    rownames(df) <- gsub(paste0("^", SHINYREPS_PREFIX), "", basename(samples))
-    # rownames(df) <- gsub(lcPrefix(rownames(df)), "", rownames(df)) # remove longest common prefix
-    rownames(df) <- gsub(lcSuffix(rownames(df)), "", rownames(df)) # remove longest common suffix
-    colnames(df) <- c("Read qualities", "Sequence bias", "GC content")
-    kable(df, output=F, align="c")
+  
+  # logs folder
+  if(!file.exists(SHINYREPS_FASTQC_OUT)) {
+    return("Fastqc statistics not available")
+  }
+  
+  # construct the folder name, which is different for web and noweb
+  QC <- if(web) "/fastqc" else SHINYREPS_FASTQC_OUT
+  
+  # construct the image url from the folder contents (skip current dir .)
+  samples <- list.dirs(SHINYREPS_FASTQC_OUT, recursive=F, full.names = T)
+  
+  # select subset of samples for fastqc figures (e.g. merged singlecell pools) or use all samples for samplePattern=NULL
+  samples <- selectSampleSubset(samples, ...)
+  
+  df <- sapply(samples, function(f) {
+    c(paste0("![fastqc img](", f, "/Images/per_base_quality.png)"), 
+      paste0("![fastqc img](", f, "/Images/per_base_sequence_content.png)"),
+      paste0("![fastqc img](", f, "/Images/per_sequence_gc_content.png)"))
+  })
+  
+  # set row and column names, and output the md table
+  df <- as.data.frame(t(df))
+  rownames(df) <- gsub(paste0("^", SHINYREPS_PREFIX), "", basename(samples))
+  rownames(df) <- gsub(lcPrefix(rownames(df)), "", rownames(df)) # remove longest common prefix
+  rownames(df) <- gsub(lcSuffix(rownames(df)), "", rownames(df)) # remove longest common suffix
+  colnames(df) <- c("Read qualities", "Sequence bias", "GC content")
+  kable(df, output=F, align="c")
 }
 
 ##
@@ -1063,13 +1065,15 @@ DEhelper.dupRadar <- function(web=TRUE, ...) {
   QC <- if(web) "/dupRadar" else SHINYREPS_DUPRADAR_LOG
   
   # construct the image url from the folder contents (skip current dir .)
-  samples <- list.files(SHINYREPS_DUPRADAR_LOG, pattern=".png$")
+  samples <- list.files(SHINYREPS_DUPRADAR_LOG, pattern=".png$", full.names=T)
   
   # select subset of samples for fastqc figures (e.g. merged singlecell pools) or use all samples for samplePattern=NULL
   samples <- selectSampleSubset(samples, ...)
   
   df <- sapply(samples, function(f) {
-    paste0("![dupRadar img](", QC, "/", basename(f), ")")
+    # paste0("![dupRadar img](", QC, "/", basename(f), ")")
+    paste0("![dupRadar img](", f, ")")
+    
   })
   
   # put sample names and output an md table of SHINYREPS_PLOTS_COLUMN columns
@@ -1078,6 +1082,7 @@ DEhelper.dupRadar <- function(web=TRUE, ...) {
     x <- sapply(x, function(x) gsub(paste0("^", SHINYREPS_PREFIX), "", basename(x)))
   })
   samples <- gsub(lcSuffix(samples), "", samples)
+  samples <- gsub(lcPrefix(samples), "", samples)
   
   df      <- matrix(df     , ncol=SHINYREPS_PLOTS_COLUMN, byrow=T)
   samples <- matrix(samples, ncol=SHINYREPS_PLOTS_COLUMN, byrow=T)
@@ -1113,7 +1118,8 @@ DEhelper.RNAtypes <- function(...) {
         # f <- list.files(FOLDER, pattern=SUFFIX, full.names = T)[1]
         samplename <- basename(f)
         samplename <- gsub(paste0("^", SHINYREPS_PREFIX), "", samplename)
-        samplename <- gsub(lcSuffix(basename(l.infiles)), "", samplename) # remove longest common suffix
+        samplename <- gsub(lcSuffix(basename(l.infiles)), "", samplename) # remove longest common suffix of l.infiles
+        samplename <- gsub(lcPrefix(basename(l.infiles)), "", samplename) # remove longest common prefix of l.infiles
         df.readcount <- read.table(f, header=T, sep='\t', comment.char = '#', col.names=c("Geneid","Length",samplename))
         df.readcount$Length <- NULL
         return(df.readcount)
@@ -1156,47 +1162,47 @@ DEhelper.RNAtypes <- function(...) {
 ##     the gene coverage plots
 ##
 DEhelper.geneBodyCov <- function(web=TRUE, ...) {
-    
-    # logs folder
-    if(!file.exists(SHINYREPS_GENEBODYCOV_LOG)) {
-        return("geneBodyCov statistics not available")
-    }
-    
-    SHINYREPS_PLOTS_COLUMN <- tryCatch(as.integer(SHINYREPS_PLOTS_COLUMN),error=function(e){3})
-    if(SHINYREPS_PLOTS_COLUMN < 2) {
-        SHINYREPS_PLOTS_COLUMN <- 3L    # default to 3 columns
-    }
-    
-    # construct the folder name, which is different for web and noweb
-    QC <- if(web) "/geneBodyCov" else SHINYREPS_GENEBODYCOV_LOG
-    
-    # construct the image url from the folder contents (skip current dir .)
-    samples <- list.files(SHINYREPS_GENEBODYCOV_LOG, pattern=".png$")
-    
-    # select subset of samples for fastqc figures (e.g. merged singlecell pools) or use all samples for samplePattern=NULL
-    samples <- selectSampleSubset(samples, ...)
-    
-    df <- sapply(samples, function(f) {
-        paste0("![geneBodyCov img](", QC, "/", basename(f), ")")
-    })
-    
-    # put sample names and output in md table of SHINYREPS_PLOTS_COLUMN columns
-    while(length(df) %% SHINYREPS_PLOTS_COLUMN != 0) df <- c(df, "")
-    samples <- sapply(df, function(x) {
-        x <- sapply(x, function(x) gsub(paste0("^", SHINYREPS_PREFIX), "", basename(x)))
-        gsub(paste0(lcSuffix(samples),")"), "", x)
-        # gsub("_geneBodyCov.png)", "", x) # remove longest common suffix
-    })
-
-    df      <- matrix(df     , ncol=SHINYREPS_PLOTS_COLUMN, byrow=T)
-    samples <- matrix(samples, ncol=SHINYREPS_PLOTS_COLUMN, byrow=T)
-    
-    # add a row with the sample names
-    df.names <- matrix(sapply(1:nrow(df), function(i) { c(df[i, ], samples[i, ]) }), 
-                       ncol=SHINYREPS_PLOTS_COLUMN, byrow=T)
-    colnames(df.names) <- rep(" ", SHINYREPS_PLOTS_COLUMN)
-    
-    kable(as.data.frame(df.names), align="c", output=F, format="markdown")
+  
+  # logs folder
+  if(!file.exists(SHINYREPS_GENEBODYCOV_LOG)) {
+    return("geneBodyCov statistics not available")
+  }
+  
+  SHINYREPS_PLOTS_COLUMN <- tryCatch(as.integer(SHINYREPS_PLOTS_COLUMN),error=function(e){3})
+  if(SHINYREPS_PLOTS_COLUMN < 2) {
+    SHINYREPS_PLOTS_COLUMN <- 3L    # default to 3 columns
+  }
+  
+  # construct the folder name, which is different for web and noweb
+  QC <- if(web) "/geneBodyCov" else SHINYREPS_GENEBODYCOV_LOG
+  
+  # construct the image url from the folder contents (skip current dir .)
+  samples <- list.files(SHINYREPS_GENEBODYCOV_LOG, pattern=".png$", full.names = T)
+  
+  # select subset of samples for fastqc figures (e.g. merged singlecell pools) or use all samples for samplePattern=NULL
+  samples <- selectSampleSubset(samples, ...)
+  
+  df <- sapply(samples, function(f) {
+    paste0("![geneBodyCov img](", basename(f), ")")
+  })
+  
+  # put sample names and output in md table of SHINYREPS_PLOTS_COLUMN columns
+  while(length(df) %% SHINYREPS_PLOTS_COLUMN != 0) df <- c(df, "")
+  samples <- sapply(df, function(x) {
+    x <- sapply(x, function(x) gsub(paste0("^", SHINYREPS_PREFIX), "", basename(x)))
+    # gsub("_geneBodyCov.png)", "", x) # remove longest common suffix
+  })
+  samples <- gsub(paste0(lcSuffix(samples)), "", samples)
+  
+  df      <- matrix(df     , ncol=SHINYREPS_PLOTS_COLUMN, byrow=T)
+  samples <- matrix(samples, ncol=SHINYREPS_PLOTS_COLUMN, byrow=T)
+  
+  # add a row with the sample names
+  df.names <- matrix(sapply(1:nrow(df), function(i) { c(df[i, ], samples[i, ]) }), 
+                     ncol=SHINYREPS_PLOTS_COLUMN, byrow=T)
+  colnames(df.names) <- rep(" ", SHINYREPS_PLOTS_COLUMN)
+  
+  kable(as.data.frame(df.names), align="c", output=F, format="markdown")
 }
 
 ##
@@ -1372,9 +1378,10 @@ x.df$skipped_reads <- round(100* (x.df$skipped_reads_total / x.df$input_reads_to
 x.df$counted_reads <- round(100* (x.df$counted_reads_total / x.df$input_reads_total), 2)
 
 
-#reduce size of file names 
+# reduce size of file names 
 row.names(x.df) <- basename(colnames(x))
 row.names(x.df)  <- gsub(lcSuffix(row.names(x.df) ), "", row.names(x.df) )
+row.names(x.df)  <- gsub(lcPrefix(row.names(x.df) ), "", row.names(x.df) )
 if(!is.na(SHINYREPS_PREFIX)) {row.names(x.df) <- gsub(SHINYREPS_PREFIX, "", row.names(x.df))}
 x.df$filename <- factor(row.names(x.df))
 
@@ -1683,21 +1690,24 @@ plotPCAfromQCmetrics <- function(sce, metrics, anno){
 #' @param samples character vector with sample names
 #' @param samplePattern regular expression to apply on \code{samples}
 #' @param exclude logical indicating if selected samples shall be excluded or included
-#'
+#' @param grepInBasename logical. If \code{TRUE} apply pattern to filename, not to full path.
+#' 
 #' @return character vector with selected sample names
 
-selectSampleSubset <- function(samples, samplePattern=NULL, exclude=F, maxno=NULL) {
-    # use all samples for samplePattern=NULL
-    if(!is.null(samplePattern)) {
-      samplefilenames <- basename(samples) # apply pattern to filename, not to full path
-      samples <- samples[grep(samplePattern, samplefilenames, invert=exclude)]
-      if(length(samples)==0) {stop("\nYou have selected no files!\n")}
-    }
-    if(!is.null(maxno)) {
-      samples <- samples[1:min(length(samples), maxno)]
-      if(maxno > length(samples)) {cat("\nSample number restricted to", maxno)}
-    }
-    return(samples)
+selectSampleSubset <- function(samples, samplePattern=NULL, exclude=F, grepInBasename=T, maxno=NULL) {
+  # use all samples for samplePattern=NULL
+  if(!is.null(samplePattern)) {
+    
+    x <- if(grepInBasename) {basename(samples)} else {samples} # if TRUE apply pattern to filename, not to full path
+    samples <- samples[grep(samplePattern, x, invert=exclude)]
+    
+    if(length(samples)==0) {stop("\nYou have selected no files!\n")}
   }
-  
+  if(!is.null(maxno)) {
+    samples <- samples[1:min(length(samples), maxno)]
+    if(maxno > length(samples)) {cat("\nSample number restricted to", maxno)}
+  }
+  return(samples)
+}
+
 

@@ -463,7 +463,8 @@ Summary of cells that don't pass the QC:
 ##### parameter to set:
 # define filtering criteria based on previous QC plots
 type_of_threshold = "absolute" # either "absolute" or "relative" (i.e. using MAD)
-threshold_total_counts = 2000 # lower threshold 2000
+threshold_total_counts_min = 2000 # lower threshold 2000
+threshold_total_counts_max = NULL # may be NULL
 threshold_total_features_by_counts_endogenous = 500 # lower threshold 500
 threshold_pct_counts_Mt = 50 # upper threshold 50
 NMADS =2 # number of absolute deviations from median. Only relevant if type_of_threshold = "relative".
@@ -479,16 +480,18 @@ sce <- sce[,!count.drop]
 
 # apply thresholds
 if(type_of_threshold=="absolute") {
-  libsize.drop <- sce$total_counts < threshold_total_counts
+  libsize.drop <- (sce$total_counts < threshold_total_counts_min) | (sce$total_counts > min(threshold_total_counts_max, max(sce$total_counts)))
   feature.drop <- sce$total_features_by_counts < threshold_total_features_by_counts_endogenous
   mito.drop <- sce$pct_counts_Mt > threshold_pct_counts_Mt
   keep <- !(libsize.drop | feature.drop | mito.drop)
   
-  qcfailed <- data.frame(criterion=c(paste("total counts <", threshold_total_counts),
+  if(!is.null(threshold_total_counts_max)) {threshold_total_counts_max <- paste("or >", threshold_total_counts_max)} # prepare string for output
+  
+  qcfailed <- data.frame(criterion=c(paste("total counts <", threshold_total_counts_min, threshold_total_counts_max),
                                      paste("total features <", threshold_total_features_by_counts_endogenous),
                                      paste("% mitochondrial counts >", threshold_pct_counts_Mt),
                                      paste("remaining")), 
-                         failed=c(sum(libsize.drop), sum(feature.drop), sum(mito.drop), sum(keep)))
+                         cell_count=c(sum(libsize.drop), sum(feature.drop), sum(mito.drop), sum(keep)))
   kable(qcfailed, format="markdown", caption="QC filtering") %>% kable_styling()
   
   } else {
@@ -502,7 +505,7 @@ if(type_of_threshold=="absolute") {
                                      paste("total features <", NMADS, "MAD"),
                                      paste("% mitochondrial counts >", NMADS, "MAD"),
                                      paste("remaining")), 
-                         failed=c(sum(libsize.drop), sum(feature.drop), sum(mito.drop), sum(keep)))
+                         cell_count=c(sum(libsize.drop), sum(feature.drop), sum(mito.drop), sum(keep)))
      kable(qcfailed, format="markdown", caption="QC filtering") %>% kable_styling()
 
   } else {stop("\ntype_of_threshold must be either 'absolute' or 'relative'")}
@@ -538,7 +541,7 @@ pca <- cbind(pca, as.data.frame(colData(sce)[match(rownames(pca), colnames(sce))
 ## extract all dropped samples
 #df <- subset(pca, libsize | feature | mito | libsize.high)
 df <- subset(pca, libsize | feature | mito)
-df$libsize.word      <- ifelse(df$libsize==TRUE,"lib size too low","")
+df$libsize.word      <- ifelse(df$libsize==TRUE,"lib size","")
 #df$libsize.high.word <- ifelse(df$libsize.high==TRUE,"lib size too high","")
 df$feature.word      <- ifelse(df$feature==TRUE,"genes detected","")
 df$mito.word         <- ifelse(df$mito==TRUE,"Mt fraction","")
@@ -550,7 +553,8 @@ df.kept <- subset(pca, !(libsize | feature | mito))
 if(!is.null(annoFactors)) {
   if(length(annoFactors) !=1) {annoFactors <- annoFactors[1]} # just 1 annoFactor can be illustrated
   if(annoFactors %in% c("group", "group_name")) {
-      annoFactors.name <- paste0(annoFactors, ".1")} # the terms "group" and "group_name" are occupied by runPCA
+      annoFactors.name <- paste0(annoFactors, ".1")} else { # the terms "group" and "group_name" are occupied by runPCA
+      annoFactors.name <- annoFactors}  
   annoFactors.name <- rlang::ensym(annoFactors.name)
   } else {
   annoFactors.name <- NULL}
