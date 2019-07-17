@@ -8,8 +8,8 @@ InsertSize = {
 		author: "Nastasja Kreim"
 
 	output.dir=INSERTSIZE_OUTDIR
-	def INSERTSIZE_FLAGS = "ASSUME_SORTED=TRUE"
-	def JAVA_FLAGS  = "-Xmx" + INSERTSIZE_MAXMEM + "m"
+	def INSERTSIZE_FLAGS = INSERTSIZE_OTHER
+	def JAVA_FLAGS  = INSERTSIZE_MAXMEM 
 
 	transform(".bam") to ("_insertsizemetrics.tsv") {
 		exec """
