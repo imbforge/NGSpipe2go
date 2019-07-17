@@ -1018,6 +1018,7 @@ Identification of sub-populations with t-SNE, trying different perplexity values
 # define up to 2 categories to be indicated in the plot by color and shape.
 annoFactors <- c("group", "pool")
 #####
+set.seed(100)
 
 if(length(annoFactors)>2) {stop("\nno more than 2 categories allowed in 'annoFactors'.")}
   dotcol <- annoFactors[1]
@@ -1037,7 +1038,7 @@ for(type in names(hvg.cor.list)){
     plotTSNE(sce.tmp,  rerun = T, 
              colour_by=dotcol, shape_by=dotshape,
              run_args=list(perplexity=p,
-                           rand_seed=100, ntop=nrow(sce.tmp), # feature_set overwrites ntop
+                           ntop=nrow(sce.tmp), # feature_set overwrites ntop
                            feature_set=top.hvg)) +
       ggtitle(paste("t-SNE plot of top correlated HVGs with perplexity", p))
   }, mc.cores=1), cols=2))
@@ -1047,7 +1048,7 @@ for(type in names(hvg.cor.list)){
     plotTSNE(sce.tmp, rerun = T, # FR add rerun = T
              colour_by=dotcol, shape_by=dotshape,
              run_args=list(perplexity=p,
-                           rand_seed=100, ntop=nrow(sce.tmp), # feature_set overwrites ntop
+                           ntop=nrow(sce.tmp), # feature_set overwrites ntop
                            feature_set=top.hvg)) +
       ggtitle(paste("group:", type, "with perplexity", p))
   }, mc.cores=1), cols=2))
@@ -1067,6 +1068,7 @@ Identification of sub-populations with UMAP plots (uniform manifold approximatio
 # define up to 2 categories to be indicated in the plot by color and shape.
 annoFactors <- c("group", "pool")
 #####
+set.seed(100)
 
 if(length(annoFactors)>2) {stop("\nno more than 2 categories allowed in 'annoFactors'.")}
   dotcol <- annoFactors[1]
@@ -1082,14 +1084,13 @@ for(type in names(hvg.cor.list)){
 
   umap1 <- plotUMAP(sce.tmp,  rerun = T, 
              colour_by=dotcol, shape_by=dotshape,
-             run_args=list(rand_seed=100, 
-                           ntop=nrow(sce.tmp) # ntop default is 500
+             run_args=list(ntop=nrow(sce.tmp) # ntop default is 500
                            )) +  
       ggtitle(paste("UMAP of all genes"))
     
   umap2 <- plotUMAP(sce.tmp, rerun = T, 
              colour_by=dotcol, shape_by=dotshape,
-             run_args=list(rand_seed=100, ntop=nrow(sce.tmp), 
+             run_args=list(ntop=nrow(sce.tmp), 
                            feature_set=top.hvg)) + # feature_set overwrites ntop
       ggtitle(paste("UMAP of cor HVGs"))
     
@@ -1100,14 +1101,13 @@ for(type in names(hvg.cor.list)){
 
    umap1 <- plotUMAP(sce.tmp, rerun = T, 
              colour_by=dotcol, shape_by=dotshape,
-             run_args=list(rand_seed=100, 
-                           ntop=nrow(sce.tmp) # ntop default is 500
+             run_args=list(ntop=nrow(sce.tmp) # ntop default is 500
                            )) +  
       ggtitle(paste("UMAP of all genes for group:", type))
     
    umap2 <-   plotUMAP(sce.tmp, rerun = T, 
              colour_by=dotcol, shape_by=dotshape,
-             run_args=list(rand_seed=100, ntop=nrow(sce.tmp), 
+             run_args=list(ntop=nrow(sce.tmp), 
                            feature_set=top.hvg)) + # feature_set overwrites ntop
       ggtitle(paste("UMAP of cor HVGs for group:", type))
    
