@@ -824,62 +824,64 @@ DEhelper.edgeR.DEgenes <- function(i=1) {
 ## DEhelper.STAR: parse STAR log files and create a md table
 ##
 DEhelper.STARparms <- function() {
+  
+  # log file
+  LOG <- SHINYREPS_STAR_LOG
+  SUFFIX <- paste0(SHINYREPS_STARparms_SUFFIX, '$')
+  if(!file.exists(LOG)) {
+    return("STAR statistics not available")
+  }
+  
+  # look for the lines containing the strings and get the values associated with this strings
+  parseLog <- function(f) {
+    # read in the lines
+    #f <- file(paste0(LOG, "/", f))
+    f <- file(f)
+    l <- readLines(f)
+    close(f)
     
-    # log file
-    LOG <- SHINYREPS_STAR_LOG
-    SUFFIX <- paste0(SHINYREPS_STARparms_SUFFIX, '$')
-    if(!file.exists(LOG)) {
-        return("STAR statistics not available")
-    }
+    # get the version number from the first line (STAR svn revision compiled=STAR_2.3.1z13_r470)
+    v <- unlist(strsplit(l[1], "="))[2]
     
-    # look for the lines containing the strings and get the values associated with this strings
-    parseLog <- function(f) {
-        # read in the lines
-        f <- file(paste0(LOG, "/", f))
-        l <- readLines(f)
-        close(f)
-        
-        # get the version number from the first line (STAR svn revision compiled=STAR_2.3.1z13_r470)
-        v <- unlist(strsplit(l[1], "="))[2]
-        
-        # get the redifined parameters and parse them in a key-value data.frame
-        redefined <- l[grep("\\s+\\~RE-DEFINED$", l)]
-        redefined <- sapply(redefined, function(x) {
-            x <- unlist(strsplit(gsub("\\s+\\~RE-DEFINED$", "", x), "\\s+"))
-            x[2] <- if(length(x) < 2) "" else x[2]
-            x[2] <- shorten(x[2])
-            x[c(1, 2)]
-        })
-
-        # take the 1st time a parm appears re-defined (skip re-defined in index generation)
-        redefined <- redefined[, !duplicated(redefined[1, ])] 
-
-        # create a vector with the values
-        x <- redefined[2, ]
-        names(x) <- redefined[1, ]
-        
-        # put the STAR version number
-        x <- c(version=v, x)
-        return(x)
-    }
-    df <- sapply(list.files(LOG, pattern=SUFFIX), parseLog)
+    # get the redifined parameters and parse them in a key-value data.frame
+    redefined <- l[grep("\\s+\\~RE-DEFINED$", l)]
+    redefined <- sapply(redefined, function(x) {
+      x <- unlist(strsplit(gsub("\\s+\\~RE-DEFINED$", "", x), "\\s+"))
+      x[2] <- if(length(x) < 2) "" else x[2]
+      x[2] <- shorten(x[2])
+      x[c(1, 2)]
+    })
     
-    # remove variable lines (lines depending on the fastq.gz file name)
-    # and check if all the columns contain the same value. Display a warning otherwise
-    df <- df[!grepl("(outFileNamePrefix|outTmpDir|readFilesIn)", rownames(df)), ]
-    l <- apply(df, 1, function(x) length(unique(x)))    # rows differing (l > 1)
-    df <- as.data.frame(df[, 1, drop=F])    # keep only the first column
-    colnames(df) <- "parms"
-    df$warning[l > 1] <- "Some files aligned with a different parm. Check logs"
+    # take the 1st time a parm appears re-defined (skip re-defined in index generation)
+    redefined <- redefined[, !duplicated(redefined[1, ])] 
     
-    # set row and column names, and output the md table
-    if(all(is.na(df$warning))) {
-        #kable(df[, 1, drop=F], align=c("r"), output=F)
-      kable(df[, 1, drop=F]) %>% kable_styling()
-    } else {
-        #kable(df, align=c("r", "r"), output=F)
-      kable(df) %>% kable_styling()
-      }
+    # create a vector with the values
+    x <- redefined[2, ]
+    names(x) <- redefined[1, ]
+    
+    # put the STAR version number
+    x <- c(version=v, x)
+    return(x)
+  }
+  df <- sapply(list.files(LOG, pattern=SUFFIX, full.names = T), parseLog)
+  colnames(df) <- basename(colnames(df))
+  
+  # remove variable lines (lines depending on the fastq.gz file name)
+  # and check if all the columns contain the same value. Display a warning otherwise
+  df <- df[!grepl("(outFileNamePrefix|outTmpDir|readFilesIn)", rownames(df)), ]
+  l <- apply(df, 1, function(x) length(unique(x)))    # rows differing (l > 1)
+  df <- as.data.frame(df[, 1, drop=F])    # keep only the first column
+  colnames(df) <- "parms"
+  df$warning[l > 1] <- "Some files aligned with a different parm. Check logs"
+  
+  # set row and column names, and output the md table
+  if(all(is.na(df$warning))) {
+    #kable(df[, 1, drop=F], align=c("r"), output=F)
+    kable(df[, 1, drop=F]) %>% kable_styling()
+  } else {
+    #kable(df, align=c("r", "r"), output=F)
+    kable(df) %>% kable_styling()
+  }
 }
 
 ##
@@ -1174,7 +1176,7 @@ DEhelper.geneBodyCov <- function(web=TRUE, ...) {
   }
   
   # construct the folder name, which is different for web and noweb
-  QC <- if(web) "/geneBodyCov" else SHINYREPS_GENEBODYCOV_LOG
+  # QC <- if(web) "/geneBodyCov" else SHINYREPS_GENEBODYCOV_LOG
   
   # construct the image url from the folder contents (skip current dir .)
   samples <- list.files(SHINYREPS_GENEBODYCOV_LOG, pattern=".png$", full.names = T)
@@ -1183,16 +1185,15 @@ DEhelper.geneBodyCov <- function(web=TRUE, ...) {
   samples <- selectSampleSubset(samples, ...)
   
   df <- sapply(samples, function(f) {
-    paste0("![geneBodyCov img](", basename(f), ")")
+    paste0("![geneBodyCov img](", f, ")")
   })
+  names(df) <- basename(names(df))
+  names(df) <- gsub(lcSuffix(names(df)), "", names(df))
+  names(df) <- gsub(lcPrefix(names(df)), "", names(df))
   
   # put sample names and output in md table of SHINYREPS_PLOTS_COLUMN columns
   while(length(df) %% SHINYREPS_PLOTS_COLUMN != 0) df <- c(df, "")
-  samples <- sapply(df, function(x) {
-    x <- sapply(x, function(x) gsub(paste0("^", SHINYREPS_PREFIX), "", basename(x)))
-    # gsub("_geneBodyCov.png)", "", x) # remove longest common suffix
-  })
-  samples <- gsub(paste0(lcSuffix(samples)), "", samples)
+  samples <- names(df)
   
   df      <- matrix(df     , ncol=SHINYREPS_PLOTS_COLUMN, byrow=T)
   samples <- matrix(samples, ncol=SHINYREPS_PLOTS_COLUMN, byrow=T)
