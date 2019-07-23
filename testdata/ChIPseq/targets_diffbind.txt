@@ -1,0 +1,5 @@
+SampleID	Condition	Replicate	bamReads	ControlID	bamControl	Peaks	PeakCaller
+NF_YA_ESC_1	NF_YA_ESC	1	./mapped/NF_YA_ESC_1.bam	Input	./mapped/Input.bam	./results/NF_YA_ESC_1.tsv	macs
+NF_YA_ESC_2	NF_YA_ESC	2	./mapped/NF_YA_ESC_2.bam	Input	./mapped/Input.bam	./results/NF_YA_ESC_2.tsv	macs
+NF_YA_TN_1	NF_YA_TN	1	./mapped/NF_YA_TN_1.bam	Input	./mapped/Input.bam	./results/NF_YA_TN_1.tsv	macs
+NF_YA_TN_2	NF_YA_TN	2	./mapped/NF_YA_TN_2.bam	Input	./mapped/Input.bam	./results/NF_YA_TN_2.tsv	macs

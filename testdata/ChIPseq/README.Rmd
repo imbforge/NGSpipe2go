@@ -1,0 +1,19 @@
+Obtained from the `chpseqDB` Bioconductor [package](http://bioconductor.org/packages/release/workflows/html/chipseqDB.html)
+Five NF-YA (nuclear transcription factor Y subunit alpha) ChIP-seq libraries, with two biological replicates for murine terminal neurons, two replicates for embryonic stem cells and one input ontrol. This uses single-end sequencing data from accession GSE25532 of the NCBI Gene Expression Omnibus.
+
+
+```{r}
+if(!require(chipseqDBData)) {
+  BiocManager::install("chipseqDBData")
+  require(chipseqDBData)
+}
+
+nfyadata <- NFYAData()
+nfyadata$name <- gsub("[- ]", "_", gsub("[\\(\\)]", "", nfyadata$Description))
+dir.create("./rawdata", showWarnings=FALSE)
+Map(name=nfyadata$name, path=nfyadata$Path, function(name, path) {
+  system(paste0("/fsimb/common/tools/samtools/1.9/bin/samtools bam2fq ", path,
+                " | /fsimb/common/tools/pigz/2.4/pigz -p8 > ./rawdata/", name, ".fastq.gz"))
+})
+```
+
