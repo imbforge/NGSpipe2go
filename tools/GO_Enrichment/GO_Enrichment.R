@@ -99,8 +99,8 @@ processContrast <-  function(x) {
         
         enriched         <- enrichGO(entrezDeId$ENTREZID, OrgDb=orgDb[org], keyType="ENTREZID", ont="BP", readable=TRUE,
                                      universe=if(univ == "all") orgDb[org] else entrezUnivId$ENTREZID)
-        enrichedKEGG     <- enrichKEGG(entrezDeId$ENTREZID, org, universe=entrezUnivId$ENTREZID)
-        enrichedReactome <- enrichPathway(entrezDeId$ENTREZID, org, readable=TRUE, universe=entrezUnivId$ENTREZID)
+        enrichedKEGG     <- enrichKEGG(entrezDeId$ENTREZID, keyType="ncbi-geneid", organism=org, universe=entrezUnivId$ENTREZID)
+        enrichedReactome <- enrichPathway(entrezDeId$ENTREZID, organism=org, readable=TRUE, universe=entrezUnivId$ENTREZID)
              
         # filter enriched results by gene count
         enriched         <- gsfilter(enriched, by = "Count", min = 2)
