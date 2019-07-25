@@ -6,6 +6,9 @@
 library("knitr")        # for markdown output
 library("ChIPpeakAnno")	#for peak venn diagrams
 library("RColorBrewer")
+library("gridExtra")
+library("dplyr")
+library("tidyr")
 
 ##
 ## loadGlobalVars: read configuration from bpipe vars
@@ -343,6 +346,139 @@ DEhelper.insertsize <- function(){
 	kable(insertsizes, output=F, align=c("l"), format="markdown")
 }
 
+
+# Helper to plot the insertsize histogram equivalent to the one from picard
+# Input is the Picard generated metrics file
+DEhelper.insertsize.helper <- function(metricsFile){
+  #find the start of our metrics informatioun 
+  startFinder <- scan(metricsFile, what="character", sep="\n", quiet=TRUE, blank.lines.skip=FALSE)
+  
+  firstBlankLine=0
+  
+  for (i in 1:length(startFinder)) {
+    if (startFinder[i] == "") {
+      if (firstBlankLine == 0) {
+        firstBlankLine = i+1
+      } else {
+        secondBlankLine = i+1
+        break
+      }
+    }
+  }
+  
+  histogram <- read.table(metricsFile, header=TRUE, sep="\t", skip=secondBlankLine, comment.char="", quote='', check.names=FALSE)
+  
+  ## The histogram has a fr_count/rf_count/tandem_count for each metric "level"
+  ## This code parses out the distinct levels so we can output one graph per level
+  headers <- sapply(sub(".fr_count","",names(histogram),fixed=TRUE), "[[" ,1)
+  headers <- sapply(sub(".rf_count","",headers,fixed=TRUE), "[[" ,1)
+  headers <- sapply(sub(".tandem_count","",headers,fixed=TRUE), "[[" ,1)
+  
+  ## Duplicate header names could cause this to barf.  But it really shouldn't when we have "All_reads.fr_count" and 
+  ## "All_reads.rf_count" for example.  Not sure why this would fail, but I care.
+  if (any(duplicated(headers))) {
+    levels = unique(headers[2:length(headers)]);
+  } else {
+    levels <- c()
+    for (i in 2:length(headers)) {
+      if (!(headers[i] %in% levels)) {
+        levels[length(levels)+1] <- headers[i]
+      }
+    }
+  }
+  
+  title_info <- gsub("_insertsizemetrics.tsv$", "", gsub(SHINYREPS_PREFIX, "", basename(metricsFile)))
+  
+  #we get the histogram which ahs the names of the leves e.g. all_reads and readgroups/sample groups depending on
+  #accumulation level which was used.
+  #the colnames of histogram are something like all.read.fr_count, all.read.rf_count etc.
+  #to get the whole shebang into a wider format we have to add the information
+  hist_long <- melt(histogram, id.var = "insert_size") %>% 
+    separate( variable, 
+              sep = "\\.",
+              into = c("group", "counttype" )) %>%
+    rename( amount = value)
+  #we also have to add the comulative sum per group to the whole shebang
+  hist_long <- hist_long %>% group_by(group) %>% 
+    arrange( desc(insert_size)) %>% 
+    mutate( cumulative = (cumsum(amount)/sum(amount))*max(amount))
+  #1. Create one plot per group (all_reads etc)
+  #2. save the plots in a list
+  #3. use arrangeGrob to arrange
+  hist_long <- split(hist_long, hist_long$group)
+  hist_plots <- lapply(hist_long, function(hist_data){
+    p <- ggplot(hist_data, aes(x    = insert_size,
+                               y    = amount,
+                               fill = counttype)) +
+      geom_bar( stat = "identity", 
+                position = "identity",
+                alpha=0.7) +
+      scale_fill_hue( c=50, l=40) +
+      geom_line(aes(x = insert_size,
+                    y = cumulative),
+                linetype = "dashed",
+                color    = "grey") +
+      scale_y_continuous( name="# reads",
+                          sec.axis = sec_axis(~./max(hist_data$amount),
+                                                    name = "Cumulative fraction of reads > insert size")) +
+                           xlab("insert size in bp") +
+                           theme_bw() +
+      facet_grid(~group)
+      return(p)
+})
+ 
+ hist_plot <- arrangeGrob(grobs = hist_plots,
+                           top = textGrob(title_info)) 
+ return(hist_plot)
+
+}
+
+## 
+## DEhelper.subchunkify: small function stolen from here 
+##http://michaeljw.com/blog/post/subchunkify/
+## to dynamically create chunks and adjust their size accordingly.
+##
+DEhelper.subchunkify <- function(g, fig_height=7, fig_width=5) {
+  g_deparsed <- paste0(deparse(
+    function() {grid.draw(g)}
+  ), collapse = '')
+  
+  sub_chunk <- paste0("`","``{r sub_chunk_", floor(runif(1) * 10000),
+                      ", fig.height=", fig_height,
+                      ", fig.width=", fig_width,
+                      ", echo=FALSE}","\n(", 
+                      g_deparsed, ")()",
+                      "\n`","``")
+  
+  cat(knitr::knit(text = knitr::knit_expand(text = sub_chunk), quiet = TRUE))
+}
+
+
+##
+##DEhelper.insertsize.plot: get the insertsize histograms and display them 
+##
+DEhelper.insertsize.plot <- function(){
+  # logs folder
+  SHINYREPS_PLOTS_COLUMN <- tryCatch(as.integer(SHINYREPS_PLOTS_COLUMN),
+                                     error=function(e){3})
+  if(SHINYREPS_PLOTS_COLUMN < 2) {
+    SHINYREPS_PLOTS_COLUMN <- 3L    # default to 3 columns
+  }
+  if (SHINYREPS_PAIRED == "yes" &
+      length(list.files(path = SHINYREPS_INSERTSIZE,
+                        pattern = "insertsizemetrics.tsv$")) > 0) {
+    samples <- list.files(path = SHINYREPS_INSERTSIZE,
+                          full.names = TRUE,
+                          pattern = "insertsizemetrics.tsv$")
+    #we generate the plots
+    insert_plots <- lapply(samples, 
+                           DEhelper.insertsize.helper)
+    return(arrangeGrob(grobs = insert_plots,
+                       ncol = SHINYREPS_PLOTS_COLUMN))
+  }else{
+    return("No insertsize histograms available.")
+  }
+}
 ##
 ## ChIPhelper.IPstrength: go through IPstrength output dir and create a md table with
 ##     the plots
