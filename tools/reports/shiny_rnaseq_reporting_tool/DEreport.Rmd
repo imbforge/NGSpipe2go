@@ -66,16 +66,26 @@ To view the tracks in the UCSC Genome Browser, navigate to the [UCSC Genome Brow
 cat(DEhelper.Trackhub(), sep="\n")
 ```
 
+
 ## Insert Size (for paired-end sequencing) ##
 
-```{r echo=F,results='asis',error=F,warning=F,message=F}
+```{r echo=F, error=F, fig.width=15, message=FALSE, warning=FALSE, results='asis'}
 
 if (!file.exists(SHINYREPS_INSERTSIZE)) {
 	cat("Insert size data not available.")
 	} else {
 	cat(DEhelper.insertsize(), sep="\n")
+	p <- DEhelper.insertsize.plot()
+	sample_length <- length(list.files(SHINYREPS_INSERTSIZE, 
+	                                   pattern = "insertsizemetrics.tsv$"))
+  DEhelper.subchunkify(p, 
+                       fig_height = 3*sample_length,
+                       fig_width = 15)
 	}
+
+
 ```
+
 
 ## Library complexity assessment ##
 
