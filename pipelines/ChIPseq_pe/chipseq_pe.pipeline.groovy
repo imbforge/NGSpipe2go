@@ -51,6 +51,9 @@ load MODULE_FOLDER + "ChIPseq/blacklist_filter.module.groovy"
 load MODULE_FOLDER + "ChIPseq/peak_annotation.vars.groovy"
 load MODULE_FOLDER + "ChIPseq/peak_annotation.module.groovy"  
 
+load MODULE_FOLDER + "ChIPseq/diffbind.vars.groovy"
+load MODULE_FOLDER + "ChIPseq/diffbind.module.groovy"
+
 load MODULE_FOLDER + "ChIPseq/GREAT.vars.groovy"
 load MODULE_FOLDER + "ChIPseq/GREAT.module.groovy"             
 
@@ -68,6 +71,7 @@ run {
     "%.fastq.gz" * [ FastQC ] + "%.R*.fastq.gz" * 
     [ bowtie2_pe + BAMindexer + BamQC + filbowtie2unique + BAMindexer + RmDups + BAMindexer +
     [ bamCoverage, InsertSize, ipstrength, macs2 ] ]  + 
+    // diffbind +
     // trackhub_config + trackhub +
     peak_annotation + collectBpipeLogs + shinyReports
 }
@@ -80,6 +84,7 @@ run {
 //    "%.fastq.gz" * [ FastQC ] + "%.R*.fastq.gz" * 
 //    [ bowtie2_pe + BAMindexer + BamQC + 
 //    [ MarkDups + BAMindexer, bamCoverage, InsertSize, ipstrength, macs2 ] ] + 
+//    diffbind +
 //    // trackhub_config + trackhub +
 //    peak_annotation + collectBpipeLogs + shinyReports
 //}

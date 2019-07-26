@@ -252,10 +252,15 @@ for(i in 1:length(levels(targets$group))) {
 }
 ```
 
+## Differential binding analysis {.tabset}
+
+```{r diffbind, echo=F, results='asis', error=F, warning=F, message=F, fig.align="center"}
+invisible(ChIPhelper.diffbind())
+```
+
 ## Used tools and versions for this analysis ##
 ```{r ToolVersions_paragraph, echo=F, results='asis', error=F, warning=F, message=F}
 cat(Toolhelper.ToolVersions(), sep="\n")
 ```
-
 
 </div>

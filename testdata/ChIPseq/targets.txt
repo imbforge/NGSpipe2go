@@ -1,5 +1,5 @@
 IP	IPname	INPUT	INPUTname	group
-NF_YA_ESC_1.bam	NF_YA_ESC	1	Input.bam	Input	NF_YA_ESC_1
-NF_YA_ESC_2.bam	NF_YA_ESC	2	Input.bam	Input	NF_YA_ESC_2
-NF_YA_TN_1.bam	NF_YA_TN	1	Input.bam	Input	NF_YA_TN_1
-NF_YA_TN_2.bam	NF_YA_TN	2	Input.bam	Input	NF_YA_TN_2
+NF_YA_ESC_1.dupmarked.bam	NF_YA_ESC	Input.dupmarked.bam	Input	NF_YA_ESC
+NF_YA_ESC_2.dupmarked.bam	NF_YA_ESC	Input.dupmarked.bam	Input	NF_YA_ESC
+NF_YA_TN_1.dupmarked.bam	NF_YA_TN	Input.dupmarked.bam	Input	NF_YA_TN
+NF_YA_TN_2.dupmarked.bam	NF_YA_TN	Input.dupmarked.bam	Input	NF_YA_TN
