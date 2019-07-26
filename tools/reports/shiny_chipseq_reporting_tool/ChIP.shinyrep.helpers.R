@@ -537,8 +537,7 @@ ChIPhelper.diffbind <- function() {
   
   # read the results (if available
   if(!file.exists(file.path(SHINYREPS_DIFFBIND, "diffbind.rds"))) {
-    cat("### ", x.name, "\n",
-        "Differential binding analysis not available.\n", fill=TRUE)
+    cat("Differential binding analysis not available.\n", fill=TRUE)
     return()
   }
   res <- readRDS(file.path(SHINYREPS_DIFFBIND, "diffbind.rds"))
