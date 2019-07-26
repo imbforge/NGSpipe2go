@@ -27,3 +27,9 @@ REPORTS=PROJECT + "/reports"
 RESULTS=PROJECT + "/results"
 TMP=PROJECT + "/tmp"
 TRACKS=PROJECT + "/tracks"
+
+// optional pipeline stages to include
+RUN_USING_UNFILTERED_BAM=false  // has effect only for PE data. Defaults to false (remove duplicates from BAM file)
+RUN_PEAK_ANNOTATION=true
+RUN_DIFFBIND=false
+RUN_TRACKHUB=false

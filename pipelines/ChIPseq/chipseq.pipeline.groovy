@@ -55,7 +55,7 @@ load MODULE_FOLDER + "ChIPseq/peak_annotation.vars.groovy"
 load MODULE_FOLDER + "ChIPseq/peak_annotation.module.groovy"               
 
 load MODULE_FOLDER + "ChIPseq/diffbind.vars.groovy"
-load MODULE_FOLDER + "ChIPseq/diffbind.module.groovy"
+load MODULE_FOLDER + "ChIPseq/diffbind.module.groovy"               
 
 load MODULE_FOLDER + "ChIPseq/GREAT.vars.groovy"
 load MODULE_FOLDER + "ChIPseq/GREAT.module.groovy"             
@@ -66,12 +66,12 @@ load MODULE_FOLDER + "ChIPseq/shinyreports.vars.groovy"
 load MODULE_FOLDER + "ChIPseq/shinyreports.module.groovy"
 
 //MAIN PIPELINE TASK
-run {
-	"%.fastq.gz" * 
-	[ FastQC , bowtie_se + BAMindexer + MarkDups + BAMindexer + BamQC +
-  [ extend + bamCoverage , phantompeak , pbc , ipstrength , macs2 ] ] + 
-	peak_annotation +
-//  diffbind +
-//	trackhub_config + trackhub + 
+dontrun = segment { }
+Bpipe.run {
+  "%.fastq.gz" * [ FastQC , bowtie_se + BAMindexer + MarkDups + BAMindexer + [ extend + bamCoverage, BamQC , phantompeak , pbc , ipstrength , macs2 ] ] +
+  (RUN_PEAK_ANNOTATION ? peak_annotation : dontrun) +
+  (RUN_DIFFBIND ? diffbind : dontrun) +
+  (RUN_TRACKHUB ? trackhub_config + trackhub : dontrun) +
   collectBpipeLogs + shinyReports
 }
+

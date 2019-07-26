@@ -67,25 +67,25 @@ load MODULE_FOLDER + "ChIPseq/shinyreports_pe.module.groovy"
 // assumes that duplicated library fragments are unwanted PCR artifacts
 // discards multimapping reads as habitually done in most ChIP-seq studies
 //
-run {
-    "%.fastq.gz" * [ FastQC ] + "%.R*.fastq.gz" * 
-    [ bowtie2_pe + BAMindexer + BamQC + filbowtie2unique + BAMindexer + RmDups + BAMindexer +
-    [ bamCoverage, InsertSize, ipstrength, macs2 ] ]  + 
-    // diffbind +
-    // trackhub_config + trackhub +
-    peak_annotation + collectBpipeLogs + shinyReports
+filter_bam = segment {
+  [ bowtie2_pe + BAMindexer + BamQC + filbowtie2unique + BAMindexer + RmDups + BAMindexer + [ bamCoverage, InsertSize, ipstrength, macs2 ] ]
 }
 
 // alternative PE workflow using the unfiltered BAM files
 // may be preferable when studying some types of repetetive regions
 // make sure to have ESSENTIAL_DUP="auto" for MACS2 peak calling
-//
-// run {
-//    "%.fastq.gz" * [ FastQC ] + "%.R*.fastq.gz" * 
-//    [ bowtie2_pe + BAMindexer + BamQC + 
-//    [ MarkDups + BAMindexer, bamCoverage, InsertSize, ipstrength, macs2 ] ] + 
-//    diffbind +
-//    // trackhub_config + trackhub +
-//    peak_annotation + collectBpipeLogs + shinyReports
-//}
+dont_filter_bam = segment {
+  [ bowtie2_pe + BAMindexer + BamQC + [ MarkDups + BAMindexer, bamCoverage, InsertSize, ipstrength, macs2 ] ]
+}
+
+//MAIN PIPELINE TASK
+dontrun = segment { }
+Bpipe.run {
+    "%.fastq.gz" * [ FastQC ] + "%.R*.fastq.gz" * 
+    (RUN_USING_UNFILTERED_BAM ? dont_filter_bam : filter_bam) +
+    (RUN_DIFFBIND ? diffbind : dontrun) +
+    (RUN_TRACKHUB ? trackhub_config + trackhub : dontrun) +
+    (RUN_PEAK_ANNOTATION ? peak_annotation : dontrun) +
+    collectBpipeLogs + shinyReports
+}
 
