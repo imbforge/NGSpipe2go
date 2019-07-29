@@ -49,9 +49,9 @@ CWD        <- parseArgs(args,"cwd=","./")     # current working directory
 BAMS       <- parseArgs(args,"bams=",paste0(CWD, "/mapped"))  # directory with the bam files
 OUT        <- parseArgs(args,"out=", paste0(CWD, "/results")) # directory where the output files will go
 FRAGSIZE   <- parseArgs(args,"fragsize=", 200, "as.numeric")# fragment size
-SUBSTRACTCONTROL  <- parseArgs(args,"substractControl=", "TRUE", "as.logical")  # substract input
-FULLLIBRARYSIZE   <- parseArgs(args,"fullLibrarySize=", "TRUE", "as.logical")   # use total number of reads in bam for normalization (FALSE=only peaks)
-TAGWISEDISPERSION <- parseArgs(args,"tagwiseDispersion=", "TRUE", "as.logical") # calculate dispersion tagwise (use FALSE if no replicates)
+SUBSTRACTCONTROL  <- parseArgs(args,"substractControl=", TRUE, "as.logical")  # substract input
+FULLLIBRARYSIZE   <- parseArgs(args,"fullLibrarySize=", TRUE, "as.logical")   # use total number of reads in bam for normalization (FALSE=only peaks)
+TAGWISEDISPERSION <- parseArgs(args,"tagwiseDispersion=", TRUE, "as.logical") # calculate dispersion tagwise (use FALSE if no replicates)
 ANNOTATE   <- parseArgs(args,"annotate=", TRUE, "as.logical") # annotate after DB analysis?
 PE         <- parseArgs(args,"pe=", FALSE, "as.logical")      # paired end experiment?
 TSS        <- parseArgs(args,"tss=", c(-3000,3000), "run_custom_code") # region around the tss
