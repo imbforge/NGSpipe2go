@@ -12,6 +12,9 @@ diffbind = {
                          DIFFBIND_OUTDIR    + " " +
                          DIFFBIND_BAMS      + " " +
                          DIFFBIND_FRAGSIZE  + " " +
+                         DIFFBIND_SUBSTRACTCONTROL  + " " +
+                         DIFFBIND_FULLLIBRARYSIZE   + " " +
+                         DIFFBIND_TAGWISEDISPERSION + " " +
                          DIFFBIND_ANNOTATE  + " " +
                          DIFFBIND_TSS       + " " +
                          DIFFBIND_TXDB      + " " +
