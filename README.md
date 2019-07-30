@@ -2,7 +2,7 @@
 
 # NGSpipe2go #
 
-A set of NGS data analysis tools and pipelines developed and utilised at the Institute of Molecular Biology gGmbH in Mainz (https://www.imb.de/).
+An opinionated framework for building pipelines. It comprises set of NGS data analysis tools and pipelines developed and utilised at the Institute of Molecular Biology gGmbH in Mainz (https://www.imb.de/).
 
 ![NGSpipe2go scheme](resources/NGSpipe2go_scheme.png)
 
