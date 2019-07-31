@@ -1,5 +1,5 @@
-//rule for task phantompeak from catalog ChIPseq, version 1
-//desc: Phantompeak
+load MODULE_FOLDER + "ChIPseq/phantompeak.vars.groovy"
+
 phantompeak = {
     doc title: "Phantompeak QC  plot",
         desc:  "Phantompeak",
@@ -19,7 +19,7 @@ phantompeak = {
     transform(".bam") to("_phantompeak.png") {
         exec """
             module load R/${R_VERSION} &&
-            
+
             Rscript ${TOOL_ENCODEqc}/phantompeak.R $input \$(basename $input.prefix) $PHANTOMPEAK_FLAGS &&
             mv *_phantompeak.* $output.dir
         ""","phantompeak"

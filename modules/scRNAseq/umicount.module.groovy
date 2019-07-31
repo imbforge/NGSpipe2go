@@ -1,5 +1,5 @@
-//rule for task 
-//desc: count the reads per gene and split based on cell barcode 
+load MODULE_FOLDER + "scRNAseq/umicount.vars.groovy"
+
 umicount = {
     doc title: "Deduplication and Counting reads per gene",
         desc: "Deduplication and counting of mapped data and splitting accoring to cellbarcode with umi_tools",
@@ -7,12 +7,12 @@ umicount = {
         bpipe_version: "tested with bpipe 0.9.9.3",
         author: "Nastasja Kreim"
 
-  	// create the log folder if it doesn't exists
-  	def UMICOUNT_LOGDIR = new File( LOGS + "/umicount")
-  	if (!UMICOUNT_LOGDIR.exists()) {
-  		UMICOUNT_LOGDIR.mkdirs()
-  	}
-    
+      // create the log folder if it doesn't exists
+      def UMICOUNT_LOGDIR = new File( LOGS + "/umicount")
+      if (!UMICOUNT_LOGDIR.exists()) {
+          UMICOUNT_LOGDIR.mkdirs()
+      }
+
     def UMICOUNT_FLAGS =    UMICOUNT_LOG + " " +
                             UMICOUNT_PARAM + " " +
                             UMICOUNT_EXTRA
@@ -20,7 +20,7 @@ umicount = {
     if(ESSENTIAL_PAIRED == "yes"){
       UMICOUNT_FLAGS = UMICOUNT_FLAGS + " --paired"
     }
-    
+
     // run the chunk
     transform(".bam\$") to (".umicount.tsv.gz") {
         def SAMPLENAME = input.prefix

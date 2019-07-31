@@ -1,4 +1,5 @@
-//rule for task infer_experiment from catalog RNAseq, version 1
+load MODULE_FOLDER + "RNAseq/inferexperiment.vars.groovy"
+
 inferexperiment = {
     doc title: "inferexperiment",
         desc:  "Calculate the strand-specificity of the library",

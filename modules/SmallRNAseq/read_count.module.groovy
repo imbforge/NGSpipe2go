@@ -1,3 +1,5 @@
+load MODULE_FOLDER + "SmallRNAseq/read_count.vars.groovy"
+
 CountReads = {
    doc title: "Intersects reads genomic locations",
       desc:  "The ultimate goal is aggregate how many reads (piRNAs) map to each class of genomic features.",
@@ -10,8 +12,6 @@ CountReads = {
 
    produce(COUNT_READS_OUTDIR + "/" + SAMPLE_NAME + ".sense.counts",
            COUNT_READS_OUTDIR + "/" + SAMPLE_NAME + ".antisense.counts") {
-
-
       exec """
          module load bedtools/${BEDTOOLS_VERSION} &&
 

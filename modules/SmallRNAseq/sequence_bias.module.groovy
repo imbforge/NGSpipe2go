@@ -1,3 +1,5 @@
+load MODULE_FOLDER + "SmallRNAseq/sequence_bias.vars.groovy"
+
 SequenceBias = {
    doc title: "Length and first nucleotide frequency ",
          desc:  "Summarizes the length and first nucleotide frequence for mapped reads (small RNAs).",

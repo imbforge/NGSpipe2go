@@ -1,4 +1,5 @@
-// rule for task GATK BaseRecalibrator from the RNAseq variant calling pipeline
+load MODULE_FOLDER + "RNAseqVariantCalling/variant_filtration.vars.groovy"
+
 VariantFiltration = {
    doc title: "GATK HaplotypeCaller",
        desc: "Filter variants following bast practices:http://gatkforums.broadinstitute.org/gatk/discussion/3891/calling-variants-in-rnaseq. Note that values are hardcoded.",

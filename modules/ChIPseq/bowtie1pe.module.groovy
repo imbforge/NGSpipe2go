@@ -1,5 +1,5 @@
-//rule for task bowtie_se from catalog ChIPseq, version 1
-//desc: Align single end reads
+load MODULE_FOLDER + "ChIPseq/bowtie1pe.vars.groovy"
+
 bowtie_pe = {
     doc title: "Bowtie PE alignment",
         desc:  "Align paired end reads",
@@ -15,13 +15,13 @@ bowtie_pe = {
     OUTPUTFILE = (OUTPUTFILE =~ /.R1.fastq.gz/).replaceFirst("")
 
     def BOWTIE_FLAGS = "-q --sam "  +
-                       BOWTIE_QUALS    + " " + 
-                       BOWTIE_BEST     + " " + 
-                       BOWTIE_MM_SEED  + " " + 
-                       BOWTIE_INSERT   + " " + 
-                       BOWTIE_MAQERR   + " " + 
-                       BOWTIE_MULTIMAP + " " + 
-                       BOWTIE_THREADS  + " " + 
+                       BOWTIE_QUALS    + " " +
+                       BOWTIE_BEST     + " " +
+                       BOWTIE_MM_SEED  + " " +
+                       BOWTIE_INSERT   + " " +
+                       BOWTIE_MAQERR   + " " +
+                       BOWTIE_MULTIMAP + " " +
+                       BOWTIE_THREADS  + " " +
                        BOWTIE_EXTRA
     def SAMTOOLS_VIEW_FLAGS = "-bhSu "
     def SAMTOOLS_SORT_FLAGS = "-O bam " + BOWTIE_SAMTOOLS_THREADS

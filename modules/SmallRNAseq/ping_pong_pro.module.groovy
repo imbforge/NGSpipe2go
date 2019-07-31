@@ -1,3 +1,5 @@
+load MODULE_FOLDER + "SmallRNAseq/ping_pong_pro.vars.groovy"
+
 PingPongPro = {
    doc title: "PingPongPro",
          desc: "Calculates the ping-signal for each input transposon (genomic feature)",

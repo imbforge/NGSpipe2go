@@ -1,9 +1,9 @@
-//rule for task qualimap from catalog NGS, version 1
-//desc: get the amount of exonic intronic and intergenic reads to test for DNA contamination 
+load MODULE_FOLDER + "RNAseq/qualimap.vars.groovy"
+
 qualimap = {
     doc title: "Qualimap",
         desc:  "Call qualimap to do rnaseq qualitycontrol",
-        author: "NastasjaKreim"
+        author: "Nastasja Kreim"
 
     output.dir = QUALIMAP_OUTDIR
     // no|yes|reverse

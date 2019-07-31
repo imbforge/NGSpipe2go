@@ -1,5 +1,5 @@
-//rule for task bowtie_se from catalog ChIPseq, version 1
-//desc: Align single end reads
+load MODULE_FOLDER + "SmallRNAseq/bowtie2.vars.groovy"
+
 Bowtie2_se = {
    doc title: "Bowtie2 SE alignment",
       desc:  "Align single end reads",

@@ -1,3 +1,5 @@
+load MODULE_FOLDER + "RNAseq/deseq2.vars.groovy"
+
 DE_DESeq2 = {
     doc title: "DE_DESeq2",
         desc:  "Differential expression analysis using linear models and DESeq2",

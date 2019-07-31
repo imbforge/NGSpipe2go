@@ -1,3 +1,5 @@
+load MODULE_FOLDER + "SmallRNAseq/read_count_summary.vars.groovy"
+
 CountReadsSummary = {
    doc title: "Count Reads Summary",
       desc:  "Aggregates the read counts and plots results. Might be modified in the future.",
@@ -10,8 +12,6 @@ CountReadsSummary = {
    from ("*.counts") produce(
       COUNT_READS_OUTDIR + "/piRNA_quantification.RData"
       ) {
-
-
       exec """
          module load R/${R_VERSION} &&
 

@@ -1,3 +1,5 @@
+load MODULE_FOLDER + "SmallRNAseq/ping_pong_signal.vars.groovy"
+
 PingPongSignal = {
    doc title: "Ping-Pong signal",
          desc:  "Calculates the 10bp overlap frequency of read pairs, known as ping-pong. Outputs a plot with the signal and z-score.",
@@ -17,7 +19,7 @@ PingPongSignal = {
 
       exec """
          module load R/${R_VERSION} &&
-         
+
          python $PINGPONG_TOOL_PATH -b $input --minsize 19 --maxsize 35 --primary sense --outFolder $OUT_FOLDER --intervals $FEATURES_PATH
 
       ""","PingPongSignal"

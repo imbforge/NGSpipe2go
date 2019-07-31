@@ -4,32 +4,16 @@ load MODULE_FOLDER + "smallRNAseq_BCF/essential.vars.groovy"
 load MODULE_FOLDER + "smallRNAseq_BCF/tool.locations.groovy"
 load MODULE_FOLDER + "smallRNAseq_BCF/tool.versions.groovy"
 
-load MODULE_FOLDER + "NGS/fastqc.vars.groovy"
 load MODULE_FOLDER + "NGS/fastqc.module.groovy"
-
-load MODULE_FOLDER + "smallRNAseq_BCF/cutadapt.vars.groovy"
 load MODULE_FOLDER + "smallRNAseq_BCF/cutadapt.module.groovy"
-
-load MODULE_FOLDER + "smallRNAseq_BCF/fastq_quality_filter.vars.groovy"
-load MODULE_FOLDER + "smallRNAseq_BCF/fastq_quality_filter.module.groovy"
-
-load MODULE_FOLDER + "smallRNAseq_BCF/dedup.vars.groovy"
 load MODULE_FOLDER + "smallRNAseq_BCF/dedup.module.groovy"
-
-load MODULE_FOLDER + "smallRNAseq_BCF/dedup_stats.vars.groovy"
 load MODULE_FOLDER + "smallRNAseq_BCF/dedup_stats.module.groovy"
-
-load MODULE_FOLDER + "smallRNAseq_BCF/trim_umis.vars.groovy"
-load MODULE_FOLDER + "smallRNAseq_BCF/trim_umis.module.groovy"
-
-load MODULE_FOLDER + "smallRNAseq_BCF/mirDeep2_mapper.vars.groovy"
-load MODULE_FOLDER + "smallRNAseq_BCF/mirDeep2_mapper.module.groovy"
-
-load MODULE_FOLDER + "smallRNAseq_BCF/mirDeep2.vars.groovy"
+load MODULE_FOLDER + "smallRNAseq_BCF/fastq_quality_filter.module.groovy"
 load MODULE_FOLDER + "smallRNAseq_BCF/mirDeep2.module.groovy"
-
+load MODULE_FOLDER + "smallRNAseq_BCF/mirDeep2_mapper.module.groovy"
+load MODULE_FOLDER + "smallRNAseq_BCF/trim_umis.module.groovy"
 
 //MAIN PIPELINE TASK
 run {
-	"%.fastq.gz" * [ FastQC , Cutadapt ] + "%.cutadapt.fastq.gz" * [ FastQQualityFilter + FilterDuplicates + TrimUMIs + [ FastQC, miRDeep2Mapper + miRDeep2 ] ]
+    "%.fastq.gz" * [ FastQC , Cutadapt ] + "%.cutadapt.fastq.gz" * [ FastQQualityFilter + FilterDuplicates + TrimUMIs + [ FastQC, miRDeep2Mapper + miRDeep2 ] ]
 }

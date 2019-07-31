@@ -1,4 +1,5 @@
-//desc: Align paired end reads
+load MODULE_FOLDER + "ChIPseq/bowtie2pe.vars.groovy"
+
 bowtie2_pe = {
     doc title: "Bowtie PE alignment",
         desc:  "Align paired end reads",
@@ -7,7 +8,7 @@ bowtie2_pe = {
         author: "Nastasja Kreim"
 
     output.dir = BOWTIE2_MAPPED
-    
+
     def OUTPUTFILE = input1
     int path_index = OUTPUTFILE.lastIndexOf("/")
     OUTPUTFILE = OUTPUTFILE.substring(path_index+1)
@@ -30,7 +31,7 @@ bowtie2_pe = {
             if [ -n "\$SLURM_JOBID" ]; then
                 export TMPDIR=/jobdir/\${SLURM_JOBID};
             fi                                       &&
-            
+
             bowtie2 $BOWTIE2_FLAGS $BOWTIE2_REF -1 $input1 -2 $input2 | samtools view $SAMTOOLS_VIEW_FLAGS - | samtools sort $SAMTOOLS_SORT_FLAGS -T $TMPDIR/\$(basename $output.prefix) - > $output;
         ""","bowtie2_pe"
     }

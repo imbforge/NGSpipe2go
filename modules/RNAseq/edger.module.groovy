@@ -1,5 +1,5 @@
-//rule for task DE_edgeR from catalog RNAseq, version 1
-//desc: Differential expression analysis using linears models and edgeR
+load MODULE_FOLDER + "RNAseq/edger.vars.groovy"
+
 DE_edgeR = {
     doc title: "DE_edgeR",
         desc:  "Differential expression analysis using linears models and edgeR",

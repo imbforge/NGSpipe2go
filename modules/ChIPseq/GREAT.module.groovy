@@ -1,5 +1,6 @@
-GREAT = {
+load MODULE_FOLDER + "ChIPseq/GREAT.vars.groovy"
 
+GREAT = {
     doc title: "GREAT",
         desc: "Genomic Regions Enrichment Analysis",
         constraints: "",
@@ -17,12 +18,11 @@ GREAT = {
         GREAT_DOWNSTREAM + " " +
         GREAT_EXTRA
 
-
     produce("GREAT.RData") {
         exec """
-
            module load R/${R_VERSION} &&
-            Rscript ${TOOL_GO}/GREAT.R $GREAT_FLAGS;
+
+           Rscript ${TOOL_GO}/GREAT.R $GREAT_FLAGS
         ""","GREAT"
     }
 }

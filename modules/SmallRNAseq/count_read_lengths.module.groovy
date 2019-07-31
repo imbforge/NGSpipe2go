@@ -1,3 +1,5 @@
+load MODULE_FOLDER + "SmallRNAseq/count_read_lengths.vars.groovy"
+
 CountReadLengths = {
     doc title: "CountReadLengths",
     desc: "Determines the sequence length distribution in a fastq file",
@@ -8,7 +10,6 @@ CountReadLengths = {
 
     transform(".fastq.gz") to (".readlength.txt") {
         exec """
-
             zcat $input | awk '{if(NR%4==2) print length(\$1)}' | sort -n | uniq -c > $output
         ""","CountReadLengths"
    }

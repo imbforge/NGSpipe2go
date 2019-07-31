@@ -1,5 +1,5 @@
-//rule for task STAR_pe from catalog RNAseq, version 1
-//desc: Align single end reads
+load MODULE_FOLDER + "RNAseqVariantCalling/star1pass.vars.groovy"
+
 STAR_pe = {
    doc title: "STAR SE/PE alignment",
       desc:  "Align single end and pair end reads",
@@ -46,12 +46,9 @@ STAR_pe = {
                 " --readFilesCommand zcat"
 
       exec """
-         STAR $STAR_FLAGS --readFilesIn $inputs | ${TOOL_SAMTOOLS}/samtools view -bhSu -F 256
-- | ${TOOL_SAMTOOLS}/samtools sort -@ $STAR_THREADS - $EXP &&
+         STAR $STAR_FLAGS --readFilesIn $inputs | ${TOOL_SAMTOOLS}/samtools view -bhSu -F 256 - | ${TOOL_SAMTOOLS}/samtools sort -@ $STAR_THREADS - $EXP &&
          rm ${EXP}.bam &&
-
          rm -rf ${TMP}/${EXP}
-
       ""","STAR_pe"
    }
 }

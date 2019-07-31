@@ -1,3 +1,5 @@
+load MODULE_FOLDER + "SmallRNAseq/maping_stats.vars.groovy"
+
 MappingStatsPlot = {
     doc title: "Statistics of mapping efficiency",
         desc:  "Counts the number of reads in the mapped bam, including total, unique, and mapped. Returns a plot of the results.",

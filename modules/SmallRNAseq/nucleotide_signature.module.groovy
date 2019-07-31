@@ -1,3 +1,5 @@
+load MODULE_FOLDER + "SmallRNAseq/nucleotide_signature.vars.groovy"
+
 NucleotideSignature = {
    doc title: "Ping-Pong Nucleotide Signature",
          desc:  "Determines the nucleotide bias of small RNA reads. It is expected that libraries enriched in piRNAs will have a typical 5U (Ziwi bound) and/or 10A bias (Zili bound). Generates tables of nucleotide frequency and plots",

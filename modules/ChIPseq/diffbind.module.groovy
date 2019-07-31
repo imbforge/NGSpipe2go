@@ -1,3 +1,5 @@
+load MODULE_FOLDER + "ChIPseq/diffbind.vars.groovy"
+
 diffbind = {
     doc title: "diffbind",
         desc:  "Differential binding analysis using Diffbind",
@@ -26,7 +28,7 @@ diffbind = {
     produce("diffbind.pdf", "diffbind.xlsx", "diffbind.rds") {
         exec """
             module load R/${R_VERSION} &&
-            
+
             Rscript ${TOOL_DIFFBIND}/diffbind.R $DIFFBIND_FLAGS
         ""","diffbind"
     }

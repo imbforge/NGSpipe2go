@@ -1,5 +1,5 @@
-//rule for task ipstrength from catalog ChIPseq, version 1
-//desc: IPstrength
+load MODULE_FOLDER + "ChIPseq/ipstrength.vars.groovy"
+
 ipstrength = {
     doc title: "IPstrength plot",
         desc:  "IPstrength",
@@ -18,7 +18,7 @@ ipstrength = {
                 echo "Targets file $IPSTRENGTH_TARGETS doesn't exist" >> $output &&
                 exit 0;
             fi;
-            
+
             BAM=\$(basename $input) &&
             grep \$BAM $IPSTRENGTH_TARGETS | while read -r TARGET; do
                 IP=\$(       echo $TARGET | tr '\t' ' ' | cut -f1 -d" ") &&

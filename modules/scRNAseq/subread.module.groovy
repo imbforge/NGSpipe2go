@@ -1,12 +1,12 @@
-//rule for task feature_count from Subread package, version 1
-//desc: Counting reads in features with featureCounts
+load MODULE_FOLDER + "scRNAseq/subread.vars.groovy"
+
 subread_count = {
     doc title: "subread_count",
     desc:  "Counting reads in features with feature-count out of the subread package, modified to allow umitools specific counting",
     constraints: """Default: strand specific counting.""",
     bpipe_version: "tested with bpipe 0.9.8.7",
     author: "Oliver Drechsel, Nastasja Kreim"
-    
+
     output.dir  = SUBREAD_OUTDIR
     def SUBREAD_FLAGS = "--donotsort" +  " " + 
                         SUBREAD_CORES    + " " +
@@ -14,11 +14,11 @@ subread_count = {
                         SUBREAD_EXTRA    + " " +
                         "-R BAM" + " " + 
                         "--Rpath " + output.dir 
-    
+
     if(SUBREAD_PAIRED == "yes") {
         SUBREAD_FLAGS = "-p " + SUBREAD_FLAGS
     }
-    
+
     // no|yes|reverse
     if(SUBREAD_STRANDED == "no") {
         SUBREAD_FLAGS = "-s 0 " + SUBREAD_FLAGS
@@ -29,7 +29,7 @@ subread_count = {
     else {
         SUBREAD_FLAGS = "-s 2 " + SUBREAD_FLAGS
     }
-    
+
     // run the chunk
     transform(".bam") to (".featureCounts.bam", ".raw_readcounts.tsv") {
         exec """
@@ -38,7 +38,7 @@ subread_count = {
             featureCounts $SUBREAD_FLAGS -o $output2 $input 2> ${output.prefix}_subreadlog.stderr &&
             base=`basename $input` &&
             samtools sort ${output.dir}/\${base}.featureCounts.bam > $output1 &&
-			rm ${output.dir}/\${base}.featureCounts.bam;
+            rm ${output.dir}/\${base}.featureCounts.bam;
         ""","subread_count"
     }
 }

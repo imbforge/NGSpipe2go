@@ -1,3 +1,5 @@
+load MODULE_FOLDER + "NGS/trackhub.vars.groovy"
+
 trackhub = {
     doc title: "Trackhub",
         desc:  "Generate UCSC track hub to display project tracks",
@@ -9,9 +11,10 @@ trackhub = {
 
     transform(".yaml") to (".done") {
         exec """
-           module load kentUtils/${KENTUTILS_VERSION} &&
-           module load R/${R_VERSION} &&
-           Rscript ${TOOL_TRACKHUB}/Make_Trackhub.R $trackhub_FLAGS
+            module load kentUtils/${KENTUTILS_VERSION} &&
+            module load R/${R_VERSION} &&
+
+            Rscript ${TOOL_TRACKHUB}/Make_Trackhub.R $trackhub_FLAGS
         ""","trackhub"
     }
 }

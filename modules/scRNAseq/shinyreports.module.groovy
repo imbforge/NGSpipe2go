@@ -1,14 +1,14 @@
-//rule for task shinyReports from catalog miscellaneous, version 1
-//desc: creates the source code to compile the shiny and markdown reports
+load MODULE_FOLDER + "scRNAseq/shinyreports.vars.groovy"
+
 shinyReports = {
     doc title: "shinyReports",
         desc:  "creates the source code to compile the shiny and markdown reports",
         constraints: "",
         bpipe_version: "tested with bpipe 0.9.8.7",
         author: "Sergi Sayols, modified by Frank Rühle"
-    
+
     output.dir = REPORTS
-    
+
     produce("shinyReports.txt") {
         exec """
             cp ${MODULE_FOLDER}/../tools/reports/shiny_scrnaseq_reporting_tool/server.R ${REPORTS}                &&
@@ -17,16 +17,16 @@ shinyReports = {
             cp ${MODULE_FOLDER}/../tools/reports/shiny_scrnaseq_reporting_tool/bustard.pl ${REPORTS}              &&
             cp ${MODULE_FOLDER}/../tools/reports/shiny_scrnaseq_reporting_tool/BustardSummary.toMD.xsl ${REPORTS} &&
             cp ${MODULE_FOLDER}/../tools/reports/shiny_scrnaseq_reporting_tool/styles.css ${REPORTS}              &&
-            
+
             if [ -e "${REPORTS}/sc.report.Rmd" ]; then
                 echo 'sc.report.Rmd already exists. Older copy will be kept and not overwritten';
             else
                 cp ${MODULE_FOLDER}/../tools/reports/shiny_scrnaseq_reporting_tool/sc.report.Rmd ${REPORTS};
             fi &&
-            
+
             PROJECT=\$(basename ${SHINYREPS_PROJECT})                            &&
             sed -i "2,2s/SHINYREPS_PROJECT/\${PROJECT}/" ${REPORTS}/sc.report.Rmd &&
-            
+
             echo "SHINYREPS_PROJECT=${SHINYREPS_PROJECT}" >  $output &&
             echo "SHINYREPS_ORG=${SHINYREPS_ORG}"         >> $output &&
             echo "SHINYREPS_DB=${SHINYREPS_DB}"           >> $output &&
@@ -61,9 +61,9 @@ shinyReports = {
             echo "SHINYREPS_GO_ENRICHMENT=${SHINYREPS_GO_ENRICHMENT}" >> $output &&
             echo "SHINYREPS_TRACKHUB_DONE=${SHINYREPS_TRACKHUB_DONE}" >> $output &&
             echo "SHINYREPS_TOOL_VERSIONS=${SHINYREPS_TOOL_VERSIONS}" >> $output &&
- 	    echo "SHINYREPS_CUTADAPT_LOGS=${SHINYREPS_CUTADAPT_LOGS}" >> $output &&
-	    echo "SHINYREPS_GTF=${SHINYREPS_GTF}" >> $output &&
-	    echo "SHINYREPS_TARGET=${SHINYREPS_TARGET}" >> $output
+            echo "SHINYREPS_CUTADAPT_LOGS=${SHINYREPS_CUTADAPT_LOGS}" >> $output &&
+            echo "SHINYREPS_GTF=${SHINYREPS_GTF}" >> $output &&
+            echo "SHINYREPS_TARGET=${SHINYREPS_TARGET}" >> $output
         ""","shinyReports"
     }
 }

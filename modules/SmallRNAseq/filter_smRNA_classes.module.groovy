@@ -1,3 +1,5 @@
+load MODULE_FOLDER + "SmallRNAseq/filter_smRNA_classes.vars.groovy"
+
 FilterRNAClasses = {
    doc title: "Filter small RNA classes",
          desc:  "Filter alignments to select C. elegans small RNA classes: 21U, 22G, 26G",

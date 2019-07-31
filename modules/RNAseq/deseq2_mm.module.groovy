@@ -1,8 +1,10 @@
+load MODULE_FOLDER + "RNAseq/deseq2_mm.vars.groovy"
+
 DE_DESeq2_MM = {
     doc title: "DE_DESeq2_MM",
         desc:  "Differential expression analysis using linear models and DESeq2, and considering multimappers",
         constraints: "Needs the results from dupRadar. Use the same GTF annotation as in subread_count",
-        bpipe_version: "tested with bpipe 0.9.9.9",
+        bpipe_version: "tested with bpipe 0.9.9.7",
         author: "Sergi Sayols"
 
     output.dir = DE_DESeq2_MM_OUTDIR.replaceFirst("out=", "")

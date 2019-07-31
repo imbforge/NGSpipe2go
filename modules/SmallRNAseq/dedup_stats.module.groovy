@@ -1,3 +1,5 @@
+load MODULE_FOLDER + "SmallRNAseq/dedup_stats.vars.groovy"
+
 DedupStats = {
     doc title: "Statistics of unique reads",
         desc:  "Counts the number of reads in the original reads file, and after PCR duplicate removal, and plots results",
@@ -13,7 +15,6 @@ DedupStats = {
 
          cd ${REMOVE_DUP_OUTDIR} &&
          Rscript ${DEDUP_PLOT_TOOL}
-
         ""","DedupStats"
     }
 }

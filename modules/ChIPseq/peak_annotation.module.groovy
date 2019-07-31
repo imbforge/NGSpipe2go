@@ -1,3 +1,5 @@
+load MODULE_FOLDER + "ChIPseq/peak_annotation.vars.groovy"
+
 peak_annotation = {
 
     doc title: "peak_annotation",

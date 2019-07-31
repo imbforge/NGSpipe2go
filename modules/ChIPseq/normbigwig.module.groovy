@@ -1,3 +1,5 @@
+load MODULE_FOLDER + "ChIPseq/normbigwig.vars.groovy"
+
 normbigwig = {
     doc title: "normbigwig",
         desc:  "normbigwig wrapper",

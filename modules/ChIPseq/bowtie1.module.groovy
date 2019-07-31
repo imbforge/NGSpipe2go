@@ -1,5 +1,5 @@
-//rule for task bowtie_se from catalog ChIPseq, version 1
-//desc: Align single end reads
+load MODULE_FOLDER + "ChIPseq/bowtie1.vars.groovy"
+
 bowtie_se = {
     doc title: "Bowtie SE alignment",
         desc:  "Align single end reads",
@@ -10,13 +10,13 @@ bowtie_se = {
     output.dir = MAPPED
 
     def BOWTIE_FLAGS = "-q --sam "  +
-                       BOWTIE_QUALS    + " " + 
-                       BOWTIE_BEST     + " " + 
-                       BOWTIE_MM_SEED  + " " + 
-                       BOWTIE_INSERT   + " " + 
-                       BOWTIE_MAQERR   + " " + 
-                       BOWTIE_MULTIMAP + " " + 
-                       BOWTIE_THREADS  + " " + 
+                       BOWTIE_QUALS    + " " +
+                       BOWTIE_BEST     + " " +
+                       BOWTIE_MM_SEED  + " " +
+                       BOWTIE_INSERT   + " " +
+                       BOWTIE_MAQERR   + " " +
+                       BOWTIE_MULTIMAP + " " +
+                       BOWTIE_THREADS  + " " +
                        BOWTIE_EXTRA
 
     def SAMTOOLS_VIEW_FLAGS = "-bhSu "

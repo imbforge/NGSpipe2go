@@ -1,5 +1,5 @@
-//rule for task bowtie_se from catalog ChIPseq, version 1
-//desc: Align single end reads
+load MODULE_FOLDER + "SmallRNAseq/bowtie1.vars.groovy"
+
 Bowtie_se = {
    doc title: "Bowtie SE alignment",
       desc:  "Align single end reads",
@@ -23,7 +23,7 @@ Bowtie_se = {
       exec """
             module load bowtie/${BOWTIE_VERSION} &&
             module load samtools/${SAMTOOLS_VERSION} &&
-            
+
       if [ ! -e $TMP ]; then
         mkdir -p $TMP;
       fi &&

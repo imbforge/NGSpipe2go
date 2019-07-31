@@ -1,11 +1,13 @@
+load MODULE_FOLDER + "SmallRNAseq/collect_plots.vars.groovy"
+
 CollectPlots = {
-	doc title: "Compile results",
-		desc:  "Merges all plots in a single PDF for ease of visualization",
-		author: "Antonio Domingues"
+    doc title: "Compile results",
+        desc:  "Merges all plots in a single PDF for ease of visualization",
+        author: "Antonio Domingues"
 
-   output.dir = COLLECT_OUTDIR
+    output.dir = COLLECT_OUTDIR
 
-	produce("all_plots.pdf") {
+    produce("all_plots.pdf") {
 
       exec """
          pdfjoin --paper a4paper --rotateoversize false --landscape \
@@ -16,6 +18,6 @@ CollectPlots = {
          $COLLECT_OUTDIR/ping-pong/*/figure/*.ppPlot.pdf \
           -o $output
 
-		""","CollectPlots"
-	}
+        ""","CollectPlots"
+    }
 }

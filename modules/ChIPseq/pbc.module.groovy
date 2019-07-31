@@ -1,5 +1,3 @@
-//rule for task pbc from catalog ChIPseq, version 1
-//desc: PCR Bottleneck Coefficient
 pbc = {
     doc title: "PBC",
         desc:  "PCR Bottleneck Coefficient",
@@ -16,7 +14,7 @@ pbc = {
             Rscript ${TOOL_ENCODEqc}/PBC.R $input && mv ${input.prefix}_PBC.csv $output.dir
         ""","pbc"
     }
-    
+
     forward input
 
 }

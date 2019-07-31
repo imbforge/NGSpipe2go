@@ -1,3 +1,5 @@
+load MODULE_FOLDER + "SmallRNAseq/fastqc.vars.groovy"
+
 FastQC = {
    doc title: "FastQC",
       desc:  "Quality control of input file",

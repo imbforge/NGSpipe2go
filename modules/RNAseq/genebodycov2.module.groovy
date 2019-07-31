@@ -1,5 +1,5 @@
-//rule for task geneBodyCov from catalog RNAseq, version 1
-//desc: Calculate the RNA-seq coverage over gene body
+load MODULE_FOLDER + "RNAseq/genebodycov2.vars.groovy"
+
 geneBodyCov2 = {
     doc title: "geneBodyCoverage2",
         desc:  """Calculate the RNA-seq coverage over gene body. 

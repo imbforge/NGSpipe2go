@@ -1,3 +1,5 @@
+load MODULE_FOLDER + "SmallRNAseq/count_non_struct_reads.vars.groovy"
+
 CountNonStrutReads = {
    doc title: "CountNonStrutReads",
    desc: "Summarizes the number of non-structural reads for each the libraries. It uses the output from featureCounts",
@@ -14,7 +16,6 @@ CountNonStrutReads = {
          cd $output.dir &&
 
          Rscript $COUNT_NONSTRUCT_TOOL_PATH $ESSENTIAL_BIOTYPES_TABLE $inputs
-         
       ""","CountNonStrutReads"
    }
 }

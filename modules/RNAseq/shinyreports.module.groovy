@@ -1,14 +1,14 @@
-//rule for task shinyReports from catalog miscellaneous, version 1
-//desc: creates the source code to compile the shiny and markdown reports
+load MODULE_FOLDER + "RNAseq/shinyreports.vars.groovy"
+
 shinyReports = {
     doc title: "shinyReports",
         desc:  "creates the source code to compile the shiny and markdown reports",
         constraints: "",
         bpipe_version: "tested with bpipe 0.9.8.7",
         author: "Sergi Sayols"
-    
+
     output.dir = REPORTS
-    
+
     produce("shinyReports.txt") {
         exec """
             cp ${MODULE_FOLDER}/../tools/reports/shiny_rnaseq_reporting_tool/server.R ${REPORTS}                &&
@@ -17,16 +17,16 @@ shinyReports = {
             cp ${MODULE_FOLDER}/../tools/reports/shiny_rnaseq_reporting_tool/bustard.pl ${REPORTS}              &&
             cp ${MODULE_FOLDER}/../tools/reports/shiny_rnaseq_reporting_tool/BustardSummary.toMD.xsl ${REPORTS} &&
             cp ${MODULE_FOLDER}/../tools/reports/shiny_rnaseq_reporting_tool/styles.css ${REPORTS}              &&
-            
+
             if [ -e "${REPORTS}/DEreport.Rmd" ]; then
                 echo 'DEreport.Rmd already exists. Older copy will be kept and not overwritten';
             else
                 cp ${MODULE_FOLDER}/../tools/reports/shiny_rnaseq_reporting_tool/DEreport.Rmd ${REPORTS};
             fi &&
-            
+
             PROJECT=\$(basename ${SHINYREPS_PROJECT})                            &&
             sed -i "2,2s/SHINYREPS_PROJECT/\${PROJECT}/" ${REPORTS}/DEreport.Rmd &&
-            
+
             echo "SHINYREPS_PROJECT=${SHINYREPS_PROJECT}" >  $output &&
             echo "SHINYREPS_ORG=${SHINYREPS_ORG}"         >> $output &&
             echo "SHINYREPS_DB=${SHINYREPS_DB}"           >> $output &&

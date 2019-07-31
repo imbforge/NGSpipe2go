@@ -1,5 +1,5 @@
-//rule for task STAR_se from catalog RNAseq, version 1
-//desc: Align single end reads
+load MODULE_FOLDER + "RNAseq/stringtie.vars.groovy"
+
 StringTie = {
     doc title: "STRING_TIE transcript quantification",
         desc:  "Quantifiy transcripts ",
@@ -14,7 +14,6 @@ StringTie = {
     if(! F_LOG.exists()) {
         F_LOG.mkdirs()
     }
-    
 
     // star flags
     def STRINGTIE_FLAGS = STRINGTIE_GTF + " " +
@@ -31,15 +30,16 @@ StringTie = {
 
     // code chunk
     transform(".bam") to("_stringtie.done") {
-      exec """
-        module load stringtie/${STRINGTIE_VERSION} && 
-        base=\$(basename $input) &&
-        base=\${base%.bam} &&
-        echo \$base &&
-        echo $STRINGTIE_FLAGS &&
-        mkdir $output.dir/\$base &&
-        stringtie $input $STRINGTIE_FLAGS -A $output.dir/\${base}/\${base}_gene_abund.tab -o $output.dir/\$base/\${base}_stringtie.gtf &&
-        touch $output 
+        exec """
+            module load stringtie/${STRINGTIE_VERSION} && 
+            base=\$(basename $input) &&
+            base=\${base%.bam} &&
+            echo \$base &&
+            echo $STRINGTIE_FLAGS &&
+            mkdir $output.dir/\$base &&
+            stringtie $input $STRINGTIE_FLAGS -A $output.dir/\${base}/\${base}_gene_abund.tab -o $output.dir/\$base/\${base}_stringtie.gtf &&
+            touch $output
         ""","StringTie"
-    }
+      }
 }
+

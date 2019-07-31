@@ -1,5 +1,5 @@
-//rule for task feature_count from htseq-count package, version 1
-//desc: Counting reads in features with htseq-count
+load MODULE_FOLDER + "SmallRNAseq/htseqcount.vars.groovy"
+
 HTseqCount = {
    doc title: "subread_count_se",
    desc:  "Counting reads in features with htseq-count",

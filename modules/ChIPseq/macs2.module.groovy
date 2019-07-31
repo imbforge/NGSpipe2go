@@ -1,3 +1,5 @@
+load MODULE_FOLDER + "ChIPseq/macs2.vars.groovy"
+
 macs2 = {
     doc title: "MACS2",
         desc:  "MACS2 wrapper",
@@ -6,9 +8,9 @@ macs2 = {
         author: "Sergi Sayols"
 
     output.dir = RESULTS + "/macs2"
-    def MACS2_FLAGS= MACS2_GSIZE  + " " + 
-                     MACS2_BWIDTH + " " + 
-                     MACS2_MINLEN + " " +         
+    def MACS2_FLAGS= MACS2_GSIZE  + " " +
+                     MACS2_BWIDTH + " " +
+                     MACS2_MINLEN + " " +
                      MACS2_EXTRA
     if(MACS2_PAIRED == "yes") {
     MACS2_FLAGS = MACS2_FLAGS + " " + "--format BAMPE"
@@ -22,7 +24,7 @@ macs2 = {
                 echo "Targets file $MACS2_TARGETS doesn't exist" >> $output &&
                 exit 0;
             fi;
-            
+
             BAM=\$(basename $input) &&
             grep \$BAM $MACS2_TARGETS | while read -r TARGET; do
                 IP=\$(       echo $TARGET | tr '\t' ' ' | cut -f1 -d" ") &&

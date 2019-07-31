@@ -1,5 +1,5 @@
-//rule for task geneBodyCov from catalog RNAseq, version 1
-//desc: Calculate the RNA-seq coverage over gene body
+load MODULE_FOLDER + "RNAseq/genebodycov.vars.groovy"
+
 geneBodyCov = {
     doc title: "geneBodyCoverage",
         desc: "Calculate the RNA-seq coverage over gene body. Useful to check the 5' or 3' coverage bias",
@@ -11,12 +11,12 @@ geneBodyCov = {
     def GENEBODYCOV_FLAGS = GENEBODYCOV_FORMAT + " " +
                             GENEBODYCOV_BED    + " " +
                             GENEBODYCOV_EXTRA
-    
+
     // run the chunk
     transform(".bam") to (".geneBodyCoverage.curves.png", ".geneBodyCoverage.r", ".geneBodyCoverage.txt") {
         exec """
             module load RSeQC/${RSEQC_VERSION} &&
-            
+
             geneBody_coverage.py -i $input -o ${output3.prefix.prefix} $GENEBODYCOV_FLAGS
         ""","geneBodyCov"
     }

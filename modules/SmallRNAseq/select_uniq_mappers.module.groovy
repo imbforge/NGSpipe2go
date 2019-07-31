@@ -1,4 +1,5 @@
-//rule for task SelectUniqMappers from catalog SmallRNAseq, version 0.1
+load MODULE_FOLDER + "SmallRNAseq/select_uniq_mappers.vars.groovy"
+
 SelectUniqMappers = {
    doc title: "SelectUniqMappers",
       desc:  "Call samtools to Select uniquely mapped reads.",

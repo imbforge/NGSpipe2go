@@ -1,42 +1,36 @@
-//rule for task FastQScreen from catalog smallRNAseq_BCF, version 0.1
-//desc: A quality control tool for high throughput sequence data.
+load MODULE_FOLDER + "smallRNAseq_BCF/fastqscreen.vars.groovy"
+
 FastQScreen = {
-	doc title: "FastQScreen",
-	desc:  "Quality control of input file against various contaminants",
-	constraints: "Only supports compressed FASTQ files",
-	author: "Nastasja Kreim, Anke Busch"
+    doc title: "FastQScreen",
+    desc:  "Quality control of input file against various contaminants",
+    constraints: "Only supports compressed FASTQ files",
+    author: "Nastasja Kreim, Anke Busch"
 
-	output.dir   = FASTQSCREEN_OUTDIR
-	def FASTQSCREEN_FLAGS = "--threads " + FASTQSCREEN_THREADS + " " + FASTQSCREEN_PARAM
+    output.dir   = FASTQSCREEN_OUTDIR
+    def FASTQSCREEN_FLAGS = "--threads " + FASTQSCREEN_THREADS + " " + FASTQSCREEN_PARAM
 
-	transform(".fastq.gz") to ("_fastqscreen.done") {
-
-		def SAMPLENAME = output.prefix
-
-		exec """
-
+    transform(".fastq.gz") to ("_fastqscreen.done") {
+        def SAMPLENAME = output.prefix
+        exec """
             module load fastq_screen/${FASTQSCREEN_VERSION} &&
-			
-			if [ ! -e "$output.prefix" ]; then
-		                mkdir $output.prefix;
-		        fi &&
-	    	
-			FASTQREFERENCES=$FASTQSCREEN_CONF;
-			REFERENCES=(\${FASTQREFERENCES//,/ });
 
-			for i in "\${!REFERENCES[@]}";
-			do
-				REFERENCE=(\${REFERENCES[i]//::/ });
-				echo -e "DATABASE\t\${REFERENCE[0]}\t\${REFERENCE[1]}" >> $output.prefix/fastqscreen.conf;
-			done;
+            if [ ! -e "$output.prefix" ]; then
+                mkdir $output.prefix;
+            fi &&
 
-			SAMPLENAME_BASE=\$(basename ${SAMPLENAME}) &&
-			fastq_screen $FASTQSCREEN_FLAGS --conf $output.prefix/fastqscreen.conf --outdir $output.prefix $input 2> $output.dir/\${SAMPLENAME_BASE}.log;
-			touch $output;
+            FASTQREFERENCES=$FASTQSCREEN_CONF;
+            REFERENCES=(\${FASTQREFERENCES//,/ });
 
-		""","FastQScreen"
-	}
+            for i in "\${!REFERENCES[@]}"; do
+                REFERENCE=(\${REFERENCES[i]//::/ });
+                echo -e "DATABASE\t\${REFERENCE[0]}\t\${REFERENCE[1]}" >> $output.prefix/fastqscreen.conf;
+            done;
 
-	forward input
+            SAMPLENAME_BASE=\$(basename ${SAMPLENAME}) &&
+            fastq_screen $FASTQSCREEN_FLAGS --conf $output.prefix/fastqscreen.conf --outdir $output.prefix $input 2> $output.dir/\${SAMPLENAME_BASE}.log;
+            touch $output
+        ""","FastQScreen"
+    }
+    forward input
 }
 

@@ -1,21 +1,20 @@
+load MODULE_FOLDER + "smallRNAseq_BCF/trim_umis.vars.groovy"
+
 TrimUMIs = {
-	doc title: "Trim UMIs",
-	desc:  """Trims random barcodes that help in the identification of PCR duplicates and are in adapter-removed reads: NNNN-insert-NNNN.""",
-      	constraints: "Requires seqtk.",
-	author: "Antonio Domingues, Anke Busch"
+    doc title: "Trim UMIs",
+        desc:  """Trims random barcodes that help in the identification of PCR duplicates and are in adapter-removed reads: NNNN-insert-NNNN.""",
+        constraints: "Requires seqtk.",
+        author: "Antonio Domingues, Anke Busch"
 
-	output.dir = TRIM_OUTDIR
-	def SEQTK_FLAGS = 	" -l " + LEFT_TRIM + 
-				" -b " + RIGHT_TRIM
+    output.dir = TRIM_OUTDIR
+    def SEQTK_FLAGS = " -l " + LEFT_TRIM +
+                      " -b " + RIGHT_TRIM
 
-	transform(".fastq.gz") to (".trimmed.fastq.gz") {
-
-		exec """
-
+    transform(".fastq.gz") to (".trimmed.fastq.gz") {
+        exec """
             module load seqtk/${SEQTK_VERSION} &&
 
-		    seqtk trimfq -b ${LEFT_TRIM} -e ${RIGHT_TRIM} $input | gzip > $output
-
-		""","TrimUMIs"
-	}
+            seqtk trimfq -b ${LEFT_TRIM} -e ${RIGHT_TRIM} $input | gzip > $output
+        ""","TrimUMIs"
+    }
 }

@@ -1,4 +1,5 @@
-// rule for task GATK BaseRecalibrator from the RNAseq variant calling pipeline
+load MODULE_FOLDER + "RNAseqVariantCalling/variantCall_HC.vars.groovy"
+
 VariantCallHC = {
    doc title: "GATK HaplotypeCaller",
        desc: "Call variants, using GATK HaplotypeCaller.",

@@ -1,3 +1,5 @@
+load MODULE_FOLDER + "SmallRNAseq/repenrich.vars.groovy"
+
 RepEnrich = {
     doc title: "Quantification of Transposons",
         desc:  "Quantifies transposon expression/targeting using RepEnrich. First does unique mapping to the genome keeping the multimapped reads in a fastq file (--max). Both the uniquely mapped and multimapping reads are then used for repEnrich. Intermediate results are removed.",

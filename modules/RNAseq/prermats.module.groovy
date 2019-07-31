@@ -1,3 +1,5 @@
+load MODULE_FOLDER + "RNAseq/prermats.vars.groovy"
+
 PREMATS = {
     doc title: "rMATs prepocessor for the target and contrast file",
     desc: "rMATS Prepocessing of targets and contrast file",
