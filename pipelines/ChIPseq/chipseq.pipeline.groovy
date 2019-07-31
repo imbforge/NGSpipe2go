@@ -26,12 +26,12 @@ load MODULE_FOLDER + "NGS/trackhub_config.module.groovy"
 load MODULE_FOLDER + "miscellaneous/collectbpipes.module.2.groovy"
 
 //MAIN PIPELINE TASK
-dontrun = segment { }
+nothing = segment { }
 Bpipe.run {
   "%.fastq.gz" * [ FastQC , bowtie_se + BAMindexer + MarkDups + BAMindexer + [ extend + bamCoverage, BamQC , phantompeak , pbc , ipstrength , macs2 ] ] +
-  (RUN_PEAK_ANNOTATION ? peak_annotation : dontrun) +
-  (RUN_DIFFBIND ? diffbind : dontrun) +
-  (RUN_TRACKHUB ? trackhub_config + trackhub : dontrun) +
+  (RUN_PEAK_ANNOTATION ? peak_annotation : nothing) +
+  (RUN_DIFFBIND ? diffbind : nothing) +
+  (RUN_TRACKHUB ? trackhub_config + trackhub : nothing) +
   collectBpipeLogs + shinyReports
 }
 

@@ -41,13 +41,13 @@ dont_filter_bam = segment {
 }
 
 //MAIN PIPELINE TASK
-dontrun = segment { }
+nothing = segment { }
 Bpipe.run {
     "%.fastq.gz" * [ FastQC ] + "%.R*.fastq.gz" *
     (RUN_USING_UNFILTERED_BAM ? dont_filter_bam : filter_bam) +
-    (RUN_DIFFBIND ? diffbind : dontrun) +
-    (RUN_TRACKHUB ? trackhub_config + trackhub : dontrun) +
-    (RUN_PEAK_ANNOTATION ? peak_annotation : dontrun) +
+    (RUN_DIFFBIND ? diffbind : nothing) +
+    (RUN_TRACKHUB ? trackhub_config + trackhub : nothing) +
+    (RUN_PEAK_ANNOTATION ? peak_annotation : nothing) +
     collectBpipeLogs + shinyReports
 }
 
