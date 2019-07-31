@@ -37,13 +37,9 @@ load MODULE_FOLDER + "smallRNAseq_BCF/subread.module.groovy"
 
 //MAIN PIPELINE TASK
 run {
-    "%.fastq.gz" * 
-    [ FastQC , Cutadapt + FastQQualityFilter + FilterDuplicates + TrimUMIs ] +
-    "%.trimmed.fastq.gz" * 
-    [ FastQC, FastQScreen, RepEnrich, Bowtie_se + [ BAMindexer, SelectUniqMappers + [ NucleotideSignature, PingPongSignal, PingPongPro] ] ] +
-    "%.bam" *
-    [ SubreadCount + Filter2HTSeq, CountReads, CountMappedReads, Bam2bw, subread2rnatypes, SplitReadStrands +
-        "%sense.bam" * [Bam2bw] ] +
+    "%.fastq.gz" * [ FastQC , Cutadapt + FastQQualityFilter + FilterDuplicates + TrimUMIs ] +
+    "%.trimmed.fastq.gz" * [ FastQC, FastQScreen, RepEnrich, Bowtie_se + [ BAMindexer, SelectUniqMappers + [ NucleotideSignature, PingPongSignal, PingPongPro] ] ] +
+    "%.bam" * [ SubreadCount + Filter2HTSeq, CountReads, CountMappedReads, Bam2bw, subread2rnatypes, SplitReadStrands + "%sense.bam" * [Bam2bw] ] +
     [ CutadaptStats, FastQQualityFilterStats, DedupStats, MappingStats, CombinedStats, AggregateMappedCounts, CountReadsSummary ] +
-    [ collectBpipeLogs + shinyReports ]
+    collectBpipeLogs + shinyReports
 }

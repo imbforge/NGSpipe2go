@@ -48,13 +48,10 @@ load MODULE_FOLDER + "smallRNAseq_BCF/subread.module.groovy"
 
 //MAIN PIPELINE TASK
 run {
-   "%.fastq.gz" *
-      [ FastQC, Cutadapt + FastQQualityFilter + FilterDuplicates + TrimUMIs ] +
-   "%.trimmed.fastq.gz" *
-      [ FastQC, CountReadLengths, Bowtie_se + [ BAMindexer ] ] +
-   "%.bam" *
-      [ FilterRNAClasses, HTseqCount, SequenceBias ] + CountNonStrutReads +
+   "%.fastq.gz" * [ FastQC, Cutadapt + FastQQualityFilter + FilterDuplicates + TrimUMIs ] +
+   "%.trimmed.fastq.gz" * [ FastQC, CountReadLengths, Bowtie_se + [ BAMindexer ] ] +
+   "%.bam" * [ FilterRNAClasses, HTseqCount, SequenceBias ] + CountNonStrutReads +
    "%.bam" * [ CountMappedReads, Bam2bw ] +
       [ PlotSmallRNAclasses, CutadaptStats, FastQQualityFilterStats, DedupStats, MappingStats, CombinedStats, PlotReadLengths, AggregateMappedCounts ] +
-      [ collectBpipeLogs + shinyReports ]
+      collectBpipeLogs + shinyReports
 }

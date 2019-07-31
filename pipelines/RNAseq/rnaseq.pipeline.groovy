@@ -29,11 +29,11 @@ load MODULE_FOLDER + "miscellaneous/collectbpipes.module.2.groovy"
 //
 // Typical workflow for SR data (default):
 //
-run { "%.fastq.gz" * 
-[ FastQC , STAR + BAMindexer + 
-[ subread_count + filter2htseq , bamCoverage , inferexperiment , subread2rnatypes , MarkDups2 + BAMindexer + 
-[ dupRadar , geneBodyCov2 ] ] ] + 
-[ DE_DESeq2_MM , DE_DESeq2 + GO_Enrichment] + 
+run { "%.fastq.gz" *
+[ FastQC , STAR + BAMindexer +
+[ subread_count + filter2htseq , bamCoverage , inferexperiment , subread2rnatypes , MarkDups2 + BAMindexer +
+[ dupRadar , geneBodyCov2 ] ] ] +
+[ DE_DESeq2_MM , DE_DESeq2 + GO_Enrichment] +
 //trackhub_config + trackhub +
 collectBpipeLogs + shinyReports }
 
