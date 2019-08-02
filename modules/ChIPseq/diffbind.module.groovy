@@ -12,14 +12,18 @@ diffbind = {
                          DIFFBIND_OUTDIR    + " " +
                          DIFFBIND_BAMS      + " " +
                          DIFFBIND_FRAGSIZE  + " " +
+                         DIFFBIND_SUBSTRACTCONTROL  + " " +
+                         DIFFBIND_FULLLIBRARYSIZE   + " " +
+                         DIFFBIND_TAGWISEDISPERSION + " " +
                          DIFFBIND_ANNOTATE  + " " +
                          DIFFBIND_TSS       + " " +
                          DIFFBIND_TXDB      + " " +
                          DIFFBIND_ANNODB    + " " +
+                         DIFFBIND_PAIRED    + " " +
                          DIFFBIND_EXTRA
 
     // run the chunk
-    produce("diffbind.pdf", "diffbind.xls") {
+    produce("diffbind.pdf", "diffbind.xlsx", "diffbind.rds") {
         exec """
             module load R/${R_VERSION} &&
             
