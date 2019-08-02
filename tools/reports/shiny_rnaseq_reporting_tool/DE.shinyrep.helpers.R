@@ -20,6 +20,7 @@ library("viridis")
 library("gridExtra")
 library("dplyr")
 library("tidyr")
+library("forcats")
 #' loadGlobalVars: read configuration from bpipe vars
 #'
 #' @param f - a file defining multiple variables for reporting to run. 
@@ -892,7 +893,7 @@ DEhelper.STAR <- function() {
     
     # look for the lines containing the strings
     # and get the values associated with this strings
-    x <- sapply(list.files(LOG, pattern=SUFFIX), function(f) {
+    x <- sapply(list.files(LOG, pattern = SUFFIX), function(f) {
         f <- file(paste0(LOG, "/", f))
         l <- readLines(f)
         close(f)
@@ -912,15 +913,77 @@ DEhelper.STAR <- function() {
     })
     
     # set row and column names, and output the md table
-    colnames(x) <- gsub(paste0("^", SHINYREPS_PREFIX), "", colnames(x))
     colnames(x) <- gsub(paste0(SUFFIX, "$"), "", colnames(x))
-    df <- data.frame(input_reads=format(x[1, ], big.mark=","), 
-                     uniquely_mapped=paste0(format(x[2, ], big.mark=","), " (", format(x[3, ], nsmall=2), "%)"), 
-                     multi_mapped=paste0(format(x[4, ], big.mark=","), " (", format(x[6, ], nsmall=2), "%)"), 
-                     too_many_loci=paste0(format(x[7,],nsmall=2), "%"),
-                     unmapped=paste0(format( x[8, ] + x[9, ] + x[10, ], nsmall=2), "%")
-                     )
-    kable(df, align=c("r", "r", "r", "r","r"), output=F)
+    df_values <- as.data.frame(t(x[2:7,]))
+    df_values["Unmapped reads number"] <- x[1, ] - x[2, ] - x[4, ] - x[5,]
+    df_values["% of reads unmapped"] <- x[8, ] + x[9, ] + x[10, ]
+    df_values$sample <- rownames(df_values)
+    # we clean up the colnames a little to make them shorter and nicer
+    colnames(df_values) <- gsub("of reads mapped to", "",
+                                gsub(" reads number", "", 
+                                     gsub("Number of reads mapped to ", "",
+                                          colnames(df_values))))
+    #if we have a differential expression analysis
+    #we refactor the samples depending on group/subject or alternatively on the
+    #amount of unique_mapping reads
+    if(file.exists(SHINYREPS_TARGET)){
+        targets <- read.delim(SHINYREPS_TARGET)
+        targets$sample_ext <- gsub(paste0(SHINYREPS_RNATYPES_SUFFIX,"$"), "",targets$file )
+        add_factors <- colnames(targets)[!colnames(targets) %in% c("group", "sample", "file")]
+        #we take the additional colnames present in the targets file and sort according
+        #to them the factor levels
+        targets <- targets[match(df_values$sample, targets$sample_ext),]
+        #sort the samples according to the group
+        df_values$sample <- targets$sample
+        df_values$sample <- factor(df_values$sample, 
+                                   levels=df_values$sample[ order(do.call( paste0,
+                                                                     targets[,c("group", add_factors)]
+                                                                    ))
+                                                          ])
+    } else{
+      #we rorder according to the % amount of unique mapped reads mapped reads
+      df_values$sample <- fct_reorder(df_values$sample, df_values$`Uniquely mapped reads %`)
+    }
+    df_values$sample <- gsub(lcSuffix(df_values$sample), "", df_values$sample)
+    df_values$sample <- gsub(lcPrefix(df_values$sample), "", df_values$sample)
+    df_melt <- melt(df_values, value.name = "reads", variable.name = "mapping_stat")
+    df_melt$value_info <- ifelse(grepl("%", df_melt$mapping_stat), "perc", "reads")
+    
+    #we create two plots one for the % and one for the amount of reads in numbers
+    p_perc <- ggplot(df_melt[df_melt$value_info == "perc",],
+                     aes(x = sample, y = reads, fill = mapping_stat )) +
+              geom_bar(stat     = "identity",
+                       position = "stack") +
+           ylab("% of reads sequenced") +
+           labs(fill = "Mapping Statistic") +
+	         theme(axis.text.x = element_text(angle = 45, vjust = 1, hjust = 1),
+	               plot.title = element_text(hjust=0.5)) +
+           scale_fill_brewer(palette="Dark2") +
+           ggtitle("Percentage of sequenced reads") 
+    p_count <- p_perc %+%
+               df_melt[df_melt$value_info == "reads",] +
+               ylab("# reads") +
+               ggtitle("Number of reads sequenced") 
+      
+    rownames(df_values) <- df_values$sample
+    df_values <- df_values[, colnames(df_values) != "sample"]
+    #we reformat individual columns
+    df_values[, grepl("%", colnames(df_values))] <- as.data.frame(
+      lapply(
+        df_values[, grepl("%", colnames(df_values))], function(x){
+          paste(format(x, nsmall=2), "%") 
+        }))
+    df_values[, !grepl("%", colnames(df_values))] <- as.data.frame(
+      lapply(
+        df_values[, !grepl("%", colnames(df_values))], function(x){
+           format(x, big.mark=",") 
+        }))
+                     
+    return( list(p_perc = p_perc,
+                 p_count = p_count,
+         stat = kable(df_values, align=c("r", "r", "r", "r","r"), output=F))
+    )
+    
 }
 
 ##

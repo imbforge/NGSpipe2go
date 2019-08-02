@@ -36,3 +36,4 @@ SHINYREPS_GO_ENRICHMENT=RESULTS + "/GO_Analysis" // where the GO enrichment resu
 SHINYREPS_INSERTSIZE=QC + "/insertsize" //where the insertsize statistics are found
 SHINYREPS_TRACKHUB_DONE=PROJECT + "/trackhub.done" // contains trackhub URL
 SHINYREPS_TOOL_VERSIONS=PROJECT+ "/NGSpipe2go/modules/RNAseq/tool.versions.groovy" //where the tool versions are listed
+SHINYREPS_TARGET=PROJECT + "/NGSpipe2go/pipelines/RNAseq/targets.txt" 
