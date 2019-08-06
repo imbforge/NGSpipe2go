@@ -66,12 +66,13 @@ load MODULE_FOLDER + "ChIPseq/shinyreports.vars.groovy"
 load MODULE_FOLDER + "ChIPseq/shinyreports.module.groovy"
 
 //MAIN PIPELINE TASK
-dontrun = segment { }
+dontrun = { println "didn't run $module" }
+
 Bpipe.run {
   "%.fastq.gz" * [ FastQC , bowtie_se + BAMindexer + MarkDups + BAMindexer + [ extend + bamCoverage, BamQC , phantompeak , pbc , ipstrength , macs2 ] ] +
-  (RUN_PEAK_ANNOTATION ? peak_annotation : dontrun) +
-  (RUN_DIFFBIND ? diffbind : dontrun) +
-  (RUN_TRACKHUB ? trackhub_config + trackhub : dontrun) +
+  (RUN_PEAK_ANNOTATION ? peak_annotation : dontrun.using(module:"peak_annotation")) +
+  (RUN_DIFFBIND ? diffbind : dontrun.using(module:"diffbind")) +
+  (RUN_TRACKHUB ? trackhub_config + trackhub : dontrun.using(module:"trackhub")) +
   collectBpipeLogs + shinyReports
 }
 
