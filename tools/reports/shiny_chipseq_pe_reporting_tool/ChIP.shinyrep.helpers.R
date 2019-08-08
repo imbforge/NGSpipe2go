@@ -9,7 +9,8 @@ library("RColorBrewer")
 library("gridExtra")
 library("dplyr")
 library("tidyr")
-
+library("reshape2")
+library("ggplot2")
 ##
 ## loadGlobalVars: read configuration from bpipe vars
 ##
