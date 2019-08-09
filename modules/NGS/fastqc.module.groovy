@@ -1,4 +1,7 @@
-load MODULE_FOLDER + "NGS/fastqc.vars.groovy"
+// Notes:
+//  * Indentation is important in this file. Please, use 4 spaces for indent. *NO TABS*.
+
+load PIPELINE_ROOT + "/modules/NGS/fastqc.vars.groovy"
 
 FastQC = {
     doc title: "FastQC",
@@ -10,9 +13,11 @@ FastQC = {
     output.dir = FASTQC_OUTDIR
     def FASTQC_FLAGS = "--extract --quiet"
 
+    def TOOL_ENV = prepare_tool_env("fastqc", tools["fastqc"]["version"], tools["fastqc"]["runenv"])
+
     transform(".fastq.gz") to ("_fastqc.zip") {
         exec """
-            module load fastqc/${FASTQC_VERSION} &&
+            ${TOOL_ENV} &&
 
             fastqc $FASTQC_FLAGS -o $output.dir $input
         ""","FastQC"

@@ -1,4 +1,7 @@
-load MODULE_FOLDER + "NGS/filterchromosomes.vars.groovy"
+// Notes:
+//  * Indentation is important in this file. Please, use 4 spaces for indent. *NO TABS*.
+
+load PIPELINE_ROOT + "/modules/NGS/filterchromosomes.vars.groovy"
 
 FilterChr = {
     doc title: "FilterChr",

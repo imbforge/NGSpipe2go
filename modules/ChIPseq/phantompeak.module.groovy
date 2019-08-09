@@ -1,4 +1,7 @@
-load MODULE_FOLDER + "ChIPseq/phantompeak.vars.groovy"
+// Notes:
+//  * Indentation is important in this file. Please, use 4 spaces for indent. *NO TABS*.
+
+load PIPELINE_ROOT + "/modules/ChIPseq/phantompeak.vars.groovy"
 
 phantompeak = {
     doc title: "Phantompeak QC  plot",
@@ -16,11 +19,13 @@ phantompeak = {
                             PHANTOMPEAK_THREADS  + " " + // cores to use
                             PHANTOMPEAK_EXTRA
 
+    def TOOL_ENV = prepare_tool_env("R", tools["R"]["version"], tools["R"]["runenv"])
+
     transform(".bam") to("_phantompeak.png") {
         exec """
-            module load R/${R_VERSION} &&
+            ${TOOL_ENV} &&
 
-            Rscript ${TOOL_ENCODEqc}/phantompeak.R $input \$(basename $input.prefix) $PHANTOMPEAK_FLAGS &&
+            Rscript ${PIPELINE_ROOT}/tools/ENCODEqc/phantompeak.R $input \$(basename $input.prefix) $PHANTOMPEAK_FLAGS &&
             mv *_phantompeak.* $output.dir
         ""","phantompeak"
     }

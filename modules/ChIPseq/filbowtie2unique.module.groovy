@@ -1,4 +1,7 @@
-load MODULE_FOLDER + "ChIPseq/filbowtie2unique.vars.groovy"
+// Notes:
+//  * Indentation is important in this file. Please, use 4 spaces for indent. *NO TABS*.
+
+load PIPELINE_ROOT + "/modules/ChIPseq/filbowtie2unique.vars.groovy"
 
 filbowtie2unique = {
     doc title: "filter out multimapping reads from bowtie2 out",
@@ -9,9 +12,12 @@ filbowtie2unique = {
 
     output.dir = FILBOWTIE2UNIQUE_MAPPED
 
+    def TOOL_ENV = prepare_tool_env("samtools", tools["samtools"]["version"], tools["samtools"]["runenv"])
+
     transform(".bam") to (".unique.bam") {
         exec """
-            module load samtools/${SAMTOOLS_VERSION} &&
+            ${TOOL_ENV} &&
+
             if [ -n "\$SLURM_JOBID" ]; then
                 export TMPDIR=/jobdir/\${SLURM_JOBID};
             fi                                       &&

@@ -1,4 +1,7 @@
-load MODULE_FOLDER + "ChIPseq/macs2.vars.groovy"
+// Notes:
+//  * Indentation is important in this file. Please, use 4 spaces for indent. *NO TABS*.
+
+load PIPELINE_ROOT + "/modules/ChIPseq/macs2.vars.groovy"
 
 macs2 = {
     doc title: "MACS2",
@@ -8,16 +11,20 @@ macs2 = {
         author: "Sergi Sayols"
 
     output.dir = RESULTS + "/macs2"
+
     def MACS2_FLAGS= MACS2_GSIZE  + " " +
                      MACS2_BWIDTH + " " +
                      MACS2_MINLEN + " " +
                      MACS2_EXTRA
     if(MACS2_PAIRED == "yes") {
-    MACS2_FLAGS = MACS2_FLAGS + " " + "--format BAMPE"
+        MACS2_FLAGS = MACS2_FLAGS + " " + "--format BAMPE"
     }
+
+    def TOOL_ENV = prepare_tool_env("macs2", tools["macs2"]["version"], tools["macs2"]["runenv"])
+
     transform(".bam") to("_macs2.done") {
         exec """
-            module load macs2/${MACS2_VERSION} &&
+            ${TOOL_ENV} &&
 
             touch $output;
             if [ ! -e $MACS2_TARGETS ]; then

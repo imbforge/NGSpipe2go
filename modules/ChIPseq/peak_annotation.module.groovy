@@ -1,4 +1,7 @@
-load MODULE_FOLDER + "ChIPseq/peak_annotation.vars.groovy"
+// Notes:
+//  * Indentation is important in this file. Please, use 4 spaces for indent. *NO TABS*.
+
+load PIPELINE_ROOT + "/modules/ChIPseq/peak_annotation.vars.groovy"
 
 peak_annotation = {
 
@@ -9,6 +12,7 @@ peak_annotation = {
         author:"Sri Dewi"
 
     output.dir=peak_annotation_OUTDIR.replaceFirst("out=","")
+
     def peak_annotation_FLAGS = peak_annotation_FILES + " " +
         peak_annotation_TRANSCRIPT_TYPE + " " + 
         peak_annotation_TRANSCRIPT_DB + " " + 
@@ -17,12 +21,13 @@ peak_annotation = {
         peak_annotation_OUTDIR + " " +
         peak_annotation_EXTRA
 
+    def TOOL_ENV = prepare_tool_env("R", tools["R"]["version"], tools["R"]["runenv"])
 
     produce("Peak_Annotation.RData") {
         exec """
-            module load R/${R_VERSION} &&
+            ${TOOL_ENV} &&
 
-            Rscript ${TOOL_PEAK_ANNOTATION}/Peak_Annotation.R $peak_annotation_FLAGS;
+            Rscript ${PIPELINE_ROOT}/tools/Peak_Annotation/Peak_Annotation.R $peak_annotation_FLAGS;
         ""","peak_annotation"
     }
 }

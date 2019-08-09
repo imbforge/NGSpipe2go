@@ -1,4 +1,7 @@
-load MODULE_FOLDER + "NGS/fastqscreen.vars.groovy"
+// Notes:
+//  * Indentation is important in this file. Please, use 4 spaces for indent. *NO TABS*.
+
+load PIPELINE_ROOT + "/modules/NGS/fastqscreen.vars.groovy"
 
 FastqScreen = {
     doc title: "FastScreen",
@@ -10,9 +13,11 @@ FastqScreen = {
     output.dir = FASTQSCREEN_OUTDIR
     def FASTQSCREEN_FLAGS = "-threads" + FASTQSCREEN_THREADS + " " + FASTQSCREEN_PARAM
 
+    def TOOL_ENV = prepare_tool_env("fastqscreen", tools["fastqscreen"]["version"], tools["fastqscreen"]["runenv"])
+
     transform(".fastq.gz") to("_fastqscreen.done") {
         exec """
-            module load fastq_screen/${FASTQSCREEN_VERSION} && 
+            ${TOOL_ENV} &&
 
             if [ ! -e "$output.prefix" ]; then
                 mkdir $output.prefix;

@@ -6,7 +6,7 @@ collectBpipeLogs = {
 		author: "Sergi Sayols"
 	
 	exec """
-		${TOOL_COLLECT}/collectBpipeLogs.sh $PROJECT $LOGS
+		${PIPELINE_ROOT}/tools/collectBpipeLogs/collectBpipeLogs.sh $PROJECT $LOGS
 	""","collectBpipeLogs"
 }
 

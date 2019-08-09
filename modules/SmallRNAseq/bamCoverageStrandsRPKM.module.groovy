@@ -21,7 +21,6 @@ BamCoverageStrandsRPKM = {
 
     transform(".bam") to (".RPKM.fwd.bw", ".RPKM.rev.bw") {
          exec """
-            export TOOL_DEPENDENCIES=$TOOL_DEPENDENCIES  &&
             module load deepTools/$DEEPTOOLS_VERSION &&
             module load samtools/$SAMTOOLS_VERSION &&
 

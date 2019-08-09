@@ -1,4 +1,7 @@
-load MODULE_FOLDER + "NGS/bamcoverage.vars.groovy"
+// Notes:
+//  * Indentation is important in this file. Please, use 4 spaces for indent. *NO TABS*.
+
+load PIPELINE_ROOT + "/modules/NGS/bamcoverage.vars.groovy"
 
 bamCoverage = {
     doc title: "bamCoverage",
@@ -13,9 +16,12 @@ bamCoverage = {
             BAMCOVERAGE_FLAGS = BAMCOVERAGE_FLAGS + " --extendReads"
         }
 
+    def TOOL_ENV = prepare_tool_env("deeptools", tools["deeptools"]["version"], tools["deeptools"]["runenv"])
+
     transform(".bam") to(".bw") {
         exec """
-            module load deepTools/${DEEPTOOLS_VERSION}  &&
+            ${TOOL_ENV} &&
+    
             if [ -n "\$SLURM_JOBID" ]; then
                 export TMPDIR=/jobdir/\${SLURM_JOBID};
             fi;

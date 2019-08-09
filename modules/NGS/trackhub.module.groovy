@@ -1,4 +1,7 @@
-load MODULE_FOLDER + "NGS/trackhub.vars.groovy"
+// Notes:
+//  * Indentation is important in this file. Please, use 4 spaces for indent. *NO TABS*.
+
+load PIPELINE_ROOT + "/modules/NGS/trackhub.vars.groovy"
 
 trackhub = {
     doc title: "Trackhub",
@@ -9,12 +12,14 @@ trackhub = {
 
     def trackhub_FLAGS = "TRACKHUB_CONFIG=" + TRACKHUB_CONFIG
 
+    def TOOL_ENV = prepare_tool_env("R", tools["R"]["version"], tools["R"]["runenv"]) + " && " +
+                   prepare_tool_env("kentutils", tools["kentutils"]["version"], tools["kentutils"]["runenv"])
+
     transform(".yaml") to (".done") {
         exec """
-            module load kentUtils/${KENTUTILS_VERSION} &&
-            module load R/${R_VERSION} &&
+            ${TOOL_ENV} &&
 
-            Rscript ${TOOL_TRACKHUB}/Make_Trackhub.R $trackhub_FLAGS
+            Rscript ${PIPELINE_ROOT}/tools/trackhub/Make_Trackhub.R $trackhub_FLAGS
         ""","trackhub"
     }
 }

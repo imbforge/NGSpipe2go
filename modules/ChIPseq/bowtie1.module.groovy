@@ -1,4 +1,7 @@
-load MODULE_FOLDER + "ChIPseq/bowtie1.vars.groovy"
+// Notes:
+//  * Indentation is important in this file. Please, use 4 spaces for indent. *NO TABS*.
+
+load PIPELINE_ROOT + "/modules/ChIPseq/bowtie1.vars.groovy"
 
 bowtie_se = {
     doc title: "Bowtie SE alignment",
@@ -22,10 +25,12 @@ bowtie_se = {
     def SAMTOOLS_VIEW_FLAGS = "-bhSu "
     def SAMTOOLS_SORT_FLAGS = "-O bam " + BOWTIE_SAMTOOLS_THREADS
 
+    def TOOL_ENV = prepare_tool_env("bowtie", tools["bowtie"]["version"], tools["bowtie"]["runenv"]) + " && " +
+                   prepare_tool_env("samtools", tools["samtools"]["version"], tools["samtools"]["runenv"])
+
     transform(".fastq.gz") to (".bam") {
         exec """
-            module load bowtie/${BOWTIE_VERSION} &&
-            module load samtools/${SAMTOOLS_VERSION} &&
+            ${TOOL_ENV} &&
 
             if [ ! -d ${TMP} ]; then
                      mkdir -p ${TMP};

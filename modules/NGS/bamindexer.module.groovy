@@ -1,4 +1,7 @@
-load MODULE_FOLDER + "NGS/bamindexer.vars.groovy"
+// Notes:
+//  * Indentation is important in this file. Please, use 4 spaces for indent. *NO TABS*.
+
+load PIPELINE_ROOT + "/modules/NGS/bamindexer.vars.groovy"
 
 BAMindexer = {
     doc title: "BAMindexer",
@@ -11,9 +14,11 @@ BAMindexer = {
     OUTPUTDIR = OUTPUTDIR.substring(0,path_index)
     output.dir = OUTPUTDIR
 
+    def TOOL_ENV = prepare_tool_env("samtools", tools["samtools"]["version"], tools["samtools"]["runenv"])
+
     transform(".bam\$") to(".bam.bai") {
         exec """
-            module load samtools/${SAMTOOLS_VERSION} &&
+            ${TOOL_ENV} &&
 
             samtools index $input
         ""","BAMindexer"

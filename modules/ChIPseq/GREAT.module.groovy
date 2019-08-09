@@ -1,4 +1,7 @@
-load MODULE_FOLDER + "ChIPseq/GREAT.vars.groovy"
+// Notes:
+//  * Indentation is important in this file. Please, use 4 spaces for indent. *NO TABS*.
+
+load PIPELINE_ROOT + "/modules/ChIPseq/GREAT.vars.groovy"
 
 GREAT = {
     doc title: "GREAT",
@@ -18,11 +21,13 @@ GREAT = {
         GREAT_DOWNSTREAM + " " +
         GREAT_EXTRA
 
+    def TOOL_ENV = prepare_tool_env("R", tools["R"]["version"], tools["R"]["runenv"])
+
     produce("GREAT.RData") {
         exec """
-           module load R/${R_VERSION} &&
+           ${TOOL_ENV} &&
 
-           Rscript ${TOOL_GO}/GREAT.R $GREAT_FLAGS
+           Rscript ${PIPELINE_ROOT}/tools/GO_Enrichment/GREAT.R $GREAT_FLAGS
         ""","GREAT"
     }
 }

@@ -18,7 +18,7 @@ ESSENTIAL_PAIRED="no"   // to perform MACS2 peak calling in SR mode ("no") or PE
 ESSENTIAL_STRANDED="no"  // library prep protocol strandness: no|yes|reverse
 ESSENTIAL_BAMCOVERAGE="--binSize 10 --normalizeUsing CPM"  // deepTools options for making normalised bigWig tracks
 
-//global vars that will be reused in some global vars
+// project folders
 PROJECT=ESSENTIAL_PROJECT
 LOGS=PROJECT + "/logs"
 MAPPED=PROJECT + "/mapped"

@@ -1,4 +1,7 @@
-load MODULE_FOLDER + "ChIPseq/diffbind.vars.groovy"
+// Notes:
+//  * Indentation is important in this file. Please, use 4 spaces for indent. *NO TABS*.
+
+load PIPELINE_ROOT + "/modules/ChIPseq/diffbind.vars.groovy"
 
 diffbind = {
     doc title: "diffbind",
@@ -24,12 +27,14 @@ diffbind = {
                          DIFFBIND_PAIRED    + " " +
                          DIFFBIND_EXTRA
 
+    def TOOL_ENV = prepare_tool_env("R", tools["R"]["version"], tools["R"]["runenv"])
+
     // run the chunk
     produce("diffbind.pdf", "diffbind.xlsx", "diffbind.rds") {
         exec """
-            module load R/${R_VERSION} &&
+            ${TOOL_ENV} &&
 
-            Rscript ${TOOL_DIFFBIND}/diffbind.R $DIFFBIND_FLAGS
+            Rscript ${PIPELINE_ROOT}/tools/diffbind/diffbind.R $DIFFBIND_FLAGS
         ""","diffbind"
     }
 

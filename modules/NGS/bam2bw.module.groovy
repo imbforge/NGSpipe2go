@@ -1,4 +1,7 @@
-load MODULE_FOLDER + "NGS/bam2bw.vars.groovy"
+// Notes:
+//  * Indentation is important in this file. Please, use 4 spaces for indent. *NO TABS*.
+
+load PIPELINE_ROOT + "/modules/NGS/bam2bw.vars.groovy"
 
 bam2bw = {
     doc title: "bam2bw",
@@ -9,11 +12,13 @@ bam2bw = {
 
     output.dir=TRACKS
 
+    def TOOL_ENV = prepare_tool_env("bedtools", tools["bedtools"]["version"], tools["bedtools"]["runenv"]) + " && " +
+                   prepare_tool_env("kentutils", tools["kentutils"]["version"], tools["kentutils"]["runenv"]) + " && " +
+                   prepare_tool_env("samtools", tools["samtools"]["version"], tools["samtools"]["runenv"])
+
     transform(".bam") to ("_scaled.bw") {
         exec """
-            module load bedtools/${BEDTOOLS_VERSION} &&
-            module load samtools/${SAMTOOLS_VERSION} &&
-            module load kentUtils/${KENTUTILS_VERSION} &&
+            ${TOOL_ENV} &&
 
             if [ -n "\$SLURM_JOBID" ]; then
                                 export TMPDIR=/jobdir/\${SLURM_JOBID};

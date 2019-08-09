@@ -1,4 +1,7 @@
-load MODULE_FOLDER + "ChIPseq/normbigwig.vars.groovy"
+// Notes:
+//  * Indentation is important in this file. Please, use 4 spaces for indent. *NO TABS*.
+
+load PIPELINE_ROOT + "/modules/ChIPseq/normbigwig.vars.groovy"
 
 normbigwig = {
     doc title: "normbigwig",
@@ -9,12 +12,14 @@ normbigwig = {
 
     output.dir = NORMBIGWIG_OUTDIR 
 
+    def TOOL_ENV = prepare_tool_env("R", tools["R"]["version"], tools["R"]["runenv"]) + " && " +
+                   prepare_tool_env("deeptools", tools["deeptools"]["version"], tools["deeptools"]["runenv"])  + " && " +
+                   prepare_tool_env("kentutils", tools["kentutils"]["version"], tools["kentutils"]["runenv"])  + " && " +
+                   prepare_tool_env("samtools", tools["samtools"]["version"], tools["samtools"]["runenv"])
+
     transform(".bam") to("_normbigwig.done") {
         exec """
-            module load deepTools/${DEEPTOOLS_VERSION} &&
-            module load R/${R_VERSION} &&
-            module load kentUtils/${KENTUTILS_VERSION} &&
-            module load samtools/${SAMTOOLS_VERSION} && 
+            ${TOOL_ENV} &&
 
             if [ ! -d ${TMP} ]; then
                 mkdir -p ${TMP};

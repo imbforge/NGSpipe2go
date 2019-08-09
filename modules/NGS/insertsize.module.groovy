@@ -1,4 +1,7 @@
-load MODULE_FOLDER + "NGS/insertsize.vars.groovy"
+// Notes:
+//  * Indentation is important in this file. Please, use 4 spaces for indent. *NO TABS*.
+
+load PIPELINE_ROOT + "/modules/NGS/insertsize.vars.groovy"
 
 InsertSize = {
     doc title: "InsertSize",
@@ -11,12 +14,15 @@ InsertSize = {
     def INSERTSIZE_FLAGS = INSERTSIZE_OTHER
     def JAVA_FLAGS  = INSERTSIZE_MAXMEM 
 
+    def TOOL_ENV = prepare_tool_env("R", tools["bowtie"]["version"], tools["bowtie"]["runenv"]) + " && " +
+                   prepare_tool_env("java", tools["java"]["version"], tools["java"]["runenv"]) + " && "+
+                   prepare_tool_env("picard", tools["picard"]["version"], tools["picard"]["runenv"])
+
     transform(".bam") to ("_insertsizemetrics.tsv") {
         exec """
-            module load R/${R_VERSION} &&
-            module load picard/${PICARD_VERSION} && 
+            ${TOOL_ENV} &&
 
-            java $JAVA_FLAGS -jar ${TOOL_PICARD}/picard.jar CollectInsertSizeMetrics $INSERTSIZE_FLAGS INPUT=$input OUTPUT=$output HISTOGRAM_FILE=${output.prefix}_hist.pdf
+            java $JAVA_FLAGS -jar \${picard} CollectInsertSizeMetrics $INSERTSIZE_FLAGS INPUT=$input OUTPUT=$output HISTOGRAM_FILE=${output.prefix}_hist.pdf
         ""","InsertSize"
     }
 }

@@ -1,4 +1,7 @@
-load MODULE_FOLDER + "NGS/rmdups.vars.groovy"
+// Notes:
+//  * Indentation is important in this file. Please, use 4 spaces for indent. *NO TABS*.
+
+load PIPELINE_ROOT + "/modules/NGS/rmdups.vars.groovy"
 
 RmDups = {
     doc title: "MarkDups",
@@ -11,12 +14,14 @@ RmDups = {
     def JAVA_FLAGS  = "-Xmx" + MARKDUPS_MAXMEM + "m"
     def MARKDUPS_FLAGS  = "REMOVE_DUPLICATES=TRUE ASSUME_SORTED=TRUE"
 
+    def TOOL_ENV = prepare_tool_env("java", tools["java"]["version"], tools["java"]["runenv"]) + " && " +
+                   prepare_tool_env("picard", tools["picard"]["version"], tools["picard"]["runenv"])
+
     transform(".bam") to (".duprm.bam") {
         exec """
-            module load jdk/${JAVA_VERSION} &&
-            module load picard/${PICARD_VERSION} &&
+            ${TOOL_ENV} &&
 
-            java $JAVA_FLAGS -jar ${TOOL_PICARD}/picard.jar MarkDuplicates $MARKDUPS_FLAGS INPUT=$input OUTPUT=$output METRICS_FILE=${input.prefix}_dupmetrics.tsv
+            java $JAVA_FLAGS -jar \${picard} MarkDuplicates $MARKDUPS_FLAGS INPUT=$input OUTPUT=$output METRICS_FILE=${input.prefix}_dupmetrics.tsv
         ""","RmDups"
     }
 }

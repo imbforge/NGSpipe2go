@@ -1,4 +1,7 @@
-load MODULE_FOLDER + "NGS/downsamplefastqPE.vars.groovy"
+// Notes:
+//  * Indentation is important in this file. Please, use 4 spaces for indent. *NO TABS*.
+
+load PIPELINE_ROOT + "/modules/NGS/downsamplefastqPE.vars.groovy"
 
 DownsamplefastqPE = {
     doc title: "downsample",
@@ -7,16 +10,15 @@ DownsamplefastqPE = {
         bpipe_version: "tested with bpipe 0.9.8.7",
         author: "Nastasja Kreim"
 
-        output.dir = DOWNSAMPLE_OUTDIR
-        def OUTPUTFILES = new ArrayList()
-        inputs.eachWithIndex { item, index -> 
-                path_index = item.lastIndexOf("/")
-                item = item.substring(path_index+1)
-                item = (item =~ /.fastq.gz/).replaceFirst(".down.fastq.gz")
-                OUTPUTFILES.add(item)
-                println OUTPUTFILES[index]
-        }
-
+    output.dir = DOWNSAMPLE_OUTDIR
+    def OUTPUTFILES = new ArrayList()
+    inputs.eachWithIndex { item, index -> 
+        path_index = item.lastIndexOf("/")
+        item = item.substring(path_index+1)
+        item = (item =~ /.fastq.gz/).replaceFirst(".down.fastq.gz")
+        OUTPUTFILES.add(item)
+        println OUTPUTFILES[index]
+    }
 
     produce(OUTPUTFILES){
         exec """

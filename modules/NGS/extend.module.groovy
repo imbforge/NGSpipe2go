@@ -1,4 +1,7 @@
-load MODULE_FOLDER + "NGS/extend.vars.groovy"
+// Notes:
+//  * Indentation is important in this file. Please, use 4 spaces for indent. *NO TABS*.
+
+load PIPELINE_ROOT + "/modules/NGS/extend.vars.groovy"
 
 extend = {
     doc title: "extend",
@@ -11,10 +14,12 @@ extend = {
 
     def SAMTOOLS_SORT_FLAGS = "-O bam " + EXTEND_SAMTOOLS_THREADS
 
+    def TOOL_ENV = prepare_tool_env("bedtools", tools["bedtools"]["version"], tools["bedtools"]["runenv"]) + " && " +
+                   prepare_tool_env("samtools", tools["samtools"]["version"], tools["samtools"]["runenv"])
+
     transform(".bam") to ("_ext.bam") {
         exec """
-            module load bedtools/${BEDTOOLS_VERSION} &&
-            module load samtools/${SAMTOOLS_VERSION} &&
+            ${TOOL_ENV} &&
 
             if [ ! -d $TMP ]; then
                 mkdir -p $TMP;

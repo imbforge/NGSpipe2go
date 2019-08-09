@@ -1,3 +1,6 @@
+// Notes:
+//  * Indentation is important in this file. Please, use 4 spaces for indent. *NO TABS*.
+
 pbc = {
     doc title: "PBC",
         desc:  "PCR Bottleneck Coefficient",
@@ -7,11 +10,13 @@ pbc = {
 
     output.dir = QC + "/pbc"
 
+    def TOOL_ENV = prepare_tool_env("R", tools["R"]["version"], tools["R"]["runenv"])
+
     transform(".bam") to("_PBC.csv") {
         exec """
-            module load R/${R_VERSION} &&
+            ${TOOL_ENV} &&
 
-            Rscript ${TOOL_ENCODEqc}/PBC.R $input && mv ${input.prefix}_PBC.csv $output.dir
+            Rscript ${PIPELINE_ROOT}/tools/ENCODEqc/PBC.R $input && mv ${input.prefix}_PBC.csv $output.dir
         ""","pbc"
     }
 

@@ -13,7 +13,6 @@ load MODULE_FOLDER + "ChIPseq/ipstrength.module.groovy"
 load MODULE_FOLDER + "ChIPseq/macs2.module.groovy"
 load MODULE_FOLDER + "ChIPseq/pbc.module.groovy"
 load MODULE_FOLDER + "ChIPseq/peak_annotation.module.groovy"
-load MODULE_FOLDER + "ChIPseq/shinyreports_pe.module.groovy"
 load MODULE_FOLDER + "NGS/bamcoverage.module.groovy"
 load MODULE_FOLDER + "NGS/bamindexer.module.groovy"
 load MODULE_FOLDER + "NGS/bamqc.module.groovy"
@@ -24,6 +23,7 @@ load MODULE_FOLDER + "NGS/rmdups.module.groovy"
 load MODULE_FOLDER + "NGS/trackhub.module.groovy"
 load MODULE_FOLDER + "NGS/trackhub_config.module.groovy"
 load MODULE_FOLDER + "miscellaneous/collectbpipes.module.2.groovy"
+load MODULE_FOLDER + "ChIPseq/shinyreports_pe.module.groovy"
 
 // standard PE workflow using deduplicated BAM files of MapQ filtered (~ unique) reads
 // assumes that duplicated library fragments are unwanted PCR artifacts

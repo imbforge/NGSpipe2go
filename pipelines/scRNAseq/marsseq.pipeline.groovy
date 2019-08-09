@@ -17,10 +17,10 @@ load MODULE_FOLDER + "RNAseq/subread2rnatypes.module.groovy"
 load MODULE_FOLDER + "miscellaneous/collectbpipes.module.2.groovy"
 load MODULE_FOLDER + "scRNAseq/addumibarcodetofastq.module.groovy"
 load MODULE_FOLDER + "scRNAseq/cutadapt.module.groovy"
-load MODULE_FOLDER + "scRNAseq/shinyreports.module.groovy"
 load MODULE_FOLDER + "scRNAseq/subread.module.groovy"
 load MODULE_FOLDER + "scRNAseq/umicount.module.groovy"
 load MODULE_FOLDER + "scRNAseq/umidedup.module.groovy"
+load MODULE_FOLDER + "scRNAseq/shinyreports.module.groovy"
 
 //
 // Typical workflow for MARS-Seq data:

@@ -1,4 +1,7 @@
-load MODULE_FOLDER + "NGS/strandSpecificBW.vars.groovy"
+// Notes:
+//  * Indentation is important in this file. Please, use 4 spaces for indent. *NO TABS*.
+
+load PIPELINE_ROOT + "/modules/NGS/strandSpecificBW.vars.groovy"
 
 strandBigWig = {
     doc title: "strandBigWig",
@@ -19,15 +22,18 @@ strandBigWig = {
         def REVERSE="reverse"
     }
 
+    def TOOL_ENV = prepare_tool_env("deeptools", tools["deeptools"]["version"], tools["deeptools"]["runenv"]) + " && " +
+                   prepare_tool_env("kentutils", tools["kentutils"]["version"], tools["kentutils"]["runenv"]) + " && " +
+                   prepare_tool_env("samtools", tools["samtools"]["version"], tools["samtools"]["runenv"])
+
     transform(".bam") to(".fwd.bw", ".rev.bw") {
         exec """
-            export TOOL_DEPENDENCIES=$TOOL_DEPENDENCIES  &&
-            module load deepTools/$DEEPTOOLS_VERSION &&
-            module load samtools/$SAMTOOLS_VERSION &&
-            module load kentUtils/$KENTUTILS_VERSION &&
+            ${TOOL_ENV} &&
+
             if [ -n "\$SLURM_JOBID" ]; then
                 export TMPDIR=/jobdir/\${SLURM_JOBID};
             fi;
+
             base=\$(basename $input.prefix) &&
             echo \$base &&
             CHRSIZES=${TMPDIR}/\${base}.bam2bw.chrsizes &&

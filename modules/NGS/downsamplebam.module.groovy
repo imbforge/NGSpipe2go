@@ -1,4 +1,7 @@
-load MODULE_FOLDER + "NGS/downsamplebam.vars.groovy"
+// Notes:
+//  * Indentation is important in this file. Please, use 4 spaces for indent. *NO TABS*.
+
+load PIPELINE_ROOT + "/modules/NGS/downsamplebam.vars.groovy"
 
 DownsampleBAM = {
     doc title: "DownsampleBAM",
@@ -9,9 +12,12 @@ DownsampleBAM = {
 
     output.dir = DOWNSAMPLED
 
+    def TOOL_ENV = prepare_tool_env("samtools", tools["samtools"]["version"], tools["samtools"]["runenv"])
+
     transform(".bam") to (".down.bam") {
         exec """
-            module load samtools/${SAMTOOLS_VERSION} &&
+            ${TOOL_ENV} &&
+    
             if [ -n "\$SLURM_JOBID" ]; then
                 export TMPDIR=/jobdir/\${SLURM_JOBID};
             fi &&

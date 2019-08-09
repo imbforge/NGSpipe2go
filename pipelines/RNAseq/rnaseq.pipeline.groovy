@@ -20,11 +20,11 @@ load MODULE_FOLDER + "RNAseq/dupradar.module.groovy"
 load MODULE_FOLDER + "RNAseq/filter2htseq.module.groovy"
 load MODULE_FOLDER + "RNAseq/genebodycov2.module.groovy"
 load MODULE_FOLDER + "RNAseq/inferexperiment.module.groovy"
-load MODULE_FOLDER + "RNAseq/shinyreports.module.groovy"
 load MODULE_FOLDER + "RNAseq/star.module.groovy"
 load MODULE_FOLDER + "RNAseq/subread.module.groovy"
 load MODULE_FOLDER + "RNAseq/subread2rnatypes.module.groovy"
 load MODULE_FOLDER + "miscellaneous/collectbpipes.module.2.groovy"
+load MODULE_FOLDER + "RNAseq/shinyreports.module.groovy"
 
 //
 // Typical workflow for SR data (default):

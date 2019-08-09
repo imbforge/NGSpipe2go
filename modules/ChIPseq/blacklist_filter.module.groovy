@@ -1,4 +1,7 @@
-load MODULE_FOLDER + "ChIPseq/blacklist_filter.vars.groovy"
+// Notes:
+//  * Indentation is important in this file. Please, use 4 spaces for indent. *NO TABS*.
+
+load PIPELINE_ROOT + "/modules/ChIPseq/blacklist_filter.vars.groovy"
 
 blacklist_filter = {
     doc title: "blacklist_filter",
@@ -13,12 +16,13 @@ blacklist_filter = {
                                  blacklist_filter_OUTDIR   + " " +
                                  blacklist_filter_EXTRA
 
+    def TOOL_ENV = prepare_tool_env("R", tools["R"]["version"], tools["R"]["runenv"])
+
     produce("BlackList_Filter.RData") {
         exec """
-           module load bedtools/${BEDTOOLS_VERSION} &&
-           module load R/${R_VERSION} &&
+            ${TOOL_ENV} &&
 
-           Rscript ${TOOL_BLACKLIST_FILTER}/BlackList_Filter.R $blacklist_filter_FLAGS;
+            Rscript ${PIPELINE_ROOT}/tools/BlackList_Filter/BlackList_Filter.R $blacklist_filter_FLAGS;
         ""","blacklist_filter"
     }
 }

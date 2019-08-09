@@ -1,4 +1,7 @@
-load MODULE_FOLDER + "ChIPseq/bowtie1pe.vars.groovy"
+// Notes:
+//  * Indentation is important in this file. Please, use 4 spaces for indent. *NO TABS*.
+
+load PIPELINE_ROOT + "/modules/ChIPseq/bowtie1pe.vars.groovy"
 
 bowtie_pe = {
     doc title: "Bowtie PE alignment",
@@ -11,7 +14,6 @@ bowtie_pe = {
     def OUTPUTFILE = input1
     int path_index = OUTPUTFILE.lastIndexOf("/")
     OUTPUTFILE = OUTPUTFILE.substring(path_index+1)
-    println(OUTPUTFILE)
     OUTPUTFILE = (OUTPUTFILE =~ /.R1.fastq.gz/).replaceFirst("")
 
     def BOWTIE_FLAGS = "-q --sam "  +
@@ -26,10 +28,12 @@ bowtie_pe = {
     def SAMTOOLS_VIEW_FLAGS = "-bhSu "
     def SAMTOOLS_SORT_FLAGS = "-O bam " + BOWTIE_SAMTOOLS_THREADS
 
+    def TOOL_ENV = prepare_tool_env("bowtie", tools["bowtie"]["version"], tools["bowtie"]["runenv"]) + " && " +
+                   prepare_tool_env("samtools", tools["samtools"]["version"], tools["samtools"]["runenv"])
+
     produce(OUTPUTFILE + ".bam") {
         exec """
-            module load bowtie/${BOWTIE_VERSION}     &&
-            module load samtools/${SAMTOOLS_VERSION} &&
+            ${TOOL_ENV} &&
 
             if [ -n "\$SLURM_JOBID" ]; then
               export TMPDIR=/jobdir/\${SLURM_JOBID};

@@ -1,4 +1,7 @@
-load MODULE_FOLDER + "NGS/downsamplefastqSE.vars.groovy"
+// Notes:
+//  * Indentation is important in this file. Please, use 4 spaces for indent. *NO TABS*.
+
+load PIPELINE_ROOT + "/modules/NGS/downsamplefastqSE.vars.groovy"
 
 DownsamplefastqSE = {
     doc title: "downsample",

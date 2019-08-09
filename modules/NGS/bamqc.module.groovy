@@ -1,4 +1,7 @@
-load MODULE_FOLDER + "NGS/bamqc.vars.groovy"
+// Notes:
+//  * Indentation is important in this file. Please, use 4 spaces for indent. *NO TABS*.
+
+load PIPELINE_ROOT + "/modules/NGS/bamqc.vars.groovy"
 
 BamQC = {
     doc title: "BamQC",
@@ -10,9 +13,11 @@ BamQC = {
     output.dir   = BAMQC_OUTDIR
     def BAMQC_FLAGS = "--extract --quiet"
 
+    def TOOL_ENV = prepare_tool_env("bamqc", tools["bamqc"]["version"], tools["bamqc"]["runenv"])
+
     transform(".bam") to ("_bamqc.zip") {
         exec """
-            module load BamQC/${BAMQC_VERSION} &&
+            ${TOOL_ENV} &&
 
             bamqc $BamQC_FLAGS -o $output.dir $input
         ""","BamQC"

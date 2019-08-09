@@ -32,8 +32,8 @@ load MODULE_FOLDER + "smallRNAseq_BCF/fastq_quality_filter_stats.module.groovy"
 load MODULE_FOLDER + "smallRNAseq_BCF/fastqscreen.module.groovy"
 load MODULE_FOLDER + "smallRNAseq_BCF/filter2htseq.module.groovy"
 load MODULE_FOLDER + "smallRNAseq_BCF/mapping_stats.module.groovy"
-load MODULE_FOLDER + "smallRNAseq_BCF/shinyreports.module.groovy"
 load MODULE_FOLDER + "smallRNAseq_BCF/subread.module.groovy"
+load MODULE_FOLDER + "smallRNAseq_BCF/shinyreports.module.groovy"
 
 //MAIN PIPELINE TASK
 run {

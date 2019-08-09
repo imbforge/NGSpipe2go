@@ -1,4 +1,7 @@
-load MODULE_FOLDER + "NGS/markdups2.vars.groovy"
+// Notes:
+//  * Indentation is important in this file. Please, use 4 spaces for indent. *NO TABS*.
+
+load PIPELINE_ROOT + "/modules/NGS/markdups2.vars.groovy"
 
 MarkDups2 = {
     doc title: "MarkDups2",
@@ -9,9 +12,11 @@ MarkDups2 = {
 
     output.dir=MAPPED
 
+    def TOOL_ENV = prepare_tool_env("bamutil", tools["bamutil"]["version"], tools["bamutil"]["runenv"])
+
     transform(".bam") to (".dupmarked.bam") {
         exec """
-            module load bamUtil/${BAMUTIL_VERSION} &&
+            ${TOOL_ENV} &&
 
             bam dedup --in $input --out $output --log ${input.prefix}_dupmetrics.log --noPhoneHome
         ""","MarkDups2"

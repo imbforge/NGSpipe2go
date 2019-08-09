@@ -1,4 +1,7 @@
-load MODULE_FOLDER + "ChIPseq/ipstrength.vars.groovy"
+// Notes:
+//  * Indentation is important in this file. Please, use 4 spaces for indent. *NO TABS*.
+
+load PIPELINE_ROOT + "/modules/ChIPseq/ipstrength.vars.groovy"
 
 ipstrength = {
     doc title: "IPstrength plot",
@@ -9,9 +12,11 @@ ipstrength = {
 
     output.dir = QC + "/ipstrength"
 
+    def TOOL_ENV = prepare_tool_env("R", tools["R"]["version"], tools["R"]["runenv"])
+
     transform(".bam") to("_ipstrength.done") {
         exec """
-            module load R/${R_VERSION} &&
+            ${TOOL_ENV} &&
 
             touch $output;
             if [ ! -e $IPSTRENGTH_TARGETS ]; then
@@ -28,7 +33,7 @@ ipstrength = {
 
                 if [ "\$BAM" != "\$INPUT" ]; then
                     echo "\${IPname} vs \${INPUTname}" >> $output ;
-                    Rscript ${TOOL_ENCODEqc}/IPstrength.R $IPSTRENGTH_MAPPED/\$IP \$IPname $IPSTRENGTH_MAPPED/\$INPUT \$INPUTname \${IPname}.vs.\${INPUTname}_ipstrength $IPSTRENGTH_BSGENOME;
+                    Rscript ${PIPELINE_ROOT}/tools/ENCODEqc/IPstrength.R $IPSTRENGTH_MAPPED/\$IP \$IPname $IPSTRENGTH_MAPPED/\$INPUT \$INPUTname \${IPname}.vs.\${INPUTname}_ipstrength $IPSTRENGTH_BSGENOME;
                     if [ \$? -ne 0 ]; then rm $output; fi;
                     mv \${IPname}.vs.\${INPUTname}_ipstrength* $output.dir;
                 fi;
