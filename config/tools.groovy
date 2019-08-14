@@ -317,7 +317,7 @@ tools_prepare_env = [
 // prepare_tool_env
 // 
 // Given a tool, version and run env, return its tools_prepare_env string.
-// If any of the keys doesn't exist, returns an empty string.
+// If any of the keys doesn't exist, returns the POSIX shell null command.
 //
 String prepare_tool_env (String tool, String version, String runenv) {
 
@@ -326,7 +326,7 @@ String prepare_tool_env (String tool, String version, String runenv) {
        tools_prepare_env[tool][version].containsKey(runenv)) {
         return tools_prepare_env[tool][version][runenv]
     } else {
-        return ""
+        return ":"   // return the POSIX shell null command
     }
 }
 
