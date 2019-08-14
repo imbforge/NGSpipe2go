@@ -1,4 +1,7 @@
-load MODULE_FOLDER + "DNAseq/realignment.vars.groovy"
+// Notes:
+//  * Indentation is important in this file. Please, use 4 spaces for indent. *NO TABS*.
+
+load  PIPELINE_ROOT + "/modules/DNAseq/realignment.vars.groovy"
 
 IndelRealignment = {
     doc title: "GATK IndelRealignment",
@@ -17,9 +20,12 @@ IndelRealignment = {
         GATK_FLAGS = ""
     }
 
+    def TOOL_ENV = prepare_tool_env("java", tools["java"]["version"], tools["java"]["runenv"])
+
     transform (".bam") to (".realignment.targets.bed", ".realigned.bam") {
         exec """
-            module load jdk/${JAVA_VERSION} &&
+            ${TOOL_ENV} &&
+
             if [ -n "\$SLURM_JOBID" ]; then
                 export TMPDIR=/jobdir/\${SLURM_JOBID};
             fi                           &&

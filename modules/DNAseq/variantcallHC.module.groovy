@@ -1,4 +1,7 @@
-load MODULE_FOLDER + "DNAseq/variantcallHC.vars.groovy"
+// Notes:
+//  * Indentation is important in this file. Please, use 4 spaces for indent. *NO TABS*.
+
+load  PIPELINE_ROOT + "/modules/DNAseq/variantcallHC.vars.groovy"
 
 VariantCallHC = {
     doc title: "GATK Variant Calling HC",
@@ -17,9 +20,12 @@ VariantCallHC = {
         GATK_FLAGS = ""
     }
 
+    def TOOL_ENV = prepare_tool_env("java", tools["java"]["version"], tools["java"]["runenv"])
+
     transform (".duprm.realigned.recalibrated.bam") to (".HC.vcf.gz") {
         exec """
-            module load jdk/${JAVA_VERSION} &&
+            ${TOOL_ENV} &&
+
             if [ -n "\$SLURM_JOBID" ]; then
                 export TMPDIR=/jobdir/\${SLURM_JOBID};
             fi &&

@@ -1,21 +1,20 @@
-MODULE_FOLDER="./NGSpipe2go/modules/"  // adjust to your projects needs
+PIPELINE_ROOT="./NGSpipe2go/"  // adjust to your projects needs
 
-load MODULE_FOLDER + "DNAseq/essential.vars.groovy"
-load MODULE_FOLDER + "DNAseq/tool.locations.groovy"
-load MODULE_FOLDER + "DNAseq/tool.versions.groovy"
+load PIPELINE_ROOT + "/pipelines/DNAseq/essential.vars.groovy"
+load PIPELINE_ROOT + "/pipelines/DNAseq/tools.groovy"
 
-load MODULE_FOLDER + "DNAseq/bwa.module.groovy"
-load MODULE_FOLDER + "DNAseq/realignment.module.groovy"
-load MODULE_FOLDER + "DNAseq/recalibration.module.groovy"
-load MODULE_FOLDER + "DNAseq/variantcallHC.module.groovy"
-load MODULE_FOLDER + "DNAseq/variantcallUG.module.groovy"
-load MODULE_FOLDER + "DNAseq/varianteval.module.groovy"
-load MODULE_FOLDER + "DNAseq/variantfuseHC.module.groovy"
-load MODULE_FOLDER + "NGS/bamindexer.module.groovy"
-load MODULE_FOLDER + "NGS/fastqc.module.groovy"
-load MODULE_FOLDER + "NGS/rmdups.module.groovy"
-load MODULE_FOLDER + "miscellaneous/collectbpipes.module.2.groovy"
-load MODULE_FOLDER + "DNAseq/shinyreports.module.groovy"
+load PIPELINE_ROOT + "/modules/DNAseq/bwa.module.groovy"
+load PIPELINE_ROOT + "/modules/DNAseq/realignment.module.groovy"
+load PIPELINE_ROOT + "/modules/DNAseq/recalibration.module.groovy"
+load PIPELINE_ROOT + "/modules/DNAseq/variantcallHC.module.groovy"
+load PIPELINE_ROOT + "/modules/DNAseq/variantcallUG.module.groovy"
+load PIPELINE_ROOT + "/modules/DNAseq/varianteval.module.groovy"
+load PIPELINE_ROOT + "/modules/DNAseq/variantfuseHC.module.groovy"
+load PIPELINE_ROOT + "/modules/NGS/bamindexer.module.groovy"
+load PIPELINE_ROOT + "/modules/NGS/fastqc.module.groovy"
+load PIPELINE_ROOT + "/modules/NGS/rmdups.module.groovy"
+load PIPELINE_ROOT + "/modules/miscellaneous/collectbpipes.module.2.groovy"
+load PIPELINE_ROOT + "/modules/DNAseq/shinyreports.module.groovy"
 
 run {
     "%.fastq.gz" * [ FastQC ] + "%_R*.fastq.gz" * [ BWA_pe ] + "%.bam" * [ RmDups + BAMindexer + IndelRealignment + BaseRecalibration + [ VariantCallHC, VariantCallUG ] ] + "%.vcf.gz" * [ VariantEval ] + collectBpipeLogs + shinyReports

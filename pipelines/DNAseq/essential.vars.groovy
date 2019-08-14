@@ -1,8 +1,3 @@
-//Pipeline generated with command line: ./imb-pip.pl --tasks-pip=1 --force
-//By: ssayolsp At: Fr 17 Okt 2014 17:12:41 CEST
-//
-// REMEMBER TO CHANGE THESE ESSENTIAL VARS!!
-//
 ESSENTIAL_PROJECT="/project"
 ESSENTIAL_BWA_REF="/data/igenomes_reference/Mus_musculus/UCSC/mm9/Sequence/BWAIndex/genome.fa"
 ESSENTIAL_CALL_REGION="/project/dnaseq/call.region.bed" // OPTIONALLY limit variant calling to a limited region, e.g. exonic sequences or chr3 only. Will save a lot of compute time.
@@ -20,3 +15,6 @@ REPORTS=PROJECT + "/reports"
 RESULTS=PROJECT + "/results"
 TMP=PROJECT + "/tmp"
 TRACKS=PROJECT + "/tracks"
+
+// optional pipeline stages to include
+

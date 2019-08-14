@@ -1,4 +1,7 @@
-load MODULE_FOLDER + "DNAseq/bwa.vars.groovy"
+// Notes:
+//  * Indentation is important in this file. Please, use 4 spaces for indent. *NO TABS*.
+
+load  PIPELINE_ROOT + "/modules/DNAseq/bwa.vars.groovy"
 
 BWA_pe = {
     doc title: "BWA PE alignment",
@@ -21,10 +24,12 @@ BWA_pe = {
     def SAMTOOLS_VIEW_FLAGS = "-bhSu"
     def SAMTOOLS_SORT_FLAGS = SAMTOOLS_THREADS
 
+    def TOOL_ENV = prepare_tool_env("bwa", tools["bwa"]["version"], tools["bwa"]["runenv"]) + " && " +
+                   prepare_tool_env("samtools", tools["samtools"]["version"], tools["samtools"]["runenv"])
+
     produce(OUTPUTFILE + ".bam") {
         exec """
-            module load bwa/${BWA_VERSION} &&
-            module load samtools/${SAMTOOLS_VERSION} && 
+            ${TOOL_ENV} &&
 
             if [ -n "\$SLURM_JOBID" ]; then
                 export TMPDIR=/jobdir/\${SLURM_JOBID};

@@ -1,4 +1,7 @@
-load MODULE_FOLDER + "DNAseq/shinyreports.vars.groovy"
+// Notes:
+//  * Indentation is important in this file. Please, use 4 spaces for indent. *NO TABS*.
+
+load  PIPELINE_ROOT + "/modules/DNAseq/shinyreports.vars.groovy"
 
 shinyReports = {
     doc title: "shinyReports",

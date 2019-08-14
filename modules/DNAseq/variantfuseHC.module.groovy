@@ -1,4 +1,7 @@
-load MODULE_FOLDER + "DNAseq/variantfuseHC.vars.groovy"
+// Notes:
+//  * Indentation is important in this file. Please, use 4 spaces for indent. *NO TABS*.
+
+load  PIPELINE_ROOT + "/modules/DNAseq/variantfuseHC.vars.groovy"
 
 VariantFuseHC = {
     doc title: "GATK Base Quality Recalibration",
@@ -13,10 +16,12 @@ VariantFuseHC = {
                      GATK_INDEXPARM + " " +
                      GATK_EXTRA
 
+    def TOOL_ENV = prepare_tool_env("java", tools["java"]["version"], tools["java"]["runenv"])
+
     transform (".duprm.realigned.recalibrated.bam") to (".HC.vcf.gz") {
         // usage parameters https://www.broadinstitute.org/gatk/gatkdocs/org_broadinstitute_gatk_tools_walkers_haplotypecaller_HaplotypeCaller.php
         exec """
-            module load jdk/${JAVA_VERSION} &&
+            ${TOOL_ENV} &&
 
             if [ -n "\$SLURM_JOBID" ]; then
                 export TMPDIR=/jobdir/\${SLURM_JOBID};

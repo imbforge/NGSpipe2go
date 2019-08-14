@@ -1,4 +1,7 @@
-load MODULE_FOLDER + "DNAseq/variantcallUG.vars.groovy"
+// Notes:
+//  * Indentation is important in this file. Please, use 4 spaces for indent. *NO TABS*.
+
+load  PIPELINE_ROOT + "/modules/DNAseq/variantcallUG.vars.groovy"
 
 VariantCallUG = {
     doc title: "GATK Variant Calling UG",
@@ -17,10 +20,13 @@ VariantCallUG = {
         GATK_FLAGS = ""
     }
 
+    def TOOL_ENV = prepare_tool_env("java", tools["java"]["version"], tools["java"]["runenv"])
+
     transform (".duprm.realigned.recalibrated.bam") to (".UG.vcf.gz") {
     // usage parameters https://www.broadinstitute.org/gatk/gatkdocs/org_broadinstitute_gatk_tools_walkers_genotyper_UnifiedGenotyper.php
         exec """
-            module load jdk/${JAVA_VERSION} &&
+            ${TOOL_ENV} &&
+
             if [ -n "\$SLURM_JOBID" ]; then
                 export TMPDIR=/jobdir/\${SLURM_JOBID};
             fi                                       &&

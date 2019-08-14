@@ -1,4 +1,7 @@
-load MODULE_FOLDER + "DNAseq/recalibration.vars.groovy"
+// Notes:
+//  * Indentation is important in this file. Please, use 4 spaces for indent. *NO TABS*.
+
+load  PIPELINE_ROOT + "/modules/DNAseq/recalibration.vars.groovy"
 
 BaseRecalibration = {
     doc title: "GATK Base Quality Recalibration",
@@ -17,9 +20,12 @@ BaseRecalibration = {
         GATK_FLAGS = ""
     }
 
+    def TOOL_ENV = prepare_tool_env("java", tools["java"]["version"], tools["java"]["runenv"])
+
     transform (".bam") to (".recalibration.table", ".recalibrated.bam") {
         exec """
-            module load jdk/${JAVA_VERSION} && 
+            ${TOOL_ENV} &&
+
             if [ -n "\$SLURM_JOBID" ]; then
                 export TMPDIR=/jobdir/\${SLURM_JOBID};
             fi &&
