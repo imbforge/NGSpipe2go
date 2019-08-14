@@ -15,7 +15,8 @@ BaseRecalibration = {
     def GATK_FLAGS  = " -R " + GATK_REF +
                       " -nct " + GATK_THREADS
 
-    def TOOL_ENV = prepare_tool_env("picard", tools["picard"]["version"], tools["picard"]["runenv"])
+    def TOOL_ENV = prepare_tool_env("java", tools["java"]["version"], tools["java"]["runenv"]) + " && " +
+                   prepare_tool_env("gatk", tools["gatk"]["version"], tools["gatk"]["runenv"])
 
     transform (".bam") to (".recalibration.table", ".recalibrated.bam"){
 
