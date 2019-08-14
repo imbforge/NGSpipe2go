@@ -1,4 +1,7 @@
-load MODULE_FOLDER + "RNAseq/qualimap.vars.groovy"
+// Notes:
+//  * Indentation is important in this file. Please, use 4 spaces for indent. *NO TABS*.
+
+load PIPELINE_ROOT + "/modules/RNAseq/qualimap.vars.groovy"
 
 qualimap = {
     doc title: "Qualimap",
@@ -20,9 +23,12 @@ qualimap = {
         QUALIMAP_EXTRA = QUALIMAP_EXTRA + " -pe"
     }
 
+    def TOOL_ENV = prepare_tool_env("qualimap", tools["qualimap"]["version"], tools["qualimap"]["runenv"])
+
     transform(".bam") to("_counts.txt") {
         exec """
-            module load qualimap/${QUALIMAP_VERSION} &&
+            ${TOOL_ENV} &&
+    
             unset DISPLAY;
             echo $output.prefix;
             qualimap rnaseq -bam $input -outdir ${output.prefix}_qualimap -outformat html $QUALIMAP_GENESGTF -oc $output -p $QUALIMAP_PROTOCOL $QUALIMAP_EXTRA

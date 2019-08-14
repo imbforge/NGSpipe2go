@@ -1,4 +1,7 @@
-load MODULE_FOLDER + "RNAseq/edger.vars.groovy"
+// Notes:
+//  * Indentation is important in this file. Please, use 4 spaces for indent. *NO TABS*.
+
+load PIPELINE_ROOT + "/modules/RNAseq/edger.vars.groovy"
 
 DE_edgeR = {
     doc title: "DE_edgeR",
@@ -20,12 +23,14 @@ DE_edgeR = {
                          DE_edgeR_OUTDIR    + "/DE_edgeR " +
                          DE_edgeR_EXTRA
 
+    def TOOL_ENV = prepare_tool_env("R", tools["R"]["version"], tools["R"]["runenv"])
+
     // run the chunk
     produce("DE_edgeR.RData") {
         exec """
-            module load R/${R_VERSION} &&
+            ${TOOL_ENV} &&
 
-            Rscript ${TOOL_EDGER}/DE_edgeR.R $DE_edgeR_FLAGS
+            Rscript ${PIPELINE_ROOT}/tools/DE_edgeR/DE_edgeR.R $DE_edgeR_FLAGS
         ""","DE_edgeR"
     }
 

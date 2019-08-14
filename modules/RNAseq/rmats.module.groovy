@@ -1,4 +1,7 @@
-load MODULE_FOLDER + "RNAseq/rmats.vars.groovy"
+// Notes:
+//  * Indentation is important in this file. Please, use 4 spaces for indent. *NO TABS*.
+
+load PIPELINE_ROOT + "/modules/RNAseq/rmats.vars.groovy"
 
 rMATS = {
     doc title: "rMats Wrapper for alternative splicing events",
@@ -26,10 +29,13 @@ rMATS = {
         RMATS_FLAGS = "--libType fr-secondstrand " + RMATS_FLAGS
     }
 
+    def TOOL_ENV = prepare_tool_env("rmats", tools["rmats"]["version"], tools["rmats"]["runenv"])
+
     // run the chunk
     transform (".txt") to (".done") {
         exec """
-            module load rmats/${RMATS_VERSION} &&
+            ${TOOL_ENV} &&
+    
             if [ -n "\$SLURM_JOBID" ]; then
                 export TMPDIR=/jobdir/\${SLURM_JOBID};
             fi;

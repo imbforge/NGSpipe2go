@@ -26,3 +26,7 @@ RESULTS=PROJECT + "/results"
 TMP=PROJECT + "/tmp"
 TRACKS=PROJECT + "/tracks"
 FUSION=PROJECT + "/fusion"
+
+// optional pipeline stages to include
+RUN_TRACKHUB=false
+RUN_IN_PAIRED_END_MODE=(ESSENTIAL_PAIRED == "yes")

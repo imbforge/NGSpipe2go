@@ -1,4 +1,7 @@
-load MODULE_FOLDER + "RNAseq/dupradar.vars.groovy"
+// Notes:
+//  * Indentation is important in this file. Please, use 4 spaces for indent. *NO TABS*.
+
+load PIPELINE_ROOT + "/modules/RNAseq/dupradar.vars.groovy"
 
 dupRadar = {
     doc title: "dupRadar",
@@ -16,11 +19,14 @@ dupRadar = {
                          DUPRADAR_EXTRA
     def THREADS=DUPRADAR_THREADS.replaceFirst("threads=", "")
 
+    def TOOL_ENV = prepare_tool_env("R", tools["R"]["version"], tools["R"]["runenv"]) + " && " +
+                   prepare_tool_env("subread", tools["subread"]["version"], tools["subread"]["runenv"])
+
     // run the chunk
     transform(".bam") to("_dupRadar.png") {
         exec """
-            module load R/${R_VERSION} &&
-            module load subread/${SUBREAD_VERSION} &&
+            ${TOOL_ENV} &&
+
             if [ -n "\$SLURM_JOBID" ]; then
                 export TMPDIR=/jobdir/\${SLURM_JOBID};
             fi &&
@@ -29,9 +35,9 @@ dupRadar = {
             if [[ "$DUPRADAR_PAIRED" == "paired=yes" ]]; then
                 echo "We are resorting and doing the repair\n" &&
                 repair -i $input -T $THREADS -o \${TMPDIR}/\${base} &&
-                Rscript ${TOOL_DUPRADAR}/dupRadar.R bam=\${TMPDIR}/\${base} $DUPRADAR_FLAGS;
+                Rscript ${PIPELINE_ROOT}/tools/dupRadar/dupRadar.R bam=\${TMPDIR}/\${base} $DUPRADAR_FLAGS;
             else
-                Rscript ${TOOL_DUPRADAR}/dupRadar.R bam=$input $DUPRADAR_FLAGS;
+                Rscript ${PIPELINE_ROOT}/tools/dupRadar/dupRadar.R bam=$input $DUPRADAR_FLAGS;
             fi
         ""","dupRadar"
     }

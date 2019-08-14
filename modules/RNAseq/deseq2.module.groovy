@@ -1,4 +1,7 @@
-load MODULE_FOLDER + "RNAseq/deseq2.vars.groovy"
+// Notes:
+//  * Indentation is important in this file. Please, use 4 spaces for indent. *NO TABS*.
+
+load PIPELINE_ROOT + "/modules/RNAseq/deseq2.vars.groovy"
 
 DE_DESeq2 = {
     doc title: "DE_DESeq2",
@@ -19,12 +22,14 @@ DE_DESeq2 = {
                           DE_DESeq2_GENES     + " " +
                           DE_DESeq2_EXTRA
 
+    def TOOL_ENV = prepare_tool_env("R", tools["R"]["version"], tools["R"]["runenv"])
+
     // run the chunk
     produce("DE_DESeq2.RData") {
         exec """
-            module load R/${R_VERSION} &&
+            ${TOOL_ENV} &&
 
-            Rscript ${TOOL_DESeq2}/DE_DESeq2.R $DE_DESeq2_FLAGS
+            Rscript ${PIPELINE_ROOT}/tools/DE_DESeq2/DE_DESeq2.R $DE_DESeq2_FLAGS
         ""","DE_DESeq2"
     }
 }

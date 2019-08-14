@@ -1,4 +1,7 @@
-load MODULE_FOLDER + "RNAseq/GO_Enrichment.vars.groovy"
+// Notes:
+//  * Indentation is important in this file. Please, use 4 spaces for indent. *NO TABS*.
+
+load PIPELINE_ROOT + "/modules/RNAseq/GO_Enrichment.vars.groovy"
 
 GO_Enrichment = {
     doc title: "GO_Enrichment",
@@ -18,11 +21,14 @@ GO_Enrichment = {
                               GO_Enrichment_CORES    + " " +
                               GO_Enrichment_EXTRA
 
+    def TOOL_ENV = prepare_tool_env("R", tools["R"]["version"], tools["R"]["runenv"])
+
     transform(".RData") to("_GO.done") {
         exec """
-            module load R/${R_VERSION} &&
+            ${TOOL_ENV} &&
+
             touch $output &&
-            Rscript ${TOOL_GO}/GO_Enrichment.R rData=$input $GO_Enrichment_FLAGS &&
+            Rscript ${PIPELINE_ROOT}/tools/GO_Enrichment/GO_Enrichment.R rData=$input $GO_Enrichment_FLAGS &&
             if [ \$? -ne 0 ]; then rm $output; fi;
         ""","GO_Enrichment"
     }

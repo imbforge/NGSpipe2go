@@ -1,4 +1,7 @@
-load MODULE_FOLDER + "RNAseq/inferexperiment.vars.groovy"
+// Notes:
+//  * Indentation is important in this file. Please, use 4 spaces for indent. *NO TABS*.
+
+load PIPELINE_ROOT + "/modules/RNAseq/inferexperiment.vars.groovy"
 
 inferexperiment = {
     doc title: "inferexperiment",
@@ -9,10 +12,12 @@ inferexperiment = {
 
     output.dir = INFEREXPERIMENT_OUTDIR
 
+    def TOOL_ENV = prepare_tool_env("rseqc", tools["rseqc"]["version"], tools["rseqc"]["runenv"])
+
     // run the chunk
     transform(".bam") to (input.prefix + "_inferexperiment.txt") {
         exec """
-            module load RSeQC/${RSEQC_VERSION} &&
+            ${TOOL_ENV} &&
 
             infer_experiment.py -i $input $INFEREXPERIMENT_EXTRA $INFEREXPERIMENT_BED > $output
         ""","inferexperiment"

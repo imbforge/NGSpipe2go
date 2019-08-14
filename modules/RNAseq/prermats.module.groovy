@@ -1,4 +1,7 @@
-load MODULE_FOLDER + "RNAseq/prermats.vars.groovy"
+// Notes:
+//  * Indentation is important in this file. Please, use 4 spaces for indent. *NO TABS*.
+
+load PIPELINE_ROOT + "/modules/RNAseq/prermats.vars.groovy"
 
 PREMATS = {
     doc title: "rMATs prepocessor for the target and contrast file",

@@ -1,4 +1,7 @@
-load MODULE_FOLDER + "RNAseq/subread.vars.groovy"
+// Notes:
+//  * Indentation is important in this file. Please, use 4 spaces for indent. *NO TABS*.
+
+load PIPELINE_ROOT + "/modules/RNAseq/subread.vars.groovy"
 
 subread_count = {
     doc title: "subread_count_se",
@@ -28,10 +31,13 @@ subread_count = {
         SUBREAD_FLAGS = "-s 2 " + SUBREAD_FLAGS
     }
 
+    def TOOL_ENV = prepare_tool_env("subread", tools["subread"]["version"], tools["subread"]["runenv"])
+
     // run the chunk
     transform(".bam") to (".raw_readcounts.tsv") {
         exec """
-            module load subread/${SUBREAD_VERSION} &&
+            ${TOOL_ENV} &&
+    
             if [ -n "\$SLURM_JOBID" ]; then
                 export TMPDIR=/jobdir/\${SLURM_JOBID};
             fi &&

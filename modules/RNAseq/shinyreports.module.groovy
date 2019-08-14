@@ -1,4 +1,7 @@
-load MODULE_FOLDER + "RNAseq/shinyreports.vars.groovy"
+// Notes:
+//  * Indentation is important in this file. Please, use 4 spaces for indent. *NO TABS*.
+
+load PIPELINE_ROOT + "/modules/RNAseq/shinyreports.vars.groovy"
 
 shinyReports = {
     doc title: "shinyReports",
@@ -11,17 +14,17 @@ shinyReports = {
 
     produce("shinyReports.txt") {
         exec """
-            cp ${MODULE_FOLDER}/../tools/reports/shiny_rnaseq_reporting_tool/server.R ${REPORTS}                &&
-            cp ${MODULE_FOLDER}/../tools/reports/shiny_rnaseq_reporting_tool/ui.R ${REPORTS}                    &&
-            cp ${MODULE_FOLDER}/../tools/reports/shiny_rnaseq_reporting_tool/DE.shinyrep.helpers.R ${REPORTS}   &&
-            cp ${MODULE_FOLDER}/../tools/reports/shiny_rnaseq_reporting_tool/bustard.pl ${REPORTS}              &&
-            cp ${MODULE_FOLDER}/../tools/reports/shiny_rnaseq_reporting_tool/BustardSummary.toMD.xsl ${REPORTS} &&
-            cp ${MODULE_FOLDER}/../tools/reports/shiny_rnaseq_reporting_tool/styles.css ${REPORTS}              &&
+            cp ${PIPELINE_ROOT}/tools/reports/shiny_rnaseq_reporting_tool/server.R ${REPORTS}                &&
+            cp ${PIPELINE_ROOT}/tools/reports/shiny_rnaseq_reporting_tool/ui.R ${REPORTS}                    &&
+            cp ${PIPELINE_ROOT}/tools/reports/shiny_rnaseq_reporting_tool/DE.shinyrep.helpers.R ${REPORTS}   &&
+            cp ${PIPELINE_ROOT}/tools/reports/shiny_rnaseq_reporting_tool/bustard.pl ${REPORTS}              &&
+            cp ${PIPELINE_ROOT}/tools/reports/shiny_rnaseq_reporting_tool/BustardSummary.toMD.xsl ${REPORTS} &&
+            cp ${PIPELINE_ROOT}/tools/reports/shiny_rnaseq_reporting_tool/styles.css ${REPORTS}              &&
 
             if [ -e "${REPORTS}/DEreport.Rmd" ]; then
                 echo 'DEreport.Rmd already exists. Older copy will be kept and not overwritten';
             else
-                cp ${MODULE_FOLDER}/../tools/reports/shiny_rnaseq_reporting_tool/DEreport.Rmd ${REPORTS};
+                cp ${PIPELINE_ROOT}/tools/reports/shiny_rnaseq_reporting_tool/DEreport.Rmd ${REPORTS};
             fi &&
 
             PROJECT=\$(basename ${SHINYREPS_PROJECT})                            &&

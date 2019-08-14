@@ -1,4 +1,7 @@
-load MODULE_FOLDER + "RNAseq/genebodycov.vars.groovy"
+// Notes:
+//  * Indentation is important in this file. Please, use 4 spaces for indent. *NO TABS*.
+
+load PIPELINE_ROOT + "/modules/RNAseq/genebodycov.vars.groovy"
 
 geneBodyCov = {
     doc title: "geneBodyCoverage",
@@ -12,10 +15,12 @@ geneBodyCov = {
                             GENEBODYCOV_BED    + " " +
                             GENEBODYCOV_EXTRA
 
+    def TOOL_ENV = prepare_tool_env("rseqc", tools["rseqc"]["version"], tools["rseqc"]["runenv"])
+
     // run the chunk
     transform(".bam") to (".geneBodyCoverage.curves.png", ".geneBodyCoverage.r", ".geneBodyCoverage.txt") {
         exec """
-            module load RSeQC/${RSEQC_VERSION} &&
+            ${TOOL_ENV} &&
 
             geneBody_coverage.py -i $input -o ${output3.prefix.prefix} $GENEBODYCOV_FLAGS
         ""","geneBodyCov"

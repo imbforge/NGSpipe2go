@@ -1,4 +1,7 @@
-load MODULE_FOLDER + "RNAseq/genebodycov2.vars.groovy"
+// Notes:
+//  * Indentation is important in this file. Please, use 4 spaces for indent. *NO TABS*.
+
+load PIPELINE_ROOT + "/modules/RNAseq/genebodycov2.vars.groovy"
 
 geneBodyCov2 = {
     doc title: "geneBodyCoverage2",
@@ -15,16 +18,18 @@ geneBodyCov2 = {
                              GENEBODYCOV2_OUTDIR   + " " +
                              GENEBODYCOV2_THREADS
 
+    def TOOL_ENV = prepare_tool_env("R", tools["R"]["version"], tools["R"]["runenv"])
+
     // run the chunk
     transform(".bam") to ("_geneBodyCov.png") {
         exec """
-            module load R/${R_VERSION} &&
+            ${TOOL_ENV} &&
 
             if [[ ! -e "$output.dir" ]]; then
                 mkdir -p "$output.dir";
             fi &&
 
-            Rscript ${TOOL_GENEBODYCOV2}/geneBodyCov.R bam=$input $GENEBODYCOV2_FLAGS
+            Rscript ${PIPELINE_ROOT}/tools/geneBodyCov/geneBodyCov.R bam=$input $GENEBODYCOV2_FLAGS
         ""","geneBodyCov2"
     }
     forward input

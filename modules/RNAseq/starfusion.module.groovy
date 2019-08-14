@@ -1,4 +1,7 @@
-load MODULE_FOLDER + "RNAseq/starfusion.vars.groovy"
+// Notes:
+//  * Indentation is important in this file. Please, use 4 spaces for indent. *NO TABS*.
+
+load PIPELINE_ROOT + "/modules/RNAseq/starfusion.vars.groovy"
 
 STAR_Fusion = {
     doc title: "STAR-Fusion",
@@ -17,9 +20,11 @@ STAR_Fusion = {
     def STARFUSION_FLAGS = STARFUSION_THREADS + " " +
                            STARFUSION_GENOME_LIB
 
+    def TOOL_ENV = prepare_tool_env("starfusion", tools["starfusion"]["version"], tools["starfusion"]["runenv"])
+
     produce(OUTPUTFILE + "_starfusion.done") {
         exec """
-            module load STAR-Fusion/${STARFUSION_VERSION} &&
+            ${TOOL_ENV} &&
 
             if [ -n "\$SLURM_JOBID" ]; then
                 export TMPDIR=/jobdir/\${SLURM_JOBID};

@@ -1,4 +1,7 @@
-load MODULE_FOLDER + "RNAseq/stringtie.vars.groovy"
+// Notes:
+//  * Indentation is important in this file. Please, use 4 spaces for indent. *NO TABS*.
+
+load PIPELINE_ROOT + "/modules/RNAseq/stringtie.vars.groovy"
 
 StringTie = {
     doc title: "STRING_TIE transcript quantification",
@@ -28,10 +31,13 @@ StringTie = {
         STRINGTIE_FLAGS = "--rf " + STRINGTIE_FLAGS
     }
 
+    def TOOL_ENV = prepare_tool_env("stringtie", tools["stringtie"]["version"], tools["stringtie"]["runenv"])
+
     // code chunk
     transform(".bam") to("_stringtie.done") {
         exec """
-            module load stringtie/${STRINGTIE_VERSION} && 
+            ${TOOL_ENV} &&
+
             base=\$(basename $input) &&
             base=\${base%.bam} &&
             echo \$base &&

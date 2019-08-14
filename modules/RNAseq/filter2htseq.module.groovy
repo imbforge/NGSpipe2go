@@ -1,4 +1,7 @@
-load MODULE_FOLDER + "RNAseq/filter2htseq.vars.groovy"
+// Notes:
+//  * Indentation is important in this file. Please, use 4 spaces for indent. *NO TABS*.
+
+load PIPELINE_ROOT + "/modules/RNAseq/filter2htseq.vars.groovy"
 
 filter2htseq = {
     doc title: "filter_featureCounts_to_htseq",

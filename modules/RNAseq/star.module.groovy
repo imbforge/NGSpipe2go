@@ -1,4 +1,7 @@
-load MODULE_FOLDER + "RNAseq/star.vars.groovy"
+// Notes:
+//  * Indentation is important in this file. Please, use 4 spaces for indent. *NO TABS*.
+
+load PIPELINE_ROOT + "/modules/RNAseq/star.vars.groovy"
 
 STAR = {
     doc title: "STAR alignment",
@@ -56,12 +59,14 @@ STAR = {
 
     def SAMTOOLS_SORT_FLAGS = " -O bam " + STAR_SAMTOOLS_THREADS
 
+    def TOOL_ENV = prepare_tool_env("star", tools["star"]["version"], tools["star"]["runenv"]) + " && " +
+                   prepare_tool_env("samtools", tools["samtools"]["version"], tools["samtools"]["runenv"])
+
     // code chunk
     // TODO: warn if the genome index was created using another version of STAR?
     produce(OUTPUTFILE + ".bam", OUTPUTFILE + "Log.final.out") {
         exec """
-            module load star/${STAR_VERSION} && 
-            module load samtools/${SAMTOOLS_VERSION} &&
+            ${TOOL_ENV} &&
 
             if [ -e $TMP/$OUTPUTFILE ];
             then
