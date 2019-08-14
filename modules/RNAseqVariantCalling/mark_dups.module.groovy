@@ -1,4 +1,7 @@
-load MODULE_FOLDER + "RNAseqVariantCalling/mark_dups.vars.groovy"
+// Notes:
+//  * Indentation is important in this file. Please, use 4 spaces for indent. *NO TABS*.
+
+load PIPELINE_ROOT + "/modules/RNAseqVariantCalling/mark_dups.vars.groovy"
 
 MarkDups = {
     doc title: "MarkDups",
@@ -14,13 +17,17 @@ MarkDups = {
                           " VALIDATION_STRINGENCY=" + MARKDUPS_VALIDATION +
                           " ASSUME_SORTED=TRUE"
 
+    def TOOL_ENV = prepare_tool_env("picard", tools["picard"]["version"], tools["picard"]["runenv"])
+
     transform(".rg.bam") to (".rg.duprm.bam"){
         exec """
+            ${TOOL_ENV} &&
+
             echo 'VERSION INFO'  1>&2 &&
-            echo \$(java -jar ${TOOL_PICARD}/picard.jar MarkDuplicates --version) 1>&2 &&
+            echo \$(java -jar \${picard} MarkDuplicates --version) 1>&2 &&
             echo '/VERSION INFO' 1>&2 &&
 
-            java $JAVA_FLAGS -jar ${TOOL_PICARD}/picard.jar MarkDuplicates $MARKDUPS_FLAGS I=$input O=$output M=${input.prefix}_dupmetrics.tsv
+            java $JAVA_FLAGS -jar \${picard} MarkDuplicates $MARKDUPS_FLAGS I=$input O=$output M=${input.prefix}_dupmetrics.tsv
         ""","MarkDups"
     }
 }

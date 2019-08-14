@@ -1,4 +1,7 @@
-load MODULE_FOLDER + "RNAseqVariantCalling/splitNcigar.vars.groovy"
+// Notes:
+//  * Indentation is important in this file. Please, use 4 spaces for indent. *NO TABS*.
+
+load PIPELINE_ROOT + "/modules/RNAseqVariantCalling/splitNcigar.vars.groovy"
 
 SplitNCigarReads = {
     doc title: "GATK SplitNCigarReads",
@@ -15,13 +18,18 @@ SplitNCigarReads = {
                             " -RMQT " + MAP_Q_TO_FLAG +
                             " -U " + UNSAFE_FLAG
 
+    def TOOL_ENV = prepare_tool_env("java", tools["java"]["version"], tools["java"]["runenv"]) + " && " +
+                   prepare_tool_env("gatk", tools["gatk"]["version"], tools["gatk"]["runenv"])
+
     transform (".duprm.bam") to (".duprm.split.bam"){
        exec """
+           ${TOOL_ENV} &&
+
            echo 'VERSION INFO'  1>&2 &&
-           echo \$(java -jar ${TOOL_GATK}/GenomeAnalysisTK.jar --version) 1>&2 &&
+           echo \$(java -jar \${gatk} --version) 1>&2 &&
            echo '/VERSION INFO' 1>&2 &&
 
-           java $JAVA_FLAGS -jar ${TOOL_GATK}/GenomeAnalysisTK.jar -T SplitNCigarReads -I $input -o $output $SPLITCIGAR_FLAGS
+           java $JAVA_FLAGS -jar \${gatk} -T SplitNCigarReads -I $input -o $output $SPLITCIGAR_FLAGS
        ""","SplitNCigarReads"
     }
 }

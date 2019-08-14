@@ -1,4 +1,7 @@
-load MODULE_FOLDER + "RNAseqVariantCalling/variant_filtration.vars.groovy"
+// Notes:
+//  * Indentation is important in this file. Please, use 4 spaces for indent. *NO TABS*.
+
+load PIPELINE_ROOT + "/modules/RNAseqVariantCalling/variant_filtration.vars.groovy"
 
 VariantFiltration = {
    doc title: "GATK HaplotypeCaller",
@@ -11,14 +14,19 @@ VariantFiltration = {
    def JAVA_FLAGS = "-Xmx" + VARFILT_MAXMEM
    def GATK_FLAGS  = " -R " + GATK_REF
 
+    def TOOL_ENV = prepare_tool_env("java", tools["java"]["version"], tools["java"]["runenv"]) + " && " +
+                   prepare_tool_env("gatk", tools["gatk"]["version"], tools["gatk"]["runenv"])
+
    transform (".vcf.gz") to (".filtered.vcf.gz") {
 
       exec """
+            ${TOOL_ENV} &&
+
             echo 'VERSION INFO'  1>&2 &&
-            echo \$(java -jar ${TOOL_GATK}/GenomeAnalysisTK.jar --version) 1>&2 &&
+            echo \$(java -jar \${gatk} --version) 1>&2 &&
             echo '/VERSION INFO' 1>&2 &&
 
-            java $JAVA_FLAGS -jar ${TOOL_GATK}/GenomeAnalysisTK.jar -T VariantFiltration -V $input -o $output -window 35 -cluster 3 -filterName FS -filter "FS > 30.0" -filterName QD -filter "QD < 2.0" $GATK_FLAGS
+            java $JAVA_FLAGS -jar \${gatk} -T VariantFiltration -V $input -o $output -window 35 -cluster 3 -filterName FS -filter "FS > 30.0" -filterName QD -filter "QD < 2.0" $GATK_FLAGS
       ""","VariantFiltration"
    }
 }

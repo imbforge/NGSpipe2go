@@ -1,4 +1,7 @@
-load MODULE_FOLDER + "RNAseqVariantCalling/merge_SJ_tab.vars.groovy"
+// Notes:
+//  * Indentation is important in this file. Please, use 4 spaces for indent. *NO TABS*.
+
+load PIPELINE_ROOT + "/modules/RNAseqVariantCalling/merge_SJ_tab.vars.groovy"
 
 FilterAndMergeSJtab = {
     doc title: "FilterAndMergeSJtab",

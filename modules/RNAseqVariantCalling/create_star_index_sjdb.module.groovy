@@ -1,4 +1,7 @@
-load MODULE_FOLDER + "RNAseqVariantCalling/create_star_index_sjdb.vars.groovy"
+// Notes:
+//  * Indentation is important in this file. Please, use 4 spaces for indent. *NO TABS*.
+
+load PIPELINE_ROOT + "/modules/RNAseqVariantCalling/create_star_index_sjdb.vars.groovy"
 
 GenerateStarIndexFromSJ = {
     doc title: "GenerateStarIndexFromSJ",
@@ -32,7 +35,12 @@ GenerateStarIndexFromSJ = {
                          // " --sjdbGTFfile " + ESSENTIAL_GENESGTF +
                          " --readFilesCommand zcat"
 
+        def TOOL_ENV = prepare_tool_env("star", tools["star"]["version"], tools["star"]["runenv"])
+
         exec """
+
+            ${TOOL_ENV} &&
+
             STAR $STAR_FLAGS
         ""","GenerateStarIndexFromSJ"
     }

@@ -1,4 +1,7 @@
-load MODULE_FOLDER + "RNAseqVariantCalling/base_recalibration.vars.groovy"
+// Notes:
+//  * Indentation is important in this file. Please, use 4 spaces for indent. *NO TABS*.
+
+load PIPELINE_ROOT + "/modules/RNAseqVariantCalling/base_recalibration.vars.groovy"
 
 BaseRecalibration = {
     doc title: "GATK BaseRecalibrator",
@@ -12,16 +15,20 @@ BaseRecalibration = {
     def GATK_FLAGS  = " -R " + GATK_REF +
                       " -nct " + GATK_THREADS
 
+    def TOOL_ENV = prepare_tool_env("picard", tools["picard"]["version"], tools["picard"]["runenv"])
+
     transform (".bam") to (".recalibration.table", ".recalibrated.bam"){
 
         exec """
+            ${TOOL_ENV} &&
+
             echo 'VERSION INFO'  1>&2 &&
-            echo \$(java -jar ${TOOL_GATK}/GenomeAnalysisTK.jar --version) 1>&2 &&
+            echo \$(java -jar \${gatk} --version) 1>&2 &&
             echo '/VERSION INFO' 1>&2 &&
 
-            java -jar ${TOOL_GATK}/GenomeAnalysisTK.jar -T BaseRecalibrator -I $input -o $output1 -knownSites $VCF_REF  $GATK_FLAGS &&
+            java -jar \${gatk} -T BaseRecalibrator -I $input -o $output1 -knownSites $VCF_REF  $GATK_FLAGS &&
 
-            java $JAVA_FLAGS -jar ${TOOL_GATK}/GenomeAnalysisTK.jar -T PrintReads -I $input -BQSR $output1 -o $output2 $GATK_FLAGS
+            java $JAVA_FLAGS -jar \${gatk} -T PrintReads -I $input -BQSR $output1 -o $output2 $GATK_FLAGS
         ""","BaseRecalibration"
     }
 }

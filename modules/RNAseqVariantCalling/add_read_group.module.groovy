@@ -1,4 +1,7 @@
-load MODULE_FOLDER + "RNAseqVariantCalling/add_read_group.vars.groovy"
+// Notes:
+//  * Indentation is important in this file. Please, use 4 spaces for indent. *NO TABS*.
+
+load PIPELINE_ROOT + "/modules/RNAseqVariantCalling/add_read_group.vars.groovy"
 
 AddRG = {
     doc title: "AddReadGroup",
@@ -10,15 +13,19 @@ AddRG = {
     def JAVA_FLAGS = "-Xmx" + RG_MAXMEM
     def EXP = input1.split("/")[-1].replaceAll(".bam", "")
 
+    def TOOL_ENV = prepare_tool_env("picard", tools["picard"]["version"], tools["picard"]["runenv"])
+
     transform(".bam") to (".rg.bam"){
         exec """
+            ${TOOL_ENV} &&
+
             echo 'VERSION INFO'  1>&2 &&
-            echo \$(java -jar ${TOOL_PICARD}/picard.jar AddOrReplaceReadGroups --version) 1>&2 &&
+            echo \$(java -jar \${picard} AddOrReplaceReadGroups --version) 1>&2 &&
             echo '/VERSION INFO' 1>&2 &&
 
             PLATFORM="genomics" &&
 
-            java $JAVA_FLAGS -jar ${TOOL_PICARD}/picard.jar AddOrReplaceReadGroups I=$input O=$output SO=coordinate RGID=${EXP} RGLB=${EXP} RGPL=illumina RGPU=${PLATFORM} RGSM=${EXP}
+            java $JAVA_FLAGS -jar \${picard} AddOrReplaceReadGroups I=$input O=$output SO=coordinate RGID=${EXP} RGLB=${EXP} RGPL=illumina RGPU=${PLATFORM} RGSM=${EXP}
         ""","AddRG"
     }
 }

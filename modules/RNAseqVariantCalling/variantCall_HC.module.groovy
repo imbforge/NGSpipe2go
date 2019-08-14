@@ -1,4 +1,7 @@
-load MODULE_FOLDER + "RNAseqVariantCalling/variantCall_HC.vars.groovy"
+// Notes:
+//  * Indentation is important in this file. Please, use 4 spaces for indent. *NO TABS*.
+
+load PIPELINE_ROOT + "/modules/RNAseqVariantCalling/variantCall_HC.vars.groovy"
 
 VariantCallHC = {
    doc title: "GATK HaplotypeCaller",
@@ -15,14 +18,17 @@ VariantCallHC = {
                      " -stand_emit_conf " + MIN_SCORE_EMIT +
                      " -dontUseSoftClippedBases"
 
+    def TOOL_ENV = prepare_tool_env("java", tools["java"]["version"], tools["java"]["runenv"]) + " && " +
+                   prepare_tool_env("gatk", tools["gatk"]["version"], tools["gatk"]["runenv"])
+
    transform (".rg.duprm.split.recalibrated.bam") to (".UG.vcf.gz") {
 
       exec """
             echo 'VERSION INFO'  1>&2 &&
-            echo \$(java -jar ${TOOL_GATK}/GenomeAnalysisTK.jar --version) 1>&2 &&
+            echo \$(java -jar \${gatk} --version) 1>&2 &&
             echo '/VERSION INFO' 1>&2 &&
 
-            java $JAVA_FLAGS -jar ${TOOL_GATK}/GenomeAnalysisTK.jar -T HaplotypeCaller -I $input -o $output --dbsnp $VCF_REF  $GATK_FLAGS
+            java $JAVA_FLAGS -jar \${gatk} -T HaplotypeCaller -I $input -o $output --dbsnp $VCF_REF  $GATK_FLAGS
 
       ""","VariantCallHC"
    }

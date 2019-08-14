@@ -1,4 +1,7 @@
-load MODULE_FOLDER + "RNAseqVariantCalling/star1pass.vars.groovy"
+// Notes:
+//  * Indentation is important in this file. Please, use 4 spaces for indent. *NO TABS*.
+
+load PIPELINE_ROOT + "/modules/RNAseqVariantCalling/star1pass.vars.groovy"
 
 STAR_pe = {
    doc title: "STAR SE/PE alignment",
@@ -45,8 +48,12 @@ STAR_pe = {
                 // " --sjdbGTFfile " + ESSENTIAL_GENESGTF +
                 " --readFilesCommand zcat"
 
+    def TOOL_ENV = prepare_tool_env("star", tools["star"]["version"], tools["star"]["runenv"]) + " && " +
+                   prepare_tool_env("samtools", tools["samtools"]["version"], tools["samtools"]["runenv"])
       exec """
-         STAR $STAR_FLAGS --readFilesIn $inputs | ${TOOL_SAMTOOLS}/samtools view -bhSu -F 256 - | ${TOOL_SAMTOOLS}/samtools sort -@ $STAR_THREADS - $EXP &&
+         ${TOOL_ENV} &&
+
+         STAR $STAR_FLAGS --readFilesIn $inputs | samtools view -bhSu -F 256 - | samtools sort -@ $STAR_THREADS - $EXP &&
          rm ${EXP}.bam &&
          rm -rf ${TMP}/${EXP}
       ""","STAR_pe"

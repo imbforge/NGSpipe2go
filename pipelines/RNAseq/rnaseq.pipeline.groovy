@@ -25,9 +25,7 @@ load PIPELINE_ROOT + "/modules/RNAseq/subread2rnatypes.module.groovy"
 load PIPELINE_ROOT + "/modules/miscellaneous/collectbpipes.module.2.groovy"
 load PIPELINE_ROOT + "/modules/RNAseq/shinyreports.module.groovy"
 
-//
-// Typical workflow for SR data (default):
-//
+//MAIN PIPELINE TASK
 dontrun = { println "didn't run $module" }
 
 Bpipe.run {
