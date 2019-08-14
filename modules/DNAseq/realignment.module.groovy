@@ -26,12 +26,13 @@ IndelRealignment = {
         exec """
             ${TOOL_ENV} &&
 
+            export TMPDIR=/tmp &&
             if [ -n "\$SLURM_JOBID" ]; then
                 export TMPDIR=/jobdir/\${SLURM_JOBID};
             fi                           &&
 
-            java -Djava.io.tmpdir=$TMPDIR -jar ${TOOL_GATK}/GenomeAnalysisTK.jar -T RealignerTargetCreator -nt $GATK_THREADS -R $GATK_BWA_REF -I $input -o $output1 &&
-            java -Djava.io.tmpdir=$TMPDIR -jar ${TOOL_GATK}/GenomeAnalysisTK.jar -T IndelRealigner -R $GATK_BWA_REF -I $input -targetIntervals $output1 -o $output2;
+            java -Djava.io.tmpdir=$TMPDIR -jar \${gatk} -T RealignerTargetCreator -nt $GATK_THREADS -R $GATK_BWA_REF -I $input -o $output1 &&
+            java -Djava.io.tmpdir=$TMPDIR -jar \${gatk} -T IndelRealigner -R $GATK_BWA_REF -I $input -targetIntervals $output1 -o $output2;
        ""","IndelRealignment"
     }
     

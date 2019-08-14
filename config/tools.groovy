@@ -36,6 +36,7 @@ tools_defaults = [
     fastqc     : [ runenv: "lmod", version: "0.11.8"       ],
     fastqscreen: [ runenv: "lmod", version: "0.13"         ],
     fastx      : [ runenv: "lmod", version: "0.0.14"       ],
+    gatk       : [ runenv: "lmod", version: "3.4-46"       ],
     htseq      : [ runenv: "lmod", version: "0.6.1"        ],
     java       : [ runenv: "lmod", version: "1.8"          ],
     ketnutils  : [ runenv: "lmod", version: "v365"         ],
@@ -148,6 +149,10 @@ tools_prepare_env = [
             conda: "source activate ${conda_tools}/fastx_toolkit/0.0.14"
         ]
     ],
+    gatk: [
+        "3.4-46": [
+            lmod: "module load GATK/3.4-46"
+        ],
     htseq: [
         "0.6.1": [
             lmod: "module load htseq/0.6.1"

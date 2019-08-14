@@ -61,10 +61,12 @@ BWA_se = {
     def SAMTOOLS_VIEW_FLAGS = "-bhSu"
     def SAMTOOLS_SORT_FLAGS = SAMTOOLS_THREADS    
 
+    def TOOL_ENV = prepare_tool_env("bwa", tools["bwa"]["version"], tools["bwa"]["runenv"]) + " && " +
+                   prepare_tool_env("samtools", tools["samtools"]["version"], tools["samtools"]["runenv"])
+
     transform(".fastq.gz") to(".bam") {
         exec """
-            module load bwa &&
-            module load samtools &&
+            ${TOOL_ENV} &&
 
             SAMPLE_NAME=\$(basename $output.prefix.prefix) &&
 
