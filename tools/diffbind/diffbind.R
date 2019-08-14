@@ -54,7 +54,7 @@ FULLLIBRARYSIZE   <- parseArgs(args,"fullLibrarySize=", TRUE, "as.logical")   # 
 TAGWISEDISPERSION <- parseArgs(args,"tagwiseDispersion=", TRUE, "as.logical") # calculate dispersion tagwise (use FALSE if no replicates)
 ANNOTATE   <- parseArgs(args,"annotate=", TRUE, "as.logical") # annotate after DB analysis?
 PE         <- parseArgs(args,"pe=", FALSE, "as.logical")      # paired end experiment?
-TSS        <- parseArgs(args,"tss=", c(-3000,3000), "run_custom_code") # region around the tss
+TSS        <- eval(str2lang(parseArgs(args,"tss=", "c(-3000,3000)", "run_custom_code"))) # region around the tss
 TXDB       <- parseArgs(args,"txdb=", "TxDb.Mmusculus.UCSC.mm9.knownGene") # Bioconductor transcript database, for annotation 
 ANNODB     <- parseArgs(args,"annodb=", "org.Mm.eg.db") # Bioconductor gene annotation database
 
@@ -85,19 +85,29 @@ dba.plotPCA(db, DBA_CONDITION, label=DBA_CONDITION)
 
 # parse the formula in cont and do the analysis
 result <- lapply(conts[, 1], function(cont) {
+  # parse formula
   cat(cont, fill=T)
   cont.name <- gsub("(.+)=(.+)", "\\1", cont)
   cont.form <- gsub("(.+)=(.+)", "\\2", cont)
   factors   <- unlist(strsplit(cont.form, "\\W"))
   factors   <- factors[factors != ""]
 
+  # dba analysis (deseq2)
   c1 <- dba.mask(db, DBA_CONDITION, factors[1])
   c2 <- dba.mask(db, DBA_CONDITION, factors[2])
   db <- dba.contrast(db, group1=c1, group2=c2,  name1=factors[1], name2=factors[2], categories=DBA_CONDITION)
   db <- dba.analyze(db, bSubControl=SUBSTRACTCONTROL, bFullLibrarySize=FULLLIBRARYSIZE, bTagwise=TAGWISEDISPERSION)
   dba.plotMA(db)
-  dba.plotBox(db)
-  dba.plotVenn(db, c1 | c2)
+  try(dba.plotBox(db))          # try, in case there's not significant peaks
+
+  # plot consensus peaks
+  if(sum(c1 | c2) <= 4) {        # if less than 2 replicates per group (or 4 replicates in total)
+    dba.plotVenn(db, c1 | c2)    # plot all together
+  } else {                       # generate a consensus peakset otherwise
+     db2 <- dba(sampleSheet=targets, config=data.frame(fragmentSize=FRAGSIZE, bCorPlot=F, singleEnd=!PE))
+     db2 <- dba.peakset(db2, consensus=DBA_CONDITION)
+     try(dba.plotVenn(db2, mask=db2$masks$Consensus & names(db2$masks$Consensus) %in% factors))
+  }
 
   dba.report(db, bCalled=T)
 })
@@ -108,9 +118,16 @@ result <- lapply(conts[, 1], function(cont) {
 if(ANNOTATE) {
   library(ChIPseeker)
   txdb <- eval(parse(text=TXDB))
-  result <- lapply(result, annotatePeak, TxDb=txdb, annoDb=ANNODB, tssRegion=TSS, verbose=T)
-  lapply(result, plotAnnoBar)
-  lapply(result, plotDistToTSS)
+  result <- lapply(result, function(x) {
+    tryCatch({
+      x.ann <- annotatePeak(x, TxDb=txdb, annoDb=ANNODB, tssRegion=TSS, verbose=T)
+      plotAnnoBar(x.ann)
+      plotDistToTSS(x.ann)
+      x.ann
+    },
+      error=function(e) NULL
+    )
+  })
 }
 
 dev.off()
