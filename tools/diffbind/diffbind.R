@@ -54,7 +54,7 @@ FULLLIBRARYSIZE   <- parseArgs(args,"fullLibrarySize=", TRUE, "as.logical")   # 
 TAGWISEDISPERSION <- parseArgs(args,"tagwiseDispersion=", TRUE, "as.logical") # calculate dispersion tagwise (use FALSE if no replicates)
 ANNOTATE   <- parseArgs(args,"annotate=", TRUE, "as.logical") # annotate after DB analysis?
 PE         <- parseArgs(args,"pe=", FALSE, "as.logical")      # paired end experiment?
-TSS        <- eval(str2lang(parseArgs(args,"tss=", "c(-3000,3000)", "run_custom_code"))) # region around the tss
+TSS        <- parseArgs(args,"tss=", "c(-3000,3000)", "run_custom_code") # region around the tss
 TXDB       <- parseArgs(args,"txdb=", "TxDb.Mmusculus.UCSC.mm9.knownGene") # Bioconductor transcript database, for annotation 
 ANNODB     <- parseArgs(args,"annodb=", "org.Mm.eg.db") # Bioconductor gene annotation database
 
