@@ -1,24 +1,18 @@
-load PIPELINE_ROOT + "config/tools.groovy"
-
-// Tools versions and run environments
-// Names should match tools.keys() in ${PIPELINE_ROOT}/config/tools.groovy
-// Notes:
+// Tools custom versions and run environments
+// Overrides the defaults defined in ${PIPELINE_ROOT}/config/tools.groovy
+// Names should match tools_defaults.keys() in ${PIPELINE_ROOT}/config/tools.groovy
+// 
+// The structure of this map is:
+//   tools_custom = [
+//       R         = [ runenv = "lmod", version= "3.6.0" ],
+//    <...>
+//       samtools  = [ runenv = "lmod", version= "1.9"   ]
+//   ]
+//
+// Tips:
 //   * Indentation is important in this file. Please, use 4 spaces for indent. *NO TABS*.
-//   * Help others finding the tools here:
-//       * keep the keys *sorted*
-//       * use always *lowercase* if possible
-tool_versions = [
-    R         = [ runenv = "lmod", version= "3.6.0"        ],
-    bamqc     = [ runenv = "lmod", version= "0.1.25_devel" ],
-    bedtools  = [ runenv = "lmod", version= "2.27"         ],
-    bowtie2   = [ runenv = "lmod", version= "2.3.4"        ],
-    bowtie    = [ runenv = "lmod", version= "1.2.2"        ],
-    deeptools = [ runenv = "lmod", version= "3.1"          ],
-    fastqc    = [ runenv = "lmod", version= "0.11.8"       ],
-    java      = [ runenv = "lmod", version= "1.8"          ],
-    ketnutils = [ runenv = "lmod", version= "v365"         ],
-    macs2     = [ runenv = "lmod", version= "2.1.2"        ],
-    picard    = [ runenv = "lmod", version= "2.17.6"       ],
-    rseqc     = [ runenv = "lmod", version= "3.0.0"        ],
-    samtools  = [ runenv = "lmod", version= "1.9"          ]
-]
+load PIPELINE_ROOT + "/config/tools.groovy" // tools_defaults are specified here
+tools_custom = [ ] 
+
+tools = new LinkedHashMap(tools_defaults)   // create new tools map based on defaults
+tools.putAll(tools_custom)                  // override with users custom versions/runenvs
