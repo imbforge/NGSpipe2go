@@ -20,7 +20,8 @@ BaseRecalibration = {
         GATK_FLAGS = ""
     }
 
-    def TOOL_ENV = prepare_tool_env("java", tools["java"]["version"], tools["java"]["runenv"])
+    def TOOL_ENV = prepare_tool_env("java", tools["java"]["version"], tools["java"]["runenv"]) + " && " +
+                   prepare_tool_env("gatk", tools["gatk"]["version"], tools["gatk"]["runenv"])
 
     transform (".bam") to (".recalibration.table", ".recalibrated.bam") {
         exec """

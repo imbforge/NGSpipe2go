@@ -20,7 +20,8 @@ VariantCallHC = {
         GATK_FLAGS = ""
     }
 
-    def TOOL_ENV = prepare_tool_env("java", tools["java"]["version"], tools["java"]["runenv"])
+    def TOOL_ENV = prepare_tool_env("java", tools["java"]["version"], tools["java"]["runenv"]) + " && " +
+                   prepare_tool_env("gatk", tools["gatk"]["version"], tools["gatk"]["runenv"])
 
     transform (".duprm.realigned.recalibrated.bam") to (".HC.vcf.gz") {
         exec """

@@ -16,7 +16,8 @@ VariantFuseHC = {
                      GATK_INDEXPARM + " " +
                      GATK_EXTRA
 
-    def TOOL_ENV = prepare_tool_env("java", tools["java"]["version"], tools["java"]["runenv"])
+    def TOOL_ENV = prepare_tool_env("java", tools["java"]["version"], tools["java"]["runenv"]) + " && " +
+                   prepare_tool_env("gatk", tools["gatk"]["version"], tools["gatk"]["runenv"])
 
     transform (".duprm.realigned.recalibrated.bam") to (".HC.vcf.gz") {
         // usage parameters https://www.broadinstitute.org/gatk/gatkdocs/org_broadinstitute_gatk_tools_walkers_haplotypecaller_HaplotypeCaller.php
