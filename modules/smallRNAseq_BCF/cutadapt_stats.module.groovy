@@ -1,4 +1,7 @@
-load MODULE_FOLDER + "smallRNAseq_BCF/cutadapt_stats.vars.groovy"
+// Notes:
+//  * Indentation is important in this file. Please, use 4 spaces for indent. *NO TABS*.
+
+load PIPELINE_ROOT + "/modules/smallRNAseq_BCF/cutadapt_stats.vars.groovy"
 
 CutadaptStats = {
     doc title: "Adapter trimming statistics",
@@ -7,10 +10,13 @@ CutadaptStats = {
 
     output.dir = REMOVE_ADAPTER_PLOTDIR
 
+    def TOOL_ENV = prepare_tool_env("R", tools["R"]["version"], tools["R"]["runenv"])
+
     produce(REMOVE_ADAPTER_PLOTDIR + "/trimmedReads.pdf", REMOVE_ADAPTER_PLOTDIR + "/trimmedReads.png") {
         exec """
-            module load R/${R_VERSION} &&
-            Rscript ${CUTADAPT_PLOT_TOOL} ${REMOVE_ADAPTER_DATADIR} ${REMOVE_ADAPTER_PLOTDIR} ${ESSENTIAL_SAMPLE_PREFIX}
+            ${TOOL_ENV} &&
+
+            Rscript ${PIPELINE_ROOT}/tools/fastq_stats/cutadapt_stats.R ${REMOVE_ADAPTER_DATADIR} ${REMOVE_ADAPTER_PLOTDIR} ${ESSENTIAL_SAMPLE_PREFIX}
         ""","CutadaptStats"
     }
 }

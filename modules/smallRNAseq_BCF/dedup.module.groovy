@@ -1,4 +1,7 @@
-load MODULE_FOLDER + "smallRNAseq_BCF/dedup.vars.groovy"
+// Notes:
+//  * Indentation is important in this file. Please, use 4 spaces for indent. *NO TABS*.
+
+load PIPELINE_ROOT + "/modules/smallRNAseq_BCF/dedup.vars.groovy"
 
 FilterDuplicates = {
     doc title: "Remove Duplicate sequences",

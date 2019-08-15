@@ -1,4 +1,7 @@
-load MODULE_FOLDER + "smallRNAseq_BCF/cutadapt.vars.groovy"
+// Notes:
+//  * Indentation is important in this file. Please, use 4 spaces for indent. *NO TABS*.
+
+load PIPELINE_ROOT + "/modules/smallRNAseq_BCF/cutadapt.vars.groovy"
 
 Cutadapt = {
     doc title: "Cutadapt",
@@ -14,10 +17,12 @@ Cutadapt = {
         CUTADAPT_LOGDIR.mkdirs()
     }
 
+    def TOOL_ENV = prepare_tool_env("cutadapt", tools["cutadapt"]["version"], tools["cutadapt"]["runenv"])
+
     transform(".fastq.gz") to (".cutadapt.fastq.gz",".cutadapt_discarded.fastq.gz") {
          def SAMPLENAME = input.prefix.prefix
          exec """
-            module load cutadapt/${CUTADAPT_VERSION} &&
+            ${TOOL_ENV} &&
 
             SAMPLENAME_BASE=\$(basename ${SAMPLENAME}) &&
             cutadapt $ADAPTER_SEQUENCE -O $MINIMUM_OVERLAP -m $MINIMUM_LENGTH_KEEP -M $MAXIMUM_LENGTH_KEEP -o $output1 $input 2>&1 >> ${CUTADAPT_LOGDIR}/\${SAMPLENAME_BASE}.cutadapt.log &&

@@ -1,4 +1,7 @@
-load MODULE_FOLDER + "smallRNAseq_BCF/trim_umis.vars.groovy"
+// Notes:
+//  * Indentation is important in this file. Please, use 4 spaces for indent. *NO TABS*.
+
+load PIPELINE_ROOT + "/modules/smallRNAseq_BCF/trim_umis.vars.groovy"
 
 TrimUMIs = {
     doc title: "Trim UMIs",
@@ -10,9 +13,11 @@ TrimUMIs = {
     def SEQTK_FLAGS = " -l " + LEFT_TRIM +
                       " -b " + RIGHT_TRIM
 
+    def TOOL_ENV = prepare_tool_env("seqtk", tools["seqtk"]["version"], tools["seqtk"]["runenv"])
+
     transform(".fastq.gz") to (".trimmed.fastq.gz") {
         exec """
-            module load seqtk/${SEQTK_VERSION} &&
+            ${TOOL_ENV} &&
 
             seqtk trimfq -b ${LEFT_TRIM} -e ${RIGHT_TRIM} $input | gzip > $output
         ""","TrimUMIs"

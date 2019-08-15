@@ -1,4 +1,7 @@
-load MODULE_FOLDER + "smallRNAseq_BCF/shinyreports.vars.groovy"
+// Notes:
+//  * Indentation is important in this file. Please, use 4 spaces for indent. *NO TABS*.
+
+load PIPELINE_ROOT + "/modules/smallRNAseq_BCF/shinyreports.vars.groovy"
 
 shinyReports = {
     doc title: "shinyReports",
@@ -11,13 +14,13 @@ shinyReports = {
 
     produce("shinyReports.txt") {
         exec """
-            cp ${MODULE_FOLDER}/../tools/reports/shiny_smallrnaseq_reporting_tool/smallRNA.shinyrep.helpers.R ${REPORTS}   &&
-            cp ${MODULE_FOLDER}/../tools/reports/shiny_smallrnaseq_reporting_tool/styles.css ${REPORTS}              &&
+            cp ${PIPELINE_ROOT}/tools/reports/shiny_smallrnaseq_reporting_tool/smallRNA.shinyrep.helpers.R ${REPORTS}   &&
+            cp ${PIPELINE_ROOT}/tools/reports/shiny_smallrnaseq_reporting_tool/styles.css ${REPORTS}              &&
 
             if [ -e "${REPORTS}/smallRNAreport.Rmd" ]; then
                 echo 'smallRNAreport.Rmd already exists. Older copy will be kept and not overwritten';
             else
-                cp ${MODULE_FOLDER}/../tools/reports/shiny_smallrnaseq_reporting_tool/smallRNAreport.Rmd ${REPORTS};
+                cp ${PIPELINE_ROOT}/tools/reports/shiny_smallrnaseq_reporting_tool/smallRNAreport.Rmd ${REPORTS};
             fi &&
 
             PROJECT=\$(basename ${SHINYREPS_PROJECT})                            &&

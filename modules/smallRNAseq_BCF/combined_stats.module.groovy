@@ -1,4 +1,7 @@
-load MODULE_FOLDER + "smallRNAseq_BCF/combined_stats.vars.groovy"
+// Notes:
+//  * Indentation is important in this file. Please, use 4 spaces for indent. *NO TABS*.
+
+load PIPELINE_ROOT + "/modules/smallRNAseq_BCF/combined_stats.vars.groovy"
 
 CombinedStats = {
     doc title: "Summary of all trimming and filtering statistics of raw reads",
@@ -7,10 +10,13 @@ CombinedStats = {
 
     output.dir = COMBINED_STATS_PLOTDIR
 
+    def TOOL_ENV = prepare_tool_env("R", tools["R"]["version"], tools["R"]["runenv"])
+
     produce(COMBINED_STATS_PLOTDIR + "/allTrimmingStats.pdf", COMBINED_STATS_PLOTDIR + "/allTrimmingStats.png") {
         exec """
-            module load R/${R_VERSION} &&
-            Rscript ${COMBINED_STATS_PLOT_TOOL} ${COMBINED_STATS_DATADIR} ${COMBINED_STATS_PLOTDIR} ${ESSENTIAL_SAMPLE_PREFIX}
+            ${TOOL_ENV} &&
+
+            Rscript ${PIPELINE_ROOT}/tools/fastq_stats/summary_stats.R ${COMBINED_STATS_DATADIR} ${COMBINED_STATS_PLOTDIR} ${ESSENTIAL_SAMPLE_PREFIX}
         ""","CombinedStats"
     }
 }

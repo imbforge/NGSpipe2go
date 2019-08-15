@@ -1,17 +1,16 @@
-MODULE_FOLDER="project_folder/NGSpipe2go/modules/"  // adjust to your projects needs
+PIPELINE_ROOT="./NGSpipe2go/"    // may need adjustment for some projects
 
-load MODULE_FOLDER + "smallRNAseq_BCF/essential.vars.groovy"
-load MODULE_FOLDER + "smallRNAseq_BCF/tool.locations.groovy"
-load MODULE_FOLDER + "smallRNAseq_BCF/tool.versions.groovy"
+load PIPELINE_ROOT + "/pipelines/smallRNAseq_BCF/essential.vars.groovy"
+load PIPELINE_ROOT + "/pipelines/smallRNAseq_BCF/tools.groovy"
 
-load MODULE_FOLDER + "NGS/fastqc.module.groovy"
-load MODULE_FOLDER + "smallRNAseq_BCF/cutadapt.module.groovy"
-load MODULE_FOLDER + "smallRNAseq_BCF/dedup.module.groovy"
-load MODULE_FOLDER + "smallRNAseq_BCF/dedup_stats.module.groovy"
-load MODULE_FOLDER + "smallRNAseq_BCF/fastq_quality_filter.module.groovy"
-load MODULE_FOLDER + "smallRNAseq_BCF/mirDeep2.module.groovy"
-load MODULE_FOLDER + "smallRNAseq_BCF/mirDeep2_mapper.module.groovy"
-load MODULE_FOLDER + "smallRNAseq_BCF/trim_umis.module.groovy"
+load PIPELINE_ROOT + "/modules/NGS/fastqc.module.groovy"
+load PIPELINE_ROOT + "/modules/smallRNAseq_BCF/cutadapt.module.groovy"
+load PIPELINE_ROOT + "/modules/smallRNAseq_BCF/dedup.module.groovy"
+load PIPELINE_ROOT + "/modules/smallRNAseq_BCF/dedup_stats.module.groovy"
+load PIPELINE_ROOT + "/modules/smallRNAseq_BCF/fastq_quality_filter.module.groovy"
+load PIPELINE_ROOT + "/modules/smallRNAseq_BCF/mirDeep2.module.groovy"
+load PIPELINE_ROOT + "/modules/smallRNAseq_BCF/mirDeep2_mapper.module.groovy"
+load PIPELINE_ROOT + "/modules/smallRNAseq_BCF/trim_umis.module.groovy"
 
 //MAIN PIPELINE TASK
 run {

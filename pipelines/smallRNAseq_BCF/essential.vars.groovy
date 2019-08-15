@@ -38,3 +38,5 @@ MAPPED=PROJECT + "/mapped"
 TMP=PROJECT + "/tmp"
 TRACKS=PROJECT + "/tracks"
 
+// optional pipeline stages to include
+

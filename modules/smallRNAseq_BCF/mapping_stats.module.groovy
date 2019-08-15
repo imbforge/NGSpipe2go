@@ -1,4 +1,7 @@
-load MODULE_FOLDER + "smallRNAseq_BCF/mapping_stats.vars.groovy"
+// Notes:
+//  * Indentation is important in this file. Please, use 4 spaces for indent. *NO TABS*.
+
+load PIPELINE_ROOT + "/modules/smallRNAseq_BCF/mapping_stats.vars.groovy"
 
 MappingStats = {
     doc title: "Statistics of mapping efficiency",
@@ -8,12 +11,14 @@ MappingStats = {
 
     output.dir = MAPPING_STATS_PLOTDIR
 
+    def TOOL_ENV = prepare_tool_env("R", tools["R"]["version"], tools["R"]["runenv"]) + " && " +
+                   prepare_tool_env("samtools", tools["samtools"]["version"], tools["samtools"]["runenv"])
+
     produce(MAPPING_STATS_PLOTDIR + "/totalReads.pdf", MAPPING_STATS_PLOTDIR + "/totalReads.png") {
         exec """
-            module load R/${R_VERSION} &&
-            module load samtools/${SAMTOOLS_VERSION} &&
+            ${TOOL_ENV} &&
 
-            Rscript ${MAPPING_STATS_TOOL} ${MAPPING_STATS_DATADIR} ${MAPPING_STATS_PLOTDIR} ${ESSENTIAL_SAMPLE_PREFIX}
+            Rscript ${PIPELINE_ROOT}/tools/mapping_stats/mapping_stats_bowtie1_BCF.R ${MAPPING_STATS_DATADIR} ${MAPPING_STATS_PLOTDIR} ${ESSENTIAL_SAMPLE_PREFIX}
         ""","MappingStats"
     }
 }

@@ -1,4 +1,7 @@
-load MODULE_FOLDER + "smallRNAseq_BCF/subread.vars.groovy"
+// Notes:
+//  * Indentation is important in this file. Please, use 4 spaces for indent. *NO TABS*.
+
+load PIPELINE_ROOT + "/modules/smallRNAseq_BCF/subread.vars.groovy"
 
 SubreadCount = {
     doc title: "SubreadCount",
@@ -26,10 +29,12 @@ SubreadCount = {
         SUBREAD_FLAGS = " -s 2 " + SUBREAD_FLAGS
     }
 
+    def TOOL_ENV = prepare_tool_env("subread", tools["subread"]["version"], tools["subread"]["runenv"])
+
     // run the chunk
     transform(".bam") to (".raw_readcounts.tsv") {
         exec """
-            module load subread/${SUBREAD_VERSION} &&
+            ${TOOL_ENV} &&
 
             featureCounts $SUBREAD_FLAGS -o $output $input 2> ${output.prefix}_subreadlog.stderr
         ""","SubreadCount"

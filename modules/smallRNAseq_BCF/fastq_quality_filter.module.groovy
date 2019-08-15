@@ -1,4 +1,7 @@
-load MODULE_FOLDER + "smallRNAseq_BCF/fastq_quality_filter.vars.groovy"
+// Notes:
+//  * Indentation is important in this file. Please, use 4 spaces for indent. *NO TABS*.
+
+load PIPELINE_ROOT + "/modules/smallRNAseq_BCF/fastq_quality_filter.vars.groovy"
 
 FastQQualityFilter = {
     doc title: "Remove sequences",
@@ -19,10 +22,13 @@ FastQQualityFilter = {
                                     " -Q " + QUAL_FORMAT +
                                     FASTQ_QUALITY_FILTER_OTHER
 
+    def TOOL_ENV = prepare_tool_env("fastx", tools["fastx"]["version"], tools["fastx"]["runenv"])
+
     transform(".fastq.gz") to (".highQ.fastq.gz") {
         def SAMPLENAME = input.prefix.prefix    
         exec """
-            module load fastx_toolkit/${FASTX_TOOLKIT_VERSION} &&
+            ${TOOL_ENV} &&
+
             SAMPLENAME_BASE=\$(basename ${SAMPLENAME}) &&
             zcat $input | fastq_quality_filter $FASTQ_QUALITY_FILTER_FLAGS -o $output 2>&1 >> ${FASTQ_QUALITY_FILTER_LOGDIR}/\${SAMPLENAME_BASE}.fastq_quality_filter.log
         ""","FastQQualityFilter"

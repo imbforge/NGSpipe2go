@@ -1,4 +1,7 @@
-load MODULE_FOLDER + "smallRNAseq_BCF/mirDeep2.vars.groovy"
+// Notes:
+//  * Indentation is important in this file. Please, use 4 spaces for indent. *NO TABS*.
+
+load PIPELINE_ROOT + "/modules/smallRNAseq_BCF/mirDeep2.vars.groovy"
 
 miRDeep2 = {
     doc title: "miRDeep2",
@@ -9,9 +12,11 @@ miRDeep2 = {
     def EXP = input1.split("/")[-1].replaceAll(".arf", "")
     output.dir = MIR_OUTDIR + "/" + EXP
 
+    def TOOL_ENV = prepare_tool_env("mirdeep2", tools["mirdeep2"]["version"], tools["mirdeep2"]["runenv"])
+
     transform(".arf", ".fa") to (".tmp") {
         exec """
-            module load mirdeep2/${MIRDEEP2_VERSION} &&
+            ${TOOL_ENV} &&
 
             mkdir -p $output.dir &&
             cd $output.dir &&

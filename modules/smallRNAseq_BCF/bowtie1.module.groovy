@@ -1,4 +1,7 @@
-load MODULE_FOLDER + "smallRNAseq_BCF/bowtie1.vars.groovy"
+// Notes:
+//  * Indentation is important in this file. Please, use 4 spaces for indent. *NO TABS*.
+
+load PIPELINE_ROOT + "/modules/smallRNAseq_BCF/bowtie1.vars.groovy"
 
 Bowtie_se = {
     doc title: "Bowtie SE alignment",
@@ -14,11 +17,13 @@ Bowtie_se = {
                        " -v " + Integer.toString(BOWTIE_MM) +
                        " -M " + Integer.toString(BOWTIE_MULTIREPORT) 
 
+    def TOOL_ENV = prepare_tool_env("bowtie", tools["bowtie"]["version"], tools["bowtie"]["runenv"]) + " && " +
+                   prepare_tool_env("samtools", tools["samtools"]["version"], tools["samtools"]["runenv"])
+
     transform(".fastq.gz") to (".bam") {
         def SAMPLENAME = output.prefix
         exec """
-            module load bowtie/${BOWTIE_VERSION} &&
-            module load samtools/${SAMTOOLS_VERSION} &&
+            ${TOOL_ENV} &&
 
             if [ ! -e $TMP ]; then
                 mkdir -p $TMP;

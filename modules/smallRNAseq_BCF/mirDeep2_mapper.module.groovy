@@ -1,4 +1,7 @@
-load MODULE_FOLDER + "smallRNAseq_BCF/mirDeep2_mapper.vars.groovy"
+// Notes:
+//  * Indentation is important in this file. Please, use 4 spaces for indent. *NO TABS*.
+
+load PIPELINE_ROOT + "/modules/smallRNAseq_BCF/mirDeep2_mapper.vars.groovy"
 
 miRDeep2Mapper = {
     doc title: "miRDeep2",
@@ -8,12 +11,14 @@ miRDeep2Mapper = {
 
     output.dir = MIR_MAPPER_OUTDIR
 
+    def TOOL_ENV = prepare_tool_env("mirdeep2", tools["mirdeep2"]["version"], tools["mirdeep2"]["runenv"])
+
     transform(".fastq.gz") to (".arf", ".fa") {
         def SAMPLENAME = input.prefix
         def OUTPUTLOG_MAIN = output2.prefix
 
         exec """
-            module load mirdeep2/${MIRDEEP2_VERSION} &&
+            ${TOOL_ENV} &&
 
             if [ ! -d ${TMP} ]; then
                 mkdir -p ${TMP};

@@ -1,4 +1,7 @@
-load MODULE_FOLDER + "smallRNAseq_BCF/filter2htseq.vars.groovy"
+// Notes:
+//  * Indentation is important in this file. Please, use 4 spaces for indent. *NO TABS*.
+
+load PIPELINE_ROOT + "/modules/smallRNAseq_BCF/filter2htseq.vars.groovy"
 
 Filter2HTSeq = {
     doc title: "Filter2HTSeq",

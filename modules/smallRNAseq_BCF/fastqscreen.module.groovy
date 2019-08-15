@@ -1,4 +1,7 @@
-load MODULE_FOLDER + "smallRNAseq_BCF/fastqscreen.vars.groovy"
+// Notes:
+//  * Indentation is important in this file. Please, use 4 spaces for indent. *NO TABS*.
+
+load PIPELINE_ROOT + "/modules/smallRNAseq_BCF/fastqscreen.vars.groovy"
 
 FastQScreen = {
     doc title: "FastQScreen",
@@ -9,10 +12,12 @@ FastQScreen = {
     output.dir   = FASTQSCREEN_OUTDIR
     def FASTQSCREEN_FLAGS = "--threads " + FASTQSCREEN_THREADS + " " + FASTQSCREEN_PARAM
 
+    def TOOL_ENV = prepare_tool_env("fastq_screen", tools["fastq_screen"]["version"], tools["fastq_screen"]["runenv"])
+
     transform(".fastq.gz") to ("_fastqscreen.done") {
         def SAMPLENAME = output.prefix
         exec """
-            module load fastq_screen/${FASTQSCREEN_VERSION} &&
+            ${TOOL_ENV} &&
 
             if [ ! -e "$output.prefix" ]; then
                 mkdir $output.prefix;
