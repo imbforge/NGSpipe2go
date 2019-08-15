@@ -1,4 +1,7 @@
-load MODULE_FOLDER + "scRNAseq/subread.vars.groovy"
+// Notes:
+//  * Indentation is important in this file. Please, use 4 spaces for indent. *NO TABS*.
+
+load PIPELINE_ROOT + "/modules/scRNAseq/subread.vars.groovy"
 
 subread_count = {
     doc title: "subread_count",
@@ -30,11 +33,14 @@ subread_count = {
         SUBREAD_FLAGS = "-s 2 " + SUBREAD_FLAGS
     }
 
+    def TOOL_ENV = prepare_tool_env("subread", tools["subread"]["version"], tools["subread"]["runenv"]) + " && " +
+                   prepare_tool_env("samtools", tools["samtools"]["version"], tools["samtools"]["runenv"])
+
     // run the chunk
     transform(".bam") to (".featureCounts.bam", ".raw_readcounts.tsv") {
         exec """
-            module load subread/${SUBREAD_VERSION} &&
-            module load samtools/${SAMTOOLS_VERSION} &&
+            ${TOOL_ENV} &&
+
             featureCounts $SUBREAD_FLAGS -o $output2 $input 2> ${output.prefix}_subreadlog.stderr &&
             base=`basename $input` &&
             samtools sort ${output.dir}/\${base}.featureCounts.bam > $output1 &&

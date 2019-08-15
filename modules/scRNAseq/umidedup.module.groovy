@@ -1,4 +1,7 @@
-load MODULE_FOLDER + "scRNAseq/umidedup.vars.groovy"
+// Notes:
+//  * Indentation is important in this file. Please, use 4 spaces for indent. *NO TABS*.
+
+load PIPELINE_ROOT + "/modules/scRNAseq/umidedup.vars.groovy"
 
 umidedup = {
     doc title: "deduplication based on UMIs",
@@ -14,13 +17,16 @@ umidedup = {
 
     if(ESSENTIAL_PAIRED == "yes"){
       UMIDEDUP_FLAGS = UMIDEDUP_FLAGS + " --paired"
-   }
+    }
     //umi_tools dedup $UMIDEDUP_FLAGS -I $input -S $output1 -E $output2 -L $output3 --output-stats=${output1.prefix}.stats
+
+    def TOOL_ENV = prepare_tool_env("umitools", tools["umitools"]["version"], tools["umitools"]["runenv"])
 
     // run the chunk
     transform(".bam") to (".umidedup.bam") {
         exec """
-            module load umitools/${UMITOOLS_VERSION} &&
+            ${TOOL_ENV} &&
+
             umi_tools dedup $UMIDEDUP_FLAGS -I $input -S $output1 --output-stats=${output1.prefix}.stats
         ""","umidedup"
     }

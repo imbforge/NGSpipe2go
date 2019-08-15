@@ -1,4 +1,7 @@
-load MODULE_FOLDER + "scRNAseq/addumibarcodetofastq.vars.groovy"
+// Notes:
+//  * Indentation is important in this file. Please, use 4 spaces for indent. *NO TABS*.
+
+load PIPELINE_ROOT + "/modules/scRNAseq/addumibarcodetofastq.vars.groovy"
 
 AddUMIBarcodeToFastq = {
     doc title: "Adds UMI and Barcode of to the fastq header",
@@ -16,9 +19,12 @@ AddUMIBarcodeToFastq = {
                               " " +  ADDUMIBARCODE_BARCODELIST +
                               " " +  ADDUMIBARCODE_EXTRA
 
+    def TOOL_ENV = prepare_tool_env("umitools", tools["umitools"]["version"], tools["umitools"]["runenv"])
+
     produce(OUTPUTFILE + ".umibarcode.fastq.gz"){
         exec """
-            module load umitools/${UMITOOLS_VERSION} &&
+            ${TOOL_ENV} &&
+
             umi_tools extract $ADDUMIBARCODE_FLAGS -I $input2 --stdout ${input2.prefix}.barcode.fastq.gz --read2-in $input1 --read2-out=$output &&
             rm ${input2.prefix}.barcode.fastq.gz
         ""","AddUMIBarcodeToFastq"

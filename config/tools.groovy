@@ -55,7 +55,7 @@ tools_defaults = [
     stringtie  : [ runenv: "lmod", version: "1.3.5"        ],
     subread    : [ runenv: "lmod", version: "1.6"          ],
     trimgalore : [ runenv: "lmod", version: "0.5.0"        ],
-    umitools   : [ runenv: "lmod", version: "0.5.5"        ]
+    umitools   : [ runenv: "lmod", version: "1.0.0"        ]
 ]
 
 // This map defines how to prepare the environment in order to have in PATH all

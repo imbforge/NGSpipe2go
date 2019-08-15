@@ -1,4 +1,7 @@
-load MODULE_FOLDER + "scRNAseq/cutadapt.vars.groovy"
+// Notes:
+//  * Indentation is important in this file. Please, use 4 spaces for indent. *NO TABS*.
+
+load PIPELINE_ROOT + "/modules/scRNAseq/cutadapt.vars.groovy"
 
 Cutadapt = {
         doc title: "Cutadapt",
@@ -25,10 +28,13 @@ Cutadapt = {
                          " " + CUTADAPT_ERRORRATE +
                          " " + CUTADAPT_EXTRA
 
+    def TOOL_ENV = prepare_tool_env("cutadapt", tools["cutadapt"]["version"], tools["cutadapt"]["runenv"])
+
     transform(".fastq.gz") to (".cutadapt.fastq.gz") {
         def SAMPLENAME = input.prefix.prefix
         exec """
-            module load cutadapt/${CUTADAPT_VERSION} &&
+            ${TOOL_ENV} &&
+
             SAMPLENAME_BASE=\$(basename ${SAMPLENAME}) &&
             cutadapt $CUTADAPT_FLAGS --too-short-output=${CUTADAPT_DISCARDED_DIR}/${SAMPLENAME_BASE}.cutadapt_discarded.fastq.gz --output=$output $input 2>&1 >> ${CUTADAPT_LOGDIR}/${SAMPLENAME_BASE}.cutadapt.log --info-file=${CUTADAPT_LOGDIR}/${SAMPLENAME_BASE}.cutadapt.info
         ""","Cutadapt"

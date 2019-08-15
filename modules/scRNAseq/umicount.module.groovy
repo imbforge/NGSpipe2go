@@ -1,4 +1,7 @@
-load MODULE_FOLDER + "scRNAseq/umicount.vars.groovy"
+// Notes:
+//  * Indentation is important in this file. Please, use 4 spaces for indent. *NO TABS*.
+
+load PIPELINE_ROOT + "/modules/scRNAseq/umicount.vars.groovy"
 
 umicount = {
     doc title: "Deduplication and Counting reads per gene",
@@ -21,11 +24,14 @@ umicount = {
       UMICOUNT_FLAGS = UMICOUNT_FLAGS + " --paired"
     }
 
+    def TOOL_ENV = prepare_tool_env("umitools", tools["umitools"]["version"], tools["umitools"]["runenv"])
+
     // run the chunk
     transform(".bam\$") to (".umicount.tsv.gz") {
         def SAMPLENAME = input.prefix
         exec """
-            module load umitools/${UMITOOLS_VERSION} &&
+            ${TOOL_ENV} &&
+
             SAMPLENAME_BASE=\$(basename ${SAMPLENAME}) &&
 
             umi_tools count $UMICOUNT_FLAGS -I $input -S $output1 -L ${UMICOUNT_LOGDIR}/\${SAMPLENAME_BASE}.umicount.log -E ${UMICOUNT_LOGDIR}/\${SAMPLENAME_BASE}.umicount.error 
