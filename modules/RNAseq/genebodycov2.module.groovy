@@ -19,11 +19,13 @@ geneBodyCov2 = {
                              GENEBODYCOV2_THREADS
 
     def TOOL_ENV = prepare_tool_env("R", tools["R"]["version"], tools["R"]["runenv"])
+    def PREAMBLE = get_preamble("geneBodyCoverage2")
 
     // run the chunk
     transform(".bam") to ("_geneBodyCov.png") {
         exec """
             ${TOOL_ENV} &&
+            ${PREAMBLE} &&
 
             if [[ ! -e "$output.dir" ]]; then
                 mkdir -p "$output.dir";

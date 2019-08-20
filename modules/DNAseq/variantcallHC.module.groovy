@@ -22,17 +22,14 @@ VariantCallHC = {
 
     def TOOL_ENV = prepare_tool_env("java", tools["java"]["version"], tools["java"]["runenv"]) + " && " +
                    prepare_tool_env("gatk", tools["gatk"]["version"], tools["gatk"]["runenv"])
+    def PREAMBLE = get_preamble("VariantCallHC")
 
     transform (".duprm.realigned.recalibrated.bam") to (".HC.vcf.gz") {
         exec """
             ${TOOL_ENV} &&
+            ${PREAMBLE} &&
 
-            export TMPDIR=/tmp &&
-            if [ -n "\$SLURM_JOBID" ]; then
-                export TMPDIR=/jobdir/\${SLURM_JOBID};
-            fi &&
-
-            java -Djava.io.tmpdir=$TMPDIR -jar \${gatk} -T HaplotypeCaller -nct $GATK_THREADS -R $GATK_BWA_REF --dbsnp $GATK_KNOWN_VARIANTS -I $input -o $output $GATK_FLAGS;
+            java -Djava.io.tmpdir=\${TMP} -jar \${gatk} -T HaplotypeCaller -nct $GATK_THREADS -R $GATK_BWA_REF --dbsnp $GATK_KNOWN_VARIANTS -I $input -o $output $GATK_FLAGS;
         ""","VariantCallHC"
     }
 }

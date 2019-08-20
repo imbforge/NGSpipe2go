@@ -30,16 +30,14 @@ bowtie_pe = {
 
     def TOOL_ENV = prepare_tool_env("bowtie", tools["bowtie"]["version"], tools["bowtie"]["runenv"]) + " && " +
                    prepare_tool_env("samtools", tools["samtools"]["version"], tools["samtools"]["runenv"])
+    def PREAMBLE = get_preamble("bowtie_pe")
 
     produce(OUTPUTFILE + ".bam") {
         exec """
             ${TOOL_ENV} &&
+            ${PREAMBLE} &&
 
-            if [ -n "\$SLURM_JOBID" ]; then
-              export TMPDIR=/jobdir/\${SLURM_JOBID};
-            fi                                       &&
-
-      bowtie $BOWTIE_FLAGS $BOWTIE_REF -1 <(zcat $input1) -2 <(zcat $input2) | samtools view $SAMTOOLS_VIEW_FLAGS - | samtools sort $SAMTOOLS_SORT_FLAGS -T $TMPDIR/\$(basename $output.prefix) - > $output;
+      bowtie $BOWTIE_FLAGS $BOWTIE_REF -1 <(zcat $input1) -2 <(zcat $input2) | samtools view $SAMTOOLS_VIEW_FLAGS - | samtools sort $SAMTOOLS_SORT_FLAGS -T \${TMP}/\$(basename $output.prefix) - > $output;
     ""","bowtie_pe"
   }
 }

@@ -26,19 +26,17 @@ BWA_pe = {
 
     def TOOL_ENV = prepare_tool_env("bwa", tools["bwa"]["version"], tools["bwa"]["runenv"]) + " && " +
                    prepare_tool_env("samtools", tools["samtools"]["version"], tools["samtools"]["runenv"])
+    def PREAMBLE = get_preamble("BWA_pe")
 
     produce(OUTPUTFILE + ".bam") {
         exec """
             ${TOOL_ENV} &&
-
-            if [ -n "\$SLURM_JOBID" ]; then
-                export TMPDIR=/jobdir/\${SLURM_JOBID};
-            fi;
+            ${PREAMBLE} &&
 
             SAMPLE_NAME=\$(basename $output.prefix) &&
             PLATFORM="genomics" &&
 
-            bwa mem $BWA_FLAGS -R \"@RG\\tID:\${SAMPLE_NAME}\\tSM:\${SAMPLE_NAME}\\tPL:illumina\\tLB:\${SAMPLE_NAME}\\tPU:\${PLATFORM}\" $BWA_REF $input1 $input2 | samtools view ${SAMTOOLS_VIEW_FLAGS} - | samtools sort ${SAMTOOLS_SORT_FLAGS} -T \${TMPDIR}/\${SAMPLE_NAME} -  > ${output} &&
+            bwa mem $BWA_FLAGS -R \"@RG\\tID:\${SAMPLE_NAME}\\tSM:\${SAMPLE_NAME}\\tPL:illumina\\tLB:\${SAMPLE_NAME}\\tPU:\${PLATFORM}\" $BWA_REF $input1 $input2 | samtools view ${SAMTOOLS_VIEW_FLAGS} - | samtools sort ${SAMTOOLS_SORT_FLAGS} -T \${TMP}/\${SAMPLE_NAME} -  > ${output} &&
 
             samtools flagstat ${output} 1>&2
             ""","BWA_pe"
@@ -63,10 +61,12 @@ BWA_se = {
 
     def TOOL_ENV = prepare_tool_env("bwa", tools["bwa"]["version"], tools["bwa"]["runenv"]) + " && " +
                    prepare_tool_env("samtools", tools["samtools"]["version"], tools["samtools"]["runenv"])
+    def PREAMBLE = get_preamble("BWA_se")
 
     transform(".fastq.gz") to(".bam") {
         exec """
             ${TOOL_ENV} &&
+            ${PREAMBLE} &&
 
             SAMPLE_NAME=\$(basename $output.prefix.prefix) &&
 

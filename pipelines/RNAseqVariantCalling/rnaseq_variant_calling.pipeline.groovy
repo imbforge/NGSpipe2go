@@ -2,6 +2,7 @@ PIPELINE_ROOT="./NGSpipe2go/" // adjust to your projects needs
 
 load PIPELINE_ROOT + "/pipelines/RNAseqVariantCalling/essential.vars.groovy"
 load PIPELINE_ROOT + "/pipelines/RNAseqVariantCalling/tools.groovy"
+load PIPELINE_ROOT + "/config/preambles.groovy"
 
 load PIPELINE_ROOT + "/modules/NGS/bamindexer.module.groovy"
 load PIPELINE_ROOT + "/modules/RNAseqVariantCalling/add_read_group.module.groovy"

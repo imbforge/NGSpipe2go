@@ -13,10 +13,12 @@ MappingStats = {
 
     def TOOL_ENV = prepare_tool_env("R", tools["R"]["version"], tools["R"]["runenv"]) + " && " +
                    prepare_tool_env("samtools", tools["samtools"]["version"], tools["samtools"]["runenv"])
+    def PREAMBLE = get_preamble("MappingStats")
 
     produce(MAPPING_STATS_PLOTDIR + "/totalReads.pdf", MAPPING_STATS_PLOTDIR + "/totalReads.png") {
         exec """
             ${TOOL_ENV} &&
+            ${PREAMBLE} &&
 
             Rscript ${PIPELINE_ROOT}/tools/mapping_stats/mapping_stats_bowtie1_BCF.R ${MAPPING_STATS_DATADIR} ${MAPPING_STATS_PLOTDIR} ${ESSENTIAL_SAMPLE_PREFIX}
         ""","MappingStats"

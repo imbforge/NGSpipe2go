@@ -12,11 +12,6 @@ STAR = {
 
     output.dir = MAPPED
 
-    // create the TMP folder if it doesn't exists
-    def F_TMP = new File(TMP)
-    if(! F_TMP.exists()) { 
-        F_TMP.mkdirs()
-    }
     // create the LOGS/STAR folder if it doesn't exists
     def F_LOG = new File(LOGS + "/STAR")
     if(! F_LOG.exists()) {
@@ -42,7 +37,6 @@ STAR = {
                      "--outSJfilterReads Unique "   +
                      "--readFilesCommand zcat "     +
                      "--outFileNamePrefix " + LOGS + "/STAR/" + OUTPUTFILE + " " +
-                     "--outTmpDir " + TMP + "/" + OUTPUTFILE + " " +
                      STAR_UNMAPPED_BAM + " " +
                      STAR_REF      + " " +
                      STAR_THREADS  + " " +
@@ -61,24 +55,21 @@ STAR = {
 
     def TOOL_ENV = prepare_tool_env("star", tools["star"]["version"], tools["star"]["runenv"]) + " && " +
                    prepare_tool_env("samtools", tools["samtools"]["version"], tools["samtools"]["runenv"])
+    def PREAMBLE = get_preamble("STAR")
 
     // code chunk
     // TODO: warn if the genome index was created using another version of STAR?
     produce(OUTPUTFILE + ".bam", OUTPUTFILE + "Log.final.out") {
         exec """
             ${TOOL_ENV} &&
+            ${PREAMBLE} &&
 
-            if [ -e $TMP/$OUTPUTFILE ];
-            then
+            if [ -e \${TMP}/$OUTPUTFILE ]; then
                 echo 'removing old STAR tmp folder';
-                rm -r $TMP/$OUTPUTFILE*;
+                rm -r \${TMP}/$OUTPUTFILE*;
             fi &&
 
-            if [ -n "\$SLURM_JOBID" ]; then
-                export TMPDIR=/jobdir/\${SLURM_JOBID};
-            fi &&
-
-            STAR $STAR_FLAGS --readFilesIn $inputs | samtools view $SAMTOOLS_VIEW_FLAGS - | samtools sort $SAMTOOLS_SORT_FLAGS -T \${TMPDIR}/${OUTPUTFILE}_sort - > $output1 &&
+            STAR $STAR_FLAGS --outTmpDir \${TMP}/$OUTPUTFILE --readFilesIn $inputs | samtools view $SAMTOOLS_VIEW_FLAGS - | samtools sort $SAMTOOLS_SORT_FLAGS -T \${TMP}/${OUTPUTFILE}_sort - > $output1 &&
 
             mv ${LOGS}/STAR/${OUTPUTFILE}SJ.out.tab $output.dir &&
             ln -s ${LOGS}/STAR/${OUTPUTFILE}Log.final.out $output.dir

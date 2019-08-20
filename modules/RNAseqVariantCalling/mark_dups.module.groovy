@@ -18,14 +18,12 @@ MarkDups = {
                           " ASSUME_SORTED=TRUE"
 
     def TOOL_ENV = prepare_tool_env("picard", tools["picard"]["version"], tools["picard"]["runenv"])
+    def PREAMBLE = get_preamble("MarkDups")
 
     transform(".rg.bam") to (".rg.duprm.bam"){
         exec """
             ${TOOL_ENV} &&
-
-            echo 'VERSION INFO'  1>&2 &&
-            echo \$(java -jar \${picard} MarkDuplicates --version) 1>&2 &&
-            echo '/VERSION INFO' 1>&2 &&
+            ${PREAMBLE} &&
 
             java $JAVA_FLAGS -jar \${picard} MarkDuplicates $MARKDUPS_FLAGS I=$input O=$output M=${input.prefix}_dupmetrics.tsv
         ""","MarkDups"

@@ -17,15 +17,13 @@ bamCoverage = {
         }
 
     def TOOL_ENV = prepare_tool_env("deeptools", tools["deeptools"]["version"], tools["deeptools"]["runenv"])
+    def PREAMBLE = get_preamble("bamCoverage")
 
     transform(".bam") to(".bw") {
         exec """
             ${TOOL_ENV} &&
+            ${PREAMBLE} &&
     
-            if [ -n "\$SLURM_JOBID" ]; then
-                export TMPDIR=/jobdir/\${SLURM_JOBID};
-            fi;
-
             bamCoverage $BAMCOVERAGE_FLAGS --bam $input -o ${output};
         ""","bamCoverage"
     }

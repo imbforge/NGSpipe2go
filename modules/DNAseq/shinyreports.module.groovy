@@ -12,8 +12,12 @@ shinyReports = {
 
     output.dir = REPORTS
 
+    def PREAMBLE = get_preamble("")
+
     produce("shinyReports.txt") {
         exec """
+            ${PREAMBLE} &&
+
             if [ -e "${REPORTS}/variantreport.Rmd" ]; then
                 echo 'variantreport.Rmd already exists. Older copy will be kept and not overwritten';
             else

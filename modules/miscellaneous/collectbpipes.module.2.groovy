@@ -5,7 +5,10 @@ collectBpipeLogs = {
 		bpipe_version: "tested with bpipe 0.9.8.7",
 		author: "Sergi Sayols"
 	
+    def PREAMBLE = get_preamble("collectBpipeLogs")
+
 	exec """
+        ${PREAMBLE} &&
 		${PIPELINE_ROOT}/tools/collectBpipeLogs/collectBpipeLogs.sh $PROJECT $LOGS
 	""","collectBpipeLogs"
 }

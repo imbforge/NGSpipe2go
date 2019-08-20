@@ -11,8 +11,12 @@ FilterAndMergeSJtab = {
 
     output.dir = OUTDIR_2ND_INDEX
 
+    def PREAMBLE = get_preamble("FilterAndMergeSJtab")
+
     produce("SJ.out.tab.Pass1.sjdb"){
         exec """
+            ${PREAMBLE} &&
+
             cat $inputs | awk 'BEGIN {OFS="\t"; strChar[0]="."; strChar[1]="+"; strChar[2]="-";} {if(\$5>0){print \$1,\$2,\$3,strChar[\$4]}}' > ${OUTDIR_2ND_INDEX}/SJ.out.tab.Pass1.sjdb
         ""","FilterAndMergeSJtab"
     }

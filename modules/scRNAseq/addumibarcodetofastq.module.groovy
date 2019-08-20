@@ -20,10 +20,12 @@ AddUMIBarcodeToFastq = {
                               " " +  ADDUMIBARCODE_EXTRA
 
     def TOOL_ENV = prepare_tool_env("umitools", tools["umitools"]["version"], tools["umitools"]["runenv"])
+    def PREAMBLE = get_preamble("AddUMIBarcodeToFastq")
 
     produce(OUTPUTFILE + ".umibarcode.fastq.gz"){
         exec """
             ${TOOL_ENV} &&
+            ${PREAMBLE} &&
 
             umi_tools extract $ADDUMIBARCODE_FLAGS -I $input2 --stdout ${input2.prefix}.barcode.fastq.gz --read2-in $input1 --read2-out=$output &&
             rm ${input2.prefix}.barcode.fastq.gz

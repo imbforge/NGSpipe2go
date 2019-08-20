@@ -5,7 +5,11 @@ collectBpipeLogs = {
 		bpipe_version: "tested with bpipe 0.9.8.7",
 		author: "Sergi Sayols"
 	
+    def PREAMBLE = get_preamble("collectBpipeLogs")
+
 	exec """
+        ${PREAMBLE} &&
+
 		for f in $PROJECT/.bpipe/outputs/*; do
 			F=\$(basename \$f)                              &&
 			JOB=\$(echo \$F |cut -d. -f1)                   &&

@@ -24,11 +24,13 @@ DE_edgeR = {
                          DE_edgeR_EXTRA
 
     def TOOL_ENV = prepare_tool_env("R", tools["R"]["version"], tools["R"]["runenv"])
+    def PREAMBLE = get_preamble("DE_edgeR")
 
     // run the chunk
     produce("DE_edgeR.RData") {
         exec """
             ${TOOL_ENV} &&
+            ${PREAMBLE} &&
 
             Rscript ${PIPELINE_ROOT}/tools/DE_edgeR/DE_edgeR.R $DE_edgeR_FLAGS
         ""","DE_edgeR"

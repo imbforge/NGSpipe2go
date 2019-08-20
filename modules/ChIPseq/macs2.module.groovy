@@ -21,10 +21,12 @@ macs2 = {
     }
 
     def TOOL_ENV = prepare_tool_env("macs2", tools["macs2"]["version"], tools["macs2"]["runenv"])
+    def PREAMBLE = get_preamble("macs2")
 
     transform(".bam") to("_macs2.done") {
         exec """
             ${TOOL_ENV} &&
+            ${PREAMBLE} &&
 
             touch $output;
             if [ ! -e $MACS2_TARGETS ]; then

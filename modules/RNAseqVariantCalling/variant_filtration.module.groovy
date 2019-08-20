@@ -14,17 +14,14 @@ VariantFiltration = {
    def JAVA_FLAGS = "-Xmx" + VARFILT_MAXMEM
    def GATK_FLAGS  = " -R " + GATK_REF
 
-    def TOOL_ENV = prepare_tool_env("java", tools["java"]["version"], tools["java"]["runenv"]) + " && " +
-                   prepare_tool_env("gatk", tools["gatk"]["version"], tools["gatk"]["runenv"])
+   def TOOL_ENV = prepare_tool_env("java", tools["java"]["version"], tools["java"]["runenv"]) + " && " +
+                  prepare_tool_env("gatk", tools["gatk"]["version"], tools["gatk"]["runenv"])
+   def PREAMBLE = get_preamble("VariantFiltration")
 
    transform (".vcf.gz") to (".filtered.vcf.gz") {
-
       exec """
             ${TOOL_ENV} &&
-
-            echo 'VERSION INFO'  1>&2 &&
-            echo \$(java -jar \${gatk} --version) 1>&2 &&
-            echo '/VERSION INFO' 1>&2 &&
+            ${PREAMBLE} &&
 
             java $JAVA_FLAGS -jar \${gatk} -T VariantFiltration -V $input -o $output -window 35 -cluster 3 -filterName FS -filter "FS > 30.0" -filterName QD -filter "QD < 2.0" $GATK_FLAGS
       ""","VariantFiltration"

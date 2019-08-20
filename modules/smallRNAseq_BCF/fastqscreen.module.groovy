@@ -13,11 +13,13 @@ FastQScreen = {
     def FASTQSCREEN_FLAGS = "--threads " + FASTQSCREEN_THREADS + " " + FASTQSCREEN_PARAM
 
     def TOOL_ENV = prepare_tool_env("fastq_screen", tools["fastq_screen"]["version"], tools["fastq_screen"]["runenv"])
+    def PREAMBLE = get_preamble("FastQScreen")
 
     transform(".fastq.gz") to ("_fastqscreen.done") {
         def SAMPLENAME = output.prefix
         exec """
             ${TOOL_ENV} &&
+            ${PREAMBLE} &&
 
             if [ ! -e "$output.prefix" ]; then
                 mkdir $output.prefix;

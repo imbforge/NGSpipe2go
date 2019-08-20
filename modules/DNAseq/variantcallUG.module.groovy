@@ -22,18 +22,15 @@ VariantCallUG = {
 
     def TOOL_ENV = prepare_tool_env("java", tools["java"]["version"], tools["java"]["runenv"]) + " && " +
                    prepare_tool_env("gatk", tools["gatk"]["version"], tools["gatk"]["runenv"])
+    def PREAMBLE = get_preamble("VariantCallUG")
 
     transform (".duprm.realigned.recalibrated.bam") to (".UG.vcf.gz") {
     // usage parameters https://www.broadinstitute.org/gatk/gatkdocs/org_broadinstitute_gatk_tools_walkers_genotyper_UnifiedGenotyper.php
         exec """
             ${TOOL_ENV} &&
+            ${PREAMBLE} &&
 
-            export TMPDIR=/tmp &&
-            if [ -n "\$SLURM_JOBID" ]; then
-                export TMPDIR=/jobdir/\${SLURM_JOBID};
-            fi                                       &&
-
-            java -Djava.io.tmpdir=$TMPDIR -jar \${gatk} -T UnifiedGenotyper -nt $GATK_THREADS -nct $GATK_THREADS -R $GATK_BWA_REF -glm BOTH -I $input -o $output $GATK_FLAGS;
+            java -Djava.io.tmpdir=\${TMP} -jar \${gatk} -T UnifiedGenotyper -nt $GATK_THREADS -nct $GATK_THREADS -R $GATK_BWA_REF -glm BOTH -I $input -o $output $GATK_FLAGS;
         ""","VariantCallUG"
     }
 }

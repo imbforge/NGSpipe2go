@@ -23,11 +23,13 @@ FastQQualityFilter = {
                                     FASTQ_QUALITY_FILTER_OTHER
 
     def TOOL_ENV = prepare_tool_env("fastx", tools["fastx"]["version"], tools["fastx"]["runenv"])
+    def PREAMBLE = get_preamble("FastQQualityFilter")
 
     transform(".fastq.gz") to (".highQ.fastq.gz") {
         def SAMPLENAME = input.prefix.prefix    
         exec """
             ${TOOL_ENV} &&
+            ${PREAMBLE} &&
 
             SAMPLENAME_BASE=\$(basename ${SAMPLENAME}) &&
             zcat $input | fastq_quality_filter $FASTQ_QUALITY_FILTER_FLAGS -o $output 2>&1 >> ${FASTQ_QUALITY_FILTER_LOGDIR}/\${SAMPLENAME_BASE}.fastq_quality_filter.log

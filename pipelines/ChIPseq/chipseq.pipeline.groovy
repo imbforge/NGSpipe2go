@@ -2,6 +2,7 @@ PIPELINE_ROOT="/fsimb/groups/imb-bioinfocf/projects/cfb_internal/tmp/ngspipe2go_
 
 load PIPELINE_ROOT + "/pipelines/ChIPseq/essential.vars.groovy"
 load PIPELINE_ROOT + "/pipelines/ChIPseq/tools.groovy"
+load PIPELINE_ROOT + "/config/preambles.groovy"
 
 load PIPELINE_ROOT + "/modules/ChIPseq/GREAT.module.groovy"
 load PIPELINE_ROOT + "/modules/ChIPseq/blacklist_filter.module.groovy"

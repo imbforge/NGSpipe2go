@@ -14,10 +14,12 @@ trackhub = {
 
     def TOOL_ENV = prepare_tool_env("R", tools["R"]["version"], tools["R"]["runenv"]) + " && " +
                    prepare_tool_env("kentutils", tools["kentutils"]["version"], tools["kentutils"]["runenv"])
+    def PREAMBLE = get_preamble("trackhub")
 
     transform(".yaml") to (".done") {
         exec """
             ${TOOL_ENV} &&
+            ${PREAMBLE} &&
 
             Rscript ${PIPELINE_ROOT}/tools/trackhub/Make_Trackhub.R $trackhub_FLAGS
         ""","trackhub"

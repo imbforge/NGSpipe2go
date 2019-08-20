@@ -30,15 +30,14 @@ rMATS = {
     }
 
     def TOOL_ENV = prepare_tool_env("rmats", tools["rmats"]["version"], tools["rmats"]["runenv"])
+    def PREAMBLE = get_preamble("rMATS")
 
     // run the chunk
     transform (".txt") to (".done") {
         exec """
             ${TOOL_ENV} &&
+            ${PREAMBLE} &&
     
-            if [ -n "\$SLURM_JOBID" ]; then
-                export TMPDIR=/jobdir/\${SLURM_JOBID};
-            fi;
             input_var=`basename $input`;
             postfix=$RMATS_POSTFIX;
             groups=\${input_var%\$postfix};

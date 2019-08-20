@@ -14,10 +14,12 @@ BamQC = {
     def BAMQC_FLAGS = "--extract --quiet"
 
     def TOOL_ENV = prepare_tool_env("bamqc", tools["bamqc"]["version"], tools["bamqc"]["runenv"])
+    def PREAMBLE = get_preamble("BamQC")
 
     transform(".bam") to ("_bamqc.zip") {
         exec """
             ${TOOL_ENV} &&
+            ${PREAMBLE} &&
 
             bamqc $BamQC_FLAGS -o $output.dir $input
         ""","BamQC"

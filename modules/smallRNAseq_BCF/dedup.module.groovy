@@ -16,9 +16,13 @@ FilterDuplicates = {
         REMOVE_DUP_LOGDIR.mkdirs()
     }
 
+    def PREAMBLE = get_preamble("FilterDuplicates")
+
     transform(".fastq.gz") to (".deduped.fastq.gz") {
         def SAMPLE_NAME = input.prefix.prefix
          exec """
+             ${PREAMBLE} &&
+
              EXP=\$(basename ${SAMPLE_NAME}) &&
              nreads=\$(zcat $input | echo \$((`wc -l`/4))) &&
              echo \$nreads \${EXP}.highQ >> ${REMOVE_DUP_LOGDIR}/\${EXP}.dedup_stats.txt &&

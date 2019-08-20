@@ -36,10 +36,11 @@ GenerateStarIndexFromSJ = {
                          " --readFilesCommand zcat"
 
         def TOOL_ENV = prepare_tool_env("star", tools["star"]["version"], tools["star"]["runenv"])
+        def PREAMBLE = get_preamble("GenerateStarIndexFromSJ")
 
         exec """
-
             ${TOOL_ENV} &&
+            ${PREAMBLE} &&
 
             STAR $STAR_FLAGS
         ""","GenerateStarIndexFromSJ"

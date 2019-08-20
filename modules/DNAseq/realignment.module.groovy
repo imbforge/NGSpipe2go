@@ -22,18 +22,15 @@ IndelRealignment = {
 
     def TOOL_ENV = prepare_tool_env("java", tools["java"]["version"], tools["java"]["runenv"]) + " && " +
                    prepare_tool_env("gatk", tools["gatk"]["version"], tools["gatk"]["runenv"])
+    def PREAMBLE = get_preamble("IndelRealignment")
 
     transform (".bam") to (".realignment.targets.bed", ".realigned.bam") {
         exec """
             ${TOOL_ENV} &&
+            ${PREAMBLE} &&
 
-            export TMPDIR=/tmp &&
-            if [ -n "\$SLURM_JOBID" ]; then
-                export TMPDIR=/jobdir/\${SLURM_JOBID};
-            fi                           &&
-
-            java -Djava.io.tmpdir=$TMPDIR -jar \${gatk} -T RealignerTargetCreator -nt $GATK_THREADS -R $GATK_BWA_REF -I $input -o $output1 &&
-            java -Djava.io.tmpdir=$TMPDIR -jar \${gatk} -T IndelRealigner -R $GATK_BWA_REF -I $input -targetIntervals $output1 -o $output2;
+            java -Djava.io.tmpdir=\${TMP} -jar \${gatk} -T RealignerTargetCreator -nt $GATK_THREADS -R $GATK_BWA_REF -I $input -o $output1 &&
+            java -Djava.io.tmpdir=\${TMP} -jar \${gatk} -T IndelRealigner -R $GATK_BWA_REF -I $input -targetIntervals $output1 -o $output2;
        ""","IndelRealignment"
     }
     

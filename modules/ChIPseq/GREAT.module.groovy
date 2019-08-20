@@ -22,12 +22,14 @@ GREAT = {
         GREAT_EXTRA
 
     def TOOL_ENV = prepare_tool_env("R", tools["R"]["version"], tools["R"]["runenv"])
+    def PREAMBLE = get_preamble("GREAT")
 
     produce("GREAT.RData") {
         exec """
-           ${TOOL_ENV} &&
+            ${TOOL_ENV} &&
+            ${PREAMBLE} &&
 
-           Rscript ${PIPELINE_ROOT}/tools/GO_Enrichment/GREAT.R $GREAT_FLAGS
+            Rscript ${PIPELINE_ROOT}/tools/GO_Enrichment/GREAT.R $GREAT_FLAGS
         ""","GREAT"
     }
 }

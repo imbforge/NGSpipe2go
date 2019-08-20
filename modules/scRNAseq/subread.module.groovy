@@ -5,10 +5,10 @@ load PIPELINE_ROOT + "/modules/scRNAseq/subread.vars.groovy"
 
 subread_count = {
     doc title: "subread_count",
-    desc:  "Counting reads in features with feature-count out of the subread package, modified to allow umitools specific counting",
-    constraints: """Default: strand specific counting.""",
-    bpipe_version: "tested with bpipe 0.9.8.7",
-    author: "Oliver Drechsel, Nastasja Kreim"
+        desc:  "Counting reads in features with feature-count out of the subread package, modified to allow umitools specific counting",
+        constraints: """Default: strand specific counting.""",
+        bpipe_version: "tested with bpipe 0.9.8.7",
+        author: "Oliver Drechsel, Nastasja Kreim"
 
     output.dir  = SUBREAD_OUTDIR
     def SUBREAD_FLAGS = "--donotsort" +  " " + 
@@ -35,11 +35,13 @@ subread_count = {
 
     def TOOL_ENV = prepare_tool_env("subread", tools["subread"]["version"], tools["subread"]["runenv"]) + " && " +
                    prepare_tool_env("samtools", tools["samtools"]["version"], tools["samtools"]["runenv"])
+    def PREAMBLE = get_preamble("subread_count")
 
     // run the chunk
     transform(".bam") to (".featureCounts.bam", ".raw_readcounts.tsv") {
         exec """
             ${TOOL_ENV} &&
+            ${PREAMBLE} &&
 
             featureCounts $SUBREAD_FLAGS -o $output2 $input 2> ${output.prefix}_subreadlog.stderr &&
             base=`basename $input` &&

@@ -20,10 +20,12 @@ phantompeak = {
                             PHANTOMPEAK_EXTRA
 
     def TOOL_ENV = prepare_tool_env("R", tools["R"]["version"], tools["R"]["runenv"])
+    def PREAMBLE = get_preamble("phantompeak")
 
     transform(".bam") to("_phantompeak.png") {
         exec """
             ${TOOL_ENV} &&
+            ${PREAMBLE} &&
 
             Rscript ${PIPELINE_ROOT}/tools/ENCODEqc/phantompeak.R $input \$(basename $input.prefix) $PHANTOMPEAK_FLAGS &&
             mv *_phantompeak.* $output.dir

@@ -12,8 +12,12 @@ filter2htseq = {
 
     output.dir = SUBREAD_OUTDIR
 
+    def PREAMBLE = get_preamble("filter2htseq")
+
     transform(".raw_readcounts.tsv") to (".readcounts.tsv") {
         exec """
+            ${PREAMBLE} &&
+
             tail -n +3 $input | awk '{print \$1\"\\t\"\$7}' > $output
         """
     }

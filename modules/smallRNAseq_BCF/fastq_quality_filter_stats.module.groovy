@@ -11,10 +11,12 @@ FastQQualityFilterStats = {
     output.dir = REMOVE_LOWQUAL_PLOTDIR
 
     def TOOL_ENV = prepare_tool_env("R", tools["R"]["version"], tools["R"]["runenv"])
+    def PREAMBLE = get_preamble("FastQQualityFilterStats")
 
     produce(REMOVE_LOWQUAL_PLOTDIR + "/qualityFilteredReads.pdf", REMOVE_LOWQUAL_PLOTDIR + "/qualityFilteredReads.png") {
         exec """
             ${TOOL_ENV} &&
+            ${PREAMBLE} &&
 
             Rscript ${PIPELINE_ROOT}/tools/fastq_stats/fastq_quality_filter_stats.R ${REMOVE_LOWQUAL_DATADIR} ${REMOVE_LOWQUAL_PLOTDIR} ${ESSENTIAL_SAMPLE_PREFIX} 
         ""","FastQQualityFilterStats"

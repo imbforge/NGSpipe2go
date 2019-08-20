@@ -30,11 +30,13 @@ SubreadCount = {
     }
 
     def TOOL_ENV = prepare_tool_env("subread", tools["subread"]["version"], tools["subread"]["runenv"])
+    def PREAMBLE = get_preamble("SubreadCount")
 
     // run the chunk
     transform(".bam") to (".raw_readcounts.tsv") {
         exec """
             ${TOOL_ENV} &&
+            ${PREAMBLE} &&
 
             featureCounts $SUBREAD_FLAGS -o $output $input 2> ${output.prefix}_subreadlog.stderr
         ""","SubreadCount"

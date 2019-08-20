@@ -13,11 +13,13 @@ inferexperiment = {
     output.dir = INFEREXPERIMENT_OUTDIR
 
     def TOOL_ENV = prepare_tool_env("rseqc", tools["rseqc"]["version"], tools["rseqc"]["runenv"])
+    def PREAMBLE = get_preamble("inferexperiment")
 
     // run the chunk
     transform(".bam") to (input.prefix + "_inferexperiment.txt") {
         exec """
             ${TOOL_ENV} &&
+            ${PREAMBLE} &&
 
             infer_experiment.py -i $input $INFEREXPERIMENT_EXTRA $INFEREXPERIMENT_BED > $output
         ""","inferexperiment"

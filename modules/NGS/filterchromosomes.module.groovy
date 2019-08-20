@@ -12,10 +12,13 @@ FilterChr = {
 
     output.dir=MAPPED
 
+    def PREAMBLE = get_preamble("FilterChr")
+
     transform(".bam") to (".chrOnly.bam") {
         exec """
-            chroms=\$(cut -f1 $FILTER_CHR_FILE) && 
+            ${PREAMBLE} &&
 
+            chroms=\$(cut -f1 $FILTER_CHR_FILE) && 
             samtools view -@ $FILTER_CHR_THREADS -b $input \$chroms > $output &&
             samtools index $output
         ""","FilterChr"

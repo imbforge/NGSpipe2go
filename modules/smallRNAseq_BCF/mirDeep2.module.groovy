@@ -13,10 +13,12 @@ miRDeep2 = {
     output.dir = MIR_OUTDIR + "/" + EXP
 
     def TOOL_ENV = prepare_tool_env("mirdeep2", tools["mirdeep2"]["version"], tools["mirdeep2"]["runenv"])
+    def PREAMBLE = get_preamble("miRDeep2")
 
     transform(".arf", ".fa") to (".tmp") {
         exec """
             ${TOOL_ENV} &&
+            ${PREAMBLE} &&
 
             mkdir -p $output.dir &&
             cd $output.dir &&

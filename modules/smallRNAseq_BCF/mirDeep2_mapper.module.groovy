@@ -12,6 +12,7 @@ miRDeep2Mapper = {
     output.dir = MIR_MAPPER_OUTDIR
 
     def TOOL_ENV = prepare_tool_env("mirdeep2", tools["mirdeep2"]["version"], tools["mirdeep2"]["runenv"])
+    def PREAMBLE = get_preamble("miRDeep2Mapper")
 
     transform(".fastq.gz") to (".arf", ".fa") {
         def SAMPLENAME = input.prefix
@@ -19,16 +20,13 @@ miRDeep2Mapper = {
 
         exec """
             ${TOOL_ENV} &&
-
-            if [ ! -d ${TMP} ]; then
-                mkdir -p ${TMP};
-            fi &&
+            ${PREAMBLE} &&
 
             SAMPLENAME_BASE=\$(basename ${SAMPLENAME}) &&
-            gunzip -c $input > ${TMP}/\${SAMPLENAME_BASE} &&
+            gunzip -c $input > \${TMP}/\${SAMPLENAME_BASE} &&
             cd $output.dir &&
-            mapper.pl ${TMP}/\${SAMPLENAME_BASE} -e -p $GENOME_REF -s $output2 -t $output1 -h -m -i -j -o 8 &> ${OUTPUTLOG_MAIN}.mapper.log &&
-            rm ${TMP}/\${SAMPLENAME_BASE}
+            mapper.pl \${TMP}/\${SAMPLENAME_BASE} -e -p $GENOME_REF -s $output2 -t $output1 -h -m -i -j -o 8 &> ${OUTPUTLOG_MAIN}.mapper.log &&
+            rm \${TMP}/\${SAMPLENAME_BASE}
         ""","miRDeep2Mapper"
     }
 }

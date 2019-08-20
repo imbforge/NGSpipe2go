@@ -32,21 +32,20 @@ subread_count = {
     }
 
     def TOOL_ENV = prepare_tool_env("subread", tools["subread"]["version"], tools["subread"]["runenv"])
+    def PREAMBLE = get_preamble("subread_count")
 
     // run the chunk
     transform(".bam") to (".raw_readcounts.tsv") {
         exec """
             ${TOOL_ENV} &&
+            ${PREAMBLE} &&
     
-            if [ -n "\$SLURM_JOBID" ]; then
-                export TMPDIR=/jobdir/\${SLURM_JOBID};
-            fi &&
             base=`basename $input` &&
             if [[ "$SUBREAD_PAIRED" == "yes" ]]; 
             then
                 echo "We are resorting and doing the repair\n" &&
-                repair -i $input $SUBREAD_CORES -o \${TMPDIR}/\${base} &&
-                featureCounts $SUBREAD_FLAGS -o $output \${TMPDIR}/\${base} 2> ${output.prefix}_subreadlog.stderr;
+                repair -i $input $SUBREAD_CORES -o \${TMP}/\${base} &&
+                featureCounts $SUBREAD_FLAGS -o $output \${TMP}/\${base} 2> ${output.prefix}_subreadlog.stderr;
             else
                 featureCounts $SUBREAD_FLAGS -o $output $input 2> ${output.prefix}_subreadlog.stderr;
             fi

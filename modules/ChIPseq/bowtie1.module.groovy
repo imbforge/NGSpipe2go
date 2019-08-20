@@ -27,16 +27,14 @@ bowtie_se = {
 
     def TOOL_ENV = prepare_tool_env("bowtie", tools["bowtie"]["version"], tools["bowtie"]["runenv"]) + " && " +
                    prepare_tool_env("samtools", tools["samtools"]["version"], tools["samtools"]["runenv"])
+    def PREAMBLE = get_preamble("bowtie_se")
 
     transform(".fastq.gz") to (".bam") {
         exec """
             ${TOOL_ENV} &&
+            ${PREAMBLE} &&
 
-            if [ ! -d ${TMP} ]; then
-                     mkdir -p ${TMP};
-            fi &&
-
-            zcat $input | bowtie $BOWTIE_FLAGS $BOWTIE_REF - | samtools view $SAMTOOLS_VIEW_FLAGS - | samtools sort $SAMTOOLS_SORT_FLAGS -T $TMP/\$(basename $output.prefix)_bowtie1_sort - > $output
+            zcat $input | bowtie $BOWTIE_FLAGS $BOWTIE_REF - | samtools view $SAMTOOLS_VIEW_FLAGS - | samtools sort $SAMTOOLS_SORT_FLAGS -T \${TMP}/\$(basename $output.prefix)_bowtie1_sort - > $output
         ""","bowtie_se"
     }
 }

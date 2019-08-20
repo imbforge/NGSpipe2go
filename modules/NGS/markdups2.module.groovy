@@ -13,10 +13,12 @@ MarkDups2 = {
     output.dir=MAPPED
 
     def TOOL_ENV = prepare_tool_env("bamutil", tools["bamutil"]["version"], tools["bamutil"]["runenv"])
+    def PREAMBLE = get_preamble("MarkDups2")
 
     transform(".bam") to (".dupmarked.bam") {
         exec """
             ${TOOL_ENV} &&
+            ${PREAMBLE} &&
 
             bam dedup --in $input --out $output --log ${input.prefix}_dupmetrics.log --noPhoneHome
         ""","MarkDups2"

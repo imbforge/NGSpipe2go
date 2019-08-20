@@ -34,21 +34,20 @@ subread2rnatypes = {
     }
 
     def TOOL_ENV = prepare_tool_env("subread", tools["subread"]["version"], tools["subread"]["runenv"])
+    def PREAMBLE = get_preamble("subread2rnatypes")
 
     // run the chunk
     transform(".bam") to ("_readcounts.tsv") {
         exec """
             ${TOOL_ENV} &&
+            ${PREAMBLE} &&
     
-            if [ -n "\$SLURM_JOBID" ]; then
-                export TMPDIR=/jobdir/\${SLURM_JOBID};
-            fi &&
             base=`basename $input` &&
             if [[ "$RNATYPES_PAIRED" == "yes" ]];
             then            
                 echo "We are resorting and doing the repair\n" &&
-                repair -i $input $RNATYPES_CORES -o \${TMPDIR}/\${base} &&
-                featureCounts $RNATYPES_FLAGS -o ${output}_tmp \${TMPDIR}/\${base} 2> ${output.prefix}_rnatypeslog.stderr;
+                repair -i $input $RNATYPES_CORES -o \${TMP}/\${base} &&
+                featureCounts $RNATYPES_FLAGS -o ${output}_tmp \${TMP}/\${base} 2> ${output.prefix}_rnatypeslog.stderr;
             else
                 featureCounts $RNATYPES_FLAGS -o ${output}_tmp $input 2> ${output.prefix}_rnatypeslog.stderr;
             fi &&

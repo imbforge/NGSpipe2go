@@ -13,10 +13,12 @@ ipstrength = {
     output.dir = QC + "/ipstrength"
 
     def TOOL_ENV = prepare_tool_env("R", tools["R"]["version"], tools["R"]["runenv"])
+    def PREAMBLE = get_preamble("ipstrength")
 
     transform(".bam") to("_ipstrength.done") {
         exec """
             ${TOOL_ENV} &&
+            ${PREAMBLE} &&
 
             touch $output;
             if [ ! -e $IPSTRENGTH_TARGETS ]; then

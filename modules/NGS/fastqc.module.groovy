@@ -14,10 +14,12 @@ FastQC = {
     def FASTQC_FLAGS = "--extract --quiet"
 
     def TOOL_ENV = prepare_tool_env("fastqc", tools["fastqc"]["version"], tools["fastqc"]["runenv"])
+    def PREAMBLE = get_preamble("FastQC")
 
     transform(".fastq.gz") to ("_fastqc.zip") {
         exec """
             ${TOOL_ENV} &&
+            ${PREAMBLE} &&
 
             fastqc $FASTQC_FLAGS -o $output.dir $input
         ""","FastQC"

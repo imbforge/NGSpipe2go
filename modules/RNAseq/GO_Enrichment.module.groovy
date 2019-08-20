@@ -22,10 +22,12 @@ GO_Enrichment = {
                               GO_Enrichment_EXTRA
 
     def TOOL_ENV = prepare_tool_env("R", tools["R"]["version"], tools["R"]["runenv"])
+    def PREAMBLE = get_preamble("GO_Enrichment")
 
     transform(".RData") to("_GO.done") {
         exec """
             ${TOOL_ENV} &&
+            ${PREAMBLE} &&
 
             touch $output &&
             Rscript ${PIPELINE_ROOT}/tools/GO_Enrichment/GO_Enrichment.R rData=$input $GO_Enrichment_FLAGS &&

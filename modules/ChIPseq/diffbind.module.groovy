@@ -28,11 +28,13 @@ diffbind = {
                          DIFFBIND_EXTRA
 
     def TOOL_ENV = prepare_tool_env("R", tools["R"]["version"], tools["R"]["runenv"])
+    def PREAMBLE = get_preamble("diffbind")
 
     // run the chunk
     produce("diffbind.pdf", "diffbind.xlsx", "diffbind.rds") {
         exec """
             ${TOOL_ENV} &&
+            ${PREAMBLE} &&
 
             Rscript ${PIPELINE_ROOT}/tools/diffbind/diffbind.R $DIFFBIND_FLAGS
         ""","diffbind"

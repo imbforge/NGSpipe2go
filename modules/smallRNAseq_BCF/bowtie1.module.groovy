@@ -19,22 +19,20 @@ Bowtie_se = {
 
     def TOOL_ENV = prepare_tool_env("bowtie", tools["bowtie"]["version"], tools["bowtie"]["runenv"]) + " && " +
                    prepare_tool_env("samtools", tools["samtools"]["version"], tools["samtools"]["runenv"])
+    def PREAMBLE = get_preamble("Bowtie_se")
 
     transform(".fastq.gz") to (".bam") {
         def SAMPLENAME = output.prefix
         exec """
             ${TOOL_ENV} &&
-
-            if [ ! -e $TMP ]; then
-                mkdir -p $TMP;
-            fi &&
+            ${PREAMBLE} &&
 
             SAMPLENAME_BASE=\$(basename ${SAMPLENAME}) &&
 
             echo 'BOWTIE_FLAGS' $BOWTIE_FLAGS > $output.dir/\${SAMPLENAME_BASE}.bowtie.log &&
             echo 'BOWTIE_REF' $BOWTIE_REF >> $output.dir/\${SAMPLENAME_BASE}.bowtie.log && 
 
-            zcat $input | bowtie $BOWTIE_FLAGS $BOWTIE_REF - 2>> $output.dir/\${SAMPLENAME_BASE}.bowtie.log | awk '{if (\$1~/^@/) print; else {if(\$5 == 255) print \$0"\tNH:i:1"; else print \$0"\tNH:i:2";}}' | samtools view -bhSu - | samtools sort -@ $BOWTIE_THREADS -T $TMP/\$(basename $output.prefix)_bowtie1_sort - -o $output
+            zcat $input | bowtie $BOWTIE_FLAGS $BOWTIE_REF - 2>> $output.dir/\${SAMPLENAME_BASE}.bowtie.log | awk '{if (\$1~/^@/) print; else {if(\$5 == 255) print \$0"\tNH:i:1"; else print \$0"\tNH:i:2";}}' | samtools view -bhSu - | samtools sort -@ $BOWTIE_THREADS -T \${TMP}/\$(basename $output.prefix)_bowtie1_sort - -o $output
            ""","Bowtie_se"
     }
 }

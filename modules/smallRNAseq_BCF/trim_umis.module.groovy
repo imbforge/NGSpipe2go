@@ -14,10 +14,12 @@ TrimUMIs = {
                       " -b " + RIGHT_TRIM
 
     def TOOL_ENV = prepare_tool_env("seqtk", tools["seqtk"]["version"], tools["seqtk"]["runenv"])
+    def PREAMBLE = get_preamble("TrimUMIs")
 
     transform(".fastq.gz") to (".trimmed.fastq.gz") {
         exec """
             ${TOOL_ENV} &&
+            ${PREAMBLE} &&
 
             seqtk trimfq -b ${LEFT_TRIM} -e ${RIGHT_TRIM} $input | gzip > $output
         ""","TrimUMIs"

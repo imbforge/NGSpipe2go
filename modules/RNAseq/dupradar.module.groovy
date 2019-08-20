@@ -21,21 +21,19 @@ dupRadar = {
 
     def TOOL_ENV = prepare_tool_env("R", tools["R"]["version"], tools["R"]["runenv"]) + " && " +
                    prepare_tool_env("subread", tools["subread"]["version"], tools["subread"]["runenv"])
+    def PREAMBLE = get_preamble("dupRadar")
 
     // run the chunk
     transform(".bam") to("_dupRadar.png") {
         exec """
             ${TOOL_ENV} &&
-
-            if [ -n "\$SLURM_JOBID" ]; then
-                export TMPDIR=/jobdir/\${SLURM_JOBID};
-            fi &&
+            ${PREAMBLE} &&
 
             base=`basename $input` &&
             if [[ "$DUPRADAR_PAIRED" == "paired=yes" ]]; then
                 echo "We are resorting and doing the repair\n" &&
-                repair -i $input -T $THREADS -o \${TMPDIR}/\${base} &&
-                Rscript ${PIPELINE_ROOT}/tools/dupRadar/dupRadar.R bam=\${TMPDIR}/\${base} $DUPRADAR_FLAGS;
+                repair -i $input -T $THREADS -o \${TMP}/\${base} &&
+                Rscript ${PIPELINE_ROOT}/tools/dupRadar/dupRadar.R bam=\${TMP}/\${base} $DUPRADAR_FLAGS;
             else
                 Rscript ${PIPELINE_ROOT}/tools/dupRadar/dupRadar.R bam=$input $DUPRADAR_FLAGS;
             fi

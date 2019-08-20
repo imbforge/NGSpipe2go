@@ -11,10 +11,12 @@ pbc = {
     output.dir = QC + "/pbc"
 
     def TOOL_ENV = prepare_tool_env("R", tools["R"]["version"], tools["R"]["runenv"])
+    def PREAMBLE = get_preamble("pbc")
 
     transform(".bam") to("_PBC.csv") {
         exec """
             ${TOOL_ENV} &&
+            ${PREAMBLE} &&
 
             Rscript ${PIPELINE_ROOT}/tools/ENCODEqc/PBC.R $input && mv ${input.prefix}_PBC.csv $output.dir
         ""","pbc"

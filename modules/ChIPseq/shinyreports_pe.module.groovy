@@ -12,8 +12,12 @@ shinyReports = {
 
     output.dir = REPORTS
 
+    def PREAMBLE = get_preamble("shinyReports")
+
     produce("shinyReports.txt") {
         exec """
+            ${PREAMBLE} &&
+
             cp ${PIPELINE_ROOT}/tools/reports/shiny_chipseq_pe_reporting_tool/server.R ${REPORTS}                &&
             cp ${PIPELINE_ROOT}/tools/reports/shiny_chipseq_pe_reporting_tool/ui.R ${REPORTS}                    &&
             cp ${PIPELINE_ROOT}/tools/reports/shiny_chipseq_pe_reporting_tool/ChIP.shinyrep.helpers.R ${REPORTS} &&

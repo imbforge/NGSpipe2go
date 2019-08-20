@@ -16,11 +16,13 @@ geneBodyCov = {
                             GENEBODYCOV_EXTRA
 
     def TOOL_ENV = prepare_tool_env("rseqc", tools["rseqc"]["version"], tools["rseqc"]["runenv"])
+    def PREAMBLE = get_preamble("geneBodyCoverage")
 
     // run the chunk
     transform(".bam") to (".geneBodyCoverage.curves.png", ".geneBodyCoverage.r", ".geneBodyCoverage.txt") {
         exec """
             ${TOOL_ENV} &&
+            ${PREAMBLE} &&
 
             geneBody_coverage.py -i $input -o ${output3.prefix.prefix} $GENEBODYCOV_FLAGS
         ""","geneBodyCov"

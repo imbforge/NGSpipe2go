@@ -13,25 +13,24 @@ DownsampleBAM = {
     output.dir = DOWNSAMPLED
 
     def TOOL_ENV = prepare_tool_env("samtools", tools["samtools"]["version"], tools["samtools"]["runenv"])
+    def PREAMBLE = get_preamble("DownsampleBAM")
 
     transform(".bam") to (".down.bam") {
         exec """
             ${TOOL_ENV} &&
+            ${PREAMBLE} &&
     
-            if [ -n "\$SLURM_JOBID" ]; then
-                export TMPDIR=/jobdir/\${SLURM_JOBID};
-            fi &&
             BASE=\$(basename $input) &&
-            samtools view -F 0x04 -bh ${input} -o \${TMPDIR}/\${BASE}_mapped.bam &&
-            TOTAL_MAPPED=\$(samtools flagstat \${TMPDIR}/\${BASE}_mapped.bam | grep mapped | head -n 1 | awk '{print \$1 }') &&
+            samtools view -F 0x04 -bh ${input} -o \${TMP}/\${BASE}_mapped.bam &&
+            TOTAL_MAPPED=\$(samtools flagstat \${TMP}/\${BASE}_mapped.bam | grep mapped | head -n 1 | awk '{print \$1 }') &&
             echo mapped_info \$TOTAL_MAPPED &&
             if [[ $DOWNSAMPLE_AMOUNT > \$TOTAL_MAPPED ]]; then
                 echo "Downsample amount higher than amount of mapped reads. Keeping all reads!" &&
-                cp \${TMPDIR}/\${BASE}_mapped.bam $output;
+                cp \${TMP}/\${BASE}_mapped.bam $output;
             else
                 PROBABILITY=\$(echo "$DOWNSAMPLE_SEED + $DOWNSAMPLE_AMOUNT/\$TOTAL_MAPPED" | bc -l);
                 echo Probability \$PROBABILITY &&
-                samtools view -bs \$PROBABILITY -o $output \${TMPDIR}/\${BASE}_mapped.bam;
+                samtools view -bs \$PROBABILITY -o $output \${TMP}/\${BASE}_mapped.bam;
             fi
         ""","DownsampleBAM"
     }

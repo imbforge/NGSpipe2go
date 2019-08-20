@@ -20,11 +20,10 @@ DownsamplefastqSE = {
         println OUTPUTFILES[index]
     }
 
+    def PREAMBLE = get_preamble("DownsamplefastqSE")
+
     produce(OUTPUTFILES) {
         exec """
-            if [ -n "\$SLURM_JOBID" ]; then
-                export TMPDIR=/jobdir/\${SLURM_JOBID};
-            fi;
             paste <(zcat $input) | awk '{ printf("%s",\$0); n++; if(n%4==0) { printf("\\n");} else { printf("\\t\\t");} }' | shuf | head -n $DOWNSAMPLE_AMOUNT | sed 's/\\t\\t/\\n/g' | awk -v r1=$output1.prefix 'BEGIN {FS="\\t"}{print \$1 >r1}' &&
             gzip $output1.prefix
     ""","Downsamplefastq"

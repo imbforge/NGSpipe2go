@@ -6,7 +6,7 @@ load PIPELINE_ROOT + "/modules/RNAseq/starfusion.vars.groovy"
 STAR_Fusion = {
     doc title: "STAR-Fusion",
         desc:  "detection of fusion transcripts from RNA-Seq data",
-        constraints: "tab-delimited summary file identifying the fusion pairs",
+        constraints: "tab-delimited summary file identifying the fusion pairs. Works only with PE data",
         bpipe_version: "tested with bpipe 0.9.9",
         author: "Giuseppe Petrosino"
 
@@ -21,16 +21,14 @@ STAR_Fusion = {
                            STARFUSION_GENOME_LIB
 
     def TOOL_ENV = prepare_tool_env("starfusion", tools["starfusion"]["version"], tools["starfusion"]["runenv"])
+    def PREAMBLE = get_preamble("STAR_Fusion")
 
     produce(OUTPUTFILE + "_starfusion.done") {
         exec """
             ${TOOL_ENV} &&
+            ${PREAMBLE} &&
 
-            if [ -n "\$SLURM_JOBID" ]; then
-                export TMPDIR=/jobdir/\${SLURM_JOBID};
-            fi                                       &&
-
-            STAR-Fusion $STARFUSION_FLAGS --tmpdir $TMPDIR/\$(basename $output.prefix) --left_fq $input1 --right_fq $input2 --output_dir $output.prefix;
+            STAR-Fusion $STARFUSION_FLAGS --tmpdir \${TMP}/\$(basename $output.prefix) --left_fq $input1 --right_fq $input2 --output_dir $output.prefix;
             touch $output
         ""","STAR_Fusion"
     }

@@ -23,11 +23,13 @@ DE_DESeq2 = {
                           DE_DESeq2_EXTRA
 
     def TOOL_ENV = prepare_tool_env("R", tools["R"]["version"], tools["R"]["runenv"])
+    def PREAMBLE = get_preamble("DE_DESeq2")
 
     // run the chunk
     produce("DE_DESeq2.RData") {
         exec """
             ${TOOL_ENV} &&
+            ${PREAMBLE} &&
 
             Rscript ${PIPELINE_ROOT}/tools/DE_DESeq2/DE_DESeq2.R $DE_DESeq2_FLAGS
         ""","DE_DESeq2"

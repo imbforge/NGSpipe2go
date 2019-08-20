@@ -23,10 +23,12 @@ trackhub_config = {
                          "TRACKHUB_CONFIG="      + TRACKHUB_CONFIG
 
     def TOOL_ENV = prepare_tool_env("R", tools["R"]["version"], tools["R"]["runenv"])
+    def PREAMBLE = get_preamble("trackhub_config")
 
     produce(TRACKHUB_CONFIG) {
         exec """
             ${TOOL_ENV} &&
+            ${PREAMBLE} &&
 
             Rscript ${PIPELINE_ROOT}/tools/trackhub/Configure_Trackhub.R $trackhub_FLAGS
         ""","trackhub_config"

@@ -32,11 +32,13 @@ StringTie = {
     }
 
     def TOOL_ENV = prepare_tool_env("stringtie", tools["stringtie"]["version"], tools["stringtie"]["runenv"])
+    def PREAMBLE = get_preamble("StringTie")
 
     // code chunk
     transform(".bam") to("_stringtie.done") {
         exec """
             ${TOOL_ENV} &&
+            ${PREAMBLE} &&
 
             base=\$(basename $input) &&
             base=\${base%.bam} &&

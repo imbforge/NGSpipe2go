@@ -23,6 +23,8 @@ PREMATS = {
             println contrasts[index]
     }
 
+    def PREAMBLE = get_preamble("PREMATS")
+
     produce(contrasts) {
         exec """
             for i in `cat $PREMATS_CONTRASTS`; do

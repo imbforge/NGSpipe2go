@@ -20,16 +20,14 @@ VariantCallHC = {
 
     def TOOL_ENV = prepare_tool_env("java", tools["java"]["version"], tools["java"]["runenv"]) + " && " +
                    prepare_tool_env("gatk", tools["gatk"]["version"], tools["gatk"]["runenv"])
+    def PREAMBLE = get_preamble("VariantCallHC")
 
-   transform (".rg.duprm.split.recalibrated.bam") to (".UG.vcf.gz") {
-
-      exec """
-            echo 'VERSION INFO'  1>&2 &&
-            echo \$(java -jar \${gatk} --version) 1>&2 &&
-            echo '/VERSION INFO' 1>&2 &&
+    transform (".rg.duprm.split.recalibrated.bam") to (".UG.vcf.gz") {
+        exec """
+            ${TOOL_ENV} &&
+            ${PREAMBLE} &&
 
             java $JAVA_FLAGS -jar \${gatk} -T HaplotypeCaller -I $input -o $output --dbsnp $VCF_REF  $GATK_FLAGS
-
-      ""","VariantCallHC"
+        ""","VariantCallHC"
    }
 }

@@ -9,16 +9,19 @@ BAMindexer = {
         constraints: "",
         bpipe_version: "tested with bpipe 0.9.8.7",
         author: "Sergi Sayols, Nastasja Kreim"
+
     def OUTPUTDIR = input1
     int path_index = OUTPUTDIR.lastIndexOf("/")
     OUTPUTDIR = OUTPUTDIR.substring(0,path_index)
     output.dir = OUTPUTDIR
 
     def TOOL_ENV = prepare_tool_env("samtools", tools["samtools"]["version"], tools["samtools"]["runenv"])
+    def PREAMBLE = get_preamble("BAMindexer")
 
     transform(".bam\$") to(".bam.bai") {
         exec """
             ${TOOL_ENV} &&
+            ${PREAMBLE} &&
 
             samtools index $input
         ""","BAMindexer"

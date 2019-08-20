@@ -24,12 +24,14 @@ DE_DESeq2_MM = {
                              DE_DESeq2_MM_EXTRA
 
     def TOOL_ENV = prepare_tool_env("R", tools["R"]["version"], tools["R"]["runenv"])
+    def PREAMBLE = get_preamble("DE_DESeq2_MM")
 
     // run the chunk
     // should match deseq2.module.groovy, adding a step in between to convert all dupRadar input counts to HTSeq
     produce("DE_DESeq2.RData") {
         exec """
             ${TOOL_ENV} &&
+            ${PREAMBLE} &&
 
             if [[ ! -e "$INPUT_READS_DIR" ]]; then
                 mkdir "$INPUT_READS_DIR";

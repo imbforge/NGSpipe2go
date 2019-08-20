@@ -22,10 +22,12 @@ peak_annotation = {
         peak_annotation_EXTRA
 
     def TOOL_ENV = prepare_tool_env("R", tools["R"]["version"], tools["R"]["runenv"])
+    def PREAMBLE = get_preamble("peak_annotation")
 
     produce("Peak_Annotation.RData") {
         exec """
             ${TOOL_ENV} &&
+            ${PREAMBLE} &&
 
             Rscript ${PIPELINE_ROOT}/tools/Peak_Annotation/Peak_Annotation.R $peak_annotation_FLAGS;
         ""","peak_annotation"

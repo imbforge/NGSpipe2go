@@ -20,14 +20,12 @@ SplitNCigarReads = {
 
     def TOOL_ENV = prepare_tool_env("java", tools["java"]["version"], tools["java"]["runenv"]) + " && " +
                    prepare_tool_env("gatk", tools["gatk"]["version"], tools["gatk"]["runenv"])
+    def PREAMBLE = get_preamble("SplitNCigarReads")
 
     transform (".duprm.bam") to (".duprm.split.bam"){
        exec """
            ${TOOL_ENV} &&
-
-           echo 'VERSION INFO'  1>&2 &&
-           echo \$(java -jar \${gatk} --version) 1>&2 &&
-           echo '/VERSION INFO' 1>&2 &&
+           ${PREAMBLE} &&
 
            java $JAVA_FLAGS -jar \${gatk} -T SplitNCigarReads -I $input -o $output $SPLITCIGAR_FLAGS
        ""","SplitNCigarReads"

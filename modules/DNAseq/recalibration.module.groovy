@@ -22,18 +22,15 @@ BaseRecalibration = {
 
     def TOOL_ENV = prepare_tool_env("java", tools["java"]["version"], tools["java"]["runenv"]) + " && " +
                    prepare_tool_env("gatk", tools["gatk"]["version"], tools["gatk"]["runenv"])
+    def PREAMBLE = get_preamble("BaseRecalibration")
 
     transform (".bam") to (".recalibration.table", ".recalibrated.bam") {
         exec """
             ${TOOL_ENV} &&
+            ${PREAMBLE} &&
 
-            export TMPDIR=/tmp &&
-            if [ -n "\$SLURM_JOBID" ]; then
-                export TMPDIR=/jobdir/\${SLURM_JOBID};
-            fi &&
-
-            java -Djava.io.tmpdir=$TMPDIR -jar \${gatk} -T BaseRecalibrator -nct $GATK_THREADS -R $GATK_BWA_REF -knownSites $GATK_KNOWN_VARIANTS -I $input -o $output1 &&
-            java -Djava.io.tmpdir=$TMPDIR -jar \${gatk} -T PrintReads -nct $GATK_THREADS -R $GATK_BWA_REF -I $input -BQSR $output1 -o $output2
+            java -Djava.io.tmpdir=\${TMP} -jar \${gatk} -T BaseRecalibrator -nct $GATK_THREADS -R $GATK_BWA_REF -knownSites $GATK_KNOWN_VARIANTS -I $input -o $output1 &&
+            java -Djava.io.tmpdir=\${TMP} -jar \${gatk} -T PrintReads -nct $GATK_THREADS -R $GATK_BWA_REF -I $input -BQSR $output1 -o $output2
         ""","BaseRecalibration"
     }
     

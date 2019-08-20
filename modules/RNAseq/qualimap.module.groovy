@@ -24,10 +24,12 @@ qualimap = {
     }
 
     def TOOL_ENV = prepare_tool_env("qualimap", tools["qualimap"]["version"], tools["qualimap"]["runenv"])
+    def PREAMBLE = get_preamble("qualimap")
 
     transform(".bam") to("_counts.txt") {
         exec """
             ${TOOL_ENV} &&
+            ${PREAMBLE} &&
     
             unset DISPLAY;
             echo $output.prefix;

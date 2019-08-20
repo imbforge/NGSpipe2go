@@ -13,16 +13,14 @@ filbowtie2unique = {
     output.dir = FILBOWTIE2UNIQUE_MAPPED
 
     def TOOL_ENV = prepare_tool_env("samtools", tools["samtools"]["version"], tools["samtools"]["runenv"])
+    def PREAMBLE = get_preamble("filbowtie2unique")
 
     transform(".bam") to (".unique.bam") {
         exec """
             ${TOOL_ENV} &&
+            ${PREAMBLE} &&
 
-            if [ -n "\$SLURM_JOBID" ]; then
-                export TMPDIR=/jobdir/\${SLURM_JOBID};
-            fi                                       &&
-
-            samtools view -f 2 $FILBOWTIE2UNIQUE_SAMTOOLS_MAPQ -bhu ${input} | samtools sort $FILBOWTIE2UNIQUE_SAMTOOLS_THREADS -T $TMPDIR/\$(basename $output.prefix) -o ${output} -;
+            samtools view -f 2 $FILBOWTIE2UNIQUE_SAMTOOLS_MAPQ -bhu ${input} | samtools sort $FILBOWTIE2UNIQUE_SAMTOOLS_THREADS -T \${TMP}/\$(basename $output.prefix) -o ${output} -;
         ""","filbowtie2unique"
     }
 }

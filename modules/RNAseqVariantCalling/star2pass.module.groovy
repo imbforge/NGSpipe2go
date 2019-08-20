@@ -11,11 +11,6 @@ STAR_pe_2nd = {
 
    output.dir = OUTDIR_STAR2ND
 
-   // create the TMP folder if it doesn't exists
-   def F_TMP = new File(TMP)
-   if(! F_TMP.exists()) {
-      F_TMP.mkdirs()
-   }
    // create the LOGS/STAR folder if it doesn't exists
    def F_LOG = new File(LOGS + "/STAR_2ndPass")
    if(! F_LOG.exists()) {
@@ -46,18 +41,19 @@ STAR_pe_2nd = {
                 " --outSAMattributes Standard" +
                 " --outSJfilterReads Unique" +
                 " --outFileNamePrefix " + output.dir + "/" + EXP + "." +
-                " --outTmpDir " + TMP + "/" + EXP +
                 // " --sjdbGTFfile " + ESSENTIAL_GENESGTF +
                 " --readFilesCommand zcat"
 
       def TOOL_ENV = prepare_tool_env("star", tools["star"]["version"], tools["star"]["runenv"]) + " && " +
                      prepare_tool_env("samtools", tools["samtools"]["version"], tools["samtools"]["runenv"])
+      def PREAMBLE = get_preamble("STAR_pe_2nd")
 
       exec """
          ${TOOL_ENV} &&
+         ${PREAMBLE} &&
 
-         STAR $STAR_FLAGS --readFilesIn $inputs | samtools view -bhSu -F 256 - | samtools sort -@ $STAR_THREADS - $output.dir"/"${EXP} &&
-         rm -rf ${TMP}/${EXP}
+         STAR $STAR_FLAGS --outTmpDir \${TMP}/$EXP --readFilesIn $inputs | samtools view -bhSu -F 256 - | samtools sort -@ $STAR_THREADS - $output.dir"/"${EXP} &&
+         rm -rf \${TMP}/${EXP}
       ""","STAR_pe_2nd"
    }
 }

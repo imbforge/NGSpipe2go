@@ -4,7 +4,7 @@
 load PIPELINE_ROOT + "/modules/NGS/fastqscreen.vars.groovy"
 
 FastqScreen = {
-    doc title: "FastScreen",
+    doc title: "FastqScreen",
         desc:  "Quality control of input file against various contaminants",
         constraints: "Only supports compressed FASTQ files",
         bpipe_version: "tested with bpipe 0.9.8.7",
@@ -14,10 +14,12 @@ FastqScreen = {
     def FASTQSCREEN_FLAGS = "-threads" + FASTQSCREEN_THREADS + " " + FASTQSCREEN_PARAM
 
     def TOOL_ENV = prepare_tool_env("fastqscreen", tools["fastqscreen"]["version"], tools["fastqscreen"]["runenv"])
+    def PREAMBLE = get_preamble("FastqScreen")
 
     transform(".fastq.gz") to("_fastqscreen.done") {
         exec """
             ${TOOL_ENV} &&
+            ${PREAMBLE} &&
 
             if [ ! -e "$output.prefix" ]; then
                 mkdir $output.prefix;
