@@ -10,8 +10,10 @@ FastqScreen = {
         bpipe_version: "tested with bpipe 0.9.8.7",
         author: "Nastasja Kreim"
 
-    output.dir = FASTQSCREEN_OUTDIR
-    def FASTQSCREEN_FLAGS = "-threads" + FASTQSCREEN_THREADS + " " + FASTQSCREEN_PARAM
+    output.dir = FastqScreen_vars.outdir
+    def FASTQSCREEN_FLAGS = 
+        (FastqScreen_vars.threads ? " --threads " + FastqScreen_vars.threads : "") +
+        (FastqScreen_vars.extra   ? " "           + FastqScreen_vars.extra   : "")
 
     def TOOL_ENV = prepare_tool_env("fastqscreen", tools["fastqscreen"]["version"], tools["fastqscreen"]["runenv"])
     def PREAMBLE = get_preamble("FastqScreen")
@@ -24,13 +26,13 @@ FastqScreen = {
             if [ ! -e "$output.prefix" ]; then
                 mkdir $output.prefix;
             fi &&
-            fastqreference=$FASTQSCREEN_CONF;
+            fastqreference=${FastqScreen_vars.conf};
             references=(\${fastqreference//,/ });
             for i in "\${!references[@]}"; do
                 reference=(\${references[i]//::/ });
                 echo -e "DATABASE\t\${reference[0]}\t\${reference[1]}" >> $output.prefix/fastqscreen.conf;
             done;
-            fastq_screen $FASTQSCREEN_PARAM --conf $output.prefix/fastqscreen.conf $FASTQSCREEN_PARAM --outdir $output.prefix $input;
+            fastq_screen $FASTQSCREEN_FLAGS --conf $output.prefix/fastqscreen.conf --outdir $output.prefix $input;
             touch $output
         ""","FastqScreen"
     }

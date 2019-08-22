@@ -10,9 +10,9 @@ InsertSize = {
         bpipe_version: "tested with bpipe 0.9.8.7",
         author: "Nastasja Kreim"
 
-    output.dir=INSERTSIZE_OUTDIR
-    def INSERTSIZE_FLAGS = INSERTSIZE_OTHER
-    def JAVA_FLAGS  = INSERTSIZE_MAXMEM 
+    output.dir = InsertSize_vars.outdir
+    def INSERTSIZE_FLAGS =
+        (InsertSize_vars.extra ? " " + InsertSize_vars.extra : "")
 
     def TOOL_ENV = prepare_tool_env("R", tools["bowtie"]["version"], tools["bowtie"]["runenv"]) + " && " +
                    prepare_tool_env("java", tools["java"]["version"], tools["java"]["runenv"]) + " && "+
@@ -24,7 +24,7 @@ InsertSize = {
             ${TOOL_ENV} &&
             ${PREAMBLE} &&
 
-            java $JAVA_FLAGS -jar \${picard} CollectInsertSizeMetrics $INSERTSIZE_FLAGS INPUT=$input OUTPUT=$output HISTOGRAM_FILE=${output.prefix}_hist.pdf
+            java ${InsertSize_vars.java_flags} -jar \${picard} CollectInsertSizeMetrics $INSERTSIZE_FLAGS INPUT=$input OUTPUT=$output HISTOGRAM_FILE=${output.prefix}_hist.pdf
         ""","InsertSize"
     }
 }

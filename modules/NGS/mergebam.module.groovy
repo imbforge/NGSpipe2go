@@ -10,7 +10,7 @@ MergeBam = {
         bpipe_version: "tested with bpipe 0.9.9.3",
         author: "Antonio Domingues"
 
-    output.dir  = MERGEDBAMS_OUTDIR
+    output.dir = MergeBam_vars.outdir
     def EXP = input1.split("/")[-1].replaceAll(".bam", "").replaceAll("_rep\\d+", "")
 
     def TOOL_ENV = prepare_tool_env("samtools", tools["samtools"]["version"], tools["samtools"]["runenv"])

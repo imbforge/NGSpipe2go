@@ -10,7 +10,7 @@ filbowtie2unique = {
         bpipe_version: "tested with bpipe 0.9.8.7",
         author: "Nastasja Kreim"
 
-    output.dir = FILBOWTIE2UNIQUE_MAPPED
+    output.dir = filbowtie2unique_vars.mapped
 
     def TOOL_ENV = prepare_tool_env("samtools", tools["samtools"]["version"], tools["samtools"]["runenv"])
     def PREAMBLE = get_preamble("filbowtie2unique")
@@ -20,7 +20,7 @@ filbowtie2unique = {
             ${TOOL_ENV} &&
             ${PREAMBLE} &&
 
-            samtools view -f 2 $FILBOWTIE2UNIQUE_SAMTOOLS_MAPQ -bhu ${input} | samtools sort $FILBOWTIE2UNIQUE_SAMTOOLS_THREADS -T \${TMP}/\$(basename $output.prefix) -o ${output} -;
+            samtools view -f 2 -q $filbowtie2unique_vars.samtools_mapq -bhu ${input} | samtools sort -@ $filbowtie2unique_vars.samtools_threads -T \${TMP}/\$(basename $output.prefix) -o ${output} -
         ""","filbowtie2unique"
     }
 }

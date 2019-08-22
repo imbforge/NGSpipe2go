@@ -1,6 +1,8 @@
 // Notes:
 //  * Indentation is important in this file. Please, use 4 spaces for indent. *NO TABS*.
 
+load PIPELINE_ROOT + "/modules/ChIPseq/pbc.vars.groovy"
+
 pbc = {
     doc title: "PBC",
         desc:  "PCR Bottleneck Coefficient",
@@ -8,7 +10,7 @@ pbc = {
         bpipe_version: "tested with bpipe 0.9.8.7",
         author: "Sergi Sayols"
 
-    output.dir = QC + "/pbc"
+    output.dir = pbc_vars.outdir
 
     def TOOL_ENV = prepare_tool_env("R", tools["R"]["version"], tools["R"]["runenv"])
     def PREAMBLE = get_preamble("pbc")

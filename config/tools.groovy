@@ -152,7 +152,8 @@ tools_prepare_env = [
     gatk: [
         "3.4-46": [
             lmod: "module load GATK/3.4-46"
-        ],
+        ]
+    ],
     htseq: [
         "0.6.1": [
             lmod: "module load htseq/0.6.1"

@@ -10,11 +10,11 @@ bamCoverage = {
         bpipe_version: "tested with bpipe 0.9.8.7",
         author: "Nastasja Kreim"
 
-        output.dir = BAMCOVERAGE_OUTDIR
-        def BAMCOVERAGE_FLAGS = BAMCOVERAGE_CORES + " " + BAMCOVERAGE_OTHER
-        if( BAMCOVERAGE_FRAGMENTS == "yes") {
-            BAMCOVERAGE_FLAGS = BAMCOVERAGE_FLAGS + " --extendReads"
-        }
+    output.dir = bamCoverage_vars.outdir
+    def BAMCOVERAGE_FLAGS =
+        (bamCoverage_vars.cores     ? " --numberOfProcessors " + bamCoverage_vars.cores : "") +
+        (bamCoverage_vars.fragments ? " --extendReads "                                 : "") +
+        (bamCoverage_vars.extra     ? " "                      + bamCoverage_vars.extra : "")
 
     def TOOL_ENV = prepare_tool_env("deeptools", tools["deeptools"]["version"], tools["deeptools"]["runenv"])
     def PREAMBLE = get_preamble("bamCoverage")

@@ -10,22 +10,23 @@ diffbind = {
         bpipe_version: "tested with bpipe 0.9.8.7",
         author: "Sergi Sayols"
 
-    output.dir = RESULTS + "/diffbind"
-    def DIFFBIND_FLAGS = DIFFBIND_TARGETS   + " " + 
-                         DIFFBIND_CONTRASTS + " " +
-                         DIFFBIND_CWD       + " " +
-                         DIFFBIND_OUTDIR    + " " +
-                         DIFFBIND_BAMS      + " " +
-                         DIFFBIND_FRAGSIZE  + " " +
-                         DIFFBIND_SUBSTRACTCONTROL  + " " +
-                         DIFFBIND_FULLLIBRARYSIZE   + " " +
-                         DIFFBIND_TAGWISEDISPERSION + " " +
-                         DIFFBIND_ANNOTATE  + " " +
-                         DIFFBIND_TSS       + " " +
-                         DIFFBIND_TXDB      + " " +
-                         DIFFBIND_ANNODB    + " " +
-                         DIFFBIND_PAIRED    + " " +
-                         DIFFBIND_EXTRA
+    output.dir = diffbind_vars.outdir
+    def DIFFBIND_FLAGS =
+        (diffbind_vars.targets           ? " targets="           + diffbind_vars.targets           : "") +
+        (diffbind_vars.contrasts         ? " contrasts="         + diffbind_vars.contrasts         : "") +
+        (diffbind_vars.cwd               ? " cwd="               + diffbind_vars.cwd               : "") +
+        (diffbind_vars.outdir            ? " out="               + diffbind_vars.outdir            : "") +
+        (diffbind_vars.bams              ? " bams="              + diffbind_vars.bams              : "") +
+        (diffbind_vars.fragsize          ? " fragsize="          + diffbind_vars.fragsize          : "") +
+        (diffbind_vars.substractcontrol  ? " substractControl="  + diffbind_vars.substractcontrol  : "") +
+        (diffbind_vars.fulllibrarysize   ? " fullLibrarySize="   + diffbind_vars.fulllibrarysize   : "") +
+        (diffbind_vars.tagwisedispersion ? " tagwiseDispersion=" + diffbind_vars.tagwisedispersion : "") +
+        (diffbind_vars.annotate          ? " annotate="          + diffbind_vars.annotate          : "") +
+        (diffbind_vars.tss               ? " tss="               + diffbind_vars.tss               : "") +
+        (diffbind_vars.txdb              ? " txdb="              + diffbind_vars.txdb              : "") +
+        (diffbind_vars.annodb            ? " annodb="            + diffbind_vars.annodb            : "") +
+        (diffbind_vars.paired            ? " pe="                + diffbind_vars.paired            : "") +
+        (diffbind_vars.extra             ? " "                   + diffbind_vars.extra             : "")
 
     def TOOL_ENV = prepare_tool_env("R", tools["R"]["version"], tools["R"]["runenv"])
     def PREAMBLE = get_preamble("diffbind")

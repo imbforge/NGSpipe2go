@@ -31,36 +31,36 @@ shinyReports = {
                 cp ${PIPELINE_ROOT}/tools/reports/shiny_chipseq_pe_reporting_tool/ChIPreport.Rmd ${REPORTS};
             fi &&
 
-            PROJECT=\$(basename ${SHINYREPS_PROJECT})                              &&
+            PROJECT=\$(basename ${shinyReports_vars.project})                              &&
             sed -i "2,2s/SHINYREPS_PROJECT/\${PROJECT}/" ${REPORTS}/ChIPreport.Rmd &&
 
-            echo "SHINYREPS_PROJECT=${SHINYREPS_PROJECT}" >  $output &&
-            echo "SHINYREPS_LOG=${SHINYREPS_LOG}"         >> $output &&
-            echo "SHINYREPS_QC=${SHINYREPS_QC}"           >> $output &&
-            echo "SHINYREPS_RES=${SHINYREPS_RES}"         >> $output &&
-            echo "SHINYREPS_TARGETS=${SHINYREPS_TARGETS}" >> $output &&
-            echo "SHINYREPS_BOWTIE_LOG=${SHINYREPS_BOWTIE_LOG}"      >> $output &&
-            echo "SHINYREPS_BAMINDEX_LOG=${SHINYREPS_BAMINDEX_LOG}"  >> $output &&
-            echo "SHINYREPS_MARKDUPS_LOG=${SHINYREPS_MARKDUPS_LOG}"  >> $output &&
-            echo "SHINYREPS_EXTEND_LOG=${SHINYREPS_EXTEND_LOG}"      >> $output &&
-            echo "SHINYREPS_FASTQC=${SHINYREPS_FASTQC}"   >> $output &&
-            echo "SHINYREPS_FASTQC_LOG=${SHINYREPS_FASTQC_LOG}"   >> $output &&
-            echo "SHINYREPS_INSERTSIZE=${SHINYREPS_INSERTSIZE}" >> $output &&
-            echo "SHINYREPS_IPSTRENGTH=${SHINYREPS_IPSTRENGTH}"      >> $output &&
-            echo "SHINYREPS_IPSTRENGTH_LOG=${SHINYREPS_IPSTRENGTH_LOG}" >> $output &&
-            echo "SHINYREPS_PBC=${SHINYREPS_PBC}"         >> $output &&
-            echo "SHINYREPS_PHANTOMPEAK=${SHINYREPS_PHANTOMPEAK}"    >> $output &&
-            echo "SHINYREPS_PHANTOM_LOG=${SHINYREPS_PHANTOM_LOG}"    >> $output &&
-            echo "SHINYREPS_BUSTARD=${SHINYREPS_BUSTARD}" >> $output &&
-            echo "SHINYREPS_MACS2=${SHINYREPS_MACS2}"     >> $output &&
-            echo "SHINYREPS_MACS2_LOG=${SHINYREPS_MACS2_LOG}"         >> $output &&
-            echo "SHINYREPS_BLACKLIST_FILTER=${SHINYREPS_BLACKLIST_FILTER}" >> $output &&
-            echo "SHINYREPS_PREFIX=${SHINYREPS_PREFIX}"   >> $output &&
-            echo "SHINYREPS_PLOTS_COLUMN=${SHINYREPS_PLOTS_COLUMN}" >> $output &&
-            echo "SHINYREPS_PEAK_ANNOTATION=${SHINYREPS_PEAK_ANNOTATION}" >> $output &&
-            echo "SHINYREPS_GREAT=${SHINYREPS_GREAT}" >> $output &&
-            echo "SHINYREPS_TRACKHUB_DONE=${SHINYREPS_TRACKHUB_DONE}" >> $output &&
-            echo "SHINYREPS_TOOL_VERSIONS=${SHINYREPS_TOOL_VERSIONS}" >> $output
+            echo "SHINYREPS_PROJECT=${shinyReports_vars.project}" >  $output &&
+            echo "SHINYREPS_LOG=${shinyReports_vars.log}"         >> $output &&
+            echo "SHINYREPS_QC=${shinyReports_vars.qc}"           >> $output &&
+            echo "SHINYREPS_RES=${shinyReports_vars.res}"         >> $output &&
+            echo "SHINYREPS_TARGETS=${shinyReports_vars.targets}" >> $output &&
+            echo "SHINYREPS_BOWTIE_LOG=${shinyReports_vars.bowtie_log}"      >> $output &&
+            echo "SHINYREPS_BAMINDEX_LOG=${shinyReports_vars.bamindex_log}"  >> $output &&
+            echo "SHINYREPS_MARKDUPS_LOG=${shinyReports_vars.markdups_log}"  >> $output &&
+            echo "SHINYREPS_EXTEND_LOG=${shinyReports_vars.extend_log}"      >> $output &&
+            echo "SHINYREPS_FASTQC=${shinyReports_vars.fastqc}"   >> $output &&
+            echo "SHINYREPS_FASTQC_LOG=${shinyReports_vars.fastqc_log}"   >> $output &&
+            echo "SHINYREPS_INSERTSIZE=${shinyReports_vars.insertsize}" >> $output &&
+            echo "SHINYREPS_IPSTRENGTH=${shinyReports_vars.ipstrength}"      >> $output &&
+            echo "SHINYREPS_IPSTRENGTH_LOG=${shinyReports_vars.ipstrength_log}" >> $output &&
+            echo "SHINYREPS_PBC=${shinyReports_vars.pbc}"         >> $output &&
+            echo "SHINYREPS_PHANTOMPEAK=${shinyReports_vars.phantompeak}"    >> $output &&
+            echo "SHINYREPS_PHANTOM_LOG=${shinyReports_vars.phantom_log}"    >> $output &&
+            echo "SHINYREPS_BUSTARD=${shinyReports_vars.bustard}" >> $output &&
+            echo "SHINYREPS_MACS2=${shinyReports_vars.macs2}"     >> $output &&
+            echo "SHINYREPS_MACS2_LOG=${shinyReports_vars.macs2_log}"         >> $output &&
+            echo "SHINYREPS_BLACKLIST_FILTER=${shinyReports_vars.blacklist_filter}" >> $output &&
+            echo "SHINYREPS_PREFIX=${shinyReports_vars.prefix}"   >> $output &&
+            echo "SHINYREPS_PLOTS_COLUMN=${shinyReports_vars.plots_column}" >> $output &&
+            echo "SHINYREPS_PEAK_ANNOTATION=${shinyReports_vars.peak_annotation}" >> $output &&
+            echo "SHINYREPS_GREAT=${shinyReports_vars.great}" >> $output &&
+            echo "SHINYREPS_TRACKHUB_DONE=${shinyReports_vars.trackhub_done}" >> $output &&
+            echo "SHINYREPS_TOOL_VERSIONS=${shinyReports_vars.tool_versions}" >> $output
         ""","shinyReports"
     }
 }

@@ -1,3 +1,5 @@
-//rule for task filterChr from catalog NGS, version 1
-FILTER_CHR_THREADS=ESSENTIAL_THREADS
-FILTER_CHR_FILE=ESSENTIAL_FILTER_CHR
+FilterChr_vars=[
+    outdir : MAPPED,
+    threads: Integer.toString(ESSENTIAL_THREADS),
+    file   : ESSENTIAL_FILTER_CHR
+]

@@ -10,17 +10,26 @@ strandBigWig = {
         bpipe_version: "tested with bpipe 0.9.8.7",
         author: "Nastasja Kreim"
 
-    output.dir = STRANDSPECIFICBIGWIG_OUTDIR
+    output.dir = strandBigWig_vars.outdir
+
     //this might be confusing regarding the reverse and forward
-    //setting but according to the deeptools manual it has to be like
-    //that. 
-     if(ESSENTIAL_STRANDED == "yes") {
-        def FORWARD="reverse"
-        def REVERSE="forward"
-    } else if(ESSENTIAL_STRANDED == "reverse") {
-        def FORWARD="forward"
-        def REVERSE="reverse"
+    //setting but according to the deeptools manual it has to be like this
+    if(strandBigWig_vars.stranded == "yes") {
+        FORWARD="reverse"
+        REVERSE="forward"
+    } else if(strandBigWig_vars.stranded == "reverse") {
+        FORWARD="forward"
+        REVERSE="reverse"
     }
+
+    // if you use > v3 modify the vars to --normalizeUsing RPKM since the API of deeptools changed
+    def STRANDBIGWIG_FLAGS =
+        (strandBigWig_vars.threads               ? " --numberOfProcessors " + strandBigWig_vars.threads       : "") +
+        (strandBigWig_vars.smoothLength          ? " --smoothLength "       + strandBigWig_vars.smoothLength  : "") +
+        (strandBigWig_vars.binSize               ? " --binSize "            + strandBigWig_vars.binSize       : "") +
+        (strandBigWig_vars.normalizeUsingRPKM    ? " --normalizeUsingRPKM"                                    : "") +
+        (strandBigWig_vars.skipNonCoveredRegions ? " --skipNonCoveredRegions"                                 : "") +
+        (strandBigWig_vars.extra                 ? " "                      + strandBigWig_vars.extra         : "")
 
     def TOOL_ENV = prepare_tool_env("deeptools", tools["deeptools"]["version"], tools["deeptools"]["runenv"]) + " && " +
                    prepare_tool_env("kentutils", tools["kentutils"]["version"], tools["kentutils"]["runenv"]) + " && " +
@@ -36,8 +45,8 @@ strandBigWig = {
             echo \$base &&
             CHRSIZES=\${TMP}/\${base}.bam2bw.chrsizes &&
             samtools idxstats ${input} | cut -f1-2 > \${CHRSIZES} &&
-            bamCoverage --numberOfProcessors $STRANDSPECIFICBIGWIG_CORES --filterRNAstrand $FORWARD $STRANDSPECIFICBIGWIG_OTHER -b $input -o \${TMP}/\${base}.fwd.bedgraph &&
-            bamCoverage --numberOfProcessors $STRANDSPECIFICBIGWIG_CORES --filterRNAstrand $REVERSE $STRANDSPECIFICBIGWIG_OTHER -b $input -o \${TMP}/\${base}.rev.bedgraph &&
+            bamCoverage --filterRNAstrand $FORWARD $STRANDBIGWIG_FLAGS -b $input -o \${TMP}/\${base}.fwd.bedgraph &&
+            bamCoverage --filterRNAstrand $REVERSE $STRANDBIGWIG_FLAGS -b $input -o \${TMP}/\${base}.rev.bedgraph &&
 
             awk 'BEGIN {OFS="\t"; FS="\t"}{print \$1,\$2, \$3,"-"\$4}' \${TMP}/\${base}.rev.bedgraph > \${TMP}/\${base}.rev.bedgraph_neg &&
             mv \${TMP}/\${base}.rev.bedgraph_neg \${TMP}/\${base}.rev.bedgraph &&

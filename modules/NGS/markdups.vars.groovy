@@ -1,2 +1,7 @@
-//vars for task MarkDups from catalog NGS, version 1
-MARKDUPS_MAXMEM = "5000"  // max mem in MB to reserve for the jvm
+MarkDups_vars=[
+    outdir       : MAPPED,
+    java_flags   : "-Xmx5000m",
+    remove_dups  : false,
+    assume_sorted: true,
+    extra        : ""
+]

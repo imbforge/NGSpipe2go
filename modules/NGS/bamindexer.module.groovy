@@ -10,10 +10,8 @@ BAMindexer = {
         bpipe_version: "tested with bpipe 0.9.8.7",
         author: "Sergi Sayols, Nastasja Kreim"
 
-    def OUTPUTDIR = input1
-    int path_index = OUTPUTDIR.lastIndexOf("/")
-    OUTPUTDIR = OUTPUTDIR.substring(0,path_index)
-    output.dir = OUTPUTDIR
+    File f = new File(input1)
+    output.dir = f.getParent()
 
     def TOOL_ENV = prepare_tool_env("samtools", tools["samtools"]["version"], tools["samtools"]["runenv"])
     def PREAMBLE = get_preamble("BAMindexer")

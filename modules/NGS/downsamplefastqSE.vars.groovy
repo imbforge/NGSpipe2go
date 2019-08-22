@@ -1,2 +1,4 @@
-DOWNSAMPLE_OUTDIR=PROJECT + "/downsampled"
-DOWNSAMPLE_AMOUNT=100000
+downsample_vars=[
+    outdir: PROJECT + "/downsampled",
+    amount: 100000
+]

@@ -1,1 +1,3 @@
-MERGEDBAMS_OUTDIR=MAPPED + "/merged"
+MergeBam_vars=[
+    outdir: MAPPED + "/merged"
+]

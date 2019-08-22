@@ -10,8 +10,9 @@ FastQC = {
         bpipe_version: "tested with bpipe 0.9.8.7",
         author: "Sergi Sayols"
 
-    output.dir = FASTQC_OUTDIR
-    def FASTQC_FLAGS = "--extract --quiet"
+    output.dir = FastQC_vars.outdir
+    def FASTQC_FLAGS =
+        (FastQC_vars.extra ? " " + FastQC_vars.extra : "")
 
     def TOOL_ENV = prepare_tool_env("fastqc", tools["fastqc"]["version"], tools["fastqc"]["runenv"])
     def PREAMBLE = get_preamble("FastQC")
@@ -21,7 +22,7 @@ FastQC = {
             ${TOOL_ENV} &&
             ${PREAMBLE} &&
 
-            fastqc $FASTQC_FLAGS -o $output.dir $input
+            fastqc --extract $FASTQC_FLAGS -o $output.dir $input
         ""","FastQC"
     }
 

@@ -1,0 +1,2 @@
+BAMindexer_vars=[
+]

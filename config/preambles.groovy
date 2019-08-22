@@ -7,14 +7,14 @@
 //   * modules can have custom preambles defined in the module_preambles Map. The
 //     custom preable _overrides_ the default (unless it is defined as `default_preamble + custom_preamble`).
 // See example in the next paragraph for more details
-default_preamble="""\
-    export TMP=${TMP};
-    if [ ! -d "\${TMP}" ]; then                                                                                                                      
-        mkdir -p "\${TMP}";                                                                                                                          
+default_preamble="""
+    export TMP="$TMP";
+    if [ ! -d "\$TMP" ]; then
+        mkdir -p "\$TMP";
     fi;
 
     if [ -n "\$SLURM_JOBID" ]; then
-        export TMP=/jobdir/\${SLURM_JOBID};
+        export TMP="/jobdir/\$SLURM_JOBID";
     fi
 """
 

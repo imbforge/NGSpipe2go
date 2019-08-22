@@ -1,1 +1,3 @@
-//vars for task bam2bw from catalog NGS, version 1
+bam2bw_vars=[
+    outdir: TRACKS
+]

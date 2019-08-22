@@ -1,3 +1,4 @@
-//vars for task FastQC from catalog NGS, version 1
-FASTQC_OUTDIR=QC + "/fastqc"
-
+FastQC_vars=[
+    outdir: QC + "/fastqc",
+    extra : "--quiet"
+]

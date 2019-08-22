@@ -10,14 +10,15 @@ phantompeak = {
         bpipe_version: "tested with bpipe 0.9.8.7",
         author: "Sergi Sayols"
 
-    output.dir = QC + "/phantompeak"
+    output.dir = phantompeak_vars.outdir
 
-    def PHANTOMPEAK_FLAGS = PHANTOMPEAK_MINSHIFT + " " + // left 'x' coordinate in plot
-                            PHANTOMPEAK_MAXSHIFT + " " + // right 'x' coordinate in plot
-                            PHANTOMPEAK_BINSIZE  + " " + // stepsize for cc calculation
-                            PHANTOMPEAK_READLEN  + " " + // read length
-                            PHANTOMPEAK_THREADS  + " " + // cores to use
-                            PHANTOMPEAK_EXTRA
+    def PHANTOMPEAK_FLAGS =
+        (phantompeak_vars.minshift ? " " + phantompeak_vars.minshift : "") +
+        (phantompeak_vars.maxshift ? " " + phantompeak_vars.maxshift : "") +
+        (phantompeak_vars.binsize  ? " " + phantompeak_vars.binsize  : "") +
+        (phantompeak_vars.readlen  ? " " + phantompeak_vars.readlen  : "") +
+        (phantompeak_vars.threads  ? " " + phantompeak_vars.threads  : "") +
+        (phantompeak_vars.extra    ? " " + phantompeak_vars.extra    : "")
 
     def TOOL_ENV = prepare_tool_env("R", tools["R"]["version"], tools["R"]["runenv"])
     def PREAMBLE = get_preamble("phantompeak")

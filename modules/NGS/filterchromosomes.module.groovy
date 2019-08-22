@@ -10,7 +10,7 @@ FilterChr = {
         bpipe_version: "tested with bpipe 0.9.9.3.slurm",
         author: "António Domingues"
 
-    output.dir=MAPPED
+    output.dir=FilterChr_vars.outdir
 
     def PREAMBLE = get_preamble("FilterChr")
 
@@ -18,8 +18,8 @@ FilterChr = {
         exec """
             ${PREAMBLE} &&
 
-            chroms=\$(cut -f1 $FILTER_CHR_FILE) && 
-            samtools view -@ $FILTER_CHR_THREADS -b $input \$chroms > $output &&
+            chroms=\$(cut -f1 ${FilterChr_vars.file}) && 
+            samtools view -@ ${FilterChr_vars.threads} -b $input \$chroms > $output &&
             samtools index $output
         ""","FilterChr"
     }

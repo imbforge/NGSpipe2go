@@ -10,22 +10,22 @@ bowtie2_pe = {
         bpipe_version: "tested with bpipe 0.9.8.7",
         author: "Nastasja Kreim"
 
-    output.dir = BOWTIE2_MAPPED
+    output.dir = bowtie2_pe_vars.mapped
 
-    def OUTPUTFILE = input1
-    int path_index = OUTPUTFILE.lastIndexOf("/")
-    OUTPUTFILE = OUTPUTFILE.substring(path_index+1)
-    OUTPUTFILE = (OUTPUTFILE =~ /.R1.fastq.gz/).replaceFirst("")
+    File f = new File(input1)
+    OUTPUTFILE = (f.getName() =~ /.R1.fastq.gz/).replaceFirst("")
 
+    def BOWTIE2_FLAGS = "-q " +
+        (bowtie2_pe_vars.quals   ?  " "     + bowtie2_pe_vars.quals   : "") + 
+        (bowtie2_pe_vars.mm_seed ?  " "     + bowtie2_pe_vars.mm_seed : "") + 
+        (bowtie2_pe_vars.insert  ?  " -n "  + bowtie2_pe_vars.insert  : "") + 
+        (bowtie2_pe_vars.threads ?  " -p "  + bowtie2_pe_vars.threads : "") + 
+        (bowtie2_pe_vars.extra   ?  " "     + bowtie2_pe_vars.extra   : "") +
+        (bowtie2_pe_vars.ref     ?  " -x "  + bowtie2_pe_vars.ref     : "")
 
-    def BOWTIE2_FLAGS = "-q "  +
-                       BOWTIE2_QUALS    + " " + 
-                       BOWTIE2_MM_SEED  + " " + 
-                       BOWTIE2_INSERT   + " " + 
-                       BOWTIE2_THREADS  + " " + 
-                       BOWTIE2_EXTRA
     def SAMTOOLS_VIEW_FLAGS = "-bhSu "
-    def SAMTOOLS_SORT_FLAGS = "-O bam " + BOWTIE2_SAMTOOLS_THREADS
+    def SAMTOOLS_SORT_FLAGS = "-O bam " +
+        (bowtie2_pe_vars.samtools_threads ? " -@ " + bowtie2_pe_vars.samtools_threads : "")
 
     def TOOL_ENV = prepare_tool_env("bowtie2", tools["bowtie"]["version"], tools["bowtie"]["runenv"]) + " && " +
                    prepare_tool_env("samtools", tools["samtools"]["version"], tools["samtools"]["runenv"])
@@ -36,7 +36,7 @@ bowtie2_pe = {
             ${TOOL_ENV} &&
             ${PREAMBLE} &&
 
-            bowtie2 $BOWTIE2_FLAGS $BOWTIE2_REF -1 $input1 -2 $input2 | samtools view $SAMTOOLS_VIEW_FLAGS - | samtools sort $SAMTOOLS_SORT_FLAGS -T \${TMP}/\$(basename $output.prefix) - > $output;
+            bowtie2 $BOWTIE2_FLAGS -1 $input1 -2 $input2 | samtools view $SAMTOOLS_VIEW_FLAGS - | samtools sort $SAMTOOLS_SORT_FLAGS -T \${TMP}/\$(basename $output.prefix) - > $output;
         ""","bowtie2_pe"
     }
 }
