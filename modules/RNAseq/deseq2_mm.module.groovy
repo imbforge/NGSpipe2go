@@ -10,18 +10,19 @@ DE_DESeq2_MM = {
         bpipe_version: "tested with bpipe 0.9.9.7",
         author: "Sergi Sayols"
 
-    output.dir = DE_DESeq2_MM_OUTDIR.replaceFirst("out=", "")
-    def INPUT_READS_DIR = DE_DESeq2_MM_CWD.replaceFirst("cwd=", "")
-    def DE_DESeq2_MM_FLAGS = DE_DESeq2_MM_TARGETS   + " " + 
-                             DE_DESeq2_MM_CONTRASTS + " " +
-                             DE_DESeq2_MM_MMATRIX   + " " +
-                             DE_DESeq2_MM_FILTER    + " " +
-                             DE_DESeq2_MM_PREFIX    + " " +
-                             DE_DESeq2_MM_SUFFIX    + " " +
-                             DE_DESeq2_MM_CWD       + " " +
-                             DE_DESeq2_MM_OUTDIR    + " " +
-                             DE_DESeq2_MM_GENES     + " " +
-                             DE_DESeq2_MM_EXTRA
+    output.dir = DE_DESeq2_MM_vars.outdir
+    def INPUT_READS_DIR = DE_DESeq2_MM_vars.cwd
+    def DE_DESeq2_MM_FLAGS =
+        (DE_DESeq2_MM_vars.targets   ? " targets="   + DE_DESeq2_MM_vars.targets   : "") +
+        (DE_DESeq2_MM_vars.contrasts ? " contrasts=" + DE_DESeq2_MM_vars.contrasts : "") +
+        (DE_DESeq2_MM_vars.mmatrix   ? " mmatrix="   + DE_DESeq2_MM_vars.mmatrix   : "") +
+        (DE_DESeq2_MM_vars.filter    ? " filter="    + DE_DESeq2_MM_vars.filter    : "") +
+        (DE_DESeq2_MM_vars.prefix    ? " prefix="    + DE_DESeq2_MM_vars.prefix    : "") +
+        (DE_DESeq2_MM_vars.suffix    ? " suffix="    + DE_DESeq2_MM_vars.suffix    : "") +
+        (DE_DESeq2_MM_vars.cwd       ? " cwd="       + DE_DESeq2_MM_vars.cwd       : "") +
+        (DE_DESeq2_MM_vars.outdir    ? " out="       + DE_DESeq2_MM_vars.outdir    : "") +
+        (DE_DESeq2_MM_vars.genes     ? " gtf="       + DE_DESeq2_MM_vars.genes     : "") +
+        (DE_DESeq2_MM_vars.extra     ? " "           + DE_DESeq2_MM_vars.extra     : "") 
 
     def TOOL_ENV = prepare_tool_env("R", tools["R"]["version"], tools["R"]["runenv"])
     def PREAMBLE = get_preamble("DE_DESeq2_MM")
@@ -37,7 +38,7 @@ DE_DESeq2_MM = {
                 mkdir "$INPUT_READS_DIR";
             fi &&
 
-            for f in $DE_DESeq2_MM_DUPRADAR_OUTDIR/*.tsv; do
+            for f in $DE_DESeq2_MM_vars.dupradar_outdir/*.tsv; do
                 F=\$(basename \$f) ;
                 tail -n +2 $f | cut -f1,3 | sort -k1,1 > "$INPUT_READS_DIR/\${F%_dupRadar.tsv}.readcounts.tsv" ;
             done &&

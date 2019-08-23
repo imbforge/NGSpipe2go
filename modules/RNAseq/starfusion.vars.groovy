@@ -1,4 +1,6 @@
-STARFUSION_OUTDIR=FUSION
-// settings imported from essential vars
-STARFUSION_THREADS = "--CPU " + Integer.toString(ESSENTIAL_THREADS)
-STARFUSION_GENOME_LIB = "--genome_lib_dir " + ESSENTIAL_STARFUSION_LIB
+STAR_Fusion_vars=[
+    outdir     : FUSION,
+    threads    :  "--CPU " + Integer.toString(ESSENTIAL_THREADS),
+    genome_lib :  "--genome_lib_dir " + ESSENTIAL_STARFUSION_LIB,
+    extra      : ""
+]

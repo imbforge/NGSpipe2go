@@ -9,20 +9,22 @@ rMATS = {
         constraints: "",
         author: "Nastasja Kreim"
 
-    output.dir = RMATS_OUTDIR
-    def RMATS_FLAGS = RMATS_GTF +
-                      RMATS_LENGTH +
-                      RMATS_THREADS + 
-                      RMATS_EXTRA
-    if(RMATS_PAIRED == "yes") {
+    output.dir = rMATS_vars.outdir
+    def RMATS_FLAGS =
+        (rMATS_vars.gtf     ? " --gtf "        +  rMATS_vars.gtf     : "" ) +
+        (rMATS_vars.length  ? " --readLength " +  rMATS_vars.length  : "" ) +
+        (rMATS_vars.threads ? " --nthread "    +  rMATS_vars.threads : "" ) + 
+        (rMATS_vars.extra   ? " "              +  rMATS_vars.extra   : "" ) 
+
+    if(rMATS_vars.paired) {
         RMATS_FLAGS = RMATS_FLAGS + " -t paired"
     } else {
         RMATS_FLAGS = RMATS_FLAGS + " -t single"
     }
-    if(RMATS_STRANDED == "no") {
+    if(rMATS_vars.stranded == "no") {
         RMATS_FLAGS = "--libType fr-unstranded " + RMATS_FLAGS
     }
-    else if (RMATS_STRANDED == "yes") {
+    else if (rMATS_vars.stranded == "yes") {
         RMATS_FLAGS = "--libType fr-firststrand " + RMATS_FLAGS
     }
     else {
@@ -39,20 +41,20 @@ rMATS = {
             ${PREAMBLE} &&
     
             input_var=`basename $input`;
-            postfix=$RMATS_POSTFIX;
-            groups=\${input_var%\$postfix};
-            echo "groups after postfix removal" \$groups;
-            sep=$RMATS_SEP;
+            suffix=${rMATS_vars.suffix};
+            groups=\${input_var%\$suffix};
+            echo "groups after suffix removal" \$groups;
+            sep=${rMATS_vars.sep};
             groups=(\${groups//\$sep/ });
             echo "groups 0 " \${groups[0]};
             gcol=\$(head -n 1 $input | awk 'BEGIN{FS="\t"}{ for(fn=1; fn<=NF;fn++){ if(\$fn == "group") print fn;}}' ) &&
             fcol=\$(head -n 1 $input | awk 'BEGIN{FS="\t"}{ for(fn=1; fn<=NF;fn++){ if(\$fn == "file") print fn;}}' ) &&
-            mkdir $output.dir/\${input_var%$PREMATS_POSTFIX}_rMATS &&
+            mkdir $output.dir/\${input_var%${rMATS_vars.suffix}}_rMATS &&
             bamgroup0=`awk -v g="\${groups[0]}" -v M="$MAPPED" -v fcol=\$fcol -v gcol=\$gcol 'BEGIN{OFS=""} {if (\$gcol == g) print M "/" \$fcol}' $input | paste -sd, -` &&
-            echo \$bamgroup0 > $output.dir/\${input_var%$PREMATS_POSTFIX}_rMATS/\${groups[0]}_samples.txt &&
+            echo \$bamgroup0 > $output.dir/\${input_var%${rMATS_vars.suffix}}_rMATS/\${groups[0]}_samples.txt &&
             bamgroup1=`awk -v g="\${groups[1]}" -v M="$MAPPED" -v fcol=\$fcol -v gcol=\$gcol 'BEGIN{ OFS=""} {if (\$gcol == g) print M "/" \$fcol}' $input | paste -sd, -` &&
-            echo \$bamgroup1 > $output.dir/\${input_var%$PREMATS_POSTFIX}_rMATS/\${groups[1]}_samples.txt &&
-            rmats.py --b1 $output.dir/\${input_var%$PREMATS_POSTFIX}_rMATS/\${groups[0]}_samples.txt --b2 $output.dir/\${input_var%$PREMATS_POSTFIX}_rMATS/\${groups[1]}_samples.txt $RMATS_FLAGS --od $output.dir/\${input_var%$PREMATS_POSTFIX}_rMATS &&
+            echo \$bamgroup1 > $output.dir/\${input_var%${rMATS_vars.suffix}}_rMATS/\${groups[1]}_samples.txt &&
+            rmats.py --b1 $output.dir/\${input_var%${rMATS_vars.suffix}}_rMATS/\${groups[0]}_samples.txt --b2 $output.dir/\${input_var%${rMATS_vars.suffix}}_rMATS/\${groups[1]}_samples.txt $RMATS_FLAGS --od $output.dir/\${input_var%${rMATS_vars.suffix}}_rMATS &&
             touch $output;
         ""","rMATS"
     }

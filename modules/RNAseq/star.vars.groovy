@@ -1,14 +1,18 @@
-// local settings
-STAR_MM = "--outFilterMismatchNoverLmax 0.04 --outFilterMismatchNmax 999" // max. percentage of mismatches in the alignment (4% used by ENCODE)
-STAR_UNMAPPED_BAM = "--outSAMunmapped Within"		// report unmapped reads to bam file? (choices: Within, None)
+STAR_vars=[
+    outdir          : MAPPED,
+    logdir          : LOGS + "/STAR",
+    mm              : "0.04",          // max. permitted mismatches in the alignment, relative to the read length (4% as used by ENCODE)
+    unmapped_bam    : "Within",        // report unmapped reads to bam file? (choices: Within, None)
 
-// settings imported from essential vars
-STAR_THREADS = "--runThreadN " + Integer.toString(ESSENTIAL_THREADS)
-STAR_REF = "--genomeDir " + ESSENTIAL_STAR_REF
-STAR_OVERHANG = "--sjdbOverhang " + Integer.toString(ESSENTIAL_READLENGTH - 1)
-STAR_GTF = "--sjdbGTFfile " + ESSENTIAL_GENESGTF		// gene model GTF file
+    // settings imported from essential vars
+    threads         : Integer.toString(ESSENTIAL_THREADS),
+    ref             : ESSENTIAL_STAR_REF,
+    overhang        : Integer.toString(ESSENTIAL_READLENGTH - 1),
+    gtf             : ESSENTIAL_GENESGTF,   // gene model GTF file
+    paired          : (ESSENTIAL_PAIRED == "yes"),
 
-// additional settings
-STAR_EXTRA=""		// extra parms to sent to the tool
-STAR_FILTER_SEC="YES"		// remove secondary alignments in order to keep just 1 alignment of the multi-mapping reads ?
-STAR_SAMTOOLS_THREADS= "-@ " + Integer.toString(ESSENTIAL_THREADS)
+    // additional settings
+    filter_sec      : true,            // remove secondary alignments in order to keep just 1 alignment of the multi-mapping reads ?
+    samtools_threads: Integer.toString(ESSENTIAL_THREADS),
+    extra           : ""               // extra parms to sent to the tool
+]

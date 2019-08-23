@@ -10,7 +10,7 @@ StringTie = {
         bpipe_version: "tested with bpipe 0.9.9",
         author: "Nastasja Kreim"
 
-    output.dir = STRINGTIE_OUT
+    output.dir = StringTie_vars.outdir
 
     // create the LOGS/STRING_TIE folder if it doesn't exists
     def F_LOG = new File(LOGS + "/STRING_TIE")
@@ -19,17 +19,19 @@ StringTie = {
     }
 
     // star flags
-    def STRINGTIE_FLAGS = STRINGTIE_GTF + " " +
-                          STRINGTIE_THREADS + " " +
-                          STRINGTIE_EXTRA
+    def STRINGTIE_FLAGS =
+        (StringTie_gtf      ? " -G " + stringtie_gtf     : "" ) +
+        (StringTie_threads  ? " -p " + stringtie_threads : "" ) +
+        (StringTie_extra    ? " "    + stringtie_extra   : "" ) 
 
     // no|yes|reverse
-    if (STRINGTIE_STRANDED == "yes") {
+    if (StringTie_stranded == "yes") {
         STRINGTIE_FLAGS = "--fr " + STRINGTIE_FLAGS
     }
-    else if (STRINGTIE_STRANDED == "reverse") {
+    else if (StringTie_stranded == "reverse") {
         STRINGTIE_FLAGS = "--rf " + STRINGTIE_FLAGS
     }
+    // NOTE: else? what if stranded == "no"?
 
     def TOOL_ENV = prepare_tool_env("stringtie", tools["stringtie"]["version"], tools["stringtie"]["runenv"])
     def PREAMBLE = get_preamble("StringTie")

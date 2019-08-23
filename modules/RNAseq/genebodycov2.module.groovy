@@ -11,12 +11,13 @@ geneBodyCov2 = {
         bpipe_version: "tested with bpipe 0.9.9.9",
         author: "Sergi Sayols"
 
-    output.dir = GENEBODYCOV2_OUTDIR.replaceFirst("outdir=", "")
-    def GENEBODYCOV2_FLAGS = GENEBODYCOV2_GTF      + " " +
-                             GENEBODYCOV2_PAIRED   + " " +
-                             GENEBODYCOV2_STRANDED + " " +
-                             GENEBODYCOV2_OUTDIR   + " " +
-                             GENEBODYCOV2_THREADS
+    output.dir = geneBodyCov2_vars.outdir
+    def GENEBODYCOV2_FLAGS =
+        (geneBodyCov2_vars.gtf      ? " gtf="      + geneBodyCov2_vars.gtf      : "" ) +
+        (geneBodyCov2_vars.paired   ? " paired="   + geneBodyCov2_vars.paired   : "" ) +
+        (geneBodyCov2_vars.stranded ? " stranded=" + geneBodyCov2_vars.stranded : "" ) +
+        (geneBodyCov2_vars.outdir   ? " outdir="   + geneBodyCov2_vars.outdir   : "" ) +
+        (geneBodyCov2_vars.threads  ? " threads="  + geneBodyCov2_vars.threads  : "" ) 
 
     def TOOL_ENV = prepare_tool_env("R", tools["R"]["version"], tools["R"]["runenv"])
     def PREAMBLE = get_preamble("geneBodyCoverage2")

@@ -10,17 +10,18 @@ DE_DESeq2 = {
         bpipe_version: "tested with bpipe 0.9.8.7",
         author: "Sergi Sayols"
 
-    output.dir = DE_DESeq2_OUTDIR.replaceFirst("out=", "")
-    def DE_DESeq2_FLAGS = DE_DESeq2_TARGETS   + " " + 
-                          DE_DESeq2_CONTRASTS + " " +
-                          DE_DESeq2_MMATRIX   + " " +
-                          DE_DESeq2_FILTER    + " " +
-                          DE_DESeq2_PREFIX    + " " +
-                          DE_DESeq2_SUFFIX    + " " +
-                          DE_DESeq2_CWD       + " " +
-                          DE_DESeq2_OUTDIR    + " " +
-                          DE_DESeq2_GENES     + " " +
-                          DE_DESeq2_EXTRA
+    output.dir = DE_DESeq2_vars.outdir
+    def DE_DESeq2_FLAGS =
+        (DE_DESeq2_vars.targets   ? " targets="   + DE_DESeq2_vars.targets   : "") +
+        (DE_DESeq2_vars.contrasts ? " contrasts=" + DE_DESeq2_vars.contrasts : "") +
+        (DE_DESeq2_vars.mmatrix   ? " mmatrix="   + DE_DESeq2_vars.mmatrix   : "") +
+        (DE_DESeq2_vars.filter    ? " filter="    + DE_DESeq2_vars.filter    : "") +
+        (DE_DESeq2_vars.prefix    ? " prefix="    + DE_DESeq2_vars.prefix    : "") +
+        (DE_DESeq2_vars.suffix    ? " suffix="    + DE_DESeq2_vars.suffix    : "") +
+        (DE_DESeq2_vars.cwd       ? " cwd="       + DE_DESeq2_vars.cwd       : "") +
+        (DE_DESeq2_vars.outdir    ? " out="       + DE_DESeq2_vars.outdir    : "") +
+        (DE_DESeq2_vars.genes     ? " gtf="       + DE_DESeq2_vars.genes     : "") +
+        (DE_DESeq2_vars.extra     ? " "           + DE_DESeq2_vars.extra     : "") 
 
     def TOOL_ENV = prepare_tool_env("R", tools["R"]["version"], tools["R"]["runenv"])
     def PREAMBLE = get_preamble("DE_DESeq2")

@@ -1,11 +1,11 @@
-//vars for task rMatas
-RMATS_OUTDIR=RESULTS + "/rMATS"
-RMATS_POSTFIX=PREMATS_POSTFIX
-RMATS_SEP=".vs.";
-RMATS_PAIRED=ESSENTIAL_PAIRED
-RMATS_STRANDED=ESSENTIAL_STRANDED
-RMATS_GTF=" --gtf " + ESSENTIAL_GENESGTF
-RMATS_LENGTH=" --readLength " + ESSENTIAL_READLENGTH
-RMATS_THREADS=" --nthread " + Integer.toString(ESSENTIAL_THREADS) 
-RMATS_EXTRA=" --cstat 0.0001"
-
+rMATS_vars=[
+    outdir  : RESULTS + "/rMATS",
+    suffix  : PREMATS_SUFFIX,
+    sep     : ".vs.",
+    paired  : (ESSENTIAL_PAIRED == "yes"),
+    stranded: ESSENTIAL_STRANDED,
+    gtf     : ESSENTIAL_GENESGTF,
+    length  : ESSENTIAL_READLENGTH,
+    threads : Integer.toString(ESSENTIAL_THREADS),
+    extra   : " --cstat 0.0001"
+]

@@ -1,7 +1,8 @@
-SUBREAD_STRANDED=ESSENTIAL_STRANDED //whether the data is from a strand-specific assay (illumina SR: always reverse)
-SUBREAD_PAIRED=ESSENTIAL_PAIRED	 //paired end design
-SUBREAD_GENESGTF="-a " + ESSENTIAL_GENESGTF
-SUBREAD_CORES="-T " + Integer.toString(ESSENTIAL_THREADS)
-SUBREAD_OUTDIR=RESULTS + "/subread-count"
-SUBREAD_EXTRA=""    // extra parms to sent to the tool
-
+subread_count_vars=[
+    outdir  : RESULTS + "/subread-count",
+    stranded: ESSENTIAL_STRANDED,           //whether the data is from a strand-specific assay (illumina SR: always reverse)
+    paired  : (ESSENTIAL_PAIRED == "yes"),  //paired end design
+    genesgtf: ESSENTIAL_GENESGTF,
+    threads : Integer.toString(ESSENTIAL_THREADS),
+    extra   : ""                            // extra parms to sent to the tool
+]

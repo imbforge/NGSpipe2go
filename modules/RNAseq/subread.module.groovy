@@ -10,26 +10,14 @@ subread_count = {
         bpipe_version: "tested with bpipe 0.9.8.7",
         author: "Oliver Drechsel"
 
-    output.dir  = SUBREAD_OUTDIR
-    def SUBREAD_FLAGS = "--donotsort" +  " " + 
-                        SUBREAD_CORES    + " " +
-                        SUBREAD_GENESGTF + " " +
-                        SUBREAD_EXTRA    + " "
-
-    if(SUBREAD_PAIRED == "yes") {
-        SUBREAD_FLAGS = "-p " + SUBREAD_FLAGS
-    }
-
-    // no|yes|reverse
-    if(SUBREAD_STRANDED == "no") {
-        SUBREAD_FLAGS = "-s 0 " + SUBREAD_FLAGS
-    }
-    else if (SUBREAD_STRANDED == "yes") {
-        SUBREAD_FLAGS = "-s 1 " + SUBREAD_FLAGS
-    }
-    else {
-        SUBREAD_FLAGS = "-s 2 " + SUBREAD_FLAGS
-    }
+    output.dir  = subread_count_vars.outdir
+    def SUBREAD_FLAGS =
+        "--donotsort " +
+        (subread_count_vars.threads  ? " -T " + subread_count_vars.threads  : "") +
+        (subread_count_vars.genesgtf ? " -a " + subread_count_vars.genesgtf : "") +
+        (subread_count_vars.paired   ? " -p "                               : "") +
+        (subread_count_vars.extra    ? " "    + subread_count_vars.extra    : "") +
+        (subread_count_vars.stranded == "no" ? " -s0 " : (subread2rnatypes_vars.stranded == "yes" ? " -s1 " : " -s2 "))
 
     def TOOL_ENV = prepare_tool_env("subread", tools["subread"]["version"], tools["subread"]["runenv"])
     def PREAMBLE = get_preamble("subread_count")
@@ -41,10 +29,10 @@ subread_count = {
             ${PREAMBLE} &&
     
             base=`basename $input` &&
-            if [[ "$SUBREAD_PAIRED" == "yes" ]]; 
+            if [[ "${subread_count_vars.paired}" == "true" ]]; 
             then
                 echo "We are resorting and doing the repair\n" &&
-                repair -i $input $SUBREAD_CORES -o \${TMP}/\${base} &&
+                repair -i $input -T ${subread_count_vars.threads} -o \${TMP}/\${base} &&
                 featureCounts $SUBREAD_FLAGS -o $output \${TMP}/\${base} 2> ${output.prefix}_subreadlog.stderr;
             else
                 featureCounts $SUBREAD_FLAGS -o $output $input 2> ${output.prefix}_subreadlog.stderr;

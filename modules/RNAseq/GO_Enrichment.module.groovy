@@ -10,16 +10,17 @@ GO_Enrichment = {
         bpipe_version: "",
         author: ""
 
-    output.dir = GO_Enrichment_OUTDIR.replaceFirst("out=", "")
-    def GO_Enrichment_FLAGS = GO_Enrichment_LOG2FOLD + " " + 
-                              GO_Enrichment_PADJ     + " " +
-                              GO_Enrichment_ORG      + " " +
-                              GO_Enrichment_UNIV     + " " +
-                              GO_Enrichment_TYPE     + " " +
-                              GO_Enrichment_CATEGORY + " " +
-                              GO_Enrichment_OUTDIR   + " " +
-                              GO_Enrichment_CORES    + " " +
-                              GO_Enrichment_EXTRA
+    output.dir = GO_Enrichment_vars.outdir
+    def GO_Enrichment_FLAGS =
+        (GO_Enrichment_vars.log2fold ? " log2Fold="     + GO_Enrichment_vars.log2fold : "" ) +
+        (GO_Enrichment_vars.padj     ? " padj="         + GO_Enrichment_vars.padj     : "" ) +
+        (GO_Enrichment_vars.org      ? " organism="     + GO_Enrichment_vars.org      : "" ) +
+        (GO_Enrichment_vars.univ     ? " univ="         + GO_Enrichment_vars.univ     : "" ) +
+        (GO_Enrichment_vars.type     ? " type="         + GO_Enrichment_vars.type     : "" ) +
+        (GO_Enrichment_vars.category ? " plotCategory=" + GO_Enrichment_vars.category : "" ) +
+        (GO_Enrichment_vars.outdir   ? " out="          + GO_Enrichment_vars.outdir   : "" ) +
+        (GO_Enrichment_vars.cores    ? " cores="        + GO_Enrichment_vars.cores    : "" ) +
+        (GO_Enrichment_vars.extra    ? " "              + GO_Enrichment_vars.extra    : "" ) 
 
     def TOOL_ENV = prepare_tool_env("R", tools["R"]["version"], tools["R"]["runenv"])
     def PREAMBLE = get_preamble("GO_Enrichment")

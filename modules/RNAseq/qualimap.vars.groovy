@@ -1,6 +1,7 @@
-//vars for task qualimap 
-QUALIMAP_OUTDIR=QC + "/qualimap"
-QUALIMAP_STRANDED=ESSENTIAL_STRANDED // options are no/yes/reverse 
-QUALIMAP_GENESGTF="-gtf " + ESSENTIAL_GENESGTF
-QUALIMAP_EXTRA="--java-mem-size=10G"
-QUALIMAP_PAIRED=ESSENTIAL_PAIRED
+qualimap_vars=[
+    outdir  : QC + "/qualimap",
+    stranded: ESSENTIAL_STRANDED, // options are no/yes/reverse 
+    genesgtf: ESSENTIAL_GENESGTF,
+    paired  : (ESSENTIAL_PAIRED == "yes"),
+    extra   : "--java-mem-size=10G"
+]

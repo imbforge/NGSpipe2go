@@ -10,28 +10,17 @@ subread2rnatypes = {
         bpipe_version: "tested with bpipe 0.9.8.7",
         author: "Oliver Drechsel"
 
-    output.dir  = RNATYPES_OUTDIR
-    def RNATYPES_FLAGS = "-F GTF --donotsort " +
-                         RNATYPES_GENESGTF + " " +
-                         RNATYPES_FEATURE  + " " +
-                         RNATYPES_ACCUMULATE + " " +
-                         RNATYPES_CORES    + " " +
-                         RNATYPES_EXTRA    + " "
+    output.dir = subread2rnatypes_vars.outdir
 
-    if(RNATYPES_PAIRED == "yes") {
-        RNATYPES_FLAGS = "-p " + RNATYPES_FLAGS
-    }
-
-    // no|yes|reverse
-    if(RNATYPES_STRANDED == "no") {
-        RNATYPES_FLAGS = "-s 0 " + RNATYPES_FLAGS
-    }
-    else if (RNATYPES_STRANDED == "yes") {
-        RNATYPES_FLAGS = "-s 1 " + RNATYPES_FLAGS
-    }
-    else {
-        RNATYPES_FLAGS = "-s 2 " + RNATYPES_FLAGS
-    }
+    def RNATYPES_FLAGS =
+        "-F GTF --donotsort " +
+        (subread2rnatypes_vars.genesgtf   ? " -a " + subread2rnatypes_vars.genesgtf   : "") +
+        (subread2rnatypes_vars.feature    ? " -t " + subread2rnatypes_vars.feature    : "") +
+        (subread2rnatypes_vars.accumulate ? " -g " + subread2rnatypes_vars.accumulate : "") +
+        (subread2rnatypes_vars.threads    ? " -T " + subread2rnatypes_vars.threads    : "") +
+        (subread2rnatypes_vars.paired     ? " -p "                                    : "") +
+        (subread2rnatypes_vars.extra      ? " "    + subread2rnatypes_vars.extra      : "") +
+        (subread2rnatypes_vars.stranded == "no" ? " -s0 " : (subread2rnatypes_vars.stranded == "yes" ? " -s1 " : " -s2 "))
 
     def TOOL_ENV = prepare_tool_env("subread", tools["subread"]["version"], tools["subread"]["runenv"])
     def PREAMBLE = get_preamble("subread2rnatypes")
@@ -43,10 +32,9 @@ subread2rnatypes = {
             ${PREAMBLE} &&
     
             base=`basename $input` &&
-            if [[ "$RNATYPES_PAIRED" == "yes" ]];
-            then            
+            if [[ "${subread2rnatypes_vars.paired}" == "true" ]]; then            
                 echo "We are resorting and doing the repair\n" &&
-                repair -i $input $RNATYPES_CORES -o \${TMP}/\${base} &&
+                repair -i $input -T ${subread2rnatypes_vars.threads} -o \${TMP}/\${base} &&
                 featureCounts $RNATYPES_FLAGS -o ${output}_tmp \${TMP}/\${base} 2> ${output.prefix}_rnatypeslog.stderr;
             else
                 featureCounts $RNATYPES_FLAGS -o ${output}_tmp $input 2> ${output.prefix}_rnatypeslog.stderr;

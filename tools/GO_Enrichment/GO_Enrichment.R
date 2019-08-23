@@ -82,25 +82,29 @@ processContrast <-  function(x) {
 
     calculateGoEnrichment <-  function(de.genes, univ.genes, de.genes.lfc, suffix) {
         # convert to entrezID downregulated/univers genes
-        getEntrezId <- function(genes) {
-            bitr( genes, fromType=if(type == "gene_name") "SYMBOL" else "ENSEMBL", toType="ENTREZID", OrgDb=orgDb[org])
+        getEntrezId <- function(genes, keytype) {
+            bitr( genes, fromType=keytype, toType="ENTREZID", OrgDb=orgDb[org])
         }
-        entrezDeId   <- getEntrezId(de.genes)
-        entrezUnivId <- getEntrezId(univ.genes)
+        keytype <- if(type == "gene_name" && org != "yeast") "SYMBOL" else "ENSEMBL"
+        entrezDeId   <- getEntrezId(de.genes, keytype)
+        entrezUnivId <- getEntrezId(univ.genes, keytype)
 
         # merge entrezID and log2 foldchange
-        entrezDeIdLfc <- merge(x = entrezDeId, y = de.genes.lfc[ , c(type, "log2FoldChange")], by.x=if(type == "gene_name") "SYMBOL" else "ENSEMBL",  by.y= type)
+        entrezDeIdLfc <- merge(x = entrezDeId, y = de.genes.lfc[ , c(type, "log2FoldChange")], by.x=keytype, by.y= type)
         entrezDeIdLfc <- entrezDeIdLfc[!duplicated(entrezDeIdLfc[,1]),]
-        rownames(entrezDeIdLfc) <- entrezDeIdLfc$ENTREZID
+        rownames(entrezDeIdLfc) <- make.names(entrezDeIdLfc$ENTREZID, unique=TRUE)
         entrezDeIdLfc[,1] <- NULL
         entrezDeIdLfc$ENTREZID <- NULL
         entrezDeIdLfc <- apply(t(entrezDeIdLfc), 2,as.numeric)
 
         
-        enriched         <- enrichGO(entrezDeId$ENTREZID, OrgDb=orgDb[org], keyType="ENTREZID", ont="BP", readable=TRUE,
+        enriched         <- enrichGO(entrezDeId$ENTREZID, OrgDb=orgDb[org], keyType="ENTREZID", ont="BP",
+                                     readable="SYMBOL" %in% keytypes(eval(parse(text=orgDb[org]))),
                                      universe=if(univ == "all") orgDb[org] else entrezUnivId$ENTREZID)
         enrichedKEGG     <- enrichKEGG(entrezDeId$ENTREZID, keyType="ncbi-geneid", organism=org, universe=entrezUnivId$ENTREZID)
-        enrichedReactome <- enrichPathway(entrezDeId$ENTREZID, organism=org, readable=TRUE, universe=entrezUnivId$ENTREZID)
+        enrichedReactome <- enrichPathway(entrezDeId$ENTREZID, organism=org,
+                                          readable="SYMBOL" %in% keytypes(eval(parse(text=orgDb[org]))),
+                                          universe=entrezUnivId$ENTREZID)
              
         # filter enriched results by gene count
         enriched         <- gsfilter(enriched, by = "Count", min = 2)
@@ -192,7 +196,7 @@ processContrast <-  function(x) {
     invisible(0)
 }
 
-if(cores > 1) {
+if(cores > 1 && length(res) > 1) {
     cl <- makeCluster(cores)
     clusterExport(cl, c("log2Fold", "padj", "orgDb", "org", "univ", "type", "plotCategory", "out"))
     parLapply(cl, zipup(res, names(res)), processContrast)

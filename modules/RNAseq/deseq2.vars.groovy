@@ -1,11 +1,12 @@
-DE_DESeq2_TARGETS="targets=targets.txt"       //targets file. Check the bin directory for the format
-DE_DESeq2_CONTRASTS="contrasts=contrasts.txt" //contrasts file. Check the bin directory for the format
-DE_DESeq2_MMATRIX="mmatrix=~group"        //formula for the linear model
-DE_DESeq2_FILTER="filter=TRUE"                //whether to perform automatic independent filtering of lowly expressed genes
-DE_DESeq2_PREFIX="prefix="                    //prefix to be removed from file names
-DE_DESeq2_SUFFIX="suffix="                    //suffix to be removed from file names
-DE_DESeq2_CWD="cwd=" + RESULTS + "/subread-count"  //directory where the .tsv files with the gene counts are located
-DE_DESeq2_OUTDIR="out=" + RESULTS + "/DE_DESeq2"   //output filename base pattern. If you change it here, change it also in the module file
-DE_DESeq2_GENES="gtf=" + ESSENTIAL_GENESGTF		      //gtf file to calculate RPKM
-DE_DESeq2_EXTRA=""                                 //extra parms to sent to the tool
-
+DE_DESeq2_vars=[
+    targets  : "targets.txt",              //targets file. Check the bin directory for the format
+    contrasts: "contrasts.txt",            //contrasts file. Check the bin directory for the format
+    mmatrix  : "~group",                   //formula for the linear model
+    filter   : "TRUE",                     //whether to perform automatic independent filtering of lowly expressed genes
+    prefix   : "",                         //prefix to be removed from file names
+    suffix   : "",                         //suffix to be removed from file names
+    cwd      : RESULTS + "/subread-count", //directory where the .tsv files with the gene counts are located
+    outdir   : RESULTS + "/DE_DESeq2",     //output filename base pattern. If you change it here, change it also in the module file
+    genes    : ESSENTIAL_GENESGTF,         //gtf file to calculate RPKM
+    extra    : ""                         //extra parms to sent to the tool
+]

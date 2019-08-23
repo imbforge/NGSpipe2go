@@ -1,5 +1,10 @@
-PREMATS_OUTDIR=RESULTS + "/preMATS"
-PREMATS_TARGETS="targets_rMATS.txt" //the rmats targets file differs from the normal targets file by supplying and fragment size for your samples in the last column
-PREMATS_CONTRASTS="contrasts.txt"
-PREMATS_POSTFIX="_targets_rMats.txt"
-
+PREMATS_vars=[
+    outdir   : RESULTS + "/preMATS",
+    //The rmats targets file differs from the normal targets file by supplying a
+    //fragment size for your samples in the last column.
+    //It's a good idea to reuse the pipeline's targets.txt with an extra column
+    //containing the fragment size
+    targets  : "targets_rMATS.txt",
+    contrasts: "contrasts.txt",
+    suffix  : "_targets_rMats.txt"
+]

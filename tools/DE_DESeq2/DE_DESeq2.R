@@ -96,7 +96,13 @@ gtf.flat <- unlist(reduce(split(gtf, elementMetadata(gtf)$gene_id)))
 gene.lengths <- tapply(width(gtf.flat), names(gtf.flat), sum)
 
 # make sure we have a gene_name column (needed as output in the report later)
-if(!any(colnames(mcols(gtf)) == "gene_name")) gtf$gene_name <- "NA"
+if(! "gene_name" %in% colnames(mcols(gtf))) {
+    if("gene_id" %in% colnames(mcols(gtf))) {
+        gtf$gene_name <- gtf$gene_id
+    } else {
+        gtf$gene_name <- NA
+    }
+}
 
 # create a txdb object to collect the genes coordinates for later usage
 txdb  <- makeTxDbFromGRanges(gtf)

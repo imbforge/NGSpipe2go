@@ -10,7 +10,7 @@ filter2htseq = {
         bpipe_version: "tested with bpipe 0.9.8.7",
         author: "Oliver Drechsel"
 
-    output.dir = SUBREAD_OUTDIR
+    output.dir = filter2htseq_vars.outdir
 
     def PREAMBLE = get_preamble("filter2htseq")
 

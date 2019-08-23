@@ -10,10 +10,11 @@ geneBodyCov = {
         bpipe_version: "tested with bpipe 0.9.8.7",
         author: "Sergi Sayols"
 
-    output.dir = GENEBODYCOV_OUTDIR
-    def GENEBODYCOV_FLAGS = GENEBODYCOV_FORMAT + " " +
-                            GENEBODYCOV_BED    + " " +
-                            GENEBODYCOV_EXTRA
+    output.dir = geneBodyCov_vars.outdir
+    def GENEBODYCOV_FLAGS =
+        (geneBodyCov_vars.format ? " -f " + geneBodyCov_vars.format : "" ) +
+        (geneBodyCov_vars.bed    ? " -r " + geneBodyCov_vars.bed    : "" ) +
+        (geneBodyCov_vars.extra  ? " "    + geneBodyCov_vars.extra  : "" ) 
 
     def TOOL_ENV = prepare_tool_env("rseqc", tools["rseqc"]["version"], tools["rseqc"]["runenv"])
     def PREAMBLE = get_preamble("geneBodyCoverage")

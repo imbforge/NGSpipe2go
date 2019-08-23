@@ -8,19 +8,19 @@ qualimap = {
         desc:  "Call qualimap to do rnaseq qualitycontrol",
         author: "Nastasja Kreim"
 
-    output.dir = QUALIMAP_OUTDIR
+    output.dir = qualimap_vars.outdir
     // no|yes|reverse
-    if(QUALIMAP_STRANDED == "no") {
-        QUALIMAP_PROTOCOL = "non-strand-specific"
+    if(qualimap_vars.stranded == "no") {
+        qualimap_vars.protocol = "non-strand-specific"
     }
-    else if (QUALIMAP_STRANDED == "yes") {
-        QUALIMAP_PROTOCOL = "strand-specific-forward"
+    else if (qualimap_vars.stranded == "yes") {
+        qualimap_vars.protocol = "strand-specific-forward"
     }
     else {
-        QUALIMAP_PROTOCOL = "strand-specific-reverse"
+        qualimap_vars.protocol = "strand-specific-reverse"
     }
-    if(QUALIMAP_PAIRED == "yes"){
-        QUALIMAP_EXTRA = QUALIMAP_EXTRA + " -pe"
+    if(qualimap_vars.paired){
+        qualimap_vars.extra = qualimap_vars.extra + " -pe"
     }
 
     def TOOL_ENV = prepare_tool_env("qualimap", tools["qualimap"]["version"], tools["qualimap"]["runenv"])
@@ -33,7 +33,7 @@ qualimap = {
     
             unset DISPLAY;
             echo $output.prefix;
-            qualimap rnaseq -bam $input -outdir ${output.prefix}_qualimap -outformat html $QUALIMAP_GENESGTF -oc $output -p $QUALIMAP_PROTOCOL $QUALIMAP_EXTRA
+            qualimap rnaseq -bam $input -outdir ${output.prefix}_qualimap -outformat html -gtf ${qualimap_vars.genesgtf} -oc $output -p ${qualimap_vars.protocol} ${qualimap_vars.extra}
         ""","qualimap"
     }
 
