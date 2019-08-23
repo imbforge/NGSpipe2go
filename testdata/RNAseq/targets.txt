@@ -1,0 +1,5 @@
+sample	file	group	replicate
+mut_1	mut_1.readcounts.tsv	mut	1
+mut_2	mut_2.readcounts.tsv	mut	2
+wt_1	wt_1.readcounts.tsv	wt	1
+wt_2	wt_2.readcounts.tsv	wt	2

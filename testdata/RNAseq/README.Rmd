@@ -1,0 +1,18 @@
+Obtained from the `yeastRNASeq` Bioconductor [package](https://bioconductor.org/packages/release/data/experiment/html/yeastRNASeq.html)
+The subset of the data which this package contains is more specifically
+data from a wild-type and a single mutant yeast. For each condition (mutant,
+wild-type) there is two lanes worth of data, each lane containing a sample of
+500,000 raw (unaligned) reads from each of 2 lanes each. 
+
+```{r}
+if(!require(yeastRNASeq)) {
+  BiocManager::install("yeastRNASeq")
+  require(yeastRNASeq)
+}
+
+files <-  list.files(file.path(system.file(package = "yeastRNASeq"), "reads"), full.names=TRUE)
+files.fastq.gz <- files[grepl("\\.fastq\\.gz$", files)]
+dir.create("./rawdata", showWarnings=FALSE)
+sapply(files.fastq.gz, file.copy, to="./rawdata/")
+```
+
