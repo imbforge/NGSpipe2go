@@ -24,6 +24,7 @@ load PIPELINE_ROOT + "/modules/RNAseq/genebodycov2.module.groovy"
 load PIPELINE_ROOT + "/modules/RNAseq/inferexperiment.module.groovy"
 load PIPELINE_ROOT + "/modules/RNAseq/GO_Enrichment.module.groovy"
 load PIPELINE_ROOT + "/modules/RNAseq/qualimap.module.groovy"
+load PIPELINE_ROOT + "/modules/NGS/multiqc.module.groovy"
 load PIPELINE_ROOT + "/modules/miscellaneous/collectbpipes.module.2.groovy"
 load PIPELINE_ROOT + "/modules/RNAseq/shinyreports.module.groovy"
 
@@ -41,6 +42,6 @@ Bpipe.run {
      ] +
      [ DE_DESeq2_MM , DE_DESeq2 + GO_Enrichment ] +
      (RUN_TRACKHUB ? trackhub_config + trackhub : dontrun.using(module:"trackhub")) +
-     collectBpipeLogs + shinyReports
+     MultiQC + collectBpipeLogs + shinyReports
 }
 

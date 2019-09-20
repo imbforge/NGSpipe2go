@@ -21,6 +21,7 @@ load PIPELINE_ROOT + "/modules/NGS/fastqc.module.groovy"
 load PIPELINE_ROOT + "/modules/NGS/markdups.module.groovy"
 load PIPELINE_ROOT + "/modules/NGS/trackhub.module.groovy"
 load PIPELINE_ROOT + "/modules/NGS/trackhub_config.module.groovy"
+load PIPELINE_ROOT + "/modules/NGS/multiqc.module.groovy"
 load PIPELINE_ROOT + "/modules/miscellaneous/collectbpipes.module.2.groovy"
 load PIPELINE_ROOT + "/modules/ChIPseq/shinyreports.module.groovy"
 
@@ -31,6 +32,6 @@ Bpipe.run {
   (RUN_PEAK_ANNOTATION ? peak_annotation : nothing) +
   (RUN_DIFFBIND ? diffbind : nothing) +
   (RUN_TRACKHUB ? trackhub_config + trackhub : nothing) +
-  collectBpipeLogs + shinyReports
+  MultiQC + collectBpipeLogs + shinyReports
 }
 

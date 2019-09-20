@@ -42,6 +42,7 @@ tools_defaults = [
     ketnutils  : [ runenv: "lmod", version: "v365"         ],
     macs2      : [ runenv: "lmod", version: "2.1.2"        ],
     mirdeep2   : [ runenv: "lmod", version: "2.0.0.8"      ],
+    multiqc    : [ runenv: "lmod", version: "1.7"          ],
     picard     : [ runenv: "lmod", version: "2.20"         ],
     pingpongpro: [ runenv: "lmod", version: "1.0"          ],
     qualimap   : [ runenv: "lmod", version: "2.2.1"        ],
@@ -184,6 +185,13 @@ tools_prepare_env = [
         "2.0.0.8": [
             lmod: "module load mirdeep2/2.0.0.8",
             conda: "source activate ${conda_tools}/mirdeep2/2.0.0.8"
+        ]
+    ],
+    multiqc: [
+        "1.7": [
+            lmod: "module load MultiQC/1.7",
+            conda: "source activate ${conda_tools}/MultiQC/1.7",
+            singularity: "alias fastqc=\"singularity run --app fastqc ${singularity_tools}/MultiQC/1.7/multiqc.simg\""
         ]
     ],
     picard: [
