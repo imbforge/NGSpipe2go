@@ -191,7 +191,7 @@ tools_prepare_env = [
         "1.7": [
             lmod: "module load MultiQC/1.7",
             conda: "source activate ${conda_tools}/MultiQC/1.7",
-            singularity: "alias fastqc=\"singularity run --app fastqc ${singularity_tools}/MultiQC/1.7/multiqc.simg\""
+            singularity: "alias multiqc=\"singularity run --app multiqc ${singularity_tools}/MultiQC/1.7/multiqc.simg\""
         ]
     ],
     picard: [
