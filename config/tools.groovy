@@ -319,10 +319,12 @@ tools_prepare_env = [
     ],
     umitools: [
         "0.5.5": [
+            lmod: "module load umitools/0.5.5",
             conda: "source activate ${conda_tools}/umitools/0.5.5"
         ],
         "1.0.0": [
-            lmod: "module load umitools/1.0.0"
+            lmod: "module load umitools/1.0.0",
+            conda: "source activate ${conda_tools}/umitools/1.0.0"
         ]
     ]
 ]
