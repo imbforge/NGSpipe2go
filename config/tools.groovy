@@ -39,7 +39,7 @@ tools_defaults = [
     gatk       : [ runenv: "lmod", version: "3.4-46"       ],
     htseq      : [ runenv: "lmod", version: "0.6.1"        ],
     java       : [ runenv: "lmod", version: "1.8"          ],
-    ketnutils  : [ runenv: "lmod", version: "v365"         ],
+    kentutils  : [ runenv: "lmod", version: "v365"         ],
     macs2      : [ runenv: "lmod", version: "2.1.2"        ],
     mirdeep2   : [ runenv: "lmod", version: "2.0.0.8"      ],
     multiqc    : [ runenv: "lmod", version: "1.7"          ],
