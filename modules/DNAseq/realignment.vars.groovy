@@ -1,3 +1,6 @@
-GATK_THREADS=Integer.toString(ESSENTIAL_THREADS)
-GATK_CALL_REGION=ESSENTIAL_CALL_REGION
-GATK_BWA_REF=ESSENTIAL_BWA_REF
+IndelRealignment_vars=[
+    outdir     : MAPPED,
+    java_flags : "-Xmx5000m",
+    threads    : Integer.toString(ESSENTIAL_THREADS),
+    bwa_ref    : ESSENTIAL_BWA_REF
+]

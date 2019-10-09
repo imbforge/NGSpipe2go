@@ -1,4 +1,8 @@
-GATK_THREADS=Integer.toString(ESSENTIAL_THREADS)
-GATK_CALL_REGION=ESSENTIAL_CALL_REGION
-GATK_BWA_REF=ESSENTIAL_BWA_REF
-GATK_KNOWN_VARIANTS=ESSENTIAL_KNOWN_VARIANTS
+VariantCallHC_vars=[
+    outdir        : RESULTS,
+    java_flags    : "-Xmx50000m",
+    threads       : Integer.toString(ESSENTIAL_THREADS),
+    call_region   : ESSENTIAL_CALL_REGION,
+    bwa_ref       : ESSENTIAL_BWA_REF,
+    known_variants: ESSENTIAL_KNOWN_VARIANTS
+]

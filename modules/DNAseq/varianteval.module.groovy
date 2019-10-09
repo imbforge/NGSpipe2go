@@ -10,8 +10,12 @@ VariantEval = {
         bpipe_version: "tested with bpipe 0.9.8.7",
         author: "Oliver Drechsel"
 
-    output.dir = QC + '/GATK_varianteval'
-    def GATK_FLAGS = " "
+    output.dir = VariantEval_vars.outdir
+
+    VariantEval_FLAGS = 
+        (VariantEval_vars.threads        ? " -nt "     + VariantEval_vars.threads        : "" ) +
+        (VariantEval_vars.bwa_ref        ? " -R "      + VariantEval_vars.bwa_ref        : "" ) +
+        (VariantEval_vars.known_variants ? " --dbsnp " + VariantEval_vars.known_variants : "" )
 
     def TOOL_ENV = prepare_tool_env("java", tools["java"]["version"], tools["java"]["runenv"]) + " && " +
                    prepare_tool_env("gatk", tools["gatk"]["version"], tools["gatk"]["runenv"])
@@ -23,7 +27,7 @@ VariantEval = {
             ${TOOL_ENV} &&
             ${PREAMBLE} &&
 
-            java -Djava.io.tmpdir=\${TMP} -jar \${gatk} -T VariantEval -R $GATK_BWA_REF -nt $GATK_THREADS --dbsnp ${GATK_KNOWN_VARIANTS} --eval $input -o $output;
+            java ${VariantEval_vars.java_flags} -Djava.io.tmpdir=\${TMP} -jar \${gatk} -T VariantEval $VariantEval_FLAGS --eval $input -o $output
         ""","VariantEval"
     }
     forward input

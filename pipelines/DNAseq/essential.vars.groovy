@@ -17,4 +17,5 @@ TMP=PROJECT + "/tmp"
 TRACKS=PROJECT + "/tracks"
 
 // optional pipeline stages to include
+RUN_IN_PAIRED_END_MODE=(ESSENTIAL_PAIRED == "yes")
 

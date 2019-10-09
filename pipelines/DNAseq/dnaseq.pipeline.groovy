@@ -17,6 +17,13 @@ load PIPELINE_ROOT + "/modules/NGS/rmdups.module.groovy"
 load PIPELINE_ROOT + "/modules/miscellaneous/collectbpipes.module.2.groovy"
 load PIPELINE_ROOT + "/modules/DNAseq/shinyreports.module.groovy"
 
+// Main pipeline task
+dontrun = { println "didn't run $module" }
+
 run {
-    "%.fastq.gz" * [ FastQC ] + "%_R*.fastq.gz" * [ BWA_pe ] + "%.bam" * [ RmDups + BAMindexer + IndelRealignment + BaseRecalibration + [ VariantCallHC, VariantCallUG ] ] + "%.vcf.gz" * [ VariantEval ] + collectBpipeLogs + shinyReports
+    "%.fastq.gz" * [ FastQC ] +
+    (RUN_IN_PAIRED_END_MODE ? "%.R*.fastq.gz" * [ BWA_pe ] : "%.fastq.gz" * [ BWA_se ] ) +
+    "%.bam" * [ RmDups + BAMindexer + IndelRealignment + BaseRecalibration + [ VariantCallHC, VariantCallUG ] ] +
+    "%.vcf.gz" * [ VariantEval ] +
+    collectBpipeLogs + shinyReports
 }
