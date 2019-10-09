@@ -1,19 +1,20 @@
-//vars for task shinyReports from catalog miscellaneous, version 1
-SHINYREPS_PROJECT=PROJECT	//project directory
-SHINYREPS_LOG=LOGS			//where the logs lie
-SHINYREPS_QC=QC				//where the QC lie
-SHINYREPS_RES=RESULTS		//where the results lie
-SHINYREPS_PREFIX=ESSENTIAL_SAMPLE_PREFIX	//standard sample prefix
-SHINYREPS_FASTQC_OUT=FASTQC_OUTDIR		//where the Fastqc output lie
-SHINYREPS_FASTQC_LOG=LOGS + "/FastQC"		//where the Fastqc logs lie
-SHINYREPS_BWA_LOG=LOGS + "/BWA_pe"	//where the BWA (samtools flagstat) logs lie
-SHINYREPS_BWA_SUFFIX=".bam.log"	//extension given to the BWA log files
-SHINYREPS_MARKDUPS_LOG=LOGS + "/MarkDups"	//where the picard MarkDuplicates logs lie
-SHINYREPS_GATKug_LOG=LOGS + "/VariantCallUG"	//where the GATK UnifiedGenotyper logs lie
-SHINYREPS_GATKug_SUFFIX=".UG.vcf.gz.log"	//extension given to the GATK UnifiedGenotyper log files
-SHINYREPS_GATKhc_LOG=LOGS + "/VariantCallHC"	//where the GATK HaplotypeCaller logs lie
-SHINYREPS_GATKhc_SUFFIX=".HC.vcf.gz.log"	//extension given to the GATK Haplotypecaller log files
-SHINYREPS_GATKvarianteval=QC + "/GATK_varianteval" // location of GATK variantEval results
-SHINYREPS_GATKvarianteval_SUFFIX=".report"	//extension given to the GATK VariantEval output files
-SHINYREPS_RES_GATKhc_SUFFIX=".HC.vcf.gz" // extension of the GATK HaplotypeCaller output files
-SHINYREPS_TOOL_VERSIONS = PROJECT + "/NGSpipe2go/modules/DNAseq/tool.versions.groovy" // where the tool version listed
+shinyReports_vars=[
+    project               : PROJECT,                 //project directory
+    log                   : LOGS,                    //where the logs lie
+    qc                    : QC,                      //where the QC lie
+    res                   : RESULTS,                 //where the results lie
+    prefix                : ESSENTIAL_SAMPLE_PREFIX, //standard sample prefix
+    fastqc_out            : FastQC_vars.outdir,      //where the Fastqc output lie
+    fastqc_log            : LOGS + "/FastQC",        //where the Fastqc logs lie
+    bwa_log               : LOGS + "/BWA_pe",        //where the BWA (samtools flagstat) logs lie
+    bwa_suffix            : ".bam.log",              //extension given to the BWA log files
+    markdups_log          : LOGS + "/MarkDups",      //where the picard MarkDuplicates logs lie
+    gatkug_log            : LOGS + "/VariantCallUG", //where the GATK UnifiedGenotyper logs lie
+    gatkug_suffix         : ".UG.vcf.gz.log",        //extension given to the GATK UnifiedGenotyper log files
+    gatkhc_log            : LOGS + "/VariantCallHC", //where the GATK HaplotypeCaller logs lie
+    gatkhc_suffix         : ".HC.vcf.gz.log",        //extension given to the GATK Haplotypecaller log files
+    gatkvarianteval       : VariantEval_vars.outdir, //location of GATK variantEval results
+    gatkvarianteval_suffix: ".report",               //extension given to the GATK VariantEval output files
+    res_gatkhc_suffix     : ".HC.vcf.gz",            //extension of the GATK HaplotypeCaller output files
+    tool_versions         : PIPELINE_ROOT + "/pipelines/ChIPseq/tools.groovy" //where the tool versions listed
+]

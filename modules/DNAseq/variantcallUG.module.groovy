@@ -10,27 +10,26 @@ VariantCallUG = {
         bpipe_version: "tested with bpipe 0.9.9.3.slurm",
         author: "Oliver Drechsel"
 
-    output.dir = RESULTS
-    def GATK_FLAGS = ""
+    output.dir = VariantCallUG_vars.outdir
 
-    // check if a region limit was provided
-    if (GATK_CALL_REGION!=null && GATK_CALL_REGION.length()>0) {
-        GATK_FLAGS = " -L " + GATK_CALL_REGION
-    } else {
-        GATK_FLAGS = ""
-    }
+    def UnifiedGenotyper_FLAGS =
+        " -glm BOTH " +
+        (VariantCallUG_vars.call_region    ? " -L "      + VariantCallUG_vars.call_region    : "" ) +
+        (VariantCallUG_vars.threads        ? " -nt "     + VariantCallUG_vars.threads        : "" ) + // this is not a typo!
+        (VariantCallUG_vars.threads        ? " -nct "    + VariantCallUG_vars.threads        : "" ) + // check tool multithread options
+        (VariantCallUG_vars.bwa_ref        ? " -R "      + VariantCallUG_vars.bwa_ref        : "" )
 
     def TOOL_ENV = prepare_tool_env("java", tools["java"]["version"], tools["java"]["runenv"]) + " && " +
                    prepare_tool_env("gatk", tools["gatk"]["version"], tools["gatk"]["runenv"])
     def PREAMBLE = get_preamble("VariantCallUG")
 
-    transform (".duprm.realigned.recalibrated.bam") to (".UG.vcf.gz") {
+    transform (".dupmarked.realigned.recalibrated.bam") to (".UG.vcf.gz") {
     // usage parameters https://www.broadinstitute.org/gatk/gatkdocs/org_broadinstitute_gatk_tools_walkers_genotyper_UnifiedGenotyper.php
         exec """
             ${TOOL_ENV} &&
             ${PREAMBLE} &&
 
-            java -Djava.io.tmpdir=\${TMP} -jar \${gatk} -T UnifiedGenotyper -nt $GATK_THREADS -nct $GATK_THREADS -R $GATK_BWA_REF -glm BOTH -I $input -o $output $GATK_FLAGS;
+            java ${VariantCallUG_vars.java_flags} -Djava.io.tmpdir=\${TMP} -jar \${gatk} -T UnifiedGenotyper $UnifiedGenotyper_FLAGS -I $input -o $output
         ""","VariantCallUG"
     }
 }

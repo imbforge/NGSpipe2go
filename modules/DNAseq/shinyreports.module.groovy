@@ -27,27 +27,27 @@ shinyReports = {
             cp ${PIPELINE_ROOT}/tools/reports/shiny_dnaseq_reporting_tool/variant.shinyrep.helpers.R ${REPORTS} &&
             cp ${PIPELINE_ROOT}/tools/reports/shiny_dnaseq_reporting_tool/styles.css ${REPORTS}                 &&
 
-            PROJECT=\$(basename ${SHINYREPS_PROJECT})                                 &&
+            PROJECT=\$(basename ${shinyReports_vars.project})                                 &&
             sed -i "2,2s/SHINYREPS_PROJECT/\${PROJECT}/" ${REPORTS}/variantreport.Rmd &&
 
-            echo "SHINYREPS_PROJECT=${SHINYREPS_PROJECT}" >  $output &&
-            echo "SHINYREPS_LOG=${SHINYREPS_LOG}"         >> $output &&
-            echo "SHINYREPS_QC=${SHINYREPS_QC}"           >> $output &&
-            echo "SHINYREPS_RES=${SHINYREPS_RES}"         >> $output &&
-            echo "SHINYREPS_PREFIX=${SHINYREPS_PREFIX}"   >> $output &&
-            echo "SHINYREPS_FASTQC_OUT=${SHINYREPS_FASTQC_OUT}"     >> $output &&
-            echo "SHINYREPS_FASTQC_LOG=${SHINYREPS_FASTQC_LOG}"     >> $output &&
-            echo "SHINYREPS_BWA_LOG=${SHINYREPS_BWA_LOG}"           >> $output &&
-            echo "SHINYREPS_BWA_SUFFIX=${SHINYREPS_BWA_SUFFIX}"     >> $output &&
-            echo "SHINYREPS_MARKDUPS_LOG=${SHINYREPS_MARKDUPS_LOG}" >> $output &&
-            echo "SHINYREPS_GATKug_LOG=${SHINYREPS_GATKug_LOG}"           >> $output &&
-            echo "SHINYREPS_GATKug_SUFFIX=${SHINYREPS_GATKug_SUFFIX}"     >> $output &&
-            echo "SHINYREPS_GATKhc_LOG=${SHINYREPS_GATKhc_LOG}"           >> $output &&
-            echo "SHINYREPS_GATKhc_SUFFIX=${SHINYREPS_GATKhc_SUFFIX}"     >> $output &&
-            echo "SHINYREPS_GATKvarianteval=${SHINYREPS_GATKvarianteval}" >> $output &&
-            echo "SHINYREPS_GATKvarianteval_SUFFIX=${SHINYREPS_GATKvarianteval_SUFFIX}" >> $output &&
-            echo "SHINYREPS_GATKhc_SUFFIX=${SHINYREPS_GATKhc_SUFFIX}"       >> $output &&
-            echo "SHINYREPS_TOOL_VERSIONS=${SHINYREPS_TOOL_VERSIONS}" >> $output 
+            echo "SHINYREPS_PROJECT=${shinyReports_vars.project}" >  $output &&
+            echo "SHINYREPS_LOG=$shinyReports_vars.log}"          >> $output &&
+            echo "SHINYREPS_QC=${shinyReports_vars.qc}"           >> $output &&
+            echo "SHINYREPS_RES=${shinyReports_vars.res}"         >> $output &&
+            echo "SHINYREPS_PREFIX=${shinyReports_vars.prefix}"   >> $output &&
+            echo "SHINYREPS_FASTQC_OUT=${shinyReports_vars.fastqc_out}"     >> $output &&
+            echo "SHINYREPS_FASTQC_LOG=${shinyReports_vars.fastqc_log}"     >> $output &&
+            echo "SHINYREPS_BWA_LOG=${shinyReports_vars.bwa_log}"           >> $output &&
+            echo "SHINYREPS_BWA_SUFFIX=${shinyReports_vars.bwa_suffix}"     >> $output &&
+            echo "SHINYREPS_MARKDUPS_LOG=${shinyReports_vars.markdups_log}" >> $output &&
+            echo "SHINYREPS_GATKug_LOG=${shinyReports_vars.gatkug_log}"           >> $output &&
+            echo "SHINYREPS_GATKug_SUFFIX=${shinyReports_vars.gatkug_suffix}"     >> $output &&
+            echo "SHINYREPS_GATKhc_LOG=${shinyReports_vars.gatkhc_log}"           >> $output &&
+            echo "SHINYREPS_GATKhc_SUFFIX=${shinyReports_vars.gatkhc_suffix}"     >> $output &&
+            echo "SHINYREPS_GATKvarianteval=${shinyReports_vars.gatkvarianteval}" >> $output &&
+            echo "SHINYREPS_GATKvarianteval_SUFFIX=${shinyReports_vars.gatkvarianteval_suffix}" >> $output &&
+            echo "SHINYREPS_RES_GATKhc_SUFFIX=${shinyReports_vars.res_gatkhc_suffix}" >> $output &&
+            echo "SHINYREPS_TOOL_VERSIONS=${shinyReports_vars.tool_versions}" >> $output
         ""","shinyReports"
     }
 }

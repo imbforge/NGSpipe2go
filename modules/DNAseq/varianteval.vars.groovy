@@ -1,3 +1,7 @@
-GATK_THREADS=Integer.toString(ESSENTIAL_THREADS)
-GATK_BWA_REF=ESSENTIAL_BWA_REF
-GATK_KNOWN_VARIANTS=ESSENTIAL_KNOWN_VARIANTS
+VariantEval_vars=[
+    outdir        : QC + "/GATK_varianteval",
+    java_flags    : "-Xmx5000m",
+    threads       : Integer.toString(ESSENTIAL_THREADS),
+    bwa_ref       : ESSENTIAL_BWA_REF,
+    known_variants: ESSENTIAL_KNOWN_VARIANTS
+]

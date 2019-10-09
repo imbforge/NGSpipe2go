@@ -10,19 +10,18 @@ BWA_pe = {
     bpipe_version: "tested with bpipe 0.9.8.7",
     author: "Oliver Drechsel, Anke Busch"
 
-    output.dir = MAPPED
+    output.dir = BWA_vars.outdir
 
-    def OUTPUTFILE = input1
-    int path_index = OUTPUTFILE.lastIndexOf("/")
-    OUTPUTFILE = OUTPUTFILE.substring(path_index+1)
-    OUTPUTFILE = (OUTPUTFILE =~ /_R1.fastq.gz/).replaceFirst("")
+    File f = new File(input1)
+    def OUTPUTFILE = (f.getName() =~ /(.R1)*.fastq.gz/).replaceFirst("")
 
     def BWA_FLAGS = "-M " +
-                    BWA_THREADS + " " +
-                    BWA_EXTRA
+        (BWA_vars.threads ? "-t " + BWA_vars.threads : "" ) +
+        (BWA_vars.extra   ?         BWA_vars.extra   : "" )
 
     def SAMTOOLS_VIEW_FLAGS = "-bhSu"
-    def SAMTOOLS_SORT_FLAGS = SAMTOOLS_THREADS
+    def SAMTOOLS_SORT_FLAGS = 
+        (BWA_vars.samtools_threads ? " -@ " + BWA_vars.samtools_threads : "" )
 
     def TOOL_ENV = prepare_tool_env("bwa", tools["bwa"]["version"], tools["bwa"]["runenv"]) + " && " +
                    prepare_tool_env("samtools", tools["samtools"]["version"], tools["samtools"]["runenv"])
@@ -33,10 +32,7 @@ BWA_pe = {
             ${TOOL_ENV} &&
             ${PREAMBLE} &&
 
-            SAMPLE_NAME=\$(basename $output.prefix) &&
-            PLATFORM="genomics" &&
-
-            bwa mem $BWA_FLAGS -R \"@RG\\tID:\${SAMPLE_NAME}\\tSM:\${SAMPLE_NAME}\\tPL:illumina\\tLB:\${SAMPLE_NAME}\\tPU:\${PLATFORM}\" $BWA_REF $input1 $input2 | samtools view ${SAMTOOLS_VIEW_FLAGS} - | samtools sort ${SAMTOOLS_SORT_FLAGS} -T \${TMP}/\${SAMPLE_NAME} -  > ${output} &&
+            bwa mem $BWA_FLAGS -R \"@RG\\tID:${OUTPUTFILE}\\tSM:${OUTPUTFILE}\\tPL:illumina\\tLB:${OUTPUTFILE}\\tPU:genomics\" $BWA_vars.ref $input1 $input2 | samtools view $SAMTOOLS_VIEW_FLAGS - | samtools sort $SAMTOOLS_SORT_FLAGS -T \${TMP}/${OUTPUTFILE}_sort -  > ${output} &&
 
             samtools flagstat ${output} 1>&2
             ""","BWA_pe"
@@ -51,13 +47,18 @@ BWA_se = {
     bpipe_version: "tested with bpipe 0.9.8.7",
     author: "Oliver Drechsel"
 
-    output.dir = MAPPED
+    output.dir = BWA_vars.outdir
+
+    File f = new File(input1)
+    def OUTPUTFILE = (f.getName() =~ /(.R1)*.fastq.gz/).replaceFirst("")
+
     def BWA_FLAGS = "-M " +
-                    BWA_THREADS + " " +
-                    BWA_EXTRA
+        (BWA_vars.threads ? "-t " + BWA_vars.threads : "" ) +
+        (BWA_vars.extra   ?         BWA_vars.extra   : "" )
 
     def SAMTOOLS_VIEW_FLAGS = "-bhSu"
-    def SAMTOOLS_SORT_FLAGS = SAMTOOLS_THREADS    
+    def SAMTOOLS_SORT_FLAGS = 
+        (BWA_vars.samtools_threads ? " -@ " + BWA_vars.samtools_threads : "" )
 
     def TOOL_ENV = prepare_tool_env("bwa", tools["bwa"]["version"], tools["bwa"]["runenv"]) + " && " +
                    prepare_tool_env("samtools", tools["samtools"]["version"], tools["samtools"]["runenv"])
@@ -68,11 +69,7 @@ BWA_se = {
             ${TOOL_ENV} &&
             ${PREAMBLE} &&
 
-            SAMPLE_NAME=\$(basename $output.prefix.prefix) &&
-
-            PLATFORM="genomics" &&
-
-            bwa mem $BWA_FLAGS -R \"@RG\\tID:\${SAMPLE_NAME}\\tSM:\${SAMPLE_NAME}\\tPL:illumina\\tLB:\${SAMPLE_NAME}\\tPU:\${PLATFORM}\" $BWA_REF $input | samtools view ${SAMTOOLS_VIEW_FLAGS} - | samtools sort ${SAMTOOLS_SORT_FLAGS} -T \${TMP}/\${SAMPLE_NAME} -  > ${output} &&
+            bwa mem $BWA_FLAGS -R \"@RG\\tID:\${OUTPUTFILE}\\tSM:\${OUTPUTFILE}\\tPL:illumina\\tLB:\${OUTPUTFILE}\\tPU:genomics\" $BWA_vars.ref $input | samtools view $SAMTOOLS_VIEW_FLAGS - | samtools sort $SAMTOOLS_SORT_FLAGS -T \${TMP}/${OUTPUTFILE}_sort - > ${output} &&
 
             samtools flagstat ${output} 1>&2
         ""","BWA_se"

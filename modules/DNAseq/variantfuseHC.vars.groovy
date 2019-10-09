@@ -1,8 +1,11 @@
-GATK_THREADS=Integer.toString(ESSENTIAL_THREADS)
-GATK_BWA_REF=ESSENTIAL_BWA_REF
-GATK_KNOWN_VARIANTS=ESSENTIAL_KNOWN_VARIANTS
-GATK_REFCONF="--emitRefConfidence GVCF"
-GATK_INDEXTYPE="--variant_index_type LINEAR"
-GATK_INDEXPARM="-variant_index_parameter 128000"
-GATK_EXTRA=""
-
+HaplotypeCaller_vars=[
+    outdir        : RESULTS,
+    java_flags    : "-Xmx5000m",
+    threads       : Integer.toString(ESSENTIAL_THREADS),
+    bwa_ref       : ESSENTIAL_BWA_REF,
+    known_variants: ESSENTIAL_KNOWN_VARIANTS,
+    refconf       : "--emitRefConfidence GVCF",
+    indextype     : "--variant_index_type LINEAR",
+    indexparm     : "-variant_index_parameter 128000",
+    extra         : ""
+]

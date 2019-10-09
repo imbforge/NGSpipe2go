@@ -10,15 +10,16 @@ BaseRecalibration = {
         bpipe_version: "tested with bpipe 0.9.8.7",
         author: "Oliver Drechsel"
 
-    output.dir = MAPPED
-    def GATK_FLAGS = "-knownSites latest_dbsnp.vcf "
+    output.dir = BaseRecalibration_vars.outdir
 
-    // check if a region limit was provided
-    if (GATK_CALL_REGION!=null && GATK_CALL_REGION.length()>0) {
-        GATK_FLAGS = GATK_FLAGS + " -L " + GATK_CALL_REGION
-    } else {
-        GATK_FLAGS = ""
-    }
+    def BaseRecalibrator_FLAGS =
+        (BaseRecalibration_vars.known_variants ? " -knownSites " + BaseRecalibration_vars.known_variants : "" ) +
+        (BaseRecalibration_vars.threads        ? " -nct "        + BaseRecalibration_vars.threads        : "" ) +
+        (BaseRecalibration_vars.bwa_ref        ? " -R "          + BaseRecalibration_vars.bwa_ref        : "" )
+
+    def PrintReads_FLAGS =
+        (BaseRecalibration_vars.threads ? " -nct " + BaseRecalibration_vars.threads : "" ) +
+        (BaseRecalibration_vars.bwa_ref ? " -R "   + BaseRecalibration_vars.bwa_ref     : "" )
 
     def TOOL_ENV = prepare_tool_env("java", tools["java"]["version"], tools["java"]["runenv"]) + " && " +
                    prepare_tool_env("gatk", tools["gatk"]["version"], tools["gatk"]["runenv"])
@@ -29,8 +30,8 @@ BaseRecalibration = {
             ${TOOL_ENV} &&
             ${PREAMBLE} &&
 
-            java -Djava.io.tmpdir=\${TMP} -jar \${gatk} -T BaseRecalibrator -nct $GATK_THREADS -R $GATK_BWA_REF -knownSites $GATK_KNOWN_VARIANTS -I $input -o $output1 &&
-            java -Djava.io.tmpdir=\${TMP} -jar \${gatk} -T PrintReads -nct $GATK_THREADS -R $GATK_BWA_REF -I $input -BQSR $output1 -o $output2
+            java ${BaseRecalibration_vars.java_flags} -Djava.io.tmpdir=\${TMP} -jar \${gatk} -T BaseRecalibrator $BaseRecalibrator_FLAGS -I $input -o $output1 &&
+            java ${BaseRecalibration_vars.java_flags} -Djava.io.tmpdir=\${TMP} -jar \${gatk} -T PrintReads $PrintReads_FLAGS -I $input -BQSR $output1 -o $output2
         ""","BaseRecalibration"
     }
     
