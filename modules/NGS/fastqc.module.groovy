@@ -8,7 +8,7 @@ FastQC = {
         desc:  "Quality control of input file",
         constraints: "Only supports compressed FASTQ files",
         bpipe_version: "tested with bpipe 0.9.8.7",
-        author: "Sergi Sayols"
+        author: "Sergi Sayols, Frank Rühle"
 
     output.dir = FastQC_vars.outdir
     def FASTQC_FLAGS =
@@ -22,7 +22,9 @@ FastQC = {
             ${TOOL_ENV} &&
             ${PREAMBLE} &&
 
-            fastqc --extract $FASTQC_FLAGS -o $output.dir $input
+            fastqc --extract $FASTQC_FLAGS -o \$TMP $input &&
+            mv \$TMP/* $output.dir/
+
         ""","FastQC"
     }
 
