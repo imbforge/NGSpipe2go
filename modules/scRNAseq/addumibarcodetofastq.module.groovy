@@ -27,10 +27,10 @@ AddUMIBarcodeToFastq = {
             ${TOOL_ENV} &&
             ${PREAMBLE} &&
 
-            umi_tools extract $ADDUMIBARCODE_FLAGS -I $input2 --stdout $TMP/\$(basename ${input2.prefix}).barcode.fastq.gz --read2-in $input1 --read2-out=$TMP/\$(basename ${OUTPUTFILE}).umibarcode.fastq.gz &&
+            umi_tools extract $ADDUMIBARCODE_FLAGS -I $input2 --stdout \${TMP}/\$(basename ${input2.prefix}).barcode.fastq.gz --read2-in $input1 --read2-out=\${TMP}/\$(basename ${OUTPUTFILE}).umibarcode.fastq.gz &&
             
-            rm $TMP/\$(basename ${input2.prefix}).barcode.fastq.gz &&
-            mv $TMP/\$(basename ${OUTPUTFILE}).umibarcode.fastq.gz $output
+            rm \${TMP}/\$(basename ${input2.prefix}).barcode.fastq.gz &&
+            mv \${TMP}/\$(basename ${OUTPUTFILE}).umibarcode.fastq.gz $output
 
         ""","AddUMIBarcodeToFastq"
     }
