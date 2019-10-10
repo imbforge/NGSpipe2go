@@ -1455,13 +1455,17 @@ DEhelper.umicount <- function(colorByFactor=NULL, targetsdf=targets, ...){
   #now we do a violin plot of the trimmed/too_short/etc. ones and color it
   # according to the different factors given in colorByFactor 
   
+  # prepare palette of appropriate length
+  colourCount = length(unique(x.melt[,colorByFactor]))
+  getPalette = colorRampPalette(brewer.pal(9, "Set1"))
+  
   create.violin <- function(x.melt, color.value){
     ylab <- "% reads"
     p <- ggplot(x.melt, aes_string(x="reads",
                                    y="value",
                                    color=color.value ))+
       geom_quasirandom() +
-      scale_color_brewer(type= "qual", palette=2)  +    # FR replaced color palette: scale_color_brewer(palette="Paired")
+      scale_color_manual(values=getPalette(colourCount)) + # creates as many colors as needed
       ylab(ylab) +
       xlab("") +
       scale_y_continuous( breaks=seq(0, max(x.melt$value), 10),

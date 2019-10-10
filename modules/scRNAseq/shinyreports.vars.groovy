@@ -23,8 +23,8 @@ SHINYREPS_SUBREAD=RESULTS + "/subread-count" // location of the subread counts
 SHINYREPS_SUBREAD_SUFFIX=".raw_readcounts.tsv.summary" // the extension of the subread stats file
 SHINYREPS_SUBREAD_LOG=LOGS + "/subread_count"	//where the Subread/FeatureCounts logs lie
 SHINYREPS_BAM2BW_LOG=LOGS + "/bam2bw"        	//where the Bam2BW logs lie
-SHINYREPS_UMICOUNT=RESULTS + "/umicount" // location of the umitools counts // FR
-SHINYREPS_UMICOUNT_LOG=LOGS + "/umicount"	//where the umicount/FeatureCounts logs lie // FR
+SHINYREPS_UMICOUNT=RESULTS + "/umicount" // location of the umitools counts 
+SHINYREPS_UMICOUNT_LOG=LOGS + "/umicount"	//where the umicount/FeatureCounts logs lie 
 SHINYREPS_MARKDUPS_LOG=LOGS + "/MarkDups"	//where the picard MarkDuplicates logs lie
 SHINYREPS_PLOTS_COLUMN=3L    //number of columns to splits the plot grids (dupradar, genebodycov...). Min=2L. L=integer in R
 SHINYREPS_INFEREXPERIMENT_LOGS=QC + "/inferexperiment" //where the inferexperiment logs lie
