@@ -842,8 +842,8 @@ DEhelper.STARparms <- function() {
     # log file
     LOG <- SHINYREPS_STAR_LOG
     SUFFIX <- paste0(SHINYREPS_STARparms_SUFFIX, '$')
-    if(!file.exists(LOG)) {
-        return("STAR statistics not available")
+     if(!all(sapply(LOG, file.exists))) {
+      return(paste("STAR statistics not available for", names(which(!sapply(LOG, file.exists)))))
     }
     
     # look for the lines containing the strings and get the values associated with this strings
@@ -906,8 +906,8 @@ DEhelper.STAR <- function(colorByFactor=NULL, targetsdf=targets, ...) {
     # log file
     LOG <- SHINYREPS_STAR_LOG
     SUFFIX <- paste0(SHINYREPS_STAR_SUFFIX, '$')
-    if(!file.exists(LOG)) {
-        return("STAR statistics not available")
+    if(!all(sapply(LOG, file.exists))) {
+      return(paste("STAR statistics not available for", names(which(!sapply(LOG, file.exists)))))
     }
     
     # look for the lines containing the strings
@@ -1031,8 +1031,8 @@ DEhelper.STAR <- function(colorByFactor=NULL, targetsdf=targets, ...) {
 DEhelper.Fastqc <- function(web=TRUE, ...) {
     
     # logs folder
-    if(!file.exists(SHINYREPS_FASTQC_OUT)) {
-        return("Fastqc statistics not available")
+    if(!all(sapply(SHINYREPS_FASTQC_OUT, file.exists))) {
+        return(paste("Fastqc statistics not available for", names(which(!sapply(SHINYREPS_FASTQC_OUT, file.exists)))))
     }
     
     # construct the folder name, which is different for web and noweb
@@ -1068,10 +1068,10 @@ DEhelper.Fastqc <- function(web=TRUE, ...) {
 DEhelper.dupRadar <- function(web=TRUE, ...) {
     
     # logs folder
-    if(!file.exists(SHINYREPS_DUPRADAR_LOG)) {
-        return("DupRadar statistics not available")
+    if(!all(sapply(SHINYREPS_DUPRADAR_LOG, file.exists))) {
+      return(paste("DupRadar statistics not available for", names(which(!sapply(SHINYREPS_DUPRADAR_LOG, file.exists)))))
     }
-
+    
     SHINYREPS_PLOTS_COLUMN <- tryCatch(as.integer(SHINYREPS_PLOTS_COLUMN[1]),error=function(e){3})
     if(SHINYREPS_PLOTS_COLUMN < 2) {
         SHINYREPS_PLOTS_COLUMN <- 3L    # default to 4 columns
@@ -1124,8 +1124,8 @@ DEhelper.RNAtypes <- function(...) {
     SUFFIX <- gsub(".umi", "", SUFFIX)
     
     # check if folder exists
-    if(!file.exists(FOLDER)) {
-        return("Subread statistics not available")
+    if(!all(sapply(FOLDER, file.exists))) {
+      return(paste("Subread statistics not available for", names(which(!sapply(FOLDER, file.exists)))))
     }
     
     # create a matrix using feature names as rownames, sample names as colnames
@@ -1182,11 +1182,11 @@ DEhelper.RNAtypes <- function(...) {
 DEhelper.geneBodyCov <- function(web=TRUE, ...) {
     
     # logs folder
-    if(!file.exists(SHINYREPS_GENEBODYCOV_LOG)) {
-        return("geneBodyCov statistics not available")
+    if(!all(sapply(SHINYREPS_GENEBODYCOV_LOG, file.exists))) {
+      return(paste("geneBodyCov statistics not available for", names(which(!sapply(SHINYREPS_GENEBODYCOV_LOG, file.exists)))))
     }
-    
-    SHINYREPS_PLOTS_COLUMN <- tryCatch(as.integer(SHINYREPS_PLOTS_COLUMN[1]),error=function(e){3})
+  
+   SHINYREPS_PLOTS_COLUMN <- tryCatch(as.integer(SHINYREPS_PLOTS_COLUMN[1]),error=function(e){3})
     if(SHINYREPS_PLOTS_COLUMN < 2) {
         SHINYREPS_PLOTS_COLUMN <- 3L    # default to 3 columns
     }
@@ -1230,10 +1230,10 @@ DEhelper.geneBodyCov <- function(web=TRUE, ...) {
 DEhelper.strandspecificity <- function(samplePattern=NULL, ...){
 
     # logs folder
-    if(!file.exists(SHINYREPS_INFEREXPERIMENT_LOGS)) {
-        return("Strand specificity statistics not available")
+    if(!all(sapply(SHINYREPS_INFEREXPERIMENT_LOGS, file.exists))) {
+      return(paste("Strand specificity statistics not available for", names(which(!sapply(SHINYREPS_INFEREXPERIMENT_LOGS, file.exists)))))
     }
-    
+  
     filelist <- list.files(path=SHINYREPS_INFEREXPERIMENT_LOGS, full.names=TRUE)
     # select subset of samples for fastqc figures (e.g. merged singlecell pools) or use all samples for samplePattern=NULL
     filelist <- selectSampleSubset(filelist, samplePattern, ...)
@@ -1258,10 +1258,15 @@ DEhelper.strandspecificity <- function(samplePattern=NULL, ...){
 ## 
 DEhelper.cutadapt <- function(colorByFactor=NULL, targetsdf=targets, ...){
   
+  # logs folder
+  if(!all(sapply(SHINYREPS_CUTADAPT_LOGS, file.exists))) {
+    return(paste("Cutadapt statistics not available for", names(which(!sapply(SHINYREPS_CUTADAPT_LOGS, file.exists)))))
+  }
+  
 # x <- sapply(list.files(SHINYREPS_CUTADAPT_LOGS,pattern='imb_gcf.*.log$',full.names=TRUE), function(f) { 
 x <- list.files(SHINYREPS_CUTADAPT_LOGS,pattern='*cutadapt.log$',full.names=TRUE) 
-# select subset of samples for fastqc figures (e.g. merged singlecell pools) or use all samples for samplePattern=NULL
 
+# select subset of samples for fastqc figures (e.g. merged singlecell pools) or use all samples for samplePattern=NULL
 x <- selectSampleSubset(x, ...)
 
 x <- sapply(x, function(f) { 
@@ -1301,12 +1306,7 @@ if(!is.null(colorByFactor) && nrow(x.df) == nrow(targetsdf)) { # if targets obje
 
   targetsdf$samplemod <- gsub(lcSuffix(targetsdf$sample ), "", targetsdf$sample ) # shorten filename suffix
   targetsdf$samplemod <- gsub(lcPrefix(targetsdf$sample ), "", targetsdf$sample ) # shorten filename suffix
-  #if(!is.na(SHINYREPS_PREFIX)) {targetsdf$samplemod  <- gsub(SHINYREPS_PREFIX, "", targetsdf$samplemod)}
-  targetsdf$samplemod <- gsub(lcPrefix(targetsdf$sample ), "", targetsdf$sample ) # shorten filename prefix
-  
-  
-  #index <- as.numeric(sapply(x.df$filename, function(x) grep(x, targetsdf$samplemod, ignore.case = T))) # grep for shortened file names in sample names
-  # x.df <- cbind(x.df, targetsdf[index, , drop=F ]) 
+ 
   index <- as.numeric(sapply(targetsdf$samplemod, function(s) grep(s, x.df$filename, ignore.case = T))) # grep for sample name in shortened file names
       if(nrow(x.df) != length(index) || any(is.na(index))) {
         stop("\nThere seem to be ambiguous sample names in targets. Can't assign them uniquely to cutadapt logfile names")
@@ -1334,19 +1334,23 @@ if(!is.null(colorByFactor) && nrow(x.df) == nrow(targetsdf)) { # if targets obje
 
 # melt data frame for plotting
 x.melt <- melt(x.df, measure.vars=c("trimmed", "tooshort", grep("Adapter", colnames(x.df), value=T)),
-               #id.vars=group.vars,
                variable="reads")
 # everything which is not a value should be a factor
 
 # now we do a violin plot of the trimmed/too_short/etc. ones and color it
 # according to the different factors given in colorByFactor 
+
+# prepare palette of appropriate length
+colourCount = length(unique(x.melt[,colorByFactor]))
+getPalette = colorRampPalette(brewer.pal(9, "Set1"))
+
 create.violin <- function(x.melt, color.value){
   ylab <- "% reads"
   p <- ggplot(x.melt, aes_string(x="reads",
                                  y="value",
                                  color=color.value ))+
     geom_quasirandom() +
-    scale_color_brewer(type= "qual", palette=2)  +    # replaced color palette: scale_color_brewer(palette="Paired")
+    scale_color_manual(values=getPalette(colourCount)) + # creates as many colors as needed
     ylab(ylab) +
     xlab("") +
     scale_y_continuous( breaks=seq(0, max(x.melt$value), 10),
@@ -1451,13 +1455,17 @@ DEhelper.umicount <- function(colorByFactor=NULL, targetsdf=targets, ...){
   #now we do a violin plot of the trimmed/too_short/etc. ones and color it
   # according to the different factors given in colorByFactor 
   
+  # prepare palette of appropriate length
+  colourCount = length(unique(x.melt[,colorByFactor]))
+  getPalette = colorRampPalette(brewer.pal(9, "Set1"))
+  
   create.violin <- function(x.melt, color.value){
     ylab <- "% reads"
     p <- ggplot(x.melt, aes_string(x="reads",
                                    y="value",
                                    color=color.value ))+
       geom_quasirandom() +
-      scale_color_brewer(type= "qual", palette=2)  +    # FR replaced color palette: scale_color_brewer(palette="Paired")
+      scale_color_manual(values=getPalette(colourCount)) + # creates as many colors as needed
       ylab(ylab) +
       xlab("") +
       scale_y_continuous( breaks=seq(0, max(x.melt$value), 10),
@@ -1578,10 +1586,10 @@ DEhelper.Subread <- function() {
 DEhelper.Qualimap <- function(...) {
     
     # logs folder
-    if(!file.exists(SHINYREPS_QUALIMAP_LOGS)) {
-        return("Read distribution statistics not available")
-    }  
-    
+    if(!all(sapply(SHINYREPS_QUALIMAP_LOGS, file.exists))) {
+      return(paste("Read distribution statistics not available for", names(which(!sapply(SHINYREPS_QUALIMAP_LOGS, file.exists)))))
+    }
+  
     QC <- SHINYREPS_QUALIMAP_LOGS    
     # construct the image url from the folder contents (skip current dir .)
     samples <- list.files(QC, pattern="Reads.*.png$", recursive=T, full.names=T)
@@ -1656,12 +1664,27 @@ DEhelper.Trackhub <- function() {
 ##
 ## report version of used tools
 Toolhelper.ToolVersions <- function() {
-    toolList <- SHINYREPS_TOOL_VERSIONS[1]
-    ver <- read.table(file=toolList,sep="=")
-    ver$V1 <- strsplit(as.character(ver$V1),"_VERSION")
-    colnames(ver) <- c("Tool name","Version")
-
-    kable(as.data.frame(ver),output=F)
+  
+  custom.merge <- function(x,y) { # custom merge function for Reduce
+    # if(is.null(y)) return(x)
+    z <- merge(x,y, all=T, by=1)
+    rownames(z) <- z$Row.names
+    return(z)}
+  
+  ver_list <- list()
+  for(t in SHINYREPS_TOOL_VERSIONS) {
+    toolList <- t
+    ver_list[[t]] <- read.table(file=toolList,sep="=")
+  }
+  names(ver_list) <- basename(SHINYREPS_PROJECT)
+  
+  ver <- Reduce(custom.merge, ver_list)
+  
+  ver$V1 <- gsub("_VERSION", "", as.character(ver$V1))
+  colnames(ver) <- c("Tool name", names(ver_list))
+  if (length(names(ver_list))==1) {colnames(ver)[colnames(ver)==names(ver_list)] <- "Version"}
+  
+  kable(as.data.frame(ver),output=F)
 }
 
 
@@ -1684,6 +1707,7 @@ MAD <- function(x, n) {
 #' 
 plotPCAfromQCmetrics <- function(sce, metrics, anno){
   
+  
   if(length(anno)>2) {stop("\nno more than 2 categories allowed in 'anno'.")}
   dotcol <- anno[1]
   if(length(anno)==2) { 
@@ -1697,16 +1721,22 @@ plotPCAfromQCmetrics <- function(sce, metrics, anno){
   pca <- cbind(pca, qc.drop[match(rownames(pca), rownames(qc.drop)), ])
   pca <- cbind(pca, as.data.frame(colData(sce)[match(rownames(pca), colnames(sce)), unique(c("cells",anno)), drop=F]))
   
-  p_allGroups <-  plotReducedDim(pca.sce, use_dimred="PCA_coldata", colour_by=dotcol, shape_by=dotshape) +
+  p_allGroups <-  plotReducedDim(pca.sce, use_dimred="PCA_coldata", by_exprs_values = "counts", colour_by=dotcol, shape_by=dotshape) +   # 
     geom_text_repel(aes(x=PC1, y=PC2, label=cells), subset(pca, cells %in% c("0c", "10c"))) +
     scale_fill_discrete(guide=F) +
-    geom_point(aes(color=colour_by), size=3)+
     scale_color_brewer(palette = "Dark2", name=dotcol) +
     #  scale_alpha_manual(values=1) + 
     theme_bw()
   
+  if(is.null(dotshape)) {
+    p_allGroups <- p_allGroups + 
+      geom_point(aes(color=colour_by), size=3)} else {
+        p_allGroups <- p_allGroups +
+          geom_point(aes(color=colour_by, shape=shape_by), size=3)
+      } 
+  
   plot(p_allGroups)
-  }
+}
 
 
 

@@ -7,7 +7,7 @@ Cutadapt = {
         doc title: "Cutadapt",
         desc:  "remove adapter from reads",
         constraints: "Only supports compressed FASTQ files",
-        author: "Antonio Domingues, Anke Busch, Nastasja Kreim"
+        author: "Antonio Domingues, Anke Busch, Nastasja Kreim, Frank Rühle"
 
     output.dir = CUTADAPT_OUTDIR
 
@@ -38,7 +38,12 @@ Cutadapt = {
             ${PREAMBLE} &&
 
             SAMPLENAME_BASE=\$(basename ${SAMPLENAME}) &&
-            cutadapt $CUTADAPT_FLAGS --too-short-output=${CUTADAPT_DISCARDED_DIR}/${SAMPLENAME_BASE}.cutadapt_discarded.fastq.gz --output=$output $input 2>&1 >> ${CUTADAPT_LOGDIR}/${SAMPLENAME_BASE}.cutadapt.log --info-file=${CUTADAPT_LOGDIR}/${SAMPLENAME_BASE}.cutadapt.info
+
+            cutadapt $CUTADAPT_FLAGS --too-short-output=\${TMP}/\${SAMPLENAME_BASE}.cutadapt_discarded.fastq.gz --output=\${TMP}/\${SAMPLENAME_BASE}.cutadapt.fastq.gz $input 2>&1 >> ${CUTADAPT_LOGDIR}/${SAMPLENAME_BASE}.cutadapt.log &&
+		
+            mv \${TMP}/\${SAMPLENAME_BASE}.cutadapt_discarded.fastq.gz ${CUTADAPT_DISCARDED_DIR}/\${SAMPLENAME_BASE}.cutadapt_discarded.fastq.gz &&
+            mv \${TMP}/\${SAMPLENAME_BASE}.cutadapt.fastq.gz $output
+
         ""","Cutadapt"
     }
 }
