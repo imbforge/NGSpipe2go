@@ -1,8 +1,10 @@
-// vars for task SplitNCigarReads step from catalog RNAseqVariantCalling, version 1
-GATK_REF=ESSENTIAL_GENOME_REF
-GATK_THREADS=ESSENTIAL_THREADS
-SPLITNCIGAR_MAXMEM = "2400m"  // max mem in MB to reserve for the jvm
-READ_FILTER_FLAG="ReassignOneMappingQuality"
-MAP_Q_FROM_FLAG=255
-MAP_Q_TO_FLAG=60
-UNSAFE_FLAG="ALLOW_N_CIGAR_READS"
+SplitNCigarReads_vars=[
+    outdir          : STAR_pe_2nd_vars.outdir,
+    gatk_ref        : ESSENTIAL_GENOME_REF,
+    gatk_threads    : ESSENTIAL_THREADS,
+    java_flags      : "2400m",
+    read_filter_flag: "ReassignOneMappingQuality",
+    map_q_from_flag : 255,
+    map_q_to_flag   : 60,
+    unsafe_flag     : "ALLOW_N_CIGAR_READS"
+]

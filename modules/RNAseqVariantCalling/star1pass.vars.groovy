@@ -1,11 +1,13 @@
-//vars for task STAR_pe 1st step from catalog RNAseq, version 1
-STAR_THREADS = 8
-// STAR_REF = ESSENTIAL_STAR_REF
-STAR_MAXRAM = "31000000000"	// around 30Gb for mammals
-STAR_BUFSIZE = "150000000"	// buffer size
-STAR_MM = "2"				// number of mismatches allowed
-STAR_MULTIMAP = "10"		// max multimap positions per read
-STAR_MININTRO = "21"		// minimum intron size
-STAR_FILTER_SEC="YES"		// filter out secondary alignments from the bam file?
-OUTDIR = MAPPED + "/1stPass"
-
+STAR_pe_vars=[
+    outdir    : MAPPED + "/1stPass",
+    logdir    : LOGS + "/STAR_1stPass",
+    threads   : Integer.toString(ESSENTIAL_THREADS),
+    ref       : ESSENTIAL_STAR_REF,
+    maxram    : "31000000000", // around 30Gb for mammals
+    bufsize   : "150000000",   // buffer size
+    mm        : "2",           // number of mismatches allowed
+    multimap  : "10",          // max multimap positions per read
+    minintro  : "21",          // minimum intron size
+    overhang  : Integer.toString(ESSENTIAL_READLENGTH - 1),
+    extra     : ""
+]

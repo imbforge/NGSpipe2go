@@ -9,14 +9,14 @@ SplitNCigarReads = {
         constraints: "GATK version >= 3.5",
         author: "Antonio Domingues"
 
-    output.dir = OUTDIR_STAR2ND
+    output.dir = SplitNCigarReads_vars.outdir
 
-    def JAVA_FLAGS = "-Xmx" + SPLITNCIGAR_MAXMEM
-    def SPLITCIGAR_FLAGS  = " -R " + GATK_REF +
-                            " -rf " + READ_FILTER_FLAG +
-                            " -RMQF " + MAP_Q_FROM_FLAG +
-                            " -RMQT " + MAP_Q_TO_FLAG +
-                            " -U " + UNSAFE_FLAG
+    def SplitNCigarReads_FLAGS =
+    (SplitNCigarReads_vars.gatk_ref         ? " -R "    + SplitNCigarReads_vars.gatk_ref         : "") +
+    (SplitNCigarReads_vars.read_filter_flag ? " -rf "   + SplitNCigarReads_vars.read_filter_flag : "") +
+    (SplitNCigarReads_vars.map_q_from_flag  ? " -RMQF " + SplitNCigarReads_vars.map_q_from_flag  : "") +
+    (SplitNCigarReads_vars.map_q_to_flag    ? " -RMQT " + SplitNCigarReads_vars.map_q_to_flag    : "") +
+    (SplitNCigarReads_vars.unsafe_flag      ? " -U "    + SplitNCigarReads_vars.unsafe_flag      : "")
 
     def TOOL_ENV = prepare_tool_env("java", tools["java"]["version"], tools["java"]["runenv"]) + " && " +
                    prepare_tool_env("gatk", tools["gatk"]["version"], tools["gatk"]["runenv"])
@@ -27,7 +27,7 @@ SplitNCigarReads = {
            ${TOOL_ENV} &&
            ${PREAMBLE} &&
 
-           java $JAVA_FLAGS -jar \${gatk} -T SplitNCigarReads -I $input -o $output $SPLITCIGAR_FLAGS
+           java ${VariantCallHC_vars.java_flags} -Djava.io.tmpdir=\${TMP} -jar \${gatk} -T SplitNCigarReads $SplitNCigarReads_FLAGS -I $input -o $output
        ""","SplitNCigarReads"
     }
 }

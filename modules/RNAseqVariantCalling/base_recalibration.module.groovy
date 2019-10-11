@@ -9,11 +9,16 @@ BaseRecalibration = {
         constraints: "GATK version >= 3.5",
         author: "Antonio Domingues"
 
-    output.dir = OUTDIR_STAR2ND
+    output.dir = BaseRecalibration_vars.outdir
 
-    def JAVA_FLAGS = "-Xmx" + RECAL_MAXMEM
-    def GATK_FLAGS  = " -R " + GATK_REF +
-                      " -nct " + GATK_THREADS
+    def BaseRecalibrator_FLAGS =
+        (BaseRecalibration_vars.vcf_ref    ? " -knownSites " + BaseRecalibration_vars.vcf_ref    : "" ) +
+        (BaseRecalibration_vars.threads    ? " -nct "        + BaseRecalibration_vars.threads    : "" ) +
+        (BaseRecalibration_vars.genome_ref ? " -R "          + BaseRecalibration_vars.genome_ref : "" )
+
+    def PrintReads_FLAGS =
+        (BaseRecalibration_vars.threads    ? " -nct " + BaseRecalibration_vars.threads    : "" ) +
+        (BaseRecalibration_vars.genome_ref ? " -R "   + BaseRecalibration_vars.genome_ref : "" )
 
     def TOOL_ENV = prepare_tool_env("java", tools["java"]["version"], tools["java"]["runenv"]) + " && " +
                    prepare_tool_env("gatk", tools["gatk"]["version"], tools["gatk"]["runenv"])
@@ -24,8 +29,8 @@ BaseRecalibration = {
             ${TOOL_ENV} &&
             ${PREAMBLE} &&
 
-            java -jar \${gatk} -T BaseRecalibrator -I $input -o $output1 -knownSites $VCF_REF  $GATK_FLAGS &&
-            java $JAVA_FLAGS -jar \${gatk} -T PrintReads -I $input -BQSR $output1 -o $output2 $GATK_FLAGS
+            java ${BaseRecalibration_vars.java_flags} -Djava.io.tmpdir=\${TMP} -jar \${gatk} -T BaseRecalibrator $BaseRecalibrator_FLAGS -I $input -o $output1 &&
+            java ${BaseRecalibration_vars.java_flags} -Djava.io.tmpdir=\${TMP} -jar \${gatk} -T PrintReads $PrintReads_FLAGS -I $input -BQSR $output1 -o $output2
         ""","BaseRecalibration"
     }
 }

@@ -9,7 +9,7 @@ ESSENTIAL_THREADS=4
 //global vars that will be reused in some global vars
 PROJECT=ESSENTIAL_PROJECT
 LOGS=PROJECT + "/logs"
-MAPPED=PROJECT + "/results/mapped"
+MAPPED=PROJECT + "/mapped"
 QC=PROJECT + "data/qc"
 REPORTS=PROJECT + "/reports"
 RESULTS=PROJECT + "/results"

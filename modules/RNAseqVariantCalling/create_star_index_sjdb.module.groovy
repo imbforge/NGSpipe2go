@@ -9,35 +9,24 @@ GenerateStarIndexFromSJ = {
         constraints: "STAR STAR_2.4.2a",
         author: "Antonio Domingues"
 
-    output.dir = OUTDIR_2ND_INDEX
+    output.dir = GenerateStarIndexFromSJ_vars.outdir
+
+    def STAR_FLAGS =
+        " --runMode genomeGenerate " +
+        " --readFilesCommand zcat "  +
+        (GenerateStarIndexFromSJ_vars.outdir_2nd_index ? " --genomeDir "              + GenerateStarIndexFromSJ_vars.outdir_2nd_index : "") +
+        (GenerateStarIndexFromSJ_vars.genome_ref       ? " --genomeFastaFiles "       + GenerateStarIndexFromSJ_vars.genome_ref : "") +
+        (GenerateStarIndexFromSJ_vars.sjdbfile         ? " --sjdbFileChrStartEnd "    + GenerateStarIndexFromSJ_vars.sjdbfile   : "") +
+        (GenerateStarIndexFromSJ_vars.overhang         ? " --sjdbOverhang "           + GenerateStarIndexFromSJ_vars.overhang   : "") +
+        (GenerateStarIndexFromSJ_vars.threads          ? " --runThreadN "             + GenerateStarIndexFromSJ_vars.threads    : "") +
+        (GenerateStarIndexFromSJ_vars.maxram           ? " --limitGenomeGenerateRAM " + GenerateStarIndexFromSJ_vars.maxram     : "") +
+        (GenerateStarIndexFromSJ_vars.bufsize          ? " --limitIObufferSize "      + GenerateStarIndexFromSJ_vars.bufsize    : "") +
+        (GenerateStarIndexFromSJ_vars.extra            ? " "                          + GenerateStarIndexFromSJ_vars.extra      : "")
+
+    def TOOL_ENV = prepare_tool_env("star", tools["star"]["version"], tools["star"]["runenv"])
+    def PREAMBLE = get_preamble("GenerateStarIndexFromSJ")
 
     produce("sjdbInfo.txt"){
-        def int OVERHANG
-        OVERHANG = ESSENTIAL_READLENGTH.toInteger() - 1
-
-        def STAR_FLAGS = " --runMode genomeGenerate" +
-                         " --genomeDir " + OUTDIR_2ND_INDEX +
-                         " --genomeFastaFiles " + ESSENTIAL_GENOME_REF +
-                         " --sjdbFileChrStartEnd " + SJDBFILE +
-                         " --sjdbOverhang " + OVERHANG.toString() +
-                         " --runThreadN " + STAR_THREADS +
-                         " --limitGenomeGenerateRAM " + STAR_MAXRAM +
-                         " --limitIObufferSize " + STAR_BUFSIZE +
-                         // " --outFilterMismatchNmax " + STAR_MM +
-                         // " --outFilterMultimapNmax " + STAR_MULTIMAP +
-                         // " --genomeLoad NoSharedMemory" +
-                         // " --alignIntronMin " + STAR_MININTRO +
-                         // " --outStd SAM" +
-                         // " --outSAMattributes Standard" +
-                         // " --outSJfilterReads Unique" +
-                         // " --outFileNamePrefix " + output.dir + "/" + EXP + "." +
-                         // " --outTmpDir " + TMP + "/" + EXP +
-                         // " --sjdbGTFfile " + ESSENTIAL_GENESGTF +
-                         " --readFilesCommand zcat"
-
-        def TOOL_ENV = prepare_tool_env("star", tools["star"]["version"], tools["star"]["runenv"])
-        def PREAMBLE = get_preamble("GenerateStarIndexFromSJ")
-
         exec """
             ${TOOL_ENV} &&
             ${PREAMBLE} &&

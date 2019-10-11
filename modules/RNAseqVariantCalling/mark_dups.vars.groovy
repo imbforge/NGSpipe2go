@@ -1,6 +1,9 @@
-//vars for task AddRG 1st step from catalog RNAseqVariantCalling, version 1
-MARKDUPS_MAXMEM = "5000m"  // max mem in MB to reserve for the jvm
-MARKDUPS_REMOVE = "FALSE" // remove duplicates, or just mark?
-MARKDUPS_INDEX = "true"
-MARKDUPS_VALIDATION = "SILENT"
-
+MarkDups_vars=[
+    outdir       : MAPPED,
+    java_flags   : "-Xmx5000m",
+    remove_dups  : false,
+    index        : true,
+    assume_sorted: true,
+    validation   : "SILENT",
+    extra        : ""
+]

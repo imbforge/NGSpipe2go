@@ -9,10 +9,16 @@ VariantFiltration = {
        constraints: "GATK version >= 3.5",
        author: "Antonio Domingues"
 
-   output.dir = OUTPUT_HC
+    output.dir = VariantFiltration_vars.outdir
 
-   def JAVA_FLAGS = "-Xmx" + VARFILT_MAXMEM
-   def GATK_FLAGS  = " -R " + GATK_REF
+    def VariantFiltration_FLAGS =
+        " -window 35"            +
+        " -cluster 3"            +
+        " -filterName FS"        +
+        " -filter \"FS > 30.0\"" +
+        " -filterName QD"        +
+        " -filter \"QD < 2.0\""  +
+        (VariantFiltration_vars.ref     ? " -R "   + VariantFiltration_vars.ref     : "")
 
    def TOOL_ENV = prepare_tool_env("java", tools["java"]["version"], tools["java"]["runenv"]) + " && " +
                   prepare_tool_env("gatk", tools["gatk"]["version"], tools["gatk"]["runenv"])
@@ -23,7 +29,7 @@ VariantFiltration = {
             ${TOOL_ENV} &&
             ${PREAMBLE} &&
 
-            java $JAVA_FLAGS -jar \${gatk} -T VariantFiltration -V $input -o $output -window 35 -cluster 3 -filterName FS -filter "FS > 30.0" -filterName QD -filter "QD < 2.0" $GATK_FLAGS
+            java ${VariantFiltration_vars.java_flags} -Djava.io.tmpdir=\${TMP} -jar \${gatk} -T VariantFiltration -V $input -o $output $VariantFiltration_FLAGS
       ""","VariantFiltration"
    }
 }

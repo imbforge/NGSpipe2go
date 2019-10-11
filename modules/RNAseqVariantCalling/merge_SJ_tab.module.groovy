@@ -9,7 +9,7 @@ FilterAndMergeSJtab = {
         constraints: "STAR STAR_2.4.2a",
         author: "Antonio Domingues"
 
-    output.dir = OUTDIR_2ND_INDEX
+    output.dir = FilterAndMergeSJtab_vars.outdir
 
     def PREAMBLE = get_preamble("FilterAndMergeSJtab")
 
@@ -17,7 +17,7 @@ FilterAndMergeSJtab = {
         exec """
             ${PREAMBLE} &&
 
-            cat $inputs | awk 'BEGIN {OFS="\t"; strChar[0]="."; strChar[1]="+"; strChar[2]="-";} {if(\$5>0){print \$1,\$2,\$3,strChar[\$4]}}' > ${OUTDIR_2ND_INDEX}/SJ.out.tab.Pass1.sjdb
+            cat $inputs | awk 'BEGIN {OFS="\t"; strChar[0]="."; strChar[1]="+"; strChar[2]="-";} {if(\$5>0){print \$1,\$2,\$3,strChar[\$4]}}' > $output
         ""","FilterAndMergeSJtab"
     }
 }

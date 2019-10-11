@@ -4,56 +4,53 @@
 load PIPELINE_ROOT + "/modules/RNAseqVariantCalling/star2pass.vars.groovy"
 
 STAR_pe_2nd = {
-   doc title: "STAR SE/PE alignment",
-      desc:  "Align single end and pair end reads",
-      constraints: "Only works with compressed input. Set all global vars.",
-      author: "Sergi Sayols modified by N.Kreim and Antonio Domingues"
+    doc title: "STAR PE alignment",
+       desc:  "Align single end and pair end reads",
+       constraints: "Only works with compressed input. Set all global vars.",
+       author: "Sergi Sayols modified by N.Kreim and Antonio Domingues"
 
-   output.dir = OUTDIR_STAR2ND
+    output.dir = STAR_pe_2nd_vars.outdir
 
-   // create the LOGS/STAR folder if it doesn't exists
-   def F_LOG = new File(LOGS + "/STAR_2ndPass")
-   if(! F_LOG.exists()) {
-      F_LOG.mkdirs()
-   }
+    //before we start we have to define the output filename
+    File f = new File(input1)
+    def EXP = (f.getName() =~ /(.R1)*.fastq.gz/).replaceFirst("")
 
-   // code chunk
-   //before we start we have to define the output filename
-   // def OUTPUTFILE = input1
-   // OUTPUTFILE = (OUTPUTFILE =~ /_R1.fastq.gz/).replaceFirst("")
-   def EXP = input1.split("/")[-1].replaceAll("_R1.fastq.gz", "")
+    def STAR_FLAGS =
+        " --runMode alignReads "        +
+        " --genomeLoad NoSharedMemory " +
+        " --outStd SAM "                +
+        " --outSAMattributes Standard " +
+        " --outSJfilterReads Unique "   +
+        " --readFilesCommand zcat "     +
+        " --outFileNamePrefix "         + STAR_pe_2nd_vars.outdir + "/" + EXP + "." +
+        (STAR_pe_2nd_vars.maxram   ? " --limitGenomeGenerateRAM " + STAR_pe_2nd_vars.maxram   : "") +
+        (STAR_pe_2nd_vars.bufsize  ? " --limitIObufferSize "      + STAR_pe_2nd_vars.bufsize  : "") +
+        (STAR_pe_2nd_vars.ref      ? " --genomeDir "              + STAR_pe_2nd_vars.ref      : "") +
+        (STAR_pe_2nd_vars.threads  ? " --runThreadN "             + STAR_pe_2nd_vars.threads  : "") +
+        (STAR_pe_2nd_vars.mm       ? " --outFilterMismatchNmax "  + STAR_pe_2nd_vars.mm       : "") +
+        (STAR_pe_2nd_vars.multimap ? " --outFilterMultimapNmax "  + STAR_pe_2nd_vars.multimap : "") +
+        (STAR_pe_2nd_vars.minintro ? " --alignIntronMin "         + STAR_pe_2nd_vars.minintro : "") +
+        (STAR_pe_2nd_vars.overhang ? " --sjdbOverhang "           + STAR_pe_2nd_vars.overhang : "") +
+        (STAR_pe_2nd_vars.gtf      ? " --sjdbGTFfile "            + STAR_pe_2nd_vars.gtf      : "") +
+        (STAR_pe_2nd_vars.extra    ? " "                          + STAR_pe_2nd_vars.extra    : "")
 
-   produce(EXP + ".bam") {
-      def int OVERHANG
-      OVERHANG = ESSENTIAL_READLENGTH.toInteger() - 1
+    // samtools flags
+    def SAMTOOLS_VIEW_FLAGS = "-bhSu" +
+        (STAR_pe_2nd_vars.filter_sec ? " -F 256" : "")
+    def SAMTOOLS_SORT_FLAGS = " -O bam" +
+        (STAR_pe_2nd_vars.samtools_threads ? " -@ " + STAR_pe_2nd_vars.samtools_threads : "")
 
-      def STAR_FLAGS = " --runMode alignReads" +
-                " --limitGenomeGenerateRAM " + STAR_MAXRAM +
-                " --limitIObufferSize " + STAR_BUFSIZE +
-                " --genomeDir " + STAR_REF_2 +
-                " --runThreadN " + STAR_THREADS +
-                " --outFilterMismatchNmax " + STAR_MM +
-                " --outFilterMultimapNmax " + STAR_MULTIMAP +
-                " --genomeLoad NoSharedMemory" +
-                " --sjdbOverhang " + OVERHANG.toString() +
-                " --alignIntronMin " + STAR_MININTRO +
-                " --outStd SAM" +
-                " --outSAMattributes Standard" +
-                " --outSJfilterReads Unique" +
-                " --outFileNamePrefix " + output.dir + "/" + EXP + "." +
-                // " --sjdbGTFfile " + ESSENTIAL_GENESGTF +
-                " --readFilesCommand zcat"
+    def TOOL_ENV = prepare_tool_env("star", tools["star"]["version"], tools["star"]["runenv"]) + " && " +
+                   prepare_tool_env("samtools", tools["samtools"]["version"], tools["samtools"]["runenv"])
+    def PREAMBLE = get_preamble("STAR_pe_2nd")
 
-      def TOOL_ENV = prepare_tool_env("star", tools["star"]["version"], tools["star"]["runenv"]) + " && " +
-                     prepare_tool_env("samtools", tools["samtools"]["version"], tools["samtools"]["runenv"])
-      def PREAMBLE = get_preamble("STAR_pe_2nd")
+    produce(EXP + ".bam") {
+        exec """
+            ${TOOL_ENV} &&
+            ${PREAMBLE} &&
 
-      exec """
-         ${TOOL_ENV} &&
-         ${PREAMBLE} &&
-
-         STAR $STAR_FLAGS --outTmpDir \${TMP}/$EXP --readFilesIn $inputs | samtools view -bhSu -F 256 - | samtools sort -@ $STAR_THREADS - $output.dir"/"${EXP} &&
-         rm -rf \${TMP}/${EXP}
-      ""","STAR_pe_2nd"
+            STAR $STAR_FLAGS --outTmpDir \${TMP}/$EXP --readFilesIn $inputs | samtools view $SAMTOOLS_VIEW_FLAGS - | samtools sort $SAMTOOLS_SORT_FLAGS -T \${TMP}/${EXP}_sort - > $output &&
+            rm -rf \${TMP}/${EXP}*
+        ""","STAR_pe_2nd"
    }
 }

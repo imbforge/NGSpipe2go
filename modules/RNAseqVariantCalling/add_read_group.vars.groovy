@@ -1,2 +1,4 @@
-//vars for task AddRG 1st step from catalog RNAseqVariantCalling, version 1
-RG_MAXMEM = "5000m"
+AddRG_vars=[
+    outdir    : STAR_pe_2nd_vars.outdir,
+    java_flags: "-Xmx5000m"
+]

@@ -9,9 +9,8 @@ AddRG = {
         constraints: "Picard tools version >= 1.141"
         author: "Antonio Domingues"
 
-    output.dir = OUTDIR_STAR2ND
-    def JAVA_FLAGS = "-Xmx" + RG_MAXMEM
-    def EXP = input1.split("/")[-1].replaceAll(".bam", "")
+    File f = new File(input1)
+    def EXP = (f.getName() =~ /.bam/).replaceFirst("")
 
     def TOOL_ENV = prepare_tool_env("picard", tools["picard"]["version"], tools["picard"]["runenv"])
     def PREAMBLE = get_preamble("AddRG")
