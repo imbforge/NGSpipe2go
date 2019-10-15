@@ -1,4 +1,6 @@
-PIPELINE_ROOT="/fsimb/groups/imb-bioinfocf/projects/cfb_internal/tmp/ngspipe2go_chipseq_test/NGSpipe2go"
+PIPELINE="ChIPseq_pe"
+PIPELINE_VERSION="1.0"
+PIPELINE_ROOT="./NGSpipe2go"
 
 load PIPELINE_ROOT + "/pipelines/ChIPseq/essential.vars.groovy"
 load PIPELINE_ROOT + "/pipelines/ChIPseq/tools.groovy"

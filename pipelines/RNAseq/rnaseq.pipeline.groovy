@@ -1,3 +1,5 @@
+PIPELINE="RNAseq"
+PIPELINE_VERSION="1.0"
 PIPELINE_ROOT="./NGSpipe2go/"    // may need adjustment for some projects
 
 load PIPELINE_ROOT + "/pipelines/RNAseq/essential.vars.groovy"

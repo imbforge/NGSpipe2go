@@ -1,3 +1,5 @@
+PIPELINE="DNAseq"
+PIPELINE_VERSION="1.0"
 PIPELINE_ROOT="./NGSpipe2go/"  // adjust to your projects needs
 
 load PIPELINE_ROOT + "/pipelines/DNAseq/essential.vars.groovy"
