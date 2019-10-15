@@ -1,3 +1,5 @@
+PIPELINE="scRNAseq_marsseq"
+PIPELINE_VERSION="1.0"
 PIPELINE_ROOT="./NGSpipe2go/"    // may need adjustment for some projects
 
 load PIPELINE_ROOT + "/pipelines/scRNAseq/essential.vars.groovy"
@@ -13,11 +15,11 @@ load PIPELINE_ROOT + "/modules/RNAseq/genebodycov2.module.groovy"
 load PIPELINE_ROOT + "/modules/RNAseq/inferexperiment.module.groovy"
 load PIPELINE_ROOT + "/modules/RNAseq/qualimap.module.groovy"
 load PIPELINE_ROOT + "/modules/RNAseq/star.module.groovy"
-load PIPELINE_ROOT + "/modules/RNAseq/subread2rnatypes.module.groovy"
 load PIPELINE_ROOT + "/modules/miscellaneous/collectbpipes.module.2.groovy"
 load PIPELINE_ROOT + "/modules/scRNAseq/addumibarcodetofastq.module.groovy"
 load PIPELINE_ROOT + "/modules/scRNAseq/cutadapt.module.groovy"
 load PIPELINE_ROOT + "/modules/scRNAseq/subread.module.groovy"
+load PIPELINE_ROOT + "/modules/RNAseq/subread2rnatypes.module.groovy"
 load PIPELINE_ROOT + "/modules/scRNAseq/umicount.module.groovy"
 load PIPELINE_ROOT + "/modules/scRNAseq/umidedup.module.groovy"
 load PIPELINE_ROOT + "/modules/scRNAseq/shinyreports.module.groovy"

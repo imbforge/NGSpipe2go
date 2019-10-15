@@ -1,38 +1,37 @@
-//vars for task shinyReports from catalog miscellaneous, version 1
-SHINYREPS_PROJECT=PROJECT	//project directory
-SHINYREPS_ORG=ESSENTIAL_ORG	//UCSC organism
-SHINYREPS_DB=ESSENTIAL_DB	//UCSC assembly version
-SHINYREPS_PAIRED=ESSENTIAL_PAIRED // paired-end data [yes|no]
-SHINYREPS_LOG=LOGS			//where the logs lie
-SHINYREPS_QC=QC				//where the QC lie
-SHINYREPS_RES=RESULTS		//where the results lie
-SHINYREPS_PREFIX=ESSENTIAL_SAMPLE_PREFIX	//standard sample prefix
-SHINYREPS_STAR_LOG=LOGS + "/STAR"	//where the STAR logs lie
-SHINYREPS_STAR_SUFFIX="Log.final.out"	//extension given to the STAR log files
-SHINYREPS_STARparms_SUFFIX="Log.out"	//extension given to the STAR log files
-SHINYREPS_FASTQC_OUT=FASTQC_OUTDIR		//where the Fastqc output lie
-SHINYREPS_FASTQC_LOG=LOGS + "/FastQC"		//where the Fastqc logs lie
-SHINYREPS_BAMINDEX_LOG=LOGS + "/BAMindexer"	//where the Samtools/BamIndexer logs lie
-SHINYREPS_DUPRADAR_LOG=QC + "/dupRadar" //where dupRadar results lie
-SHINYREPS_RNATYPES_LOG=LOGS + "/RNAtypes"	//where the RNAtypes logs lie
-SHINYREPS_RNATYPES=RNATYPES_OUTDIR	//where the RNAtypes count results lie
-SHINYREPS_RNATYPES_SUFFIX="counts.tsv" // the extension of the subread results files
-SHINYREPS_GENEBODYCOV_LOG=QC + "/geneBodyCov"
-SHINYREPS_BUSTARD=QC + "/DemultiplexedBustardSummary.xml"	//where the bustard xml file lies
-SHINYREPS_SUBREAD=RESULTS + "/subread-count" // location of the subread counts
-SHINYREPS_SUBREAD_SUFFIX=".raw_readcounts.tsv.summary" // the extension of the subread stats file
-SHINYREPS_SUBREAD_LOG=LOGS + "/subread_count"	//where the Subread/FeatureCounts logs lie
-SHINYREPS_BAM2BW_LOG=LOGS + "/bam2bw"        	//where the Bam2BW logs lie
-SHINYREPS_UMICOUNT=RESULTS + "/umicount" // location of the umitools counts 
-SHINYREPS_UMICOUNT_LOG=LOGS + "/umicount"	//where the umicount/FeatureCounts logs lie 
-SHINYREPS_MARKDUPS_LOG=LOGS + "/MarkDups"	//where the picard MarkDuplicates logs lie
-SHINYREPS_PLOTS_COLUMN=3L    //number of columns to splits the plot grids (dupradar, genebodycov...). Min=2L. L=integer in R
-SHINYREPS_INFEREXPERIMENT_LOGS=QC + "/inferexperiment" //where the inferexperiment logs lie
-SHINYREPS_QUALIMAP_LOGS=QC + "/qualimap" //where the qualimap output files are
-SHINYREPS_GO_ENRICHMENT=RESULTS + "/GO_Analysis" // where the GO enrichment results lie
-SHINYREPS_INSERTSIZE=QC + "/insertsize" //where the insertsize statistics are found
-SHINYREPS_TRACKHUB_DONE=PROJECT + "/trackhub.done" // contains trackhub URL
-SHINYREPS_TOOL_VERSIONS=PROJECT+ "/NGSpipe2go/modules/scRNAseq/tool.versions.groovy" //where the tool versions are listed
-SHINYREPS_CUTADAPT_LOGS=LOGS + "/Cutadapt" // cutadapt log files
-SHINYREPS_GTF=ESSENTIAL_GENESGTF 
-SHINYREPS_TARGET=PROJECT + "/NGSpipe2go/pipelines/scRNAseq/targets.txt" 
+shinyReports_vars=[
+    project         : PROJECT,          //project directory
+    org             : ESSENTIAL_ORG,    //UCSC organism
+    db              : ESSENTIAL_DB,     //UCSC assembly version
+    paired          : ESSENTIAL_PAIRED, // paired-end data [yes|no]
+    log             : LOGS,             //where the logs lie
+    qc              : QC,               //where the QC lie
+    res             : RESULTS,          //where the results lie
+    prefix          : ESSENTIAL_SAMPLE_PREFIX, //standard sample prefix
+    star_log        : STAR_vars.logdir,        //where the STAR logs lie
+    star_suffix     : "Log.final.out",         //extension given to the STAR log files
+    starparms_suffix: "Log.out",               //extension given to the STAR log files
+    fastqc_out      : FastQC_vars.outdir,      //where the Fastqc output lie
+    fastqc_log      : LOGS + "/FastQC",        //where the Fastqc logs lie
+    bamindex_log    : LOGS + "/BAMindexer",    //where the Samtools/BamIndexer logs lie
+    dupradar_log    : dupRadar_vars.outdir,    //where dupRadar results lie
+    rnatypes_log    : LOGS + "/RNAtypes",      //where the RNAtypes logs lie
+    rnatypes        : subread2rnatypes_vars.outdir, //where the RNAtypes count results lie
+    rnatypes_suffix : "counts.tsv",            //the extension of the subread results files
+    genebodycov_log : geneBodyCov2_vars.outdir,
+    bustard         : QC + "/DemultiplexedBustardSummary.xml",  //where the bustard xml file lies
+    subread         : subread_count_vars.outdir,     // location of the subread counts
+    subread_suffix  : ".raw_readcounts.tsv.summary", // the extension of the subread stats file
+    subread_log     : LOGS + "/subread_count",       //where the Subread/FeatureCounts logs lie
+    bam2bw_log      : LOGS + "/bam2bw",              //where the Bam2BW logs lie
+    umicount        : (PIPELINE == "scRNAseq_marsseq" ? umicount_vars.outdir : ""), //location of the umitools counts 
+    umicount_log    : (PIPELINE == "scRNAseq_marsseq" ? umicount_vars.logdir : ""), //where the umicount/FeatureCounts logs lie
+    markdups_log    : LOGS + "/MarkDups",            //where the picard MarkDuplicates logs lie
+    plots_column    : 3L,                            //number of columns to splits the plot grids (dupradar, genebodycov...). Min=2L. L=integer in R
+    inferexperiment_logs: inferexperiment_vars.outdir, //where the inferexperiment logs lie
+    qualimap_logs   : qualimap_vars.outdir,          //where the qualimap output files are
+    trackhub_done   : PROJECT + "/trackhub.done",    //contains trackhub URL
+    tool_versions   : PROJECT+ "/NGSpipe2go/modules/scRNAseq/tool.versions.groovy", //where the tool versions are listed
+    cutadapt_logs   : Cutadapt_vars.logdir,          // cutadapt log files
+    gtf             : ESSENTIAL_GENESGTF, 
+    target          : PROJECT + "/NGSpipe2go/pipelines/scRNAseq/targets.txt"
+]

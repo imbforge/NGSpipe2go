@@ -10,15 +10,12 @@ umidedup = {
         bpipe_version: "tested with bpipe 0.9.9.3",
         author: "Nastasja Kreim"
 
-    output.dir = UMIDEDUP_OUTDIR
-    def UMIDEDUP_FLAGS = UMIDEDUP_LOG + " " +
-                         UMIDEDUP_PARAM + " " +
-                         UMIDEDUP_EXTRA
-
-    if(ESSENTIAL_PAIRED == "yes"){
-      UMIDEDUP_FLAGS = UMIDEDUP_FLAGS + " --paired"
-    }
-    //umi_tools dedup $UMIDEDUP_FLAGS -I $input -S $output1 -E $output2 -L $output3 --output-stats=${output1.prefix}.stats
+    output.dir = umidedup_vars.outdir
+    def umidedup_FLAGS =
+        (umidedup_vars.verbose ? "--verbose=1 " : "") +
+        (umidedup_vars.paired  ? "--paired "    : "") +
+        (umidedup_vars.param   ? " " + umidedup_vars.param : "") +
+        (umidedup_vars.extra   ? " " + umidedup_vars.extra : "")
 
     def TOOL_ENV = prepare_tool_env("umitools", tools["umitools"]["version"], tools["umitools"]["runenv"])
     def PREAMBLE = get_preamble("umidedup")
@@ -29,7 +26,7 @@ umidedup = {
             ${TOOL_ENV} &&
             ${PREAMBLE} &&
 
-            umi_tools dedup $UMIDEDUP_FLAGS -I $input -S $output1 --output-stats=${output1.prefix}.stats
+            umi_tools dedup $umidedup_FLAGS -I $input -S $output --output-stats=${output.prefix}.stats
         ""","umidedup"
     }
 }
