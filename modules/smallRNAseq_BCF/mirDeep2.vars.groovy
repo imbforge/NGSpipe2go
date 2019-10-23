@@ -1,7 +1,7 @@
-//vars for task miRDeep2 from catalog smallRNAseq_BCF, version 0.1
-
-MIR_OUTDIR=RESULTS + "/miRDeep2"
-GENOME_SEQ=ESSENTIAL_GENOME_REF
-MATURE_MIRNA=ESSENTIAL_MATURE_MIRNA
-HAIRPIN_MIRNA=ESSENTIAL_HAIRPIN_MIRNA
-SPECIES=ESSENTIAL_SPECIES
+miRDeep2_vars=[
+    outdir       : RESULTS + "/miRDeep2",
+    genome_seq   : ESSENTIAL_GENOME_REF,
+    mature_mirna : ESSENTIAL_MATURE_MIRNA,
+    hairpin_mirna: ESSENTIAL_HAIRPIN_MIRNA,
+    species      : ESSENTIAL_SPECIES
+]

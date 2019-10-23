@@ -9,24 +9,24 @@ miRDeep2Mapper = {
         constraints: "Requires mirDeep2.",
         author: "Antonio Domingues, Anke Busch"
 
-    output.dir = MIR_MAPPER_OUTDIR
+    output.dir = miRDeep2Mapper_vars.outdir
+
+    def MIRDEEP2MAPPER_FLAGS=
+        (miRDeep2Mapper_vars.genome_ref ? " -p " + miRDeep2Mapper_vars.genome_ref : "") +
+        (miRDeep2Mapper_vars.extra      ? " "    + miRDeep2Mapper_vars.extra      : "")
 
     def TOOL_ENV = prepare_tool_env("mirdeep2", tools["mirdeep2"]["version"], tools["mirdeep2"]["runenv"])
     def PREAMBLE = get_preamble("miRDeep2Mapper")
 
     transform(".fastq.gz") to (".arf", ".fa") {
-        def SAMPLENAME = input.prefix
-        def OUTPUTLOG_MAIN = output2.prefix
-
         exec """
             ${TOOL_ENV} &&
             ${PREAMBLE} &&
 
-            SAMPLENAME_BASE=\$(basename ${SAMPLENAME}) &&
-            gunzip -c $input > \${TMP}/\${SAMPLENAME_BASE} &&
-            cd $output.dir &&
-            mapper.pl \${TMP}/\${SAMPLENAME_BASE} -e -p $GENOME_REF -s $output2 -t $output1 -h -m -i -j -o 8 &> ${OUTPUTLOG_MAIN}.mapper.log &&
-            rm \${TMP}/\${SAMPLENAME_BASE}
+            x="\${TMP}/\$(basename $input.prefix)" &&
+            gzip -cd $input > \$x &&
+            mapper.pl \$x $MIRDEEP2MAPPER_FLAGS -s $output2 -t $output1 &> ${output2.prefix}.mapper.log &&
+            rm \$x
         ""","miRDeep2Mapper"
     }
 }

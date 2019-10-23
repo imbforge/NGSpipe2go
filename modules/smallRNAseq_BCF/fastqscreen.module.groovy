@@ -9,10 +9,12 @@ FastQScreen = {
     constraints: "Only supports compressed FASTQ files",
     author: "Nastasja Kreim, Anke Busch"
 
-    output.dir   = FASTQSCREEN_OUTDIR
-    def FASTQSCREEN_FLAGS = "--threads " + FASTQSCREEN_THREADS + " " + FASTQSCREEN_PARAM
+    output.dir = FastQScreen_vars.outdir
+    def FASTQSCREEN_FLAGS =
+        (FastQScreen_vars.threads ? " --threads " + FastQScreen_vars.threads : "") +
+        (FastQScreen_vars.param   ? " "           + FastQScreen_vars.param   : "")
 
-    def TOOL_ENV = prepare_tool_env("fastq_screen", tools["fastq_screen"]["version"], tools["fastq_screen"]["runenv"])
+    def TOOL_ENV = prepare_tool_env("fastqscreen", tools["fastqscreen"]["version"], tools["fastqscreen"]["runenv"])
     def PREAMBLE = get_preamble("FastQScreen")
 
     transform(".fastq.gz") to ("_fastqscreen.done") {
@@ -25,16 +27,16 @@ FastQScreen = {
                 mkdir $output.prefix;
             fi &&
 
-            FASTQREFERENCES=$FASTQSCREEN_CONF;
+            FASTQREFERENCES=$FastQScreen_vars.conf;
             REFERENCES=(\${FASTQREFERENCES//,/ });
 
             for i in "\${!REFERENCES[@]}"; do
                 REFERENCE=(\${REFERENCES[i]//::/ });
                 echo -e "DATABASE\t\${REFERENCE[0]}\t\${REFERENCE[1]}" >> $output.prefix/fastqscreen.conf;
-            done;
+            done &&
 
             SAMPLENAME_BASE=\$(basename ${SAMPLENAME}) &&
-            fastq_screen $FASTQSCREEN_FLAGS --conf $output.prefix/fastqscreen.conf --outdir $output.prefix $input 2> $output.dir/\${SAMPLENAME_BASE}.log;
+            fastq_screen $FASTQSCREEN_FLAGS --conf $output.prefix/fastqscreen.conf --outdir $output.prefix $input 2> $output.dir/\${SAMPLENAME_BASE}.log &&
             touch $output
         ""","FastQScreen"
     }

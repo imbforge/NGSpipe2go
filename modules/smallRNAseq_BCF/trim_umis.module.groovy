@@ -9,9 +9,11 @@ TrimUMIs = {
         constraints: "Requires seqtk.",
         author: "Antonio Domingues, Anke Busch"
 
-    output.dir = TRIM_OUTDIR
-    def SEQTK_FLAGS = " -l " + LEFT_TRIM +
-                      " -b " + RIGHT_TRIM
+    output.dir = TrimUMIs_vars.outdir
+
+    def TRIMFQ_FLAGS =
+        (TrimUMIs_vars.left_trim  ? " -b " + TrimUMIs_vars.left_trim  : "") +
+        (TrimUMIs_vars.right_trim ? " -e " + TrimUMIs_vars.right_trim : "")
 
     def TOOL_ENV = prepare_tool_env("seqtk", tools["seqtk"]["version"], tools["seqtk"]["runenv"])
     def PREAMBLE = get_preamble("TrimUMIs")
@@ -21,7 +23,7 @@ TrimUMIs = {
             ${TOOL_ENV} &&
             ${PREAMBLE} &&
 
-            seqtk trimfq -b ${LEFT_TRIM} -e ${RIGHT_TRIM} $input | gzip > $output
+            seqtk trimfq $TRIMFQ_FLAGS $input | gzip > $output
         ""","TrimUMIs"
     }
 }

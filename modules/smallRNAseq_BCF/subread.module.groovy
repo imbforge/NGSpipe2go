@@ -9,26 +9,16 @@ SubreadCount = {
         constraints: "Default: strand specific counting.",
         author: "Oliver Drechsel, Antonio Domingues, Anke Busch"
 
-    output.dir = SUBREAD_OUTDIR
-    def SUBREAD_FLAGS = SUBREAD_CORES    + " " +
-                        SUBREAD_GENESGTF + " " +
-                        SUBREAD_EXTRA
-
-    if(SUBREAD_PAIRED == "yes") {
-        SUBREAD_FLAGS = " -p " + SUBREAD_FLAGS
-    }
-
-    // no|yes|reverse
-    if(SUBREAD_STRANDED == "no") {
-        SUBREAD_FLAGS = " -s 0 " + SUBREAD_FLAGS
-    }
-    else if (SUBREAD_STRANDED == "yes") {
-        SUBREAD_FLAGS = " -s 1 " + SUBREAD_FLAGS
-    }
-    else {
-        SUBREAD_FLAGS = " -s 2 " + SUBREAD_FLAGS
-    }
-
+    output.dir  = SubreadCount_vars.outdir
+    def SUBREAD_FLAGS =
+        "--donotsort " +
+        (SubreadCount_vars.threads  ? " -T " + SubreadCount_vars.threads  : "") +
+        (SubreadCount_vars.genesgtf ? " -a " + SubreadCount_vars.genesgtf : "") +
+        (SubreadCount_vars.ignore_duplicates  ? " --ignoreDup "            : "") +
+        (SubreadCount_vars.count_multimapping ? " -M "                     : "") +
+        (SubreadCount_vars.extra    ? " "    + SubreadCount_vars.extra    : "") +
+        (SubreadCount_vars.stranded == "no" ? " -s0 " : (subread2rnatypes_vars.stranded == "yes" ? " -s1 " : " -s2 "))
+    
     def TOOL_ENV = prepare_tool_env("subread", tools["subread"]["version"], tools["subread"]["runenv"])
     def PREAMBLE = get_preamble("SubreadCount")
 

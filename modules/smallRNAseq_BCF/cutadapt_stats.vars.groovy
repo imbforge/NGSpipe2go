@@ -1,4 +1,5 @@
-//vars for task CutadaptStats from catalog smallRNAseq_BCF, version 0.1
-REMOVE_ADAPTER_DATADIR=PROCESSED + "/logs"
-REMOVE_ADAPTER_PLOTDIR=PROCESSED + "/plots"
-
+CutadaptStats_vars=[
+    datadir: PROCESSED + "/logs",
+    plotdir: PROCESSED + "/plots",
+    sample_prefix: ESSENTIAL_SAMPLE_PREFIX
+]

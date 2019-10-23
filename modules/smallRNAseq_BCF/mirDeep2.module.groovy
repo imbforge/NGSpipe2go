@@ -10,7 +10,7 @@ miRDeep2 = {
         author: "Antonio Domingues, Anke Busch"
 
     def EXP = input1.split("/")[-1].replaceAll(".arf", "")
-    output.dir = MIR_OUTDIR + "/" + EXP
+    output.dir = miRDeep2_vars.outdir + "/" + EXP
 
     def TOOL_ENV = prepare_tool_env("mirdeep2", tools["mirdeep2"]["version"], tools["mirdeep2"]["runenv"])
     def PREAMBLE = get_preamble("miRDeep2")
@@ -20,10 +20,18 @@ miRDeep2 = {
             ${TOOL_ENV} &&
             ${PREAMBLE} &&
 
+            reads_fa=`realpath $input2`;
+            genome_fa=`realpath $miRDeep2_vars.genome_seq`;
+            reads_vs_genome_arf=`realpath $input1`;
+            mautre_ref_miRNAs_fa=`realpath $miRDeep2_vars.mature_mirna`;
+            mature_other_miRNAs_fa="none";
+            hairpin_ref_miRNAs=`realpath $miRDeep2_vars.hairpin_mirna`;
+
             mkdir -p $output.dir &&
             cd $output.dir &&
-            miRDeep2.pl $input2 $GENOME_SEQ $input1 $MATURE_MIRNA none $HAIRPIN_MIRNA -t $SPECIES -c -d -v -r ${EXP} -z ".${EXP}" 2> ${EXP}.report.log &&
-            touch ${EXP}.tmp
+
+            miRDeep2.pl \$reads_fa \$genome_fa \$reads_vs_genome_arf \$mautre_ref_miRNAs_fa \$mature_other_miRNAs_fa \$hairpin_ref_miRNAs -t $miRDeep2_vars.species -c -d -v -r ${EXP} -z ".${EXP}" 2> ${output.dir}/${EXP}.report.log &&
+            touch \$(basename $output)
         ""","miRDeep2"
     }
 }

@@ -10,17 +10,17 @@ ESSENTIAL_GENOME_REF="/data/mus_musculus/gencode/release-M10_GRCm38.p4/full/geno
 ESSENTIAL_GENESGTF="/data/mus_musculus/gencode/release-M10_GRCm38.p4/full/annotation/gencode.vM10.chr_patch_hapl_scaff.annotation.gtf"
 ESSENTIAL_RRNA_BOWTIE_REF="/data/rrna/mouse/mouse_all_rRNA" // necessary for fastqscreen
 
-ESSENTIAL_SPECIES="mouse"   // necessary for miRDeep2, used to refer to UCSC
+ESSENTIAL_SPECIES="Mouse"      // necessary for miRDeep2, used to refer to UCSC
 ESSENTIAL_SAMPLE_PREFIX="Sample_"
 ESSENTIAL_FEATURETYPE="gene_type" //gencode uses gene_type; ensemble uses gene_biotype
-ESSENTIAL_PAIRED="no"           // paired end design
-ESSENTIAL_STRANDED="yes"    // strandness: no|yes|reverse
-ESSENTIAL_THREADS=4             // number of threads for parallel tasks
+ESSENTIAL_PAIRED="no"          // paired end design
+ESSENTIAL_STRANDED="yes"       // strandness: no|yes|reverse
+ESSENTIAL_THREADS=4            // number of threads for parallel tasks
 
-ESSENTIAL_READLENGTH=51      // actual read length in original raw data (incl. insert, UMIs, adapter)
-ESSENTIAL_MINADAPTEROVERLAP=5 // minimal overlap with adapter
-ESSENTIAL_MINREADLENGTH=26   // remaining read length plus UMIs (2x4) 
-ESSENTIAL_UMI_LENGTH=8       // (2x4bp)
+ESSENTIAL_READLENGTH=51        // actual read length in original raw data (incl. insert, UMIs, adapter)
+ESSENTIAL_MINADAPTEROVERLAP=5  // minimal overlap with adapter
+ESSENTIAL_MINREADLENGTH=26     // remaining read length plus UMIs (2x4) 
+ESSENTIAL_UMI_LENGTH=8         // (2x4bp)
 ESSENTIAL_ADAPTER_SEQUENCE="TGGAATTCTCGGGTGCCAAGG" // needed for cutadapt adapter trimming
 
 // vars for mirDeep2

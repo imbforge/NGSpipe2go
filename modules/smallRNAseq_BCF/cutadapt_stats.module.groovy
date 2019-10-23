@@ -8,17 +8,17 @@ CutadaptStats = {
         desc:  "Creates a plot summarizing the amount of reads left after trimming off the adapter",
         author: "Anke Busch"
 
-    output.dir = REMOVE_ADAPTER_PLOTDIR
+    output.dir = CutadaptStats_vars.plotdir
 
     def TOOL_ENV = prepare_tool_env("R", tools["R"]["version"], tools["R"]["runenv"])
     def PREAMBLE = get_preamble("CutadaptStats")
 
-    produce(REMOVE_ADAPTER_PLOTDIR + "/trimmedReads.pdf", REMOVE_ADAPTER_PLOTDIR + "/trimmedReads.png") {
+    produce("trimmedReads.pdf", "trimmedReads.png") {
         exec """
             ${TOOL_ENV} &&
             ${PREAMBLE} &&
 
-            Rscript ${PIPELINE_ROOT}/tools/fastq_stats/cutadapt_stats.R ${REMOVE_ADAPTER_DATADIR} ${REMOVE_ADAPTER_PLOTDIR} ${ESSENTIAL_SAMPLE_PREFIX}
+            Rscript ${PIPELINE_ROOT}/tools/fastq_stats/cutadapt_stats.R ${CutadaptStats_vars.datadir} ${CutadaptStats_vars.plotdir} ${CutadaptStats_vars.sample_prefix}
         ""","CutadaptStats"
     }
 }

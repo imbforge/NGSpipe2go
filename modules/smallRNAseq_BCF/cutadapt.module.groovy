@@ -9,13 +9,24 @@ Cutadapt = {
         constraints: "Only supports compressed FASTQ files",
         author: "Antonio Domingues, Anke Busch"
 
-    output.dir = CUTADAPT_OUTDIR
+    output.dir = Cutadapt_vars.outdir
 
     // create the log folder if it doesn't exists
-    def CUTADAPT_LOGDIR = new File( CUTADAPT_OUTDIR + "/logs")
-    if (!CUTADAPT_LOGDIR.exists()) {
-        CUTADAPT_LOGDIR.mkdirs()
+    def Cutadapt_LOGDIR = new File(Cutadapt_vars.logdir)
+    if (!Cutadapt_LOGDIR.exists()) {
+        Cutadapt_LOGDIR.mkdirs()
     }
+
+    def Cutadapt_FLAGS_1 =
+        (Cutadapt_vars.adapter_sequence    ? " -a " + Cutadapt_vars.adapter_sequence    : "") +
+        (Cutadapt_vars.minimum_overlap     ? " -O " + Cutadapt_vars.minimum_overlap     : "") +
+        (Cutadapt_vars.minimum_length_keep ? " -m " + Cutadapt_vars.minimum_length_keep : "") +
+        (Cutadapt_vars.maximum_length_keep ? " -M " + Cutadapt_vars.maximum_length_keep : "")
+
+    def Cutadapt_FLAGS_2 =
+        (Cutadapt_vars.adapter_sequence    ? " -a " + Cutadapt_vars.adapter_sequence          : "") +
+        (Cutadapt_vars.minimum_overlap     ? " -O " + Cutadapt_vars.minimum_overlap           : "") +
+        (Cutadapt_vars.minimum_length_keep ? " -m " + Cutadapt_vars.maximum_length_keep_plus1 : "")
 
     def TOOL_ENV = prepare_tool_env("cutadapt", tools["cutadapt"]["version"], tools["cutadapt"]["runenv"])
     def PREAMBLE = get_preamble("Cutadapt")
@@ -27,8 +38,8 @@ Cutadapt = {
             ${PREAMBLE} &&
 
             SAMPLENAME_BASE=\$(basename ${SAMPLENAME}) &&
-            cutadapt $ADAPTER_SEQUENCE -O $MINIMUM_OVERLAP -m $MINIMUM_LENGTH_KEEP -M $MAXIMUM_LENGTH_KEEP -o $output1 $input 2>&1 >> ${CUTADAPT_LOGDIR}/\${SAMPLENAME_BASE}.cutadapt.log &&
-            cutadapt $ADAPTER_SEQUENCE -O $MINIMUM_OVERLAP -m $MAXIMUM_LENGTH_KEEP_PLUS1 -o $output2 $input 2>&1 >> ${CUTADAPT_LOGDIR}/\${SAMPLENAME_BASE}.cutadapt_discarded.log
+            cutadapt $Cutadapt_FLAGS_1 -o $output1 $input 2>&1 >> ${Cutadapt_vars.logdir}/\${SAMPLENAME_BASE}.cutadapt.log &&
+            cutadapt $Cutadapt_FLAGS_2 -o $output2 $input 2>&1 >> ${Cutadapt_vars.logdir}/\${SAMPLENAME_BASE}.cutadapt_discarded.log
         ""","Cutadapt"
     }
 }

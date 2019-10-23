@@ -8,17 +8,17 @@ CombinedStats = {
         desc:  "Counts the number of reads in the original reads file, after adapter trimming, after quality filtering and after duplicate removal and plots results",
         author: "Anke Busch"
 
-    output.dir = COMBINED_STATS_PLOTDIR
+    output.dir = CombinedStats_vars.plotdir
 
     def TOOL_ENV = prepare_tool_env("R", tools["R"]["version"], tools["R"]["runenv"])
     def PREAMBLE = get_preamble("CombinedStats")
 
-    produce(COMBINED_STATS_PLOTDIR + "/allTrimmingStats.pdf", COMBINED_STATS_PLOTDIR + "/allTrimmingStats.png") {
+    produce("allTrimmingStats.pdf", "allTrimmingStats.png") {
         exec """
             ${TOOL_ENV} &&
             ${PREAMBLE} &&
 
-            Rscript ${PIPELINE_ROOT}/tools/fastq_stats/summary_stats.R ${COMBINED_STATS_DATADIR} ${COMBINED_STATS_PLOTDIR} ${ESSENTIAL_SAMPLE_PREFIX}
+            Rscript ${PIPELINE_ROOT}/tools/fastq_stats/summary_stats.R $CombinedStats_vars.datadir $CombinedStats_vars.plotdir $CombinedStats_vars.sample_prefix
         ""","CombinedStats"
     }
 }

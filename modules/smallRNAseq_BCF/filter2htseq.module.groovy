@@ -9,7 +9,7 @@ Filter2HTSeq = {
         constraints: "none.",
         author: "Oliver Drechsel, Antonio Domingues, Anke Busch"
 
-    output.dir = SUBREAD_OUTDIR
+    output.dir = Filter2HTSeq_vars.outdir
 
     def PREAMBLE = get_preamble("Filter2HTSeq")
 

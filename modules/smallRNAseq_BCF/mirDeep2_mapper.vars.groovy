@@ -1,4 +1,10 @@
-//vars for task miRDeep2Mapper from catalog smallRNAseq_BCF, version 0.1
-
-MIR_MAPPER_OUTDIR=RESULTS + "/miRDeep2"
-GENOME_REF=ESSENTIAL_BOWTIE_REF
+miRDeep2Mapper_vars=[
+    outdir    : RESULTS + "/miRDeep2",
+    genome_ref: ESSENTIAL_BOWTIE_REF,
+    extra     : "-e " + // please, add a description for this parm
+                "-h " + // please, add a description for this parm
+                "-m " + // please, add a description for this parm
+                "-i " + // please, add a description for this parm
+                "-j " + // please, add a description for this parm
+                "-o 8"  // please, add a description for this parm
+]

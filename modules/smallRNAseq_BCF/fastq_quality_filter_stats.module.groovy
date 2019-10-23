@@ -8,17 +8,17 @@ FastQQualityFilterStats = {
         desc:  "Creates a plot summarizing the numbers of removed and kept reads due to low and high qualities, respectively",
         author: "Anke Busch"
 
-    output.dir = REMOVE_LOWQUAL_PLOTDIR
+    output.dir = FastQQualityFilterStats_vars.plotdir
 
     def TOOL_ENV = prepare_tool_env("R", tools["R"]["version"], tools["R"]["runenv"])
     def PREAMBLE = get_preamble("FastQQualityFilterStats")
 
-    produce(REMOVE_LOWQUAL_PLOTDIR + "/qualityFilteredReads.pdf", REMOVE_LOWQUAL_PLOTDIR + "/qualityFilteredReads.png") {
+    produce("qualityFilteredReads.pdf", "qualityFilteredReads.png") {
         exec """
             ${TOOL_ENV} &&
             ${PREAMBLE} &&
 
-            Rscript ${PIPELINE_ROOT}/tools/fastq_stats/fastq_quality_filter_stats.R ${REMOVE_LOWQUAL_DATADIR} ${REMOVE_LOWQUAL_PLOTDIR} ${ESSENTIAL_SAMPLE_PREFIX} 
+            Rscript ${PIPELINE_ROOT}/tools/fastq_stats/fastq_quality_filter_stats.R ${FastQQualityFilterStats_vars.datadir} ${FastQQualityFilterStats_vars.plotdir} ${FastQQualityFilterStats_vars.sample_prefix} 
         ""","FastQQualityFilterStats"
     }
 }

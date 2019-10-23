@@ -1,11 +1,11 @@
-//vars for task Bowtie from catalog smallRNAseq_BCF, version 0.1
-
-BOWTIE_THREADS=8	// threads to use
-BOWTIE_REF=ESSENTIAL_BOWTIE_REF // prefix of the bowtie reference genome
-BOWTIE_MM=1             // number of mismatches allowed
-BOWTIE_MULTIREPORT=1    // if a read has more than <int> reportable alignments, one is reported at random.
-BOWTIE_BEST="--tryhard --best --strata --chunkmbs 256"	// bowtie best mode
-BOWTIE_QUALS="--phred33-quals"	// phred33-quals. Use --phred64-quals for old sequencing runs
-
-
-
+Bowtie_se_vars=[
+    mapped     : MAPPED,           // output dir
+    threads    : Integer.toString(ESSENTIAL_THREADS), // threads to use
+    samtools_threads: Integer.toString(ESSENTIAL_THREADS),
+    ref        : ESSENTIAL_BOWTIE_REF, // prefix of the bowtie reference genome
+    mm         : 1,                // number of mismatches allowed
+    multireport: 1,                // if a read has more than <int> reportable alignments, one is reported at random.
+    best       : true,             // bowtie best mode (implies --best --strata --tryhard). Doesn't apply to PE
+    quals      : "--phred33-quals",// phred33-quals. Use --phred64-quals for old sequencing runs
+    extra      : ""
+]
