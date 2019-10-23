@@ -70,7 +70,8 @@ shinyReports = {
             echo "SHINYREPS_INSERTSIZE=${shinyReports_vars.insertsize}" >> $output &&
             echo "SHINYREPS_GO_ENRICHMENT=${shinyReports_vars.go_enrichment}" >> $output &&
             echo "SHINYREPS_TRACKHUB_DONE=${shinyReports_vars.trackhub_done}" >> $output &&
-            echo "SHINYREPS_TOOL_VERSIONS=${shinyReports_vars.tool_versions}" >> $output
+            echo "SHINYREPS_TOOL_VERSIONS=${shinyReports_vars.tool_versions}" >> $output &&
+	        echo "SHINYREPS_TARGET=${shinyReports_vars.target}" >> $output
         ""","shinyReports"
     }
 }

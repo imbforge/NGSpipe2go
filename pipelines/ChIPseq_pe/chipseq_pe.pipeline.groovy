@@ -44,13 +44,14 @@ dont_filter_bam = segment {
 }
 
 //MAIN PIPELINE TASK
-nothing = segment { }
+dontrun = { println "didn't run $module" }
+
 Bpipe.run {
     "%.fastq.gz" * [ FastQC ] + "%.R*.fastq.gz" *
     (RUN_USING_UNFILTERED_BAM ? dont_filter_bam : filter_bam) +
-    (RUN_DIFFBIND ? diffbind : nothing) +
-    (RUN_TRACKHUB ? trackhub_config + trackhub : nothing) +
-    (RUN_PEAK_ANNOTATION ? peak_annotation : nothing) +
+    (RUN_DIFFBIND ? diffbind : dontrun.using(module:"diffbind")) +
+    (RUN_TRACKHUB ? trackhub_config + trackhub : dontrun.using(module:"trackhub")) +
+    (RUN_PEAK_ANNOTATION ? peak_annotation : dontrun.using(module:"peak_annotation")) +
     MultiQC + collectBpipeLogs + shinyReports
 }
 
