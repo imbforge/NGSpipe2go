@@ -299,7 +299,7 @@ tools_prepare_env = [
     ],
     subread: [
         "1.6": [
-            lmod: "module load subread/1.6.2_debian9",
+            lmod: "module load subread/1.6.5_debian9",
             conda: "source activate ${conda_tools}/subread/1.6.3",
             singularity: """
                 alias exactSNP=\"singularity run --app exactSNP ${singularity_tools}/subread/1.6.3r0/subread.simg\";
@@ -310,6 +310,9 @@ tools_prepare_env = [
                 alias subread-align=\"singularity run --app subread-align ${singularity_tools}/subread/1.6.3r0/subread.simg\";
                 alias subread-buildindex=\"singularity run --app subread-buildindex${singularity_tools}/subread/1.6.3r0/subread.simg\"
             """
+        ],
+        "2.0": [
+            lmod: "module load subread/2.0.0_debian9"
         ]
     ],
     trimgalore: [
