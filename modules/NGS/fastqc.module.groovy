@@ -22,9 +22,7 @@ FastQC = {
             ${TOOL_ENV} &&
             ${PREAMBLE} &&
 
-            fastqc --extract $FASTQC_FLAGS -o \$TMP $input &&
-            mv \$TMP/* $output.dir/
-
+            fastqc --extract $FASTQC_FLAGS -o $output.dir $input
         ""","FastQC"
     }
 
