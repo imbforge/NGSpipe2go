@@ -82,10 +82,14 @@ processContrast <-  function(x) {
 
     calculateGoEnrichment <-  function(de.genes, univ.genes, de.genes.lfc, suffix) {
         # convert to entrezID downregulated/univers genes
+        guessKeyType <- function(genes) {
+            orgdb <- eval(parse(text=orgDb[org]))
+            keytypes(orgdb)[which.max(sapply(keytypes(orgdb), function(x) sum(genes %in% keys(orgdb, keytype=x))))]
+        }
         getEntrezId <- function(genes, keytype) {
             bitr( genes, fromType=keytype, toType="ENTREZID", OrgDb=orgDb[org])
         }
-        keytype <- if(type == "gene_name" && org != "yeast") "SYMBOL" else "ENSEMBL"
+        keytype      <- guessKeyType(de.genes)
         entrezDeId   <- getEntrezId(de.genes, keytype)
         entrezUnivId <- getEntrezId(univ.genes, keytype)
 
