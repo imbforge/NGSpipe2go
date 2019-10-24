@@ -1,9 +1,9 @@
 ESSENTIAL_PROJECT="/fsimb/groups/imb-bioinfocf/projects/cfb_internal/tmp/ngspipe2go_rnaseq_test"
-ESSENTIAL_STAR_REF="/fsimb/common/genomes/saccharomyces_cerevisiae/ucsc/saccer3/canonical/index/star/2.5.1b/"
-ESSENTIAL_GENESGTF="/fsimb/common/genomes/saccharomyces_cerevisiae/ucsc/saccer3/canonical/annotation/sacCer3.gtf"
-ESSENTIAL_GENESBED="/fsimb/common/genomes/saccharomyces_cerevisiae/ucsc/saccer3/canonical/annotation/sacCer3.bed"
-ESSENTIAL_CHROMSIZES="/fsimb/common/genomes/saccharomyces_cerevisiae/ucsc/saccer3/canonical/index/star/2.5.1b/chrNameLength.txt"  // chromosome sizes file
-ESSENTIAL_FEATURETYPE="gene_type" //gencode uses gene_type; ensemble uses gene_biotype
+ESSENTIAL_STAR_REF="/fsimb/common/genomes/saccharomyces_cerevisiae/ensembl/R64/canonical/index/star/2.5.1b/"
+ESSENTIAL_GENESGTF="/fsimb/common/genomes/saccharomyces_cerevisiae/ensembl/R64/canonical/annotation/Saccharomyces_cerevisiae.R64-1-1.86.gtf"
+ESSENTIAL_GENESBED="/fsimb/common/genomes/saccharomyces_cerevisiae/ensembl/R64/canonical/annotation/Saccharomyces_cerevisiae.R64-1-1.86.bed"
+ESSENTIAL_CHROMSIZES="/fsimb/common/genomes/saccharomyces_cerevisiae/ensembl/R64/canonical/index/star/2.5.1b/chrNameLength.txt"  // chromosome sizes file
+ESSENTIAL_FEATURETYPE="gene_biotype" //gencode uses gene_type; ensemble uses gene_biotype
 ESSENTIAL_SAMPLE_PREFIX=""
 ESSENTIAL_PAIRED="no"           // paired end design
 ESSENTIAL_STRANDED="reverse"    // strandness: no|yes|reverse
