@@ -86,7 +86,7 @@ dev.off()
 # create upsetplot 
 for(i in 1:length(peakAnno)){
   png(file=paste0(out, "/", filename[[i]], "_ChIPseq_UpSetplot.png"), width = 700, height = 500)
-  upsetplot(peakAnno[[i]])
+  print(upsetplot(peakAnno[[i]]))
   dev.off()
 }
 
