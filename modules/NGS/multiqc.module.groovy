@@ -10,9 +10,9 @@ MultiQC = {
         bpipe_version: "tested with bpipe 0.9.9.7",
         author: "Giuseppe Petrosino"
 
-    output.dir = MULTIQC_vars.outdir
+    output.dir = MultiQC_vars.outdir
     def MULTIQC_FLAGS =
-        (MULTIQC_vars.extra ? " " + MULTIQC_vars.extra : "")
+        (MultiQC_vars.extra ? " " + MultiQC_vars.extra : "")
 
     def TOOL_ENV = prepare_tool_env("multiqc", tools["multiqc"]["version"], tools["multiqc"]["runenv"])
     def PREAMBLE = get_preamble("MULTIQC")

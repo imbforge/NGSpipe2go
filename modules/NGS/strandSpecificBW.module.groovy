@@ -15,11 +15,11 @@ strandBigWig = {
     //this might be confusing regarding the reverse and forward
     //setting but according to the deeptools manual it has to be like this
     if(strandBigWig_vars.stranded == "yes") {
-        FORWARD="reverse"
-        REVERSE="forward"
+        def FORWARD="reverse"
+        def REVERSE="forward"
     } else if(strandBigWig_vars.stranded == "reverse") {
-        FORWARD="forward"
-        REVERSE="reverse"
+        def FORWARD="forward"
+        def REVERSE="reverse"
     }
 
     // if you use > v3 modify the vars to --normalizeUsing RPKM since the API of deeptools changed

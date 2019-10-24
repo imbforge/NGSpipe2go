@@ -12,7 +12,7 @@ BWA_pe = {
 
     output.dir = BWA_vars.outdir
 
-    File f = new File(input1)
+    def File f = new File(input1)
     def OUTPUTFILE = (f.getName() =~ /(.R1)*.fastq.gz/).replaceFirst("")
 
     def BWA_FLAGS = "-M " +

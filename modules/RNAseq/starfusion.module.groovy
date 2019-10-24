@@ -12,7 +12,7 @@ STAR_Fusion = {
 
     output.dir = STAR_Fusion_vars.outdir
 
-    File f = new File(input1)
+    def File f = new File(input1)
     def OUTPUTFILE = (f.getName() =~ /.R1.fastq.gz/).replaceFirst("")
 
     def STARFUSION_FLAGS =

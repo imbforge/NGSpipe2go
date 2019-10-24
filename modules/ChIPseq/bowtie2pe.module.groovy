@@ -12,8 +12,8 @@ bowtie2_pe = {
 
     output.dir = bowtie2_pe_vars.mapped
 
-    File f = new File(input1)
-    OUTPUTFILE = (f.getName() =~ /.R1.fastq.gz/).replaceFirst("")
+    def File f = new File(input1)
+    def OUTPUTFILE = (f.getName() =~ /.R1.fastq.gz/).replaceFirst("")
 
     def BOWTIE2_FLAGS = "-q " +
         (bowtie2_pe_vars.quals   ?  " "     + bowtie2_pe_vars.quals   : "") + 

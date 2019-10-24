@@ -11,8 +11,8 @@ bowtie_pe = {
         author: "Sergi Sayols modified for paired end by Nastasja Kreim"
 
     output.dir = bowtie_pe_vars.mapped
-    File f = new File(input1)
-    OUTPUTFILE = (f.getName() =~ /.R1.fastq.gz/).replaceFirst("")
+    def File f = new File(input1)
+    def OUTPUTFILE = (f.getName() =~ /.R1.fastq.gz/).replaceFirst("")
 
     def BOWTIE_FLAGS = " -q --sam"  +
         (bowtie_pe_vars.best    ? " --best --strata --tryhard --chunkmbs 256 " : "") +
