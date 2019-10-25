@@ -14,7 +14,6 @@ subread_count = {
     def SUBREAD_FLAGS =
         "--donotsort " +
         "-R BAM "      + 
-        "--Rpath "     + subread_count_vars.outdir +
         (subread_count_vars.threads  ? " -T " + subread_count_vars.threads  : "") +
         (subread_count_vars.genesgtf ? " -a " + subread_count_vars.genesgtf : "") +
         (subread_count_vars.paired   ? " -p "                               : "") +
@@ -31,10 +30,10 @@ subread_count = {
             ${TOOL_ENV} &&
             ${PREAMBLE} &&
 
-            featureCounts $SUBREAD_FLAGS --tmpDir \${TMP}/featureCounts_${input} -o $output2 $input 2> ${output.prefix}_subreadlog.stderr &&
-            base=`basename $input` &&
-            samtools sort ${output.dir}/\${base}.featureCounts.bam > $output1 &&
-            rm ${output.dir}/\${base}.featureCounts.bam
+            base=`basename ${input}` &&
+            featureCounts $SUBREAD_FLAGS --Rpath \${TMP} --tmpDir \${TMP} -o $output2 $input 2> ${output1.prefix}_subreadlog.stderr &&
+            samtools sort -T \${TMP}/\${base}_tmp \${TMP}/\${base}.featureCounts.bam > $output1 &&
+            rm \${TMP}/\${base}*
         ""","subread_count"
     }
 }
