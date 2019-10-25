@@ -5,6 +5,7 @@ PIPELINE_ROOT="./NGSpipe2go/"    // may need adjustment for some projects
 load PIPELINE_ROOT + "/pipelines/scRNAseq/essential.vars.groovy"
 load PIPELINE_ROOT + "/pipelines/scRNAseq/tools.groovy"
 load PIPELINE_ROOT + "/config/preambles.groovy"
+load PIPELINE_ROOT + "/config/bpipe.config.groovy"
 
 load PIPELINE_ROOT + "/modules/NGS/bamcoverage.module.groovy"
 load PIPELINE_ROOT + "/modules/NGS/bamindexer.module.groovy"

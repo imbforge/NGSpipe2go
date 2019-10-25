@@ -5,6 +5,7 @@ PIPELINE_ROOT="./NGSpipe2go"
 load PIPELINE_ROOT + "/pipelines/ChIPseq/essential.vars.groovy"
 load PIPELINE_ROOT + "/pipelines/ChIPseq/tools.groovy"
 load PIPELINE_ROOT + "/config/preambles.groovy"
+load PIPELINE_ROOT + "/config/bpipe.config.groovy"
 
 load PIPELINE_ROOT + "/modules/ChIPseq/GREAT.module.groovy"
 load PIPELINE_ROOT + "/modules/ChIPseq/blacklist_filter.module.groovy"

@@ -5,6 +5,7 @@ PIPELINE_ROOT="./NGSpipe2go/"  // adjust to your projects needs
 load PIPELINE_ROOT + "/pipelines/DNAseq/essential.vars.groovy"
 load PIPELINE_ROOT + "/pipelines/DNAseq/tools.groovy"
 load PIPELINE_ROOT + "/config/preambles.groovy"
+load PIPELINE_ROOT + "/config/bpipe.config.groovy"
 
 load PIPELINE_ROOT + "/modules/DNAseq/bwa.module.groovy"
 load PIPELINE_ROOT + "/modules/DNAseq/realignment.module.groovy"
