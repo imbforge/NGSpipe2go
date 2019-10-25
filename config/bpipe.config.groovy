@@ -339,7 +339,7 @@ config {
       procs="2" 
       memory="20"
     }
-    VariantCallU { 
+    VariantCallUG { 
       walltime="24:00:00" 
       queue="bcflong" 
       procs="8" 
@@ -354,7 +354,7 @@ config {
     VariantFiltration { 
       walltime="02:00:00" 
       procs="8" 
-      memory="24"
+      memory="20"
     }
     VariantFuseHC { 
       walltime="24:00:00" 
