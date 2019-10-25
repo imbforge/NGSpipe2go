@@ -35,12 +35,12 @@ subread2rnatypes = {
             if [[ "${subread2rnatypes_vars.paired}" == "true" ]]; then            
                 echo "We are resorting and doing the repair\n" &&
                 repair -i $input -T ${subread2rnatypes_vars.threads} -o \${TMP}/\${base} &&
-                featureCounts $RNATYPES_FLAGS -o ${output}_tmp \${TMP}/\${base} 2> ${output.prefix}_rnatypeslog.stderr;
+                featureCounts $RNATYPES_FLAGS -o \${TMP}/\${base} \${TMP}/\${base} 2> ${output.prefix}_rnatypeslog.stderr;
             else
-                featureCounts $RNATYPES_FLAGS -o ${output}_tmp $input 2> ${output.prefix}_rnatypeslog.stderr;
+                featureCounts $RNATYPES_FLAGS -o \${TMP}/\${base} $input 2> ${output.prefix}_rnatypeslog.stderr;
             fi &&
-            cut -f1,6,7 ${output}_tmp > $output &&
-            rm ${output}_tmp
+            cut -f1,6,7 \${TMP}/\${base} > $output &&
+            rm \${TMP}/\${base}
         ""","subread2rnatypes"
     }
 }

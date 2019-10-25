@@ -29,7 +29,7 @@ bam2bw = {
             SCALE=\$(echo "1000000/\$TOTAL_MAPPED" | bc -l) &&
             genomeCoverageBed -bg -split -scale \${SCALE} -ibam ${input} | sortBed -i -  > \${TMP}/\${BASEOUTPUT%.bw}.bedgraph &&
             bedGraphToBigWig \${TMP}/\${BASEOUTPUT%.bw}.bedgraph \${CHRSIZES} \${TMP}/\${BASEOUTPUT} &&
-            cp \${TMP}/\${BASEOUTPUT} $output
+            cp -f \${TMP}/\${BASEOUTPUT} $output
         ""","bam2bw"
     }
 }
