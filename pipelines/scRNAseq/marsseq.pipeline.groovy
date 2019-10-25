@@ -30,10 +30,21 @@ load PIPELINE_ROOT + "/modules/scRNAseq/shinyreports.module.groovy"
 //
 dontrun = { println "didn't run $module" }
 
-run {
+Bpipe.run {
     "%.fastq.gz" * [ FastQC ] +
-    (RUN_IN_PAIRED_END_MODE ? "%.R*.fastq.gz" : "%.fastq.gz") * [ AddUMIBarcodeToFastq + Cutadapt + FastQC + STAR + BAMindexer +
-                      [ subread_count + BAMindexer + umicount , bamCoverage , inferexperiment , subread2rnatypes , qualimap, geneBodyCov2 ]] +
+    (RUN_IN_PAIRED_END_MODE ? "%.R*.fastq.gz" : "%.fastq.gz") * [
+        AddUMIBarcodeToFastq + Cutadapt + [
+            FastQC,
+            STAR + BAMindexer + [
+                subread_count + BAMindexer + umicount,
+                bamCoverage,
+                inferexperiment,
+                subread2rnatypes,
+                qualimap,
+                geneBodyCov2
+            ]
+        ]
+    ] +
     (RUN_TRACKHUB ? trackhub_config + trackhub : dontrun.using(module:"trackhub")) +
     collectBpipeLogs + shinyReports
 }

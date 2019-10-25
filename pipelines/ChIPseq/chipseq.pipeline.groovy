@@ -32,10 +32,20 @@ load PIPELINE_ROOT + "/modules/ChIPseq/shinyreports.module.groovy"
 dontrun = { println "didn't run $module" }
 
 Bpipe.run {
-  "%.fastq.gz" * [ FastQC , bowtie_se + BAMindexer + MarkDups + BAMindexer + [ extend + bamCoverage, BamQC , phantompeak , pbc , ipstrength , macs2 ] ] +
-  (RUN_PEAK_ANNOTATION ? peak_annotation : dontrun.using(module:"peak_annotation")) +
-  (RUN_DIFFBIND ? diffbind : dontrun.using(module:"diffbind")) +
-  (RUN_TRACKHUB ? trackhub_config + trackhub : dontrun.using(module:"trackhub")) +
-  MultiQC + collectBpipeLogs + shinyReports
+    "%.fastq.gz" * [
+        FastQC,
+        bowtie_se + BAMindexer + MarkDups + BAMindexer + [
+            extend + bamCoverage,
+            BamQC,
+            phantompeak,
+            pbc,
+            ipstrength,
+            macs2
+        ]
+    ] +
+    (RUN_PEAK_ANNOTATION ? peak_annotation : dontrun.using(module:"peak_annotation")) +
+    (RUN_DIFFBIND ? diffbind : dontrun.using(module:"diffbind")) +
+    (RUN_TRACKHUB ? trackhub_config + trackhub : dontrun.using(module:"trackhub")) +
+    MultiQC + collectBpipeLogs + shinyReports
 }
 

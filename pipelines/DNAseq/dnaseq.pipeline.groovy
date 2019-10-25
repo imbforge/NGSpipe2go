@@ -23,10 +23,14 @@ load PIPELINE_ROOT + "/modules/DNAseq/shinyreports.module.groovy"
 // Main pipeline task
 dontrun = { println "didn't run $module" }
 
-run {
+Bpipe.run {
     "%.fastq.gz" * [ FastQC ] +
     (RUN_IN_PAIRED_END_MODE ? "%.R*.fastq.gz" * [ BWA_pe ] : "%.fastq.gz" * [ BWA_se ] ) +
-    "%.bam" * [ RmDups + BAMindexer + IndelRealignment + BaseRecalibration + [ VariantCallHC, VariantCallUG ] ] +
-    "%.vcf.gz" * [ VariantEval ] +
+    "%.bam" * [
+        RmDups + BAMindexer + IndelRealignment + BaseRecalibration + [
+            VariantCallHC + VariantEval,
+            VariantCallUG + VariantEval
+        ]
+    ] +
     collectBpipeLogs + shinyReports
 }

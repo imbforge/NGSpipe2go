@@ -36,15 +36,21 @@ dontrun = { println "didn't run $module" }
 
 Bpipe.run {
     "%.fastq.gz" * [ FastQC ] +
-     (RUN_IN_PAIRED_END_MODE ? "%.R*.fastq.gz" : "%.fastq.gz") * [
-         STAR + BAMindexer +
-         [ subread_count + filter2htseq , bamCoverage ,
-           (RUN_IN_PAIRED_END_MODE ? InsertSize : dontrun.using(module:"InsertSize")) ,
-           inferexperiment , subread2rnatypes , MarkDups2 + BAMindexer + [ dupRadar , geneBodyCov2 ]
-         ]
-     ] +
-     [ DE_DESeq2_MM , DE_DESeq2 + GO_Enrichment ] +
-     (RUN_TRACKHUB ? trackhub_config + trackhub : dontrun.using(module:"trackhub")) +
-     MultiQC + collectBpipeLogs + shinyReports
+    (RUN_IN_PAIRED_END_MODE ? "%.R*.fastq.gz" : "%.fastq.gz") * [
+        STAR + BAMindexer + [
+            subread_count + filter2htseq,
+            bamCoverage,
+            inferexperiment,
+            subread2rnatypes,
+            MarkDups2 + BAMindexer + [
+                dupRadar,
+                geneBodyCov2
+            ],
+            (RUN_IN_PAIRED_END_MODE ? InsertSize : dontrun.using(module: "InsertSize"))
+        ]
+    ] +
+    [ DE_DESeq2_MM , DE_DESeq2 + GO_Enrichment ] +
+    (RUN_TRACKHUB ? trackhub_config + trackhub : dontrun.using(module: "trackhub")) +
+    MultiQC + collectBpipeLogs + shinyReports
 }
 

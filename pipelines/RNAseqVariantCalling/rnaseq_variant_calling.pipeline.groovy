@@ -25,7 +25,7 @@ dontrun = { println "didn't run $module" }
 Bpipe.run {
     "%R*.fastq.gz" * [ STAR_pe ] +
     "*.SJ.out.tab" * [ FilterAndMergeSJtab + GenerateStarIndexFromSJ ] +
-    "%R*.fastq.gz" * [ STAR_pe_2nd ] +
-    "%.bam" * [ AddRG + MarkDups + SplitNCigarReads + BaseRecalibration + VariantCallHC ] +
-    "%.vcf.gz" * [ VariantFiltration ]
+    "%R*.fastq.gz" * [
+        STAR_pe_2nd + AddRG + MarkDups + SplitNCigarReads + BaseRecalibration + VariantCallHC + VariantFiltration
+    ]
 }

@@ -1,8 +1,3 @@
-//Pipeline generated with command line: ./imb-pip.pl --tasks-pip=1 --force
-//By: ssayolsp At: Fr 17 Okt 2014 17:12:41 CEST
-//
-// REMEMBER TO CHANGE THESE ESSENTIAL VARS!!
-//
 ESSENTIAL_PROJECT="/project/"
 ESSENTIAL_BOWTIE_REF="/data/mus_musculus/gencode/release-M10_GRCm38.p4/full/index/bowtie/1.1.2/GRCm38.p4"
 ESSENTIAL_GENOME_REF="/data/mus_musculus/gencode/release-M10_GRCm38.p4/full/genome/GRCm38.p4.genome_chr.fa" // necessary for miRDeep2

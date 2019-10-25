@@ -18,5 +18,13 @@ load PIPELINE_ROOT + "/modules/smallRNAseq_BCF/trim_umis.module.groovy"
 
 //MAIN PIPELINE TASK
 run {
-    "%.fastq.gz" * [ FastQC , Cutadapt ] + "%.cutadapt.fastq.gz" * [ FastQQualityFilter + FilterDuplicates + TrimUMIs + [ FastQC, miRDeep2Mapper + miRDeep2 ] ]
+    "%.fastq.gz" * [
+        FastQC,
+        Cutadapt + [
+            FastQQualityFilter + FilterDuplicates + TrimUMIs + [
+                FastQC,
+                miRDeep2Mapper + miRDeep2
+            ]
+        ]
+    ]
 }

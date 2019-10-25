@@ -29,8 +29,20 @@ load PIPELINE_ROOT + "/modules/smallRNAseq_BCF/shinyreports.module.groovy"
 
 //MAIN PIPELINE TASK
 run {
-    "%.fastq.gz" * [ FastQC , Cutadapt ] +
-    "%.cutadapt.fastq.gz" * [ FastQQualityFilter + FilterDuplicates + TrimUMIs + [ FastQC , Bowtie_se + BAMindexer , FastQScreen ] ] +
-    "%.bam" * [ SubreadCount + Filter2HTSeq, bam2bw, subread2rnatypes ] + [ CutadaptStats, FastQQualityFilterStats, DedupStats, MappingStats, CombinedStats ] +
+    "%.fastq.gz" * [
+        FastQC ,
+        Cutadapt + FastQQualityFilter + FilterDuplicates + TrimUMIs + [
+            FastQC,
+            FastQScreen,
+            Bowtie_se + BAMindexer + [
+                SubreadCount + Filter2HTSeq,
+                bam2bw,
+                subread2rnatypes
+            ]
+        ]
+    ] +
+    [
+        CutadaptStats, FastQQualityFilterStats, DedupStats, MappingStats, CombinedStats
+    ] +
     collectBpipeLogs + shinyReports
 }

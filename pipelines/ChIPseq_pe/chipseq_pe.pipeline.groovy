@@ -34,22 +34,37 @@ load PIPELINE_ROOT + "/modules/ChIPseq/shinyreports_pe.module.groovy"
 // discards multimapping reads as habitually done in most ChIP-seq studies
 //
 filter_bam = segment {
-  [ bowtie2_pe + BAMindexer + BamQC + filbowtie2unique + BAMindexer + RmDups + BAMindexer + [ bamCoverage, InsertSize, ipstrength, macs2 ] ]
+    [
+        bowtie2_pe + BAMindexer + BamQC + filbowtie2unique + BAMindexer + RmDups + BAMindexer + [
+            bamCoverage,
+            InsertSize,
+            ipstrength,
+            macs2
+        ]
+    ]
 }
 
 // alternative PE workflow using the unfiltered BAM files
 // may be preferable when studying some types of repetetive regions
 // make sure to have ESSENTIAL_DUP="auto" for MACS2 peak calling
 dont_filter_bam = segment {
-  [ bowtie2_pe + BAMindexer + BamQC + [ MarkDups + BAMindexer, bamCoverage, InsertSize, ipstrength, macs2 ] ]
+    [
+        bowtie2_pe + BAMindexer + BamQC + [
+            MarkDups + BAMindexer,
+            bamCoverage,
+            InsertSize,
+            ipstrength,
+            macs2
+        ]
+    ]
 }
 
 //MAIN PIPELINE TASK
 dontrun = { println "didn't run $module" }
 
 Bpipe.run {
-    "%.fastq.gz" * [ FastQC ] + "%.R*.fastq.gz" *
-    (RUN_USING_UNFILTERED_BAM ? dont_filter_bam : filter_bam) +
+    "%.fastq.gz" * [ FastQC ] +
+    "%.R*.fastq.gz" * (RUN_USING_UNFILTERED_BAM ? dont_filter_bam : filter_bam) +
     (RUN_DIFFBIND ? diffbind : dontrun.using(module:"diffbind")) +
     (RUN_TRACKHUB ? trackhub_config + trackhub : dontrun.using(module:"trackhub")) +
     (RUN_PEAK_ANNOTATION ? peak_annotation : dontrun.using(module:"peak_annotation")) +
