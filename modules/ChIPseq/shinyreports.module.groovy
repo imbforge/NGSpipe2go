@@ -58,6 +58,7 @@ shinyReports = {
             echo "SHINYREPS_PLOTS_COLUMN=${shinyReports_vars.plots_column}" >> $output &&
             echo "SHINYREPS_PEAK_ANNOTATION=${shinyReports_vars.peak_annotation}" >> $output &&
             echo "SHINYREPS_GREAT=${shinyReports_vars.great}" >> $output &&
+            echo "SHINYREPS_DIFFBIND=${shinyReports_vars.diffbind}" >> $output           &&
             echo "SHINYREPS_TRACKHUB_DONE=${shinyReports_vars.trackhub_done}" >> $output &&
             echo "SHINYREPS_TOOL_VERSIONS=${shinyReports_vars.tool_versions}" >> $output
         ""","shinyReports"

@@ -23,6 +23,7 @@ shinyReports_vars=[
     plots_column    : "4",                  //number of columns to splits the plot grids (ipstrength, phantompeaks...). Min=2
     peak_annotation : peak_annotation_vars.outdir, // where the peak annotation results lie
     great           : GREAT_vars.outdir,    // where the GO enrichment results lie
+    diffbind        : diffbind_vars.outdir, // results folder with diffbind.rds results file
     trackhub_done   : PROJECT + "/trackhub.done",   // contains trackhub URL
     tool_versions   : PIPELINE_ROOT + "/pipelines/ChIPseq/tools.groovy" //where the tool versions listed
 ]
