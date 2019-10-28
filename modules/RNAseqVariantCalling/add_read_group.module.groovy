@@ -9,6 +9,8 @@ AddRG = {
         constraints: "Picard tools version >= 1.141"
         author: "Antonio Domingues"
 
+    output.dir = AddRG_vars.outdir
+
     File f = new File(input1)
     def EXP = (f.getName() =~ /.bam/).replaceFirst("")
 
