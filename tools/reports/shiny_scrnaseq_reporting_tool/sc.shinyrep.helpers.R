@@ -1714,6 +1714,11 @@ plotPCAfromQCmetrics <- function(sce, metrics, anno){
     dotshape <- anno[2]} else {
       dotshape <- NULL}
   
+  
+  # prepare palette of appropriate length
+  colourCount = length(unique(colData(sce)[,dotcol]))
+  getPalette = colorRampPalette(brewer.pal(9, "Set1"))
+  
   #plotPCA(sce.corrected.colnames, run_args=list(pca_data_input="coldata",exprs_values="counts"), colour_by="type") +
   pca.sce <- runPCA(sce, use_coldata=TRUE, selected_variables = metrics) # FR: include selected_variables 
   pca <- as.data.frame(pca.sce@reducedDims)
@@ -1724,7 +1729,8 @@ plotPCAfromQCmetrics <- function(sce, metrics, anno){
   p_allGroups <-  plotReducedDim(pca.sce, use_dimred="PCA_coldata", by_exprs_values = "counts", colour_by=dotcol, shape_by=dotshape) +   # 
     geom_text_repel(aes(x=PC1, y=PC2, label=cells), subset(pca, cells %in% c("0c", "10c"))) +
     scale_fill_discrete(guide=F) +
-    scale_color_brewer(palette = "Dark2", name=dotcol) +
+    #scale_color_brewer(palette = "Dark2", name=dotcol) +
+    scale_color_manual(values=getPalette(colourCount)) + # creates as many colors as needed
     #  scale_alpha_manual(values=1) + 
     theme_bw()
   
@@ -1737,7 +1743,6 @@ plotPCAfromQCmetrics <- function(sce, metrics, anno){
   
   plot(p_allGroups)
 }
-
 
 
 ##
