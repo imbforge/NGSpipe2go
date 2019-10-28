@@ -22,12 +22,7 @@ AddRG = {
             ${TOOL_ENV} &&
             ${PREAMBLE} &&
 
-            echo 'VERSION INFO'  1>&2 &&
-            echo \$(java -jar \${picard} AddOrReplaceReadGroups --version) 1>&2 &&
-            echo '/VERSION INFO' 1>&2 &&
-
-            PLATFORM="genomics" &&
-            java $JAVA_FLAGS -jar \${picard} AddOrReplaceReadGroups I=$input O=$output SO=coordinate RGID=${EXP} RGLB=${EXP} RGPL=illumina RGPU=${PLATFORM} RGSM=${EXP}
+            java $JAVA_FLAGS -jar \${picard} AddOrReplaceReadGroups I=$input O=$output SO=coordinate RGID=${EXP} RGLB=${EXP} RGPL=illumina RGPU=genomics RGSM=${EXP}
         ""","AddRG"
     }
 }
