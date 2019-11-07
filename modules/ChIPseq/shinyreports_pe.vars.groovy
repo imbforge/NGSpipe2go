@@ -25,5 +25,5 @@ shinyReports_vars=[
     peak_annotation : peak_annotation_vars.outdir, // where the peak annotation results lie
     great           : GREAT_vars.outdir,    // where the GO enrichment results lie
     trackhub_done   : PROJECT + "/trackhub.done",   // contains trackhub URL
-    tool_versions   : PIPELINE_ROOT + "/pipelines/ChIPseq_pe/tools.groovy" //where the tool versions listed
+    tool_versions   : collectToolVersions_vars.outdir + "/tool_versions.txt" //where the tool versions listed
 ]

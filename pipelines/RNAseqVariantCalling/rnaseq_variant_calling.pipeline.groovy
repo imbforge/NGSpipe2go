@@ -18,6 +18,7 @@ load PIPELINE_ROOT + "/modules/RNAseqVariantCalling/base_recalibration.module.gr
 load PIPELINE_ROOT + "/modules/RNAseqVariantCalling/create_star_index_sjdb.module.groovy"
 load PIPELINE_ROOT + "/modules/RNAseqVariantCalling/variantCall_HC.module.groovy"
 load PIPELINE_ROOT + "/modules/RNAseqVariantCalling/variant_filtration.module.groovy"
+load PIPELINE_ROOT + "/modules/miscellaneous/collect_tool_versions.module.groovy"
 
 //MAIN PIPELINE TASK
 dontrun = { println "didn't run $module" }
@@ -27,5 +28,5 @@ Bpipe.run {
     "*.SJ.out.tab" * [ FilterAndMergeSJtab + GenerateStarIndexFromSJ ] +
     "%R*.fastq.gz" * [
         STAR_pe_2nd + AddRG + MarkDups + SplitNCigarReads + BaseRecalibration + VariantCallHC + VariantFiltration
-    ]
+    ] + collectToolVersions
 }

@@ -1476,11 +1476,9 @@ DEhelper.Trackhub <- function() {
 ##
 ## report version of used tools
 Toolhelper.ToolVersions <- function() {
-    toolList <- SHINYREPS_TOOL_VERSIONS
-    ver <- read.table(file=toolList,sep="=")
-    ver$V1 <- strsplit(as.character(ver$V1),"_VERSION")
-    colnames(ver) <- c("Tool name","Version")
-
-    kable(as.data.frame(ver),output=F)
+    tryCatch({
+        ver <- read.delim(file=SHINYREPS_TOOL_VERSIONS)
+        colnames(ver) <- c("Tool name","Environment", "Version")
+        kable(as.data.frame(ver),output=F)
+    }, error=function(e) cat("tool versions not available.\n", fill=TRUE))
 }
-

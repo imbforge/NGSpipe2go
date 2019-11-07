@@ -25,5 +25,5 @@ shinyReports_vars=[
     great           : GREAT_vars.outdir,    // where the GO enrichment results lie
     diffbind        : diffbind_vars.outdir, // results folder with diffbind.rds results file
     trackhub_done   : PROJECT + "/trackhub.done",   // contains trackhub URL
-    tool_versions   : PIPELINE_ROOT + "/pipelines/ChIPseq/tools.groovy" //where the tool versions listed
+    tool_versions   : new File(PIPELINE_ROOT + "/pipelines/ChIPseq/tools.groovy").getCanonicalPath() //where the tool versions listed
 ]

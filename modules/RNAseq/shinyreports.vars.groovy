@@ -35,6 +35,6 @@ shinyReports_vars=[
     go_enrichment       : GO_Enrichment_vars.outdir,      //where the GO enrichment results lie
     insertsize          : InsertSize_vars.outdir,         //where the insertsize statistics are found
     trackhub_done       : PROJECT + "/trackhub.done",     //contains trackhub URL
-    tool_versions       : PIPELINE_ROOT + "/pipelines/RNAseq/tools.groovy", //where the tool versions are listed
-    target              : PIPELINE_ROOT + "/pipelines/RNAseq/targets.txt"
+    tool_versions       : collectToolVersions_vars.outdir + "/tool_versions.txt", //where the tool versions listed
+    target              : new File(PIPELINE_ROOT + "/pipelines/RNAseq/targets.txt").getCanonicalPath()
 ]

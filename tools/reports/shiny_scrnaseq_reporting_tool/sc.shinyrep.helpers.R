@@ -1677,29 +1677,10 @@ DEhelper.Trackhub <- function() {
 ##
 ## report version of used tools
 Toolhelper.ToolVersions <- function() {
-  
-  custom.merge <- function(x,y) { # custom merge function for Reduce
-    # if(is.null(y)) return(x)
-    z <- merge(x,y, all=T, by=1)
-    rownames(z) <- z$Row.names
-    return(z)
-  }
-  
     tryCatch({
-      ver_list <- list()
-      for(t in SHINYREPS_TOOL_VERSIONS) {
-        toolList <- t
-        ver_list[[t]] <- read.table(file=toolList,sep="=")
-      }
-      names(ver_list) <- basename(SHINYREPS_PROJECT)
-      
-      ver <- Reduce(custom.merge, ver_list)
-      
-      ver$V1 <- gsub("_VERSION", "", as.character(ver$V1))
-      colnames(ver) <- c("Tool name", names(ver_list))
-      if (length(names(ver_list))==1) {colnames(ver)[colnames(ver)==names(ver_list)] <- "Version"}
-      
-      kable(as.data.frame(ver),output=F)
+        ver <- read.delim(file=SHINYREPS_TOOL_VERSIONS)
+        colnames(ver) <- c("Tool name","Environment", "Version")
+        kable(as.data.frame(ver),output=F)
     }, error=function(e) cat("tool versions not available.\n", fill=TRUE))
 }
 

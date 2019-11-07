@@ -17,6 +17,7 @@ load PIPELINE_ROOT + "/modules/DNAseq/variantfuseHC.module.groovy"
 load PIPELINE_ROOT + "/modules/NGS/bamindexer.module.groovy"
 load PIPELINE_ROOT + "/modules/NGS/fastqc.module.groovy"
 load PIPELINE_ROOT + "/modules/NGS/rmdups.module.groovy"
+load PIPELINE_ROOT + "/modules/miscellaneous/collect_tool_versions.module.groovy"
 load PIPELINE_ROOT + "/modules/miscellaneous/collectbpipes.module.2.groovy"
 load PIPELINE_ROOT + "/modules/DNAseq/shinyreports.module.groovy"
 
@@ -32,5 +33,5 @@ Bpipe.run {
             VariantCallUG + VariantEval
         ]
     ] +
-    collectBpipeLogs + shinyReports
+    collectToolVersions + collectBpipeLogs + shinyReports
 }

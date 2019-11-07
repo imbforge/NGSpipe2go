@@ -382,6 +382,7 @@ smallRNAhelper.subread <- function() {
     }
     
     # create a matrix using feature names as rownames, sample names as colnames
+    # NOTE: if sapply doesn't return a matrix (eg, RE not matching anything), the downstream code will crash
     x <- sapply(list.files(FOLDER, pattern=SUFFIX), function(f) {
         
         f <- file(paste0(FOLDER, '/', f))
@@ -405,6 +406,9 @@ smallRNAhelper.subread <- function() {
         
     })
     
+    # convert values reported by missing RE into numeric (returned Numeric(0) == matrix list mode)
+    mode(x) <- "numeric"
+
     # correct column names
     colnames(x) <- gsub(paste0("^", SHINYREPS_PREFIX), "", colnames(x))
     colnames(x) <- gsub(paste0(SUFFIX, "$"), "", colnames(x))
@@ -414,7 +418,7 @@ smallRNAhelper.subread <- function() {
     #from x we romeove the ones which are unmapped to calculate percentages
     #only for the mapped ones
     x <- x[rownames(x) != "Unassigned_Unmapped", ]
-    x <- rbind(total=x, colSums(x))
+    x <- rbind(total=x, colSums(x, na.rm=TRUE))
     rownames(x)[nrow(x)] <- "total"
     df <- data.frame(assigned=paste0(format(x[1, ], big.mark=","), " (", format((x[1, ]/x["total", ])*100, digits=2, nsmall=2), "%)"), 
                      unassigned_ambiguous=paste0(format(x[2, ], big.mark=","), " (", format((x[2, ]/x["total", ])*100, digits=2, nsmall=2), "%)"), 
@@ -424,39 +428,14 @@ smallRNAhelper.subread <- function() {
     
 }
 
-
 ##
 ## extract tool versions
 ##
 ## report version of used tools
 Toolhelper.ToolVersions <- function() {
-    table.content <- data.frame(  tool=c(
-                                          "FastQC",
-					  "cutadapt",  
-                                          "Bowtie", 
-                                          "samtools", 
-                                          "Subread", 
-                                          "FastQScreen"
-                                          ), 
-                                  version=c(
-                                          Toolhelper.VersionReporter("FastQC",   SHINYREPS_FASTQC_LOG ), 
-					  Toolhelper.VersionReporter("cutadapt", SHINYREPS_CUTADAPT_LOG ), 
-                                          Toolhelper.VersionReporter("Bowtie",   SHINYREPS_BOWTIE_LOG ), 
-                                          Toolhelper.VersionReporter("samtools", SHINYREPS_BAMINDEX_LOG), 
-                                          Toolhelper.VersionReporter("Subread",  SHINYREPS_SUBREAD_LOG), 
-                                          Toolhelper.VersionReporter("FastQScreen", SHINYREPS_FASTQSCREEN_LOG)
-                                          )
-                               )
-    kable(table.content)
-}
-
-##
-## extract tool versions
-##
-## report version of used tools
-Toolhelper.ToolVersions <- function() {
-    ver <- read.table(file=SHINYREPS_TOOL_VERSIONS,sep="=")
-         ver$V1 <- strsplit(as.character(ver$V1),"_VERSION")
-         colnames(ver) <- c("Tool name","Version")
-               kable(as.data.frame(ver),output=F)
+    tryCatch({
+        ver <- read.delim(file=SHINYREPS_TOOL_VERSIONS)
+        colnames(ver) <- c("Tool name","Environment", "Version")
+        kable(as.data.frame(ver),output=F)
+    }, error=function(e) cat("tool versions not available.\n", fill=TRUE))
 }

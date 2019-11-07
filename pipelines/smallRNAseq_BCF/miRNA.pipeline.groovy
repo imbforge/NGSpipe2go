@@ -15,6 +15,7 @@ load PIPELINE_ROOT + "/modules/smallRNAseq_BCF/fastq_quality_filter.module.groov
 load PIPELINE_ROOT + "/modules/smallRNAseq_BCF/mirDeep2.module.groovy"
 load PIPELINE_ROOT + "/modules/smallRNAseq_BCF/mirDeep2_mapper.module.groovy"
 load PIPELINE_ROOT + "/modules/smallRNAseq_BCF/trim_umis.module.groovy"
+load PIPELINE_ROOT + "/modules/miscellaneous/collect_tool_versions.module.groovy"
 
 //MAIN PIPELINE TASK
 run {
@@ -26,5 +27,6 @@ run {
                 miRDeep2Mapper + miRDeep2
             ]
         ]
-    ]
+    ] +
+    collectToolVersions
 }

@@ -23,6 +23,7 @@ load PIPELINE_ROOT + "/modules/scRNAseq/subread.module.groovy"
 load PIPELINE_ROOT + "/modules/RNAseq/subread2rnatypes.module.groovy"
 load PIPELINE_ROOT + "/modules/scRNAseq/umicount.module.groovy"
 load PIPELINE_ROOT + "/modules/scRNAseq/umidedup.module.groovy"
+load PIPELINE_ROOT + "/modules/miscellaneous/collect_tool_versions.module.groovy"
 load PIPELINE_ROOT + "/modules/scRNAseq/shinyreports.module.groovy"
 
 //
@@ -46,6 +47,6 @@ Bpipe.run {
         ]
     ] +
     (RUN_TRACKHUB ? trackhub_config + trackhub : dontrun.using(module:"trackhub")) +
-    collectBpipeLogs + shinyReports
+    collectToolVersions + collectBpipeLogs + shinyReports
 }
 

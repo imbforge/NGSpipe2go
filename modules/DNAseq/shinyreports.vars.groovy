@@ -16,5 +16,5 @@ shinyReports_vars=[
     gatkvarianteval       : VariantEval_vars.outdir, //location of GATK variantEval results
     gatkvarianteval_suffix: ".report",               //extension given to the GATK VariantEval output files
     res_gatkhc_suffix     : ".HC.vcf.gz",            //extension of the GATK HaplotypeCaller output files
-    tool_versions         : PIPELINE_ROOT + "/pipelines/ChIPseq/tools.groovy" //where the tool versions listed
+    tool_versions         : collectToolVersions_vars.outdir + "/tool_versions.txt" //where the tool versions listed
 ]

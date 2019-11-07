@@ -30,11 +30,11 @@ shinyReports_vars=[
     inferexperiment_logs: inferexperiment_vars.outdir, //where the inferexperiment logs lie
     qualimap_logs   : qualimap_vars.outdir,          //where the qualimap output files are
     trackhub_done   : PROJECT + "/trackhub.done",    //contains trackhub URL
-    tool_versions   : PROJECT+ "/NGSpipe2go/modules/scRNAseq/tool.versions.groovy", //where the tool versions are listed
+    tool_versions   : collectToolVersions_vars.outdir + "/tool_versions.txt", //where the tool versions listed
     cutadapt_logs   : Cutadapt_vars.logdir,          // cutadapt log files
     gtf             : ESSENTIAL_GENESGTF, 
     seqtype         : (PIPELINE == "scRNAseq_marsseq" ? "MARSseq" : "SmartSeq2"),
-    target          : PROJECT + "/NGSpipe2go/pipelines/scRNAseq/targets.txt",
+    target          : new File(PIPELINE_ROOT + "/pipelines/scRNAseq/targets.txt").getCanonicalPath()
     mtgenes         : ESSENTIAL_MTGENES,
     // Criteria for filtering out low quality cells
     type_of_threshold         : "absolute", // either "absolute" or "relative" (i.e. using MAD)

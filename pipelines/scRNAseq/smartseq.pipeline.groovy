@@ -21,8 +21,8 @@ load PIPELINE_ROOT + "/modules/RNAseq/filter2htseq.module.groovy"
 load PIPELINE_ROOT + "/modules/RNAseq/subread2rnatypes.module.groovy"
 load PIPELINE_ROOT + "/modules/miscellaneous/collectbpipes.module.2.groovy"
 load PIPELINE_ROOT + "/modules/scRNAseq/cutadapt.module.groovy"
+load PIPELINE_ROOT + "/modules/miscellaneous/collect_tool_versions.module.groovy"
 load PIPELINE_ROOT + "/modules/scRNAseq/shinyreports.module.groovy"
-
 
 //
 // Typical workflow for SmartSeq data:
@@ -42,6 +42,6 @@ run {
         ]
     ] +
     (RUN_TRACKHUB ? trackhub_config + trackhub : dontrun.using(module:"trackhub")) +
-    collectBpipeLogs + shinyReports
+    collectToolVersions + collectBpipeLogs + shinyReports
 }
 

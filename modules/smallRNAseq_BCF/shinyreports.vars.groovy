@@ -31,5 +31,5 @@ shinyReports_vars=[
     subread_suffix   : ".raw_readcounts.tsv.summary", // the extension of the subread stats file
     subread_log      : LOGS + "/SubreadCount",  //where the Subread/FeatureCounts logs lie
     plots_column     : 3L,    //number of columns to splits the plot grids (dupradar, genebodycov...). Min=2L. L=integer in R
-    tool_versions    : PROJECT + "/NGSpipe2go/modules/smallRNAseq_BCF/tool.versions.groovy" //where the tool versions listed
+    tool_versions    : collectToolVersions_vars.outdir + "/tool_versions.txt" //where the tool versions listed
 ]

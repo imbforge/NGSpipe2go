@@ -691,11 +691,11 @@ ChIPhelper.Bustard <- function() {
 ##
 ## report version of used tools
 Toolhelper.ToolVersions <- function() {
-    ver <- read.table(file=SHINYREPS_TOOL_VERSIONS,sep="=")
-        ver$V1 <- strsplit(as.character(ver$V1),"_VERSION")
-        colnames(ver) <- c("Tool name","Version")
-
-            kable(as.data.frame(ver),output=F)
+    tryCatch({
+        ver <- read.delim(file=SHINYREPS_TOOL_VERSIONS)
+        colnames(ver) <- c("Tool name","Environment", "Version")
+        kable(as.data.frame(ver),output=F)
+    }, error=function(e) cat("tool versions not available.\n", fill=TRUE))
 }
 
 ##
@@ -752,27 +752,25 @@ ChIPhelper.Trackhub <- function() {
 ##
 ChIPhelper.diffbind <- function() {
   
-  # read the results (if available
-  if(!file.exists(file.path(SHINYREPS_DIFFBIND, "diffbind.rds"))) {
-    cat("Differential binding analysis not available.\n", fill=TRUE)
-    return()
-  }
-  res <- readRDS(file.path(SHINYREPS_DIFFBIND, "diffbind.rds"))
-  
-  # for each contrast
-  Map(x=res, x.name=names(res), f=function(x, x.name) {
-      cat("### ", x.name, "\n",
-          nrow(x), "differential peaks at FDR 5%.\n", fill=TRUE)#,
-      layout(matrix(c(1, 2, 3, 3), nrow=2, ncol=2, byrow=TRUE))
-      freq <- table(x$seqnames)
-      opar <- par(mfrow=c(1, 3))
-      barplot(freq[rev(order(gsub("chr", "", names(freq))))], , horiz=TRUE, las=1, xlab="number of peaks")
-      hist(x$Fold, main="", xlab="fold change", ylab="number of peaks", col="grey")#,
-      abline(v=0, lty=2, col="blue")
-      plot(x$Conc, x$Fold, main="", xlab="concentration", ylab="fold change")#,
-      abline(h=0, lty=2, col="blue")
-      par(opar)
-      invisible(NULL)
-  })
+  tryCatch({
+      # read the results (if available
+      res <- readRDS(file.path(SHINYREPS_DIFFBIND, "diffbind.rds"))
+      
+      # for each contrast
+      Map(x=res, x.name=names(res), f=function(x, x.name) {
+          cat("### ", x.name, "\n",
+              nrow(x), "differential peaks at FDR 5%.\n", fill=TRUE)#,
+          layout(matrix(c(1, 2, 3, 3), nrow=2, ncol=2, byrow=TRUE))
+          freq <- table(x$seqnames)
+          opar <- par(mfrow=c(1, 3))
+          barplot(freq[rev(order(gsub("chr", "", names(freq))))], , horiz=TRUE, las=1, xlab="number of peaks")
+          hist(x$Fold, main="", xlab="fold change", ylab="number of peaks", col="grey")#,
+          abline(v=0, lty=2, col="blue")
+          plot(x$Conc, x$Fold, main="", xlab="concentration", ylab="fold change")#,
+          abline(h=0, lty=2, col="blue")
+          par(opar)
+          invisible(NULL)
+      })
+  }, error=function(e) cat("Differential binding analysis not available.\n", fill=TRUE))
 }
 

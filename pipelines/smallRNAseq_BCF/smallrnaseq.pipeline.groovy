@@ -25,6 +25,7 @@ load PIPELINE_ROOT + "/modules/smallRNAseq_BCF/subread.module.groovy"
 load PIPELINE_ROOT + "/modules/smallRNAseq_BCF/filter2htseq.module.groovy"
 load PIPELINE_ROOT + "/modules/RNAseq/subread2rnatypes.module.groovy"
 load PIPELINE_ROOT + "/modules/smallRNAseq_BCF/combined_stats.module.groovy"
+load PIPELINE_ROOT + "/modules/miscellaneous/collect_tool_versions.module.groovy"
 load PIPELINE_ROOT + "/modules/smallRNAseq_BCF/shinyreports.module.groovy"
 
 //MAIN PIPELINE TASK
@@ -44,5 +45,5 @@ run {
     [
         CutadaptStats, FastQQualityFilterStats, DedupStats, MappingStats, CombinedStats
     ] +
-    collectBpipeLogs + shinyReports
+    collectToolVersions + collectBpipeLogs + shinyReports
 }
