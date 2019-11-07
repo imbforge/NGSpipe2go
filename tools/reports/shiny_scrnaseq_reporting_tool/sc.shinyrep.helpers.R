@@ -42,27 +42,29 @@ return(unique(not.yet.attached.pkg))
 #'              
 loadGlobalVars <- function(f="shinyReports.txt") {
 
-  require(plyr)
-  
   conf_list <- lapply(f, function(f) {
     # read in the conf file(s)
     conf <- readLines(f)
     conf <- conf[grep("^SHINYREPS_", conf)]
     conf <-  sapply(conf, function(x) {
-          conf = unlist(strsplit(x, "=", fixed=T))
-          })
+        x <- unlist(strsplit(x, "=", fixed=T))
+        if(length(x) == 2)
+            x
+        else
+            c(x[1], NA)
+    })
     colnames(conf) <- conf[1,]
     conf <- conf[-1,, drop=F]
   })
   
   # combine conf files if more than one
-  conf <- rbind.fill.matrix(conf_list)
+  conf <- plyr::rbind.fill.matrix(conf_list)
   
   for(i in colnames(conf)) {
     assign(i, unique(conf[,i]), envir=.GlobalEnv)
   }
 
-    invisible(0)
+  invisible(0)
 }
 
 ##
@@ -916,6 +918,9 @@ DEhelper.STAR <- function(colorByFactor=NULL, targetsdf=targets, ...) {
   
     # select subset of samples for fastqc figures (e.g. merged singlecell pools) or use all samples for samplePattern=NULL
     x <- selectSampleSubset(x, ...)
+    if(length(x) == 0) {
+        return("No samples matched with this pattern...")
+    }
     
     x <- sapply(x, function(f) {
         f <- file(f)
@@ -1043,6 +1048,9 @@ DEhelper.Fastqc <- function(web=TRUE, ...) {
     
     # select subset of samples for fastqc figures (e.g. merged singlecell pools) or use all samples for samplePattern=NULL
     samples <- selectSampleSubset(samples, ...)
+    if(length(samples) == 0) {
+        return("No samples matched with this pattern...")
+    }
     
     df <- sapply(samples, function(f) {
         c(paste0("![fastqc img](", f, "/Images/per_base_quality.png)"), 
@@ -1085,6 +1093,9 @@ DEhelper.dupRadar <- function(web=TRUE, ...) {
 
     # select subset of samples for fastqc figures (e.g. merged singlecell pools) or use all samples for samplePattern=NULL
     samples <- selectSampleSubset(samples, ...)
+    if(length(samples) == 0) {
+        return("No samples matched with this pattern...")
+    }
     
     df <- sapply(samples, function(f) {
        # paste0("![dupRadar img](", QC, "/", basename(f), ")")
@@ -1133,6 +1144,9 @@ DEhelper.RNAtypes <- function(...) {
     
     # select subset of samples for fastqc figures (e.g. merged singlecell pools) or use all samples for samplePattern=NULL
     l.infiles <- selectSampleSubset(l.infiles, ...)
+    if(length(l.infiles) == 0) {
+        return("No samples matched with this pattern...")
+    }
     
     l.counts <- lapply(l.infiles, function(f) {
         # f <- list.files(FOLDER, pattern=SUFFIX, full.names = T)[1]
@@ -1199,6 +1213,9 @@ DEhelper.geneBodyCov <- function(web=TRUE, ...) {
     
     # select subset of samples for fastqc figures (e.g. merged singlecell pools) or use all samples for samplePattern=NULL
     samples <- selectSampleSubset(samples, ...)
+    if(length(samples) == 0) {
+        return("No samples matched with this pattern...")
+    }
     
     df <- sapply(samples, function(f) {
         paste0("![geneBodyCov img](", f, ")")
@@ -1237,6 +1254,9 @@ DEhelper.strandspecificity <- function(samplePattern=NULL, ...){
     filelist <- list.files(path=SHINYREPS_INFEREXPERIMENT_LOGS, full.names=TRUE)
     # select subset of samples for fastqc figures (e.g. merged singlecell pools) or use all samples for samplePattern=NULL
     filelist <- selectSampleSubset(filelist, samplePattern, ...)
+    if(length(filelist) == 0) {
+        return("No samples matched with this pattern...")
+    }
     
     strandspecifity <- lapply(filelist, read.table, sep=":", skip=3, header=FALSE, row.names=1, blank.lines.skip=TRUE)
     strandspecifity <- do.call(cbind, strandspecifity)
@@ -1249,10 +1269,6 @@ DEhelper.strandspecificity <- function(samplePattern=NULL, ...){
     kable(t(strandspecifity), output=F, align=c("l")) %>% kable_styling()
 }
 
-
-
-
-
 ##
 ##DEhelper.cutadapt:  get the strandspecifity from the qc and display them
 ## 
@@ -1263,116 +1279,111 @@ DEhelper.cutadapt <- function(colorByFactor=NULL, targetsdf=targets, ...){
     return(paste("Cutadapt statistics not available for", names(which(!sapply(SHINYREPS_CUTADAPT_LOGS, file.exists)))))
   }
   
-# x <- sapply(list.files(SHINYREPS_CUTADAPT_LOGS,pattern='imb_gcf.*.log$',full.names=TRUE), function(f) { 
-x <- list.files(SHINYREPS_CUTADAPT_LOGS,pattern='*cutadapt.log$',full.names=TRUE) 
-
-# select subset of samples for fastqc figures (e.g. merged singlecell pools) or use all samples for samplePattern=NULL
-x <- selectSampleSubset(x, ...)
-
-x <- sapply(x, function(f) { 
-  total.reads <- system(paste("grep \"Total reads processed\"", f, "| awk '{print $4}'"), intern=TRUE)
-  total.reads <- gsub(",", "", total.reads)
+  x <- list.files(SHINYREPS_CUTADAPT_LOGS,pattern='*cutadapt.log$',full.names=TRUE) 
   
-  trimmed.reads.perc <- system(paste("grep \"Reads with adapters\"", f, "| awk '{print $5}'"), intern=TRUE)
-  trimmed.reads.perc <- gsub("\\(|\\)|\\%", "", trimmed.reads.perc)
+  # select subset of samples for fastqc figures (e.g. merged singlecell pools) or use all samples for samplePattern=NULL
+  x <- selectSampleSubset(x, ...)
+  if(length(x) == 0) {
+      return("No samples matched with this pattern...")
+  }
   
-  tooshort.reads.perc <- system(paste("grep \"Reads that were too short\"", f, "| awk '{print $7}'"), intern=TRUE)
-  tooshort.reads.perc <- gsub("\\(|\\)|\\%", "", tooshort.reads.perc)
+  x <- sapply(x, function(f) { 
+    total.reads <- system(paste("grep \"Total reads processed\"", f, "| awk '{print $4}'"), intern=TRUE)
+    total.reads <- gsub(",", "", total.reads)
+    
+    trimmed.reads.perc <- system(paste("grep \"Reads with adapters\"", f, "| awk '{print $5}'"), intern=TRUE)
+    trimmed.reads.perc <- gsub("\\(|\\)|\\%", "", trimmed.reads.perc)
+    
+    tooshort.reads.perc <- system(paste("grep \"Reads that were too short\"", f, "| awk '{print $7}'"), intern=TRUE)
+    tooshort.reads.perc <- gsub("\\(|\\)|\\%", "", tooshort.reads.perc)
+    
+    # trimming of each adapter
+    adapters <- system(paste("grep Sequence:", f, "| awk '{print $9}'"), intern=T)
+    adapters.perc <- round(100*(as.numeric(adapters) / as.numeric(total.reads)),2)
+    names(adapters.perc) <- gsub(" *=== *", "", system(paste("grep \"=== Adapter\"", f), intern=T))
+    
+    ## add trimmed reads for each adapter here
+    return(c(total.reads, trimmed.reads.perc, tooshort.reads.perc, adapters.perc))
+  })
   
-  # trimming of each adapter
-  adapters <- system(paste("grep Sequence:", f, "| awk '{print $9}'"), intern=T)
-  adapters.perc <- round(100*(as.numeric(adapters) / as.numeric(total.reads)),2)
-  names(adapters.perc) <- gsub(" *=== *", "", system(paste("grep \"=== Adapter\"", f), intern=T))
+  # set row and column names
+  x.df <- as.data.frame(t(x)) 
+  colnames(x.df)[1:3] <- c("total.reads", "trimmed","tooshort")
+  x.df <- as.data.frame(lapply(x.df, as.numeric))
   
-  ## add trimmed reads for each adapter here
-  return(c(total.reads, trimmed.reads.perc, tooshort.reads.perc, adapters.perc))
-})
-
-# set row and column names
-x.df <- as.data.frame(t(x)) 
-colnames(x.df)[1:3] <- c("total.reads", "trimmed","tooshort")
-x.df <- as.data.frame(lapply(x.df, as.numeric))
-
-#reduce size of file names 
-row.names(x.df) <- basename(colnames(x))
-row.names(x.df)  <- gsub(lcSuffix(row.names(x.df) ), "", row.names(x.df) )
-row.names(x.df)  <- gsub(lcPrefix(row.names(x.df) ), "", row.names(x.df) )
-#if(!is.na(SHINYREPS_PREFIX)) {row.names(x.df) <- gsub(SHINYREPS_PREFIX, "", row.names(x.df))}
-x.df$filename <- factor(row.names(x.df))
-
-
-# passing the different factors given in targetsdf to x.df which was created from cutadapt logfile names (if 1 cell per file)
-if(!is.null(colorByFactor) && nrow(x.df) == nrow(targetsdf)) { # if targets object fits in length, add information to x.df
-
-  targetsdf$samplemod <- gsub(lcSuffix(targetsdf$sample ), "", targetsdf$sample ) # shorten filename suffix
-  targetsdf$samplemod <- gsub(lcPrefix(targetsdf$sample ), "", targetsdf$sample ) # shorten filename suffix
- 
-  index <- as.numeric(sapply(targetsdf$samplemod, function(s) grep(s, x.df$filename, ignore.case = T))) # grep for sample name in shortened file names
-      if(nrow(x.df) != length(index) || any(is.na(index))) {
-        stop("\nThere seem to be ambiguous sample names in targets. Can't assign them uniquely to cutadapt logfile names")
+  #reduce size of file names 
+  row.names(x.df) <- basename(colnames(x))
+  row.names(x.df)  <- gsub(lcSuffix(row.names(x.df) ), "", row.names(x.df) )
+  row.names(x.df)  <- gsub(lcPrefix(row.names(x.df) ), "", row.names(x.df) )
+  x.df$filename <- factor(row.names(x.df))
+  
+  # passing the different factors given in targetsdf to x.df which was created from cutadapt logfile names (if 1 cell per file)
+  if(!is.null(colorByFactor) && nrow(x.df) == nrow(targetsdf)) { # if targets object fits in length, add information to x.df
+  
+    targetsdf$samplemod <- gsub(lcSuffix(targetsdf$sample ), "", targetsdf$sample ) # shorten filename suffix
+    targetsdf$samplemod <- gsub(lcPrefix(targetsdf$sample ), "", targetsdf$sample ) # shorten filename suffix
+   
+    index <- as.numeric(sapply(targetsdf$samplemod, function(s) grep(s, x.df$filename, ignore.case = T))) # grep for sample name in shortened file names
+    if(nrow(x.df) != length(index) || any(is.na(index))) {
+      return("There seem to be ambiguous sample names in targets. Can't assign them uniquely to cutadapt logfile names")
+    }
+    
+    targetsdf$filename <- x.df$filename[index]
+    x.df <- merge(x.df, targetsdf, by="filename")
+    x.df <- x.df[order(rownames(x.df)),, drop=F]
+    x.df <- x.df[,!apply(x.df,2, function(x) any(is.na(x))), drop=F] # remove NA columns from unsuccessful matching
+    rownames(x.df) <- x.df$filename
+    
+    if(any(!colorByFactor %in% colnames(x.df))) {
+      if(all(!colorByFactor %in% colnames(x.df))) {
+        cat("\nNone of the column names given in colorByFactor is available. Perhaps sample names are not part of fastq file names? Using filename instead.")
+        colorByFactor <- "filename"
+      } else { # one plot each element of colorByFactor
+        cat("\n", colorByFactor[!colorByFactor %in% colnames(x.df)], "not available. Using", colorByFactor[colorByFactor %in% colnames(x.df)], "instead.")
+        colorByFactor <- colorByFactor[colorByFactor %in% colnames(x.df)]
       }
-  
-  targetsdf$filename <- x.df$filename[index]
-  x.df <- merge(x.df, targetsdf, by="filename")
-  x.df <- x.df[order(rownames(x.df)),, drop=F]
-  x.df <- x.df[,!apply(x.df,2, function(x) any(is.na(x))), drop=F] # remove NA columns from unsuccessful matching
-  rownames(x.df) <- x.df$filename
-  
-  if(any(!colorByFactor %in% colnames(x.df))) {
-    if(all(!colorByFactor %in% colnames(x.df))) {
-      cat("\nNone of the column names given in colorByFactor is available. Perhaps sample names are not part of fastq file names? Using filename instead.")
-      colorByFactor <- "filename"
-    } else { # one plot each element of colorByFactor
-      cat("\n", colorByFactor[!colorByFactor %in% colnames(x.df)], "not available. Using", colorByFactor[colorByFactor %in% colnames(x.df)], "instead.")
-      colorByFactor <- colorByFactor[colorByFactor %in% colnames(x.df)]
-         }
-     }
+    }
   } else {
     # if colorByFactor == NULL or targets does not fit to number of files
     colorByFactor <- "filename"
   }
-
-# melt data frame for plotting
-x.melt <- melt(x.df, measure.vars=c("trimmed", "tooshort", grep("Adapter", colnames(x.df), value=T)),
-               variable="reads")
-# everything which is not a value should be a factor
-
-# now we do a violin plot of the trimmed/too_short/etc. ones and color it
-# according to the different factors given in colorByFactor 
-
-# prepare palette of appropriate length
-colourCount = length(unique(x.melt[,colorByFactor]))
-getPalette = colorRampPalette(brewer.pal(9, "Set1"))
-
-create.violin <- function(x.melt, color.value){
-  ylab <- "% reads"
-  p <- ggplot(x.melt, aes_string(x="reads",
-                                 y="value",
-                                 color=color.value ))+
-    geom_quasirandom() +
-    scale_color_manual(values=getPalette(colourCount)) + # creates as many colors as needed
-    ylab(ylab) +
-    xlab("") +
-    scale_y_continuous( breaks=seq(0, max(x.melt$value), 10),
-                        limits = c(0, max(x.melt$value))) + 
-    theme(axis.text.x=element_text(angle=45, vjust=1, hjust=1)) 
   
-  return(p)
-}
-
-# one plot for each element of colorByFactor
-violin.list <- lapply(colorByFactor, create.violin, x.melt=x.melt) # "colorByFactor" is submitted as color.value
-
-for(i in 1:length(violin.list)){
-  plot(violin.list[[i]])
+  # melt data frame for plotting
+  x.melt <- melt(x.df, measure.vars=c("trimmed", "tooshort", grep("Adapter", colnames(x.df), value=T)), variable="reads")
+  # everything which is not a value should be a factor
+  
+  # now we do a violin plot of the trimmed/too_short/etc. ones and color it
+  # according to the different factors given in colorByFactor 
+  
+  # prepare palette of appropriate length
+  colourCount = length(unique(x.melt[,colorByFactor]))
+  getPalette = colorRampPalette(brewer.pal(9, "Set1"))
+  
+  create.violin <- function(x.melt, color.value){
+    ylab <- "% reads"
+    p <- ggplot(x.melt, aes_string(x="reads",
+                                   y="value",
+                                   color=color.value ))+
+      geom_quasirandom() +
+      scale_color_manual(values=getPalette(colourCount)) + # creates as many colors as needed
+      ylab(ylab) +
+      xlab("") +
+      scale_y_continuous( breaks=seq(0, max(x.melt$value), 10),
+                          limits = c(0, max(x.melt$value))) + 
+      theme(axis.text.x=element_text(angle=45, vjust=1, hjust=1)) 
+    
+    return(p)
   }
-
-#kable(x.df[,c("total.reads", "trimmed","tooshort")], output=F, format="markdown", align=c("l")) %>% kable_styling()
-DT::datatable(x.df[,c("total.reads", "trimmed","tooshort", grep("Adapter", colnames(x.df), value=T))], options = list(pageLength= 20))
+  
+  # one plot for each element of colorByFactor
+  violin.list <- lapply(colorByFactor, create.violin, x.melt=x.melt) # "colorByFactor" is submitted as color.value
+  
+  for(i in 1:length(violin.list)){
+    plot(violin.list[[i]])
+  }
+  
+  DT::datatable(x.df[,c("total.reads", "trimmed","tooshort", grep("Adapter", colnames(x.df), value=T))], options = list(pageLength= 20))
 }
-
-
-
 
 ##
 ##DEhelper.umicount: get deduplication stats from UMI_tools count
@@ -1384,6 +1395,9 @@ DEhelper.umicount <- function(colorByFactor=NULL, targetsdf=targets, ...){
   # select subset of samples for fastqc figures (e.g. merged singlecell pools) or use all samples for samplePattern=NULL
   
   x <- selectSampleSubset(x, ...)
+  if(length(x) == 0) {
+      return("No samples matched with this pattern...")
+  }
   
   x <- sapply(x, function(f) { 
     input_reads_total <- system(paste("grep \"INFO Input Reads\"", f, "| awk '{print $6}'"), intern=TRUE)
@@ -1601,13 +1615,12 @@ DEhelper.Qualimap <- function(...) {
         paste0("![alt text](", f, ")")
     })
     
-    samples <- list.files(QC, pattern="Reads.*.png$", recursive=T, full.names=F)
-    samples <- selectSampleSubset(samples, ...)
+    samples <- basename(samples)
     # put sample names and output an md table of 4 columns
     while(length(df) %% 2 != 0) df <- c(df, "")
     samples <- gsub("/.*", "", dirname(samples))
-    samples  <- gsub(lcSuffix(samples), "", samples )
-    samples  <- gsub(lcPrefix(samples), "", samples )
+    samples <- gsub(lcSuffix(samples), "", samples )
+    samples <- gsub(lcPrefix(samples), "", samples )
     
     
     while(length(samples) %% 2 != 0) samples <- c(samples, "")
@@ -1669,22 +1682,25 @@ Toolhelper.ToolVersions <- function() {
     # if(is.null(y)) return(x)
     z <- merge(x,y, all=T, by=1)
     rownames(z) <- z$Row.names
-    return(z)}
-  
-  ver_list <- list()
-  for(t in SHINYREPS_TOOL_VERSIONS) {
-    toolList <- t
-    ver_list[[t]] <- read.table(file=toolList,sep="=")
+    return(z)
   }
-  names(ver_list) <- basename(SHINYREPS_PROJECT)
   
-  ver <- Reduce(custom.merge, ver_list)
-  
-  ver$V1 <- gsub("_VERSION", "", as.character(ver$V1))
-  colnames(ver) <- c("Tool name", names(ver_list))
-  if (length(names(ver_list))==1) {colnames(ver)[colnames(ver)==names(ver_list)] <- "Version"}
-  
-  kable(as.data.frame(ver),output=F)
+    tryCatch({
+      ver_list <- list()
+      for(t in SHINYREPS_TOOL_VERSIONS) {
+        toolList <- t
+        ver_list[[t]] <- read.table(file=toolList,sep="=")
+      }
+      names(ver_list) <- basename(SHINYREPS_PROJECT)
+      
+      ver <- Reduce(custom.merge, ver_list)
+      
+      ver$V1 <- gsub("_VERSION", "", as.character(ver$V1))
+      colnames(ver) <- c("Tool name", names(ver_list))
+      if (length(names(ver_list))==1) {colnames(ver)[colnames(ver)==names(ver_list)] <- "Version"}
+      
+      kable(as.data.frame(ver),output=F)
+    }, error=function(e) cat("tool versions not available.\n", fill=TRUE))
 }
 
 
@@ -1707,38 +1723,28 @@ MAD <- function(x, n) {
 #' 
 plotPCAfromQCmetrics <- function(sce, metrics, anno){
   
-  
-  if(length(anno)>2) {stop("\nno more than 2 categories allowed in 'anno'.")}
   dotcol <- anno[1]
-  if(length(anno)==2) { 
-    dotshape <- anno[2]} else {
-      dotshape <- NULL}
+  if(length(anno) >= 2) { 
+    dotshape <- anno[2]
+  } else {
+    dotshape <- NULL
+  }
   
-  #plotPCA(sce.corrected.colnames, run_args=list(pca_data_input="coldata",exprs_values="counts"), colour_by="type") +
-  pca.sce <- runPCA(sce, use_coldata=TRUE, selected_variables = metrics) # FR: include selected_variables 
+  pca.sce <- runPCA(sce, use_coldata=TRUE, selected_variables=metrics) # FR: include selected_variables 
   pca <- as.data.frame(pca.sce@reducedDims)
   rownames(pca) <- rownames(colData(pca.sce)) # FR: add rownames
   pca <- cbind(pca, qc.drop[match(rownames(pca), rownames(qc.drop)), ])
-  pca <- cbind(pca, as.data.frame(colData(sce)[match(rownames(pca), colnames(sce)), unique(c("cells",anno)), drop=F]))
+  pca <- cbind(pca, as.data.frame(colData(sce)[match(rownames(pca), colnames(sce)), unique(c("cells", anno)), drop=F]))
   
-  p_allGroups <-  plotReducedDim(pca.sce, use_dimred="PCA_coldata", by_exprs_values = "counts", colour_by=dotcol, shape_by=dotshape) +   # 
+  p_allGroups <-  plotReducedDim(pca.sce, use_dimred="PCA_coldata", by_exprs_values = "counts") +
     geom_text_repel(aes(x=PC1, y=PC2, label=cells), subset(pca, cells %in% c("0c", "10c"))) +
     scale_fill_discrete(guide=F) +
     scale_color_brewer(palette = "Dark2", name=dotcol) +
-    #  scale_alpha_manual(values=1) + 
+    geom_point(if(is.null(dotshape)) aes(color=dotcol) else aes(color=dotcol, shape=dotshape), size=3) +
     theme_bw()
-  
-  if(is.null(dotshape)) {
-    p_allGroups <- p_allGroups + 
-      geom_point(aes(color=colour_by), size=3)} else {
-        p_allGroups <- p_allGroups +
-          geom_point(aes(color=colour_by, shape=shape_by), size=3)
-      } 
   
   plot(p_allGroups)
 }
-
-
 
 ##
 #' selectSampleSubset: select subset of samples for including in report (e.g. in case of multiple fastq files in scRNA-seq) 
@@ -1753,17 +1759,13 @@ plotPCAfromQCmetrics <- function(sce, metrics, anno){
 selectSampleSubset <- function(samples, samplePattern=NULL, exclude=F, grepInBasename=T, maxno=NULL) {
     # use all samples for samplePattern=NULL
     if(!is.null(samplePattern)) {
-      
         x <- if(grepInBasename) {basename(samples)} else {samples} # if TRUE apply pattern to filename, not to full path
         samples <- samples[grep(samplePattern, x, invert=exclude)]
-      
-      if(length(samples)==0) {stop("\nYou have selected no files!\n")}
     }
     if(!is.null(maxno)) {
-      samples <- samples[1:min(length(samples), maxno)]
-      if(maxno > length(samples)) {cat("\nSample number restricted to", maxno)}
+        if(maxno < length(samples)) {cat("\nSample number restricted to", maxno, fill=TRUE)}
+        samples <- samples[1:min(length(samples), maxno)]
     }
-    return(samples)
+    samples
   }
-  
 

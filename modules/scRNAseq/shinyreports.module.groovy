@@ -31,7 +31,7 @@ shinyReports = {
                 cp ${PIPELINE_ROOT}/tools/reports/shiny_scrnaseq_reporting_tool/sc.report.Rmd ${REPORTS};
             fi &&
 
-            PROJECT=\$(basename ${shinyReports_vars.project})                    &&
+            PROJECT=\$(basename ${shinyReports_vars.project})                     &&
             sed -i "2,2s/SHINYREPS_PROJECT/\${PROJECT}/" ${REPORTS}/sc.report.Rmd &&
 
             echo "SHINYREPS_PROJECT=${shinyReports_vars.project}" >  $output &&
@@ -68,8 +68,16 @@ shinyReports = {
             echo "SHINYREPS_TRACKHUB_DONE=${shinyReports_vars.trackhub_done}" >> $output &&
             echo "SHINYREPS_TOOL_VERSIONS=${shinyReports_vars.tool_versions}" >> $output &&
             echo "SHINYREPS_CUTADAPT_LOGS=${shinyReports_vars.cutadapt_logs}" >> $output &&
-            echo "SHINYREPS_GTF=${shinyReports_vars.gtf}" >> $output &&
-            echo "SHINYREPS_TARGET=${shinyReports_vars.target}" >> $output
+            echo "SHINYREPS_GTF=${shinyReports_vars.gtf}"         >> $output &&
+            echo "SHINYREPS_TARGET=${shinyReports_vars.target}"   >> $output &&
+            echo "SHINYREPS_MTGENES=${shinyReports_vars.mtgenes}" >> $output &&
+            echo "SHINYREPS_SEQTYPE=${shinyReports_vars.seqtype}" >> $output &&
+            echo "SHINYREPS_TYPE_OF_THRESHOLD=${shinyReports_vars.type_of_threshold}" >> $output &&
+            echo "SHINYREPS_THRESHOLD_TOTAL_COUNTS_MIN=${shinyReports_vars.threshold_total_counts_min}" >> $output &&
+            echo "SHINYREPS_THRESHOLD_TOTAL_COUNTS_MAX=${shinyReports_vars.threshold_total_counts_max}" >> $output &&
+            echo "SHINYREPS_THRESHOLD_TOTAL_FEATURES_BY_COUNTS_ENDOGENOUS=${shinyReports_vars.threshold_total_features_by_counts_endogenous}" >> $output &&
+            echo "SHINYREPS_THRESHOLD_PCT_COUNTS_MT=${shinyReports_vars.threshold_pct_counts_Mt}" >> $output &&
+            echo "SHINYREPS_NMADS=${shinyReports_vars.nmads}" >> $output
         ""","shinyReports"
     }
 }
