@@ -19,18 +19,23 @@ genes <- getBM(attributes=c("ensembl_gene_id", "chromosome_name", "start_positio
                   filter="chromosome_name", values="19",
                   mart=useMart("ensembl", dataset="hsapiens_gene_ensembl"))
 genes <- genes[genes$transcript_appris == "principal1", ]  # get only principal isoforms
-genes <- with(genes, GRanges(chromosome_name, IRanges(start_position, end_position), strand))
+genes <- with(genes, GRanges(chromosome_name, IRanges(start_position, end_position), strand, ensembl_gene_id=ensembl_gene_id))
 seqlevelsStyle(BSgenome.Hsapiens.UCSC.hg38) <- "Ensembl"
 seqs <- as.character(BSgenome::getSeq(BSgenome.Hsapiens.UCSC.hg38, genes))
 names(seqs) <- genes$ensembl_gene_id
 
-[[#]] save fasta
+# save fasta
 dir.create("ref")
 ShortRead::writeFasta(DNAStringSet(seqs), "ref/genes_chr19.fa")
+
+# duplicate (5x) 100 genes and pretend they're there multiple times, showing thus 5x expression
+set.seed(666)
+seqs.de <- c(seqs, rep(seqs[sample(1:length(seqs), 100)], 5))
+ShortRead::writeFasta(DNAStringSet(seqs.de), "ref/genes_chr19.de.fa")
 ```
 
 The second part, simulating reads from this reference, is done using samtools' `wgsim`:
-Run this bash code to generate 10k 50bp of SE reads for a reference (eg. chr19 Human), 96 replicates
+Run this bash code to generate 20k 50bp of SE reads for a reference (eg. chr19 Human), 96 replicates
 
 ```sh
 #!/bin/bash
@@ -38,7 +43,7 @@ set -euo pipefail
 
 export READ_LEN=50
 export FRAG_LEN=200
-export NUM_READS=10000
+export NUM_READS=20000
 export ERR_RATE=0.001
 export MUT_RATE=0.0001
 export INDEL_RATE=0.15
@@ -46,6 +51,7 @@ export INDEL_EXTEND_RATE=0.3
 
 export REF="ref/chr19.fa"
 export REF_RNA="ref/genes_chr19.fa"
+export REF_RNA2="ref/genes_chr19.de.fa"
 export RAWDATA="./rawdata"
 
 CORES=16
@@ -59,9 +65,9 @@ wget -qO- http://hgdownload.cse.ucsc.edu/goldenPath/hg38/database/refGene.txt.gz
 
 function f {
   REPL=${RAWDATA}/sample_$1
+  $REF=$2
   SEED=$1
 
-  echo "replicate REPL using ref REF"
   wgsim \
     -1${READ_LEN} \
     -d${FRAG_LEN} \
@@ -71,16 +77,13 @@ function f {
     -R${INDEL_RATE} \
     -X${INDEL_EXTEND_RATE} \
     -S${SEED} \
-    ${REF_RNA} ${REPL}.R1.fastq ${REPL}.R2.fastq > ${REPL}_sim.txt
+    ${REF} ${REPL}.R1.fastq ${REPL}.R2.fastq > ${REPL}_sim.txt
 
   gzip -c ${REPL}.R1.fastq > ${REPL}.fastq.gz
   rm ${REPL}.R1.fastq ${REPL}.R2.fastq ${REPL}_sim.txt
 }
 export -f f
 
-seq 1 96 | parallel -j $CORES "f {}"
+parallel --xapply -j $CORES "f {1} {2}" ::: `seq 1 96` ::: $REF_RNA $REF_RNA2
 ```
-
-The VCF with know sites was extracted from the gatk_bundle_b37, and only those variants within the coordinates of the 5 genes where selected.
-Then, coordinates were made relative to the start of the gene (with R).
 
