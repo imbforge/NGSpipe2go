@@ -1711,17 +1711,23 @@ plotPCAfromQCmetrics <- function(sce, metrics, anno){
     dotshape <- NULL
   }
   
-  pca.sce <- runPCA(sce, use_coldata=TRUE, selected_variables=metrics) # FR: include selected_variables 
+  # prepare palette of appropriate length
+  colourCount = length(unique(colData(sce)[,dotcol]))
+  getPalette = colorRampPalette(brewer.pal(9, "Set1"))
+  
+  #plotPCA(sce.corrected.colnames, run_args=list(pca_data_input="coldata",exprs_values="counts"), colour_by="type") +
+  pca.sce <- runPCA(sce, use_coldata=TRUE, selected_variables = metrics) # FR: include selected_variables 
   pca <- as.data.frame(pca.sce@reducedDims)
   rownames(pca) <- rownames(colData(pca.sce)) # FR: add rownames
   pca <- cbind(pca, qc.drop[match(rownames(pca), rownames(qc.drop)), ])
   pca <- cbind(pca, as.data.frame(colData(sce)[match(rownames(pca), colnames(sce)), unique(c("cells", anno)), drop=F]))
   
   p_allGroups <-  plotReducedDim(pca.sce, use_dimred="PCA_coldata", by_exprs_values = "counts") +
+    geom_point(if(is.null(dotshape)) aes(color=dotcol) else aes(color=dotcol, shape=dotshape), size=3) +
     geom_text_repel(aes(x=PC1, y=PC2, label=cells), subset(pca, cells %in% c("0c", "10c"))) +
     scale_fill_discrete(guide=F) +
-    scale_color_brewer(palette = "Dark2", name=dotcol) +
-    geom_point(if(is.null(dotshape)) aes(color=dotcol) else aes(color=dotcol, shape=dotshape), size=3) +
+    #scale_color_brewer(palette = "Dark2", name=dotcol) +
+    scale_color_manual(values=getPalette(colourCount)) + # creates as many colors as needed
     theme_bw()
   
   plot(p_allGroups)
@@ -1736,7 +1742,6 @@ plotPCAfromQCmetrics <- function(sce, metrics, anno){
 #' @param grepInBasename logical. If \code{TRUE} apply pattern to filename, not to full path.
 #'
 #' @return character vector with selected sample names
-
 selectSampleSubset <- function(samples, samplePattern=NULL, exclude=F, grepInBasename=T, maxno=NULL) {
     # use all samples for samplePattern=NULL
     if(!is.null(samplePattern)) {
