@@ -17,11 +17,12 @@ MultiQC = {
     def TOOL_ENV = prepare_tool_env("multiqc", tools["multiqc"]["version"], tools["multiqc"]["runenv"])
     def PREAMBLE = get_preamble("MULTIQC")
 
+    produce("multiqc_report.html") {
         exec """
             ${TOOL_ENV} &&
             ${PREAMBLE} &&
 
             multiqc $ESSENTIAL_PROJECT $MultiQC_FLAGS -o $output.dir
         ""","MULTIQC"
-
+    }
 }
