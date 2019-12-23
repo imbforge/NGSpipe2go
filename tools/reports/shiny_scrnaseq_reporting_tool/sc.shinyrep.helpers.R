@@ -1704,31 +1704,32 @@ MAD <- function(x, n) {
 #' 
 plotPCAfromQCmetrics <- function(sce, metrics, anno){
   
-  dotcol <- anno[1]
-  if(length(anno) >= 2) { 
-    dotshape <- anno[2]
-  } else {
-    dotshape <- NULL
-  }
   
-  # prepare palette of appropriate length
-  colourCount = length(unique(colData(sce)[,dotcol]))
-  getPalette = colorRampPalette(brewer.pal(9, "Set1"))
+  if(length(anno)>2) {stop("\nno more than 2 categories allowed in 'anno'.")}
+  dotcol <- anno[1]
+  if(length(anno)==2) { 
+    dotshape <- anno[2]} else {
+      dotshape <- NULL}
   
   #plotPCA(sce.corrected.colnames, run_args=list(pca_data_input="coldata",exprs_values="counts"), colour_by="type") +
-  pca.sce <- runPCA(sce, use_coldata=TRUE, selected_variables = metrics) # FR: include selected_variables 
-  pca <- as.data.frame(pca.sce@reducedDims)
-  rownames(pca) <- rownames(colData(pca.sce)) # FR: add rownames
+  pca.sce <- scater::runColDataPCA(sce, variables = metrics)  
+  pca <- as.data.frame(reducedDim(pca.sce, "PCA_coldata"))
+  # rownames(pca) <- rownames(colData(pca.sce)) 
   pca <- cbind(pca, qc.drop[match(rownames(pca), rownames(qc.drop)), ])
-  pca <- cbind(pca, as.data.frame(colData(sce)[match(rownames(pca), colnames(sce)), unique(c("cells", anno)), drop=F]))
+  pca <- cbind(pca, as.data.frame(colData(sce)[match(rownames(pca), colnames(sce)), unique(c("cells",anno)), drop=F]))
   
-  p_allGroups <-  plotReducedDim(pca.sce, use_dimred="PCA_coldata", by_exprs_values = "counts") +
-    geom_point(if(is.null(dotshape)) aes(color=dotcol) else aes(color=dotcol, shape=dotshape), size=3) +
+  p_allGroups <-  plotReducedDim(pca.sce, use_dimred="PCA_coldata", by_exprs_values = "counts", colour_by=dotcol, shape_by=dotshape) +   # 
     geom_text_repel(aes(x=PC1, y=PC2, label=cells), subset(pca, cells %in% c("0c", "10c"))) +
     scale_fill_discrete(guide=F) +
-    #scale_color_brewer(palette = "Dark2", name=dotcol) +
-    scale_color_manual(values=getPalette(colourCount)) + # creates as many colors as needed
+    scale_color_brewer(palette = "Dark2", name=dotcol) +
     theme_bw()
+  
+  if(is.null(dotshape)) {
+    p_allGroups <- p_allGroups + 
+      geom_point(aes(color=colour_by), size=3)} else {
+        p_allGroups <- p_allGroups +
+          geom_point(aes(color=colour_by, shape=shape_by), size=3)
+      } 
   
   plot(p_allGroups)
 }
@@ -1745,13 +1746,16 @@ plotPCAfromQCmetrics <- function(sce, metrics, anno){
 selectSampleSubset <- function(samples, samplePattern=NULL, exclude=F, grepInBasename=T, maxno=NULL) {
     # use all samples for samplePattern=NULL
     if(!is.null(samplePattern)) {
+      
         x <- if(grepInBasename) {basename(samples)} else {samples} # if TRUE apply pattern to filename, not to full path
         samples <- samples[grep(samplePattern, x, invert=exclude)]
+      
+      if(length(samples)==0) {stop("\nYou have selected no files!\n")}
     }
     if(!is.null(maxno)) {
-        if(maxno < length(samples)) {cat("\nSample number restricted to", maxno, fill=TRUE)}
-        samples <- samples[1:min(length(samples), maxno)]
+      samples <- samples[1:min(length(samples), maxno)]
+      if(maxno > length(samples)) {cat("\nSample number restricted to", maxno)}
     }
-    samples
+    return(samples)
   }
 
