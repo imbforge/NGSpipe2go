@@ -183,6 +183,8 @@ DEhelper.DESeq2.cluster.mean()    # heatmap of top variant 'n' genes of the rlog
 
 Pairwise differential expression analysis between the experimental groups is performed with the popular R/Bioconductor package DESeq2 (https://bioconductor.org/packages/release/bioc/html/DESeq2.html). Default DESeq2 analysis includes an independent filtering procedure for lowly expressed genes which is meant to ameliorate the multiple testing problem thereby maximising the statistical power to detect differentially expressed genes (DEGs). In this standard analysis only uniquely mapped reads are taken into account to avoid "cross-talk" between different genes. 
 
+Note that the default DESeq2 analysis uses only a statistical (FDR) filter and is thus testing for evidence that the expression changes between two sample groups is different from zero. Performing post hoc filtering on fold changes is therefore not recommended by the software developers and should be avoided. If desirable, the differential expression analysis can be repeated including an additional fold-change threshold directly in the DESeq2 statistical testing model, which will result in a more conservative DEG estimates compared to post hoc filtering.
+
 ```{r DifferentialExpression_paragraph, echo=F, results='asis', error=F, warning=F, message=F, fig.align="center"}
 for(i in 1:nrow(conts)) {
 
