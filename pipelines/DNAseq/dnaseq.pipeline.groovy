@@ -14,6 +14,7 @@ load PIPELINE_ROOT + "/modules/DNAseq/variantcallHC.module.groovy"
 load PIPELINE_ROOT + "/modules/DNAseq/variantcallUG.module.groovy"
 load PIPELINE_ROOT + "/modules/DNAseq/varianteval.module.groovy"
 load PIPELINE_ROOT + "/modules/DNAseq/variantfuseHC.module.groovy"
+load PIPELINE_ROOT + "/modules/DNAseq/variant_score_recalibration.module.groovy"
 load PIPELINE_ROOT + "/modules/NGS/bamindexer.module.groovy"
 load PIPELINE_ROOT + "/modules/NGS/fastqc.module.groovy"
 load PIPELINE_ROOT + "/modules/NGS/rmdups.module.groovy"
@@ -29,8 +30,14 @@ Bpipe.run {
     (RUN_IN_PAIRED_END_MODE ? "%.R*.fastq.gz" * [ BWA_pe ] : "%.fastq.gz" * [ BWA_se ] ) +
     "%.bam" * [
         RmDups + BAMindexer + IndelRealignment + BaseRecalibration + [
-            VariantCallHC + VariantEval,
-            VariantCallUG + VariantEval
+            VariantCallHC + [
+                VariantEval,
+                VariantScoreRecalibration + VariantEval
+            ],
+            VariantCallUG + [
+                VariantEval,
+                VariantScoreRecalibration + VariantEval
+            ]
         ]
     ] +
     collectToolVersions + collectBpipeLogs + shinyReports

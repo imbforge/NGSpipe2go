@@ -54,6 +54,11 @@ config {
       procs="1" 
       memory="2"
     }
+    VariantScoreRecalibration { 
+      walltime="04:00:00" 
+      procs="1" 
+      memory="25"
+    }
     BaseRecalibration { 
       walltime="24:00:00" 
       queue="bcflong" 
