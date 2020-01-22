@@ -60,7 +60,7 @@ config {
       memory="25"
     }
     BaseRecalibration { 
-      walltime="24:00:00" 
+      walltime="48:00:00" 
       queue="bcflong" 
       procs="8" 
       memory="50"
@@ -339,7 +339,7 @@ config {
       memory="2"
     }
     VariantCallHC { 
-      walltime="24:00:00" 
+      walltime="48:00:00" 
       queue="bcflong" 
       procs="2" 
       memory="20"
