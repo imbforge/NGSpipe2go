@@ -16,9 +16,9 @@ AddUMIBarcodeToFastq = {
     def OUTPUTFILE = (f.getName() =~ /(.R1)*.fastq.gz/).replaceFirst("")
 
     def umi_tools_FLAGS =
-        (AddUMIBarcodeToFastq_vars.BCPATTERN   ? " --bc-pattern=" + AddUMIBarcodeToFastq_vars.BCPATTERN   : "") +
-        (AddUMIBarcodeToFastq_vars.BARCODELIST ? " --whitelist="  + AddUMIBarcodeToFastq_vars.BARCODELIST + " --filter-cell-barcode" : "") +
-        (AddUMIBarcodeToFastq_vars.EXTRA       ? " "              + AddUMIBarcodeToFastq_vars.EXTRA       : "")
+        (AddUMIBarcodeToFastq_vars.bcpattern   ? " --bc-pattern=" + AddUMIBarcodeToFastq_vars.bcpattern   : "") +
+        (AddUMIBarcodeToFastq_vars.barcodelist ? " --whitelist="  + AddUMIBarcodeToFastq_vars.barcodelist + " --filter-cell-barcode" : "") +
+        (AddUMIBarcodeToFastq_vars.extra       ? " "              + AddUMIBarcodeToFastq_vars.extra       : "")
 
     def TOOL_ENV = prepare_tool_env("umitools", tools["umitools"]["version"], tools["umitools"]["runenv"])
     def PREAMBLE = get_preamble("AddUMIBarcodeToFastq")
