@@ -19,7 +19,7 @@ STAR = {
     }
 
     // calculate name of the sample being processed (added paired end support)
-    def File f = new File(input1)
+    def File f = new File(input)
     def OUTPUTFILE = (f.getName() =~ /(.R1)*.fastq.gz/).replaceFirst("")
 
     // star flags
