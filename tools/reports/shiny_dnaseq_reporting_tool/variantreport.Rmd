@@ -25,8 +25,8 @@ Bias and duplication rates ideally should be low and read qualities should be co
 high all over the read length. A slight drop towards the end of the read is unavoidable.
 
 ### Raw reads qualities, sequence bias and duplication
-```{r FastQC_paragraph, echo=F,results='asis',error=F,warning=F,message=F}
-cat(VARhelper.Fastqc(web=F),sep="\n")
+```{r FastQC_paragraph, echo=F,results='asis',error=F,warning=F,message=F,fig.align='center'}
+VARhelper.ngsReports.Fastqc()
 ```
 
 ### Mapping
