@@ -943,9 +943,9 @@ DEhelper.STAR <- function() {
     } else{
       #we rorder according to the % amount of unique mapped reads mapped reads
       df_values$sample <- fct_reorder(df_values$sample, df_values$`Uniquely mapped reads %`)
+      df_values$sample <- gsub(lcSuffix(df_values$sample), "", df_values$sample)
+      df_values$sample <- gsub(lcPrefix(df_values$sample), "", df_values$sample)
     }
-    df_values$sample <- gsub(lcSuffix(df_values$sample), "", df_values$sample)
-    df_values$sample <- gsub(lcPrefix(df_values$sample), "", df_values$sample)
     df_melt <- melt(df_values, value.name = "reads", variable.name = "mapping_stat")
     df_melt$value_info <- ifelse(grepl("%", df_melt$mapping_stat), "perc", "reads")
     
