@@ -185,7 +185,7 @@ config {
       procs="1" 
       memory="1"
     }
-    O_Enrichment { 
+    GO_Enrichment { 
       walltime="01:00:00" 
       procs="4" 
       memory="4"
