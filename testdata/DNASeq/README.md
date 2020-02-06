@@ -13,7 +13,7 @@ export MUT_RATE=0.0001
 export INDEL_RATE=0.15
 export INDEL_EXTEND_RATE=0.3
 
-export REF="/fsimb/common/genomes/saccharomyces_cerevisiae/ensembl/R64/canonical/genome/Saccharomyces_cerevisiae.R64-1-1.dna.toplevel.fa"
+export REF="/fsimb/groups/imb-bioinfocf/common-data/GATK_resources/gatk_bundle_hg38_v0/Homo_sapiens_assembly38.fasta"
 export RAWDATA="./rawdata"
 
 CORES=4
