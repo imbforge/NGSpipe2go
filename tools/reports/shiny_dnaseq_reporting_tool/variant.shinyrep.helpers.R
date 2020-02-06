@@ -3,11 +3,11 @@
 ## helper functions to create the plots for the Shiny report
 ##
 ##################################
-# library("edgeR")
+library("knitr")		# for markdown output
 library("RColorBrewer")
 library("gplots")
 library("ggplot2")
-library("knitr")		# for markdown output
+library("ngsReports")
 
 ##
 ## loadGlobalVars: read configuration from bpipe vars
@@ -71,45 +71,16 @@ VARhelper.ngsReports.Fastqc <- function() {
 	lbls <- gsub(paste0("(^", SHINYREPS_PREFIX, "|.fastqc.zip$)"), "", names(x))
     names(lbls) <- gsub(".fastqc.zip", ".fastq.gz", names(x))
 
-    cat("\n\nInspecting the PASS/WARN/FAIL Status of each module:\n\n")
-    print(ngsReports::plotSummary(x, labels=lbls))        
-    cat("\n\nVisualising Read Totals:\n\n")
-    print(ngsReports::plotReadTotals(x, labels=lbls))     
-    cat("\n\nPer Base Sequence Qualities show an overview of the range of quality",
-        "values across all bases at each position in the FastQ file:\n\n")
-    print(ngsReports::plotBaseQuals(x, labels=lbls))      
-    cat("\n\nMean Sequence Quality Per Read report allows you to see if a subset of",
-        "your sequences have universally low quality values. It is often the case that a",
-        "subset of sequences will have universally poor quality, often because they are",
-        "poorly imaged (on the edge of the field of view etc), however these should",
-        "represent only a small percentage of the total sequences:\n\n")
-    print(ngsReports::plotSeqQuals(x, plotType="line", labels=lbls))  
-    cat("\n\nPer Base Sequence Content plots out the proportion of each base",
-        "position in a file for which each of the four normal DNA bases has been",
-        "called:\n\n")
-    print(ngsReports::plotSeqContent(x, labels=lbls))     
-    cat("\n\nAdapter Content does a generic analysis of all of the Kmers in",
-        "your library to find those which do not have even coverage through the length",
-        "of your reads. This can find a number of different sources of bias in the",
-        "library which can include the presence of read-through adapter sequences",
-        "building up on the end of your sequences:\n\n")
-    print(ngsReports::plotAdapterContent(x, labels=lbls)) 
-    cat("\n\nSequence Duplication Levels counts the degree of duplication for every",
-        "sequence in a library and shows the relative number of sequences with different",
-        "degrees of duplication:\n\n")
-    print(ngsReports::plotDupLevels(x, labels=lbls))      
-    cat("\n\nInspecting GC Content measures the GC content across the whole length",
-        "of each sequence in a file and compares it to a modelled normal distribution of",
-        "GC content:\n\n")
+    print(ngsReports::plotBaseQuals(x, labels=lbls))
+    print(ngsReports::plotSeqContent(x, labels=lbls) +
+            theme(legend.position="right") +
+            guides(fill=FALSE, color="legend") +
+            geom_point(mapping=aes(x=Inf, y=Inf, color=base),
+                       data=data.frame(base=c("T", "A", "C", "G")),
+                       inherit.aes=FALSE, show.legend=TRUE) +
+            scale_color_manual("", values=c("red", "green", "blue", "black"))
+    )
     print(ngsReports::plotGcContent(x, plotType="line", gcType="Genome", labels=lbls))  
-    cat("\n\nOverrepresented Sequences lists all of the sequence which make up more",
-        "than 0.1% of the total. A normal high-throughput library will contain a diverse",
-        "set of sequences, with no individual sequence making up a tiny fraction of the",
-        "whole. Finding that a single sequence is very overrepresented in the set either",
-        "means that it is highly biologically significant, or indicates that the library",
-        "is contaminated, or not as diverse as you expected:\n\n")
-    print(ngsReports::plotOverrep(x, labels=lbls))
-    cat("\n\nMore on this, including common reasons for warnings can be found in the [FastQC documentation](https://www.bioinformatics.babraham.ac.uk/projects/fastqc/).\n\n")
 }
 
 ##

@@ -25,19 +25,15 @@ peaks   <<- ChIPhelper.init("readPeaks")
 
 The raw sequence reads of all samples are analysed with the popular FastQC tool (http://www.bioinformatics.babraham.ac.uk/projects/fastqc/).
 
-1. The "Duplication levels" plots show the proportion of the library which is made up of sequences in each of the different duplication level bins. It is useful for the assessment of the NGS library complexity and the presence or absence of PCR over-amplification during library prep. There are two lines on the plot. The blue line takes the full sequence set and shows how its duplication levels are distributed. In the red plot the sequences are de-duplicated and the proportions shown are the proportions of the deduplicated set which come from different duplication levels in the original data. In a properly diverse library most sequences should fall into the far left of the plot in both the red and blue lines. A general level of enrichment, indicating broad oversequencing in the library will tend to flatten the lines, lowering the low end and generally raising other categories.
+1. The "Duplication levels" heatmap plot shows the proportion of the library which is made up of sequences in each of the different duplication level bins. It is useful for the assessment of the NGS library complexity and the presence or absence of PCR over-amplification during library prep. There are two lines on the plot. The blue line takes the full sequence set and shows how its duplication levels are distributed. In the red plot the sequences are de-duplicated and the proportions shown are the proportions of the deduplicated set which come from different duplication levels in the original data. In a properly diverse library most sequences should fall into the far left of the plot in both the red and blue lines. A general level of enrichment, indicating broad oversequencing in the library will tend to flatten the lines, lowering the low end and generally raising other categories. The presence of dominant sequences (e.g. adapter dimers) will tend to produce spikes towards the right of the plot. These high duplication peaks will most often appear in the red trace as they make up a high proportion of the original library, but usually disappear in the blue trace as they make up an insignificant proportion of the deduplicated set. If peaks persist in the blue trace then this suggests that there are a large number of different highly duplicated sequences which might indicate either a contaminant set or a severe PCR duplication. See the related PBC metrics below.
 
-2. The "Read qualities" Box-Whisker plots show the range of quality values across all base positions:
-    (i) The central red line is the median value,
-    (ii) The yellow box represents the inter-quartile range (25-75%),
-    (iii) The upper and lower whiskers represent the 10% and 90% points,
-    (iv) The blue line represents the mean quality.
-The y-axis on the graph shows the Phred quality scores, which are logarithmically related to the base-calling error probabilities. The higher the score the better the base call. The background of the graph divides the y axis into very good quality calls (green), calls of reasonable quality (orange), and calls of poor quality (red). Typically, the majority of calls on all base positions fall into the green area.
+2. The "Read qualities" heatmap plot summarizes the mean quality score at each position.
+The color on the graph shows the Phred quality scores, which are logarithmically related to the base-calling error probabilities. The higher the score the better the base call. The background of the graph divides the y axis into very good quality calls (green), calls of reasonable quality (yellow), and calls of poor quality (red). Typically, the majority of calls on all base positions fall into the green area.
 
 3. The "Sequence bias" plots show the proportion of each base (% G, A, T and C) at each position. In a typical ChIP-seq library there would be little difference between the positions of a sequence run, so the lines in this plot should run parallel with each other, G being similar to C and A to T. 
 
-```{r FastQC_paragraph, echo=F,results='asis',error=F,warning=F,message=F}
-cat(ChIPhelper.Fastqc(web=F),sep="\n")
+```{r FastQC_paragraph, echo=F,results='asis',error=F,warning=F,message=F,fig.align='center'}
+ChIPhelper.ngsReports.Fastqc()
 ```
 
 ## Read mapping ##

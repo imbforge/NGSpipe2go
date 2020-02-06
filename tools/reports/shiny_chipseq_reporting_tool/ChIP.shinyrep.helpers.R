@@ -6,6 +6,8 @@
 library("knitr")        # for markdown output
 library("ChIPpeakAnno")	#for peak venn diagrams
 library("RColorBrewer")
+library("ggplot2")
+library("ngsReports")
 
 ##
 ## loadGlobalVars: read configuration from bpipe vars
@@ -261,6 +263,34 @@ ChIPhelper.Fastqc <- function(web=TRUE) {
     rownames(df) <- sapply(x, shorten)
     colnames(df) <- c("Duplication levels", "Read qualities", "Sequence bias")
     kable(df, output=F, align="c", format="markdown")
+}
+
+##
+## ChIPhelper.ngsReports.Fastqc: joint FastQC report of all samples in the experiment
+##
+ChIPhelper.ngsReports.Fastqc <- function() {
+	
+	# output folder
+	if(!file.exists(SHINYREPS_FASTQC)) {
+		return("Fastqc statistics not available")
+	}
+
+    # Loading FastQC Data 
+    f <- list.files(SHINYREPS_FASTQC, pattern="fastqc.zip$", full.names=TRUE)
+    x <- ngsReports::FastqcDataList(f)
+	lbls <- gsub(paste0("(^", SHINYREPS_PREFIX, "|.fastqc.zip$)"), "", names(x))
+    names(lbls) <- gsub(".fastqc.zip", ".fastq.gz", names(x))
+
+    print(ngsReports::plotDupLevels(x, labels=lbls))
+    print(ngsReports::plotBaseQuals(x, labels=lbls))
+    print(ngsReports::plotSeqContent(x, labels=lbls) +
+            theme(legend.position="right") +
+            guides(fill=FALSE, color="legend") +
+            geom_point(mapping=aes(x=Inf, y=Inf, color=base),
+                       data=data.frame(base=c("T", "A", "C", "G")),
+                       inherit.aes=FALSE, show.legend=TRUE) +
+            scale_color_manual("", values=c("red", "green", "blue", "black"))
+    )
 }
 
 ##

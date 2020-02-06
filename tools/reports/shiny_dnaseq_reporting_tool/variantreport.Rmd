@@ -17,14 +17,19 @@ source('variant.shinyrep.helpers.R')
 loadGlobalVars()
 ``` 
 
-## Quality Control RNAseq ##
-
-### Sequencing quality ###
-The sequencing quality is determined by read quality, sequence bias and duplication rates.
-Bias and duplication rates ideally should be low and read qualities should be continuously
-high all over the read length. A slight drop towards the end of the read is unavoidable.
+## Raw reads QC ##
 
 ### Raw reads qualities, sequence bias and duplication
+
+The raw sequence reads of all samples are analysed with the popular FastQC tool (http://www.bioinformatics.babraham.ac.uk/projects/fastqc/).
+
+1. The "Read qualities" heatmap plot summarizes the mean quality score at each position.
+The color on the graph shows the Phred quality scores, which are logarithmically related to the base-calling error probabilities. The higher the score the better the base call. The background of the graph divides the y axis into very good quality calls (green), calls of reasonable quality (yellow), and calls of poor quality (red). Typically, the majority of calls on all base positions fall into the green area.
+
+2. The "Sequence bias" heatmap plot shows the proportion of each base (% G, A, T and C) at each position. In a random library there would be little difference between the positions of a sequence run, so the lines in this plot should run parallel with each other. But most RNA-seq libraries show sequence imbalance in the first 10-12 read positions due to RT priming biases, which should however look fairly similar in all samples.
+
+3. The "GC Content" plot shows the GC% distribution of all reads and the ideal normal distribution based on the data (black line). Typically, the lines should tightly overlap and look essentially the same in all samples. An unusually shaped distribution could indicate a contaminated library.
+
 ```{r FastQC_paragraph, echo=F,results='asis',error=F,warning=F,message=F,fig.align='center'}
 VARhelper.ngsReports.Fastqc()
 ```
@@ -58,22 +63,22 @@ These regions are prone to lead to false positive calls and should be taken with
 no.feedback <- VARhelper.CoveragePlot()
 ```
 
-
-
 #### GATK VariantEval variant statistics
+
 Variant statistics show the basic properties of your variants as triplets for "all", "known" ,"novel" variants in comparison to dbSNP.
 The calculated ratios should be similar in "all", "known" and "novel" subsets. Highly deviating values in the "novel" subset indicate a high false positive rate.
 Due to selective pressure transitions are more likely to be retained in the genome than transversions.
 For (human) Exome sequencing a Ti/Tv ration of 2.8-3 would be good, while whole genome sequencing might result in values 2-2.1. A completely random Ti/Tv ratio would be 0.5.
 Sample names end with .HC (HaplotypeCaller) and .UG (UnifiedGenotyper).
 
-[one source of many: http://www.cureffi.org/2012/10/17/descriptive-statistics-and-quality-control-on-variants/]
+[one source of many](http://www.cureffi.org/2012/10/17/descriptive-statistics-and-quality-control-on-variants/)
 
 ```{r GATK_VariantEval_paragraph, echo=F,results='asis',error=F,warning=F,message=F}
 cat(VARhelper.GATKvarianteval(),sep="\n")
 ```
 
-##Used tools and versions for this analysis##
+## Used tools and versions for this analysis ##
+
 ```{r ToolVersions_paragraph, echo=F,results='asis', error=F, warning=F, message=F}
 cat(Toolhelper.ToolVersions(), sep="\n")
 ```

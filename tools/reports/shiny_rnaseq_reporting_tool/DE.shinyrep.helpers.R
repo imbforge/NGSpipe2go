@@ -3,6 +3,7 @@
 ## helper functions to create the plots for the Shiny report
 ##
 ##################################
+library("knitr")        # for markdown output
 library("edgeR")
 library("DESeq2")
 library("RColorBrewer")
@@ -12,7 +13,6 @@ library("reshape2")
 library("ggrepel")
 library("VennDiagram")
 library("grid")
-library("knitr")        # for markdown output
 library("plotly")
 library("GeneOverlap")
 library("pheatmap")
@@ -21,6 +21,8 @@ library("gridExtra")
 library("dplyr")
 library("tidyr")
 library("forcats")
+library("ngsReports")
+
 #' loadGlobalVars: read configuration from bpipe vars
 #'
 #' @param f - a file defining multiple variables for reporting to run. 
@@ -1015,6 +1017,33 @@ DEhelper.Fastqc <- function(web=TRUE) {
     kable(df, output=F, align="c")
 }
 
+##
+## DEhelper.ngsReports.Fastqc: joint FastQC report of all samples in the experiment
+##
+DEhelper.ngsReports.Fastqc <- function() {
+	
+	# output folder
+	if(!file.exists(SHINYREPS_FASTQC_OUT)) {
+		return("Fastqc statistics not available")
+	}
+
+    # Loading FastQC Data 
+    f <- list.files(SHINYREPS_FASTQC_OUT, pattern="fastqc.zip$", full.names=TRUE)
+    x <- ngsReports::FastqcDataList(f)
+	lbls <- gsub(paste0("(^", SHINYREPS_PREFIX, "|.fastqc.zip$)"), "", names(x))
+    names(lbls) <- gsub(".fastqc.zip", ".fastq.gz", names(x))
+
+    print(ngsReports::plotBaseQuals(x, labels=lbls))
+    print(ngsReports::plotSeqContent(x, labels=lbls) +
+            theme(legend.position="right") +
+            guides(fill=FALSE, color="legend") +
+            geom_point(mapping=aes(x=Inf, y=Inf, color=base),
+                       data=data.frame(base=c("T", "A", "C", "G")),
+                       inherit.aes=FALSE, show.legend=TRUE) +
+            scale_color_manual("", values=c("red", "green", "blue", "black"))
+    )
+    print(ngsReports::plotGcContent(x, plotType="line", gcType="Genome", labels=lbls))  
+}
 ##
 ## DEhelper.dupRadar: go through dupRadar output dir and create a md table with
 ##     the duplication plots
