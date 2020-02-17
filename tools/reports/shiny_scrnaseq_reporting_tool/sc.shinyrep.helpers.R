@@ -968,9 +968,9 @@ DEhelper.STAR <- function(colorByFactor=NULL, targetsdf=targets, ...) {
     # we have to plot per feature and then rearrange
     # we add one plot for the color value where we plot the percentages and color them according to the amount of input reads
   
-    targetsdf$samplemod <- gsub(lcSuffix(targetsdf$sample ), "", targetsdf$sample ) # shorten filename suffix
+    targetsdf$samplemod <- gsub(paste0(lcSuffix(targetsdf$sample ), "$"), "", targetsdf$sample ) # shorten filename suffix
     #if(!is.na(SHINYREPS_PREFIX)) {targetsdf$samplemod  <- gsub(SHINYREPS_PREFIX, "", targetsdf$samplemod)}
-    targetsdf$samplemod <- gsub(lcPrefix(targetsdf$samplemod ), "", targetsdf$samplemod ) # shorten filename prefix
+    targetsdf$samplemod <- gsub(paste0("^", lcPrefix(targetsdf$samplemod )), "", targetsdf$samplemod ) # shorten filename prefix
     
     index <- as.numeric(sapply(targetsdf$samplemod, function(x) grep(x, df.stacked$filename, ignore.case = T))) # grep for sample name in shortened file names
     if((nrow(df.stacked) != length(index)) || any(is.na(index))) {
