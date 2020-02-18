@@ -28,12 +28,12 @@ library("ngsReports")
 #' @param f - a file defining multiple variables for reporting to run. 
 #'
 #' @return A set of variables that are mentioned in input file, e.g.
-#'         SHINYREPS_PROJECT <- "/fsimb/groups/imb-bioinfocf/projects/butter/imb_butter_2016_10_alina_rnaseq_u2os_oe/"
+#'         SHINYREPS_PROJECT <- "projects/example_project"
 #'         SHINYREPS_ORG <- "human"
 #'         SHINYREPS_DB <- "hg38"
 #'              
 #' @description File content should be:
-#'              SHINYREPS_PROJECT=/fsimb/groups/imb-bioinfocf/projects/butter/imb_butter_2016_10_alina_rnaseq_u2os_oe/
+#'              SHINYREPS_PROJECT <- "projects/example_project"
 #'              SHINYREPS_ORG=human
 #'              SHINYREPS_DB=hg38
 #'              
