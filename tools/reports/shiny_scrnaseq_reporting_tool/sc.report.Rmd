@@ -478,7 +478,7 @@ Filter criteria (see below) are selected according to quality control plots.
 
 Summary of cells that don't pass the QC:
 
-```{r dropout_cells}
+```{r dropout_cells, fig.height=8, fig.width=10}
 ##### parameter to set:
 # define filtering criteria based on previous QC plots
 type_of_threshold = SHINYREPS_TYPE_OF_THRESHOLD # either "absolute" or "relative" (i.e. using MAD)
@@ -487,7 +487,12 @@ threshold_total_counts_max = as.numeric(SHINYREPS_THRESHOLD_TOTAL_COUNTS_MAX)
 threshold_total_features_by_counts_endogenous = as.numeric(SHINYREPS_THRESHOLD_TOTAL_FEATURES_BY_COUNTS_ENDOGENOUS)
 threshold_pct_counts_Mt = as.numeric(SHINYREPS_THRESHOLD_PCT_COUNTS_MT)
 NMADS = as.numeric(SHINYREPS_NMADS) # number of absolute deviations from median. Only relevant if type_of_threshold = "relative".
+# define QC metrics to be used for PCA
+qcmetrics = c("pct_counts_in_top_100_features", "total_features_by_counts", "pct_counts_feature_control", "total_features_by_counts_feature_control", "log10_total_counts_endogenous", "log10_total_counts_feature_control")
+# define one category to be used for symbol shape in the plot.
+annoFactors <- "pool"
 #####
+
 if(!exists("sce.beforefiltMincount")) {sce.beforefiltMincount <- sce}
 
 # Before we apply QC filters we remove all the cells which hardly have any counts 
@@ -497,51 +502,54 @@ cat("We drop ", sum(count.drop), " cells, because they have less than", min_read
 sce <- sce[,!count.drop]
 
 # apply thresholds
+qc.drop <-  data.frame(row.names = colnames(sce)) # initialise
+
 if(SHINYREPS_TYPE_OF_THRESHOLD=="absolute") {
-  libsize.drop <- (sce$total_counts < threshold_total_counts_min) | (sce$total_counts > min(threshold_total_counts_max, max(sce$total_counts), na.rm=T))
-  feature.drop <- sce$total_features_by_counts < threshold_total_features_by_counts_endogenous
-  mito.drop <- sce$pct_counts_Mt > threshold_pct_counts_Mt
-  keep <- !(libsize.drop | feature.drop | mito.drop)
-  
-  if(is.na(threshold_total_counts_max)) {threshold_total_counts_max <- paste("or >", threshold_total_counts_max)} # prepare string for output
+  qc.drop$libsize <- (sce$total_counts < threshold_total_counts_min) | (sce$total_counts > min(threshold_total_counts_max, max(sce$total_counts), na.rm=T))
+  qc.drop$feature_count <- sce$total_features_by_counts < threshold_total_features_by_counts_endogenous
+  qc.drop$mito <- sce$pct_counts_Mt > threshold_pct_counts_Mt
+  qc.drop$pass <- !apply(qc.drop, 1, any)
+  qc.drop <- qc.drop[match(colnames(sce), rownames(qc.drop)), ]  # sort to match the 'sce' cell order
+
+  if(!is.na(threshold_total_counts_max)) {threshold_total_counts_max <- paste("or >", threshold_total_counts_max)
+        } else {threshold_total_counts_max <- NULL}   # prepare string for output
   
   qcfailed <- data.frame(criterion=c(paste("total counts <", threshold_total_counts_min, threshold_total_counts_max),
                                      paste("total features <", threshold_total_features_by_counts_endogenous),
                                      paste("% mitochondrial counts >", threshold_pct_counts_Mt),
                                      paste("remaining")), 
-                         cell_count=c(sum(libsize.drop), sum(feature.drop), sum(mito.drop), sum(keep)))
+                         cell_count=c(sum(qc.drop$libsize), sum(qc.drop$feature_count), sum(qc.drop$mito), sum(qc.drop$pass)))
   kable(qcfailed, format="markdown", caption="QC filtering") %>% kable_styling()
   
   } else {
     if(SHINYREPS_TYPE_OF_THRESHOLD=="relative") {
-     libsize.drop <- isOutlier(sce$total_counts, nmads=NMADS, type="lower", log=TRUE)
-     feature.drop <- isOutlier(sce$total_features_by_counts, nmads=NMADS, type="lower", log=TRUE) 
-     mito.drop <- isOutlier(sce$pct_counts_Mt, nmads=NMADS, type="higher")
-     keep <- !(libsize.drop | feature.drop | mito.drop)
-  
+     qc.drop$libsize <- isOutlier(sce$total_counts, nmads=NMADS, type="lower", log=TRUE)
+     qc.drop$feature_count <- isOutlier(sce$total_features_by_counts, nmads=NMADS, type="lower", log=TRUE) 
+     qc.drop$mito <- isOutlier(sce$pct_counts_Mt, nmads=NMADS, type="higher")
+     qc.drop$pass <- !apply(qc.drop, 1, any)
+     qc.drop <- qc.drop[match(colnames(sce), rownames(qc.drop)), ]  # sort to match the 'sce' cell order
+     
      qcfailed <- data.frame(criterion=c(paste("total counts <", NMADS, "MAD"),
                                      paste("total features <", NMADS, "MAD"),
                                      paste("% mitochondrial counts >", NMADS, "MAD"),
                                      paste("remaining")), 
-                         cell_count=c(sum(libsize.drop), sum(feature.drop), sum(mito.drop), sum(keep)))
+                         cell_count=c(sum(qc.drop$libsize), sum(qc.drop$feature_count), sum(qc.drop$mito), sum(qc.drop$pass)))
      kable(qcfailed, format="markdown", caption="QC filtering") %>% kable_styling()
 
   } else {stop("\ntype_of_threshold must be either 'absolute' or 'relative'")}
 }
-  
-qc.drop <- data.frame(libsize=libsize.drop,
-                      #libsize.high=libsize.drop.high,
-                      feature=feature.drop,
-                      mito   = mito.drop,
-                      row.names=colnames(sce))
-qc.drop <- qc.drop[match(colnames(sce), rownames(qc.drop)), ]  # sort to match the 'sce' cell order
-qc.drop$pass <- !apply(qc.drop, 1, any)
+
+# plot QC metrics as PCA
+cat("These quality metrics are summarized in a PCA")
+plotPCAfromQCmetrics(sce, metrics=qcmetrics, anno=annoFactors, qc.drop=qc.drop)
+
+
 ```
 
 
-These quality metrics are summarized in a PCA:
 
-```{r pca1, fig.height=8, fig.width=10}
+
+```{r pca1, fig.height=8, fig.width=10, eval=FALSE}
 ##### parameters to set:
 # define QC metrics to be used for PCA
 qcmetrics = c("pct_counts_in_top_100_features", "total_features_by_counts", "pct_counts_feature_control", "total_features_by_counts_feature_control", "log10_total_counts_endogenous", "log10_total_counts_feature_control")
@@ -1317,7 +1325,7 @@ rowData(sce)$feature_symbol <- rowData(sce)$SYMBOL # columns needed for SC3
 # store cluster assignments 
 dir_sc3 <- file.path("report_files", "cluster", "SC3")
 if (!file.exists(dir_sc3)) {dir.create(dir_sc3, recursive=T) }
-write.table(colData(sce)[,c(group.vars2, grep("sc3_", colnames(colData(sce)), value=T))], file =file.path(dir_sc3, paste0("SC3_", nr_clusters, "_cluster.txt")), sep="\t", quote = F, row.names = F)
+write.table(colData(sce)[,c(group.vars, grep("sc3_", colnames(colData(sce)), value=T))], file =file.path(dir_sc3, paste0("SC3_", nr_clusters, "_cluster.txt")), sep="\t", quote = F, row.names = F)
 
 
 ### plot SC3 clustering
@@ -1418,7 +1426,7 @@ lapply(names(sce_igraphclust), function(x) {kable(t(table(sce_igraphclust[[x]]))
 # store cluster assignments
 dir_igraph <- file.path("report_files", "cluster", "igraph")
 if (!file.exists(dir_igraph)) {dir.create(dir_igraph, recursive=T) }
-      write.table(colData(sce)[,c(group.vars2, grep("igraph", names(colData(sce)), value=T))], 
+      write.table(colData(sce)[,c(group.vars, grep("igraph", names(colData(sce)), value=T))], 
       file = file.path(dir_igraph, paste0("igraph_cluster_assignments.txt")), sep="\t", quote=F, row.names=F)
 
 
@@ -1541,7 +1549,7 @@ lapply(names(clust_sce), function(x) {kable(t(table(clust_sce[[x]])), align = "l
 # store cluster assignments
 dir_hclust <- file.path("report_files", "cluster", "hclust")
 if (!file.exists(dir_hclust)) {dir.create(dir_hclust, recursive=T) }
-      write.table(colData(sce)[,c(group.vars2, grep("hclust", names(colData(sce)), value=T))], 
+      write.table(colData(sce)[,c(group.vars, grep("hclust", names(colData(sce)), value=T))], 
       file = file.path(dir_hclust, paste0("hclust_cluster_assignments.txt")), sep="\t", quote=F, row.names=F)
 
 
@@ -1595,10 +1603,11 @@ if (!file.exists(dir_hclust)) {dir.create(dir_hclust, recursive=T) }
 ```{r select_clustering}
      
   selected_clustering_method <- "igraph_TSNE_p25_allgenes_k10_louvain"    
-  cat("Selected clustering:", selected_clustering_method, "\n\n")
-  
+  name_dimred <- gsub("^.*(((TSNE)(_p[[:digit:]]+)*|(UMAP)|(PCA))(_allgenes)*).*$", "\\1",  selected_clustering_method) # get corresponding reducedDimName
+  cat("Selected clustering:", selected_clustering_method, "\nreducedDimName:", name_dimred, "\n\n")
+
    plot_selected <- scater::plotReducedDim(sce, 
-                      dimred = "TSNE_p25_allgenes",
+                      dimred = name_dimred,
                       by_exprs_values = exprs_values,
                       colour_by=selected_clustering_method, shape_by = dotshape, point_size=3) +
                       scale_color_discrete(name="cluster") +
@@ -1620,87 +1629,102 @@ if (!file.exists(dir_hclust)) {dir.create(dir_hclust, recursive=T) }
 
 Next we identify the genes that drive separation between clusters of the final clustering setting. These marker genes allow us to assign biological meaning to each cluster based on their functional annotation. In the most obvious case, the marker genes for each cluster are a priori associated with particular cell types, allowing us to treat the clustering as a proxy for cell type identity. We use a one-sided t-test to identify genes that are upregulated in each cluster compared to the others (test for log foldchange > 1).
 
-Additionally, we use a cluster specific approach. Instead of identifiying genes upregulated compared to any of the other clusters, we only consider genes that are up-regulated in all pairwise comparisons involving the cluster of interest. To achieve this, we use an intersection-union test where the combined p-value for each gene is the maximum of the p-values from all pairwise comparisons. A gene will only achieve a low combined p-value if it is strongly DE in all comparisons to other clusters.
+Additionally, we use a cluster specific approach. Instead of identifiying genes upregulated compared to any of the other clusters, we only consider genes that are up-regulated in all pairwise comparisons involving the cluster of interest. To achieve this, we use an intersection-union test where the combined p-value for each gene is the maximum of the p-values from all pairwise comparisons (apply setting pval.type="all"). A gene will only achieve a low combined p-value if it is strongly DE in all comparisons to other clusters.
 
 For each cluster, every gene is assigned with the highest rank which from comparisons with all other clusters. E.g. the set of genes with top rank <= n contains the top n genes from each comparison. These genes which distinguish that cluster from any other cluster are visualized in a heatmap across all clusters.
 
 
-```{r findmarkers, fig.width=11, fig.height=20, results='asis'}
+```{r findmarkers_per_cluster, fig.width=11, fig.height=20, results='asis'}
 
 DE_var2adjust <- "final_var2adjust" # "pool" # NULL
+clustervar <- selected_clustering_method
+groupingvar <- "group" # still to implement: use findMarkers for differential expression analysis within clusters
+
 ###############################################
 
-library(pheatmap)
 
-dir_marker <- file.path("report_files", "marker_per_cluster", selected_clustering_method)
-if (!file.exists(dir_marker)) {dir.create(dir_marker, recursive=T) }
+if(nlevels(factor(colData(sce)[,clustervar])) >=2) {
 
-cat("Un-adjusted logcounts are used for marker detection. ")
-if(is.null(DE_var2adjust)) {
-  cat("The analysis is not adjusted for any confounding variables.\n")
+  dir_marker <- file.path("report_files", "marker_per_cluster", clustervar)
+  if (!file.exists(dir_marker)) {dir.create(dir_marker, recursive=T) }
+  
+  cat("Un-adjusted logcounts are used for marker detection. ")
+  if(is.null(DE_var2adjust)) {
+    cat("The analysis is not adjusted for any confounding variables.\n")
+  } else {
+      if(DE_var2adjust == "final_var2adjust") {
+        cat("The analysis is adjusted for the same factors as described in 'Adjust for confounder variables'.\n")
+      } else {
+        cat("The analysis is adjusted for:", DE_var2adjust, "\n")
+      } 
+    }
+    
+    
+  # find upregulated markers for each cluster and upregulated marker specific for each cluster
+  # using unadjusted logcounts including previously applied blocking variable
+  # If DE_var2adjust is NULL no blocking applied 
+  markers <- findMarkers(sce, groups=colData(sce)[,clustervar], 
+                         block= if (is.null(DE_var2adjust)) {NULL} else {colData(sce)[,DE_var2adjust]},  
+                         assay.type = "logcounts_not_adjusted",
+                         row.data=rowData(sce)[,"SYMBOL", drop=F], direction="up", lfc=1)
+  markers_spec <- findMarkers(sce, groups=colData(sce)[,clustervar], 
+                         block= if (is.null(DE_var2adjust)) {NULL} else {colData(sce)[,DE_var2adjust]},  
+                         assay.type = "logcounts_not_adjusted",
+                         row.data=rowData(sce)[,"SYMBOL", drop=F], direction="up", pval.type="all")
+                         # use pval.type="some" if "all" is too stringent 
+  
+     list_heatmaps <- NULL
+     list_heatmaps_spec <- NULL
+   marker_heatmaps <- lapply(names(markers), function(cl) { 
+    
+         # all upregulated markers per cluster
+        write.table(markers[[cl]], sep="\t", quote=F, row.names=F, 
+                    file=file.path(dir_marker, paste0("gene_marker_upregulated_in_cluster_", cl, ".txt")) )
+        best_set <- markers[[cl]][markers[[cl]]$Top <= 5,]
+        logFCs <- as.matrix(best_set[,grepl("logFC", colnames(best_set))])
+        colnames(logFCs) <- sub("logFC.", "", colnames(logFCs))
+        logFCs <- logFCs[, colSums(is.na(logFCs)) != nrow(logFCs)] # remove columns with only NA (cannot be plotted in heatmap)
+        
+        # markers upregulated in 1 cluster only   
+        write.table(markers_spec[[cl]], sep="\t", quote=F, row.names=F, 
+                    file=file.path(dir_marker, paste0("gene_marker_upregulated_in_cluster_", cl, "_only.txt")))
+        best_set_spec <- markers_spec[[cl]][1:nrow(best_set), ] # select same number of genes displayed as in best_set
+        logFCs_spec <- as.matrix(best_set_spec[,grepl("logFC", colnames(best_set_spec))])
+        colnames(logFCs_spec) <- sub("logFC.", "", colnames(logFCs_spec))
+        logFCs_spec <- logFCs_spec[, colSums(is.na(logFCs_spec)) != nrow(logFCs_spec)] # remove columns with only NA 
+        
+        if(length(names(markers)) >=3) { # create heatmaps if at least 3 groups, i.e. at least 2 hetmap columns.
+            list_heatmaps <- pheatmap(logFCs, labels_row=best_set$SYMBOL, silent=T, breaks=seq(-5, 5, length.out=101), 
+                                  main=paste("Top marker upregulated in cluster", cl))[["gtable"]]
+  
+            list_heatmaps_spec <- pheatmap(logFCs_spec, labels_row=best_set_spec$SYMBOL, silent=T, breaks=seq(-5, 5, length.out=101), 
+                                       main=paste("Top marker upregulated in cluster", cl, "only"))[["gtable"]]
+        
+            filenamePlot <- file.path(dir_marker, paste0("heatmap_of_upregulated_gene_marker_cluster_", cl, ".png"))
+            ggsave(filename=filenamePlot,
+                   plot=plot(arrangeGrob(grobs=list(list_heatmaps, list_heatmaps_spec), ncol=2)), 
+                   width = 200, height = 150, units = c("mm"),  dpi = 300, device="png")
+    
+            # include plots in report    
+            cat(paste0("![plot of ", basename(filenamePlot), "](", filenamePlot, ")"))
+            cat("\n", fill = T)
+        } else {cat("\nHeatmaps skipped because only 1 column to plot.")}
+        
+      return(list(all_up=list_heatmaps, cluster_spec=list_heatmaps_spec))
+    })
+  
 } else {
-    if(DE_var2adjust == "final_var2adjust") {
-      cat("The analysis is adjusted for the same factors as described in 'Adjust for confounder variables'.\n")
-    } else {
-      cat("The analysis is adjusted for:", DE_var2adjust, "\n")
-    } 
-  }
-  
-  
-# find upregulated markers for each cluster and upregulated marker specific for each cluster
-# using unadjusted logcounts including previously applied blocking variable
-# If DE_var2adjust is NULL no blocking applied 
-markers <- findMarkers(sce, groups=colData(sce)[,selected_clustering_method], 
-                       block= if (is.null(DE_var2adjust)) {NULL} else {colData(sce)[,DE_var2adjust]},  
-                       assay.type = "logcounts_not_adjusted",
-                       row.data=rowData(sce)[,"SYMBOL", drop=F], direction="up", lfc=1)
-markers_spec <- findMarkers(sce, groups=colData(sce)[,selected_clustering_method], 
-                       block= if (is.null(DE_var2adjust)) {NULL} else {colData(sce)[,DE_var2adjust]},  
-                       assay.type = "logcounts_not_adjusted",
-                       row.data=rowData(sce)[,"SYMBOL", drop=F], direction="up", pval.type="all")
-
-marker_heatmaps <- lapply(names(markers), function(cl) {
-  
-      # all upregulated markers per cluster
-      write.table(markers[[cl]], sep="\t", quote=F, row.names=F, 
-                  file=file.path(dir_marker, paste0("gene_marker_upregulated_in_cluster_", cl, ".txt")) )
-      best_set <- markers[[cl]][markers[[cl]]$Top <= 5,]
-      logFCs <- as.matrix(best_set[,grepl("logFC", colnames(best_set))])
-      colnames(logFCs) <- sub("logFC.", "", colnames(logFCs))
-      logFCs <- logFCs[, colSums(is.na(logFCs)) != nrow(logFCs)] # remove columns with only NA (cannot be plotted in heatmap)
-      list_heatmaps <- pheatmap(logFCs, labels_row=best_set$SYMBOL, silent=T, breaks=seq(-5, 5, length.out=101), 
-                                main=paste("Top marker upregulated in cluster", cl))[["gtable"]]
-      
-      # markers upregulated in 1 cluster only   
-      write.table(markers_spec[[cl]], sep="\t", quote=F, row.names=F, 
-                  file=file.path(dir_marker, paste0("gene_marker_upregulated_in_cluster_", cl, "_only.txt")))
-      best_set_spec <- markers_spec[[cl]][1:nrow(best_set), ] # select same number of genes displayed as in best_set
-      logFCs_spec <- as.matrix(best_set_spec[,grepl("logFC", colnames(best_set_spec))])
-      colnames(logFCs_spec) <- sub("logFC.", "", colnames(logFCs_spec))
-      logFCs_spec <- logFCs_spec[, colSums(is.na(logFCs_spec)) != nrow(logFCs_spec)] # remove columns with only NA 
-      list_heatmaps_spec <- pheatmap(logFCs_spec, labels_row=best_set_spec$SYMBOL, silent=T, breaks=seq(-5, 5, length.out=101), 
-                                     main=paste("Top marker upregulated in cluster", cl, "only"))[["gtable"]]
-      
-      filenamePlot <- file.path(dir_marker, paste0("heatmap_of_upregulated_gene_marker_cluster_", cl, ".png"))
-      ggsave(filename=filenamePlot,
-             plot=plot(arrangeGrob(grobs=list(list_heatmaps, list_heatmaps_spec), ncol=2)), 
-             width = 200, height = 150, units = c("mm"),  dpi = 300, device="png")
-  
-      # include plots in report    
-      cat(paste0("![plot of ", basename(filenamePlot), "](", filenamePlot, ")"))
-      cat("\n", fill = T)
-      
-return(list(all_up=list_heatmaps, cluster_spec=list_heatmaps_spec))
-})
-
-
-
+  cat("\nNo marker genes to calculate because clustering variable has only 1 cluster\n")
+}
 
 ```
 
 
 
-```{r cell_type_annotation, results='asis', eval=T}
+
+
+
+```{r cell_type_annotation, results='asis', eval=org %in% c("human", "mouse")}
 library(SingleR)
 # eval= org %in% c("human", "mouse")
 
@@ -1712,6 +1736,9 @@ if (!file.exists(dir_anno_per_cluster)) {dir.create(dir_anno_per_cluster, recurs
 
 # Assigning cell labels from reference data (available for human only)
 if(org=="human") {
+  cat("\nAssigning cell labels from built-in reference data constructed from Blueprint and ENCODE data (Martens and Stunnenberg 2013; The ENCODE Project Consortium 2012). This reference contains normalized expression values of 259 human bulk RNA-seq samples of pure stroma and immune cells\n")
+  countdata <- logcounts(sce)
+  rownames(countdata) <- rowData(sce)$SYMBOL
   ref <- BlueprintEncodeData() # human bulk RNA-seq data from Blueprint and ENCODE
   pred <- SingleR(test=sce, ref=ref, labels=ref$label.main) # alternative: ref$label.fine
   table(pred$labels)
@@ -1723,11 +1750,19 @@ if(org=="human") {
   pheatmap(log2(tab+10), color=colorRampPalette(c("white", "blue"))(101))
 }
 
-if(org=="mouse") {
-
-library(org.Mm.eg.db)
-species="Mm"
-
+  switch(org,
+         human={
+            library(org.Hs.eg.db)
+            orgdb <- org.Hs.eg.db
+            species="Hs"
+         },
+         mouse={
+            library(org.Mm.eg.db)
+            orgdb <- org.Mm.eg.db
+            species="Mm"
+         }
+  )
+    
 ## Assigning cluster labels from markers
 cat("
     Perform a gene set enrichment analysis on the marker genes defining each cluster. This identifies the pathways and processes that are (relatively) active in each cluster based on upregulation of the associated genes compared to other clusters. We will use gene sets defined by the Gene Ontology (GO) project, which describe a comprehensive range of biological processes and functions. We define our subset of relevant marker genes at a FDR of 5% and apply the goana function from the limma package. This performs a hypergeometric test to identify GO terms that are overrepresented in our marker subset. We keep only biological process terms that are not overly general (<=200 genes) and which are significantly enriched (p<0.05).\n\n")
@@ -1742,7 +1777,9 @@ for (i in levels(colData(sce)[,selected_clustering_method])) {
     is.de <- cur.markers$FDR <= 0.05 
     # summary(is.de)
     
-    entrez.ids <- mapIds(org.Mm.eg.db, keys=rownames(cur.markers), 
+    if(org=="human") {rownames(cur.markers) <- gsub("\\..*$", "", rownames(cur.markers))} # remove .version of human Ensembl IDs
+
+    entrez.ids <- mapIds(orgdb, keys=rownames(cur.markers), 
         column="ENTREZID", keytype="ENSEMBL")
     go.out <- goana(unique(entrez.ids[is.de]), species=species, 
         universe=unique(entrez.ids))
@@ -1766,9 +1803,9 @@ for (i in levels(colData(sce)[,selected_clustering_method])) {
   }
 
 # Extract symbols for each GO term; done once.
-    tab <- select(org.Mm.eg.db, keytype="ENSEMBL", keys=rownames(sce), columns="GOALL")
+    tab <- AnnotationDbi::select(orgdb, keytype="ENSEMBL", keys=gsub("\\..*$", "", rownames(sce)), columns="GOALL")
     by.go <- split(tab[,1], tab[,2])
-}
+
 ```
 
 

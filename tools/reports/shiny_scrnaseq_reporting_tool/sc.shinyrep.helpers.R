@@ -1701,35 +1701,46 @@ MAD <- function(x, n) {
 #' @param sce SingleCellExperiment object
 #' @param metrics character vector with QC metric to be used from colData(sce)
 #' @param anno character vector defining up to 2 cell grouping factors to be indicated in the PCA plot by color and shape
+#' @param qc.drop dataframe containing logicals for passing the applied qc criteria. May contain a summary column "pass".
 #' 
-plotPCAfromQCmetrics <- function(sce, metrics, anno){
+plotPCAfromQCmetrics <- function(sce, metrics, anno, qc.drop=NULL){
   
+  pca.sce <- scater::runColDataPCA(sce, variables = metrics, name = "PCA_coldata", ncomponents = 2)  
   
-  if(length(anno)>2) {stop("\nno more than 2 categories allowed in 'anno'.")}
-  dotcol <- anno[1]
-  if(length(anno)==2) { 
-    dotshape <- anno[2]} else {
-      dotshape <- NULL}
+  if(!is.null(qc.drop)) { # use dataframe with QC failing data 
+    
+    if(! "pass" %in% colnames(qc.drop)) {qc.drop$pass <- !apply(qc.drop, 1, any)} # create "pass" column if not present
+    qcfiltercriteria <- colnames(qc.drop)[colnames(qc.drop) != "pass"]
+    
+    colData(pca.sce) <- cbind(colData(pca.sce), qc.drop[match(colnames(pca.sce), rownames(qc.drop)), ]) # add passing qc metrics to PCs
+    
+    for (i in qcfiltercriteria) { # create column with combined qc criteria output
+      colData(pca.sce)[,paste0(i,".word")] <- ifelse(colData(pca.sce)[,i]==TRUE,i,"")
+    }
+    pca.sce$QC_drop <- ifelse(pca.sce$pass, "kept", apply(colData(pca.sce)[,paste0(qcfiltercriteria,".word")], 1, paste, collapse="+"))
+    pca.sce$QC_drop <- sub("^\\+","",sub("\\+$","",gsub("\\+\\+","\\+",pca.sce$QC_drop)))
+    
+    anno <- c("QC_drop", anno) # color by failed qc criteria
+  }
   
-  #plotPCA(sce.corrected.colnames, run_args=list(pca_data_input="coldata",exprs_values="counts"), colour_by="type") +
-  pca.sce <- scater::runColDataPCA(sce, variables = metrics)  
-  pca <- as.data.frame(reducedDim(pca.sce, "PCA_coldata"))
-  # rownames(pca) <- rownames(colData(pca.sce)) 
-  pca <- cbind(pca, qc.drop[match(rownames(pca), rownames(qc.drop)), ])
-  pca <- cbind(pca, as.data.frame(colData(sce)[match(rownames(pca), colnames(sce)), unique(c("cells",anno)), drop=F]))
+  if(length(anno)>=1) {
+    dotcol <- anno[1]
+    if(length(anno)>=2) { 
+      dotshape <- anno[2]} else {
+        dotshape <- NULL}
+  } else {
+    dotcol <- dotshape <- NULL
+  }
   
-  p_allGroups <-  plotReducedDim(pca.sce, use_dimred="PCA_coldata", by_exprs_values = "counts", colour_by=dotcol, shape_by=dotshape) +   # 
-    geom_text_repel(aes(x=PC1, y=PC2, label=cells), subset(pca, cells %in% c("0c", "10c"))) +
-    scale_fill_discrete(guide=F) +
+  p_allGroups <-  plotReducedDim(pca.sce, dimred="PCA_coldata", colour_by=dotcol, shape_by=dotshape, point_size=3) +    
+    #scale_fill_discrete(guide=F) +
     scale_color_brewer(palette = "Dark2", name=dotcol) +
     theme_bw()
   
-  if(is.null(dotshape)) {
-    p_allGroups <- p_allGroups + 
-      geom_point(aes(color=colour_by), size=3)} else {
-        p_allGroups <- p_allGroups +
-          geom_point(aes(color=colour_by, shape=shape_by), size=3)
-      } 
+  if("cells" %in% colnames(colData(pca.sce))) { # add labels for 0c and 10c controls
+    p_allGroups <- p_allGroups + geom_text_repel(aes(x=PC1, y=PC2, label=cells), 
+                                                 subset(data.frame(reducedDim(pca.sce, "PCA_coldata"), cells=pca.sce$cells), cells %in% c("0c", "10c"))) 
+  }
   
   plot(p_allGroups)
 }
