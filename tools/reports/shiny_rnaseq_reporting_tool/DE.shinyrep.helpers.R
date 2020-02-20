@@ -1266,7 +1266,9 @@ DEhelper.Subread <- function() {
                  "Unassigned_FragmentLength",
                  "Unassigned_Chimera",
                  "Unassigned_Secondary",
-                 "Unassigned_Nonjunction",
+                 "Unassigned_NonSplit",
+		 "Unassigned_Read_Type",
+		 "Unassigned_Singleton",
                  "Unassigned_Duplicate"), function(y) {
                     as.numeric(  gsub( ".+\t(.+)", "\\1", l[grep(y, l)] )  )
                  })    

@@ -22,7 +22,7 @@ shinyReports_vars=[
     de_edger            : "",                             //where the DE_edgeR output lies
     de_deseq            : DE_DESeq2_vars.outdir + "/DE_DESeq2.RData",   //where the DE_DESeq2 output lies
     de_deseq_mm         : DE_DESeq2_MM_vars.outdir + "/DE_DESeq2.RData",//where the DE_DESeq2_MM output lies
-    subread             : subread_count_vars.outdir + "/subread-count", // location of the subread counts
+    subread             : subread_count_vars.outdir,      // location of the subread counts
     subread_suffix      : ".raw_readcounts.tsv.summary",  // the extension of the subread stats file
     subread_log         : LOGS + "/subread_count",        //where the Subread/FeatureCounts logs lie
     bam2bw_log          : LOGS + "/bam2bw",               //where the Bam2BW logs lie
