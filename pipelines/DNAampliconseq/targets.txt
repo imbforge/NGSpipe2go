@@ -1,0 +1,7 @@
+unique_sample_id,sample_name,experiment,sub_experiment,replicate,fraction,bin
+S1,sample1,exp_name,sub_exp,1,0.2,1
+S2,sample2,exp_name,sub_exp,2,0.2,1
+S3,sample3,exp_name,sub_exp,1,0.2,2
+S4,sample4,exp_name,sub_exp,2,0.1,2
+S5,sample5,exp_name,sub_exp,1,0.1,3
+S6,sample6,exp_name,sub_exp,2,0.2,3

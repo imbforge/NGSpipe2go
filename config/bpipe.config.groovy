@@ -251,6 +251,11 @@ config {
       procs="1" 
       memory="25"
     }
+    pear {
+      walltime="2:00:00"
+      procs="1"
+      memory="8"
+    }
     PingPongPro { 
       walltime="1:00:00" 
       procs="1" 
@@ -504,6 +509,11 @@ config {
       memory="1"
     }
     umicount { 
+      walltime="05:00:00" 
+      procs="1" 
+      memory="20"
+    }
+    umicount_tab { 
       walltime="05:00:00" 
       procs="1" 
       memory="20"
