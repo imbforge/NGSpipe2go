@@ -25,14 +25,11 @@ library(plyr)
 library(dplyr)
 library(Biostrings)
 library(mixtools)
-
 library(RColorBrewer)
 library(gplots)
 library(ggplot2)
 library(ggbeeswarm)
 library(ggrepel)
-library(openxlsx)
-library(rtracklayer)
 library(pheatmap)
 
 ##
@@ -63,18 +60,9 @@ name_plotfolder <- file.path(out, "plots")
 if(!dir.exists(name_plotfolder)) {dir.create(name_plotfolder, recursive = T)}
 
 
-annoFactors <- "group"
+annoFactors <- c("experiment", "sub_experiment")
 qcmetrics <- c("sum", "detected")
 NMADS =3 # number of absolute deviations from median. 
-
-#######
-# out <- "/fsimb/groups/imb-bioinfocf/projects/khmelinskii/imb_khmelinskii_2019_02_nieto_amplicon_test/results/MPSprofiling"
-# inputdir <- "/fsimb/groups/imb-bioinfocf/projects/khmelinskii/imb_khmelinskii_2019_02_nieto_amplicon_test/results/barcode_count"
-# ftargets <- "/fsimb/groups/imb-bioinfocf/projects/khmelinskii/imb_khmelinskii_2019_02_nieto_amplicon_test/targets.txt"
-# pre <- ""
-# suf <- ""
-######
-
 
 
 
@@ -174,7 +162,7 @@ qcfailed <- data.frame(criterion=c(paste("total counts <", NMADS, "MAD"),
 kable(qcfailed, format="markdown", caption="QC filtering") %>% kable_styling()
 
 # PCAplot mit QC metrics
-# annoFactors <- c("group", "experiment")
+# annoFactors <- c("experiment", "sub_experiment")
 # plotPCAfromQCmetrics(sce_all, metrics=qcmetrics, anno=annoFactors, qc.drop=qc.drop) +  
 #   ggtitle(paste("PCA plot of QC metrics"))
 
