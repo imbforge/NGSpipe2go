@@ -15,8 +15,10 @@ load PIPELINE_ROOT + "/modules/DNAampliconseq/pear.module.groovy"
 load PIPELINE_ROOT + "/modules/DNAampliconseq/barcode_count.module.groovy"
 load PIPELINE_ROOT + "/modules/DNAampliconseq/MPSprofiling.module.groovy"
 
-// load PIPELINE_ROOT + "/modules/miscellaneous/collect_tool_versions.module.groovy"
-// load PIPELINE_ROOT + "/modules/miscellaneous/collectbpipes.module.2.groovy"
+load PIPELINE_ROOT + "/modules/NGS/multiqc.module.groovy"
+load PIPELINE_ROOT + "/modules/miscellaneous/collect_tool_versions.module.groovy"
+load PIPELINE_ROOT + "/modules/miscellaneous/collectbpipes.module.2.groovy"
+
 // load PIPELINE_ROOT + "/modules/DNAampliconseq/shinyreports.module.groovy"
 
 // Main pipeline task
@@ -28,5 +30,6 @@ Bpipe.run {
         (RUN_PEAR ? pear : dontrun.using(module:"pear")) +
                AddUMIBarcodeToFastq + barcode_count
     ] +
-    MPSprofiling
-                 }
+            (RUN_MPSprofiling ? MPSprofiling : dontrun.using(module:"MPSprofiling")) +
+            MultiQC + collectToolVersions + collectBpipeLogs
+}

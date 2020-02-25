@@ -4,7 +4,7 @@
 load PIPELINE_ROOT + "/modules/DNAampliconseq/barcode_count.vars.groovy"
 
 barcode_count = {
-    doc title: "Deduplication and Counting of cell barcodes",
+    doc title: "Deduplication and counting of cell barcodes",
         desc: "Counting cell barcode occurrences from fastq read names. If UMIs are present they are used for deduplication.",
         constraints: "",
         bpipe_version: "tested with bpipe 0.9.9.8",
@@ -33,10 +33,8 @@ barcode_count = {
     def PREAMBLE = get_preamble("barcode_count")
 
     def BCSEP = barcode_count_vars.barcode_separator
-    // println BCSEP
 
 
-    // run the chunk
     transform(".fastq.gz") to (".barcode_count.tsv") {
         def SAMPLENAME = input.prefix.prefix
 
@@ -53,8 +51,12 @@ barcode_count = {
             
             amplicon2)
                 zcat $input | awk 'NR%4==1 {print substr(\$1,2)}' | sed -E "s/(.*[0-9]$BCSEP)([ACGTN]+)($BCSEP+)/\\2\\t\${SAMPLENAME_BASE}/" |
-                awk -F "\\t" 'BEGIN{OFS = "\\t"; print "cell", "id", "count"} {seen[\$1 "\\t" \$2]++} END{for(x in seen) print x,seen[x]}' > $output;;            
-            
+                awk -F "\\t" 'BEGIN{OFS = "\\t"; print "cell", "id", "count"} {seen[\$1 "\\t" \$2]++} END{for(x in seen) print x,seen[x]}' > $output;;
+
+            amplicon3)
+                zcat $input | awk 'NR%4==1 {print substr(\$1,2)}' | sed -E 's/(.*[0-9]$BCSEP)([ACGTN]+)($BCSEP+)([ACGTN]+)($BCSEP)/\\2\\t\\4/' |
+                awk -F "\\t" 'BEGIN{OFS = "\\t"; print "variable_region", "barcode", "count"} {seen[\$1 "\\t" \$2]++} END{for(x in seen) print x,seen[x]}' > $output;;
+
             *)  echo 'error: parameter ESSENTIAL_EXPDESIGN not set properly' > ${barcode_count_LOGDIR}/\${SAMPLENAME_BASE}.barcode_count.log;;
          esac;    
             
@@ -71,4 +73,9 @@ barcode_count = {
     // awk: filter fastq files for lines containing read names and skip the first "@" character
     // sed: extract CB in readnames and add the sample id in 2nd column (for conformity with amplicon1 design)
     // awk: write header line and count BC occurrences
+
+    // amplicon3:
+    // awk: filter fastq files for lines containing read names and skip the first "@" character
+    // sed: extract both CB from readnames
+    // awk: write header line and count occurrences of BC combinations
 }
