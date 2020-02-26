@@ -13,11 +13,13 @@ IndelRealignment = {
     output.dir = IndelRealignment_vars.outdir
 
     def RealignerTargetCreator_FLAGS =
-        (IndelRealignment_vars.threads ? " -nt " + IndelRealignment_vars.threads : "" ) +
-        (IndelRealignment_vars.bwa_ref ? " -R "  + IndelRealignment_vars.bwa_ref : "" )
+        (IndelRealignment_vars.threads        ? " -nt "     + IndelRealignment_vars.threads : "" ) +
+        (IndelRealignment_vars.bwa_ref        ? " -R "      + IndelRealignment_vars.bwa_ref : "" ) +
+        (IndelRealignment_vars.mills_variants ? " --known " + IndelRealignment_vars.mills_variants : "" )
 
     def IndelRealignment_FLAGS =
-        (IndelRealignment_vars.bwa_ref ? " -R "  + IndelRealignment_vars.bwa_ref : "" )
+        (IndelRealignment_vars.bwa_ref        ? " -R "      + IndelRealignment_vars.bwa_ref : "" ) +
+        (IndelRealignment_vars.mills_variants ? " --known " + IndelRealignment_vars.mills_variants : "" )
 
     def TOOL_ENV = prepare_tool_env("java", tools["java"]["version"], tools["java"]["runenv"]) + " && " +
                    prepare_tool_env("gatk", tools["gatk"]["version"], tools["gatk"]["runenv"])
