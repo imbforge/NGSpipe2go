@@ -129,7 +129,7 @@ colnames(p) <- names(l)
 
 # print the peaks table
 cat("",fill=T)
-cat(kable(p,row.names=T),sep="\n")
+cat(kable(p,row.names=T, format="markdown"),sep="\n")
 cat("",fill=T)
 ```
 
@@ -208,7 +208,7 @@ for(i in 1:length(levels(targets$group))) {
         colnames(enrich) <- c("GO ID","Term Name", "Binom Raw P-value", "Binom FDR Q-Val", "Binom Fold Enrichment", "Binom Observed Region Hits", "Binom Region Set Coverage" )
         #colnames(enrich)  <- gsub("GO.Biological.Process.", "",  colnames(enrich))
         #colnames(enrich)  <- gsub("\\.", " ", colnames(enrich))
-        cat(kable(enrich[1:r,], row.names=T, align="r"),  sep="\n") # show only the top min or top 10 biological processes
+        cat(kable(enrich[1:r,], row.names=T, align="r", format="markdown"),  sep="\n") # show only the top min or top 10 biological processes
 
         cat("\n", fill=T)
 

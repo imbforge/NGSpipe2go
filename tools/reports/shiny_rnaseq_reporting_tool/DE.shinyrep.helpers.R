@@ -875,9 +875,9 @@ DEhelper.STARparms <- function() {
     
     # set row and column names, and output the md table
     if(all(is.na(df$warning))) {
-        kable(df[, 1, drop=F], align=c("r"), output=F)
+        kable(df[, 1, drop=F], align=c("r"), output=F, format="markdown")
     } else {
-        kable(df, align=c("r", "r"), output=F)
+        kable(df, align=c("r", "r"), output=F, format="markdown")
     }
 }
 
