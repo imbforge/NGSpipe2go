@@ -983,7 +983,7 @@ DEhelper.STAR <- function() {
                      
     return( list(p_perc = p_perc,
                  p_count = p_count,
-         stat = kable(df_values, align=c("r", "r", "r", "r","r"), output=F))
+         stat = kable(df_values, align=c("r", "r", "r", "r","r"),format="markdown", output=F))
     )
     
 }
@@ -1014,7 +1014,7 @@ DEhelper.Fastqc <- function(web=TRUE) {
     rownames(df) <- gsub(paste0("^", SHINYREPS_PREFIX), "", basename(samples))
     rownames(df) <- gsub(paste0("_fastqc$"), "", rownames(df))
     colnames(df) <- c("Read qualities", "Sequence bias", "GC content")
-    kable(df, output=F, align="c")
+    kable(df, output=F, align="c",format="markdown")
 }
 
 ##
@@ -1200,7 +1200,7 @@ DEhelper.strandspecificity <- function(){
     samplenames <- gsub("_inferexperiment.txt", "", samplenames)
     colnames(strandspecifity) <- samplenames 
     rownames(strandspecifity) <- c("other", "sense", "antisense") 
-    kable(t(strandspecifity), output=F, align=c("l"))
+    kable(t(strandspecifity), output=F, format="markdown", align=c("l"))
 }
 
 ##
@@ -1290,7 +1290,7 @@ DEhelper.Subread <- function() {
                      unassigned_multimap=paste0(format(x[3, ], big.mark=","), " (", format((x[3, ]/x["total", ])*100, digits=2, nsmall=2), "%)"), 
                      unassigned_nofeature=paste0(format(x[4, ], big.mark=","), " (", format((x[4, ]/x["total", ])*100, digits=2, nsmall=2), "%)"))
     rownames(df) <- colnames(x)
-    kable(df, align=c("r", "r", "r", "r"), output=F)
+    kable(df, align=c("r", "r", "r", "r"), output=F, format="markdown")
     
 }
 
@@ -1510,6 +1510,6 @@ Toolhelper.ToolVersions <- function() {
     tryCatch({
         ver <- read.delim(file=SHINYREPS_TOOL_VERSIONS)
         colnames(ver) <- c("Tool name","Environment", "Version")
-        kable(as.data.frame(ver),output=F)
+        kable(as.data.frame(ver),output=F, format="markdown")
     }, error=function(e) cat("tool versions not available.\n", fill=TRUE))
 }

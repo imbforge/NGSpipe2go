@@ -227,7 +227,7 @@ for(i in 1:nrow(conts)) {
 	genes$log2FoldChange <- round(genes$log2FoldChange, 2)
 	genes$padj           <- format(genes$padj, digits=3, scientific=TRUE)
     cols <- c("gene_name", "baseMean", "log2FoldChange", "padj")
-	cat(kable(genes[1:25, cols], row.names=T, align="r"), sep="\n")	# show only the top 25 genes
+	cat(kable(genes[1:25, cols], row.names=T, align="r", format="markdown"), sep="\n")	# show only the top 25 genes
 	cat("", fill=T)
 
 }
@@ -272,7 +272,7 @@ for(i in 1:nrow(conts)) {
         	r       <- min(10, nrow(enrich))
         	enrich  <- as.data.frame(enrich)
         	enrich$geneID <- ifelse(nchar(enrich$geneID) > 10, paste0(substr(enrich$geneID, 0, 35), "..."), enrich$geneID) # shorten long lines
-        	cat(kable(enrich[1:r, cols], row.names=T, align="r"), sep="\n") # show only the top min or top 10 biological processes
+        	cat(kable(enrich[1:r, cols], row.names=T, align="r", format="markdown"), sep="\n") # show only the top min or top 10 biological processes
         	cat("\n", fill=T)
 
     	} else {
@@ -337,7 +337,7 @@ for(i in 1:nrow(conts)) {
         	r       <- min(10, nrow(enrich))
         	enrich  <- as.data.frame(enrich)
         	enrich$geneID <- ifelse(nchar(enrich$geneID) > 10, paste0(substr(enrich$geneID, 0, 35), "..."), enrich$geneID) # shorten long lines
-        	cat(kable(enrich[1:r, cols], row.names=T, align="r"), sep="\n") # show only the top min or top 10 pathways
+        	cat(kable(enrich[1:r, cols], row.names=T, align="r", format="markdown"), sep="\n") # show only the top min or top 10 pathways
         	cat("\n", fill=T)
 
     	} else {
@@ -366,7 +366,7 @@ for(i in 1:nrow(conts)) {
         	r       <- min(10, nrow(enrich))
         	enrich  <- as.data.frame(enrich)
         	enrich$geneID <- ifelse(nchar(enrich$geneID) > 10, paste0(substr(enrich$geneID, 0, 35), "..."), enrich$geneID) # shorten long lines
-        	cat(kable(enrich[1:r, cols], row.names=T, align="r"), sep="\n") # show only the top min or top 10 pathways
+        	cat(kable(enrich[1:r, cols], row.names=T, align="r", format="markdown"), sep="\n") # show only the top min or top 10 pathways
         	cat("\n", fill=T)
 
     	} else {
@@ -393,7 +393,7 @@ for(i in 1:nrow(conts)) {
     table_fisher <- DEhelper.DESeq2.ChrOverrepresentation(i, fdr)
 
     if (nrow(table_fisher) > 0) {
-        cat(kable(table_fisher, row.names=T, align="r"), sep="\n")
+        cat(kable(table_fisher, row.names=T, align="r", format="markdown"), sep="\n")
         cat("", fill=T)
     } else {
         cat("No chromosome over-representation found.", fill=T)
@@ -453,11 +453,11 @@ for(i in 1:nrow(conts)) {
     # output result
     cat("With multimappers only:", fill=T)
     cat("", fill=T)
-    cat(kable(tables[[2]], row.names=T, align="r"), sep="\n")    # show max 25 genes
+    cat(kable(tables[[2]], row.names=T, align="r",format="markdown"), sep="\n")    # show max 25 genes
     cat("", fill=T)
     cat("Without multimappers only:", fill=T)
     cat("", fill=T)
-    cat(kable(tables[[1]], row.names=T, align="r"), sep="\n")    # show max 25 genes
+    cat(kable(tables[[1]], row.names=T, align="r",format="markdown"), sep="\n")    # show max 25 genes
     cat("", fill=T)
 }
 ```
