@@ -47,15 +47,15 @@ barcode_count = {
             amplicon1)
                 zcat $input | awk 'NR%4==1 {print substr(\$1,2)}' | sed -E "s/(.*[0-9]$BCSEP)([ACGTN]+)($BCSEP+)([ACGTN]+)/\\1\\4\\3\\2\\t\${SAMPLENAME_BASE}/" | 
                 umi_tools count_tab $umicount_FLAGS -L ${barcode_count_LOGDIR}/\${SAMPLENAME_BASE}.barcode_count.log -E ${barcode_count_LOGDIR}/\${SAMPLENAME_BASE}.barcode_count.error |  
-                sed -E -e 's/(^b'\\'')([ACGTN]+)('\\'')(.*)/\\2\\4/' -e '1s/gene/id/' > $output;;
+                sed -E -e 's/(^b'\\'')([ACGTN]+)('\\'')(.*)/\\2\\4/' -e '1s/cell/sequence/' -e '1s/gene/id/' > $output;;
             
             amplicon2)
                 zcat $input | awk 'NR%4==1 {print substr(\$1,2)}' | sed -E "s/(.*[0-9]$BCSEP)([ACGTN]+)($BCSEP+)/\\2\\t\${SAMPLENAME_BASE}/" |
-                awk -F "\\t" 'BEGIN{OFS = "\\t"; print "cell", "id", "count"} {seen[\$1 "\\t" \$2]++} END{for(x in seen) print x,seen[x]}' > $output;;
+                awk -F "\\t" 'BEGIN{OFS = "\\t"; print "sequence", "id", "count"} {seen[\$1 "\\t" \$2]++} END{for(x in seen) print x,seen[x]}' > $output;;
 
-            amplicon3)
+            amplicon3|amplicon4)
                 zcat $input | awk 'NR%4==1 {print substr(\$1,2)}' | sed -E 's/(.*[0-9]$BCSEP)([ACGTN]+)($BCSEP+)([ACGTN]+)($BCSEP)/\\2\\t\\4/' |
-                awk -F "\\t" 'BEGIN{OFS = "\\t"; print "variable_region", "barcode", "count"} {seen[\$1 "\\t" \$2]++} END{for(x in seen) print x,seen[x]}' > $output;;
+                awk -F "\\t" 'BEGIN{OFS = "\\t"; print "sequence", "id", "count"} {seen[\$1 "\\t" \$2]++} END{for(x in seen) print x,seen[x]}' > $output;;
 
             *)  echo 'error: parameter ESSENTIAL_EXPDESIGN not set properly' > ${barcode_count_LOGDIR}/\${SAMPLENAME_BASE}.barcode_count.log;;
          esac;    
@@ -65,16 +65,16 @@ barcode_count = {
 
     // amplicon1:
     // awk: filter fastq files for lines containing read names and skip the first "@" character
-    // sed: switch UMI and CB in readnames and add the sample id in 2nd column. This format is needed for umi_tools count_tab
+    // sed: switch UMI and CB in readnames from read_id[SEP]_CB_UMI to read_id[SEP]_UMI_CB and add the sample id in 2nd column. This format is needed for umi_tools count_tab
     // umi_tools count_tab: count remaining CB occurrences after UMI deduplication
-    // sed: modify count_tab cell column format from b'BC' to BC (escape single quote) and rename "gene" column to "id"
+    // sed: modify count_tab cell column format from b'BC' to BC (escape single quote) and rename columns "cell" and "gene" to "sequence" and "id"
 
     // amplicon2:
     // awk: filter fastq files for lines containing read names and skip the first "@" character
     // sed: extract CB in readnames and add the sample id in 2nd column (for conformity with amplicon1 design)
     // awk: write header line and count BC occurrences
 
-    // amplicon3:
+    // amplicon3|amplicon4:
     // awk: filter fastq files for lines containing read names and skip the first "@" character
     // sed: extract both CB from readnames
     // awk: write header line and count occurrences of BC combinations
