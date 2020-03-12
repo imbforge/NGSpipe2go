@@ -197,7 +197,7 @@ processContrast <-  function(x) {
 if(cores > 1 && length(res) > 1) {
     cl <- makeCluster(cores)
     clusterExport(cl, c("log2Fold", "padj", "orgDb", "org", "univ", "type", "plotCategory", "out"))
-    clusterEvalQ({
+    clusterEvalQ(cl, {
         library(clusterProfiler)
         library(DOSE)
         library(ReactomePA)
