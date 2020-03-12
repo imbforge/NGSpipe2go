@@ -56,16 +56,6 @@ if(!file.exists(ftargets))   stop(paste("File",ftargets,"does NOT exist. Run wit
 if(!file.exists(inputdir))   stop(paste("Dir",inputdir,"does NOT exist. Run with:\n",runstr))
 
 
-#######
-# out <- "/fsimb/groups/imb-bioinfocf/projects/khmelinskii/imb_khmelinskii_2019_02_nieto_amplicon_test/tempresults"
-# inputdir <- "/fsimb/groups/imb-bioinfocf/projects/khmelinskii/imb_khmelinskii_2019_02_nieto_amplicon_test/20200311_results_MPS_pipeline/results/barcode_count"
-# ftargets <- "/fsimb/groups/imb-bioinfocf/projects/khmelinskii/imb_khmelinskii_2019_02_nieto_amplicon_test/targets.txt"
-# pre <- ""
-# suf <- ""
-# expdesign <- "amplicon1"
-######
-
-
 
 ### columns in target file
 # experiment: overall experiment name
@@ -108,15 +98,7 @@ targets <- targets[,required_target_columns]
   counts <- mclapply(f, read.delim, header=T, comment.char = "#")
   names(counts) <- basename(f)
   
-  # unique_file_name <- basename(f)
-  # if(pre != ""){gsub(pre, "", unique_file_name)}
-  # if(suf != ""){gsub(suf, "", unique_file_name)}
-  # if (length(unique_file_name)>1) {
-  #   if(pre == ""){unique_file_name <- gsub(lcSuffix(unique_file_name),"", unique_file_name)}
-  #   if(suf == ""){unique_file_name <- gsub(lcPrefix(unique_file_name),"", unique_file_name)}
-  # }
-  # names(counts) <- unique_file_name
-  
+ 
   # merge counts with targets file (includes optional demultiplexing)
   counts <- lapply(names(counts), function(x) {
     colnames(counts[[x]]) <- c("sequence", "id", "count")
@@ -146,7 +128,7 @@ targets <- targets[,required_target_columns]
   # sum all counts per sample for initial QC filtering
   counts_summary <- counts %>%
     dplyr::group_by(unique_sample_id) %>%
-    dplyr::summarize(sum2 = sum(count)) %>%
+    dplyr::summarize(sum = sum(count)) %>%
     dplyr::ungroup() 
     counts <- merge(counts, counts_summary, by="unique_sample_id", all.x=T)
       
