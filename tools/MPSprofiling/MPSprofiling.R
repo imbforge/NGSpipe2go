@@ -56,6 +56,17 @@ if(!file.exists(ftargets))   stop(paste("File",ftargets,"does NOT exist. Run wit
 if(!file.exists(inputdir))   stop(paste("Dir",inputdir,"does NOT exist. Run with:\n",runstr))
 
 
+#######
+# out <- "/fsimb/groups/imb-bioinfocf/projects/khmelinskii/imb_khmelinskii_2019_02_nieto_amplicon_test/tempresults"
+# inputdir <- "/fsimb/groups/imb-bioinfocf/projects/khmelinskii/imb_khmelinskii_2019_02_nieto_amplicon_test/20200311_results_MPS_pipeline/results/barcode_count"
+# ftargets <- "/fsimb/groups/imb-bioinfocf/projects/khmelinskii/imb_khmelinskii_2019_02_nieto_amplicon_test/targets.txt"
+# pre <- ""
+# suf <- ""
+# expdesign <- "amplicon1"
+######
+
+
+
 ### columns in target file
 # experiment: overall experiment name
 # sub_experiment: summarizes those samples which have been distributed to stability bins and belong together for PSI calculation (can be empty if same as experiment)
@@ -130,26 +141,22 @@ targets <- targets[,required_target_columns]
   
   # remove barcodes containg Ns
   counts <- counts[!grepl("N", counts$sequence), ]
-  # factorize categorical variables
-  category_vars <- colnames(counts)[colnames(counts) %in% c("unique_sample_id", "experiment", "sub_experiment", "bin", "sequence")]
-  counts[,category_vars] <- lapply(counts[,category_vars], factor)
-  
+    
   
   # sum all counts per sample for initial QC filtering
   counts_summary <- counts %>%
     dplyr::group_by(unique_sample_id) %>%
-    dplyr::summarize(sum = sum(count)) %>%
+    dplyr::summarize(sum2 = sum(count)) %>%
     dplyr::ungroup() 
-  
-      counts <- merge(counts, counts_summary, by="unique_sample_id", all.x=T)
+    counts <- merge(counts, counts_summary, by="unique_sample_id", all.x=T)
       
-      # 1st filter step for extreme outlier
-      removedSamples <- as.data.frame(counts_summary[counts_summary$sum < threshold_rel_countssum * mean(counts_summary$sum), "unique_sample_id"])
+      # 1st filter step for extreme outlier (need counts_summary for correct mean(counts_summary$sum))
+      removedSamples <- as.data.frame(counts_summary[counts_summary$sum < threshold_rel_countssum * mean(counts_summary$sum), c("unique_sample_id", "sum")])
       cat("\nremove", nrow(removedSamples), "samples from dataset with <", 100*threshold_rel_countssum, "% of mean total counts:\n")
       print(removedSamples)
-      counts <- filter(counts, sum >= threshold_rel_countssum * mean(counts_summary$sum))
-
-
+      counts <- filter(counts, !(sum < threshold_rel_countssum * mean(counts_summary$sum)))
+      
+      
   
     #### start analsis per experiment
     # initalise result lists for all experiments
@@ -161,12 +168,17 @@ targets <- targets[,required_target_columns]
     for (e in unique(allExpCounts$experiment)) { # this loop may be obsolet
       counts <- allExpCounts[allExpCounts$experiment == e, ]
 
-    # decide whether column "sub_experiment" is used (e.g. for strain names) 
-    use_sub_experiment <- !( !"sub_experiment" %in% colnames(counts) || any(is.na(counts$sub_experiment)) || 
-                               any(counts$sub_experiment=="") || all(as.character(counts$sub_experiment) == as.character(counts$experiment)))
-    if(use_sub_experiment) {counts$helper_cat <- factor(paste(counts$experiment, counts$sub_experiment, sep="_")) # as long as in e loop, could use sub_experiment only
-                          } else {helper_cat <- factor(counts$experiment)}
-    
+      # factorize categorical variables after subsetting and initial outlier removal
+      category_vars <- colnames(counts)[colnames(counts) %in% c("unique_sample_id", "experiment", "sub_experiment", "bin", "sequence")]
+      counts[,category_vars] <- lapply(counts[,category_vars], factor)
+      
+      
+      # decide whether column "sub_experiment" is used (e.g. for strain names) 
+      use_sub_experiment <- !( !"sub_experiment" %in% colnames(counts) || any(is.na(counts$sub_experiment)) || 
+                                 any(counts$sub_experiment=="") || all(as.character(counts$sub_experiment) == as.character(counts$experiment)))
+      if(use_sub_experiment) {counts$helper_cat <- factor(paste(counts$experiment, counts$sub_experiment, sep="_")) # as long as in e loop, could use sub_experiment only
+                            } else {counts$helper_cat <- factor(counts$experiment)}
+      
     
     # add columns bin_rank per (sub)experiment and column totalbins
       counts_summary2 <- unique(counts[,colnames(counts) %in% c("unique_sample_id", "experiment", "sub_experiment", "bin", "helper_cat")]) %>%
@@ -180,10 +192,8 @@ targets <- targets[,required_target_columns]
     
     # add column f as transformed bin index [0,1]
     counts$f <- (counts$bin_rank -1) / (counts$totalbins -1) 
+  
     
-    
-
-
   # in case there are sequences with zero counts, these entries are removed
   removeZerosRaw = FALSE # there are no zero counts since only observed sequences are counted
   if(removeZerosRaw) {
@@ -197,14 +207,9 @@ targets <- targets[,required_target_columns]
     }
   
   
-  # # helper column for background subtraction and plotting if column sub_experiment available
-  # if (use_sub_experiment) {counts$helper_exp_col <- counts$sub_experiment} else {
-  #   counts$helper_exp_col <- counts$experiment
-  # }
-  
-  
-### background subtraction
-# and run downstream calculations separated for with and without background subtraction
+
+  ### background subtraction
+  # and run downstream calculations separated for with and without background subtraction
   
   # To try to remove the noise, we will try to fit a Gaussian mixture model to each sample and subtract the mean of the background distribution. In addition,
   # we will threshold the raw counts to remove the background distribution. There are several cases to deal with: The case of well-separable distributions,
@@ -259,12 +264,10 @@ targets <- targets[,required_target_columns]
          }}
      
      # recalulate sample sum for bgsubt 
-     bgsubt_summary <- bgsubt %>%
+     bgsubt <- bgsubt %>%
        dplyr::group_by(unique_sample_id) %>%
-       dplyr::summarize(sum = sum(count)) %>%
+       dplyr::mutate(sum = sum(count)) %>%
        dplyr::ungroup() 
-     
-     bgsubt <- merge(bgsubt[,colnames(bgsubt) != "sum"], bgsubt_summary, by="unique_sample_id", all.x=T)
     }
    
    
@@ -308,7 +311,7 @@ targets <- targets[,required_target_columns]
       
       # produce output table
         counts <- data.frame(counts[,c(colnames(targets)[colnames(targets) %in% colnames(counts)], 
-                                       "bin_rank", "f", "fxCp", "sequence", "translation", "count", "normalized_counts")])
+                                       "bin_rank", "f", "fxCp", "sequence", "sum", "translation", "count", "normalized_counts")])
         if(use_sub_experiment){
           counts <- counts[order(counts$experiment, counts$sub_experiment, counts$f, counts$sequence), ]
         } else {
@@ -349,8 +352,8 @@ targets <- targets[,required_target_columns]
                               normcountstats,
                               rawcountstats,
                               nfractions= melt(tapply(factor(counts$bin), listcats4index, dplyr::n_distinct))[,"value"])
-          bynuc <- bynuc[!is.na(bynuc$PSI),]
-  
+          # NA entries in bynuc are removed later to keep conformity for byaa which calculated from bynuc and counts
+          # Those byaa calculations based on bynuc contain the na.rm argument 
           
           
       ## calculate PSI per di-residue (byaa) from bynuc
@@ -377,7 +380,7 @@ targets <- targets[,required_target_columns]
           dimnames_aa_by_counts <- dimnames(tapply(counts$fxCp, listcats4index_byaa_pooled, sum)) 
           if(!identical(dimnames_aa_by_nuc, dimnames_aa_by_counts)) { # check for identical dim names 
             stop("\ndim names of aa matrix differ when calculated by count matrix and by nuc matrix!")
-          } # if this gives a problem (e.g. when all entries of a bin in bynuc are discarded as NA), create a separate byaa matrix from counts and merge to byaa matrix from nuc
+          } # if this gives a problem, create a separate byaa matrix from counts and merge to byaa matrix from nuc
  
           byaa$pooled_fxCp_sum <- melt(tapply(counts$fxCp, listcats4index_byaa_pooled, sum))[,"value"]
           byaa$pooled_Cp_sum <- melt(tapply(counts$normalized_counts, listcats4index_byaa_pooled, sum))[,"value"]
@@ -396,10 +399,12 @@ targets <- targets[,required_target_columns]
                              byaa_normcountstats,
                              byaa_rawcountstats,
                              nfractions= melt(tapply(factor(counts$bin), listcats4index_byaa_pooled, dplyr::n_distinct))[,"value"],
-                             nsequences= melt(tapply(bynuc$PSI, listcats4index_byaa, length))[,"value"]
+                             nsequences= melt(tapply(bynuc$PSI, listcats4index_byaa, function(x){na.omit(length(x))}))[,"value"]
                              )
+
+          # remove NA entries
+          bynuc <- bynuc[!is.na(bynuc$PSI),]
           byaa <- byaa[!is.na(byaa$pooled_PSI),]
-         
           
           # store results in list
           counts_all[[bg]][[e]] <- counts
