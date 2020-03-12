@@ -64,6 +64,6 @@ TMP=PROJECT + "/tmp"
 TRACKS=PROJECT + "/tracks"
 
 // optional pipeline stages to include
-RUN_IN_PAIRED_END_MODE=(ESSENTIAL_EXPDESIGN in ["amplicon1","amplicon2","amplicon3"])
+RUN_IN_PAIRED_END_MODE=(ESSENTIAL_EXPDESIGN in ["amplicon1","amplicon2","amplicon3", "amplicon4"])
 RUN_PEAR=(ESSENTIAL_EXPDESIGN in ["amplicon1","amplicon2", "amplicon3"])
 RUN_MPSprofiling=(ESSENTIAL_EXPDESIGN in ["amplicon1","amplicon2", "amplicon3"])
