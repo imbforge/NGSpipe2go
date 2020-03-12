@@ -74,12 +74,6 @@ res <- lapply(res, as.data.frame, row.names=NULL)
 
 processContrast <-  function(x) {
 
-    library(clusterProfiler)
-    library(DOSE)
-    library(ReactomePA)
-    library(Cairo)
-    library(ggplot2)
-
     calculateGoEnrichment <-  function(de.genes, univ.genes, de.genes.lfc, suffix) {
         # convert to entrezID downregulated/univers genes
         guessKeyType <- function(genes) {
@@ -203,6 +197,14 @@ processContrast <-  function(x) {
 if(cores > 1 && length(res) > 1) {
     cl <- makeCluster(cores)
     clusterExport(cl, c("log2Fold", "padj", "orgDb", "org", "univ", "type", "plotCategory", "out"))
+    clusterEvalQ({
+        library(clusterProfiler)
+        library(DOSE)
+        library(ReactomePA)
+        library(Cairo)
+        library(ggplot2)
+        library(orgDb[org], character.only=TRUE)
+    })
     parLapply(cl, zipup(res, names(res)), processContrast)
     stopCluster(cl)
 } else {
