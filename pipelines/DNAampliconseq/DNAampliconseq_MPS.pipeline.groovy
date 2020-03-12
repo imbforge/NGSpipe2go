@@ -18,8 +18,7 @@ load PIPELINE_ROOT + "/modules/DNAampliconseq/MPSprofiling.module.groovy"
 load PIPELINE_ROOT + "/modules/NGS/multiqc.module.groovy"
 load PIPELINE_ROOT + "/modules/miscellaneous/collect_tool_versions.module.groovy"
 load PIPELINE_ROOT + "/modules/miscellaneous/collectbpipes.module.2.groovy"
-
-// load PIPELINE_ROOT + "/modules/DNAampliconseq/shinyreports.module.groovy"
+load PIPELINE_ROOT + "/modules/DNAampliconseq/shinyreports.module.groovy"
 
 // Main pipeline task
 dontrun = { println "didn't run $module" }
@@ -31,5 +30,5 @@ Bpipe.run {
                AddUMIBarcodeToFastq + barcode_count
     ] +
             (RUN_MPSprofiling ? MPSprofiling : dontrun.using(module:"MPSprofiling")) +
-            MultiQC + collectToolVersions + collectBpipeLogs
+            MultiQC + collectToolVersions + collectBpipeLogs + shinyReports
 }

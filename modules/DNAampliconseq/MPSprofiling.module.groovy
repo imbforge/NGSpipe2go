@@ -17,6 +17,7 @@ MPSprofiling = {
         (MPSprofiling_vars.suffix    ? " suffix="    + MPSprofiling_vars.suffix    : "") +
         (MPSprofiling_vars.inputdir  ? " inputdir="  + MPSprofiling_vars.inputdir  : "") +
         (MPSprofiling_vars.outdir    ? " out="       + MPSprofiling_vars.outdir    : "") +
+        (MPSprofiling_vars.outdir    ? " expdesign=" + MPSprofiling_vars.expdesign : "") +
         (MPSprofiling_vars.extra     ? " "           + MPSprofiling_vars.extra     : "")
 
     def TOOL_ENV = prepare_tool_env("R", tools["R"]["version"], tools["R"]["runenv"])
