@@ -34,7 +34,7 @@ shinyReports_vars=[
     cutadapt_logs   : Cutadapt_vars.logdir,          // cutadapt log files
     gtf             : ESSENTIAL_GENESGTF, 
     seqtype         : (PIPELINE == "scRNAseq_marsseq" ? "MARSseq" : "SmartSeq2"),
-    target          : new File(PIPELINE_ROOT + "/pipelines/scRNAseq/targets.txt").getCanonicalPath()
+    target          : new File(PIPELINE_ROOT + "/pipelines/scRNAseq/targets.txt").getCanonicalPath(),
     mtgenes         : ESSENTIAL_MTGENES,
     // Criteria for filtering out low quality cells
     type_of_threshold         : "absolute", // either "absolute" or "relative" (i.e. using MAD)
