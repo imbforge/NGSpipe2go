@@ -1,6 +1,6 @@
 PIPELINE="scRNAseq_smartseq2"
 PIPELINE_VERSION="1.0"
-PIPELINE_ROOT="./NGSpipe2go/"    // may need adjustment for some projects
+PIPELINE_ROOT="./ngspipe2go/"    // may need adjustment for some projects
 
 load PIPELINE_ROOT + "/pipelines/scRNAseq/essential.vars.groovy"
 load PIPELINE_ROOT + "/pipelines/scRNAseq/tools.groovy"
@@ -23,6 +23,7 @@ load PIPELINE_ROOT + "/modules/miscellaneous/collectbpipes.module.2.groovy"
 load PIPELINE_ROOT + "/modules/scRNAseq/cutadapt.module.groovy"
 load PIPELINE_ROOT + "/modules/miscellaneous/collect_tool_versions.module.groovy"
 load PIPELINE_ROOT + "/modules/scRNAseq/shinyreports.module.groovy"
+load PIPELINE_ROOT + "/modules/NGS/multiqc.module.groovy"
 
 //
 // Typical workflow for SmartSeq data:
@@ -34,14 +35,14 @@ run {
     (RUN_IN_PAIRED_END_MODE ? "%.R*.fastq.gz" : "%.fastq.gz") * [
         Cutadapt + FastQC + STAR + BAMindexer + [
             subread_count + filter2htseq + subread2rnatypes,
-            MarkDups2 + BAMindexer + dupRadar,
+            MarkDups2 + BAMindexer  + dupRadar,
             bamCoverage,
             inferexperiment,
             qualimap,
-            geneBodyCov2
+             geneBodyCov2
         ]
     ] +
     (RUN_TRACKHUB ? trackhub_config + trackhub : dontrun.using(module:"trackhub")) +
-    collectToolVersions + collectBpipeLogs + shinyReports
+    MultiQC + collectToolVersions + collectBpipeLogs + shinyReports
 }
 

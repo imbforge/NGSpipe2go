@@ -2,7 +2,7 @@ Cutadapt_vars=[
     outdir             : TRIMMED,
     logdir             : LOGS + "/Cutadapt",
     adapter_sequence   : ESSENTIAL_ADAPTER_SEQUENCE,   // adapter to be trimmed off
-    polya              : "-a A{100}",
+    polya              : " -a A{100} ",                // trim poly stretches
     minimum_overlap    : ESSENTIAL_MINADAPTEROVERLAP,  // minimal overlap of the read and the adapter
     minimum_length_keep: ESSENTIAL_MINREADLENGTH,      // minimal length of reads to be kept
     errorrate          : "0.1",                        // default 0.1

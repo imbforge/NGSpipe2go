@@ -24,7 +24,7 @@ Cutadapt = {
 
     def Cutadapt_FLAGS =
         (Cutadapt_vars.adapter_sequence    ? " --adapter "        + Cutadapt_vars.adapter_sequence    : "") +
-        (Cutadapt_vars.polya               ? " -a A{100} "        + Cutadapt_vars.polya               : "") +
+        (Cutadapt_vars.polya               ?                        Cutadapt_vars.polya               : "") +
         (Cutadapt_vars.minimum_overlap     ? " --overlap="        + Cutadapt_vars.minimum_overlap     : "") +
         (Cutadapt_vars.minimum_length_keep ? " --minimum-length " + Cutadapt_vars.minimum_length_keep : "") +
         (Cutadapt_vars.errorrate           ? " --error-rate "     + Cutadapt_vars.errorrate           : "") +

@@ -1,6 +1,6 @@
 PIPELINE="scRNAseq_marsseq"
 PIPELINE_VERSION="1.0"
-PIPELINE_ROOT="./NGSpipe2go/"    // may need adjustment for some projects
+PIPELINE_ROOT="./ngspipe2go/"    // may need adjustment for some projects
 
 load PIPELINE_ROOT + "/pipelines/scRNAseq/essential.vars.groovy"
 load PIPELINE_ROOT + "/pipelines/scRNAseq/tools.groovy"
@@ -25,6 +25,7 @@ load PIPELINE_ROOT + "/modules/scRNAseq/umicount.module.groovy"
 load PIPELINE_ROOT + "/modules/scRNAseq/umidedup.module.groovy"
 load PIPELINE_ROOT + "/modules/miscellaneous/collect_tool_versions.module.groovy"
 load PIPELINE_ROOT + "/modules/scRNAseq/shinyreports.module.groovy"
+load PIPELINE_ROOT + "/modules/NGS/multiqc.module.groovy"
 
 //
 // Typical workflow for MARS-Seq data:
@@ -47,6 +48,6 @@ Bpipe.run {
         ]
     ] +
     (RUN_TRACKHUB ? trackhub_config + trackhub : dontrun.using(module:"trackhub")) +
-    collectToolVersions + collectBpipeLogs + shinyReports
+    MultiQC + collectToolVersions + collectBpipeLogs + shinyReports
 }
 

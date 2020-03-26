@@ -30,7 +30,7 @@ attach_packages(c("rmarkdown", "knitr", "Cairo", "gplots", "ggplot2", "plotly", 
                   "grid", "gridExtra", "rtracklayer", "scater", "scran", "ggbeeswarm", "dplyr", "tidyr", "forcats",
                   "scales", "kableExtra", "reshape2", "M3Drop", "vipor", "corrplot", "limma", "pheatmap",
                   "VennDiagram", "edgeR", "DESeq2", "GeneOverlap", "viridis", "Biobase", "batchelor", "SC3", "pkgmaker",
-                  "igraph", "pheatmap", "cluster", "dendextend", "dynamicTreeCut", "shinydashboard"))
+                  "igraph", "pheatmap", "cluster", "dendextend", "dynamicTreeCut", "shinydashboard", "umap"))
 
 # load global variables
 loadGlobalVars(f="shinyReports.txt")
@@ -59,12 +59,27 @@ theme_set(theme_bw() + theme(axis.text=element_text(colour="grey30",size=12),
 									legend.title=element_text(size=12,colour="grey30")))
 
 # load list of mitochondrial genes
-mito.genes <- tryCatch(read.delim(SHINYREPS_MTGENES)[, 1], error=function(e) NA)
+mito.genes <- tryCatch(read.delim(file.path(SHINYREPS_PROJECT,SHINYREPS_MTGENES))[, 1], error=function(e) NA)
 
-## load targets file for all cells. Columns required: "sample", "barcode", "row", "col", "cells", "group"
-targets <- read.delim(SHINYREPS_TARGET)
-group.vars <- colnames(targets)[!colnames(targets) %in% c("sample", "barcode", "row", "col")] 
+## load targets file for all cells. 
+targets <- read.delim(SHINYREPS_TARGET, sep=",")
+group.vars <- colnames(targets)[!colnames(targets) %in% c("sample", "barcode", "row", "col", "cells")] 
 targets[,group.vars] <- lapply(targets[,group.vars], factor)
+
+required_cols <- c("sample", "plate", "row", "col", "cells", "group")
+if(SHINYREPS_SEQTYPE=="MARSseq") {required_cols <- c(required_cols, "barcode", "pool")}
+if(!all(required_cols) %in% colnames(targets)) {
+  stop("required target columns missing: ", paste(required_cols[!required_cols %in% colnames(targets)], collapse=", "))
+}
+
+## create targets4plot (needed for pool-based libraries like MARS-Seq with 1 count file for all samples of a pool)
+  if(SHINYREPS_SEQTYPE=="MARSseq") {
+  targets4plot <- targets[!duplicated(targets$pool), !colnames(targets) %in% c("barcode", "row", "col", "cells"), drop=F]
+  targets4plot$sample <- targets4plot$pool # for pool-based designs pool id is used for merging to count files 
+  targets4plot <- lapply(targets4plot, factor)
+  } else {
+    targets4plot <- targets
+  }
 
 # print targets file
 DT::datatable(targets, caption="targets file (sample sheet) used for analysis")
@@ -109,14 +124,11 @@ The y-axis on the graph shows the Phred quality scores, which are logarithmicall
 # This is e.g. for excluding the trimmed fastq files which contain "cutadapt" in the file name (see below). 
 # If you set argument 'maxno', the maximum sample number will be restricted accordingly to the first 'maxno' plots. 
 #
-# NOTE: this should be moved as parameters into shinyreports.vars.groovy
-samplePattern="_R1\\."
-excludePattern=F  # default FALSE
-maxno=NULL        # default NULL
+samplePattern=SHINYREPS_PATTERNFASTQC
+maxno=SHINYREPS_MAXNO        
 ##### 
 
-cat(DEhelper.Fastqc(web=F, samplePattern=samplePattern, exclude=excludePattern, maxno=maxno), sep="\n")
-# These options also apply for the helper functions following below
+cat(DEhelper.Fastqc(web=F, samplePattern=samplePattern, maxno=maxno), sep="\n")
 ```
 
 
@@ -126,19 +138,14 @@ The following plot shows the amount of reads trimmed for the selected adapter se
 
 ```{r cutadapt, echo=F, results='asis', error=F, warning=F, message=F}
 ##### parameters to set:
-# define subset of cutadapt log files if desired (samplePattern=NULL (default) includes all files).
-# NOTE: this should be moved as parameters into shinyreports.vars.groovy
-samplePattern=NULL
 # define categories of targets.txt to be used for dot color in the plot (one plot per element of colorByFactor will be created). 
 # The function will try to map the data from targets$sample to the cutadapt log file names (for this, the unique part of 
-# targets$sample must be a substring of file name). If you have cutadapt log files from pooled fastq files but cell-wise 
-# information in targets.txt as in MARS-Seq, you may provide another customized targets object in 'targetsdf'. 
-# Otherwise pruned file names will be used by default.
-colorByFactor = NULL # NULL by default
-targetsdf=targets
+# targets$sample must be a substring of file name). Otherwise pruned file names will be used by default. 
+# In case of pooled library design the targets object will be modified accordingly. 
+colorByFactor = SHINYREPS_COLORBYFACTOR 
 #####
 
-DEhelper.cutadapt(samplePattern=samplePattern, colorByFactor=colorByFactor, targetsdf=targetsdf)
+DEhelper.cutadapt(colorByFactor=colorByFactor, targetsdf=targets4plot)
 ```
 
 
@@ -149,7 +156,7 @@ Quality control plots of fastq files after adapter trimming with cutadapt.
 ```{r FastQC_paragraph2, echo=F, results='asis', error=F, warning=F, message=F}
 # Applying FastQC again after adapter trimming (fastq file names contain "cutadapt" as part of their name)
 
-cat(DEhelper.Fastqc(web=F, samplePattern="cutadapt"), sep="\n") 
+cat(DEhelper.Fastqc(web=F, samplePattern=SHINYREPS_PATTERNFASTQC2), sep="\n") 
 ```
 
 
@@ -201,39 +208,32 @@ The browser tracks are generated using bamCoverage tool in [deepTools](https://d
 
 ```{r mapping_stats, fig.height=10, fig.width=12, results='asis', message=FALSE, warning=FALSE}
 ##### parameters to set:
-# define subset of Star log files if desired. samplePattern=NULL (default) includes all files.
-samplePattern=NULL
 # define categories of targets.txt to be used for dot color in the summary plot (one plot per element of colorByFactor will be created). 
 # The function will try to map the data from targets$sample to the cutadapt log file names (for this, the unique part of 
-# targets$sample must be a substring of file name). If you have cutadapt log files from pooled fastq files but cell-wise 
-# information in targets.txt as in MARS-Seq, you may provide another customized targets object in 'targetsdf'. 
-# Otherwise pruned file names will be used by default.
-colorByFactor = NULL # NULL by default
-targetsdf=targets
+# targets$sample must be a substring of file name). Otherwise pruned file names will be used by default. 
+# In case of pooled library design the targets object will be modified accordingly.  
+colorByFactor = SHINYREPS_COLORBYFACTOR 
 #####
 
-DEhelper.STAR(samplePattern=samplePattern, targetsdf=targetsdf, colorByFactor=colorByFactor)
+DEhelper.STAR(targetsdf=targets4plot, colorByFactor=colorByFactor)
 ```
 
 
-## Read de-duplication and feature counting with UMI-tools
 
-UMI-tools counts the mapped reads per feature obtained after de-duplication. UMI-tools uses the uniquely mapped reads from STAR as well as as the multimapped reads (but not those which are mapped to too many loci) as input reads.
-
-```{r umicount, echo=F, results='asis', error=F, warning=F, message=F}
+```{r umicount, echo=F, results='asis', error=F, warning=F, message=F, eval= (SHINYREPS_SEQTYPE=="MARSseq")}
 ##### parameters to set:
-# define subset of umicount log files if desired (samplePattern=NULL (default) includes all files).
-samplePattern=NULL
 # define categories of targets.txt to be used for dot color in the plot (one plot per element of colorByFactor will be created). 
 # The function will try to map the data from targets$sample to the umicount log file names (for this, the unique part of 
-# targets$sample must be a substring of the file name). If you have umi-tools log files from pooled fastq files but cell-wise 
-# information in targets.txt as in MARS-Seq, you may provide another customized targets object in 'targetsdf'. 
-# Otherwise pruned file names will be used by default.
-colorByFactor = NULL # NULL by default
-targetsdf=targets
+# targets$sample must be a substring of the file name). Otherwise pruned file names will be used by default. 
+# In case of pooled library design the targets object will be modified accordingly. 
+colorByFactor = SHINYREPS_COLORBYFACTOR 
 #####
 
-DEhelper.umicount(samplePattern=samplePattern, colorByFactor=colorByFactor, targetsdf=targetsdf)
+cat("## Read de-duplication and feature counting with UMI-tools
+
+UMI-tools counts the mapped reads per feature obtained after de-duplication. UMI-tools uses the uniquely mapped reads from STAR as well as as the multimapped reads (but not those which are mapped to too many loci) as input reads.")
+
+DEhelper.umicount(colorByFactor=colorByFactor, targetsdf=targets4plot)
 ```
 
 
@@ -266,7 +266,7 @@ switch(SHINYREPS_SEQTYPE,
             if(sum(grepl(i, names(counts), ignore.case = T)) !=1) {stop("\ncannot unambiguously assign pool ID given in targets.txt to count filename")}
             current_pool <- targets[targets$pool ==i, ]
             countname <- grep(i, names(counts), ignore.case = T, value=T )
-            colnames(counts[[countname]]) <- current_pool[match(colnames(counts[[countname]]), current_pool$barcode), "sample"]
+            colnames(counts[[countname]]) <- current_pool[match(colnames(counts[[countname]]), current_pool$barcode), "sample"] # replace barcode with sample name
         }
         
         # merge pools into one dataset with union of genelists
@@ -284,18 +284,31 @@ switch(SHINYREPS_SEQTYPE,
         # table(colnames(counts) == targets$sample) # all TRUE
     },
     SmartSeq2={
-        # load counts
+      # load counts
         f <- list.files(paste0(SHINYREPS_SUBREAD), pattern="\\.readcounts\\.tsv$", full.names=TRUE) # don't select raw_readcounts.tsv
         f <- f[!grepl("Undetermined", f)] # don't use count file with unmapped reads if present
         
         counts <- mclapply(f, read.delim, header=F, row.names=1, comment.char = "#")
         stopifnot(all(sapply(counts, function(x) all(rownames(x) == rownames(counts[[1]])))))
         counts <- do.call(cbind, counts)
-        colnames(counts) <- gsub(lcSuffix(basename(f)),"", basename(f))
+        colnames(counts) <- basename(f)
 
-        targets <- targets[match(colnames(counts), targets$sample, nomatch=0), ]  # subset targets to match only samples with counts files
+      # align with targets.txt
+        if(any(duplicated(targets$sample))) { # check for duplicated entries in targets.txt
+          stop("Duplicated entries in targets.txt: ", paste(targets$sample[duplicated(targets$sample)], collapse=", "))
+        }
+     
+        logindex_targetsfile <- sapply(targets$sample, grep,  colnames(counts)) # grep targets in counts
+        targets <- targets[sapply(logindex_targetsfile, length) ==1, ] # remove targets entries not (uniquely) found in counts
+
+       if(!identical(sort(unname(unlist(logindex_targetsfile))), 1:length(colnames(counts)))) { 
+         # check if all counts samples are contained in targets.txt
+         stop("Sample names not included in targets.txt: ", paste(colnames(counts)[-logindex_targetsfile], collapse=", "))
+       }
+       counts <- counts[,unlist(logindex_targetsfile)] # cols in same order as rows in targets   
+       colnames(counts) <- targets$sample
     },
-    stop(c("Don't find seqtype:", SHINYREPS_SEQTYPE))   # Otherwise
+    stop(c("Don't find seqtype:", SHINYREPS_SEQTYPE))  
 )
 
 
@@ -337,9 +350,10 @@ To remove outliers, these criteria may be filtered either for relative threshold
 ##### parameters to set:
 # define set of categories used to annotate cells in the plots (e.g.: annoFactors <- c("group", "pool"))
 # By default, all columns given in 'targets.txt' ar used except for "sample", "barcode", "row" and "col".
-annoFactors <- group.vars # default is group.vars
+annoFactors <- SHINYREPS_COLORBYFACTOR # default is group.vars
 #####
 
+annoFactors <- unique(c(annoFactors, "cells")) # cells is included anyway
 # define mitochondrial genes as control features
 is.mito  <- row.names(sce) %in% mito.genes
 # calculate QC metrics
@@ -427,7 +441,7 @@ The plots below visualise the count data distribution (not log-transformed) via 
 ```{r total_counts_per_plate_position, fig.width=8}
 ##### parameters to set:
 # define one category to be used for symbol shape in the plots.
-annoFactors <- "pool"
+annoFactors <- SHINYREPS_COLORBYFACTOR[1]
 #####
 
 sce$plate_position <- paste0(sce$row, sce$col) # column "plate_position" needed for plotPlatePosition
@@ -450,7 +464,7 @@ for (size in c("total_counts", "total_features_by_counts_endogenous", "pct_count
 ```{r corr_plots}
 ##### parameters to set:
 # define one category to be used for symbol color in the plots.
-annoFactors <- "pool"
+annoFactors <- SHINYREPS_COLORBYFACTOR[1]
 #####
 
 qc.data <- colData(sce)
@@ -490,7 +504,7 @@ NMADS = as.numeric(SHINYREPS_NMADS) # number of absolute deviations from median.
 # define QC metrics to be used for PCA
 qcmetrics = c("pct_counts_in_top_100_features", "total_features_by_counts", "pct_counts_feature_control", "total_features_by_counts_feature_control", "log10_total_counts_endogenous", "log10_total_counts_feature_control")
 # define one category to be used for symbol shape in the plot.
-annoFactors <- "pool"
+annoFactors <- SHINYREPS_COLORBYFACTOR[1]
 #####
 
 if(!exists("sce.beforefiltMincount")) {sce.beforefiltMincount <- sce}
@@ -547,65 +561,15 @@ plotPCAfromQCmetrics(sce, metrics=qcmetrics, anno=annoFactors, qc.drop=qc.drop)
 ```
 
 
-
-
-```{r pca1, fig.height=8, fig.width=10, eval=FALSE}
-##### parameters to set:
-# define QC metrics to be used for PCA
-qcmetrics = c("pct_counts_in_top_100_features", "total_features_by_counts", "pct_counts_feature_control", "total_features_by_counts_feature_control", "log10_total_counts_endogenous", "log10_total_counts_feature_control")
-# define one category to be used for symbol shape in the plot.
-annoFactors <- "pool"
-#####
-
-# prepare PCA from quality metrics
-pca.sce <- runPCA(sce, use_coldata=TRUE, selected_variables = qcmetrics) 
-pca <- as.data.frame(pca.sce@reducedDims)
-rownames(pca) <- rownames(colData(pca.sce)) 
-pca <- cbind(pca, qc.drop[match(rownames(pca), rownames(qc.drop)), ])
-pca <- cbind(pca, as.data.frame(colData(sce)[match(rownames(pca), colnames(sce)), unique(c(annoFactors, "cells")), drop=F]))
-
-## extract all dropped samples
-#df <- subset(pca, libsize | feature | mito | libsize.high)
-df <- subset(pca, libsize | feature | mito)
-df$libsize.word      <- ifelse(df$libsize==TRUE,"lib size","")
-#df$libsize.high.word <- ifelse(df$libsize.high==TRUE,"lib size too high","")
-df$feature.word      <- ifelse(df$feature==TRUE,"genes detected","")
-df$mito.word         <- ifelse(df$mito==TRUE,"Mt fraction","")
-
-df$rm      <- paste(df$libsize.word,df$feature.word,df$mito.word,sep="+")
-df$rm.nice <- sub("^\\+","",sub("\\+$","",gsub("\\+\\+","\\+",df$rm)))
-df.kept <- subset(pca, !(libsize | feature | mito))
-
-if(!is.null(annoFactors)) {
-  if(length(annoFactors) !=1) {annoFactors <- annoFactors[1]} # just 1 annoFactor can be illustrated
-  if(annoFactors %in% c("group", "group_name")) {
-      annoFactors.name <- paste0(annoFactors, ".1")} else { # the terms "group" and "group_name" are occupied by runPCA
-      annoFactors.name <- annoFactors}  
-  annoFactors.name <- rlang::ensym(annoFactors.name)
-  } else {
-  annoFactors.name <- NULL}
-  
-p <- plotReducedDim(pca.sce, use_dimred="PCA_coldata", by_exprs_values = "counts", shape_by=annoFactors) +
-       geom_point(data=df, aes(x=PC1, y=PC2, color=rm.nice, shape=!!annoFactors.name), size=3)+
-       geom_text_repel(aes(x=PC1, y=PC2, label=cells), subset(pca, cells %in% c("0c", "10c")), color="grey30", size=6) +
-       scale_color_manual("QC drop", 
-                          values=c("grey50","#E41A1C","#377EB8","#4DAF4A","#FF7F00","#984EA3","#FFFF33","#A65628","#F781BF"), 
-                          guide="legend")+
-       theme_bw()
-
-if(nrow(df.kept) > 0)
-    p <- p + geom_point(data=df.kept, aes(x=PC1, y=PC2, color="kept", shape=!!annoFactors.name), size=3)
-
-print(p)
-```
-
 Removed samples/cells:
 
 ```{r remove_low_qual_cells_and_control_wells}
 ##### parameters to set:
 # define up to 2 categories to be used for output tables.
-annoFactors <- c("group", "pool")
+annoFactors <- SHINYREPS_COLORBYFACTOR
 #####
+
+SHINYREPS_COLORBYFACTOR <- SHINYREPS_COLORBYFACTOR[SHINYREPS_COLORBYFACTOR != "cells"] # column "cells" not needed anymore
 
 # output overview of remaining cells and table of removed cells
 j <- c("total_counts", "total_features_by_counts", "pct_counts_Mt", annoFactors) 
@@ -639,7 +603,7 @@ knitr::kable(table(colData(sce)[, annoFactors, drop=F]), col.names=colnames_tabl
 ```{r pca2, fig.height=8, fig.width=10}
 ##### parameters to set:
 # define up to 2 categories to be indicated in the PCA plot by color and shape.
-annoFactors <- c("group", "pool")
+annoFactors <- SHINYREPS_COLORBYFACTOR
 #####
 
 try(plotPCAfromQCmetrics(sce, qcmetrics, anno=annoFactors))
@@ -697,7 +661,7 @@ Size factors can be calculated with DESeq2 or edgeR, but these methods do not wo
 ```{r size_factors_and_normalize, warning=FALSE, message=FALSE}
 ##### parameters to set:
 # define up to 2 categories to be indicated in the plot by color and shape.
-annoFactors <- c("group", "pool")
+annoFactors <- SHINYREPS_COLORBYFACTOR
 #####
 
 high.ave <- rowData(sce)$ave.count >= 0.1
@@ -738,7 +702,7 @@ sce <- normalize(sce) # adds normalized logcounts matrix
 ```{r plot_violin_top50, fig.width=12, fig.height=10}
 ##### parameters to set:
 # define up to 2 categories to be indicated in the plot by color and shape.
-annoFactors <- c("group", "pool")
+annoFactors <- SHINYREPS_COLORBYFACTOR
 #####
 
 # use tmp.sce to change rownames to SYMBOL for the plot
@@ -775,7 +739,7 @@ if the G2/M score is above 0.5 and greater than the G1 score; and in S phase if 
 # define organism (either "human" or "mouse")
 org <- SHINYREPS_ORG
 # define one category to be used for symbol colour in the plot.
-annoFactors <- "group"
+annoFactors <- SHINYREPS_COLORBYFACTOR[1]
 #####
 
 if(!exists("sce.no.ccp")) {sce.no.ccp <- sce}
@@ -839,20 +803,23 @@ lapply(var2color, function(x) {
 
 ```
 
-## Adjust for confounder variables
 
 
-```{r limma_blocking_confounder, eval=any(!is.na(sce$phases))}
+```{r limma_blocking_confounder, eval=T}
 # use limma for adjustment of cell cycle phase and confounder variable
 library(limma)
-var2adjust <- "pool"
+var2adjust <- NULL
 adjust_ccp <- F # adjust for cell cycle phase 
 ######
 
-if(adjust_ccp) {
-    cat("We can account for possible cell cycle effect on downstream analysis, using the G1 and G2M assignment scores as a continuous blocking factor to estimate the variance. This is more graduated than using a strict assignment of each cell to a specific phase, as the magnitude of the score considers the uncertainty of the assignment. The phase covariates in the design matrix will absorb any phase-related effects on expression such that they will not affect estimation of the effects of other experimental factors. Any additionial batch variable can be included via the 'batch'-argument of the 'removeBatchEffect' function.")
-    
-    
+if(adjust_ccp | !is.null(var2adjust)) {
+  
+  cat("## Adjust for confounder variables")
+
+  if(adjust_ccp) {
+      cat("We can account for possible cell cycle effect on downstream analysis, using the G1 and G2M assignment scores as a continuous blocking factor to estimate the variance. This is more graduated than using a strict assignment of each cell to a specific phase, as the magnitude of the score considers the uncertainty of the assignment. The phase covariates in the design matrix will absorb any phase-related effects on expression such that they will not affect estimation of the effects of other experimental factors. Any additionial batch variable can be included via the 'batch'-argument of the 'removeBatchEffect' function.")
+      
+      
     # filter out cells with undetermined cell cycle
      scoresFilteredNA <- assignments$scores[!is.na(assignments$phases), ] # NA entries are not used
      cat(sum(is.na(sce$phases)), "cells not assigned to a cell cycle phase are removed from the dataset.\n")
@@ -898,24 +865,27 @@ if(adjust_ccp) {
   }
 
 
-## switch assay channel for downstream processing
-assay(sce, "logcounts_not_adjusted") <- assay(sce, "logcounts")
-assay(sce, "logcounts") <- assay(sce, "corrected")
-assay(sce, "corrected") <- NULL
+  ## switch assay channel for downstream processing
+  assay(sce, "logcounts_not_adjusted") <- assay(sce, "logcounts")
+  assay(sce, "logcounts") <- assay(sce, "corrected")
+  assay(sce, "corrected") <- NULL
+  
+  # plotting
+  if(adjust_ccp) {
+      cat("\nPCA plot of top 500 genes colored by G1 and G2M score\n")
+      set.seed(100)
+      out1 <- plotPCASCE(sce.no_block, ncomponents=2, rerun=T, # use_dimred="PCA", 
+               colour_by="G1score", size_by="G2Mscore") + ggtitle("Before ccp adjustment")
+      # After blocking on the phase scores
+      set.seed(100)
+      out2 <- plotPCASCE(sce, ncomponents=2, rerun=T, # use_dimred="PCA", 
+                colour_by="G1score", size_by="G2Mscore") + ggtitle("After ccp adjustment")
+      multiplot(out1, out2, cols=2)
+  }
 
-# plotting
-if(adjust_ccp) {
-    cat("\nPCA plot of top 500 genes colored by G1 and G2M score\n")
-    set.seed(100)
-    out1 <- plotPCASCE(sce.no_block, ncomponents=2, rerun=T, # use_dimred="PCA", 
-             colour_by="G1score", size_by="G2Mscore") + ggtitle("Before ccp adjustment")
-    # After blocking on the phase scores
-    set.seed(100)
-    out2 <- plotPCASCE(sce, ncomponents=2, rerun=T, # use_dimred="PCA", 
-              colour_by="G1score", size_by="G2Mscore") + ggtitle("After ccp adjustment")
-    multiplot(out1, out2, cols=2)
+} else {
+  final_var2adjust <- NULL
 }
-
 ```
 
 
@@ -923,9 +893,13 @@ if(adjust_ccp) {
 library(batchelor)
 
 ##### parameters to set:
-var2adjust <- "pool"
+var2adjust <- NULL
 adjust_ccp <- F # adjust for cell cycle phase (default = FALSE)
 #####
+
+if(adjust_ccp | !is.null(var2adjust)) {
+  
+  cat("## Adjust for confounder variables")
 
 cat("Counfounder variables like batch effects can be adjusted using the mutual nearest neighbors method (MNN). The effect from cell cycle phase can be removed from the dataset (if necessary) via linear regression treating each phase as a separate batch. If both a confounder variable and cell cycle shall be adjusted for, a new categorical variable is composed from both factors and used for MNN correction.")
 
@@ -975,34 +949,34 @@ if(is.null(var2adjust) & adjust_ccp) {
 
   } else {
   
-  if(!is.null(var2adjust)) {
-    
-      # filter out cells with missing value for var2adjust
-      cat(sum(is.na(colData(sce)[,var2adjust])), "cells with missing value for", var2adjust, "are removed from the dataset.\n")
-      sce <- sce[,!is.na(colData(sce)[,var2adjust])] 
-    
-      # create final_var2adjust (factor composed from var2adjust and optionally cell cycle phase)
-      sce$final_var2adjust <- if(adjust_ccp) {paste(colData(sce)[,var2adjust], sce$phases, sep="_")} else {colData(sce)[,var2adjust]}
-      sce$final_var2adjust <- as.factor(sce$final_var2adjust)
+    if(!is.null(var2adjust)) {
       
-      # adjust for final_var2adjust as batch effect (mutual nearest neighbours, MNN)
-      cat("\nadjusting for", var2adjust, if(adjust_ccp) {"and cell cycle phase"}, "using MNN")
-      set.seed(100)
-      sce.adjust <- batchelor::fastMNN(sce, batch=sce$final_var2adjust, assay.type = "logcounts")
-      reducedDim(sce, "corrected") <- reducedDim(sce.adjust, "corrected") # will be compared with PCA slot
-      assay(sce, "logcounts") <- assay(sce.adjust, "reconstructed") # class LowRankMatrix (not compatible with trendVar) 
+        # filter out cells with missing value for var2adjust
+        cat(sum(is.na(colData(sce)[,var2adjust])), "cells with missing value for", var2adjust, "are removed from the dataset.\n")
+        sce <- sce[,!is.na(colData(sce)[,var2adjust])] 
       
-  } else {
-    cat("\nno adjustment applied")
+        # create final_var2adjust (factor composed from var2adjust and optionally cell cycle phase)
+        sce$final_var2adjust <- if(adjust_ccp) {paste(colData(sce)[,var2adjust], sce$phases, sep="_")} else {colData(sce)[,var2adjust]}
+        sce$final_var2adjust <- as.factor(sce$final_var2adjust)
+        
+        # adjust for final_var2adjust as batch effect (mutual nearest neighbours, MNN)
+        cat("\nadjusting for", var2adjust, if(adjust_ccp) {"and cell cycle phase"}, "using MNN")
+        set.seed(100)
+        sce.adjust <- batchelor::fastMNN(sce, batch=sce$final_var2adjust, assay.type = "logcounts")
+        reducedDim(sce, "corrected") <- reducedDim(sce.adjust, "corrected") # will be compared with PCA slot
+        assay(sce, "logcounts") <- assay(sce.adjust, "reconstructed") # class LowRankMatrix (not compatible with trendVar) 
+        
+    } else {
+      cat("\nno adjustment applied")
+    }
   }
+} else {
+  final_var2adjust <- NULL
 }
-
 ```
 
 
-```{r explanatory_variables_2, echo=F, error=F, warning=F, message=F, fig.width=8, fig.height=6, results='asis', eval=T}
-
-# eval= (!is.null(var2adjust) | adjust_ccp)
+```{r explanatory_variables_2, echo=F, error=F, warning=F, message=F, fig.width=8, fig.height=6, results='asis', eval=(adjust_ccp | !is.null(var2adjust))}
 
 if(!is.null(var2adjust)) {
   cat("\nRe-plot explanatory variables after adjustment\n")
@@ -1063,7 +1037,7 @@ The number of HVGs found is:
 ```{r get_hvg, fig.width=11, echo=F, error=F, warning=F, message=F}
 ##### parameters to set:
 # define up to 2 categories to be indicated in the plot by color and shape.
-annoFactors <- c("group", "pool")
+annoFactors <- SHINYREPS_COLORBYFACTOR
 #####
 
 
@@ -1159,7 +1133,7 @@ names(hvg.cor.list) <- names(hvg.list)
 ```{r hvg_pca, echo=F, error=F, warning=F, message=F, fig.height=5, fig.width=10}
 ##### parameters to set:
 # define up to 2 categories to be indicated in the plot by color and shape.
-annoFactors <- c("pool", "group")  
+annoFactors <- SHINYREPS_COLORBYFACTOR  
 ncomponents=2  
 exprs_values="logcounts"
 #####
@@ -1204,7 +1178,7 @@ Identification of sub-populations with t-SNE, trying different perplexity values
 ```{r TSNE_plot_various_perplexities, fig.height=10, fig.width=10, echo=F, error=F, warning=F, message=F}
 ##### parameters to set:
 # define up to 2 categories to be indicated in the plot by color and shape.
-annoFactors <- c("pool", "group")
+annoFactors <- SHINYREPS_COLORBYFACTOR
 ncomponents=2  
 perplexity=c(25, 50)
 exprs_values="logcounts"
@@ -1246,7 +1220,7 @@ Identification of sub-populations with UMAP plots (uniform manifold approximatio
 ```{r UMAP_plot, fig.height=5, fig.width=10, echo=F, error=F, warning=F, message=F}
 ##### parameters to set:
 # define up to 2 categories to be indicated in the plot by color and shape.
-annoFactors <- c("pool", "group")
+annoFactors <- SHINYREPS_COLORBYFACTOR
 ncomponents=2  
 n_neighbors = 15
 exprs_values="logcounts"
@@ -1379,7 +1353,7 @@ Clustering is applied on the respective dimension reduction slot (i.e. PCA, TSNE
 library(igraph)
 library(pheatmap)
 exprs_values = "logcounts"
-dotshape <- c("group")
+dotshape <- SHINYREPS_COLORBYFACTOR[1]
 numberNearestNeighbors <- c(10, 20) # number of nearest neighbors k
 # available clustering strategies in igraph
 cluster_algo <- c("cluster_walktrap", "cluster_louvain", "cluster_infomap", "cluster_fast_greedy", "cluster_label_prop", "cluster_leading_eigen")
@@ -1506,7 +1480,7 @@ library(dynamicTreeCut)
 hclust_methods <- c("ward.D2")
 minClusterSize <- c(10, 100)
 exprs_values <- "logcounts"
-dotshape <- c("group")
+dotshape <- SHINYREPS_COLORBYFACTOR[1]
 
 dist_sce <- list()
 tree_sce <- list()
@@ -1636,9 +1610,9 @@ For each cluster, every gene is assigned with the highest rank which from compar
 
 ```{r findmarkers_per_cluster, fig.width=11, fig.height=20, results='asis'}
 
-DE_var2adjust <- "final_var2adjust" # "pool" # NULL
+DE_var2adjust <- if(is.null(final_var2adjust)) {NULL} else {"final_var2adjust"} 
 clustervar <- selected_clustering_method
-groupingvar <- "group" # still to implement: use findMarkers for differential expression analysis within clusters
+groupingvar <- SHINYREPS_COLORBYFACTOR[1] # still to implement: use findMarkers for differential expression analysis within clusters
 
 ###############################################
 
@@ -1726,7 +1700,6 @@ if(nlevels(factor(colData(sce)[,clustervar])) >=2) {
 
 ```{r cell_type_annotation, results='asis', eval=org %in% c("human", "mouse")}
 library(SingleR)
-# eval= org %in% c("human", "mouse")
 
 cat("# Cell type / GO annotation")
 
@@ -1826,8 +1799,8 @@ The DE analysis will be performed using quasi-likelihood (QL) methods from the e
 ```{r diff_expression, results='asis'}
 library(edgeR)
 
-DE_var2adjust <- "final_var2adjust" # "pool" # NULL
-varDiffGroups <- "group"
+DE_var2adjust <- if(is.null(final_var2adjust)) {NULL} else {"final_var2adjust"} 
+varDiffGroups <- SHINYREPS_COLORBYFACTOR[1]
 ########################################
 
 dir_DE_per_cluster <- file.path("report_files", "DE_per_cluster", selected_clustering_method)

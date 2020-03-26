@@ -246,6 +246,12 @@ config {
       procs="4" 
       memory="8"
     }
+    MULTIQC {
+      queue="bcflong"
+      walltime="12:00:00"
+      procs="4"
+      memory="50"
+    }
     NucleotideSignature { 
       walltime="1:00:00" 
       procs="1" 
