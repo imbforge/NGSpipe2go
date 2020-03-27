@@ -30,7 +30,7 @@ attach_packages(c("rmarkdown", "knitr", "Cairo", "gplots", "ggplot2", "plotly", 
                   "grid", "gridExtra", "rtracklayer", "scater", "scran", "ggbeeswarm", "dplyr", "tidyr", "forcats",
                   "scales", "kableExtra", "reshape2", "M3Drop", "vipor", "corrplot", "limma", "pheatmap",
                   "VennDiagram", "edgeR", "DESeq2", "GeneOverlap", "viridis", "Biobase", "batchelor", "SC3", "pkgmaker",
-                  "igraph", "pheatmap", "cluster", "dendextend", "dynamicTreeCut", "shinydashboard", "umap"))
+                  "igraph", "pheatmap", "cluster", "dendextend", "dynamicTreeCut", "shinydashboard", "umap", "SingleR"))
 
 # load global variables
 loadGlobalVars(f="shinyReports.txt")
@@ -350,10 +350,11 @@ To remove outliers, these criteria may be filtered either for relative threshold
 ##### parameters to set:
 # define set of categories used to annotate cells in the plots (e.g.: annoFactors <- c("group", "pool"))
 # By default, all columns given in 'targets.txt' ar used except for "sample", "barcode", "row" and "col".
-annoFactors <- SHINYREPS_COLORBYFACTOR # default is group.vars
+annoFactors <- SHINYREPS_COLORBYFACTOR 
 #####
 
-annoFactors <- unique(c(annoFactors, "cells")) # cells is included anyway
+annoFactors <- unique(c(annoFactors, "cells")) # cells will be included anyway
+
 # define mitochondrial genes as control features
 is.mito  <- row.names(sce) %in% mito.genes
 # calculate QC metrics
@@ -509,11 +510,13 @@ annoFactors <- SHINYREPS_COLORBYFACTOR[1]
 
 if(!exists("sce.beforefiltMincount")) {sce.beforefiltMincount <- sce}
 
-# Before we apply QC filters we remove all the cells which hardly have any counts 
-min_readcount <- 100
-count.drop <- sce$total_counts < min_readcount
-cat("We drop ", sum(count.drop), " cells, because they have less than", min_readcount, "reads counted.") 
-sce <- sce[,!count.drop]
+if(type_of_threshold=="relative") {
+  # Before we apply QC filters we remove all the cells which hardly have any counts to avoid bias for relative thresholds
+  min_readcount <- 100
+  count.drop <- sce$total_counts < min_readcount
+  cat("We drop ", sum(count.drop), " cells, because they have less than", min_readcount, "reads counted.\n") 
+  sce <- sce[,!count.drop]
+}
 
 # apply thresholds
 qc.drop <-  data.frame(row.names = colnames(sce)) # initialise
@@ -554,7 +557,7 @@ if(SHINYREPS_TYPE_OF_THRESHOLD=="absolute") {
 }
 
 # plot QC metrics as PCA
-cat("These quality metrics are summarized in a PCA")
+cat("The quality metrics are summarized in a PCA")
 plotPCAfromQCmetrics(sce, metrics=qcmetrics, anno=annoFactors, qc.drop=qc.drop)
 
 
@@ -566,10 +569,10 @@ Removed samples/cells:
 ```{r remove_low_qual_cells_and_control_wells}
 ##### parameters to set:
 # define up to 2 categories to be used for output tables.
+SHINYREPS_COLORBYFACTOR <- SHINYREPS_COLORBYFACTOR[SHINYREPS_COLORBYFACTOR != "cells"] # column "cells" not needed anymore
 annoFactors <- SHINYREPS_COLORBYFACTOR
 #####
 
-SHINYREPS_COLORBYFACTOR <- SHINYREPS_COLORBYFACTOR[SHINYREPS_COLORBYFACTOR != "cells"] # column "cells" not needed anymore
 
 # output overview of remaining cells and table of removed cells
 j <- c("total_counts", "total_features_by_counts", "pct_counts_Mt", annoFactors) 
@@ -693,7 +696,7 @@ ggplot(to.plot, aes(x=sizeFactors,
   geom_point()+ ylab("Library size (millions)") + scale_color_hue(l=40, c=40)
 
 # normalise
-sce <- normalize(sce) # adds normalized logcounts matrix
+sce <- scater::normalize(sce) # adds normalized logcounts matrix
 ```
 
 
@@ -1341,7 +1344,7 @@ if(length(annoFactors)>2) {stop("\nno more than 2 categories allowed in 'annoFac
 
 
 
-## Graph-based clustering with scran
+## Graph-based clustering with igraph
 
 Graph-based clustering is a flexible and scalable technique for clustering large scRNA-seq datasets. We first build a graph where each node is a cell that is connected to its nearest neighbours in the high-dimensional space. Edges are weighted based on the similarity between the cells involved, with higher weight given to cells that are more closely related. We then apply algorithms to identify communities of cells that are more connected to cells in the same community than they are to cells of different communities. Each community represents a cluster that we can use for downstream interpretation. 
 
@@ -1613,7 +1616,7 @@ For each cluster, every gene is assigned with the highest rank which from compar
 DE_var2adjust <- if(is.null(final_var2adjust)) {NULL} else {"final_var2adjust"} 
 clustervar <- selected_clustering_method
 groupingvar <- SHINYREPS_COLORBYFACTOR[1] # still to implement: use findMarkers for differential expression analysis within clusters
-
+assay.type <- if(adjust_ccp | !is.null(var2adjust)) {"logcounts_not_adjusted"} else {"logcounts"}
 ###############################################
 
 
@@ -1639,11 +1642,11 @@ if(nlevels(factor(colData(sce)[,clustervar])) >=2) {
   # If DE_var2adjust is NULL no blocking applied 
   markers <- findMarkers(sce, groups=colData(sce)[,clustervar], 
                          block= if (is.null(DE_var2adjust)) {NULL} else {colData(sce)[,DE_var2adjust]},  
-                         assay.type = "logcounts_not_adjusted",
+                         assay.type = assay.type,
                          row.data=rowData(sce)[,"SYMBOL", drop=F], direction="up", lfc=1)
   markers_spec <- findMarkers(sce, groups=colData(sce)[,clustervar], 
                          block= if (is.null(DE_var2adjust)) {NULL} else {colData(sce)[,DE_var2adjust]},  
-                         assay.type = "logcounts_not_adjusted",
+                         assay.type = assay.type,
                          row.data=rowData(sce)[,"SYMBOL", drop=F], direction="up", pval.type="all")
                          # use pval.type="some" if "all" is too stringent 
   
@@ -1819,10 +1822,11 @@ if(is.null(DE_var2adjust)) {
 
 
 # Creating pseudo-bulk samples from clusters uses (unnormalised "counts" matrix)
-  summed <- aggregateAcrossCells(sce, ids=DataFrame(
+  summed <- scater::aggregateAcrossCells(sce, ids=DataFrame(
                 cluster=colData(sce)[,selected_clustering_method], 
                 variable2adjust=colData(sce)[, DE_var2adjust],
-                diffgroups=colData(sce)[, varDiffGroups])
+                diffgroups=colData(sce)[, varDiffGroups]),
+                exprs_values = "counts"
                 )
 
 de.results <- list()
@@ -1908,14 +1912,14 @@ print(kable(sum.tab) %>% kable_styling())
 
 
 
-```{r store_data, echo=F, results='hide', error=F, warning=F, message=F, eval=F}
+```{r store_data, echo=F, results='hide', error=F, warning=F, message=F, eval=T}
 
 # store count data (all and by pool)
 dir_countdata <- file.path("report_files", "count_data")
 
 cat("count data matrices are stored in", dir_countdata, "\n")
 
-countslist <- lapply(c("counts", "logcounts", "logcounts_not_adjusted"), function(x) {
+countslist <- lapply(names(assays(sce)), function(x) {
 
   if (!file.exists(file.path(dir_countdata, x))) {dir.create(file.path(dir_countdata, x), recursive = T)}
 

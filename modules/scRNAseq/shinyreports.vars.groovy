@@ -37,10 +37,10 @@ shinyReports_vars=[
     target          : new File(PIPELINE_ROOT + "/pipelines/scRNAseq/targets.txt").getCanonicalPath(),
     mtgenes         : ESSENTIAL_MTGENES,
     // filtering module output in report
-    patternFastQC : "R1\\.", // pattern for sample names to select do display in report
+    patternFastQC : "R1_", // pattern for sample names to select do display in report
     patternFastQC2 : "cutadapt", // pattern2 for sample names to select do display in report (e.g. after adapter trimming)
     maxno: "NULL", //the maximum sample number will be restricted accordingly to the first 'maxno' plots. NULL means no restriction
-    colorByFactor: "c(\"group\", \"cells\")", // default variables for grouping and plotting (max 2)
+    colorByFactor: "group", // default variables for grouping and plotting (max 2)
     // Criteria for filtering out low quality cells
     type_of_threshold         : "absolute", // either "absolute" or "relative" (i.e. using MAD)
     threshold_total_counts_min: 2000,       // lower threshold 2000

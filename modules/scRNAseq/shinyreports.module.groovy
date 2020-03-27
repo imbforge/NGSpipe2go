@@ -24,6 +24,7 @@ shinyReports = {
             cp ${PIPELINE_ROOT}/tools/reports/shiny_scrnaseq_reporting_tool/bustard.pl ${REPORTS}              &&
             cp ${PIPELINE_ROOT}/tools/reports/shiny_scrnaseq_reporting_tool/BustardSummary.toMD.xsl ${REPORTS} &&
             cp ${PIPELINE_ROOT}/tools/reports/shiny_scrnaseq_reporting_tool/styles.css ${REPORTS}              &&
+            cp ${PIPELINE_ROOT}/tools/reports/shiny_scrnaseq_reporting_tool/app.R ${REPORTS}                   &&
 
             if [ -e "${REPORTS}/sc.report.Rmd" ]; then
                 echo 'sc.report.Rmd already exists. Older copy will be kept and not overwritten';

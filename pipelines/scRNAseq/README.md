@@ -35,6 +35,7 @@ All analysis steps are illustrated in the pipeline [flowchart](https://www.draw.
   - col: late column (number)
   - cells: 0c/1c/10c (control wells)
   - group: default variable for cell grouping (e.g. by condition)
+  
   for pool-based libraries like MARSseq required additionally:
   - pool: the pool ID comprises all cells from 1 library pool (i.e. a set of unique cell barcodes; the cell barcodes are re-used in other pools). Must be a unique substring of the input sample file name. For pool-based design, the pool ID is grebbed against the respective count data filename instead of the sample name as stated above.
   - barcode: cell barcodes used as cell identifier in the count files. After merging the count data with targets.txt, the barcodes are replaced with sample IDs given in the sample column (i.e. here, sample names need not be a substring of input sample file name).
