@@ -8,7 +8,7 @@ library(scater)
 ## Define UI for application
 ##
 ui <- dashboardPage(
-  dashboardHeader(title="Gut-Stomach scRNA-seq"),
+  dashboardHeader(title="scRNA-seq"),
   dashboardSidebar(disable=TRUE), 
   dashboardBody(
     fluidRow(
