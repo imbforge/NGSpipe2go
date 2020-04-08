@@ -969,7 +969,6 @@ DEhelper.STAR <- function(colorByFactor=NULL, targetsdf=targets, ...) {
     # we add one plot for the color value where we plot the percentages and color them according to the amount of input reads
   
     targetsdf$samplemod <- gsub(paste0(lcSuffix(targetsdf$sample ), "$"), "", targetsdf$sample ) # shorten filename suffix
-    #if(!is.na(SHINYREPS_PREFIX)) {targetsdf$samplemod  <- gsub(SHINYREPS_PREFIX, "", targetsdf$samplemod)}
     targetsdf$samplemod <- gsub(paste0("^", lcPrefix(targetsdf$samplemod )), "", targetsdf$samplemod ) # shorten filename prefix
     
     index <- as.numeric(sapply(targetsdf$samplemod, function(x) grep(x, df.stacked$filename, ignore.case = T))) # grep for sample name in shortened file names
@@ -1320,7 +1319,9 @@ DEhelper.cutadapt <- function(colorByFactor=NULL, targetsdf=targets, ...){
   x.df <- as.data.frame(lapply(x.df, as.numeric))
   
   # rename those adapters columns trimmed by -a commands (e.g. polyA, polyT)
-  colnames(x.df)[grepl("Adapter", colnames(x.df))][-which(c(indexAdapter, indexPoly) %in% indexAdapter)] <- cutadaptpars[indexPoly+1]
+  if (length(indexPoly>0)) {
+    colnames(x.df)[grepl("Adapter", colnames(x.df))][-which(c(indexAdapter, indexPoly) %in% indexAdapter)] <- cutadaptpars[indexPoly+1]
+  }
   
   #reduce length of file names 
   row.names(x.df) <- basename(colnames(x))
@@ -1332,7 +1333,7 @@ DEhelper.cutadapt <- function(colorByFactor=NULL, targetsdf=targets, ...){
   if(!is.null(colorByFactor)) { # add information to x.df
     
     targetsdf$filename <- gsub(lcSuffix(targetsdf$sample ), "", targetsdf$sample ) # shorten filename suffix
-    targetsdf$filename <- gsub(lcPrefix(targetsdf$sample ), "", targetsdf$sample ) # shorten filename prefix
+    targetsdf$filename <- gsub(lcPrefix(targetsdf$filename ), "", targetsdf$filename ) # shorten filename prefix
     
     index <- sapply(targetsdf$filename, grep, x.df$filename_unmod, ignore.case = T) # grep sample name in file names
     targetsdf <- targetsdf[sapply(index, length) ==1, ] # remove targetsdf entries not (uniquely) found in x.df
@@ -1408,7 +1409,7 @@ DEhelper.umicount <- function(colorByFactor=NULL, targetsdf=targets, ...){
   
   x <- selectSampleSubset(x, ...)
   if(length(x) == 0) {
-      return("No samples matched with this pattern...")
+    return("No samples matched with this pattern...")
   }
   
   x <- sapply(x, function(f) { 
@@ -1431,32 +1432,26 @@ DEhelper.umicount <- function(colorByFactor=NULL, targetsdf=targets, ...){
   
   # reduce size of file names 
   row.names(x.df) <- basename(colnames(x))
+  x.df$filename_unmod <- factor(row.names(x.df))
   row.names(x.df)  <- gsub(lcSuffix(row.names(x.df) ), "", row.names(x.df) )
   row.names(x.df)  <- gsub(lcPrefix(row.names(x.df) ), "", row.names(x.df) )
-  #if(!is.na(SHINYREPS_PREFIX)) {row.names(x.df) <- gsub(SHINYREPS_PREFIX, "", row.names(x.df))}
-  x.df$filename <- factor(row.names(x.df))
   
   
   # passing the different factors given in targetsdf to x.df which was created from cutadapt logfile names (if 1 cell per file)
   if(!is.null(colorByFactor) && nrow(x.df) == nrow(targetsdf)) { # if targets object fits in length, add information to x.df
     
+    targetsdf$filename <- gsub(lcSuffix(targetsdf$sample ), "", targetsdf$sample ) # shorten filename suffix
+    targetsdf$filename <- gsub(lcPrefix(targetsdf$filename ), "", targetsdf$filename ) # shorten filename prefix
     
-    targetsdf$samplemod <- gsub(lcSuffix(targetsdf$sample ), "", targetsdf$sample ) # shorten filename suffix
-    #if(!is.na(SHINYREPS_PREFIX)) {targetsdf$samplemod  <- gsub(SHINYREPS_PREFIX, "", targetsdf$samplemod)}
-    targetsdf$samplemod <- gsub(lcPrefix(targetsdf$samplemod ), "", targetsdf$samplemod ) # shorten filename prefix
+    index <- sapply(targetsdf$filename, grep, x.df$filename_unmod, ignore.case = T) # grep sample name in file names
+    targetsdf <- targetsdf[sapply(index, length) ==1, ] # remove targetsdf entries not (uniquely) found in x.df
     
-    
-    #index <- as.numeric(sapply(x.df$filename, function(x) grep(x, targetsdf$samplemod, ignore.case = T))) # grep for shortened file names in sample names
-    # x.df <- cbind(x.df, targetsdf[index, , drop=F ]) 
-    index <- as.numeric(sapply(targetsdf$samplemod, function(x) grep(x, x.df$filename, ignore.case = T))) # grep for sample name in shortened file names
-    if(nrow(x.df) != length(index) || any(is.na(index))) {
-      stop("\nThere seem to be ambiguous sample names in targets. Can't assign them uniquely to cutadapt logfile names")
+    if(!identical(sort(unname(unlist(index))), 1:nrow(x.df))) {
+      return("There seem to be ambiguous sample names in targets. Can't assign them uniquely to logfile names")
     }
     
-    targetsdf$filename <- x.df$filename[index]
-    x.df <- merge(x.df, targetsdf, by="filename")
+    x.df <- data.frame(x.df[unlist(index),], targetsdf, check.names =F)
     x.df <- x.df[order(rownames(x.df)),, drop=F]
-    x.df <- x.df[,!apply(x.df,2, function(x) any(is.na(x))), drop=F] # remove NA columns from unsuccessful matching
     rownames(x.df) <- x.df$filename
     
     if(any(!colorByFactor %in% colnames(x.df))) {
@@ -1469,7 +1464,7 @@ DEhelper.umicount <- function(colorByFactor=NULL, targetsdf=targets, ...){
       }
     }
   } else {
-    # if colorByFactor == NULL or targets does not fit to number of files
+    x.df$filename <- row.names(x.df)
     colorByFactor <- "filename"
   }
   
@@ -1511,6 +1506,7 @@ DEhelper.umicount <- function(colorByFactor=NULL, targetsdf=targets, ...){
   colnames(x.df)[colnames(x.df)=="counted_reads"] <- "counted_reads_perc"
   DT::datatable(x.df[,c("input_reads_total", "skipped_reads_total","skipped_reads_perc", "counted_reads_total", "counted_reads_perc")])
 }
+
 
 
 

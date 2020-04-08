@@ -6,5 +6,5 @@ Cutadapt_vars=[
     minimum_overlap    : ESSENTIAL_MINADAPTEROVERLAP,  // minimal overlap of the read and the adapter
     minimum_length_keep: ESSENTIAL_MINREADLENGTH,      // minimal length of reads to be kept
     errorrate          : "0.1",                        // default 0.1
-    extra              : "--cut 5 -a T{100} --times 3" // MARS-Seq: included 5 random bases on 5'sequence
+    extra              : "-a T{100} --times 3" // MARS-Seq: included 5 random bases on 5'sequence --cut 5
 ]

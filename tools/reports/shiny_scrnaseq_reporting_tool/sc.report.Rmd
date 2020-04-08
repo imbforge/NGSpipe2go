@@ -76,7 +76,7 @@ if(!all(required_cols) %in% colnames(targets)) {
   if(SHINYREPS_SEQTYPE=="MARSseq") {
   targets4plot <- targets[!duplicated(targets$pool), !colnames(targets) %in% c("barcode", "row", "col", "cells"), drop=F]
   targets4plot$sample <- targets4plot$pool # for pool-based designs pool id is used for merging to count files 
-  targets4plot <- lapply(targets4plot, factor)
+  targets4plot <- sapply(targets4plot, factor)
   } else {
     targets4plot <- targets
   }
@@ -1616,7 +1616,8 @@ For each cluster, every gene is assigned with the highest rank which from compar
 DE_var2adjust <- if(is.null(final_var2adjust)) {NULL} else {"final_var2adjust"} 
 clustervar <- selected_clustering_method
 groupingvar <- SHINYREPS_COLORBYFACTOR[1] # still to implement: use findMarkers for differential expression analysis within clusters
-assay.type <- if(adjust_ccp | !is.null(var2adjust)) {"logcounts_not_adjusted"} else {"logcounts"}
+# unadjusted logcounts shall be used as assay.type for findMarkers (adjustment is done with DE_var2adjust if needed)
+assay.type <- c("logcounts_not_adjusted", "logcounts", "counts")[c("logcounts_not_adjusted", "logcounts", "counts") %in% names(assays(sce))][1]
 ###############################################
 
 
