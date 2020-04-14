@@ -23,11 +23,12 @@ AddUMIBarcodeToFastq = {
     def EXTRACTWHITELIST  = AddUMIBarcodeToFastq_vars.extractWhitelist
     def EXTRACTWHITELIST2 = AddUMIBarcodeToFastq_vars.extractWhitelist2
 
-    // create the log folder if it doesn't exists
+    // create the log folder if it doesn't exists (and whitelist log folder if needed)
     def umitools_logdir = new File(AddUMIBarcodeToFastq_vars.logdir)
     if (!umitools_logdir.exists()) {
         umitools_logdir.mkdirs()
     }
+    def umitools_logdirWL = new File(AddUMIBarcodeToFastq_vars.logdirWL)
 
     def TOOL_ENV = prepare_tool_env("umitools", tools["umitools"]["version"], tools["umitools"]["runenv"])
     def PREAMBLE = get_preamble("AddUMIBarcodeToFastq")
@@ -67,7 +68,7 @@ AddUMIBarcodeToFastq = {
     def umi_tools_whitelist_FLAGS_2 = pattern2_FLAGS + whitelist_FLAGS
 
 
-    if(DESIGN == "amplicon4") { // for 2nd whitelist extraction: if Readpair as input (i.e. no PEAR assembly), the 2nd whitelist is extracted from R2, otherwise also from R1 (with different barcode def)
+    if (DESIGN == "amplicon4") { // for 2nd whitelist extraction: if Readpair as input (i.e. no PEAR assembly), the 2nd whitelist is extracted from R2, otherwise also from R1 (with different barcode def)
         def secondInput = input2.optional;
     } else {
         def secondInput = input;
@@ -81,11 +82,11 @@ AddUMIBarcodeToFastq = {
             ${PREAMBLE} &&
       
          if [ $EXTRACTWHITELIST = true ]; then
-             umi_tools whitelist $umi_tools_whitelist_FLAGS -I $input -S \${TMP}/${OUTPUTFILE}.extracted_whitelist.tsv --plot-prefix=\${TMP}/${OUTPUTFILE}.plot_whitelist --log=\${TMP}/${OUTPUTFILE}.whitelistExtraction.umibarcode.log ;
+             umi_tools whitelist $umi_tools_whitelist_FLAGS -I $input -S \${TMP}/${OUTPUTFILE}.extracted_whitelist.tsv --plot-prefix=\${TMP}/${OUTPUTFILE}.plot_extracted_whitelist --log=\${TMP}/${OUTPUTFILE}.extracted_whitelist.umibarcode.log ;
          fi &&
  
          if [ $EXTRACTWHITELIST2 = true ]; then
-             umi_tools whitelist $umi_tools_whitelist_FLAGS_2 -I $secondInput -S \${TMP}/${OUTPUTFILE}.extracted_whitelist2.tsv --plot-prefix=\${TMP}/${OUTPUTFILE}.plot_whitelist2 --log=\${TMP}/${OUTPUTFILE}.whitelistExtraction2.umibarcode.log ;
+             umi_tools whitelist $umi_tools_whitelist_FLAGS_2 -I $secondInput -S \${TMP}/${OUTPUTFILE}.extracted_whitelist2.tsv --plot-prefix=\${TMP}/${OUTPUTFILE}.plot_extracted_whitelist2 --log=\${TMP}/${OUTPUTFILE}.extracted_whitelist.umibarcode.log ;
          fi &&
       
          case $DESIGN in
@@ -107,13 +108,15 @@ AddUMIBarcodeToFastq = {
              *)        echo 'error: parameter ESSENTIAL_EXPDESIGN not set properly' > $umitools_logdir/${OUTPUTFILE}.umibarcode.log;;
          esac &&
               
-         mv \${TMP}/${OUTPUTFILE}*.umibarcode.fastq.gz $output &&
-         mv -t $umitools_logdir/ \${TMP}/${OUTPUTFILE}*umibarcode.log &&
-                        
-         if [ $EXTRACTWHITELIST = true ] || [ $EXTRACTWHITELIST2 = true ]; then
-             mv -t $output.dir/ \${TMP}/${OUTPUTFILE}.extracted_whitelist*.tsv &&
-             mv -t $output.dir/ \${TMP}/${OUTPUTFILE}.plot_whitelist* ;
-         fi 
+          if [ $EXTRACTWHITELIST = true ] || [ $EXTRACTWHITELIST2 = true ]; then
+             mkdir -p $umitools_logdirWL &&
+             mv -t $umitools_logdirWL/ \${TMP}/${OUTPUTFILE}.extracted_whitelist*.tsv &&
+             mv -t $umitools_logdirWL/ \${TMP}/${OUTPUTFILE}*extracted_whitelist*.umibarcode.log &&
+             mv -t $umitools_logdirWL/ \${TMP}/${OUTPUTFILE}.plot_extracted_whitelist* ;
+          fi &&
+         
+          mv \${TMP}/${OUTPUTFILE}*.umibarcode.fastq.gz $output &&
+          mv -t $umitools_logdir/ \${TMP}/${OUTPUTFILE}*umibarcode.log
                                    
         ""","AddUMIBarcodeToFastq"
     }

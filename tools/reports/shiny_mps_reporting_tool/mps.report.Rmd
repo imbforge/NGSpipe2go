@@ -17,26 +17,30 @@ Enter project description here
 
 # Processing
 
-Enter data processing here
-
+Bpipe.run {
+    "%.fastq.gz" * [ FastQC ] +
+    (RUN_IN_PAIRED_END_MODE ? "%.R*.fastq.gz" : "%.fastq.gz") * [
+        (RUN_PEAR ? pear : dontrun.using(module:"pear")) +
+               AddUMIBarcodeToFastq + barcode_count
+    ] +
+            (RUN_MPSprofiling ? MPSprofiling : dontrun.using(module:"MPSprofiling")) +
+            MultiQC + collectToolVersions + collectBpipeLogs + shinyReports
+}
 
 ```{r setup, echo=F, result='hide', error=F, warning=F, message=F}
 
 # source helper functions
-source("sc.shinyrep.helpers.R")
+source("mps.shinyrep.helpers.R")
 
 # load required packages
 attach_packages(c("rmarkdown", "knitr", "Cairo", "gplots", "ggplot2", "plotly", "RColorBrewer", "ggrepel", "parallel",
-                  "grid", "gridExtra", "rtracklayer", "scater", "scran", "ggbeeswarm", "dplyr", "tidyr", "forcats",
-                  "scales", "kableExtra", "reshape2", "M3Drop", "vipor", "corrplot", "limma", "pheatmap",
-                  "VennDiagram", "edgeR", "DESeq2", "GeneOverlap", "viridis", "Biobase", "batchelor", "SC3", "pkgmaker",
-                  "igraph", "pheatmap", "cluster", "dendextend", "dynamicTreeCut", "shinydashboard"))
+                  "grid", "gridExtra", "rtracklayer", "ggbeeswarm", "dplyr", "tidyr", "forcats", "gtools", "Biobase",
+                  "scales", "kableExtra", "reshape2", "vipor", "corrplot", "limma", "viridis", "pkgmaker", "DT", "htmltools",
+                  "igraph", "shinydashboard"))
 
 # load global variables
 loadGlobalVars(f="shinyReports.txt")
 
-# create folder for output files
-if (!file.exists(file.path("report_files"))) {dir.create(file.path("report_files"))}
 
 # set options
 options(stringsAsFactors=FALSE)
@@ -45,11 +49,7 @@ pal   <- brewer.pal(9, "Set1")
 pal_rb <- colorRampPalette(c(pal[1], "white", pal[2]))(20)
 pal_y  <- colorRampPalette(c("black", "yellow"))(100)
 
-knitr::opts_chunk$set(cache=F,
-                      echo=F,
-                      warning=F,
-                      message=F,
-                      dev='CairoPNG')
+knitr::opts_chunk$set(cache=F, echo=F, warning=F, message=F, dev='CairoPNG')
 
 theme_set(theme_bw() + theme(axis.text=element_text(colour="grey30",size=12),
 									axis.title=element_text(colour="grey30",size=14),
@@ -59,13 +59,22 @@ theme_set(theme_bw() + theme(axis.text=element_text(colour="grey30",size=12),
 									legend.title=element_text(size=12,colour="grey30")))
 
 
-## load targets file for all cells. Columns required: 
-targets <- read.delim(SHINYREPS_TARGET)
-#group.vars <- colnames(targets)[!colnames(targets) %in% c("sample", "barcode", "row", "col")] 
-#targets[,group.vars] <- lapply(targets[,group.vars], factor)
+run_pear_assembly <- dir.exists(SHINYREPS_PEAR_LOG)
+run_whitelist_extraction <- dir.exists(SHINYREPS_UMIEXTRACT_LOGWL)
+run_nested_extraction <-any(grepl("nested", list.files(SHINYREPS_UMIEXTRACT_LOG))) 
+PSIavailable <- file.exists(file.path(SHINYREPS_MPSPROFILING_OUT, "MPSprofiling.RData")) # PSI calculation applied?
+targets <- NULL
 
-# print targets file
-DT::datatable(targets, caption="targets file (sample sheet) used for analysis")
+if(PSIavailable) {
+  # load PSI tables if available
+  load(file.path(SHINYREPS_MPSPROFILING_OUT, "MPSprofiling.RData"))
+  
+  ## load targets file for all cells.  
+  targets <- read.delim(SHINYREPS_TARGET, sep=",")
+  
+  # print targets file
+  DT::datatable(targets, caption="targets file (sample sheet) used for analysis")
+}
 
 ```
 
@@ -88,86 +97,197 @@ The y-axis on the graph shows the Phred quality scores, which are logarithmicall
 
 ```{r FastQC_paragraph1, echo=F, results='asis', error=F, warning=F, message=F}
 ##### parameters to set:
-# Select samples for which you would like to include fastqc results in the report. For single cell RNA-Seq with many cells, 
+# Select samples for which you would like to include fastqc results in the report. For huge experiments, 
 # you may want to restrict the total number of plots. If you provide a regular expression in 'samplePattern' only those 
 # filenames will be included which match this expression, e.g. setting samplePattern="R1" yields only those fastq 
-# files containing read1 of a read pair. This is recomended e.g. for MARS-Seq, where Read2 contains barcode information only.
-# For samplePattern=NULL (default) all fastq files will be included.
+# files containing read1 of a read pair. 
+# For samplePattern=NULL all fastq files will be included.
 # If you want to exclude samples according to the given certain pattern (instead of including), set exclude=T. 
-# This is e.g. for excluding the trimmed fastq files which contain "cutadapt" in the file name (see below). 
 # If you set argument 'maxno', the maximum sample number will be restricted accordingly to the first 'maxno' plots. 
 #
-# NOTE: this should be moved as parameters into shinyreports.vars.groovy
-samplePattern="_R1\\."
-excludePattern=F  # default FALSE
-maxno=NULL        # default NULL
+samplePattern=SHINYREPS_PATTERNFASTQC
+maxno=SHINYREPS_MAXNO        
 ##### 
 
-cat(DEhelper.Fastqc(web=F, samplePattern=samplePattern, exclude=excludePattern, maxno=maxno), sep="\n")
-# These options also apply for the helper functions following below
+cat(DEhelper.Fastqc(web=F, samplePattern=samplePattern, maxno=maxno), sep="\n")
 ```
 
 
-## Read de-duplication and feature counting with UMI-tools
 
-UMI-tools counts the mapped reads per feature obtained after de-duplication. UMI-tools uses the uniquely mapped reads from STAR as well as as the multimapped reads (but not those which are mapped to too many loci) as input reads.
-
-```{r umicount, echo=F, results='asis', error=F, warning=F, message=F, eval=F}
+```{r pear, echo=F, results='asis', error=F, warning=F, eval=run_pear_assembly}
 ##### parameters to set:
-# define subset of umicount log files if desired (samplePattern=NULL (default) includes all files).
-samplePattern=NULL
+# include only files generated with umi_tools whitelist
+samplePattern=NULL 
 # define categories of targets.txt to be used for dot color in the plot (one plot per element of colorByFactor will be created). 
-# The function will try to map the data from targets$sample to the umicount log file names (for this, the unique part of 
-# targets$sample must be a substring of the file name). If you have umi-tools log files from pooled fastq files but cell-wise 
-# information in targets.txt as in MARS-Seq, you may provide another customized targets object in 'targetsdf'. 
-# Otherwise pruned file names will be used by default.
-colorByFactor = NULL # NULL by default
-targetsdf=targets
+colorByFactor = SHINYREPS_COLORBYFACTOR 
 #####
 
-DEhelper.umicount(samplePattern=samplePattern, colorByFactor=colorByFactor, targetsdf=targetsdf)
+cat("# Read assembly with PEAR\n")
+cat("\n\nThe 2 reads of a readpair are assembled to a single read. PEAR stats for assembly:\n")
+
+MPShelper.pear(samplePattern=samplePattern, colorByFactor=colorByFactor, targetsdf=targets)
+```
+
+
+
+```{r umitools_whitelist, echo=F, results='asis', error=F, warning=F, eval=run_whitelist_extraction}
+##### parameters to set:
+# include only files generated with umi_tools whitelist
+samplePattern="whitelist" 
+# define categories of targets.txt to be used for dot color in the plot (one plot per element of colorByFactor will be created). 
+colorByFactor = SHINYREPS_COLORBYFACTOR 
+#####
+
+cat("# Whitelist extraction with UMI-tools\n")
+cat("The whitelist option offers to estimate likely true cell barcodes which can then be used to filter (and optionally correct) the barcodes extracted from the fastq files. The obtained whitelist contains the observed deviations from the 'real' variable regions (including their frequency). The extracted whitelists for each sample are available as tsv files in the", gsub(SHINYREPS_PROJECT, "", SHINYREPS_UMIEXTRACT_LOGWL),"folder. They contain 4 tab-separated columns: 1) whitelisted cell barcode, 2) Other cell barcode(s) (comma-separated) to correct to the whitelisted barcode, 3) Count for whitelisted cell barcodes, 4) Count(s) for the other cell barcode(s) (comma-separated).\n")
+
+cat("\n\nKnee plots for barcode selection:\n")
+MPShelper.whitelistextraction(samplePattern=samplePattern)
+
+cat("\n\n\nUMI-tools stats for whitelist extraction:\n")
+MPShelper.umiextract(samplePattern=samplePattern, colorByFactor=colorByFactor, targetsdf=targets)
+
+```
+
+
+
+## Extract barcodes with UMI-tools
+
+Barcodes and UMIs (if applicable) are extracted from sequences in fastq files and are appended to the corresponding read names for later counting. UMIs will be used for deduplication of barcodes. Mismatches are allowed in UMIs as defined in project settings. 
+
+```{r umiextract, echo=F, results='asis', error=F, warning=F}
+##### parameters to set:
+# exclude files from optional nested run
+samplePattern=SHINYREPS_PATTERNUMITOOLS 
+# define categories of targets.txt to be used for dot color in the plot (one plot per element of colorByFactor will be created). 
+colorByFactor = SHINYREPS_COLORBYFACTOR 
+#####
+
+MPShelper.umiextract(samplePattern=samplePattern, exclude=T, colorByFactor=colorByFactor, targetsdf=targets)
+```
+
+
+```{r umiextract_nested, echo=F, results='asis', error=F, warning=F, eval=run_nested_extraction}
+##### parameters to set:
+# include files from optional nested run only
+samplePattern=SHINYREPS_PATTERNUMITOOLS 
+# define categories of targets.txt to be used for dot color in the plot (one plot per element of colorByFactor will be created). 
+colorByFactor = SHINYREPS_COLORBYFACTOR 
+#####
+
+cat("## Barcode extraction for 2nd pattern\n")
+cat("Barcode extraction statistics for 2nd run of umi_tools extract.\n")
+
+MPShelper.umiextract(samplePattern=samplePattern, colorByFactor=colorByFactor, targetsdf=targets)
 ```
 
 
 
 
+```{r countdata, results='asis', eval=PSIavailable}
+cat("# Raw count data\n")
+cat("## Histograms of count data\n")
+
+histofiles <- list.files(file.path(SHINYREPS_MPSPROFILING_OUT, "plots"), full.names =T)
+histofiles <- histofiles[grep("histogram", basename(histofiles))] # filter for histograms
+histofiles <- histofiles[grep("_raw", basename(histofiles))] # filter for raw count files
+
+for(f in histofiles) {
+ # include plots in report    
+  cat(paste0("![plot of ", basename(f), "](", f, ")"))
+}
+```
 
 
-```{r store_data, echo=F, results='hide', error=F, warning=F, message=F, eval=F}
+```{r PSIperNuc, results='asis', eval=PSIavailable}
+cat("## PSIs calculated per nucleotides
+    
+    Protein stability indices have been calculated per nucleotide sequence from normalized count data. The statistics given in the table are calculated from count data of all fractions per sub_experiment and sequence. 'nfractions' gives the number of fractions with counts detected, while 'totalfractions' contains the total number of fractions for this sub_experiment.\n")
 
-# store count data (all and by pool)
-dir_countdata <- file.path("report_files", "count_data")
-
-cat("count data matrices are stored in", dir_countdata, "\n")
-
-countslist <- lapply(c("counts", "logcounts", "logcounts_not_adjusted"), function(x) {
-
-  if (!file.exists(file.path(dir_countdata, x))) {dir.create(file.path(dir_countdata, x), recursive = T)}
-
-  write.table(data.frame(gene=rownames(sce), symbol=rowData(sce)$SYMBOL, assay(sce, x)), 
-              file =file.path(dir_countdata, x, paste0(x, "_all.txt")), sep="\t", quote = F, row.names = F)
-
-  lapply(unique(colData(sce)$pool), function(y) {
-    sce.subset <- sce[, colData(sce)$pool == y]
-    write.table(data.frame(gene=rownames(sce.subset), symbol=rowData(sce.subset)$SYMBOL, assay(sce.subset, x)), 
-                file = file.path(dir_countdata, x, paste0(x, "_", y, ".txt")), sep="\t", quote = F, row.names = F)
-  })
-})
-
-# save workspace
-save.image("report_files/WS.RData")
-
-# create files for shiny app 
-library(shinydashboard)
-
-dir_shinyapp <- file.path("report_files", "shinyapp")
-if (!file.exists(dir_shinyapp)) {dir.create(dir_shinyapp) }
-  top.hvg <- hvg.cor.list[["all"]]$top.hvg
-  genes <- gene.names[gene.names$gene_id %in% rownames(sce), ]
-  save(sce, genes, top.hvg, file=file.path(dir_shinyapp, "data4shiny.RData"))
+ htmltools::tagList(
+   lapply(unique(targets$experiment), function(x) {
+      dplyr::filter(bynuc_all[["raw"]], experiment==x) %>%
+                      head(n=as.numeric(SHINYREPS_MAX_TABLE_ROWS)) %>%
+                      DT::datatable(caption=paste("PSI per nucleotide for experiment", x, 
+                                                  if(as.numeric(SHINYREPS_MAX_TABLE_ROWS)<nrow(filter(bynuc_all[["raw"]], experiment==x)))
+                                                  {paste("(max", as.numeric(SHINYREPS_MAX_TABLE_ROWS), "entries)")} else{""})
+                                                    )
+      })
+    )
   
 ```
 
+
+```{r PSIperAA, results='asis', eval=PSIavailable}
+cat("## PSIs calculated per amino acids
+    
+    Median protein stability indices per amino acid sequence have been calculated as median of PSIs from all nucleotide sequences translated into the same amino acid sequence. Additionally, pooled PSIs are calculated directly from normalized count data by pooling counts from all nucleotide sequences translated into the same amino acid sequence. The statistics given in the table refer to the pooled approach. 'nsequences' gives the number of nucleotide sequences tranlated into the same amino acid sequence, 'nfractions' gives the number of fractions with counts detected, while 'totalfractions' contains the total number of fractions for this sub_experiment.\n")
+
+ htmltools::tagList(
+   lapply(unique(targets$experiment), function(x) {
+      dplyr::filter(byaa_all[["raw"]], experiment==x) %>%
+                      head(n=as.numeric(SHINYREPS_MAX_TABLE_ROWS)) %>%
+                      DT::datatable(caption=paste("PSI per nucleotide for experiment", x, 
+                                                  if(as.numeric(SHINYREPS_MAX_TABLE_ROWS)<nrow(filter(byaa_all[["raw"]], experiment==x)))
+                                                  {paste("(max", as.numeric(SHINYREPS_MAX_TABLE_ROWS), "entries)")} else{""})
+                                                    )
+      })
+    )
+```
+
+
+
+```{r countdata_bgsubt, results='asis', eval=(PSIavailable && "bgsubt" %in% names(counts_all))}
+cat("# Background subtracted count data\n")
+    
+cat("## Histograms of count data after background subtraction\n
+    To remove background noise, a Gaussian mixture model is fitted to each sample and then the mean of the background distribution subtracted from the raw count data. All downstream processing steps are performed as for the raw count data.\n")
+
+histofiles <- list.files(file.path(SHINYREPS_MPSPROFILING_OUT, "plots"), full.names =T)
+histofiles <- histofiles[grep("histogram", basename(histofiles))] # filter for histograms
+histofiles <- histofiles[grep("_bgsubt", basename(histofiles))] # filter for bgsubt count files
+
+for(f in histofiles) {
+ # include plots in report    
+  cat(paste0("![plot of ", basename(f), "](", f, ")"))
+}
+```
+
+
+```{r PSIperNuc_bgsubt, results='asis', eval=(PSIavailable && "bgsubt" %in% names(bynuc_all))}
+cat("## PSIs calculated per nucleotides
+    
+    Protein stability indices have been calculated per nucleotide sequence from normalized count data after background subtraction.\n")
+
+ htmltools::tagList(
+   lapply(unique(targets$experiment), function(x) {
+      dplyr::filter(bynuc_all[["bgsubt"]], experiment==x) %>%
+                      head(n=as.numeric(SHINYREPS_MAX_TABLE_ROWS)) %>%
+                      DT::datatable(caption=paste("PSI per nucleotide for experiment", x, 
+                                                  if(as.numeric(SHINYREPS_MAX_TABLE_ROWS)<nrow(filter(bynuc_all[["bgsubt"]], experiment==x)))
+                                                  {paste("(max", as.numeric(SHINYREPS_MAX_TABLE_ROWS), "entries)")} else{""})
+                                                    )
+      })
+    )
+```
+
+
+```{r PSIperAA_bgsubt, results='asis', eval=(PSIavailable && "bgsubt" %in% names(byaa_all))}
+cat("## PSIs calculated per amino acids
+    
+    Median protein stability indices per amino acid sequence have been calculated from background subtracted count data.\n")
+
+  htmltools::tagList(
+   lapply(unique(targets$experiment), function(x) {
+      dplyr::filter(byaa_all[["bgsubt"]], experiment==x) %>%
+                      head(n=as.numeric(SHINYREPS_MAX_TABLE_ROWS)) %>%
+                      DT::datatable(caption=paste("PSI per nucleotide for experiment", x, 
+                                                  if(as.numeric(SHINYREPS_MAX_TABLE_ROWS)<nrow(filter(byaa_all[["bgsubt"]], experiment==x)))
+                                                  {paste("(max", as.numeric(SHINYREPS_MAX_TABLE_ROWS), "entries)")} else{""})
+                                                    )
+      })
+    )
+```
 
 
 
