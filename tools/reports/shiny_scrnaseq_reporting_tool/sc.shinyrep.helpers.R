@@ -1773,7 +1773,7 @@ selectSampleSubset <- function(samples, samplePattern=NULL, exclude=F, grepInBas
     }
     if(!is.null(maxno)) {
       samples <- samples[1:min(length(samples), maxno)]
-      if(maxno > length(samples)) {cat("\nSample number restricted to", maxno)}
+      if(maxno < length(samples)) {cat("\nSample number restricted to", maxno)}
     }
     return(samples)
   }

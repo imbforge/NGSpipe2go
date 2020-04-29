@@ -450,7 +450,7 @@ for (size in c("total_counts", "total_features_by_counts_endogenous", "pct_count
   cat(paste("Plotting", size, "as spot size\n"))
   plates <- list()
   for (p in as.character(sort(unique(sce$plate)))) {
-        plates[[p]] <- scater::plotPlatePosition(sce[, sce$plate==p], colour_by="cells",size_by=size, shape_by=annoFactors,
+        plates[[p]] <- scater::plotPlatePosition(sce[, sce$plate==p], colour_by="cells",size_by=size, shape_by=annoFactors[1],
                             by_exprs_values = "counts", theme_size = 10,  point_alpha = 0.6, point_size = 3, add_legend = F)  
   } # plotPlatePosition uses by_exprs_values = "logcounts" by default. But if not available, uses "counts" instead
 
@@ -815,7 +815,7 @@ var2adjust <- NULL
 adjust_ccp <- F # adjust for cell cycle phase 
 ######
 
-if(adjust_ccp | !is.null(var2adjust)) {
+if(adjust_ccp || !is.null(var2adjust)) {
   
   cat("## Adjust for confounder variables")
 
@@ -900,7 +900,7 @@ var2adjust <- NULL
 adjust_ccp <- F # adjust for cell cycle phase (default = FALSE)
 #####
 
-if(adjust_ccp | !is.null(var2adjust)) {
+if(adjust_ccp || !is.null(var2adjust)) {
   
   cat("## Adjust for confounder variables")
 
@@ -979,7 +979,7 @@ if(is.null(var2adjust) & adjust_ccp) {
 ```
 
 
-```{r explanatory_variables_2, echo=F, error=F, warning=F, message=F, fig.width=8, fig.height=6, results='asis', eval=(adjust_ccp | !is.null(var2adjust))}
+```{r explanatory_variables_2, echo=F, error=F, warning=F, message=F, fig.width=8, fig.height=6, results='asis', eval=(adjust_ccp || !is.null(var2adjust))}
 
 if(!is.null(var2adjust)) {
   cat("\nRe-plot explanatory variables after adjustment\n")
