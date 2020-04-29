@@ -4,9 +4,9 @@
 // 
 // The structure of this map is:
 //   tools_custom = [
-//       R         = [ runenv = "lmod", version= "3.6.0" ],
+//       R       : [ runenv: "lmod", version: "3.6.0" ],
 //    <...>
-//       samtools  = [ runenv = "lmod", version= "1.9"   ]
+//       samtools: [ runenv: "lmod", version: "1.9"   ]
 //   ]
 //
 // Tips:
