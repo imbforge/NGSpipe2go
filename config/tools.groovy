@@ -53,7 +53,7 @@ tools_defaults = [
     samtools   : [ runenv: "lmod", version: "1.9"          ],
     seqtk      : [ runenv: "lmod", version: "1.3"          ], 
     starfusion : [ runenv: "lmod", version: "0.8.0"        ],
-    star       : [ runenv: "lmod", version: "2.6"          ],
+    star       : [ runenv: "lmod", version: "2.7"          ],
     stringtie  : [ runenv: "lmod", version: "1.3.5"        ],
     subread    : [ runenv: "lmod", version: "1.6"          ],
     trimgalore : [ runenv: "lmod", version: "0.5.0"        ],
@@ -294,6 +294,7 @@ tools_prepare_env = [
             singularity: "alias STAR=\"singularity run --app STAR ${singularity_tools}/star/2.6.1br0/STAR.simg\""
         ],
         "2.7": [
+            lmod: "module load star/2.7.3a",
             conda: "source activate ${conda_tools}/star/2.7.0d",
             singularity: "alias STAR=\"singularity run --app STAR ${singularity_tools}/star/2.7.0fr0/STAR.simg\""
         ]
