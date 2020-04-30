@@ -208,6 +208,12 @@ if(cores > 1 && length(res) > 1) {
     parLapply(cl, zipup(res, names(res)), processContrast)
     stopCluster(cl)
 } else {
+    library(clusterProfiler)
+    library(DOSE)
+    library(ReactomePA)
+    library(Cairo)
+    library(ggplot2)
+    library(orgDb[org], character.only=TRUE)
     lapply(zipup(res, names(res)), processContrast)
 }
 
