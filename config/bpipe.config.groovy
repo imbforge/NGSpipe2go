@@ -190,12 +190,12 @@ config {
       procs="4" 
       memory="4"
     }
-    REAT { 
+    GREAT { 
       walltime="01:00:00" 
       procs="1" 
       memory="1"
     }
-    enerateStarIndexFromSJ { 
+    GenerateStarIndexFromSJ { 
       walltime="04:00:00" 
       procs="8" 
       memory="32"
