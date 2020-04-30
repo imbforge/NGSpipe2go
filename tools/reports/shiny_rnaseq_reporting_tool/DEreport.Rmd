@@ -48,19 +48,17 @@ The mapping statistics below show the number and percentage of: (i) input raw re
 
 While both unique and multi-mapped reads are included in the generation of browser coverage tracks, only uniquely mapped reads are typically taken into account in the DESeq2 differential expression analysis in order to avoid potential false-positives. However, this standard analysis approach may also exclude some recently duplicated genes or gene-pseudogene pairs, resulting in false-negatives. To investigate the potential expression changes in such genes, a side branch of DESeq2 is run using all mapped reads and the results of both branches are compared.
 
-```{r STAR_paragraph, echo=F, results='asis', error=F, warning=F, message=F}
+```{r STAR_paragraph, echo=F, results='asis', error=F, warning=F, message=F, fig.align="center", out.width="100%"}
 
 star_stats <- DEhelper.STAR()
 
-cat("#### Barplot of mapping statistics (in percent of sequenced reads):\n", fill = T)
 plot(star_stats$p_perc)
 cat("\n", fill = T)
 
-cat("### Barplot of mapping statistics (read counts):\n", fill = T)
 plot(star_stats$p_count)
 cat("\n", fill = T)
 
-cat("### Mapping statistic:\n", fill=T)
+cat("#### Mapping statistics:\n", fill=T)
 cat(star_stats$stat, sep="\n")
 cat("\n", fill = T)
 ``` 
@@ -118,7 +116,7 @@ cat(DEhelper.Subread(), sep="\n")
 
 The following plot shows the fraction of reads assigned to various RNA classes. These plots help in determining if the sample prep protocol worked well and may reveal issues with rRNA contamination. 
 
-```{r RNAtypes_paragraph, echo=F, results='asis', error=F, warning=F, message=F}
+```{r RNAtypes_paragraph, echo=F, results='asis', error=F, warning=F, message=F, fig.align="center", out.width="100%"}
 DEhelper.RNAtypes()
 ```
 
@@ -153,7 +151,7 @@ cat(DEhelper.Qualimap(), sep="\n")		# sample Qualimap
 
 The plot below depicts sample similarity based on priniciple component analysis (PCA) with the 500 genes showing the highest variance. Overall, replicates are expected to show relatively small distances between them, while sample groups often show higher distances between them, depending on the magnitude of expression changes. If the samples cluster other than by group, there might be sample prep batch effects or some other unaccounted biological/technical factors in the experiment. 
 
-```{r MDSplot_paragraph, echo=F, error=F, warning=F, message=F, fig.align="center"}
+```{r MDSplot_paragraph, echo=F, error=F, warning=F, message=F, fig.align="center", out.width="100%"}
 DEhelper.DESeq2.MDS()		# sample MDS 
 ```
 
@@ -185,7 +183,8 @@ Note that the default DESeq2 analysis uses only a statistical (FDR) filter and i
 for(i in 1:nrow(conts)) {
 
 	# subsection
-	cat("### ", conts[i, 1], fill=T)	
+	cont.name <- gsub("(.+)=(.+)","\\1",conts[i,1])
+  	cat("### ", cont.name, fill=T)
 	cat("", fill=T)
 	
 	# pairwise PCA plot 
@@ -241,7 +240,8 @@ for(i in 1:nrow(conts)) {
 for(i in 1:nrow(conts)) {
 
         # subsection
-        cat("### ", conts[i, 1], fill=T)
+	cont.name <- gsub("(.+)=(.+)","\\1",conts[i,1])
+  	cat("### ", cont.name, fill=T)
         cat("", fill=T)
 
 	# GO Enrichment Plot
@@ -386,7 +386,8 @@ The tables contain a summary of the likelihood that there are more DE genes in a
 for(i in 1:nrow(conts)) {
 
     # subsection
-    cat("### ", conts[i, 1], fill=T)    
+    cont.name <- gsub("(.+)=(.+)","\\1",conts[i,1])
+    cat("### ", cont.name, fill=T)    
     cat("", fill=T)
     
     # and DE table
@@ -414,9 +415,10 @@ The Venn diagrams below compare the number of differentially expressed genes det
 for(i in 1:nrow(conts)) {
 
     fdr <- .01
-
+    
     # subsection
-    cat("### ", conts[i, 1], fill=T)
+    cont.name <- gsub("(.+)=(.+)","\\1",conts[i,1])
+    cat("### ", cont.name, fill=T)
     cat("", fill=T)
     
     # Venn comparing DE genes w/ w/o MM

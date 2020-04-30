@@ -154,7 +154,7 @@ img[alt="fastqc img"] {
 }
 
 img[alt="dupRadar img"] { 
-  max-width:  220px; 
+  max-width:  260px; 
   display: block;
 }
 
@@ -164,7 +164,7 @@ img[alt="RNAtypes img"] {
 }
 
 img[alt="geneBodyCov img"] { 
-  max-width:  220px; 
+  max-width:  260px; 
   display: block;
 }
 

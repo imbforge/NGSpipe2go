@@ -102,11 +102,18 @@ shorten <- function(x, max.len=40, ini=20, end=15) {
 #'           DEhelper.DESeq2.MDS()
 #' 
 DEhelper.DESeq2.MDS <- function() {
-    p <- plotPCA(rld, intgroup=colnames(colData(dds))[1])
-    print(p + 
-          scale_color_manual(values=brewer.pal(9,"Set1")[1:length(levels(colData(dds)[,"group"]))]) +
-          geom_text_repel(aes(label=rownames(colData(dds))), show.legend=FALSE) + 
-          theme_bw())
+
+	pca.data <- plotPCA(rld, intgroup=colnames(colData(dds))[1], returnData=TRUE)
+	percentVar <- round(100 * attr(pca.data, "percentVar"))
+	ggplot(pca.data, aes(PC1, PC2, color=group)) +
+ 		geom_point(size=2,alpha=0.7) +
+ 		xlab(paste0("PC1: ",percentVar[1],"% variance")) +
+  		ylab(paste0("PC2: ",percentVar[2],"% variance")) + 
+  		coord_fixed() + 
+  		scale_color_manual(values=brewer.pal(9,"Set1")[1:length(levels(colData(dds)[,"group"]))]) +
+  		geom_text_repel(aes(label=colData(dds)[,"replicate"]), show.legend=FALSE) + 
+  		theme_bw()
+
 }
 
 
@@ -130,11 +137,17 @@ DEhelper.DESeq2.MDS <- function() {
 #'           DEhelper.DESeq2.pairwisePCA(i)
 #'
 DEhelper.DESeq2.pairwisePCA <- function(i=1) {
-    p <- plotPCA(rlog(pairwise.dds[[i]]), intgroup=colnames(colData(pairwise.dds[[i]]))[1])
-    print(p + 
-          scale_color_manual(values=brewer.pal(9,"Set1")[1:2]) + 
-          geom_text_repel(aes(label=rownames(colData(pairwise.dds[[i]]))), show.legend=FALSE) + 
-          theme_bw())
+
+	pca.data <- plotPCA(rlog(pairwise.dds[[i]]), intgroup=colnames(colData(pairwise.dds[[i]]))[1], returnData=TRUE)
+     	percentVar <- round(100 * attr(pca.data, "percentVar"))
+     	print(ggplot(pca.data, aes(PC1, PC2, color=group)) +
+		   geom_point(size=2,alpha=0.7) +
+		   xlab(paste0("PC1: ",percentVar[1],"% variance")) +
+		   ylab(paste0("PC2: ",percentVar[2],"% variance")) + 
+		   coord_fixed() + 
+	 	   scale_color_manual(values=brewer.pal(9,"Set1")[1:2]) + 
+		   geom_text_repel(aes(label=colData(pairwise.dds[[i]])[,"replicate"]), show.legend=FALSE) +
+	 	   theme_bw())
 }
 
 
@@ -208,7 +221,7 @@ DEhelper.DESeq2.cluster.sd <- function(n=40) {
                  border_color=NA,
                  main=paste("Normalized expression values of",n,"most variable genes"),
 		 fontsize_row=5,
-                 fontsize=6,
+                 fontsize=7,
                  treeheight_row=20,
                  treeheight_col=20,
 		 annotation_names_col=FALSE)
@@ -280,7 +293,7 @@ DEhelper.DESeq2.cluster.sd.pairwise <- function(i=1,n=40) {
                  border_color=NA,
                  main=paste("Normalized expression values of",n,"most variable genes"),
                  fontsize_row=5,
-                 fontsize=6,
+                 fontsize=7,
                  treeheight_row=20,
                  treeheight_col=20,
 		 annotation_names_col=FALSE)
@@ -351,7 +364,7 @@ DEhelper.DESeq2.cluster.mean <- function(n=40) {
                  border_color=NA,
                  main=paste("Normalized expression values of",n,"genes with highest mean"),
                  fontsize_row=5,
-                 fontsize=6,
+                 fontsize=7,
                  treeheight_row=20,
                  treeheight_col=20,
 		 annotation_names_col=FALSE)
@@ -422,7 +435,7 @@ DEhelper.DESeq2.cluster.mean.pairwise <- function(i=1,n=40) {
                  border_color=NA,
                  main=paste("Normalized expression value of",n,"genes with highest mean"),
                  fontsize_row=5,
-                 fontsize=6,
+                 fontsize=7,
                  treeheight_row=20,
                  treeheight_col=20,
 		 annotation_names_col=FALSE)
@@ -503,7 +516,7 @@ DEhelper.DESeq2.corr <- function() {
                  annotation_colors=legend_colors,
                  col=col,
                  border_color=NA,
-                 fontsize=6,
+                 fontsize=7,
                  treeheight_row=20,
                  treeheight_col=20,
 		 annotation_names_col=FALSE)
@@ -573,7 +586,7 @@ DEhelper.DESeq2.corr.pairwise <- function(i=1) {
                  annotation_colors=legend_colors,
                  col=col,
                  border_color=NA,
-                 fontsize=6,
+                 fontsize=7,
                  treeheight_row=20,
                  treeheight_col=20,
 		 annotation_names_col=FALSE)
@@ -602,7 +615,8 @@ DEhelper.DESeq2.corr.pairwise <- function(i=1) {
 #'           DEhelper.DESeq2.MAplot()
 #'           
 DEhelper.DESeq2.MAplot <- function(i=1, fdr=.01) {
-     plotMA(res[[i]], main=conts[i, 1], alpha=fdr)
+	cont.name <- gsub("(.+)=(.+)","\\1",conts[i,1])
+	plotMA(res[[i]], main=cont.name, alpha=fdr)
 }
 
 ## DEhelper.DEgenes: show the DE results
@@ -665,7 +679,9 @@ DEhelper.DESeq2.VolcanoPlot <- function(i=1, fdr=.01, top=25, web=TRUE) {
             ylab("-log10 adj. p-value") +
             xlab("log2 fold change") + 
             scale_color_manual(values=c("black", "red"), guide=FALSE) +
-            scale_size_continuous("mean norm. counts (log10)")
+            scale_size_continuous("mean norm. counts (log10)") +
+	    guides(size = guide_legend(nrow=1)) +
+       	    theme(legend.position = "top")
 
     # add name of top genes
     if(top > 0) p <- p + geom_text_repel(data=d[1:min(top, nrow(d)),],
@@ -916,18 +932,23 @@ DEhelper.STAR <- function() {
     
     # set row and column names, and output the md table
     colnames(x) <- gsub(paste0(SUFFIX, "$"), "", colnames(x))
-    df_values <- as.data.frame(t(x[2:7,]))
-    df_values["Unmapped reads number"] <- x[1, ] - x[2, ] - x[4, ] - x[5,]
-    df_values["% of reads unmapped"] <- x[8, ] + x[9, ] + x[10, ]
+
+    ## row.names need to be set in case of only one sample (if more than one sample,
+    ## rownames would be set automatically, but doesnt harm to set them)
+    df_values <- as.data.frame(t(x[2:7,]),row.names=colnames(x))
+
+    df_values["unmapped"] <- x[1, ] - x[2, ] - x[4, ] - x[5,]
+    df_values["% unmapped"] <- x[8, ] + x[9, ] + x[10, ]
     df_values$sample <- rownames(df_values)
     # we clean up the colnames a little to make them shorter and nicer
-    colnames(df_values) <- gsub("of reads mapped to", "",
-                                gsub(" reads number", "", 
-                                     gsub("Number of reads mapped to ", "",
-                                          colnames(df_values))))
-    #if we have a differential expression analysis
-    #we refactor the samples depending on group/subject or alternatively on the
-    #amount of unique_mapping reads
+    colnames(df_values) <- gsub("of reads mapped to ", "",
+				gsub("Number of reads mapped to ", "",
+				     gsub("Uniquely mapped reads %","% unique",
+					  gsub("Uniquely mapped reads number","unique",colnames(df_values)))))
+
+    # if we have a differential expression analysis
+    # we refactor the samples depending on group/subject or alternatively on the
+    # amount of unique_mapping reads
     if(file.exists(SHINYREPS_TARGET)){
         targets <- read.delim(SHINYREPS_TARGET)
         targets$sample_ext <- gsub(paste0(SHINYREPS_RNATYPES_SUFFIX,"$"), "",targets$file )
@@ -944,36 +965,49 @@ DEhelper.STAR <- function() {
                                                           ])
     } else{
       #we rorder according to the % amount of unique mapped reads mapped reads
-      df_values$sample <- fct_reorder(df_values$sample, df_values$`Uniquely mapped reads %`)
+      df_values$sample <- fct_reorder(df_values$sample, df_values$`% unique`)
       df_values$sample <- gsub(paste0("^", lcPrefix(df_values$sample)), "", df_values$sample)
       df_values$sample <- gsub(paste0(lcSuffix(df_values$sample), "$"), "", df_values$sample)
     }
     df_melt <- melt(df_values, value.name = "reads", variable.name = "mapping_stat")
     df_melt$value_info <- ifelse(grepl("%", df_melt$mapping_stat), "perc", "reads")
+
+    ## melt does not work properly in case of only one sample (sample name gets lost)
+    if (nrow(df_values) == 1) {
+	    df_melt$sample <- rownames(df_values)
+    }
+
+    ## invert order for plotting
+    df_melt$mapping_stat <- fct_rev(df_melt$mapping_stat)
     
     #we create two plots one for the % and one for the amount of reads in numbers
-    p_perc <- ggplot(df_melt[df_melt$value_info == "perc",],
-                     aes(x = sample, y = reads, fill = mapping_stat )) +
-              geom_bar(stat     = "identity",
-                       position = "stack") +
-           ylab("% of reads sequenced") +
-           labs(fill = "Mapping Statistic") +
-	         theme(axis.text.x = element_text(angle = 45, vjust = 1, hjust = 1),
-	               plot.title = element_text(hjust=0.5)) +
-           scale_fill_brewer(palette="Dark2") +
-           ggtitle("Percentage of sequenced reads") 
+    p_perc <- ggplot(df_melt[df_melt$value_info == "perc",], 
+		     aes(x = sample, y = reads, fill = mapping_stat )) +
+	    geom_bar(stat     = "identity", 
+		     position = "stack") +
+	    labs(x = "", 
+		 y = "% of sequenced reads", 
+		 title = "Mapping summary (percentage)") + 
+	    theme(axis.text.y = element_text(size = 8),
+		  plot.title = element_text(hjust = 0.5,size=12),
+		  legend.position = "top") +
+	    guides(fill=guide_legend(nrow=1,title="",reverse=TRUE)) +
+	    scale_fill_manual(values=rev(brewer.pal(4,"Dark2"))) +
+	    coord_flip()
+
     p_count <- p_perc %+%
                df_melt[df_melt$value_info == "reads",] +
-               ylab("# reads") +
-               ggtitle("Number of reads sequenced") 
+	       labs(x = "",
+		    y = "# sequenced reads",
+		    title = "Mapping summary (read counts)") 
       
     rownames(df_values) <- df_values$sample
     df_values <- df_values[, colnames(df_values) != "sample"]
-    #we reformat individual columns
+    # reformatting individual columns
     df_values[, grepl("%", colnames(df_values))] <- as.data.frame(
       lapply(
         df_values[, grepl("%", colnames(df_values))], function(x){
-          paste(format(x, nsmall=2), "%") 
+          paste0(format(x, nsmall=2), "%") 
         }))
     df_values[, !grepl("%", colnames(df_values))] <- as.data.frame(
       lapply(
@@ -983,7 +1017,7 @@ DEhelper.STAR <- function() {
                      
     return( list(p_perc = p_perc,
                  p_count = p_count,
-         stat = kable(df_values, align=c("r", "r", "r", "r","r"),format="markdown", output=F))
+		 stat = kable(df_values, align=c("r", "r", "r", "r","r"), format="markdown", output=F))
     )
     
 }
@@ -1014,8 +1048,9 @@ DEhelper.Fastqc <- function(web=TRUE) {
     rownames(df) <- gsub(paste0("^", SHINYREPS_PREFIX), "", basename(samples))
     rownames(df) <- gsub(paste0("_fastqc$"), "", rownames(df))
     colnames(df) <- c("Read qualities", "Sequence bias", "GC content")
-    kable(df, output=F, align="c",format="markdown")
+    kable(df, output=F, align="c", format="markdown")
 }
+
 
 ##
 ## DEhelper.ngsReports.Fastqc: joint FastQC report of all samples in the experiment
@@ -1073,7 +1108,7 @@ DEhelper.dupRadar <- function(web=TRUE) {
     while(length(df) %% SHINYREPS_PLOTS_COLUMN != 0) df <- c(df, "")
     samples <- sapply(df, function(x) {
         x <- sapply(x, function(x) gsub(paste0("^", SHINYREPS_PREFIX), "", basename(x)))
-        gsub("_dupRadar.png)", "", x)
+        gsub(".dupmarked_dupRadar.png)", "", x)
     })
     df      <- matrix(df     , ncol=SHINYREPS_PLOTS_COLUMN, byrow=T)
     samples <- matrix(samples, ncol=SHINYREPS_PLOTS_COLUMN, byrow=T)
@@ -1129,10 +1164,15 @@ DEhelper.RNAtypes <- function() {
     df.counts.melt <- melt(df.counts, id.var="Geneid")
     colnames(df.counts.melt) <- c("type","sample","count")
     
+    # remove possible starting "X" (in case sample name starts with a number)
+    df.counts.melt$sample <- gsub("^X","",df.counts.melt$sample)
+
     plot <- ggplot() + 
         geom_bar(data=df.counts.melt, aes(x=sample, y=count, fill=type), position="fill", stat="identity") + 
         labs(x="", y="", fill="") +
-	theme(axis.text.x=element_text(angle=45, vjust=1, hjust=1)) 
+	theme(axis.text.y = element_text(size=8)) +
+	guides(fill = guide_legend(reverse=TRUE)) + 
+	coord_flip()
     
     return(plot)
 }
@@ -1167,7 +1207,7 @@ DEhelper.geneBodyCov <- function(web=TRUE) {
     while(length(df) %% SHINYREPS_PLOTS_COLUMN != 0) df <- c(df, "")
     samples <- sapply(df, function(x) {
         x <- sapply(x, function(x) gsub(paste0("^", SHINYREPS_PREFIX), "", basename(x)))
-        gsub("_geneBodyCov.png)", "", x)
+        gsub(".dupmarked_geneBodyCov.png)", "", x)
     })
     df      <- matrix(df     , ncol=SHINYREPS_PLOTS_COLUMN, byrow=T)
     samples <- matrix(samples, ncol=SHINYREPS_PLOTS_COLUMN, byrow=T)
@@ -1280,15 +1320,15 @@ DEhelper.Subread <- function() {
     colnames(x) <- gsub(paste0(SUFFIX, "$"), "", colnames(x))
     
     # create md table (omitting various values that are 0 for now)
-    #from x we romeove the ones which are unmapped to calculate percentages
-    #only for the mapped ones
+    # from x we remove the ones which are unmapped to calculate percentages
+    # only for the mapped ones
     x <- x[rownames(x) != "Unassigned_Unmapped", ]
     x <- rbind(total=x, colSums(x))
     rownames(x)[nrow(x)] <- "total"
-    df <- data.frame(assigned=paste0(format(x[1, ], big.mark=","), " (", format((x[1, ]/x["total", ])*100, digits=2, nsmall=2), "%)"), 
-                     unassigned_ambiguous=paste0(format(x[2, ], big.mark=","), " (", format((x[2, ]/x["total", ])*100, digits=2, nsmall=2), "%)"), 
-                     unassigned_multimap=paste0(format(x[3, ], big.mark=","), " (", format((x[3, ]/x["total", ])*100, digits=2, nsmall=2), "%)"), 
-                     unassigned_nofeature=paste0(format(x[4, ], big.mark=","), " (", format((x[4, ]/x["total", ])*100, digits=2, nsmall=2), "%)"))
+    df <- data.frame(assigned=paste0(format(x[1, ], big.mark=","), " (", format((x[1, ]/x["total", ])*100, digits=2, nsmall=2, trim=T), "%)"), 
+		     unassigned_ambig=paste0(format(x[2, ], big.mark=","), " (", format((x[2, ]/x["total", ])*100, digits=2, nsmall=2, trim=T), "%)"), 
+		     unassigned_multimap=paste0(format(x[3, ], big.mark=","), " (", format((x[3, ]/x["total", ])*100, digits=2, nsmall=2, trim=T), "%)"), 
+		     unassigned_nofeat=paste0(format(x[4, ], big.mark=","), " (", format((x[4, ]/x["total", ])*100, digits=2, nsmall=2, trim=T), "%)"))
     rownames(df) <- colnames(x)
     kable(df, align=c("r", "r", "r", "r"), output=F, format="markdown")
     
