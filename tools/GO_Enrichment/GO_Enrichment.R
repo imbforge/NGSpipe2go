@@ -22,6 +22,10 @@
 options(stringsAsFactors=FALSE)
 library(DESeq2)
 library(parallel)
+library(clusterProfiler)
+library(ReactomePA)
+library(Cairo)
+library(ggplot2)
 
 # supported organisms
 orgDb <- c(human="org.Hs.eg.db",
