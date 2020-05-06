@@ -5,7 +5,7 @@ ESSENTIAL_GENESBED="/fsimb/common/genomes/mus_musculus/ensembl/grcm38/canonical/
 ESSENTIAL_CHROMSIZES=""  // chromosome sizes file
 ESSENTIAL_FEATURETYPE="gene_biotype" //gencode uses gene_type; ensemble uses gene_biotype
 ESSENTIAL_SAMPLE_PREFIX=""
-ESSENTIAL_PAIRED="no"           // paired end design (irrelevant for MARS-Seq)
+ESSENTIAL_PAIRED="no"           // paired end design (irrelevant for MARS-Seq because R2 contains UMI and barcodes only)
 ESSENTIAL_STRANDED="no"    // strandness: no|yes|reverse
 ESSENTIAL_ORG="mouse"           // UCSC organism
 ESSENTIAL_DB="mm10"              // UCSC assembly version
@@ -22,7 +22,7 @@ ESSENTIAL_MTGENES="./mouse_mito_genes_Ensembl.txt"  // list with gene_id of mito
                                      //Please be aware that the addumibarcode module which uses this variable will only 
                                      //work for MARS-Seq where the barcode and the umi are present in the second reads otherwise it has to be modified! 
 //Adapter trimming
-//ESSENTIAL_ADAPTER_SEQUENCE="TruSeqLTHT=AGATCGGAAGAGCACACGTCTGAACTCCAGTCA" //first run was accidentally started with this wrong adapter
+//ESSENTIAL_ADAPTER_SEQUENCE="TruSeqLTHT=AGATCGGAAGAGCACACGTCTGAACTCCAGTCA" 
 ESSENTIAL_ADAPTER_SEQUENCE="Nextera=CTGTCTCTTATACACATCT" //standard sequence to trim illumina reads
 ESSENTIAL_MINADAPTEROVERLAP=5
 ESSENTIAL_MINREADLENGTH=30
