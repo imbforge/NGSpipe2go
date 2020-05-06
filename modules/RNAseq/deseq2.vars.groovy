@@ -8,5 +8,6 @@ DE_DESeq2_vars=[
     cwd      : RESULTS + "/subread-count", //directory where the .tsv files with the gene counts are located
     outdir   : RESULTS + "/DE_DESeq2",     //output filename base pattern. If you change it here, change it also in the module file
     genes    : ESSENTIAL_GENESGTF,         //gtf file to calculate RPKM
-    extra    : ""                         //extra parms to sent to the tool
+    pattern  : "\"\\.readcounts.tsv\"",    //pattern for filtering count files in cwd
+    extra    : ""                          //extra parms to sent to the tool
 ]

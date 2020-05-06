@@ -21,6 +21,7 @@ DE_DESeq2 = {
         (DE_DESeq2_vars.cwd       ? " cwd="       + DE_DESeq2_vars.cwd       : "") +
         (DE_DESeq2_vars.outdir    ? " out="       + DE_DESeq2_vars.outdir    : "") +
         (DE_DESeq2_vars.genes     ? " gtf="       + DE_DESeq2_vars.genes     : "") +
+        (DE_DESeq2_vars.pattern   ? " pattern="   + DE_DESeq2_vars.pattern   : "") +
         (DE_DESeq2_vars.extra     ? " "           + DE_DESeq2_vars.extra     : "") 
 
     def TOOL_ENV = prepare_tool_env("R", tools["R"]["version"], tools["R"]["runenv"])

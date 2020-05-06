@@ -62,8 +62,9 @@ pre          <- parseArgs(args,"prefix=","")    # prefix to remove from the samp
 suf          <- parseArgs(args,"suffix=","_readcounts.tsv")    # suffix to remove from the sample name
 cwd          <- parseArgs(args,"cwd=","./")     # current working directory
 out          <- parseArgs(args,"out=","DE.DESeq2") # output filename
+pattern      <- parseArgs(args,"pattern=","\\.readcounts.tsv") # output filename
 
-runstr <- "Rscript DE.DESeq2.R [targets=targets.txt] [contrasts=contrasts.txt] [mmatrix=~condition] [gtf=] [filter=TRUE] [prefix=RE] [suffix=RE] [cwd=.] [base=] [out=DE.DESeq2]"
+runstr <- "Rscript DE.DESeq2.R [targets=targets.txt] [contrasts=contrasts.txt] [mmatrix=~condition] [gtf=] [filter=TRUE] [prefix=RE] [suffix=RE] [cwd=.] [base=] [out=DE.DESeq2] [pattern=RE]"
 if(!file.exists(ftargets))   stop(paste("File",ftargets,"does NOT exist. Run with:\n",runstr))
 if(!file.exists(fcontrasts)) stop(paste("File",fcontrasts,"does NOT exist. Run with:\n",runstr))
 if(!file.exists(cwd))        stop(paste("Dir",cwd,"does NOT exist. Run with:\n",runstr))
@@ -77,16 +78,45 @@ if(!file.exists(gene.model)) stop(paste("GTF File:", gene.model, " does NOT exis
 targets <- read.delim(ftargets,head=T,colClasses="character",comment.char="#")
 if(!all(c("group", "file", "sample") %in% colnames(targets))) stop("targets file must have at least 3 columns and fit the format expected in DESeqDatcondition")
 
-#reorder the targets file
+# reorder the targets file
 add_factors <- colnames(targets)[!colnames(targets) %in% c("group", "sample", "file")]
 targets <- targets[, c("sample", "file", "group", add_factors)]
 
+# grep sample identifier in count file names
+  countfiles <- list.files(cwd)
+  countfiles <- countfiles[grep(pattern, countfiles)] # filter for valid count files
+  
+  index_targetsfile <- sapply(targets$file, grep,  countfiles) # grep targets in countfiles
+
+  ## check matching ambiguity
+      if(class(index_targetsfile)=="list") { # list means either zero or multiple matches
+        if(any(x <- sapply(index_targetsfile, length)>1)) {
+          stop(paste("\nA targets.txt entry matches multiple count file names\ntargets.txt: "),
+               paste(targets$file[x], collapse=", "),
+               "\ncount file names: ", paste(countfiles[unlist(index_targetsfile[x])], collapse=", "))
+        }
+        warning(paste("Entries in targets.txt which are not found in list of count files are removed from targets.txt:", 
+                      targets$file[sapply(index_targetsfile, length)==0], collapse=", "))
+        targets <- targets[!(sapply(index_targetsfile, length)==0),] # remove target entries
+        index_targetsfile <- sapply(targets$file, grep,  countfiles) # recreate index vector after removal of targets.txt entries
+      }
+      
+      if(any(x <- duplicated(index_targetsfile))) { # check for multiple target entries matching the same file name
+        stop(paste("\nMultiple targets.txt entries match to the same count file name\ntargets.txt: ", 
+                   paste(targets$file[x | duplicated(index_targetsfile, fromLast=T)], collapse=", "),
+                   "\ncount file names:", paste(countfiles[unlist(index_targetsfile[x])], collapse=", "), "\n"))
+      }
+      
+      if (length(unique(index_targetsfile)) < length(countfiles)) { # check for count file names not included
+        warning(paste("Count file names not included in targets.txt are ignored: ",  paste(countfiles[-index_targetsfile], collapse=", ")))
+      }
+  
+  targets$file <- countfiles[index_targetsfile] # replace entries in targets$file by count file names
+  
+
+
 # load contrasts
 conts <- read.delim(fcontrasts,head=F,comment.char="#")
-
-# check if the specified targets exists in the CWD
-if(!all(x <- sapply(paste0(cwd, "/", targets$file), file.exists)))
-    stop("one or more input files do not exist in ", cwd, " (missing file(s): ", paste(targets$file[!x], collapse=" "), ")")
 
 ##
 ## calculate gene lengths
