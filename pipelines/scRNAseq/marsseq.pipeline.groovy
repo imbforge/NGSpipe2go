@@ -1,6 +1,6 @@
 PIPELINE="scRNAseq_marsseq"
 PIPELINE_VERSION="1.0"
-PIPELINE_ROOT="./ngspipe2go/"    // may need adjustment for some projects
+PIPELINE_ROOT="./NGSpipe2go/"    // may need adjustment for some projects
 
 load PIPELINE_ROOT + "/pipelines/scRNAseq/essential.vars.groovy"
 load PIPELINE_ROOT + "/pipelines/scRNAseq/tools.groovy"
@@ -33,8 +33,7 @@ load PIPELINE_ROOT + "/modules/NGS/multiqc.module.groovy"
 dontrun = { println "didn't run $module" }
 
 Bpipe.run {
-    "%.fastq.gz" * [ FastQC ] +
-    (RUN_IN_PAIRED_END_MODE ? "%.R*.fastq.gz" : "%.fastq.gz") * [
+    "%.fastq.gz" * [ FastQC ] + "%.R*.fastq.gz" * [
         AddUMIBarcodeToFastq + Cutadapt + [
             FastQC,
             STAR + BAMindexer + [
