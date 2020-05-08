@@ -1,7 +1,0 @@
-sample	barcode	pool	plate	row	col	cells	group
-poolA_p01_A01_1c_Neg	GGAAGAA	poolA_p01	1	A	1	1c	Neg
-poolA_p01_C01_1c_Pos	CAGAGAA	poolA_p01	1	C	1	1c	Pos
-poolA_p01_E01_1c_Neg	ACCAGAA	poolA_p01	1	E	1	1c	Neg
-poolA_p01_G01_1c_Pos	CCAGGAA	poolA_p01	1	G	1	1c	Pos
-poolA_p01_E09_10c_Neg	GACTTCA	poolA_p01	1	E	9	10c	Neg
-poolA_p01_G09_0c_Pos	CGCGATA	poolA_p01	1	G	9	0c	Pos
