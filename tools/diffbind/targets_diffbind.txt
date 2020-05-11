@@ -1,9 +1,0 @@
-# note: DiffBind works with peak files in different format (.xls, .bed, .narrowPeak etc.) 
-# and the "PeakCaller" field should be changed accordingly (see https://rdrr.io/bioc/DiffBind/man/dba.peakset.html)
-SampleID	Condition	Replicate	bamReads	ControlID	bamControl	Peaks	PeakCaller
-C1_1	C1	1	./mapped/C1_1.bam	C1_1_input	./mapped/C1_1_input.bam	./results/macs2/C1_1.xls	macs
-C1_2	C1	2	./mapped/C1_2.bam	C1_2_input	./mapped/C1_2_input.bam	./results/macs2/C1_2.xls	macs
-C2_1	C2	1	./mapped/C2_1.bam	C2_1_input	./mapped/C2_1_input.bam	./results/macs2/C2_1.xls	macs
-C2_2	C2	2	./mapped/C2_2.bam	C2_2_input	./mapped/C2_2_input.bam	./results/macs2/C2_2.xls	macs
-C3_1	C3	1	./mapped/C3_1.bam	C3_1_input	./mapped/C3_1_input.bam	./results/macs2/C3_1.xls	macs
-C3_2	C3	2	./mapped/C3_2.bam	C3_2_input	./mapped/C3_2_input.bam	./results/macs2/C3_2.xls	macs
