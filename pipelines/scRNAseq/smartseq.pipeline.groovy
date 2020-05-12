@@ -31,7 +31,7 @@ load PIPELINE_ROOT + "/modules/NGS/multiqc.module.groovy"
 //
 dontrun = { println "didn't run $module" }
 
-run { 
+Bpipe.run { 
     "%.fastq.gz" * [ FastQC ] + 
     (RUN_IN_PAIRED_END_MODE ? "%.R*.fastq.gz" : "%.fastq.gz") * [
         Cutadapt + FastQC + STAR + BAMindexer + [
