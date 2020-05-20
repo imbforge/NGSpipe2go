@@ -12,7 +12,6 @@ output:
 
 # Description
 
-Enter project description here
 
 
 # Processing
@@ -63,17 +62,16 @@ run_pear_assembly <- dir.exists(SHINYREPS_PEAR_LOG)
 run_whitelist_extraction <- dir.exists(SHINYREPS_UMIEXTRACT_LOGWL)
 run_nested_extraction <-any(grepl("nested", list.files(SHINYREPS_UMIEXTRACT_LOG))) 
 PSIavailable <- file.exists(file.path(SHINYREPS_MPSPROFILING_OUT, "MPSprofiling.RData")) # PSI calculation applied?
-targets <- NULL
+  
+## load targets file  
+targets <- read.delim(SHINYREPS_TARGET, sep=",")
+  
+# print targets file
+DT::datatable(targets, caption="targets file (sample sheet) used for analysis")
 
 if(PSIavailable) {
   # load PSI tables if available
   load(file.path(SHINYREPS_MPSPROFILING_OUT, "MPSprofiling.RData"))
-  
-  ## load targets file for all cells.  
-  targets <- read.delim(SHINYREPS_TARGET, sep=",")
-  
-  # print targets file
-  DT::datatable(targets, caption="targets file (sample sheet) used for analysis")
 }
 
 ```
