@@ -72,7 +72,7 @@ Go to your <project_dir> and make symlinks for the pipeline in the main project 
 
 Copy the input FastQ files into the <project_dir>/rawdata folder.
 
-Using GNU Screen (for persistence) load the bpipe module customised for the Slurm job manager, e.g.
+You may use GNU Screen for persistence when running the pipeline. Load the bpipe module customised for the Slurm job manager, e.g.
 
     screen
     module load bpipe/0.9.9.3.slurm
@@ -83,8 +83,7 @@ Start running the pipeline
 
 ## Compile a project report ##
 
-The final result of the provided pipelines will be saved in the ./reports folder.
-The Rmd file can be edited or customised using a text editor and then converted into HTML report using knitr
+The results of the pipeline modules will be saved in the ./results folder. The final report Rmd-file is stored in the ./reports folder and can be edited or customised using a text editor before converting into a HTML report using knitr.
     
     R usage:
-    rmarkdown::render("mps.report.Rmd")
+    rmarkdown::render("reports/mps.report.Rmd")
