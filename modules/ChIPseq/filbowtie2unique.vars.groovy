@@ -1,5 +1,7 @@
 filbowtie2unique_vars=[
-    mapped          : MAPPED,
-    samtools_mapq   : "3", // MAPQ >=3 should exclude "true multireads", multi mapped reads within the window of insert size
-    samtools_threads: Integer.toString(ESSENTIAL_THREADS)
+    mapped           : MAPPED,
+    paired           : RUN_IN_PAIRED_END_MODE, // run in se or pe mode
+    samtools_mapq_pe : "3", // MAPQ for paired end data; >=3 should exclude "true multireads", multi mapped reads within the window of insert size
+    samtools_mapq_se : "3", // MAPQ for single end data; 
+    samtools_threads : Integer.toString(ESSENTIAL_THREADS)
 ]

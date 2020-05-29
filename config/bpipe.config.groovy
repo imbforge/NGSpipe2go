@@ -65,8 +65,26 @@ config {
       procs="8" 
       memory="50"
     }
-    Bowtie_se { 
-      walltime="02:00:00" 
+    bowtie1 { 
+      queue="long" 
+      walltime="24:00:00" 
+      procs="4" 
+      memory="24"
+    }
+    bowtie2 { 
+      queue="long" 
+      walltime="24:00:00" 
+      procs="4" 
+      memory="24"
+    }
+    bowtie2_pe { 
+      queue="long" 
+      walltime="24:00:00" 
+      procs="4" 
+      memory="24"
+    }
+    bowtie_se { 
+      walltime="04:00:00" 
       procs="8" 
       memory="16"
     }
@@ -392,17 +410,6 @@ config {
       walltime="01:00:00" 
       procs="1" 
       memory="1"
-    }
-    bowtie2_pe { 
-      queue="long" 
-      walltime="24:00:00" 
-      procs="4" 
-      memory="24"
-    }
-    bowtie_se { 
-      walltime="04:00:00" 
-      procs="8" 
-      memory="16"
     }
     collectBpipeLogs { 
       walltime="00:05:00" 

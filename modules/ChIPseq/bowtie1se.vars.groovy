@@ -1,6 +1,5 @@
-bowtie1_vars=[
+bowtie_se_vars=[
     mapped          : MAPPED,          // output dir
-    paired          : RUN_IN_PAIRED_END_MODE, // run in se or pe mode
     threads         : Integer.toString(ESSENTIAL_THREADS), // threads to use
     samtools_threads: Integer.toString(ESSENTIAL_THREADS),
     ref             : ESSENTIAL_BOWTIE_REF, // prefix of the bowtie reference genome
@@ -9,8 +8,7 @@ bowtie1_vars=[
     maqerr          : "70",              // maximum permitted total of quality values at all mismatched positions throughout the entire alignment
     multimap_mode   : "discard",         // discard (-m) or keep a random alignment (-M) of reads mapping to multiple locations
     multimap        : "1",               // discard (-m 1) or keep one random alignment (-M 1) of all reads mapping to multiple locations
-    best            : true,              // bowtie best mode (implies --best --strata --tryhard). Doesn't apply to PE
+    best            : true,            // bowtie best mode (implies --best --strata --tryhard). Doesn't apply to PE
     quals           : "--phred33-quals", // phred33-quals. Use --phred64-quals for old sequencing runs
-    pe_vars         : "--fr",            // vars applied only in paired end design. Mates align fw/rev.
     extra           : ""                 // extra parms to be passed to bowtie, e.g. for trimming barcodes
 ]

@@ -1,7 +1,0 @@
-IP	IPname	INPUT	INPUTname	group
-KO_1.bam	KO_1	input_KO_1.bam	input_KO_1	KO
-KO_2.bam	KO_2	input_KO_2.bam	input_KO_2	KO
-KO_2.bam	KO_3	input_KO_3.bam	input_KO_3	KO
-WT_1.bam	WT_1	input_WT_1.bam	input_WT_1	WT
-WT_2.bam	WT_2	input_WT_2.bam	input_WT_2	WT
-WT_2.bam	WT_3	input_WT_3.bam	input_WT_3	WT

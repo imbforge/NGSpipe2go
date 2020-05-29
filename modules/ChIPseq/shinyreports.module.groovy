@@ -7,7 +7,7 @@ shinyReports = {
     doc title: "shinyReports",
         desc:  "creates the source code to compile the shiny and markdown reports",
         constraints: "",
-        bpipe_version: "tested with bpipe 0.9.8.7",
+        bpipe_version: "tested with bpipe 0.9.9.8",
         author: "Sergi Sayols"
 
     output.dir = REPORTS
@@ -39,12 +39,14 @@ shinyReports = {
             echo "SHINYREPS_QC=${shinyReports_vars.qc}"           >> $output &&
             echo "SHINYREPS_RES=${shinyReports_vars.res}"         >> $output &&
             echo "SHINYREPS_TARGETS=${shinyReports_vars.targets}" >> $output &&
+            echo "SHINYREPS_PAIRED=${shinyReports_vars.paired}"      >> $output &&
             echo "SHINYREPS_BOWTIE_LOG=${shinyReports_vars.bowtie_log}"      >> $output &&
             echo "SHINYREPS_BAMINDEX_LOG=${shinyReports_vars.bamindex_log}"  >> $output &&
             echo "SHINYREPS_MARKDUPS_LOG=${shinyReports_vars.markdups_log}"  >> $output &&
             echo "SHINYREPS_EXTEND_LOG=${shinyReports_vars.extend_log}"      >> $output &&
             echo "SHINYREPS_FASTQC=${shinyReports_vars.fastqc}"   >> $output &&
             echo "SHINYREPS_FASTQC_LOG=${shinyReports_vars.fastqc_log}"   >> $output &&
+            echo "SHINYREPS_INSERTSIZE=${shinyReports_vars.insertsize}" >> $output &&
             echo "SHINYREPS_IPSTRENGTH=${shinyReports_vars.ipstrength}"      >> $output &&
             echo "SHINYREPS_IPSTRENGTH_LOG=${shinyReports_vars.ipstrength_log}"      >> $output &&
             echo "SHINYREPS_PBC=${shinyReports_vars.pbc}"         >> $output &&

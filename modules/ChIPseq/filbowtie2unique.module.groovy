@@ -12,6 +12,8 @@ filbowtie2unique = {
 
     output.dir = filbowtie2unique_vars.mapped
 
+    def FILBOWTIE2_FLAGS = (filbowtie2unique_vars.paired ? " -f 2 -q $filbowtie2unique_vars.samtools_mapq_pe" : " -F 4 -q $filbowtie2unique_vars.samtools_mapq_se")
+
     def TOOL_ENV = prepare_tool_env("samtools", tools["samtools"]["version"], tools["samtools"]["runenv"])
     def PREAMBLE = get_preamble("filbowtie2unique")
 
@@ -20,7 +22,7 @@ filbowtie2unique = {
             ${TOOL_ENV} &&
             ${PREAMBLE} &&
 
-            samtools view -f 2 -q $filbowtie2unique_vars.samtools_mapq -bhu ${input} | samtools sort -@ $filbowtie2unique_vars.samtools_threads -T \${TMP}/\$(basename $output.prefix) -o ${output} -
+            samtools view $FILBOWTIE2_FLAGS -bhu ${input} | samtools sort -@ $filbowtie2unique_vars.samtools_threads -T \${TMP}/\$(basename $output.prefix) -o ${output} -
         ""","filbowtie2unique"
     }
 }

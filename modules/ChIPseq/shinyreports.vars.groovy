@@ -5,7 +5,8 @@ shinyReports_vars=[
     res             : RESULTS,              //where the results lie
     prefix          : ESSENTIAL_SAMPLE_PREFIX,
     targets         : "targets.txt",
-    bowtie_log      : LOGS + "/bowtie_se",  //where the Bowtie logs lie
+    paired          : ESSENTIAL_PAIRED,
+    bowtie_log      : LOGS + (ESSENTIAL_USE_BOWTIE1 ? "/bowtie1" : "/bowtie2"),  //where the Bowtie logs lie
     bamindex_log    : LOGS + "/BAMindexer", //where the Samtools/BamIndexer logs lie
     markdups_log    : LOGS + "/MarkDups",   //where the MarkDups logs lie
     extend_log      : LOGS + "/extend",     //where the extend/BedTools logs lie
@@ -21,9 +22,10 @@ shinyReports_vars=[
     macs2_log       : LOGS + "/macs2",      //where the macs2 logs lie
     blacklist_filter: blacklist_filter_vars.outdir + "/peaks_detected_table.csv",
     plots_column    : "4",                  //number of columns to splits the plot grids (ipstrength, phantompeaks...). Min=2
+    insertsize      : QC + "/insertsize",     //where the insertsize statistics are found (for paired end only)
     peak_annotation : peak_annotation_vars.outdir, // where the peak annotation results lie
     great           : GREAT_vars.outdir,    // where the GO enrichment results lie
     diffbind        : diffbind_vars.outdir, // results folder with diffbind.rds results file
     trackhub_done   : PROJECT + "/trackhub.done",   // contains trackhub URL
-    tool_versions   : new File(PIPELINE_ROOT + "/pipelines/ChIPseq/tools.groovy").getCanonicalPath() //where the tool versions listed
+    tool_versions   : collectToolVersions_vars.outdir + "/tool_versions.txt" //where the tool versions listed
 ]

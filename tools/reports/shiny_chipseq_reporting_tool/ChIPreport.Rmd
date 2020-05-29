@@ -18,6 +18,11 @@ source('ChIP.shinyrep.helpers.R')
 loadGlobalVars()
 targets <<- ChIPhelper.init("readTargets")
 peaks   <<- ChIPhelper.init("readPeaks")
+isPaired <- if(tolower(SHINYREPS_PAIRED) == "yes") {TRUE} else {
+                if(tolower(SHINYREPS_PAIRED) == "no") {FALSE} else {
+                  stop("Wrong input for ESSENTIAL_PAIRED, give either 'yes' or 'no'!")
+                } 
+              } 
 ``` 
 
 
@@ -38,19 +43,57 @@ ChIPhelper.ngsReports.Fastqc()
 
 ## Read mapping ##
 
-Mapping to the reference genome was done using the established NGS mapping tool Bowtie (http://bowtie-bio.sourceforge.net/index.shtml). The mapping statistics show the total number of reads delivered to the aligner ("all reads"), the number of uniquely mapping reads ("mapped"), the reads that failed to align ("unmapped"), the number of reads discarded because of mapping to multiple positions ("too many map. pos.") and the number of duplicate reads ("duplicates") amongst the uniquely mapped reads. The browser tracks are generated using bamCoverage tool in [deepTools](https://deeptools.readthedocs.io/en/develop/) and they are normalized using the Counts Per Million mapped reads (CPM) method. The CPM formula is: CPM  = number of reads per bin (10 bp) / number of mapped reads (in millions).
+Mapping to the reference genome was done using the established NGS mapping tool Bowtie2 (http://bowtie-bio.sourceforge.net/bowtie2). 
 
-```{r Bowtie_paragraph, echo=F,results='asis',error=F,warning=F,message=F}
-cat(ChIPhelper.Bowtie(),sep="\n")
+```{r Bowtie2_paragraph, echo=F,results='asis',error=F,warning=F,message=F}
+# mapping statistics for either paired end or single read design
+
+if(isPaired) {cat(" The mapping statistics show the total number of reads delivered to the aligner ('all pairs'), the number of read mapping concordantly to one location ('unique'), the number of read pairs mapping concordantly to multiple locations ('multi'), the number of read pairs mapping discordantly to one location ('discordantly'), the number of reads pairs where only one reads maps to one location ('single unique'), the number of read pairs where only one read maps to multiple locations ('single multi') and the overall alignment rate (this is based on the amount of pairs aligned, read pairs in which only one read is mapped are taken into account as half a pair). Percentages are based on the amount of pairs sequenced ('all pairs').
+
+A read pair that aligns with the expected relative mate orientation (typically 'fr') and with the expected range of distances between mates (typically up to 1 kb) is said to align 'concordantly'. If both mates have unique alignments, but the alignments do not match paired-end expectations, the pair is said to align 'discordantly'. If Bowtie2 cannot find a paired-end alignment for a pair, by default it will search for unpaired alignments of the respective read mates. For most ChIP-seq experiments, discordant and multi-mapping reads are typically discarded in downstream analyses.\n\n")
+  
+  } else {
+    
+    cat(" The mapping statistics show the total number of reads delivered to the aligner ('all reads'), the number of reads mapping uniquely to one location ('unique'), the number of reads mapping to multiple locations ('multi') and the overall alignment rate. Percentages are based on the amount of reads sequenced ('all reads').\n\n")
+}
+if(basename(SHINYREPS_BOWTIE_LOG) =="bowtie2") {
+  cat(ChIPhelper.Bowtie2(),sep="\n")
+} else {
+  cat(ChIPhelper.Bowtie(),sep="\n")
+}
 ```
 
+
 ## UCSC Genome Browser tracks ##
+
+Browser coverage tracks are generated using the bamCoverage tool in [deepTools](https://deeptools.readthedocs.io/en/develop/) and they are normalized using the Counts Per Million mapped reads (CPM) method. The CPM formula is: CPM  = read counts per bin (typically 10 bp) / number of mapped reads (in millions). 
 
 To view the tracks in the UCSC Genome Browser, navigate to the [UCSC Genome Browser Track Hub page](https://genome-euro.ucsc.edu/cgi-bin/hgHubConnect) and enter the following line into the `URL` field:
 
 ```{r Trackhub, echo=F, results='asis', error=F, warning=F, message=F}
 cat(ChIPhelper.Trackhub(), sep="\n")
 ```
+
+
+```{r InsertSize, echo=F, error=F, fig.width=15, message=FALSE, warning=FALSE, results='asis', eval=isPaired}
+# for paired end design only
+
+cat("## Insert Size ##\n\n
+    The insert size distribution is given as histogram.")
+
+if (!file.exists(SHINYREPS_INSERTSIZE)) {
+	cat("Insert size data not available.")
+	} else {
+	ChIPhelper.insertsize()
+	p <- ChIPhelper.insertsize.plot()
+	sample_length <- length(list.files(SHINYREPS_INSERTSIZE, 
+	                                   pattern = "insertsizemetrics.tsv$"))
+  ChIPhelper.subchunkify(p, 
+                       fig_height = 3*sample_length,
+                       fig_width = 15)
+	}
+```
+
 
 ## PCR bottleneck coefficient ##
 
@@ -61,6 +104,7 @@ Low values can indicate a technical problem, such as library complexity bottlene
 ```{r PBC_paragraph, echo=F,results='asis',error=F,warning=F,message=F}
 cat(ChIPhelper.PBC(),sep="\n")
 ```
+
 
 ## IPstrength ##
 
@@ -76,28 +120,29 @@ For more details see Fig.2 of the CHANCE paper (https://doi.org/10.1186/gb-2012-
 cat(ChIPhelper.IPstrength(web=F),sep="\n")
 ```
 
-## Cross-correlation analysis ##
 
-**Cross-correlation**
+```{r PhantomPeak_paragraph, echo=F,results='asis',error=F,warning=F,message=F, eval=!isPaired}
+# for single read design only
+
+cat("## Cross-correlation analysis ##
+
+**Cross-correlation:**
 A measure of enrichment derived without dependence on prior determination of enriched regions. Forward and reverse strand read coverage signal tracks are computed (number of unique mapping read starts at each base in the genome on the + and - strand counted separately). The forward and reverse tracks are shifted towards and away from each other by incremental distances and for each shift, the Pearson correlation coefficient is computed. In this way, a cross-correlation profile is computed, representing the correlation between forward and reverse strand coverage at different shifts. The highest cross-correlation value is obtained at a strand shift equal to the predominant fragment length in the dataset as a result of clustering/enrichment of relative fixed-size fragments around the binding sites of the target factor or feature.
 
 **Normalized Strand Cross-correlation coefficient (NSC):**
 The NSC is the ratio of the maximal cross-correlation value (which occurs at strand shift equal to fragment length) divided by the background cross-correlation (minimum cross-correlation value over all possible strand shifts). Higher values indicate more enrichment, values less than 1.1 are relatively low NSC scores, and the minimum possible value is 1 (no enrichment). This score is sensitive to technical effects; for example, high-quality antibodies such as H3K4me3 and CTCF score well for all cell types and ENCODE production groups, and variation in enrichment in particular IPs is detected as stochastic variation. This score is also sensitive to biological effects; narrow marks score higher than broad marks (H3K4me3 vs H3K36me3, H3K27me3) for all cell types and ENCODE production groups, and features present in some individual cells, but not others, in a population are expected to have lower scores.
 
 **Relative Strand Cross-correlation coefficient (RSC):**
-The RSC is the ratio of the fragment-length cross-correlation value minus the background cross-correlation value, divided by the phantom-peak cross-correlation value minus the background cross-correlation value. The minimum possible value is 0 (no signal), highly enriched experiments have values greater than 1.
+The RSC is the ratio of the fragment-length cross-correlation value minus the background cross-correlation value, divided by the phantom-peak cross-correlation value minus the background cross-correlation value. The minimum possible value is 0 (no signal), highly enriched experiments have values greater than 1.\n\n")
 
-```{r PhantomPeak_paragraph, echo=F,results='asis',error=F,warning=F,message=F}
 cat(ChIPhelper.PhantomPeak(web=F),sep="\n")
 ```
 
 ## ChIP-seq peaks ##
 
-
-The ENCODE consortium empirically identified 'blacklist regions' (BRs) for some species and genome versions. These blacklist regions are often found at specific types of repeats (eg. centromeres, telomeres and satellite repeats) and are troublesome for high throughput sequencing aligners. These regions also confuse peak callers and result in spurious signal. Therefore, it is suggested to check the amount of peaks overlapping these regions and remove them for the downstream analysis. The table shows total number of peaks detected by MACS2, the number of peaks without overlapping the blacklist regions and the percentage of peaks overlapping these regions.  
+The ENCODE consortium empirically identified 'blacklist regions' (BRs) for some species and genome versions. These blacklist regions are often found at specific types of repeats (eg. centromeres, telomeres and satellite repeats) and are troublesome for high throughput sequencing aligners. These regions also confuse peak callers and result in spurious signal in both ChIP and Input. Therefore, it is suggested to check the amount of peaks overlapping these regions and remove them for the downstream analysis. The table shows total number of peaks detected by MACS2, the number of peaks without overlapping the blacklist regions and the percentage of peaks overlapping these regions.  
 
 Note that these blacklists are applicable to human (hg38 and hg19), mouse (mm10 and mm9), worm (ce10) and fly (dm3) genomes.
-
 
 ```{r BLACKLISTFILTER_paragraph, echo=F,results='asis',error=F,warning=F,message=F}
 cat(ChIPhelper.BLACKLISTFILTER(),sep="\n")
@@ -133,6 +178,7 @@ cat(kable(p,row.names=T, format="markdown"),sep="\n")
 cat("",fill=T)
 ```
 
+
 ## Correlation of peaks ##
 
 The following Venn diagrams correlate the peaks called in the sample groups.
@@ -140,6 +186,7 @@ The following Venn diagrams correlate the peaks called in the sample groups.
 ```{r peak_venn_paragraph, echo=F,results='asis',error=F,warning=F,message=F}
 ChIPhelper.VennDiagram()
 ```
+
 
 ## Functional annotation of peaks ##
 
@@ -152,6 +199,7 @@ functionalPlot <- paste0( SHINYREPS_PEAK_ANNOTATION, "/", "ChIPseq_Feature_Distr
 cat("![Peak_Annotation img](", functionalPlot, ")",fill=T)
 ```
 
+
 ### Distribution of TF-binding loci relative to TSS for all samples ### 
 
 ```{r feature_distribution_TSS_paragraph, echo=F, results='asis', error=F, warning=F, message=F}
@@ -159,17 +207,20 @@ cat("![Peak_Annotation img](", functionalPlot, ")",fill=T)
     cat("![Peak_Annotation img](", functionalPlotTSS, ")",fill=T)
 ```
 
+
 ### ChIP peaks coverage over Chromosomes ###  
 
 ```{r peak_annotation_coverage_paragraph, echo=F, results='asis', error=F, warning=F, message=F}
     cat(ChIPhelper.peakAnnotationCoverage(web=F),sep="\n")
 ```
 
+
 ### UpSet Plot ###
 
 ```{r peak_annotation_upset_paragraph, echo=F, results='asis', error=F, warning=F, message=F}
     cat(ChIPhelper.peakAnnotationUpSet(web=F),sep="\n")
 ```
+
 
 ## Enrichment Analysis ##
 
@@ -250,11 +301,13 @@ for(i in 1:length(levels(targets$group))) {
 }
 ```
 
+
 ## Differential binding analysis {.tabset}
 
 ```{r diffbind, echo=F, results='asis', error=F, warning=F, message=F, fig.align="center"}
 invisible(ChIPhelper.diffbind())
 ```
+
 
 ## Used tools and versions for this analysis ##
 ```{r ToolVersions_paragraph, echo=F, results='asis', error=F, warning=F, message=F}
