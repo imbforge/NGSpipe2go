@@ -9,7 +9,7 @@ An opinionated framework for building pipelines. It comprises set of NGS data an
 ## Available Pipelines ## 
 
 - [ChIP-Seq](https://gitlab.rlp.net/imbforge/NGSpipe2go/-/blob/devel/pipelines/ChIPseq/README.md)
-- DNA-Seq
+- [DNA-Seq](https://gitlab.rlp.net/imbforge/NGSpipe2go/-/blob/devel/pipelines/DNAseq/README.md)
 - [RNA-Seq](https://gitlab.rlp.net/imbforge/NGSpipe2go/-/blob/devel/pipelines/RNAseq/README.md)
 - RNA-Seq for variant calling
 - smallRNA-Seq
@@ -52,7 +52,7 @@ Adjust general pipeline settings in the NGSpipe2go *config* folder:
 
 Copy the input FastQ files into the <project_dir>/rawdata folder.
 
-Using GNU Screen (for persistence) load the bpipe module customised for the Slurm job manager, e.g.
+Load the bpipe module customised for the Slurm job manager (we recommend to use GNU Screen for persistence), e.g.
 
     screen
     module load bpipe/0.9.9.8.slurm
@@ -67,8 +67,7 @@ or
 
 ## Compile a project report ##
 
-The final result of the provided pipelines will be saved in the ./reports folder.
-The Rmd file can be edited or customised using a text editor and then converted into HTML report using knitr
+The results of the pipeline modules will be saved in the *./results* folder. The final report Rmd-file is stored in the *./reports* folder and can be edited or customised using a text editor before converting into a HTML report using knitr
     
     R usage:
     rmarkdown::render("DEreport.Rmd")
