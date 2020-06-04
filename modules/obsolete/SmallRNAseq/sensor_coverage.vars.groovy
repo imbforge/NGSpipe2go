@@ -1,1 +1,0 @@
-SENSOR_COVERAGE_OUTDIR=RESULTS + "/sensor_coverage"

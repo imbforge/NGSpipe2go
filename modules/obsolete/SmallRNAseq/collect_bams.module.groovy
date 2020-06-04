@@ -1,3 +1,0 @@
-init = {
-   branch.bamFiles = []
-}
