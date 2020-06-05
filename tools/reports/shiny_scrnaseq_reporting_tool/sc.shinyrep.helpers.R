@@ -916,7 +916,7 @@ DEhelper.STAR <- function(colorByFactor=NULL, targetsdf=targets, ...) {
     # and get the values associated with this strings
     x <- list.files(LOG, pattern=SUFFIX, full.names = T)
   
-    # select subset of samples for fastqc figures (e.g. merged singlecell pools) or use all samples for samplePattern=NULL
+    # select subset of samples or use all samples for samplePattern=NULL
     x <- selectSampleSubset(x, ...)
     if(length(x) == 0) {
         return("No samples matched with this pattern...")
@@ -1003,7 +1003,7 @@ DEhelper.STAR <- function(colorByFactor=NULL, targetsdf=targets, ...) {
     map.feature.plots <- lapply(colorByFactor, function(color.value){
       p <- ggplot(df.melt[!grepl("(perc)|(unique)", df.melt$map_feature),],
                   aes_string("map_feature", "value", color=color.value)) +
-        geom_quasirandom() +
+        geom_quasirandom(groupOnX=TRUE) +
         scale_color_brewer(type= "qual", palette=2)  + # FR changed palette: scale_color_brewer(palette="Paired")+
         facet_wrap(~map_feature, scales="free") +
         scale_y_log10() +
@@ -1011,7 +1011,7 @@ DEhelper.STAR <- function(colorByFactor=NULL, targetsdf=targets, ...) {
         ylab("# Reads")
       p.perc <- ggplot(df.melt[grepl("perc", df.melt$map_feature),],
                        aes_string("map_feature", "value", color=color.value)) +
-        geom_quasirandom() +
+        geom_quasirandom(groupOnX=TRUE) +
         scale_color_brewer(type= "qual", palette=2)  + # FR changed palette: scale_color_brewer(palette="Paired")+
         facet_wrap(~map_feature, scales="free") +
         xlab(NULL) + 
@@ -1047,10 +1047,7 @@ DEhelper.Fastqc <- function(web=TRUE, ...) {
     
     # select subset of samples for fastqc figures (e.g. merged singlecell pools) or use all samples for samplePattern=NULL
     samples <- selectSampleSubset(samples, ...)
-    if(length(samples) == 0) {
-        return("No samples matched with this pattern...")
-    }
-    
+
     df <- sapply(samples, function(f) {
         c(paste0("![fastqc img](", f, "/Images/per_base_quality.png)"), 
           paste0("![fastqc img](", f, "/Images/per_base_sequence_content.png)"),
@@ -1090,12 +1087,9 @@ DEhelper.dupRadar <- function(web=TRUE, ...) {
     # construct the image url from the folder contents (skip current dir .)
     samples <- list.files(SHINYREPS_DUPRADAR_LOG, pattern=".png$", full.names=T)
 
-    # select subset of samples for fastqc figures (e.g. merged singlecell pools) or use all samples for samplePattern=NULL
+    # select subset of samples or use all samples for samplePattern=NULL
     samples <- selectSampleSubset(samples, ...)
-    if(length(samples) == 0) {
-        return("No samples matched with this pattern...")
-    }
-    
+
     df <- sapply(samples, function(f) {
        # paste0("![dupRadar img](", QC, "/", basename(f), ")")
         paste0("![dupRadar img](", f, ")")
@@ -1141,12 +1135,9 @@ DEhelper.RNAtypes <- function(...) {
     # create a matrix using feature names as rownames, sample names as colnames
     l.infiles <- list.files(FOLDER, pattern=SUFFIX, full.names = T)
     
-    # select subset of samples for fastqc figures (e.g. merged singlecell pools) or use all samples for samplePattern=NULL
+    # select subset of samples or use all samples for samplePattern=NULL
     l.infiles <- selectSampleSubset(l.infiles, ...)
-    if(length(l.infiles) == 0) {
-        return("No samples matched with this pattern...")
-    }
-    
+
     l.counts <- lapply(l.infiles, function(f) {
         # f <- list.files(FOLDER, pattern=SUFFIX, full.names = T)[1]
         samplename <- basename(f)
@@ -1210,12 +1201,9 @@ DEhelper.geneBodyCov <- function(web=TRUE, ...) {
     # construct the image url from the folder contents (skip current dir .)
     samples <- list.files(SHINYREPS_GENEBODYCOV_LOG, pattern=".png$", full.names = T)
     
-    # select subset of samples for fastqc figures (e.g. merged singlecell pools) or use all samples for samplePattern=NULL
+    # select subset of samples or use all samples for samplePattern=NULL
     samples <- selectSampleSubset(samples, ...)
-    if(length(samples) == 0) {
-        return("No samples matched with this pattern...")
-    }
-    
+
     df <- sapply(samples, function(f) {
         paste0("![geneBodyCov img](", f, ")")
     })
@@ -1251,7 +1239,7 @@ DEhelper.strandspecificity <- function(samplePattern=NULL, ...){
     }
   
     filelist <- list.files(path=SHINYREPS_INFEREXPERIMENT_LOGS, full.names=TRUE)
-    # select subset of samples for fastqc figures (e.g. merged singlecell pools) or use all samples for samplePattern=NULL
+    # select subset of samples or use all samples for samplePattern=NULL
     filelist <- selectSampleSubset(filelist, samplePattern, ...)
     if(length(filelist) == 0) {
         return("No samples matched with this pattern...")
@@ -1269,9 +1257,9 @@ DEhelper.strandspecificity <- function(samplePattern=NULL, ...){
 }
 
 ##
-##DEhelper.cutadapt:  get the strandspecifity from the qc and display them
+##DEhelper.cutadapt: get cutadapt statistics from the qc folder and display them
 ## 
-DEhelper.cutadapt <- function(colorByFactor=NULL, targetsdf=targets, ...){
+DEhelper.cutadapt <- function(colorByFactor=NULL, targetsdf=targets, sampleColumnName ="sample", ...){
   
   # logs folder
   if(!all(sapply(SHINYREPS_CUTADAPT_LOGS, file.exists))) {
@@ -1280,59 +1268,82 @@ DEhelper.cutadapt <- function(colorByFactor=NULL, targetsdf=targets, ...){
   
   x <- list.files(SHINYREPS_CUTADAPT_LOGS,pattern='*cutadapt.log$',full.names=TRUE) 
   
-  # select subset of samples for fastqc figures (e.g. merged singlecell pools) or use all samples for samplePattern=NULL
+  # select subset of samples or use all samples for samplePattern=NULL
   x <- selectSampleSubset(x, ...)
-  if(length(x) == 0) {
-    return("No samples matched with this pattern...")
-  }
+
+  # get Command line parameters of first file
+  cutadaptpars <- system(paste("grep \"Command line parameters\"", x[1]), intern=T)
+  
+  paired <- grepl("(-p )|(--paired-output )", cutadaptpars) # output for R2 available?
   
   x <- sapply(x, function(f) { 
-    total.reads <- system(paste("grep \"Total reads processed\"", f, "| awk '{print $4}'"), intern=TRUE)
-    total.reads <- gsub(",", "", total.reads)
     
-    trimmed.reads.perc <- system(paste("grep \"Reads with adapters\"", f, "| awk '{print $5}'"), intern=TRUE)
-    trimmed.reads.perc <- gsub("\\(|\\)|\\%", "", trimmed.reads.perc)
+    trimmed.R1.perc <- trimmed.R2.perc <- trimmed.reads.perc <- NULL # initialise with NULL in case not needed
     
-    tooshort.reads.perc <- system(paste("grep \"Reads that were too short\"", f, "| awk '{print $7}'"), intern=TRUE)
+    if(paired) { # log lines slightly differ dependent on se or pe
+      total.reads <- system(paste("grep \"Total read pairs processed\"", f, "| awk '{print $5}'"), intern=TRUE)
+      total.reads <- gsub(",", "", total.reads)
+      trimmed.R1.perc <- system(paste("grep \"Read 1 with adapter\"", f, "| awk '{print $6}'"), intern=TRUE)
+      trimmed.R1.perc <- gsub("\\(|\\)|\\%", "", trimmed.R1.perc)
+      trimmed.R2.perc <- system(paste("grep \"Read 2 with adapter\"", f, "| awk '{print $6}'"), intern=TRUE)
+      trimmed.R2.perc <- gsub("\\(|\\)|\\%", "", trimmed.R2.perc)
+      
+    } else {
+      total.reads <- system(paste("grep \"Total reads processed\"", f, "| awk '{print $4}'"), intern=TRUE)
+      total.reads <- gsub(",", "", total.reads)
+      trimmed.reads.perc <- system(paste("grep \"Reads with adapters\"", f, "| awk '{print $5}'"), intern=TRUE)
+      trimmed.reads.perc <- gsub("\\(|\\)|\\%", "", trimmed.reads.perc)
+    }
+    
+    tooshort.reads.perc <- system(paste("grep \"that were too short\"", f, "| awk '{print $7}'"), intern=TRUE)
     tooshort.reads.perc <- gsub("\\(|\\)|\\%", "", tooshort.reads.perc)
     
     # trimming of each adapter
     adapters <- system(paste("grep Sequence:", f, "| awk '{print $9}'"), intern=T)
     adapters.perc <- round(100*(as.numeric(adapters) / as.numeric(total.reads)),2)
-    names(adapters.perc) <- gsub(" *=== *", "", system(paste("grep \"=== Adapter\"", f), intern=T))
-    
-    # get Command line parameters
-    cutadaptpars <- system(paste("grep \"Command line parameters\"", f), intern=T)
-    
+    adapterprime <- gsub(";", "", system(paste("grep Sequence:", f, "| awk '{print $5}'"), intern=T))
+
+    names(adapters.perc) <- gsub(" *=== *", "", system(paste("grep \"=== .*Adapter\"", f), intern=T))
+    namespart1 <- gsub("First read:.*", "R1_", names(adapters.perc))
+    namespart1 <- gsub("Second read:.*", "R2_", namespart1)
+    namespart2 <- gsub("^.*Adapter", "Adapter", names(adapters.perc))
+    names(adapters.perc) <- paste0(namespart1, adapterprime, namespart2)
+
     ## add trimmed reads for each adapter here
-    return(c(total.reads, trimmed.reads.perc, tooshort.reads.perc, adapters.perc, cutadaptpars=cutadaptpars))
+    return(c(total_reads=total.reads, trimmed_R1=trimmed.R1.perc, trimmed_R2=trimmed.R2.perc, 
+             trimmed=trimmed.reads.perc, tooshort=tooshort.reads.perc, adapters.perc))
   })
   
-  cutadaptpars <- x["cutadaptpars", 1] # use first cutadapt call for naming adapters
-  cutadaptpars <- unlist(strsplit(cutadaptpars, split=" "))
-  indexAdapter <- grep("--adapter", cutadaptpars)
-  indexPoly <- grep("^-a$", cutadaptpars) 
-  
-  # set row and column names
-  x.df <- as.data.frame(t(x[rownames(x)!="cutadaptpars",])) 
-  colnames(x.df)[1:3] <- c("total.reads", "trimmed","tooshort")
+  # transpose dataframe
+  x.df <- as.data.frame(t(x), make.names=F) 
   x.df <- as.data.frame(lapply(x.df, as.numeric))
+  colnames(x.df) <- rownames(x)
   
-  # rename those adapters columns trimmed by -a commands (e.g. polyA, polyT)
-  if (length(indexPoly>0)) {
-    colnames(x.df)[grepl("Adapter", colnames(x.df))][-which(c(indexAdapter, indexPoly) %in% indexAdapter)] <- cutadaptpars[indexPoly+1]
+  # use cutadapt call from first log file for naming some of the unnamed adapters 
+  cutadaptpars <- unlist(strsplit(cutadaptpars, split=" ")) 
+  indexAdapter <- grep("(^-a$)|(--adapter)|(^-g$)|(--front)|(^-A$)|(^-G$)", cutadaptpars) # index of all adapters applied
+  indexAdapterSelected <- indexAdapter[grep("[ACGT].[[:digit:]]*}", cutadaptpars[indexAdapter+1])] # select e.g. polyA, polyT
+
+  # rename those adapters columns trimmed by -a commands 
+  if (length(indexAdapterSelected>0)) {
+    colnames(x.df)[grepl("Adapter", colnames(x.df))][match(indexAdapterSelected, indexAdapter)] <- 
+      paste0(gsub("Adapter.*$", "", colnames(x.df)[grepl("Adapter", colnames(x.df))][match(indexAdapterSelected, indexAdapter)]), cutadaptpars[indexAdapterSelected+1])
   }
   
   #reduce length of file names 
   row.names(x.df) <- basename(colnames(x))
   x.df$filename_unmod <- factor(row.names(x.df))
-  row.names(x.df)  <- gsub(lcSuffix(row.names(x.df) ), "", row.names(x.df) )
-  row.names(x.df)  <- gsub(lcPrefix(row.names(x.df) ), "", row.names(x.df) )
+  if(nrow(x.df)>1){
+    row.names(x.df)  <- gsub(lcSuffix(row.names(x.df) ), "", row.names(x.df) )
+    row.names(x.df)  <- gsub(lcPrefix(row.names(x.df) ), "", row.names(x.df) )
+  }
   
   # passing the different factors given in targetsdf to x.df which was created from cutadapt logfile names 
   if(!is.null(colorByFactor)) { # add information to x.df
     
-    targetsdf$filename <- gsub(lcSuffix(targetsdf$sample ), "", targetsdf$sample ) # shorten filename suffix
+    if(is.null(targetsdf)) {stop("If 'colorByFactor' is given you must also provide 'targetsdf'!")}
+
+    targetsdf$filename <- gsub(lcSuffix(targetsdf[,sampleColumnName] ), "", targetsdf[,sampleColumnName] ) # shorten filename suffix
     targetsdf$filename <- gsub(lcPrefix(targetsdf$filename ), "", targetsdf$filename ) # shorten filename prefix
     
     index <- sapply(targetsdf$filename, grep, x.df$filename_unmod, ignore.case = T) # grep sample name in file names
@@ -1361,7 +1372,9 @@ DEhelper.cutadapt <- function(colorByFactor=NULL, targetsdf=targets, ...){
   }
   
   # melt data frame for plotting
-  x.melt <- melt(x.df, measure.vars=c("trimmed", "tooshort", grep("(Adapter)|(})", colnames(x.df), value=T)), variable="reads")
+  x.melt <- melt(x.df, measure.vars=c(grep("trimmed", colnames(x.df), value=T), 
+                                      "tooshort", 
+                                      grep("(Adapter)|(})", colnames(x.df), value=T)), variable="reads")
   # everything which is not a value should be a factor
   
   # now we do a violin plot of the trimmed/too_short/etc. ones and color it
@@ -1376,13 +1389,13 @@ DEhelper.cutadapt <- function(colorByFactor=NULL, targetsdf=targets, ...){
     p <- ggplot(x.melt, aes_string(x="reads",
                                    y="value",
                                    color=color.value ))+
-      geom_quasirandom() +
+      geom_quasirandom(groupOnX=TRUE) +
       scale_color_manual(values=getPalette(colourCount)) + # creates as many colors as needed
       ylab(ylab) +
       xlab("") +
       scale_y_continuous( breaks=seq(0, max(x.melt$value), 10),
                           limits = c(0, max(x.melt$value))) + 
-      theme(axis.text.x=element_text(angle=45, vjust=1, hjust=1)) 
+      theme(axis.text.x=element_text(angle=30, vjust=1, hjust=1)) 
     
     return(p)
   }
@@ -1394,7 +1407,11 @@ DEhelper.cutadapt <- function(colorByFactor=NULL, targetsdf=targets, ...){
     plot(violin.list[[i]])
   }
   
-  DT::datatable(x.df[,c("total.reads", "trimmed","tooshort", grep("(Adapter)|(})", colnames(x.df), value=T))], options = list(pageLength= 20))
+  DT::datatable(x.df[,c("total_reads", 
+                        grep("trimmed", colnames(x.df), value=T),
+                        "tooshort", 
+                        grep("(Adapter)|(})", colnames(x.df), value=T))], 
+                options = list(pageLength= 20))
 }
 
 
@@ -1405,12 +1422,9 @@ DEhelper.umicount <- function(colorByFactor=NULL, targetsdf=targets, ...){
   
   
   x <- list.files(SHINYREPS_UMICOUNT_LOG,pattern='*umicount.log$',full.names=TRUE) 
-  # select subset of samples for fastqc figures (e.g. merged singlecell pools) or use all samples for samplePattern=NULL
   
+  # select subset of samples or use all samples for samplePattern=NULL
   x <- selectSampleSubset(x, ...)
-  if(length(x) == 0) {
-    return("No samples matched with this pattern...")
-  }
   
   x <- sapply(x, function(f) { 
     input_reads_total <- system(paste("grep \"INFO Input Reads\"", f, "| awk '{print $6}'"), intern=TRUE)
@@ -1485,7 +1499,7 @@ DEhelper.umicount <- function(colorByFactor=NULL, targetsdf=targets, ...){
     p <- ggplot(x.melt, aes_string(x="reads",
                                    y="value",
                                    color=color.value ))+
-      geom_quasirandom() +
+      geom_quasirandom(groupOnX=TRUE) +
       scale_color_manual(values=getPalette(colourCount)) + # creates as many colors as needed
       ylab(ylab) +
       xlab("") +
