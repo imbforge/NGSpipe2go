@@ -8,18 +8,18 @@ An opinionated framework for building pipelines. It comprises set of NGS data an
 
 ## Available Pipelines ## 
 
-- [ChIP-Seq](https://gitlab.rlp.net/imbforge/NGSpipe2go/-/blob/devel/pipelines/ChIPseq/README.md)
-- [DNA-Seq](https://gitlab.rlp.net/imbforge/NGSpipe2go/-/blob/devel/pipelines/DNAseq/README.md)
-- [RNA-Seq](https://gitlab.rlp.net/imbforge/NGSpipe2go/-/blob/devel/pipelines/RNAseq/README.md)
+- [ChIP-Seq](https://gitlab.rlp.net/imbforge/NGSpipe2go/-/blob/master/pipelines/ChIPseq/README.md)
+- [DNA-Seq](https://gitlab.rlp.net/imbforge/NGSpipe2go/-/blob/master/pipelines/DNAseq/README.md)
+- [RNA-Seq](https://gitlab.rlp.net/imbforge/NGSpipe2go/-/blob/master/pipelines/RNAseq/README.md)
 - RNA-Seq for variant calling
 - smallRNA-Seq
-- [single cell RNA-Seq](https://gitlab.rlp.net/imbforge/NGSpipe2go/-/blob/devel/pipelines/scRNAseq/README.md)
+- [single cell RNA-Seq](https://gitlab.rlp.net/imbforge/NGSpipe2go/-/blob/master/pipelines/scRNAseq/README.md)
 
 ## NGSpipe2go preparations ##
 
 ### Put NGSpipe2go into the project dir ###
 
-NGS projects should be run in a consistant and reproducible way, hence NGSpipe2go asks you to copy all tools into the project folder, which will ensure that you always use the same program versions at a later time point. This can be done either from a local NGSpipe2go copy, a version from the GitHub releases (https://github.com/imbforge/NGSpipe2go/releases) or using the most recent development version from the GitHub repository
+NGS projects should be run in a consistant and reproducible way, hence NGSpipe2go asks you to copy all tools into the project folder, which will ensure that you always use the same program versions at a later time point. This can be done either from a local NGSpipe2go copy or by using the most recent version from the Gitlab repository
 
     git clone https://gitlab.rlp.net/imbforge/NGSpipe2go <project_dir>/NGSpipe2go
 
