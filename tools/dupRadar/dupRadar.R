@@ -50,7 +50,7 @@ stranded <- if(stranded == "no") 0 else if(stranded == "yes") 1 else 2
 
 dm <- analyzeDuprates(bam, gtf, stranded, (paired == "yes"), threads, autosort=FALSE)
 CairoPNG(paste0(outdir, "/", gsub("\\.bam", "", basename(bam)), "_dupRadar.png"))
-duprateExpDensPlot(DupMat=dm)
+try(duprateExpDensPlot(DupMat=dm))
 write.table(dm, sep="\t", quote=FALSE, row.names=FALSE,
             file=paste0(outdir, "/", gsub("(\\.dupmarked|)\\.bam", "", basename(bam)), "_dupRadar.tsv")) # also remove the .duprm prefix
 dev.off()
