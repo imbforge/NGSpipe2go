@@ -1,0 +1,6 @@
+MergeBam_vars=[
+    outdir: MAPPED + "/merged"
+]
+
+load PIPELINE_ROOT + "/modules/NGS/mergebam.groovy"
+

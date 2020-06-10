@@ -1,0 +1,6 @@
+FilterAndMergeSJtab_vars=[
+    outdir: MAPPED + "/sjdbStarIndex"
+]
+
+load PIPELINE_ROOT + "/modules/RNAseqVariantCalling/merge_SJ_tab.groovy"
+

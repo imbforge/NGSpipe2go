@@ -1,0 +1,6 @@
+pbc_vars=[
+    outdir: QC + "/pbc"
+]
+
+load PIPELINE_ROOT + "/modules/ChIPseq/pbc.groovy"
+

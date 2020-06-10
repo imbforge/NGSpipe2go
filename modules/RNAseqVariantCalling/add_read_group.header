@@ -1,0 +1,7 @@
+AddRG_vars=[
+    outdir    : STAR_pe_2nd_vars.outdir,
+    java_flags: "-Xmx5000m"
+]
+
+load PIPELINE_ROOT + "/modules/RNAseqVariantCalling/add_read_group.groovy"
+

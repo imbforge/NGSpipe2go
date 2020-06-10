@@ -1,9 +1,0 @@
-Cutadapt_vars=[
-    outdir: PROCESSED,
-    logdir: PROCESSED + "/logs",
-    adapter_sequence: ESSENTIAL_ADAPTER_SEQUENCE,  // adapter to be trimmed off
-    minimum_overlap : ESSENTIAL_MINADAPTEROVERLAP,  // minimal overlap of the read and the adapter
-    minimum_length_keep: ESSENTIAL_MINREADLENGTH,   // minimal length of reads to be kept
-    maximum_length_keep: Integer.toString(ESSENTIAL_READLENGTH - ESSENTIAL_MINADAPTEROVERLAP), // maximal length of reads to be kept for further analysis
-    maximum_length_keep_plus1: Integer.toString(ESSENTIAL_READLENGTH - ESSENTIAL_MINADAPTEROVERLAP + 1) // minimal length of discarded reads, but they are kept in a separate fastq.gz file
-]
