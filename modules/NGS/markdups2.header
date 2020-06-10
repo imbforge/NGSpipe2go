@@ -1,0 +1,6 @@
+MarkDups2_vars=[
+    outdir: MAPPED
+]
+
+load PIPELINE_ROOT + "/modules/NGS/markdups2.groovy"
+

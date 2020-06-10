@@ -1,0 +1,8 @@
+CutadaptStats_vars=[
+    datadir: PROCESSED + "/logs",
+    plotdir: PROCESSED + "/plots",
+    sample_prefix: ESSENTIAL_SAMPLE_PREFIX
+]
+
+load PIPELINE_ROOT + "/modules/smallRNAseq_BCF/cutadapt_stats.groovy"
+

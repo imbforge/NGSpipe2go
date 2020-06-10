@@ -1,0 +1,6 @@
+filter2htseq_vars=[
+    outdir: subread_count_vars.outdir
+]
+
+load PIPELINE_ROOT + "/modules/RNAseq/filter2htseq.groovy"
+

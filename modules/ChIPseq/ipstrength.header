@@ -1,0 +1,9 @@
+ipstrength_vars=[
+    outdir  :  QC + "/ipstrength",
+    targets : "targets.txt",      // targets file describing the samples
+    mapped  : MAPPED,             // where the bam files are stored
+    bsgenome: ESSENTIAL_BSGENOME  // a bioconductor BSgenome reference available in the R libPath() BSgenome.Hsapiens.UCSC.hg19
+]
+
+load PIPELINE_ROOT + "/modules/ChIPseq/ipstrength.groovy"
+

@@ -1,0 +1,8 @@
+DownsampleBAM_vars=[
+    outdir: MAPPED,
+    amount: 100000,
+    seed  : 1
+]
+
+load PIPELINE_ROOT + "/modules/NGS/downsamplebam.groovy"
+

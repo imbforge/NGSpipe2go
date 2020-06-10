@@ -1,0 +1,7 @@
+FastQC_vars=[
+    outdir: QC + "/fastqc",
+    extra : "--quiet"
+]
+
+load PIPELINE_ROOT + "/modules/NGS/fastqc.groovy"
+

@@ -1,0 +1,2 @@
+load PIPELINE_ROOT + "/modules/miscellaneous/collectbpipes.module.2.groovy"
+

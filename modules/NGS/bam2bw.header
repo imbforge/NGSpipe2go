@@ -1,0 +1,6 @@
+bam2bw_vars=[
+    outdir: TRACKS
+]
+
+load PIPELINE_ROOT + "/modules/NGS/bam2bw.groovy"
+

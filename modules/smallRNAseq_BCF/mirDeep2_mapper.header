@@ -1,0 +1,13 @@
+miRDeep2Mapper_vars=[
+    outdir    : RESULTS + "/miRDeep2",
+    genome_ref: ESSENTIAL_BOWTIE_REF,
+    extra     : "-e " + // please, add a description for this parm
+                "-h " + // please, add a description for this parm
+                "-m " + // please, add a description for this parm
+                "-i " + // please, add a description for this parm
+                "-j " + // please, add a description for this parm
+                "-o 8"  // please, add a description for this parm
+]
+
+load PIPELINE_ROOT + "/modules/smallRNAseq_BCF/mirDeep2_mapper.groovy"
+

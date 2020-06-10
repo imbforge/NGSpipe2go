@@ -1,0 +1,10 @@
+miRDeep2_vars=[
+    outdir       : RESULTS + "/miRDeep2",
+    genome_seq   : ESSENTIAL_GENOME_REF,
+    mature_mirna : ESSENTIAL_MATURE_MIRNA,
+    hairpin_mirna: ESSENTIAL_HAIRPIN_MIRNA,
+    species      : ESSENTIAL_SPECIES
+]
+
+load PIPELINE_ROOT + "/modules/smallRNAseq_BCF/mirDeep2.groovy"
+
