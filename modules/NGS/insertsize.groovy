@@ -9,7 +9,7 @@ InsertSize = {
     def INSERTSIZE_FLAGS =
         (InsertSize_vars.extra ? " " + InsertSize_vars.extra : "")
 
-    def TOOL_ENV = prepare_tool_env("R", tools["bowtie"]["version"], tools["bowtie"]["runenv"]) + " && " +
+    def TOOL_ENV = prepare_tool_env("R", tools["R"]["version"], tools["R"]["runenv"]) + " && " +
                    prepare_tool_env("java", tools["java"]["version"], tools["java"]["runenv"]) + " && "+
                    prepare_tool_env("picard", tools["picard"]["version"], tools["picard"]["runenv"])
     def PREAMBLE = get_preamble("InsertSize")
