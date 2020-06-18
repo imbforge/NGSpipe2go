@@ -247,7 +247,7 @@ config {
     MarkDups { 
       walltime="04:00:00" 
       procs="1" 
-      memory="50"
+      memory="5"
     }
     MarkDups2 { 
       walltime="04:00:00" 
@@ -310,11 +310,6 @@ config {
       queue="long" 
       walltime="24:00:00" 
       procs="16" 
-      memory="8"
-    }
-    RmDups { 
-      walltime="02:00:00" 
-      procs="1" 
       memory="8"
     }
     STAR { 
