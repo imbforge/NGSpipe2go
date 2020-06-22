@@ -1,4 +1,5 @@
 trackhub_vars=[
+    tracksdir : TRACKS,                 // folder with tracks & trackhub configuration file
     config: PROJECT + "/trackhub.yaml"  // trackhub configuration file
 ]
 
