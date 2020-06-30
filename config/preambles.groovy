@@ -13,8 +13,8 @@ default_preamble="""
         mkdir -p "\$TMP";
     fi;
 
-    if [ -n "\$SLURM_JOBID" ]; then
-        export TMP="/jobdir/\$SLURM_JOBID";
+    if [ -n "\$SLURM_JOB_ID" ]; then
+        export TMP="/jobdir/\$SLURM_JOB_ID";
     fi
 """
 
