@@ -52,6 +52,6 @@ Bpipe.run {
     ] +
     [ DE_DESeq2_MM , DE_DESeq2 + GO_Enrichment ] +
     (RUN_TRACKHUB ? trackhub_config + trackhub : dontrun.using(module: "trackhub")) +
-    MultiQC + collectToolVersions + collectBpipeLogs + shinyReports
+    collectToolVersions + collectBpipeLogs + MultiQC + shinyReports
 }
 
