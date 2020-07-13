@@ -54,6 +54,9 @@ expdesign  <- parseArgs(args,"expdesign=","amplicon1")
 threshold_rel_countssum  <- parseArgs(args,"threshold_rel_countssum=", 0, convert="as.numeric")  # threshold for first qc filtering (proportion of sample sum from mean sample sum)
 excludeSeqsNotInAllFractions  <- parseArgs(args,"excludeSeqsNotInAllFractions=", FALSE, convert="as.logical")  # discard all sequences per sub_experiment, which were not detected in all fractions of this sub_experiment
 
+remove_NA_bynuc_PSI <- TRUE # remove entries with PSI == NA from bynuc and byaa files (exeption: there are no different bins at all for calculation of PSIs)
+remove_NA_byaa_pooledPSI <- TRUE
+
 runstr <- "Rscript MPSprofiling.R [targets=targets.txt] [prefix=RE] [suffix=RE] [inputdir=.] [out=MPSprofiling] [expdesign=amplicon1] [threshold_rel_countssum=0] [excludeSeqsNotInAllFractions=F]"
 if(!file.exists(ftargets))   stop(paste("File",ftargets,"does NOT exist. Run with:\n",runstr))
 if(!file.exists(inputdir))   stop(paste("Dir",inputdir,"does NOT exist. Run with:\n",runstr))
@@ -318,9 +321,17 @@ targets <- targets[,required_target_columns]
         bynuc <- left_join(bynuc, bynucstats, by=c("sequence", "experiment", "sub_experiment"))   
         
         # remove NA entries and sort
-        bynuc <- bynuc[!is.na(bynuc$PSI), ] %>%
-                 dplyr::arrange(experiment, sub_experiment, sequence) %>%
-                 dplyr::select(experiment, sub_experiment, sequence, translation, PSI, nfractions, totalfractions,  contains("count"))
+        # don't remove NAs from bynuc and byaa tables if PSIs cannot be calculated anyway due to lack of different bins in targets.txt
+        if(all(tapply(targets$bin,targets$sub_experiment, function(x) length(unique(x))==1))) {
+          remove_NA_bynuc_PSI <- FALSE
+          remove_NA_byaa_pooledPSI <- FALSE
+        }
+        
+        if(remove_NA_bynuc_PSI) {bynuc <- bynuc[!is.na(bynuc$PSI),]}
+        
+        bynuc <- bynuc %>%
+          dplyr::arrange(experiment, sub_experiment, sequence) %>%
+          dplyr::select(experiment, sub_experiment, sequence, translation, PSI, nfractions, totalfractions,  contains("count"))
         
         
 
@@ -359,12 +370,13 @@ targets <- targets[,required_target_columns]
           byaa <- left_join(byaaN, byaa, by=c("translation", "experiment", "sub_experiment"))
           
           # remove NA entries and sort
-          byaa <- byaa[!is.na(byaa$pooled_PSI), ] %>%
+          if(remove_NA_byaa_pooledPSI) {byaa <- byaa[!is.na(byaa$pooled_PSI),]}
+          
+          byaa <- byaa %>%
             dplyr::arrange(experiment, sub_experiment, translation) %>%
             dplyr::select(experiment, sub_experiment, translation, median_PSI, pooled_PSI, 
                           nsequences, nfractions, totalfractions, contains("count"))
           
-             
 
           ### store results in list
           counts_all[[bg]] <- counts
