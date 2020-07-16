@@ -1,5 +1,5 @@
 PIPELINE="ChIPseq"
-PIPELINE_VERSION="1.1"
+PIPELINE_VERSION="1.2"
 PIPELINE_ROOT="./NGSpipe2go"
 
 load PIPELINE_ROOT + "/pipelines/ChIPseq/essential.vars.groovy"
@@ -47,6 +47,8 @@ qc_single = segment {
 		phantompeak
 	]
 }
+//	    		(RUN_IN_PAIRED_END_MODE ? [bamCoverage, InsertSize] : [extend + bamCoverage, phantompeak]), 
+
 
 //MAIN PIPELINE TASK
 dontrun = { println "didn't run $module" }
@@ -54,17 +56,32 @@ dontrun = { println "didn't run $module" }
 Bpipe.run {
     "%.fastq.gz" * [ FastQC ] + 
 	(RUN_IN_PAIRED_END_MODE ? "%.R*.fastq.gz" : "%.fastq.gz") * [
-		(ESSENTIAL_USE_BOWTIE1 ? bowtie1 : bowtie2) + BAMindexer + BamQC +            
-                (RUN_USING_UNFILTERED_BAM ? (MarkDups + BAMindexer + pbc) : (filbowtie2unique + BAMindexer + RmDups + BAMindexer)) + 
+		(ESSENTIAL_USE_BOWTIE1 ? bowtie1 : bowtie2) + BAMindexer + BamQC +   
+
+         [ // parallel branches with and without multi mappers
+
+            [ MarkDups + BAMindexer + pbc +
 		[
 	    		(RUN_IN_PAIRED_END_MODE ? qc_paired : qc_single), 
+                	 ipstrength.using(subdir:"unfilt"), 
+		         macs2.using(subdir:"unfilt") +
+                        (RUN_PEAK_ANNOTATION ? peak_annotation.using(subdir:"unfilt") : dontrun.using(module:"peak_annotation")) +
+                        (RUN_DIFFBIND ? diffbind.using(subdir:"unfilt") : dontrun.using(module:"diffbind"))
+		]
+            ], 
+            [ filbowtie2unique + BAMindexer + RmDups + BAMindexer + 
+                [
+	    		(RUN_IN_PAIRED_END_MODE ? qc_paired : qc_single), 
                 	 ipstrength, 
-		         macs2
-		] 
-	] + 
-        (RUN_PEAK_ANNOTATION ? peak_annotation : dontrun.using(module:"peak_annotation")) + 
-        (RUN_DIFFBIND ? diffbind : dontrun.using(module:"diffbind")) +
-        (RUN_TRACKHUB ? trackhub_config + trackhub : dontrun.using(module:"trackhub")) +
-        MultiQC + collectToolVersions + collectBpipeLogs + shinyReports
+		         macs2 +
+                        (RUN_PEAK_ANNOTATION ? peak_annotation : dontrun.using(module:"peak_annotation")) +
+                        (RUN_DIFFBIND ? diffbind : dontrun.using(module:"diffbind")) 
+		]
+            ]
+        ]
+
+      ] + 
+      // (RUN_TRACKHUB ? trackhub_config + trackhub : dontrun.using(module:"trackhub")) +
+      MultiQC + collectToolVersions + collectBpipeLogs + shinyReports
 }
 

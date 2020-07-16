@@ -43,57 +43,65 @@ shorten <- function(x, max.len=40, ini=20, end=15) {
 ##
 ## ChIPhelper.init: some time consuming tasks that can be done in advance
 ##
-ChIPhelper.init <- function(task) {
-    
-    # read targets.txt
-    readTargets <- function() {
-        TARGETS <- paste0(SHINYREPS_PROJECT, "/", SHINYREPS_TARGETS)
-        if(!file.exists(TARGETS)) {
-            return("Targets file not available")
-        }
-    
-        return(read.delim(TARGETS))
+ChIPhelper.init <- function(task, subdir="", peaks_as="data.frame") {
+  
+  # read targets.txt
+  readTargets <- function() {
+    TARGETS <- paste0(SHINYREPS_PROJECT, "/", SHINYREPS_TARGETS)
+    if(!file.exists(TARGETS)) {
+      return("Targets file not available")
     }
     
-    # read peaks from MACS2 output
-    readPeaks <- function() {
+    return(read.delim(TARGETS))
+  }
+  
+  # read peaks from MACS2 output
+  readPeaks <- function(peaksSubdir=subdir, as=peaks_as) {
     
-        # check which macs output exist
-        if(!file.exists(SHINYREPS_MACS2)) {
-            return("MACS2 results not available")
+    # check which macs output exist
+    if(!file.exists(file.path(SHINYREPS_MACS2,peaksSubdir))) {
+      return("MACS2 results not available")
+    }
+    if(file.exists(paste0(targets$IPname, ".vs.", targets$INPUTname,"_macs2_blacklist_filtered_peaks.xls"))[1]) {
+      comparisons <- paste0(targets$IPname, ".vs.", targets$INPUTname, "_macs2_blacklist_filtered_peaks.xls")  
+    } else {
+      comparisons <- paste0(targets$IPname, ".vs.", targets$INPUTname, "_macs2_peaks.xls")
+    }
+    exist <- sapply(paste0(file.path(SHINYREPS_MACS2,peaksSubdir), "/", comparisons), file.exists)
+    targets <- targets[exist, ]
+    
+    # and return the tables
+    if(file.exists(paste0(file.path(SHINYREPS_MACS2,peaksSubdir), "/", targets$IPname, ".vs.", targets$INPUTname,"_macs2_blacklist_filtered_peaks.xls"))[1]) {
+      peaks <- lapply(paste0(file.path(SHINYREPS_MACS2,peaksSubdir), "/", targets$IPname, ".vs.", targets$INPUTname, "_macs2_blacklist_filtered_peaks.xls"), function(x) {
+        if(as=="data.frame") {
+          x <- tryCatch(read.delim(x, comment.char="#"), error=function(e) as.data.frame(matrix(ncol=10)))
+          colnames(x) <- c("chr", "start", "end", "length", "summit", "tags", "-log10 pval", "fold enrichment", "-log10 FDR", "name")
+          x[order(x$chr, x$start, x$end), c(-7, -10)]
+        } else {
+          x <- tryCatch(ChIPseeker::readPeakFile(x))
         }
-            if(file.exists(paste0(targets$IPname, ".vs.", targets$INPUTname,"_macs2_blacklist_filtered_peaks.xls"))[1]) {
-                 comparisons <- paste0(targets$IPname, ".vs.", targets$INPUTname, "_macs2_blacklist_filtered_peaks.xls")  
-            } else {
-                 comparisons <- paste0(targets$IPname, ".vs.", targets$INPUTname, "_macs2_peaks.xls")
-            }
-        exist <- sapply(paste0(SHINYREPS_MACS2, "/", comparisons), file.exists)
-        targets <- targets[exist, ]
-
-        # and return the tables
-            if(file.exists(paste0(SHINYREPS_MACS2, "/", targets$IPname, ".vs.", targets$INPUTname,"_macs2_blacklist_filtered_peaks.xls"))[1]) {
-                 peaks <- lapply(paste0(SHINYREPS_MACS2, "/", targets$IPname, ".vs.", targets$INPUTname, "_macs2_blacklist_filtered_peaks.xls"), function(x) {
-                     x <- tryCatch(read.delim(x, comment.char="#"), error=function(e) as.data.frame(matrix(ncol=10)))
-                     colnames(x) <- c("chr", "start", "end", "length", "summit", "tags", "-log10 pval", "fold enrichment", "-log10 FDR", "name")
-                     x[order(x$chr, x$start, x$end), c(-7, -10)]
-                 })
-            } else {
-                 peaks <- lapply(paste0(SHINYREPS_MACS2, "/", targets$IPname, ".vs.", targets$INPUTname, "_macs2_peaks.xls"), function(x) {
-                     x <- tryCatch(read.delim(x, comment.char="#"), error=function(e) as.data.frame(matrix(ncol=10)))
-                     colnames(x) <- c("chr", "start", "end", "length", "summit", "tags", "-log10 pval", "fold enrichment", "-log10 FDR", "name")
-                     x[order(x$chr, x$start, x$end), c(-7, -10)]
-                 })
-            }
-
-        names(peaks) <- paste0(targets$IPname, " vs. ", targets$INPUTname)
-
-        return(peaks)
+      })
+    } else {
+      peaks <- lapply(paste0(file.path(SHINYREPS_MACS2,peaksSubdir), "/", targets$IPname, ".vs.", targets$INPUTname, "_macs2_peaks.xls"), function(x) {
+        if(as=="data.frame") {
+          x <- tryCatch(read.delim(x, comment.char="#"), error=function(e) as.data.frame(matrix(ncol=10)))
+          colnames(x) <- c("chr", "start", "end", "length", "summit", "tags", "-log10 pval", "fold enrichment", "-log10 FDR", "name")
+          x[order(x$chr, x$start, x$end), c(-7, -10)]
+        } else {
+          x <- tryCatch(ChIPseeker::readPeakFile(x))
+        }
+      })
     }
     
-    # dispatch tasks
-    switch(task, 
-           readTargets=readTargets(), 
-           readPeaks=readPeaks())
+    names(peaks) <- paste0(targets$IPname, " vs. ", targets$INPUTname)
+    
+    return(peaks)
+  }
+  
+  # dispatch tasks
+  switch(task, 
+         readTargets=readTargets(), 
+         readPeaks=readPeaks())
 }
 
 
@@ -146,31 +154,32 @@ ChIPhelper.Peaks <- function(i=1) {
 ##
 ## ChIPhelper.VennDiagram: shows a venn diagram per group of peaks called
 ##
-ChIPhelper.VennDiagram <- function(){
-	groups <- unique(targets$group)
-	#create granges from the peaks
-	peak.ranges <- lapply(peaks, function(x){
-		  x <- GRanges(seqnames=x$chr,
-			  IRanges(x$start,
-				  end=x$end),
-			  strand="*"
-			   )
-		  
-		  })
-	peak.groups <- targets$group
-	for(group in groups){
-		cat(paste0("#### ", group), fill=T)
-		cat("\n", fill=T)
-		peak <- peak.ranges[peak.groups==group]
-		peaks.ov <- findOverlapsOfPeaks(peak)
-		makeVennDiagram(peaks.ov,
-				margin=0.25, cat.default.pos="outer", cat.dist=0.15,
-				cat.fontface=rep("bold", length(peak)),
-				fill=brewer.pal(length(peak), "Accent")[1:length(peak)]
-				)
-		cat("\n", fill=T)
-	}
-
+ChIPhelper.VennDiagram <- function(subdir=""){
+  groups <- unique(targets$group)
+  #create granges from the peaks
+  peaks <- ChIPhelper.init("readPeaks", subdir)
+  peak.ranges <- lapply(peaks, function(x){
+    x <- GRanges(seqnames=x$chr,
+                 IRanges(x$start,
+                         end=x$end),
+                 strand="*"
+    )
+    
+  })
+  peak.groups <- targets$group
+  for(group in groups){
+    cat(paste0("#### ", group), fill=T)
+    cat("\n", fill=T)
+    peak <- peak.ranges[peak.groups==group]
+    peaks.ov <- findOverlapsOfPeaks(peak)
+    makeVennDiagram(peaks.ov,
+                    margin=0.25, cat.default.pos="outer", cat.dist=0.15,
+                    cat.fontface=rep("bold", length(peak)),
+                    fill=brewer.pal(length(peak), "Accent")[1:length(peak)]
+    )
+    cat("\n", fill=T)
+  }
+  
 }
 
 ##
@@ -371,63 +380,63 @@ ChIPhelper.ngsReports.Fastqc <- function() {
 ## ChIPhelper.IPstrength: go through IPstrength output dir and create a md table with
 ##     the plots
 ##
-ChIPhelper.IPstrength<- function(web=TRUE) {
-    
-    # logs folder
-    if(!file.exists(SHINYREPS_IPSTRENGTH)) {
-        return("IPstrength statistics not available")
-    }
-    
-    if(!is.integer(SHINYREPS_PLOTS_COLUMN) | SHINYREPS_PLOTS_COLUMN < 2) {
-        SHINYREPS_PLOTS_COLUMN <- 4L    # default to 4 columns
-    }
-    
-    # construct the folder name, which is different for web and noweb
-    QC <- if(web) "/ipstrength" else SHINYREPS_IPSTRENGTH
-    
-    # construct the image url from the folder contents (skip current dir .)
-    samples <- list.files(SHINYREPS_IPSTRENGTH, pattern=".png$")
-    COLUMNS <- min(length(samples), SHINYREPS_PLOTS_COLUMN)
-    df <- sapply(samples, function(f) {
-        paste0("![IPstrength img](", QC, "/", basename(f), ")")
-    })
-    
-    # put sample names and output an md table of COLUMNS columns
-    while(length(df) %% COLUMNS != 0) df <- c(df, "")
-    samples <- sapply(df, function(x) {
-        x <- sapply(x, function(x) gsub(paste0("^", SHINYREPS_PREFIX), "", basename(x)))
-        sapply(gsub("_ipstrength.png)$", "", x), shorten)
-    })
-    df      <- matrix(df     , ncol=COLUMNS, byrow=T)
-    samples <- matrix(samples, ncol=COLUMNS, byrow=T)
-    
-    # add a row with the sample names
-    df.names <- matrix(sapply(1:nrow(df), function(i) { c(df[i, ], samples[i, ]) }), 
-                       ncol=COLUMNS, byrow=T)
-    colnames(df.names) <- rep(" ", COLUMNS)
-    
-    kable(as.data.frame(df.names), output=F, align="c", format="markdown")
+ChIPhelper.IPstrength<- function(web=TRUE, subdir="") {
+  
+  # logs folder
+  if(!file.exists(file.path(SHINYREPS_IPSTRENGTH, subdir))) {
+    return("IPstrength statistics not available")
+  }
+  
+  if(!is.integer(SHINYREPS_PLOTS_COLUMN) | SHINYREPS_PLOTS_COLUMN < 2) {
+    SHINYREPS_PLOTS_COLUMN <- 4L    # default to 4 columns
+  }
+  
+  # construct the folder name, which is different for web and noweb
+  QC <- if(web) file.path("/ipstrength", subdir) else file.path(SHINYREPS_IPSTRENGTH, subdir)
+  
+  # construct the image url from the folder contents (skip current dir .)
+  samples <- list.files(file.path(SHINYREPS_IPSTRENGTH, subdir), pattern=".png$")
+  COLUMNS <- min(length(samples), SHINYREPS_PLOTS_COLUMN)
+  df <- sapply(samples, function(f) {
+    paste0("![IPstrength img](", QC, "/", basename(f), ")")
+  })
+  
+  # put sample names and output an md table of COLUMNS columns
+  while(length(df) %% COLUMNS != 0) df <- c(df, "")
+  samples <- sapply(df, function(x) {
+    x <- sapply(x, function(x) gsub(paste0("^", SHINYREPS_PREFIX), "", basename(x)))
+    sapply(gsub("_ipstrength.png)$", "", x), shorten)
+  })
+  df      <- matrix(df     , ncol=COLUMNS, byrow=T)
+  samples <- matrix(samples, ncol=COLUMNS, byrow=T)
+  
+  # add a row with the sample names
+  df.names <- matrix(sapply(1:nrow(df), function(i) { c(df[i, ], samples[i, ]) }), 
+                     ncol=COLUMNS, byrow=T)
+  colnames(df.names) <- rep(" ", COLUMNS)
+  
+  kable(as.data.frame(df.names), output=F, align="c", format="markdown")
 }
 
 ##
 ## ChIPhelper.peakAnnotation: go through Peak_Annotation output dir and create a md table with 
 ##      the coverage plots
 ##
-ChIPhelper.peakAnnotationCoverage <- function(web=TRUE) {
+ChIPhelper.peakAnnotationCoverage <- function(web=TRUE, subdir="") {
   # check if peak annotation results are available
-  if(!file.exists(SHINYREPS_PEAK_ANNOTATION)){
+  if(!file.exists(file.path(SHINYREPS_PEAK_ANNOTATION, subdir))){
     return("Peak annotation results not available")  
   }
   
   if(!is.integer(SHINYREPS_PLOTS_COLUMN) | SHINYREPS_PLOTS_COLUMN < 2) {
-    SHINYREPS_PLOTS_COLUMN <- 3L    # default to 3 columns
+    SHINYREPS_PLOTS_COLUMN <- 2L    # default to 2 columns
   }
   
   # construct the image url from the folder contents (skip current dir .)
-  samples <- list.files(SHINYREPS_PEAK_ANNOTATION, pattern="_ChIPseq_Peaks_Coverageplot.png$")
+  samples <- list.files(file.path(SHINYREPS_PEAK_ANNOTATION, subdir), pattern="_ChIPseq_Peaks_Coverageplot.png$")
   COLUMNS <- min(length(samples), SHINYREPS_PLOTS_COLUMN)
   df <- sapply(samples, function(f) {
-    paste0("![Peak_Annotation img](", SHINYREPS_PEAK_ANNOTATION, "/", basename(f), ")")
+    paste0("![Peak_Annotation img](", file.path(SHINYREPS_PEAK_ANNOTATION, subdir), "/", basename(f), ")")
   })
   
   # put sample names and output an md table of COLUMN columns
@@ -451,21 +460,21 @@ ChIPhelper.peakAnnotationCoverage <- function(web=TRUE) {
 ## ChIPhelper.peakAnnotationUpSet: go through Peak_Annotation output dir and create a md table with 
 ##      the UpSet plots
 ##
-ChIPhelper.peakAnnotationUpSet <- function(web=TRUE) {
+ChIPhelper.peakAnnotationUpSet <- function(web=TRUE, subdir="") {
   # check if peak annotation results are available
-  if(!file.exists(SHINYREPS_PEAK_ANNOTATION)){
+  if(!file.exists(file.path(SHINYREPS_PEAK_ANNOTATION, subdir))){
     return("Peak annotation results not available")  
   }
   
   if(!is.integer(SHINYREPS_PLOTS_COLUMN) | SHINYREPS_PLOTS_COLUMN < 2) {
-    SHINYREPS_PLOTS_COLUMN <- 3L    # default to 3 columns
+    SHINYREPS_PLOTS_COLUMN <- 2L    # default to 2 columns
   }
   
   # construct the image url from the folder contents (skip current dir .)
-  samples <- list.files(SHINYREPS_PEAK_ANNOTATION, pattern="_ChIPseq_UpSetplot.png$")
+  samples <- list.files(file.path(SHINYREPS_PEAK_ANNOTATION, subdir), pattern="_ChIPseq_UpSetplot.png$")
   COLUMNS <- min(length(samples), SHINYREPS_PLOTS_COLUMN)
   df <- sapply(samples, function(f) {
-    paste0("![Peak_Annotation img](", SHINYREPS_PEAK_ANNOTATION, "/", basename(f), ")")
+    paste0("![Peak_Annotation img](", file.path(SHINYREPS_PEAK_ANNOTATION, subdir), "/", basename(f), ")")
   })
   
   # put sample names and output an md table of COLUMN columns
@@ -489,7 +498,7 @@ ChIPhelper.peakAnnotationUpSet <- function(web=TRUE) {
 ## ChIPhelper.PhantomPeak: go through PhantomPeak output dir and create a md table with
 ##     the plots
 ##
-ChIPhelper.PhantomPeak <- function(web=TRUE) {
+ChIPhelper.PhantomPeak <- function(web=TRUE, ...) {
     
     # logs folder
     if(!file.exists(SHINYREPS_PHANTOMPEAK)) {
@@ -505,6 +514,7 @@ ChIPhelper.PhantomPeak <- function(web=TRUE) {
     
     # construct the image url from the folder contents (skip current dir .)
     samples <- list.files(SHINYREPS_PHANTOMPEAK, pattern=".png$")
+    samples <- selectSampleSubset(samples, ...)
     COLUMNS <- min(length(samples), SHINYREPS_PLOTS_COLUMN)
     df <- sapply(samples, function(f) {
         paste0("![PhantomPeak img](", QC, "/", basename(f), ")")
@@ -556,19 +566,25 @@ ChIPhelper.PBC <- function() {
 ##
 ##ChIPhelper.insertsize: get the insertsize from the qc and display mean and sd 
 ##
-ChIPhelper.insertsize <- function(){
+ChIPhelper.insertsize <- function(...){
   
   if (SHINYREPS_PAIRED == "yes") {
     filelist <- list.files(path=SHINYREPS_INSERTSIZE,full.names=TRUE, pattern="insertsizemetrics.tsv$")
+    filelist <- selectSampleSubset(filelist, ...)
     insertsizes <- lapply(filelist, read.table, sep="\t", header=TRUE, nrow=1)
     insertsizes <- do.call(rbind, insertsizes)
     samplenames <- basename(filelist)
-    samplenames <- gsub(SHINYREPS_PREFIX, "", samplenames)
-    samplenames <- gsub("_insertsizemetrics.tsv","", samplenames)
+    if(length(samplenames)>1) {
+      samplenames <- gsub(Biobase::lcPrefix(samplenames), "", samplenames) # remove longest common prefix
+      samplenames <- gsub(Biobase::lcSuffix(samplenames), "", samplenames) # remove longest common suffix
+    } else {
+      if(!is.na(SHINYREPS_PREFIX)) {samplenames <- gsub(SHINYREPS_PREFIX, "", samplenames)}
+      samplenames <- gsub("_insertsizemetrics.tsv","", samplenames)
+    }
     rownames(insertsizes) <- samplenames 
     insertsizes <- insertsizes[,c("MEDIAN_INSERT_SIZE","MEAN_INSERT_SIZE", "STANDARD_DEVIATION")]
     colnames(insertsizes) <- c("Median", "Mean", "SD")
-    kable(insertsizes, output=F, align=c("l"), format="markdown")
+    kable(insertsizes, output=F, align=c("l"), format="markdown") %>% kableExtra::kable_styling()
   }
 }
 
@@ -613,7 +629,14 @@ ChIPhelper.insertsize.helper <- function(metricsFile){
     }
   }
   
-  title_info <- gsub("_insertsizemetrics.tsv$", "", gsub(SHINYREPS_PREFIX, "", basename(metricsFile)))
+  # title_info
+  if(length(metricsFile)>1) {
+    title_info <- gsub(Biobase::lcPrefix(basename(metricsFile)), "", basename(metricsFile)) # remove longest common prefix
+    title_info <- gsub(Biobase::lcSuffix(title_info), "", title_info) # remove longest common suffix
+  } else {
+    title_info <- gsub("_insertsizemetrics.tsv$","", basename(metricsFile))
+    if(!is.na(SHINYREPS_PREFIX)) {title_info <- gsub(SHINYREPS_PREFIX, "", title_info)}
+  }
   
   #we get the histogram which ahs the names of the leves e.g. all_reads and readgroups/sample groups depending on
   #accumulation level which was used.
@@ -683,7 +706,7 @@ ChIPhelper.subchunkify <- function(g, fig_height=7, fig_width=5) {
 ##
 ##ChIPhelper.insertsize.plot: get the insertsize histograms and display them 
 ##
-ChIPhelper.insertsize.plot <- function(){
+ChIPhelper.insertsize.plot <- function(...){
   # logs folder
   SHINYREPS_PLOTS_COLUMN <- tryCatch(as.integer(SHINYREPS_PLOTS_COLUMN),
                                      error=function(e){3})
@@ -691,11 +714,14 @@ ChIPhelper.insertsize.plot <- function(){
     SHINYREPS_PLOTS_COLUMN <- 3L    # default to 3 columns
   }
   if (SHINYREPS_PAIRED == "yes" &
-      length(list.files(path = SHINYREPS_INSERTSIZE,
-                        pattern = "insertsizemetrics.tsv$")) > 0) {
+      length(selectSampleSubset(list.files(path = SHINYREPS_INSERTSIZE,
+                                           pattern = "insertsizemetrics.tsv$"), 
+                                ...)) > 0) {
     samples <- list.files(path = SHINYREPS_INSERTSIZE,
                           full.names = TRUE,
                           pattern = "insertsizemetrics.tsv$")
+    samples <- selectSampleSubset(samples, ...)
+
     #we generate the plots
     insert_plots <- lapply(samples, 
                            ChIPhelper.insertsize.helper)
@@ -746,17 +772,17 @@ Toolhelper.ToolVersions <- function() {
 ## ChIPhelper.BLACKLISTFILTER: go through MACS2 output dir and show BlackList 
 ##     Filter module file
 ##
-ChIPhelper.BLACKLISTFILTER <- function() {
-    
-    # logs folder
-    if(!file.exists(SHINYREPS_BLACKLIST_FILTER)) {
-        return("Peaks overlapping blacklist regions not available")
-    }
-    
-    # construct the image url from the folder contents (skip current dir .)
-    samples <- read.csv(SHINYREPS_BLACKLIST_FILTER, row.names=1)
-    colnames(samples) <- c("# peaks with MACS2", "# peaks wo overlapping with BRs", "% peaks overlapping BRs")
-    kable(samples, output=F, format="markdown")
+ChIPhelper.BLACKLISTFILTER <- function(subdir="") {
+  
+  # logs folder
+  if(!file.exists(sub("/([^/]*)$", paste0("/",subdir,"/\\1"), SHINYREPS_BLACKLIST_FILTER))) {
+    return("Peaks overlapping blacklist regions not available")
+  }
+  
+  # construct the image url from the folder contents (skip current dir .)
+  samples <- read.csv(sub("/([^/]*)$", paste0("/",subdir,"/\\1"), SHINYREPS_BLACKLIST_FILTER), row.names=1)
+  colnames(samples) <- c("# peaks with MACS2", "# peaks wo overlapping with BRs", "% peaks overlapping BRs")
+  kable(samples, output=F, format="markdown")
 }
 
 
@@ -794,27 +820,51 @@ ChIPhelper.Trackhub <- function() {
 ##
 ## ChIPhelper.diffbind
 ##
-ChIPhelper.diffbind <- function() {
+ChIPhelper.diffbind <- function(subdir="") {
   
   tryCatch({
-      # read the results (if available
-      res <- readRDS(file.path(SHINYREPS_DIFFBIND, "diffbind.rds"))
-      
-      # for each contrast
-      Map(x=res, x.name=names(res), f=function(x, x.name) {
-          cat("### ", x.name, "\n",
-              nrow(x), "differential peaks at FDR 5%.\n", fill=TRUE)#,
-          layout(matrix(c(1, 2, 3, 3), nrow=2, ncol=2, byrow=TRUE))
-          freq <- table(x$seqnames)
-          opar <- par(mfrow=c(1, 3))
-          barplot(freq[rev(order(gsub("chr", "", names(freq))))], , horiz=TRUE, las=1, xlab="number of peaks")
-          hist(x$Fold, main="", xlab="fold change", ylab="number of peaks", col="grey")#,
-          abline(v=0, lty=2, col="blue")
-          plot(x$Conc, x$Fold, main="", xlab="concentration", ylab="fold change")#,
-          abline(h=0, lty=2, col="blue")
-          par(opar)
-          invisible(NULL)
-      })
+    # read the results (if available
+    res <- readRDS(file.path(SHINYREPS_DIFFBIND, subdir, "diffbind.rds"))
+    
+    # for each contrast
+    Map(x=res, x.name=names(res), f=function(x, x.name) {
+      cat("#### ", x.name, "\n",
+          nrow(x), "differential peaks at FDR 5%.\n", fill=TRUE)#,
+      layout(matrix(c(1, 2, 3, 3), nrow=2, ncol=2, byrow=TRUE))
+      freq <- table(x$seqnames)
+      opar <- par(mfrow=c(1, 3))
+      barplot(freq[rev(order(gsub("chr", "", names(freq))))], horiz=TRUE, las=1, xlab="number of peaks")
+      hist(x$Fold, main="", xlab="fold change", ylab="number of peaks", col="grey")#,
+      abline(v=0, lty=2, col="blue")
+      plot(x$Conc, x$Fold, main="", xlab="concentration", ylab="fold change")#,
+      abline(h=0, lty=2, col="blue")
+      par(opar)
+      invisible(NULL)
+    })
   }, error=function(e) cat("Differential binding analysis not available.\n", fill=TRUE))
 }
 
+##
+#' selectSampleSubset: select subset of samples for including in report (e.g. in case of multiple fastq files in scRNA-seq) 
+#'
+#' @param samples character vector with sample names
+#' @param samplePattern regular expression to apply on \code{samples}
+#' @param exclude logical indicating if selected samples shall be excluded or included
+#' @param grepInBasename logical. If \code{TRUE} apply pattern to filename, not to full path.
+#'
+#' @return character vector with selected sample names
+selectSampleSubset <- function(samples, samplePattern=NULL, exclude=F, grepInBasename=T, maxno=NULL) {
+  # use all samples for samplePattern=NULL
+  if(!is.null(samplePattern)) {
+    
+    x <- if(grepInBasename) {basename(samples)} else {samples} # if TRUE apply pattern to filename, not to full path
+    samples <- samples[grep(samplePattern, x, invert=exclude)]
+    
+    if(length(samples)==0) {stop("\nYou have selected no files!\n")}
+  }
+  if(!is.null(maxno)) {
+    samples <- samples[1:min(length(samples), maxno)]
+    if(maxno < length(samples)) {cat("\nSample number restricted to", maxno)}
+  }
+  return(samples)
+}

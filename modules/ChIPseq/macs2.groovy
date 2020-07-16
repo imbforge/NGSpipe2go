@@ -3,9 +3,10 @@ macs2 = {
         desc:  "MACS2 wrapper",
         constraints: "Only performs treatment versus control peak calling",
         bpipe_version: "tested with bpipe 0.9.8.7",
-        author: "Sergi Sayols"
+        author: "Sergi Sayols, Frank Rühle"
 
-    output.dir = macs2_vars.outdir
+    var subdir : ""
+    output.dir = macs2_vars.outdir + "/$subdir" 
 
     def MACS2_FLAGS =
         (macs2_vars.gsize  ? " -g "           + macs2_vars.gsize  : "") +
@@ -28,18 +29,20 @@ macs2 = {
                 exit 0;
             fi;
 
-            BAM=\$(basename $input) &&
-            grep \$BAM ${macs2_vars.targets} | while read -r TARGET; do
-                IP=\$(       echo $TARGET | tr '\t' ' ' | cut -f1 -d" ") &&
+            BAM=\$(basename $input) &&           
+            extension="\${BAM#*.}" &&
+            BAM="\${BAM%%.*}" &&
+            grep "^\$BAM" ${macs2_vars.targets} | while read -r TARGET; do
+                IP=\$(       echo $TARGET | tr '\t' ' ' | cut -f1 -d" ").\$extension &&
                 IPname=\$(   echo $TARGET | tr '\t' ' ' | cut -f2 -d" ") &&
-                INPUT=\$(    echo $TARGET | tr '\t' ' ' | cut -f3 -d" ") &&
+                INPUT=\$(    echo $TARGET | tr '\t' ' ' | cut -f3 -d" ").\$extension &&
                 INPUTname=\$(echo $TARGET | tr '\t' ' ' | cut -f4 -d" ");
 
                 if [ "\$BAM" != "\$INPUT" ]; then
                     echo "\${IPname} vs \${INPUTname}" >> $output &&
-                    macs2 callpeak -t ${macs2_vars.mapped}/\$IP -c ${macs2_vars.mapped}/\$INPUT -n \${IPname}.vs.\${INPUTname}_macs2 $MACS2_FLAGS &&
+                    macs2 callpeak -t ${macs2_vars.mapped}/\$IP -c ${macs2_vars.mapped}/\$INPUT -n $subdir\${IPname}.vs.\${INPUTname}_macs2 $MACS2_FLAGS &&
                     if [ \$? -ne 0 ]; then rm $output; fi &&
-                    mv \${IPname}.vs.\${INPUTname}_macs2* $output.dir;
+                    find . -maxdepth 1 -name "$subdir\${IPname}.vs.\${INPUTname}_macs2*" -exec sh -c 'mv "\$1" "$output.dir/\${1#./$subdir}"' _ {} \\;;
                 fi;
             done
         ""","macs2"

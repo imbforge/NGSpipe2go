@@ -1,9 +1,10 @@
 diffbind_vars=[
-    targets          : "targets_diffbind.txt",   //targets file. Check the bin directory for the format
+    targets          : "targets.txt",            //targets file. Check the bin directory for the format
     contrasts        : "contrasts_diffbind.txt", //contrasts file. Check the bin directory for the format
     cwd              : PROJECT,                  //current working directory
     outdir           : RESULTS + "/diffbind",    //output directory
     bams             : MAPPED,                   // directory with the bam files
+    peaks            : RESULTS + "/macs2",       // directory with peak caller output
     fragsize         : Integer.toString(ESSENTIAL_FRAGLEN), // average fragment size
     substractcontrol : true,                     // substract input
     fulllibrarysize  : true,                     // use total number of reads in bam for normalization (FALSE=only peaks)

@@ -12,7 +12,7 @@ ESSENTIAL_FRAGLEN=200   // mean length of library inserts and also minimum peak 
 ESSENTIAL_DUP="auto"  // how MACS2 deals with duplicated reads or fragments ("auto", "no" or 1)
 ESSENTIAL_MACS2_GSIZE="10000000"  // mappable genome size for MACS2 (use approx. number or "hs" for human, "mm" for mouse, "ce" for worm, "dm" for fly)
 ESSENTIAL_THREADS=4   // number of threads for parallel tasks
-ESSENTIAL_DB=""  // UCSC assembly version for GREAT analysis (only for UCSC hg19, hg18, mm9 and danRer7)
+ESSENTIAL_DB="sacCer3"  // UCSC assembly version for GREAT analysis (only for UCSC hg19, hg18, mm9 and danRer7)
 ESSENTIAL_FRAGMENT_USAGE="no" // "no" for SR data; "yes" for PE data to make bigWig tracks with reconstituted fragments
 ESSENTIAL_PAIRED="no"   // to perform MACS2 peak calling in SR mode ("no") or PE mode ("yes") 
 ESSENTIAL_STRANDED="no"  // library prep protocol strandness: no|yes|reverse
@@ -34,10 +34,11 @@ RUN_IN_PAIRED_END_MODE=(ESSENTIAL_PAIRED == "yes")
 RUN_PEAK_ANNOTATION=true
 RUN_DIFFBIND=true
 RUN_TRACKHUB=false
-RUN_USING_UNFILTERED_BAM=false  // Defaults to false (remove duplicates and multimappers from BAM file)
-// Set to false for standard workflow using deduplicated BAM files of MapQ filtered (~ unique) reads
+// RUN_USING_UNFILTERED_BAM=false  // deprecated 
+// Pipeline performes 2 branches for bam file processing in parallel
+// default branch: remove duplicates and multimappers (MapQ filtered) from BAM file
 // assumes that duplicated library fragments are unwanted PCR artifacts
 // discards multimapping reads as habitually done in most ChIP-seq studies.
-// Set to true for alternative workflow using the unfiltered BAM files
+// unfilt branch: alternative workflow using the unfiltered BAM files
 // may be preferable when studying some types of repetitive regions.
 // Make sure to have ESSENTIAL_DUP="auto" for MACS2 peak calling.

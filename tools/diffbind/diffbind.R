@@ -12,6 +12,7 @@
 ## contrasts=contrasts.txt      # file describing the contrasts
 ## cwd=./                       # current working directory where the files .tsv files are located
 ## bams=paste0(CWD, "/mapped")  # directory with the bam files
+## peaks=paste0(CWD, "/results/macs2")  # directory with peak caller output
 ## out=paste0(CWD, "/results")  # prefix filename for output
 ## fragsize=200                 # average fragment size
 ## substractControl=TRUE        # substract input
@@ -47,6 +48,8 @@ FTARGETS   <- parseArgs(args,"targets=","targets.txt")     # file describing the
 FCONTRASTS <- parseArgs(args,"contrasts=","contrasts.txt") # file describing the contrasts
 CWD        <- parseArgs(args,"cwd=","./")     # current working directory
 BAMS       <- parseArgs(args,"bams=",paste0(CWD, "/mapped"))  # directory with the bam files
+PEAKS      <- parseArgs(args,"peaks=",paste0(CWD, "/results/macs2"))  # directory with the peak files
+EXTENSION  <- parseArgs(args,"ext=","unique.dupmarked.bam")  # file extension to be selected in targets,txt
 OUT        <- parseArgs(args,"out=", paste0(CWD, "/results")) # directory where the output files will go
 FRAGSIZE   <- parseArgs(args,"fragsize=", 200, "as.numeric")# fragment size
 SUBSTRACTCONTROL  <- parseArgs(args,"substractControl=", TRUE, "as.logical")  # substract input
@@ -58,12 +61,13 @@ TSS        <- parseArgs(args,"tss=", "c(-3000,3000)", "run_custom_code") # regio
 TXDB       <- parseArgs(args,"txdb=", "TxDb.Mmusculus.UCSC.mm9.knownGene") # Bioconductor transcript database, for annotation 
 ANNODB     <- parseArgs(args,"annodb=", "org.Mm.eg.db") # Bioconductor gene annotation database
 
-runstr <- "Rscript diffbind.R [targets=targets.txt] [contrasts=contrasts.txt] [cwd=./] [bams=./mapped] [out=./results] [fragsize=200] [annotate=TRUE] [pe=TRUE] [tss=c(-3000,3000)] [txdb=TxDb.Mmusculus.UCSC.mm9.knownGene] [annodb=org.Mm.eg.db]"
+runstr <- "Rscript diffbind.R [targets=targets.txt] [contrasts=contrasts.txt] [cwd=./] [bams=./mapped] [peaks=./results/macs2] [out=./results] [fragsize=200] [annotate=TRUE] [pe=TRUE] [tss=c(-3000,3000)] [txdb=TxDb.Mmusculus.UCSC.mm9.knownGene] [annodb=org.Mm.eg.db]"
 if(!file.exists(CWD))        stop("Dir",CWD,"does NOT exist. Run with:\n",runstr)
 setwd(CWD)
 if(!file.exists(FTARGETS))   stop("File",FTARGETS,"does NOT exist. Run with:\n",runstr)
 if(!file.exists(FCONTRASTS)) stop("File",FCONTRASTS,"does NOT exist. Run with:\n",runstr)
 if(!file.exists(BAMS))       stop("Dir",BAMS,"does NOT exist. Run with:\n",runstr)
+if(!file.exists(PEAKS))      stop("Dir",PEAKS,"does NOT exist. Run with:\n",runstr)
 if(!is.numeric(FRAGSIZE))    stop("Fragment size not numeric. Run with:\n",runstr)
 if(!is.logical(ANNOTATE))    stop("Annotate not logical. Run with:\n",runstr)
 if(!is.logical(PE))          stop("Paired end (pe) not logical. Run with:\n",runstr)
@@ -79,6 +83,19 @@ pdf(paste0(OUT, "/diffbind.pdf"))
 # load targets and make analysis
 conts   <- read.delim(FCONTRASTS, head=F, comment.char="#")
 targets <- read.delim(FTARGETS, head=T, colClasses="character", comment.char="#")
+
+targets <- data.frame(
+  SampleID= targets$IPname,
+  Condition= targets$group,
+  Replicate= targets$Replicate,
+  bamReads= paste0(BAMS, "/", targets$IP, ".", EXTENSION),
+  ControlID= targets$INPUTname,
+  bamControl= paste0(BAMS, "/", targets$INPUT, ".", EXTENSION),
+  Peaks= paste0(PEAKS, "/", targets$IPname, ".vs.", targets$INPUTname, "_macs2_peaks.xls"),
+  PeakCaller= targets$PeakCaller
+)
+
+
 db <- dba(sampleSheet=targets, config=data.frame(fragmentSize=FRAGSIZE, bCorPlot=F, singleEnd=!PE))
 db <- dba.count(db, bUseSummarizeOverlaps=PE)  # bUseSummarizeOverlaps method slower and memory hungry, mandatory only for PE data
 dba.plotPCA(db, DBA_CONDITION, label=DBA_CONDITION)
