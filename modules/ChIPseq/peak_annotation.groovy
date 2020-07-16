@@ -28,6 +28,4 @@ peak_annotation = {
             Rscript ${PIPELINE_ROOT}/tools/Peak_Annotation/Peak_Annotation.R $PEAK_ANNOTATION_FLAGS;
         ""","peak_annotation"
     }
-
-    forward input
 }

@@ -35,10 +35,7 @@ diffbind = {
             ${TOOL_ENV} &&
             ${PREAMBLE} &&
 
-            EXTENSION=\$(basename $input) &&           
-            EXTENSION="\${EXTENSION#*.}" &&
-
-            Rscript ${PIPELINE_ROOT}/tools/diffbind/diffbind.R ext=\$EXTENSION $DIFFBIND_FLAGS
+            Rscript ${PIPELINE_ROOT}/tools/diffbind/diffbind.R $DIFFBIND_FLAGS
         ""","diffbind"
     }
 

@@ -47,8 +47,6 @@ qc_single = segment {
 		phantompeak
 	]
 }
-//	    		(RUN_IN_PAIRED_END_MODE ? [bamCoverage, InsertSize] : [extend + bamCoverage, phantompeak]), 
-
 
 //MAIN PIPELINE TASK
 dontrun = { println "didn't run $module" }
@@ -64,24 +62,25 @@ Bpipe.run {
 		[
 	    		(RUN_IN_PAIRED_END_MODE ? qc_paired : qc_single), 
                 	 ipstrength.using(subdir:"unfilt"), 
-		         macs2.using(subdir:"unfilt") +
-                        (RUN_PEAK_ANNOTATION ? peak_annotation.using(subdir:"unfilt") : dontrun.using(module:"peak_annotation")) +
-                        (RUN_DIFFBIND ? diffbind.using(subdir:"unfilt") : dontrun.using(module:"diffbind"))
+		         macs2.using(subdir:"unfilt")                   
 		]
             ], 
             [ filbowtie2unique + BAMindexer + RmDups + BAMindexer + 
                 [
 	    		(RUN_IN_PAIRED_END_MODE ? qc_paired : qc_single), 
                 	 ipstrength, 
-		         macs2 +
-                        (RUN_PEAK_ANNOTATION ? peak_annotation : dontrun.using(module:"peak_annotation")) +
-                        (RUN_DIFFBIND ? diffbind : dontrun.using(module:"diffbind")) 
-		]
+		         macs2 
+		]  
             ]
-        ]
+        ] 
 
       ] + 
-      // (RUN_TRACKHUB ? trackhub_config + trackhub : dontrun.using(module:"trackhub")) +
-      MultiQC + collectToolVersions + collectBpipeLogs + shinyReports
+    [(RUN_PEAK_ANNOTATION ? peak_annotation.using(subdir:"unfilt") : dontrun.using(module:"peak_annotation")) +
+     (RUN_DIFFBIND ? diffbind.using(subdir:"unfilt") : dontrun.using(module:"diffbind")),
+     (RUN_PEAK_ANNOTATION ? peak_annotation : dontrun.using(module:"peak_annotation")) +
+     (RUN_DIFFBIND ? diffbind : dontrun.using(module:"diffbind")) 
+    ] +
+    // (RUN_TRACKHUB ? trackhub_config + trackhub : dontrun.using(module:"trackhub")) +
+    collectToolVersions + collectBpipeLogs + MultiQC + shinyReports
 }
 

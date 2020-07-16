@@ -17,18 +17,18 @@ library("ngsReports")
 ## loadGlobalVars: read configuration from bpipe vars
 ##
 loadGlobalVars <- function(f="shinyReports.txt") {
-
-    # read in the conf file
-    conf <- readLines(f)
-    conf <- conf[grep("^SHINYREPS_", conf)]
-    
-    # create the vars
-    sapply(conf, function(x) {
-        x <- unlist(strsplit(x, "=", fixed=T))
-        assign(x[1], x[2], envir=.GlobalEnv)
-    })
-    
-    invisible(0)
+  
+  # read in the conf file
+  conf <- readLines(f)
+  conf <- conf[grep("^SHINYREPS_", conf)]
+  
+  # create the vars
+  sapply(conf, function(x) {
+    x <- unlist(strsplit(x, "=", fixed=T))
+    assign(x[1], x[2], envir=.GlobalEnv)
+  })
+  
+  invisible(0)
 }
 
 ##
@@ -36,8 +36,8 @@ loadGlobalVars <- function(f="shinyReports.txt") {
 ##
 # shorten: if a text string is longer than certain length, shorten by showing the first and last characters
 shorten <- function(x, max.len=40, ini=20, end=15) {
-    l <- nchar(x)
-    if(l > max.len) paste(substr(x, 1, ini), substr(x, (l-end), l), sep="...") else x
+  l <- nchar(x)
+  if(l > max.len) paste(substr(x, 1, ini), substr(x, (l-end), l), sep="...") else x
 }
 
 ##
@@ -109,46 +109,46 @@ ChIPhelper.init <- function(task, subdir="", peaks_as="data.frame") {
 ## ChIPhelper.ComparisonsFromTargets: get te comparisons performed by MACS2 from the targets file
 ##
 ChIPhelper.ComparisonsFromTargets <- function() {
-    
-    # check for targets.txt and macs2 results
-    TARGETS <- paste0(SHINYREPS_PROJECT, "/", SHINYREPS_TARGETS)
-    if(!file.exists(TARGETS)) {
-        return("Targets file not available")
-    }
-
-    if(!file.exists(SHINYREPS_MACS2)) {
-        return("MACS2 results not available")
-    }
-    
-    # get the comparisons and clean the names
-    x <- read.delim(TARGETS)
-
-    if(file.exists(paste0(x$IPname, ".vs.", x$INPUTname,"_macs2_blacklist_filtered_peaks.xls"))[1]) {
-         comparisons <- paste0(x$IPname, ".vs.", x$INPUTname, "_macs2_blacklist_filtered_peaks.xls")  
-    } else {
-         comparisons <- paste0(x$IPname, ".vs.", x$INPUTname, "_macs2_peaks.xls")
-    }
-
-    exist <- sapply(paste0(SHINYREPS_MACS2, "/", comparisons), file.exists)
-    comparisons <- gsub(".vs.", " vs. ", comparisons)
-
-    if(file.exists(paste0(x$IPname, ".vs.", x$INPUTname,"_macs2_blacklist_filtered_peaks.xls"))[1]) {
-         comparisons <- gsub("_macs2_blacklist_filtered_peaks.xls", "", comparisons)  
-    } else {
-         comparisons <- gsub("_macs2_peaks.xls", "", comparisons)
-    }
-   
-    return(comparisons[exist])
+  
+  # check for targets.txt and macs2 results
+  TARGETS <- paste0(SHINYREPS_PROJECT, "/", SHINYREPS_TARGETS)
+  if(!file.exists(TARGETS)) {
+    return("Targets file not available")
+  }
+  
+  if(!file.exists(SHINYREPS_MACS2)) {
+    return("MACS2 results not available")
+  }
+  
+  # get the comparisons and clean the names
+  x <- read.delim(TARGETS)
+  
+  if(file.exists(paste0(x$IPname, ".vs.", x$INPUTname,"_macs2_blacklist_filtered_peaks.xls"))[1]) {
+    comparisons <- paste0(x$IPname, ".vs.", x$INPUTname, "_macs2_blacklist_filtered_peaks.xls")  
+  } else {
+    comparisons <- paste0(x$IPname, ".vs.", x$INPUTname, "_macs2_peaks.xls")
+  }
+  
+  exist <- sapply(paste0(SHINYREPS_MACS2, "/", comparisons), file.exists)
+  comparisons <- gsub(".vs.", " vs. ", comparisons)
+  
+  if(file.exists(paste0(x$IPname, ".vs.", x$INPUTname,"_macs2_blacklist_filtered_peaks.xls"))[1]) {
+    comparisons <- gsub("_macs2_blacklist_filtered_peaks.xls", "", comparisons)  
+  } else {
+    comparisons <- gsub("_macs2_peaks.xls", "", comparisons)
+  }
+  
+  return(comparisons[exist])
 }
 
 ##
 ## ChIPhelper.Peaks: show the peaks called by MACS2
 ##
 ChIPhelper.Peaks <- function(i=1) {
-    ord  <- order(peaks[[i]][, "-log10 FDR"], 
-                  peaks[[i]][, "fold enrichment"], 
-                  decreasing=TRUE)
-    peaks[[i]][ord, ]
+  ord  <- order(peaks[[i]][, "-log10 FDR"], 
+                peaks[[i]][, "fold enrichment"], 
+                decreasing=TRUE)
+  peaks[[i]][ord, ]
 }
 
 ##
@@ -186,66 +186,66 @@ ChIPhelper.VennDiagram <- function(subdir=""){
 ## ChIPhelper.BOWTIE: parse bowtie log files and create a md table
 ##
 ChIPhelper.Bowtie <- function() {
+  
+  # log file
+  LOG <- SHINYREPS_BOWTIE_LOG
+  if(!file.exists(LOG)) {
+    return("Bowtie statistics not available")
+  }
+  
+  # look for the lines containing the strings
+  # and get the values associated with this strings
+  x <- sapply(list.files(LOG), function(f) {
     
-    # log file
-    LOG <- SHINYREPS_BOWTIE_LOG
-    if(!file.exists(LOG)) {
-        return("Bowtie statistics not available")
+    x <- file(paste0(LOG, "/", f))
+    l <- readLines(x)
+    close(x)
+    
+    stats <- sapply(c("reads processed",                    #1
+                      "reads with at least one reported alignment",  #2
+                      "reads that failed to align",                  #3
+                      "reads with alignments suppressed due to -m"), #4
+                    function(x) { 
+                      gsub("^.+: ", "", l[grep(x, l)])
+                    })
+    
+    # and add the duplicates information
+    f <- gsub(".bam.log", ".dupmarked.bam.log", f)
+    dups <- if(file.exists(paste0(SHINYREPS_MARKDUPS_LOG, "/", f))) {
+      x <- file(paste0(SHINYREPS_MARKDUPS_LOG, "/", f))
+      l <- readLines(x)
+      close(x)
+      gsub(".+Marking (\\d+) records as duplicates.+", "\\1", l[grep("Marking \\d+ records as duplicates", l)])
+    } else {
+      "not available"
     }
     
-    # look for the lines containing the strings
-    # and get the values associated with this strings
-    x <- sapply(list.files(LOG), function(f) {
-        
-        x <- file(paste0(LOG, "/", f))
-        l <- readLines(x)
-        close(x)
-        
-        stats <- sapply(c("reads processed",                    #1
-                 "reads with at least one reported alignment",  #2
-                 "reads that failed to align",                  #3
-                 "reads with alignments suppressed due to -m"), #4
-                 function(x) { 
-                     gsub("^.+: ", "", l[grep(x, l)])
-                 })
+    stats.return <- c(
+      stats[1],                           # reads processed
+      unlist(strsplit(stats[2], " "))[1], # reads with at least one reported alignment
+      unlist(strsplit(stats[2], " "))[2], # (percentage)
+      unlist(strsplit(stats[3], " "))[1], # reads that failed to align 
+      unlist(strsplit(stats[3], " "))[2], # (percentage)
+      unlist(strsplit(stats[4], " "))[1], # reads with alignments suppressed due to -m
+      unlist(strsplit(stats[4], " "))[2]  # (percentage)
+    )
     
-        # and add the duplicates information
-        f <- gsub(".bam.log", ".dupmarked.bam.log", f)
-        dups <- if(file.exists(paste0(SHINYREPS_MARKDUPS_LOG, "/", f))) {
-            x <- file(paste0(SHINYREPS_MARKDUPS_LOG, "/", f))
-            l <- readLines(x)
-            close(x)
-            gsub(".+Marking (\\d+) records as duplicates.+", "\\1", l[grep("Marking \\d+ records as duplicates", l)])
-        } else {
-            "not available"
-        }
-        
-        stats.return <- c(
-            stats[1],                           # reads processed
-            unlist(strsplit(stats[2], " "))[1], # reads with at least one reported alignment
-            unlist(strsplit(stats[2], " "))[2], # (percentage)
-            unlist(strsplit(stats[3], " "))[1], # reads that failed to align 
-            unlist(strsplit(stats[3], " "))[2], # (percentage)
-            unlist(strsplit(stats[4], " "))[1], # reads with alignments suppressed due to -m
-            unlist(strsplit(stats[4], " "))[2]  # (percentage)
-        )
-        
-        
-        c(stats.return, dups)
-    })
-
-    # set row and column names, and output the md table
-    colnames(x) <- gsub(paste0("^", SHINYREPS_PREFIX), "", colnames(x))
-    colnames(x) <- gsub(".bam.log$", "", colnames(x))
-    df <- data.frame(sample_names=sapply(colnames(x), shorten), 
-                     input_reads=format( as.numeric(x[1, ]), big.mark=", "), 
-                     mapped=paste( format( as.numeric(x[2, ]), big.mark=", "), x[3, ], sep=" "), 
-                     failed=paste( format( as.numeric(x[4, ]), big.mark=", "), x[5, ], sep=" "), 
-                     discarded=paste( format( as.numeric(x[6, ]), big.mark=", "), x[7, ], sep=" "), 
-                     duplicates=paste0(format(as.numeric(x[8, ]), big.mark=", "), " (", round(100 * as.numeric(x[8, ]) / as.numeric(x[2, ]), 2), "%)")
-                     )
-    kable(df, align=c("l", "r", "r", "r", "r", "r"), output=F, format="markdown", row.names=FALSE,
-          col.names=c("sample names", "all reads", "mapped (% of all)", "unmapped (% of all)", "too many map. pos. (% all)", "duplicates (% of mapped)"))
+    
+    c(stats.return, dups)
+  })
+  
+  # set row and column names, and output the md table
+  colnames(x) <- gsub(paste0("^", SHINYREPS_PREFIX), "", colnames(x))
+  colnames(x) <- gsub(".bam.log$", "", colnames(x))
+  df <- data.frame(sample_names=sapply(colnames(x), shorten), 
+                   input_reads=format( as.numeric(x[1, ]), big.mark=", "), 
+                   mapped=paste( format( as.numeric(x[2, ]), big.mark=", "), x[3, ], sep=" "), 
+                   failed=paste( format( as.numeric(x[4, ]), big.mark=", "), x[5, ], sep=" "), 
+                   discarded=paste( format( as.numeric(x[6, ]), big.mark=", "), x[7, ], sep=" "), 
+                   duplicates=paste0(format(as.numeric(x[8, ]), big.mark=", "), " (", round(100 * as.numeric(x[8, ]) / as.numeric(x[2, ]), 2), "%)")
+  )
+  kable(df, align=c("l", "r", "r", "r", "r", "r"), output=F, format="markdown", row.names=FALSE,
+        col.names=c("sample names", "all reads", "mapped (% of all)", "unmapped (% of all)", "too many map. pos. (% all)", "duplicates (% of mapped)"))
 }
 
 
@@ -283,14 +283,14 @@ ChIPhelper.Bowtie2 <- function() {
                     "single unique",
                     "single multi",
                     "overall align. rate")
-
+    
     if(!isPaired) { # modify for single read design
       remove_lines <- grep("cordantly", stat.lines)
       stat.lines <- stat.lines[-remove_lines]
       stat.names <- stat.names[-remove_lines]
       stat.names <- gsub("single ", "", stat.names)
     }
-     
+    
     stats <- sapply(l[sapply(stat.lines, grep, x=l)], 
                     function(x) { 
                       sub("^\\s+", "", gsub(" \\(.*", "", x))
@@ -321,58 +321,58 @@ ChIPhelper.Bowtie2 <- function() {
 ## ChIPhelper.Fastqc: go through Fastqc output dir and create a md table with the duplication & read quals & sequence bias plots
 ##
 ChIPhelper.Fastqc <- function(web=TRUE) {
-    
-    # logs folder
-    if(!file.exists(SHINYREPS_FASTQC)) {
-        return("Fastqc statistics not available")
-    }
-    
-    # construct the folder name, which is different for web and noweb
-    QC <- if(web) "/fastqc" else SHINYREPS_FASTQC
-    
-    # construct the image url from the folder ents (skip current dir .)
-    samples <- list.dirs(SHINYREPS_FASTQC, recursive=F)
-    df <- sapply(samples, function(f) {
-        c(paste0("![fastq dup img](", QC, "/", basename(f), "/Images/duplication_levels.png)"), 
-          paste0("![fastq qual img](", QC, "/", basename(f), "/Images/per_base_quality.png)"), 
-          paste0("![fastq sequ img](", QC, "/", basename(f), "/Images/per_base_sequence_content.png)"))
-    })
-
-    # set row and column names, and output the md table
-    df <- as.data.frame(t(df))
-    x <- gsub(paste0("^", SHINYREPS_PREFIX), "", basename(samples))
-    x <- gsub("_fastqc$", "", x)
-    rownames(df) <- sapply(x, shorten)
-    colnames(df) <- c("Duplication levels", "Read qualities", "Sequence bias")
-    kable(df, output=F, align="c", format="markdown")
+  
+  # logs folder
+  if(!file.exists(SHINYREPS_FASTQC)) {
+    return("Fastqc statistics not available")
+  }
+  
+  # construct the folder name, which is different for web and noweb
+  QC <- if(web) "/fastqc" else SHINYREPS_FASTQC
+  
+  # construct the image url from the folder ents (skip current dir .)
+  samples <- list.dirs(SHINYREPS_FASTQC, recursive=F)
+  df <- sapply(samples, function(f) {
+    c(paste0("![fastq dup img](", QC, "/", basename(f), "/Images/duplication_levels.png)"), 
+      paste0("![fastq qual img](", QC, "/", basename(f), "/Images/per_base_quality.png)"), 
+      paste0("![fastq sequ img](", QC, "/", basename(f), "/Images/per_base_sequence_content.png)"))
+  })
+  
+  # set row and column names, and output the md table
+  df <- as.data.frame(t(df))
+  x <- gsub(paste0("^", SHINYREPS_PREFIX), "", basename(samples))
+  x <- gsub("_fastqc$", "", x)
+  rownames(df) <- sapply(x, shorten)
+  colnames(df) <- c("Duplication levels", "Read qualities", "Sequence bias")
+  kable(df, output=F, align="c", format="markdown")
 }
 
 ##
 ## ChIPhelper.ngsReports.Fastqc: joint FastQC report of all samples in the experiment
 ##
 ChIPhelper.ngsReports.Fastqc <- function() {
-	
-	# output folder
-	if(!file.exists(SHINYREPS_FASTQC)) {
-		return("Fastqc statistics not available")
-	}
-
-    # Loading FastQC Data 
-    f <- list.files(SHINYREPS_FASTQC, pattern="fastqc.zip$", full.names=TRUE)
-    x <- ngsReports::FastqcDataList(f)
-	lbls <- gsub(paste0("(^", SHINYREPS_PREFIX, "|.fastqc.zip$)"), "", names(x))
-    names(lbls) <- gsub(".fastqc.zip", ".fastq.gz", names(x))
-
-    print(ngsReports::plotDupLevels(x, labels=lbls))
-    print(ngsReports::plotBaseQuals(x, labels=lbls))
-    print(ngsReports::plotSeqContent(x, labels=lbls) +
-            theme(legend.position="right") +
-            guides(fill=FALSE, color="legend") +
-            geom_point(mapping=aes(x=Inf, y=Inf, color=base),
-                       data=data.frame(base=c("T", "A", "C", "G")),
-                       inherit.aes=FALSE, show.legend=TRUE) +
-            scale_color_manual("", values=c("red", "green", "blue", "black"))
-    )
+  
+  # output folder
+  if(!file.exists(SHINYREPS_FASTQC)) {
+    return("Fastqc statistics not available")
+  }
+  
+  # Loading FastQC Data 
+  f <- list.files(SHINYREPS_FASTQC, pattern="fastqc.zip$", full.names=TRUE)
+  x <- ngsReports::FastqcDataList(f)
+  lbls <- gsub(paste0("(^", SHINYREPS_PREFIX, "|.fastqc.zip$)"), "", names(x))
+  names(lbls) <- gsub(".fastqc.zip", ".fastq.gz", names(x))
+  
+  print(ngsReports::plotDupLevels(x, labels=lbls))
+  print(ngsReports::plotBaseQuals(x, labels=lbls))
+  print(ngsReports::plotSeqContent(x, labels=lbls) +
+          theme(legend.position="right") +
+          guides(fill=FALSE, color="legend") +
+          geom_point(mapping=aes(x=Inf, y=Inf, color=base),
+                     data=data.frame(base=c("T", "A", "C", "G")),
+                     inherit.aes=FALSE, show.legend=TRUE) +
+          scale_color_manual("", values=c("red", "green", "blue", "black"))
+  )
 }
 
 
@@ -499,42 +499,42 @@ ChIPhelper.peakAnnotationUpSet <- function(web=TRUE, subdir="") {
 ##     the plots
 ##
 ChIPhelper.PhantomPeak <- function(web=TRUE, ...) {
-    
-    # logs folder
-    if(!file.exists(SHINYREPS_PHANTOMPEAK)) {
-        return("PhantomPeak statistics not available")
-    }
-    
-    if(!is.integer(SHINYREPS_PLOTS_COLUMN) | SHINYREPS_PLOTS_COLUMN < 2) {
-        SHINYREPS_PLOTS_COLUMN <- 3L    # default to 4 columns
-    }
-    
-    # construct the folder name, which is different for web and noweb
-    QC <- if(web) "/phantompeak" else SHINYREPS_PHANTOMPEAK
-    
-    # construct the image url from the folder contents (skip current dir .)
-    samples <- list.files(SHINYREPS_PHANTOMPEAK, pattern=".png$")
-    samples <- selectSampleSubset(samples, ...)
-    COLUMNS <- min(length(samples), SHINYREPS_PLOTS_COLUMN)
-    df <- sapply(samples, function(f) {
-        paste0("![PhantomPeak img](", QC, "/", basename(f), ")")
-    })
-    
-    # put sample names and output an md table of COLUMN columns
-    while(length(df) %% COLUMNS != 0) df <- c(df, "")
-    samples <- sapply(df, function(x) {
-        x <- sapply(x, function(x) gsub(paste0("^", SHINYREPS_PREFIX), "", basename(x)))
-        sapply(gsub("_phantompeak.png)$", "", x), shorten)
-    })
-    df      <- matrix(df     , ncol=COLUMNS, byrow=T)
-    samples <- matrix(samples, ncol=COLUMNS, byrow=T)
-    
-    # add a row with the sample names
-    df.names <- matrix(sapply(1:nrow(df), function(i) { c(df[i, ], samples[i, ]) }), 
-                       ncol=COLUMNS, byrow=T)
-    colnames(df.names) <- rep(" ", COLUMNS)
-    
-    kable(as.data.frame(df.names), output=F, align="c", format="markdown")
+  
+  # logs folder
+  if(!file.exists(SHINYREPS_PHANTOMPEAK)) {
+    return("PhantomPeak statistics not available")
+  }
+  
+  if(!is.integer(SHINYREPS_PLOTS_COLUMN) | SHINYREPS_PLOTS_COLUMN < 2) {
+    SHINYREPS_PLOTS_COLUMN <- 3L    # default to 4 columns
+  }
+  
+  # construct the folder name, which is different for web and noweb
+  QC <- if(web) "/phantompeak" else SHINYREPS_PHANTOMPEAK
+  
+  # construct the image url from the folder contents (skip current dir .)
+  samples <- list.files(SHINYREPS_PHANTOMPEAK, pattern=".png$")
+  samples <- selectSampleSubset(samples, ...)
+  COLUMNS <- min(length(samples), SHINYREPS_PLOTS_COLUMN)
+  df <- sapply(samples, function(f) {
+    paste0("![PhantomPeak img](", QC, "/", basename(f), ")")
+  })
+  
+  # put sample names and output an md table of COLUMN columns
+  while(length(df) %% COLUMNS != 0) df <- c(df, "")
+  samples <- sapply(df, function(x) {
+    x <- sapply(x, function(x) gsub(paste0("^", SHINYREPS_PREFIX), "", basename(x)))
+    sapply(gsub("_phantompeak.png)$", "", x), shorten)
+  })
+  df      <- matrix(df     , ncol=COLUMNS, byrow=T)
+  samples <- matrix(samples, ncol=COLUMNS, byrow=T)
+  
+  # add a row with the sample names
+  df.names <- matrix(sapply(1:nrow(df), function(i) { c(df[i, ], samples[i, ]) }), 
+                     ncol=COLUMNS, byrow=T)
+  colnames(df.names) <- rep(" ", COLUMNS)
+  
+  kable(as.data.frame(df.names), output=F, align="c", format="markdown")
 }
 
 ##
@@ -542,23 +542,23 @@ ChIPhelper.PhantomPeak <- function(web=TRUE, ...) {
 ##     the PBC stats
 ##
 ChIPhelper.PBC <- function() {
-    
-    # logs folder
-    if(!file.exists(SHINYREPS_PBC)) {
-        return("PCR bottleneck coefficient statistics not available")
-    }
-    
-    # construct the image url from the folder contents (skip current dir .)
-    samples <- list.files(SHINYREPS_PBC, pattern="*.csv")
-    df <- sapply(samples, function(f) {
-        read.csv(paste0(SHINYREPS_PBC, "/", f))$PBC
-    })
-    
-    # output md table
-    df <- as.data.frame(df)
-    colnames(df) <- "PBC"
-    rownames(df) <- gsub("_PBC.csv", "", rownames(df))
-    kable(as.data.frame(df), output=F, format="markdown")
+  
+  # logs folder
+  if(!file.exists(SHINYREPS_PBC)) {
+    return("PCR bottleneck coefficient statistics not available")
+  }
+  
+  # construct the image url from the folder contents (skip current dir .)
+  samples <- list.files(SHINYREPS_PBC, pattern="*.csv")
+  df <- sapply(samples, function(f) {
+    read.csv(paste0(SHINYREPS_PBC, "/", f))$PBC
+  })
+  
+  # output md table
+  df <- as.data.frame(df)
+  colnames(df) <- "PBC"
+  rownames(df) <- gsub("_PBC.csv", "", rownames(df))
+  kable(as.data.frame(df), output=F, format="markdown")
 }
 
 
@@ -574,6 +574,7 @@ ChIPhelper.insertsize <- function(...){
     insertsizes <- lapply(filelist, read.table, sep="\t", header=TRUE, nrow=1)
     insertsizes <- do.call(rbind, insertsizes)
     samplenames <- basename(filelist)
+    
     if(length(samplenames)>1) {
       samplenames <- gsub(Biobase::lcPrefix(samplenames), "", samplenames) # remove longest common prefix
       samplenames <- gsub(Biobase::lcSuffix(samplenames), "", samplenames) # remove longest common suffix
@@ -584,7 +585,7 @@ ChIPhelper.insertsize <- function(...){
     rownames(insertsizes) <- samplenames 
     insertsizes <- insertsizes[,c("MEDIAN_INSERT_SIZE","MEAN_INSERT_SIZE", "STANDARD_DEVIATION")]
     colnames(insertsizes) <- c("Median", "Mean", "SD")
-    kable(insertsizes, output=F, align=c("l"), format="markdown") %>% kableExtra::kable_styling()
+    knitr::kable(insertsizes, output=F, align=c("l"), format="markdown") %>% kableExtra::kable_styling()
   }
 }
 
@@ -637,6 +638,7 @@ ChIPhelper.insertsize.helper <- function(metricsFile){
     title_info <- gsub("_insertsizemetrics.tsv$","", basename(metricsFile))
     if(!is.na(SHINYREPS_PREFIX)) {title_info <- gsub(SHINYREPS_PREFIX, "", title_info)}
   }
+  
   
   #we get the histogram which ahs the names of the leves e.g. all_reads and readgroups/sample groups depending on
   #accumulation level which was used.
@@ -715,13 +717,12 @@ ChIPhelper.insertsize.plot <- function(...){
   }
   if (SHINYREPS_PAIRED == "yes" &
       length(selectSampleSubset(list.files(path = SHINYREPS_INSERTSIZE,
-                                           pattern = "insertsizemetrics.tsv$"), 
-                                ...)) > 0) {
+                                           pattern = "insertsizemetrics.tsv$"), ...)) > 0) {
     samples <- list.files(path = SHINYREPS_INSERTSIZE,
                           full.names = TRUE,
                           pattern = "insertsizemetrics.tsv$")
     samples <- selectSampleSubset(samples, ...)
-
+    
     #we generate the plots
     insert_plots <- lapply(samples, 
                            ChIPhelper.insertsize.helper)
@@ -738,22 +739,22 @@ ChIPhelper.insertsize.plot <- function(...){
 ## ChIPhelper.Bustard: call the perl XML interpreter and get the MD output
 ##
 ChIPhelper.Bustard <- function() {
-    f  <- SHINYREPS_BUSTARD
-    
-    if(!file.exists(f)) {
-        return("Bustard statistics not available")
-    }
-    
-    # call the perl XSL inetrpreter
-    cmd <- paste(" bustard.pl", f)
-    try(ret <- system2("perl", cmd, stdout=TRUE, stderr=FALSE))
-    
-    # check RC
-    if(!is.null(attributes(ret))) {
-        return(paste("Error parsing bustard statistics. RC:", attributes(ret)$status, "in command: perl", cmd))
-    }
-    
-    ret     # ret contains already MD code
+  f  <- SHINYREPS_BUSTARD
+  
+  if(!file.exists(f)) {
+    return("Bustard statistics not available")
+  }
+  
+  # call the perl XSL inetrpreter
+  cmd <- paste(" bustard.pl", f)
+  try(ret <- system2("perl", cmd, stdout=TRUE, stderr=FALSE))
+  
+  # check RC
+  if(!is.null(attributes(ret))) {
+    return(paste("Error parsing bustard statistics. RC:", attributes(ret)$status, "in command: perl", cmd))
+  }
+  
+  ret     # ret contains already MD code
 }
 
 ##
@@ -761,11 +762,11 @@ ChIPhelper.Bustard <- function() {
 ##
 ## report version of used tools
 Toolhelper.ToolVersions <- function() {
-    tryCatch({
-        ver <- read.delim(file=SHINYREPS_TOOL_VERSIONS)
-        colnames(ver) <- c("Tool name","Environment", "Version")
-        kable(as.data.frame(ver),output=F)
-    }, error=function(e) cat("tool versions not available.\n", fill=TRUE))
+  tryCatch({
+    ver <- read.delim(file=SHINYREPS_TOOL_VERSIONS)
+    colnames(ver) <- c("Tool name","Environment", "Version")
+    kable(as.data.frame(ver),output=F)
+  }, error=function(e) cat("tool versions not available.\n", fill=TRUE))
 }
 
 ##
@@ -790,11 +791,11 @@ ChIPhelper.BLACKLISTFILTER <- function(subdir="") {
 ## ChIPhelper.GREAT: get the GO enrichment results and display them
 ##
 ChIPhelper.GREAT <- function(){
-
-    #csv file
-    if(!file.exists(SHINYREPS_GREAT)){
-        return("GREAT analysis not available")
-    }
+  
+  #csv file
+  if(!file.exists(SHINYREPS_GREAT)){
+    return("GREAT analysis not available")
+  }
 }
 
 
@@ -802,19 +803,19 @@ ChIPhelper.GREAT <- function(){
 ## ChIPhelper.Trackhub: display the UCSC trackhub URL
 ##
 ChIPhelper.Trackhub <- function() {
-    
-    # output file with trackhub URL
-    if(!file.exists(SHINYREPS_TRACKHUB_DONE)) {
-        return("UCSC GB Trackhub URL file not available")
-    }
-    
-    # Trackhub URL is second line of file
-    url <- scan(SHINYREPS_TRACKHUB_DONE, skip=0, nlines=1, what='character')
-    if (grepl("hub.txt", url)) {
-        return(url)
-    } else {
-        return("UCSC GB Trackhub URL not available")
-    }
+  
+  # output file with trackhub URL
+  if(!file.exists(SHINYREPS_TRACKHUB_DONE)) {
+    return("UCSC GB Trackhub URL file not available")
+  }
+  
+  # Trackhub URL is second line of file
+  url <- scan(SHINYREPS_TRACKHUB_DONE, skip=0, nlines=1, what='character')
+  if (grepl("hub.txt", url)) {
+    return(url)
+  } else {
+    return("UCSC GB Trackhub URL not available")
+  }
 }
 
 ##
@@ -868,3 +869,4 @@ selectSampleSubset <- function(samples, samplePattern=NULL, exclude=F, grepInBas
   }
   return(samples)
 }
+

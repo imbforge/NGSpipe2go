@@ -49,7 +49,6 @@ FCONTRASTS <- parseArgs(args,"contrasts=","contrasts.txt") # file describing the
 CWD        <- parseArgs(args,"cwd=","./")     # current working directory
 BAMS       <- parseArgs(args,"bams=",paste0(CWD, "/mapped"))  # directory with the bam files
 PEAKS      <- parseArgs(args,"peaks=",paste0(CWD, "/results/macs2"))  # directory with the peak files
-EXTENSION  <- parseArgs(args,"ext=","unique.dupmarked.bam")  # file extension to be selected in targets,txt
 OUT        <- parseArgs(args,"out=", paste0(CWD, "/results")) # directory where the output files will go
 FRAGSIZE   <- parseArgs(args,"fragsize=", 200, "as.numeric")# fragment size
 SUBSTRACTCONTROL  <- parseArgs(args,"substractControl=", TRUE, "as.logical")  # substract input
@@ -84,14 +83,24 @@ pdf(paste0(OUT, "/diffbind.pdf"))
 conts   <- read.delim(FCONTRASTS, head=F, comment.char="#")
 targets <- read.delim(FTARGETS, head=T, colClasses="character", comment.char="#")
 
+# determine file suffixes for targets 
+donefiles <- list.files(PEAKS,pattern=".done$")
+bam_suffix <- sub("^[^\\.]*\\.", "", gsub("_macs2.done$", "", donefiles[1]))
+bam_suffix <- paste0(bam_suffix, ".bam")
+
+peakfiles <- list.files(PEAKS,pattern=".xls")
+isBlacklistFilt <- any(grepl("blacklist_filtered", peakfiles))
+peak_suffix <- if(isBlacklistFilt) {"_macs2_blacklist_filtered_peaks.xls"} else {"_macs2_peaks.xls"}
+
+
 targets <- data.frame(
   SampleID= targets$IPname,
   Condition= targets$group,
   Replicate= targets$Replicate,
-  bamReads= paste0(BAMS, "/", targets$IP, ".", EXTENSION),
+  bamReads= paste0(BAMS, "/", targets$IP, ".", bam_suffix),
   ControlID= targets$INPUTname,
-  bamControl= paste0(BAMS, "/", targets$INPUT, ".", EXTENSION),
-  Peaks= paste0(PEAKS, "/", targets$IPname, ".vs.", targets$INPUTname, "_macs2_peaks.xls"),
+  bamControl= paste0(BAMS, "/", targets$INPUT, ".", bam_suffix),
+  Peaks= paste0(PEAKS, "/", targets$IPname, ".vs.", targets$INPUTname, peak_suffix),
   PeakCaller= targets$PeakCaller
 )
 
