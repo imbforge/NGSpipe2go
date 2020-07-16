@@ -66,20 +66,20 @@ config {
       memory="50"
     }
     bowtie1 { 
-      queue="long" 
-      walltime="24:00:00" 
+      queue="bcflong" 
+      walltime="12:00:00" 
       procs="4" 
       memory="24"
     }
     bowtie2 { 
-      queue="long" 
-      walltime="24:00:00" 
+      queue="bcflong" 
+      walltime="12:00:00" 
       procs="4" 
       memory="24"
     }
     bowtie2_pe { 
-      queue="long" 
-      walltime="24:00:00" 
+      queue="bcflong" 
+      walltime="12:00:00" 
       procs="4" 
       memory="24"
     }

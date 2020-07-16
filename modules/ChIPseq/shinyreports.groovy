@@ -20,8 +20,8 @@ shinyReports = {
             cp ${PIPELINE_ROOT}/tools/reports/shiny_chipseq_reporting_tool/BustardSummary.toMD.xsl ${REPORTS} &&
             cp ${PIPELINE_ROOT}/tools/reports/shiny_chipseq_reporting_tool/styles.css ${REPORTS}              &&
 
-            if [ -e "${REPORTS}/DEreport.Rmd" ]; then
-                echo 'DEreport.Rmd already exists. Older copy will be kept and not overwritten';
+            if [ -e "${REPORTS}/ChIPreport.Rmd" ]; then
+                echo 'ChIPreport.Rmd already exists. Older copy will be kept and not overwritten';
             else
                 cp ${PIPELINE_ROOT}/tools/reports/shiny_chipseq_reporting_tool/ChIPreport.Rmd ${REPORTS};
             fi &&
