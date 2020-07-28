@@ -5,7 +5,7 @@ trackhub_config_vars=[
     targets   : PROJECT + "/targets.txt",              // targets file describing the samples for ChIP-seq
     peaksdir  : RESULTS + "/macs2",                    // location of peak files for ChIP-seq (comment out if no peak files)
     tracksdir : TRACKS,                                // location of track files for putting into trackhub
-    config    : PROJECT + "/trackhub.yaml",            // trackhub configuration file
+    config    : TRACKS + "/trackhub.yaml",            // trackhub configuration file
     project   : PROJECT,
     db        : ESSENTIAL_DB,                          // UCSC genome assembly, e.g. "hg19
     chromsizes: ESSENTIAL_CHROMSIZES,                  // chromosome sizes file
