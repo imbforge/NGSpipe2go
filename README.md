@@ -17,7 +17,7 @@ NGSpipe2go is a software framework to facilitate the development, customization 
 
 ## NGSpipe2go preparations ##
 
-### Put NGSpipe2go into the project dir ###
+### Copy NGSpipe2go into the project dir ###
 
 NGS projects should be run in a consistent and reproducible way, hence NGSpipe2go asks you to copy all tools into the project folder, which will ensure that you always use the same program versions at a later time point. This can be done either from a local NGSpipe2go copy or by using the most recent version from the Gitlab repository
 
@@ -25,11 +25,11 @@ NGS projects should be run in a consistent and reproducible way, hence NGSpipe2g
 
 ### Choose one of the pipelines ###
 
-Select a pipeline to run and make symlinks in the main project dir, e.g. for RNA-seq project
+Select a pipeline to run and make symlinks in the main project dir, e.g. for RNA-seq projects
 
     ln -s NGSpipe2go/pipelines/RNAseq/* .
 
-or for ChIP-seq project
+or for ChIP-seq projects
 
     ln -s NGSpipe2go/pipelines/ChIPseq/* .
 
@@ -44,13 +44,13 @@ Adjust the project-specific information in the pipeline dependent files (see pip
 
 Adjust general pipeline settings defined in the NGSpipe2go ***config*** folder:
 
-- *bpipe.config.groovy*: define workload manager resources (default workload manager is "slurm", if not needed set executor="local"). Important: non-BCF users need to modify the default slurm queues named "bcfshort" & "bcflong" to e.g. "short" & "long" according to their slurm environment. 
+- *bpipe.config.groovy*: define workload manager resources (default workload manager is "slurm", if not needed set executor="local"). Important: external users need to modify the default Slurm queues ("bcfshort" and "bcflong") to e.g. "short" and "long" according to their Slurm environment. 
 - *preambles.groovy*: define module preambles if needed (or stay with default preambles)
-- *tools.groovy*: defines default versions and running environments for all installed pipeline tools. It needs to be updated accordingly if new tools or tool versions are installed on your system. If you want to use a different tool version for a certain project you can overwrite the default value in the pipeline-specific tools.groovy file in *NGSpipe2go/pipelines/<pipeline>/tools.groovy*.
+- *tools.groovy*: define default versions and running environments for all installed pipeline tools, modify accordingly if new tools or tool versions are installed on your system. If you want to use a different tool version for a certain project you can overwrite the default value in the pipeline-specific file *NGSpipe2go/pipelines/<pipeline>/tools.groovy*.
 
 ## Run a pipeline ##
 
-Copy the input FastQ files into the <project_dir>/rawdata folder.
+Copy the input FastQ files in the <project_dir>/rawdata folder.
 
 Load the bpipe module customised for the Slurm job manager (we recommend to use GNU Screen for persistence), e.g.
 
