@@ -1,5 +1,4 @@
-// Job resource limits. Adjust to your needs, though defaults are good enough.
-// Contents of this file may be overriden through the pipeline's bpipe.config.groovy
+// Job resource limits. Adjust to your needs, though defaults are usually good enough.
 // NOTES:
 //    * the commands are *sorted*. Please, keep the order!!!
 //    * check the documentation here: http://docs.bpipe.org/Language/Config/
@@ -66,19 +65,19 @@ config {
       memory="50"
     }
     bowtie1 { 
-      queue="long" 
+      queue="bcflong" 
       walltime="24:00:00" 
       procs="4" 
       memory="24"
     }
     bowtie2 { 
-      queue="long" 
+      queue="bcflong" 
       walltime="24:00:00" 
       procs="4" 
       memory="24"
     }
     bowtie2_pe { 
-      queue="long" 
+      queue="bcflong" 
       walltime="24:00:00" 
       procs="4" 
       memory="24"
@@ -301,13 +300,13 @@ config {
       memory="4"
     }
     RepEnrich { 
-      queue="long" 
+      queue="bcflong" 
       walltime="24:00:00" 
       procs="16" 
       memory="8"
     }
     RepEnrichPE { 
-      queue="long" 
+      queue="bcflong" 
       walltime="24:00:00" 
       procs="16" 
       memory="8"
@@ -343,7 +342,7 @@ config {
       memory="4"
     }
     SplitNCigarReads { 
-      queue="long" 
+      queue="bcflong" 
       procs="8" 
       memory="24"
     }
