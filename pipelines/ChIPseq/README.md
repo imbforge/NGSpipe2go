@@ -17,7 +17,7 @@ All analysis steps are illustrated in the pipeline [flowchart](https://www.draw.
 - characterize phantom peaks by cross correlation analysis using the spp R-package (for single read libraries only)
 - peak calling of IP samples vs. corresponding input controls using MACS2
 - peak annotation using the ChIPseeker R-package (optional)
-- differential binding analysis using the diffbind R-package (optional). For this, input peak files must be given in *NGSpipe2go/tools/diffbind/targets_diffbind.txt* and contrasts of interest in *NGSpipe2go/tools/diffbind/contrasts_diffbind.txt* (see below)
+- differential binding analysis using the diffbind R-package (optional). For this, contrasts of interest must be given in *NGSpipe2go/pipelines/ChIPseq/contrasts_diffbind.txt* (see below)
 
 
 ### Pipeline-specific parameter settings
@@ -29,6 +29,7 @@ All analysis steps are illustrated in the pipeline [flowchart](https://www.draw.
   - group: variable for sample grouping (e.g. by condition)
   - Replicate: number of replicate (needed if differential binding analysis is selected)
   - PeakCaller: name of peak caller (in this pipeline it is macs; needed if differential binding analysis is selected)
+
 
 - essential.vars.groovy: essential parameter describing the experiment including: 
   - ESSENTIAL_PROJECT: your project folder name
