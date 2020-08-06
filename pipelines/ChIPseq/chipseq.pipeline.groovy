@@ -76,9 +76,11 @@ Bpipe.run {
 
       ] + 
     [(RUN_PEAK_ANNOTATION ? peak_annotation.using(subdir:"unfilt") : dontrun.using(module:"peak_annotation")) +
-     (RUN_DIFFBIND ? diffbind.using(subdir:"unfilt") : dontrun.using(module:"diffbind")),
+     (RUN_DIFFBIND ? diffbind.using(subdir:"unfilt") : dontrun.using(module:"diffbind")) +
+     (RUN_ENRICHMENT ? GREAT.using(subdir:"unfilt") : dontrun.using(module:"GREAT")),
      (RUN_PEAK_ANNOTATION ? peak_annotation : dontrun.using(module:"peak_annotation")) +
-     (RUN_DIFFBIND ? diffbind : dontrun.using(module:"diffbind")) 
+     (RUN_DIFFBIND ? diffbind : dontrun.using(module:"diffbind")) +
+     (RUN_ENRICHMENT ? GREAT : dontrun.using(module:"GREAT")),
     ] +
     // (RUN_TRACKHUB ? trackhub_config + trackhub : dontrun.using(module:"trackhub")) +
     collectToolVersions + collectBpipeLogs + MultiQC + shinyReports

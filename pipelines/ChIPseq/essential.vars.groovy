@@ -1,4 +1,4 @@
-ESSENTIAL_PROJECT="/your/project/folder/"   // full project directory path
+ESSENTIAL_PROJECT="your/project/directory"   // full project directory path
 ESSENTIAL_BOWTIE_REF="/fsimb/common/genomes/saccharomyces_cerevisiae/ucsc/saccer3/canonical/index/bowtie2/genome"  // full path to reference index files (base name) needed for Bowtie2
 ESSENTIAL_BOWTIE_GENOME="/fsimb/common/genomes/saccharomyces_cerevisiae/ucsc/saccer3/canonical/genome/genome.fa" // full path to the reference genome FASTA file
 ESSENTIAL_CHROMSIZES="/fsimb/common/genomes/saccharomyces_cerevisiae/ucsc/saccer3/canonical/genome/genome.fa.fai" // chromosome sizes file of the reference genome
@@ -33,6 +33,7 @@ TRACKS=PROJECT + "/tracks"
 RUN_IN_PAIRED_END_MODE=(ESSENTIAL_PAIRED == "yes")
 RUN_PEAK_ANNOTATION=true
 RUN_DIFFBIND=true
+RUN_ENRICHMENT=false
 RUN_TRACKHUB=false
 // RUN_USING_UNFILTERED_BAM=false  // deprecated 
 // Pipeline performes 2 branches for bam file processing in parallel
