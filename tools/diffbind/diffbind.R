@@ -74,7 +74,6 @@ if(ANNOTATE & !is.numeric(TSS)) stop("Region around TSS not numeric. Run with:\n
 if(ANNOTATE & !require(TXDB, character.only=TRUE))   stop("Transcript DB", TXDB, "not installed\n")
 if(ANNOTATE & !require(ANNODB, character.only=TRUE)) stop("Annotation DB", ANNODB, "not installed\n")
 
-pdf(paste0(OUT, "/diffbind.pdf"))
 
 ##
 ## make DB analysis
@@ -92,7 +91,7 @@ peakfiles <- list.files(PEAKS,pattern=".xls")
 isBlacklistFilt <- any(grepl("blacklist_filtered", peakfiles))
 peak_suffix <- if(isBlacklistFilt) {"_macs2_blacklist_filtered_peaks.xls"} else {"_macs2_peaks.xls"}
 
-
+# create modified targets file for diffbind
 targets <- data.frame(
   SampleID= targets$IPname,
   Condition= targets$group,
@@ -104,6 +103,8 @@ targets <- data.frame(
   PeakCaller= targets$PeakCaller
 )
 
+
+pdf(paste0(OUT, "/diffbind.pdf"))
 
 db <- dba(sampleSheet=targets, config=data.frame(fragmentSize=FRAGSIZE, bCorPlot=F, singleEnd=!PE))
 db <- dba.count(db, bUseSummarizeOverlaps=PE)  # bUseSummarizeOverlaps method slower and memory hungry, mandatory only for PE data
@@ -126,6 +127,8 @@ result <- lapply(conts[, 1], function(cont) {
   dba.plotMA(db)
   try(dba.plotBox(db))          # try, in case there's not significant peaks
 
+  try(dba.plotVolcano(db))
+  
   # plot consensus peaks
   if(sum(c1 | c2) <= 4) {        # if less than 2 replicates per group (or 4 replicates in total)
     dba.plotVenn(db, c1 | c2)    # plot all together

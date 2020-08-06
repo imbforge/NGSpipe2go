@@ -12,6 +12,7 @@ library("tidyr")
 library("reshape2")
 library("ggplot2")
 library("ngsReports")
+library("DT")
 
 ##
 ## loadGlobalVars: read configuration from bpipe vars
@@ -829,15 +830,20 @@ ChIPhelper.diffbind <- function(subdir="") {
     
     # for each contrast
     Map(x=res, x.name=names(res), f=function(x, x.name) {
-      cat("#### ", x.name, "\n",
+      cat("\n\n#### ", x.name, "\n",
           nrow(x), "differential peaks at FDR 5%.\n", fill=TRUE)#,
+      
+      cat(knitr::kable(x[,c("seqnames",	"start", "end", "width", "strand", "Conc", 
+                            "Fold", "p.value", "FDR", "annotation", "geneId")], 
+                       format="markdown"),sep="\n")
+      
       layout(matrix(c(1, 2, 3, 3), nrow=2, ncol=2, byrow=TRUE))
       freq <- table(x$seqnames)
       opar <- par(mfrow=c(1, 3))
       barplot(freq[rev(order(gsub("chr", "", names(freq))))], horiz=TRUE, las=1, xlab="number of peaks")
-      hist(x$Fold, main="", xlab="fold change", ylab="number of peaks", col="grey")#,
+      hist(x$Fold, main="", xlab="log fold change", ylab="number of peaks", col="grey")#,
       abline(v=0, lty=2, col="blue")
-      plot(x$Conc, x$Fold, main="", xlab="concentration", ylab="fold change")#,
+      plot(x$Conc, x$Fold, main="", xlab="log read concentration", ylab="log fold change")#,
       abline(h=0, lty=2, col="blue")
       par(opar)
       invisible(NULL)

@@ -215,6 +215,38 @@ venn <- lapply(branches, function(peaksdir) {
 ```
 
 
+```{r peak_venn_paragraph_combined, echo=F, results='asis', error=F, warning=F, message=F}
+if(length(branches)>1) {
+cat("\n\n### Overlay of peaks from different pipeline branches\n")  
+  
+peakscovcomb <- lapply(branches, function(peaksdir) {
+  x <- ChIPhelper.init("readPeaks", subdir=peaksdir, peaks_as="GRanges")
+})
+
+peakscovcombReorder <- list()
+for(b in names(peakscovcomb)) {
+ for(p in names(peakscovcomb[[b]])) {
+     peakscovcombReorder[[p]][[b]] <- data.frame()
+     peakscovcombReorder[[p]][[b]] <- peakscovcomb[[b]][[p]]
+  }
+}
+
+venncombined <- lapply(names(peakscovcombReorder), function(x) {
+    cat(paste0("#### ", x), fill=T)
+    cat("\n", fill=T)
+    peaks.ov <- findOverlapsOfPeaks(peakscovcombReorder[[x]])
+    makeVennDiagram(peaks.ov,
+                    margin=0.25, cat.default.pos="outer", cat.dist=0.15,
+                    cat.fontface=rep("bold", length(peakscovcombReorder[[x]])),
+                    fill=brewer.pal(length(peakscovcombReorder[[x]]), "Accent")[1:length(peakscovcombReorder[[x]])]
+                    )
+    cat("\n", fill=T)
+  }
+ )
+}
+```
+
+
 ## Functional annotation of peaks ##
 
 The following plots show the feature distribution based on their chromosome region 
