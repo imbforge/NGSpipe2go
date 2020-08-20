@@ -30,7 +30,7 @@ diffbind = {
     def PREAMBLE = get_preamble("diffbind")
 
     // run the chunk
-    produce("diffbind.pdf", "diffbind.xlsx", "diffbind.rds") {
+    produce("diffbind.RData", "diffbind.xlsx", "diffbind.rds") {
         exec """
             ${TOOL_ENV} &&
             ${PREAMBLE} &&

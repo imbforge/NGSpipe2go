@@ -59,28 +59,34 @@ Bpipe.run {
          [ // parallel branches with and without multi mappers
 
             [ MarkDups + BAMindexer + pbc +
-		[
-	    		(RUN_IN_PAIRED_END_MODE ? qc_paired : qc_single), 
-                	 ipstrength.using(subdir:"unfilt"), 
-		         macs2.using(subdir:"unfilt")                   
+		[       // QC specific to paired end (pe) or single end (se) design
+	    		(RUN_IN_PAIRED_END_MODE ? [bamCoverage.using(subdir:"unfiltered"), 
+                                                   InsertSize.using(subdir:"unfiltered")] : 
+                                                  [extend + bamCoverage.using(subdir:"unfiltered"), 
+                                                   phantompeak.using(subdir:"unfiltered")]), 
+                	ipstrength.using(subdir:"unfiltered"), 
+		        macs2.using(subdir:"unfiltered")                   
 		]
             ], 
             [ filbowtie2unique + BAMindexer + RmDups + BAMindexer + 
-                [
-	    		(RUN_IN_PAIRED_END_MODE ? qc_paired : qc_single), 
-                	 ipstrength, 
-		         macs2 
+                [       // QC specific to paired end (pe) or single end (se) design
+	    		(RUN_IN_PAIRED_END_MODE ? [bamCoverage.using(subdir:"filtered"), 
+                                                   InsertSize.using(subdir:"filtered")] : 
+                                                  [extend + bamCoverage.using(subdir:"filtered"), 
+                                                   phantompeak.using(subdir:"filtered")]), 
+                	ipstrength.using(subdir:"filtered"), 
+		        macs2.using(subdir:"filtered") 
 		]  
             ]
         ] 
 
       ] + 
-    [(RUN_PEAK_ANNOTATION ? peak_annotation.using(subdir:"unfilt") : dontrun.using(module:"peak_annotation")) +
-     (RUN_DIFFBIND ? diffbind.using(subdir:"unfilt") : dontrun.using(module:"diffbind")) +
-     (RUN_ENRICHMENT ? GREAT.using(subdir:"unfilt") : dontrun.using(module:"GREAT")),
-     (RUN_PEAK_ANNOTATION ? peak_annotation : dontrun.using(module:"peak_annotation")) +
-     (RUN_DIFFBIND ? diffbind : dontrun.using(module:"diffbind")) +
-     (RUN_ENRICHMENT ? GREAT : dontrun.using(module:"GREAT")),
+    [(RUN_PEAK_ANNOTATION ? peak_annotation.using(subdir:"unfiltered") : dontrun.using(module:"peak_annotation")) +
+     (RUN_DIFFBIND ? diffbind.using(subdir:"unfiltered") : dontrun.using(module:"diffbind")) +
+     (RUN_ENRICHMENT ? GREAT.using(subdir:"unfiltered") : dontrun.using(module:"GREAT")),
+     (RUN_PEAK_ANNOTATION ? peak_annotation.using(subdir:"filtered") : dontrun.using(module:"peak_annotation")) +
+     (RUN_DIFFBIND ? diffbind.using(subdir:"filtered") : dontrun.using(module:"diffbind")) +
+     (RUN_ENRICHMENT ? GREAT.using(subdir:"filtered") : dontrun.using(module:"GREAT")),
     ] +
     // (RUN_TRACKHUB ? trackhub_config + trackhub : dontrun.using(module:"trackhub")) +
     collectToolVersions + collectBpipeLogs + MultiQC + shinyReports

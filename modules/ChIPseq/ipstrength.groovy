@@ -6,7 +6,7 @@ ipstrength = {
         author: "Sergi Sayols, Frank Rühle"
 
     var subdir : ""
-    output.dir = ipstrength_vars.outdir + "/" + "$subdir" 
+    output.dir = ipstrength_vars.outdir + "/$subdir" 
 
     def TOOL_ENV = prepare_tool_env("R", tools["R"]["version"], tools["R"]["runenv"])
     def PREAMBLE = get_preamble("ipstrength")

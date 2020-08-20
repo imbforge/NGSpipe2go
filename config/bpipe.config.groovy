@@ -312,6 +312,11 @@ config {
       procs="16" 
       memory="8"
     }
+    RmDups { 
+      walltime="04:00:00" 
+      procs="1" 
+      memory="5"
+    }
     STAR { 
       walltime="04:00:00" 
       procs="4" 
@@ -413,8 +418,8 @@ config {
     }
     diffbind { 
       walltime="01:00:00" 
-      procs="4" 
-      memory="8"
+      procs="8" 
+      memory="32"
     }
     dupRadar { 
       walltime="02:00:00" 

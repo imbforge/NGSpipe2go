@@ -25,7 +25,7 @@ targets <<- ChIPhelper.init("readTargets")
 # One sub-directory may be "" as default output folder.
 # Modules producing output files with names uniquely distinguishable for all branches may be stored in the same output folder. 
 # If a subset of these files shall be selected they can be grepped by a character substring
-branches <- c(unique="", dupmarked="unfilt") # value is sub-directory, name is file tag in case of subsetting  
+branches <- c(unique="filtered", dupmarked="unfiltered") # value is sub-directory, name is file tag in case of subsetting  
 
 ``` 
 
@@ -83,21 +83,19 @@ cat(ChIPhelper.Trackhub(), sep="\n")
 # for paired end design only
 cat("## Insert Size ##\n\n")
 
-nbranches <- names(branches)[1]
-insert <- lapply(nbranches, function(sampleSubset) {
-  if(length(nbranches)>1) {cat(paste("\n\n### Insert size metrics for bam files containing tag:", sampleSubset, "\n\n"))}
+insert <- lapply(branches[1], function(dir) {
+  if(length(branches)>1) {cat(paste("\n\n### Insert size metrics for bam files from", if(dir==""){"default"} else {dir}, "pipeline branch\n\n"))}
 
-  if (!file.exists(SHINYREPS_INSERTSIZE)) {
+  if (!file.exists(file.path(SHINYREPS_INSERTSIZE, dir))) {
   	cat("Insert size data not available.\n")
   	} else {
   	  
-  	cat(ChIPhelper.insertsize(samplePattern=sampleSubset), sep="\n")
+  	cat(ChIPhelper.insertsize(subdir=dir), sep="\n")
   	
   	cat("\nThe insert size distribution is given as histogram:\n\n")  
   	 
-  	p <- ChIPhelper.insertsize.plot(samplePattern=sampleSubset)
-  	sample_length <- length(selectSampleSubset(list.files(SHINYREPS_INSERTSIZE, pattern = "insertsizemetrics.tsv$"),
-  	                        samplePattern=sampleSubset))
+  	p <- ChIPhelper.insertsize.plot(subdir=dir)
+  	sample_length <- length(list.files(file.path(SHINYREPS_INSERTSIZE, dir), pattern = "insertsizemetrics.tsv$"))
     ChIPhelper.subchunkify(p, 
                          fig_height = 3*sample_length,
                          fig_width = 15)
@@ -128,9 +126,9 @@ To estimate the IP strength, we attempt to decompose the population of IP reads 
 For more details see Fig.2 of the CHANCE paper (https://doi.org/10.1186/gb-2012-13-10-r98).
 
 ```{r IPstrength_paragraph, echo=F,results='asis',error=F,warning=F,message=F}
-ipstrength <- lapply(branches, function(peaksdir) {
-  if(length(branches)>1) {cat(paste("### Fingerprint plots from", if(peaksdir==""){"default result"} else {peaksdir}, "directory\n\n"))}
-  cat(ChIPhelper.IPstrength(web=F, subdir=peaksdir),sep="\n")
+ipstrength <- lapply(branches, function(dir) {
+  if(length(branches)>1) {cat(paste("\n### Fingerprint plots from", if(dir==""){"default"} else {dir}, "pipeline branch\n\n"))}
+  cat(ChIPhelper.IPstrength(web=F, subdir=dir),sep="\n")
 })
 ```
 
@@ -149,7 +147,10 @@ The NSC is the ratio of the maximal cross-correlation value (which occurs at str
 **Relative Strand Cross-correlation coefficient (RSC):**
 The RSC is the ratio of the fragment-length cross-correlation value minus the background cross-correlation value, divided by the phantom-peak cross-correlation value minus the background cross-correlation value. The minimum possible value is 0 (no signal), highly enriched experiments have values greater than 1.\n\n")
 
-cat(ChIPhelper.PhantomPeak(web=F),sep="\n")
+phantompeaks <- lapply(branches, function(dir) {
+  if(length(branches)>1) {cat(paste("\n### Cross-correlation plots from", if(dir==""){"default"} else {dir}, "pipeline branch\n\n"))}
+  cat(ChIPhelper.PhantomPeak(web=F, subdir=dir), sep="\n")
+})
 
 ```
 
@@ -161,7 +162,7 @@ Note that these blacklists are applicable to human (hg38 and hg19), mouse (mm10 
 
 ```{r BLACKLISTFILTER_paragraph, echo=F,results='asis',error=F,warning=F,message=F}
 blacklistfilt <- lapply(branches, function(peaksdir) {
-  if(length(branches)>1) {cat(paste("\n\nBlacklist filter applied for peaks from", if(peaksdir==""){"default result"} else {peaksdir}, "directory:\n\n"))}
+  if(length(branches)>1) {cat(paste("\n\nBlacklist filter applied for peaks from", if(peaksdir==""){"default"} else {peaksdir}, "pipeline branch\n\n"))}
   cat(ChIPhelper.BLACKLISTFILTER(subdir=peaksdir),sep="\n")
 })
 ```
@@ -192,7 +193,7 @@ peaksAllBranches <- lapply(branches, function(peaksdir) {
   #cat(kable(data.frame(column=1:length(l),sample=names(l))),sep="\n")
   #cat("",fill=T)
   
-  if(length(branches)>1) {cat(paste("### Peaks from", if(peaksdir==""){"default result"} else {peaksdir}, "directory\n\n"))}
+  if(length(branches)>1) {cat(paste("### Peaks from", if(peaksdir==""){"default"} else {peaksdir}, "pipeline branch\n\n"))}
   # print the peaks table
   cat("",fill=T)
   cat(knitr::kable(p,row.names=T, format="markdown"),sep="\n")
@@ -209,7 +210,7 @@ The following Venn diagrams correlate the peaks called in the sample groups.
 
 ```{r peak_venn_paragraph, echo=F,results='asis',error=F,warning=F,message=F}
 venn <- lapply(branches, function(peaksdir) {
-  if(length(branches)>1) {cat(paste("### Peaks from", if(peaksdir==""){"default result"} else {peaksdir}, "directory\n\n"))}
+  if(length(branches)>1) {cat(paste("### Peaks from", if(peaksdir==""){"default"} else {peaksdir}, "pipeline branch\n\n"))}
   ChIPhelper.VennDiagram(peaksdir)
 })
 ```
@@ -217,7 +218,7 @@ venn <- lapply(branches, function(peaksdir) {
 
 ```{r peak_venn_paragraph_combined, echo=F, results='asis', error=F, warning=F, message=F}
 if(length(branches)>1) {
-cat("\n\n### Overlay of peaks from different pipeline branches\n")  
+cat("\n\n### Overlap of peaks from different pipeline branches\n")  
   
 peakscovcomb <- lapply(branches, function(peaksdir) {
   x <- ChIPhelper.init("readPeaks", subdir=peaksdir, peaks_as="GRanges")
@@ -256,7 +257,7 @@ The following plots show the feature distribution based on their chromosome regi
 ```{r feature_distribution_paragraph, echo=F, results='asis', error=F, warning=F, message=F}
 featureDist <- lapply(branches, function(peaksdir) {
   functionalPlot <- file.path( SHINYREPS_PEAK_ANNOTATION, peaksdir, "ChIPseq_Feature_Distribution_Barplot.png")
-  if(length(branches)>1) {cat(paste("\n\n#### Feature distribution from", if(peaksdir==""){"default result"} else {peaksdir}, "directory\n"))}
+  if(length(branches)>1) {cat(paste("\n\n#### Feature distribution from", if(peaksdir==""){"default"} else {peaksdir}, "pipeline branch\n"))}
   cat("![Peak_Annotation img](", functionalPlot, ")",fill=T)
   return(functionalPlot)
 })
@@ -268,7 +269,7 @@ featureDist <- lapply(branches, function(peaksdir) {
 ```{r feature_distribution_TSS_paragraph, echo=F, results='asis', error=F, warning=F, message=F}
 TFbindingDist <- lapply(branches, function(peaksdir) {
     functionalPlotTSS <- file.path( SHINYREPS_PEAK_ANNOTATION, peaksdir, "ChIPseq_Feature_Distribution_Related_to_TSS_Barplot.png")
-    if(length(branches)>1) {cat(paste("\n\n#### TF-binding loci distribution from", if(peaksdir==""){"default result"} else {peaksdir}, "directory\n"))}
+    if(length(branches)>1) {cat(paste("\n\n#### TF-binding loci distribution from", if(peaksdir==""){"default"} else {peaksdir}, "pipeline branch\n"))}
     cat("![Peak_Annotation img](", functionalPlotTSS, ")",fill=T)
     return(functionalPlotTSS)
 })
@@ -279,15 +280,15 @@ TFbindingDist <- lapply(branches, function(peaksdir) {
 
 ```{r peak_annotation_coverage_paragraph, echo=F, results='asis', error=F, warning=F, message=F}
 peakscov <- lapply(branches, function(peaksdir) {
-    if(length(branches)>1) {cat(paste("\n\n#### ChIP peaks coverage from", if(peaksdir==""){"default result"} else {peaksdir}, "directory\n"))}
+    if(length(branches)>1) {cat(paste("\n\n#### ChIP peaks coverage from", if(peaksdir==""){"default"} else {peaksdir}, "pipeline branch\n"))}
     cat(ChIPhelper.peakAnnotationCoverage(web=F, subdir=peaksdir),sep="\n")
 })
 ```
 
 
-```{r peak_annotation_coverage_combined, echo=F, results='asis', error=F, warning=F, message=F}
+```{r peak_annotation_coverage_combined, echo=F, results='asis', error=F, fig.width= 10, warning=F, message=F}
 if(length(branches)>1) {
-cat("\n\n#### Overlay of peaks from different pipeline branches\n")  
+cat("\n\n#### Overlap of peaks from different pipeline branches\n")  
   
 peakscovcomb <- lapply(branches, function(peaksdir) {
   x <- ChIPhelper.init("readPeaks", subdir=peaksdir, peaks_as="GRanges")
@@ -298,10 +299,13 @@ for(b in names(peakscovcomb)) {
  for(p in names(peakscovcomb[[b]])) {
      peakscovcombReorder[[p]][[b]] <- data.frame()
      peakscovcombReorder[[p]][[b]] <- peakscovcomb[[b]][[p]]
+     # sort by element size to print GRanges object with most peaks first and then objects with lesser amount of peaks
+     peakscovcombReorder[[p]] <- peakscovcombReorder[[p]][order(sapply(peakscovcombReorder[[p]], length), decreasing=T)]
   }
 }
 
-plotcombined <- lapply(names(peakscovcombReorder), function(x) print(ChIPseeker::covplot(peakscovcombReorder[[x]], weightCol = "X.log10.pvalue.", 
+plotcombined <- lapply(names(peakscovcombReorder), function(x) print(ChIPseeker::covplot(peakscovcombReorder[[x]], 
+                                                                                         weightCol = "X.log10.pvalue.", 
                                                                                          title=x, ylab="-log10(pvalue)")))
 }
 ```
@@ -313,8 +317,8 @@ plotcombined <- lapply(names(peakscovcombReorder), function(x) print(ChIPseeker:
 
 ```{r peak_annotation_upset_paragraph, echo=F, results='asis', error=F, warning=F, message=F}
 UpSetplots <- lapply(branches, function(peaksdir) {
-    if(length(branches)>1) {cat(paste("\n\n#### ChIP peaks from", if(peaksdir==""){"default result"} else {peaksdir}, "directory\n"))}
-    cat(ChIPhelper.peakAnnotationUpSet(web=F),sep="\n")
+    if(length(branches)>1) {cat(paste("\n\n#### ChIP peaks from", if(peaksdir==""){"default"} else {peaksdir}, "pipeline branch\n"))}
+    cat(ChIPhelper.peakAnnotationUpSet(web=F, subdir=peaksdir),sep="\n")
 })
 ```
 
@@ -323,11 +327,11 @@ UpSetplots <- lapply(branches, function(peaksdir) {
 
 Enrichment Analysis is carried out using GREAT (http://great.stanford.edu). It assigns each gene a regulatory domain consisting of basal domain that extends 5 kb upstream and 1 kb downstream from its transcription start site, and and an extension up to the basal regulatory domain of the nearest upstream and downstream genes within 1 Mb. GREAT performs both the binomial test over genomic regions and the hypergeometric test over genes to provide an accurate picture of annotation enrichments for genomic regions. The ontology terms reported below are ranked by the binomial FDR q-value.   
 
-Note that GREAT supports recent assemblies of the well-annotated human (UCSC hg19 and UCSC hg18), mouse (UCSC mm9) and zebrafish (UCSC danRer7) genomes.
+Note that GREAT (> v4.0.0) supports recent assemblies of the well-annotated human (UCSC hg19 and UCSC hg38) and mouse (UCSC mm9 and UCSC mm10) genomes.
 
 ```{r Enrichment_paragraph, echo=F, results='asis', error=F, warning=F, message=F, fig.align="center"}
 resultsenrich <- lapply(branches, function(peaksdir) {
-    if(length(branches)>1) {cat(paste("\n\n### Enrichment results from", if(peaksdir==""){"default result"} else {peaksdir}, "directory\n"))}
+    if(length(branches)>1) {cat(paste("\n\n### Enrichment results from", if(peaksdir==""){"default"} else {peaksdir}, "pipeline branch\n"))}
 
     for(i in 1:length(levels(factor(targets$group)))) {
     
@@ -405,9 +409,9 @@ resultsenrich <- lapply(branches, function(peaksdir) {
 ## Differential binding analysis {.tabset}
 
 ```{r diffbind, echo=F, results='asis', error=F, warning=F, message=F, fig.align="center"}
-diffplots <- lapply(branches, function(peaksdir) {
-    if(length(branches)>1) {cat(paste("\n\n### Diffbind results from", if(peaksdir==""){"default result"} else {peaksdir}, "directory\n"))}
-    invisible(ChIPhelper.diffbind(subdir=peaksdir))
+diffplots <- lapply(branches, function(dir) {
+    if(length(branches)>1) {cat(paste("\n\n### Diffbind results from", if(dir==""){"default"} else {dir}, "pipeline branch\n"))}
+    invisible(ChIPhelper.diffbind(subdir=dir))
 })
 ```
 

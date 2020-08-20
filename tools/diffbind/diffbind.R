@@ -104,42 +104,80 @@ targets <- data.frame(
 )
 
 
-pdf(paste0(OUT, "/diffbind.pdf"))
-
+# Construct DBA object
 db <- dba(sampleSheet=targets, config=data.frame(fragmentSize=FRAGSIZE, bCorPlot=F, singleEnd=!PE))
-db <- dba.count(db, bUseSummarizeOverlaps=PE)  # bUseSummarizeOverlaps method slower and memory hungry, mandatory only for PE data
-dba.plotPCA(db, DBA_CONDITION, label=DBA_CONDITION)
 
-# parse the formula in cont and do the analysis
-result <- lapply(conts[, 1], function(cont) {
-  # parse formula
-  cat(cont, fill=T)
-  cont.name <- gsub("(.+)=(.+)", "\\1", cont)
+png(paste0(OUT, "/Overlap_rate_plot.png"), width = 150, height = 150, units = "mm", res=300)
+  olap.rate <- dba.overlap(db, mode=DBA_OLAP_RATE)
+  plot(olap.rate, type='b', ylab='# peaks', xlab='Overlap at least this many peaksets', main="Overlap rate plot")
+dev.off()
+
+db <- dba.count(db, bUseSummarizeOverlaps=PE)  # bUseSummarizeOverlaps method slower and memory hungry, mandatory only for PE data
+
+# apply the contrasts
+ for (cont in conts[, 1]) {
+  # parse formula in cont
   cont.form <- gsub("(.+)=(.+)", "\\2", cont)
   factors   <- unlist(strsplit(cont.form, "\\W"))
   factors   <- factors[factors != ""]
-
-  # dba analysis (deseq2)
   c1 <- dba.mask(db, DBA_CONDITION, factors[1])
   c2 <- dba.mask(db, DBA_CONDITION, factors[2])
   db <- dba.contrast(db, group1=c1, group2=c2,  name1=factors[1], name2=factors[2], categories=DBA_CONDITION)
-  db <- dba.analyze(db, bSubControl=SUBSTRACTCONTROL, bFullLibrarySize=FULLLIBRARYSIZE, bTagwise=TAGWISEDISPERSION)
-  dba.plotMA(db)
-  try(dba.plotBox(db))          # try, in case there's not significant peaks
-
-  try(dba.plotVolcano(db))
-  
-  # plot consensus peaks
-  if(sum(c1 | c2) <= 4) {        # if less than 2 replicates per group (or 4 replicates in total)
-    dba.plotVenn(db, c1 | c2)    # plot all together
-  } else {                       # generate a consensus peakset otherwise
-     db2 <- dba(sampleSheet=targets, config=data.frame(fragmentSize=FRAGSIZE, bCorPlot=F, singleEnd=!PE))
-     db2 <- dba.peakset(db2, consensus=DBA_CONDITION)
-     try(dba.plotVenn(db2, mask=db2$masks$Consensus & names(db2$masks$Consensus) %in% factors))
   }
 
-  dba.report(db, bCalled=T)
-})
+  # run the diffbind analysis (DESeq2) for all contrasts
+  db <- dba.analyze(db, bSubControl=SUBSTRACTCONTROL, bFullLibrarySize=FULLLIBRARYSIZE, bTagwise=TAGWISEDISPERSION)
+
+# PCA plot
+png(paste0(OUT, "/pca_plot.png"), width = 150, height = 150, units = "mm", res=300)
+  dba.plotPCA(db, DBA_CONDITION, label=DBA_CONDITION)
+dev.off()
+
+# Heatmap
+png(paste0(OUT, "/read_count_heatmap.png"), width = 150, height = 150, units = "mm", res=300)
+  dba.plotHeatmap(db)
+dev.off()
+
+# Venn diagram of all contrasts
+png(paste0(OUT, "/venn_plot_all_contrasts.png"), width = 150, height = 150, units = "mm", res=300)
+  try(dba.plotVenn(db, main="Binding Site Overlaps Per Contrast", contrast=1:nrow(dba.show(db, bContrast=T))))
+dev.off()
+
+
+  result <- lapply(1:nrow(conts), function(cont) {
+    cont.name <- substr(gsub("(.+)=\\((.+)\\)", "\\2", conts[cont,1]), 1, 31)
+    #cont.name <- gsub("(.+)=(.+)", "\\1", conts[cont,1])
+    #cat(cont.name, fill=T)
+    png(paste0(OUT, "/", cont.name, "_ma_plot.png"), width = 150, height = 150, units = "mm", res=300)
+      try(dba.plotMA(db, contrast=cont))
+    dev.off()
+    png(paste0(OUT, "/", cont.name, "_boxplot_diff_sites.png"), width = 150, height = 150, units = "mm", res=300)
+      try(dba.plotBox(db, contrast=cont))   # try, in case there are no significant peaks
+    dev.off()
+    png(paste0(OUT, "/", cont.name, "_volcano_plot.png"), width = 150, height = 150, units = "mm", res=300)
+      try(dba.plotVolcano(db, contrast=cont))
+    dev.off()
+    
+    # plot consensus peaks
+    vennmask <- dba.mask(db, DBA_CONDITION, factor(dba.show(db, bContrast=T)[cont,c("Group1", "Group2")]))
+    if(sum(vennmask) <= 4) {        # if less than 2 replicates per group (or 4 replicates in total)
+      png(paste0(OUT, "/", cont.name, "_venn_plot.png"), width = 150, height = 150, units = "mm", res=300)
+        try(dba.plotVenn(db, mask=vennmask, main="Binding Site Overlaps Per Sample"))    # plot all relevant samples together
+      dev.off()
+    } else {                       # generate a consensus peakset otherwise
+       db2 <- dba(sampleSheet=targets, config=data.frame(fragmentSize=FRAGSIZE, bCorPlot=F, singleEnd=!PE))
+       db2 <- dba.peakset(db2, consensus=DBA_CONDITION)
+       vennmask2 <- dba.mask(db2, DBA_CONDITION, factor(dba.show(db2, bContrast=T)[cont,c("Group1", "Group2")]))
+       png(paste0(OUT, "/", cont.name, "_venn_plot.png"), width = 150, height = 150, units = "mm", res=300)
+          try(dba.plotVenn(db2, main="Binding Site Overlaps Per Group",
+                        mask=db2$masks$Consensus & names(db2$masks$Consensus) %in% factor(dba.show(db, bContrast=T)[cont,c("Group1", "Group2")]) ))
+       dev.off()
+    }
+
+    tryCatch(dba.report(db, contrast=cont, bCalled=T), 
+                    error=function(e) NULL) # dba.report crashes if there is exactly 1 significant hit to report
+  })
+
 
 ##
 ## Annotate peaks
@@ -159,11 +197,11 @@ if(ANNOTATE) {
   })
 }
 
-dev.off()
 
 writeLines(capture.output(sessionInfo()),paste(OUT, "/diffbind_session_info.txt", sep=""))
 result <- lapply(result, as.data.frame)
 names(result) <- substr(gsub("(.+)=\\((.+)\\)", "\\2", conts[,1]), 1, 31)
 write.xlsx(result, file=paste0(OUT, "/diffbind.xlsx"))
 saveRDS(result,  file=paste0(OUT, "/diffbind.rds"))
+dba.save(db, dir=OUT, file='diffbind', pre="")
 

@@ -13,6 +13,7 @@ library("reshape2")
 library("ggplot2")
 library("ngsReports")
 library("DT")
+library("DiffBind")
 
 ##
 ## loadGlobalVars: read configuration from bpipe vars
@@ -499,10 +500,10 @@ ChIPhelper.peakAnnotationUpSet <- function(web=TRUE, subdir="") {
 ## ChIPhelper.PhantomPeak: go through PhantomPeak output dir and create a md table with
 ##     the plots
 ##
-ChIPhelper.PhantomPeak <- function(web=TRUE, ...) {
+ChIPhelper.PhantomPeak <- function(web=TRUE, subdir="", ...) {
   
   # logs folder
-  if(!file.exists(SHINYREPS_PHANTOMPEAK)) {
+  if(!file.exists(file.path(SHINYREPS_PHANTOMPEAK, subdir))) {
     return("PhantomPeak statistics not available")
   }
   
@@ -511,10 +512,10 @@ ChIPhelper.PhantomPeak <- function(web=TRUE, ...) {
   }
   
   # construct the folder name, which is different for web and noweb
-  QC <- if(web) "/phantompeak" else SHINYREPS_PHANTOMPEAK
+  QC <- if(web) file.path("/phantompeak", subdir) else file.path(SHINYREPS_PHANTOMPEAK, subdir)
   
   # construct the image url from the folder contents (skip current dir .)
-  samples <- list.files(SHINYREPS_PHANTOMPEAK, pattern=".png$")
+  samples <- list.files(file.path(SHINYREPS_PHANTOMPEAK, subdir), pattern=".png$")
   samples <- selectSampleSubset(samples, ...)
   COLUMNS <- min(length(samples), SHINYREPS_PLOTS_COLUMN)
   df <- sapply(samples, function(f) {
@@ -538,21 +539,24 @@ ChIPhelper.PhantomPeak <- function(web=TRUE, ...) {
   kable(as.data.frame(df.names), output=F, align="c", format="markdown")
 }
 
+
+
 ##
 ## ChIPhelper.PBC: go through PBC output dir and create a md table with
 ##     the PBC stats
 ##
-ChIPhelper.PBC <- function() {
+ChIPhelper.PBC <- function(subdir="", ...) {
   
   # logs folder
-  if(!file.exists(SHINYREPS_PBC)) {
+  if(!file.exists(file.path(SHINYREPS_PBC, subdir))) {
     return("PCR bottleneck coefficient statistics not available")
   }
   
   # construct the image url from the folder contents (skip current dir .)
-  samples <- list.files(SHINYREPS_PBC, pattern="*.csv")
+  samples <- list.files(file.path(SHINYREPS_PBC, subdir), pattern="*.csv")
+  samples <- selectSampleSubset(samples, ...)
   df <- sapply(samples, function(f) {
-    read.csv(paste0(SHINYREPS_PBC, "/", f))$PBC
+    read.csv(file.path(SHINYREPS_PBC, subdir, f))$PBC
   })
   
   # output md table
@@ -567,10 +571,10 @@ ChIPhelper.PBC <- function() {
 ##
 ##ChIPhelper.insertsize: get the insertsize from the qc and display mean and sd 
 ##
-ChIPhelper.insertsize <- function(...){
+ChIPhelper.insertsize <- function(subdir="", ...){
   
   if (SHINYREPS_PAIRED == "yes") {
-    filelist <- list.files(path=SHINYREPS_INSERTSIZE,full.names=TRUE, pattern="insertsizemetrics.tsv$")
+    filelist <- list.files(path=file.path(SHINYREPS_INSERTSIZE, subdir), full.names=TRUE, pattern="insertsizemetrics.tsv$")
     filelist <- selectSampleSubset(filelist, ...)
     insertsizes <- lapply(filelist, read.table, sep="\t", header=TRUE, nrow=1)
     insertsizes <- do.call(rbind, insertsizes)
@@ -709,7 +713,7 @@ ChIPhelper.subchunkify <- function(g, fig_height=7, fig_width=5) {
 ##
 ##ChIPhelper.insertsize.plot: get the insertsize histograms and display them 
 ##
-ChIPhelper.insertsize.plot <- function(...){
+ChIPhelper.insertsize.plot <- function(subdir="", ...){
   # logs folder
   SHINYREPS_PLOTS_COLUMN <- tryCatch(as.integer(SHINYREPS_PLOTS_COLUMN),
                                      error=function(e){3})
@@ -717,23 +721,21 @@ ChIPhelper.insertsize.plot <- function(...){
     SHINYREPS_PLOTS_COLUMN <- 3L    # default to 3 columns
   }
   if (SHINYREPS_PAIRED == "yes" &
-      length(selectSampleSubset(list.files(path = SHINYREPS_INSERTSIZE,
+      length(selectSampleSubset(list.files(path = file.path(SHINYREPS_INSERTSIZE, subdir),
                                            pattern = "insertsizemetrics.tsv$"), ...)) > 0) {
-    samples <- list.files(path = SHINYREPS_INSERTSIZE,
+    samples <- list.files(path = file.path(SHINYREPS_INSERTSIZE, subdir),
                           full.names = TRUE,
                           pattern = "insertsizemetrics.tsv$")
     samples <- selectSampleSubset(samples, ...)
     
     #we generate the plots
-    insert_plots <- lapply(samples, 
-                           ChIPhelper.insertsize.helper)
+    insert_plots <- lapply(samples, ChIPhelper.insertsize.helper)
     return(arrangeGrob(grobs = insert_plots,
                        ncol = SHINYREPS_PLOTS_COLUMN))
   }else{
     return("No insertsize histograms available.")
   }
 }
-
 
 
 ##
@@ -827,26 +829,69 @@ ChIPhelper.diffbind <- function(subdir="") {
   tryCatch({
     # read the results (if available
     res <- readRDS(file.path(SHINYREPS_DIFFBIND, subdir, "diffbind.rds"))
+    db <- dba.load(dir=file.path(SHINYREPS_DIFFBIND, subdir), file='diffbind', pre="")
+    
+    if(!is.integer(SHINYREPS_PLOTS_COLUMN) | SHINYREPS_PLOTS_COLUMN < 2) {
+      SHINYREPS_PLOTS_COLUMN <- 3L    # default to 4 columns
+    }
+    
+    
+    # plots for 1st panel (independent from contrasts)
+    cat("\n\n")   
+    plotsPanel1 <- file.path(SHINYREPS_DIFFBIND, subdir, 
+                             c("pca_plot.png",  "Overlap_rate_plot.png", 
+                               "venn_plot_all_contrasts.png")) #"read_count_heatmap.png"
+    existsPanel1 <- file.exists(plotsPanel1)
+    plotsPanel1 <- plotsPanel1[existsPanel1]
+    
+    COLUMNS <- min(length(plotsPanel1), SHINYREPS_PLOTS_COLUMN)
+    panel1 <- paste0("![diffbind img](", plotsPanel1, ")")
+    while(length(panel1) %% COLUMNS != 0) panel1 <- c(panel1, "")
+    panel1 <- matrix(panel1, ncol=COLUMNS, byrow=T)
+    colnames(panel1) <- rep(" ", COLUMNS)
+    cat(kable(as.data.frame(panel1), output=F, align="c", format="markdown"), sep="\n")
+    cat("\n\n")
+    
     
     # for each contrast
-    Map(x=res, x.name=names(res), f=function(x, x.name) {
-      cat("\n\n#### ", x.name, "\n",
-          nrow(x), "differential peaks at FDR 5%.\n", fill=TRUE)#,
+    #Map(x=res, x.name=names(res), f=function(x, x.name) {
+    temp <- lapply(1:length(res), function(cont) {
       
-      cat(knitr::kable(x[,c("seqnames",	"start", "end", "width", "strand", "Conc", 
-                            "Fold", "p.value", "FDR", "annotation", "geneId")], 
-                       format="markdown"),sep="\n")
+      cat("\n\n#### Contrast:", names(res)[cont], "\n", nrow(res[[cont]]), "differential peaks at FDR 5%.\n", fill=TRUE)
       
-      layout(matrix(c(1, 2, 3, 3), nrow=2, ncol=2, byrow=TRUE))
-      freq <- table(x$seqnames)
-      opar <- par(mfrow=c(1, 3))
-      barplot(freq[rev(order(gsub("chr", "", names(freq))))], horiz=TRUE, las=1, xlab="number of peaks")
-      hist(x$Fold, main="", xlab="log fold change", ylab="number of peaks", col="grey")#,
-      abline(v=0, lty=2, col="blue")
-      plot(x$Conc, x$Fold, main="", xlab="log read concentration", ylab="log fold change")#,
-      abline(h=0, lty=2, col="blue")
-      par(opar)
-      invisible(NULL)
+      if(nrow(res[[cont]])>=1) {
+        cat(knitr::kable(res[[cont]][,names(res[[cont]]) %in% c("seqnames",	"start", "end", "width", "strand", "Conc", 
+                         "Fold", "p.value", "FDR", "annotation", "geneId", "distanceToTSS")], 
+                         format="markdown"),sep="\n")
+        
+        # plots for 2nd panel 
+        cat("\n\n")   
+        plotsPanel2 <- file.path(SHINYREPS_DIFFBIND, subdir, paste0(names(res)[cont],
+                                                                    c("_ma_plot.png", "_volcano_plot.png", "_venn_plot.png")))
+        existsPanel2 <- file.exists(plotsPanel2)
+        plotsPanel2 <- plotsPanel2[existsPanel2]
+        
+        COLUMNS <- min(length(plotsPanel2), SHINYREPS_PLOTS_COLUMN)
+        panel2 <- paste0("![diffbind img](", plotsPanel2, ")")
+        while(length(panel2) %% COLUMNS != 0) panel2 <- c(panel2, "")
+        panel2 <- matrix(panel2, ncol=COLUMNS, byrow=T)
+        colnames(panel2) <- rep(" ", COLUMNS)
+        cat(kable(as.data.frame(panel2), output=F, align="c", format="markdown"), sep="\n")
+        cat("\n\n")
+        
+        # plots for 3rd panel
+        cat("\n\n")   
+        opar <- par(mfrow=c(1, 3))
+        freq <- table(res[[cont]]$seqnames)
+        barplot(freq[rev(order(gsub("chr", "", names(freq))))], horiz=TRUE, las=1, xlab="number of peaks")
+        hist(res[[cont]]$Fold, main="", xlab="log fold change", ylab="number of peaks", col="grey")#,
+        abline(v=0, lty=2, col="blue")
+        plot(res[[cont]]$Conc, res[[cont]]$Fold, main="", xlab="log read concentration", ylab="log fold change")#,
+        abline(h=0, lty=2, col="blue")
+        par(opar)
+        
+        invisible(NULL)
+      }
     })
   }, error=function(e) cat("Differential binding analysis not available.\n", fill=TRUE))
 }
