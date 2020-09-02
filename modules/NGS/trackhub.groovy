@@ -5,6 +5,7 @@ trackhub = {
         bpipe_version: "tested with bpipe 0.9.9.3",
         author: "Martin Oti"
 
+    output.dir = trackhub_vars.tracksdir  // location of "trackhub.done" file
     def TRACKHUB_FLAGS =
         (trackhub_vars.config ? "TRACKHUB_CONFIG=" + trackhub_vars.config : "")
 

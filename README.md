@@ -2,7 +2,7 @@
 
 # NGSpipe2go #
 
-An opinionated framework for building pipelines. It comprises set of NGS data analysis tools and pipelines developed and utilised at the Institute of Molecular Biology gGmbH in Mainz (https://www.imb.de/).
+NGSpipe2go is a software framework to facilitate the development, customization and deployment of NGS analysis pipelines developed and utilised at the Bioinformatics Core of IMB in Mainz (https://www.imb.de/). It uses Bpipe as a workflow manager, provides access to commonly used NGS tools and generate comprehensive reports based on R Markdown.
 
 ![NGSpipe2go scheme](resources/NGSpipe2go_scheme.png)
 
@@ -17,19 +17,19 @@ An opinionated framework for building pipelines. It comprises set of NGS data an
 
 ## NGSpipe2go preparations ##
 
-### Put NGSpipe2go into the project dir ###
+### Copy NGSpipe2go into the project dir ###
 
-NGS projects should be run in a consistant and reproducible way, hence NGSpipe2go asks you to copy all tools into the project folder, which will ensure that you always use the same program versions at a later time point. This can be done either from a local NGSpipe2go copy or by using the most recent version from the Gitlab repository
+NGS projects should be run in a consistent and reproducible way, hence NGSpipe2go asks you to copy all tools into the project folder, which will ensure that you always use the same program versions at a later time point. This can be done either from a local NGSpipe2go copy or by using the most recent version from the Gitlab repository
 
     git clone https://gitlab.rlp.net/imbforge/NGSpipe2go <project_dir>/NGSpipe2go
 
 ### Choose one of the pipelines ###
 
-Select a pipeline to run and make symlinks in the main project dir, e.g. for RNA-seq project
+Select a pipeline to run and make symlinks in the main project dir, e.g. for RNA-seq projects
 
     ln -s NGSpipe2go/pipelines/RNAseq/* .
 
-or for ChIP-seq project
+or for ChIP-seq projects
 
     ln -s NGSpipe2go/pipelines/ChIPseq/* .
 
@@ -42,15 +42,15 @@ Adjust the project-specific information in the pipeline dependent files (see pip
 - *xxx.pipeline.groovy* describes the steps of the selected pipeline and the location of the respective modules
 - *targets.txt* and *contrasts.txt* contain the sample names and the differential group comparisons
 
-Adjust general pipeline settings in the NGSpipe2go *config* folder:
+Adjust general pipeline settings defined in the NGSpipe2go ***config*** folder:
 
-- *bpipe.config.groovy*: define workload manager resources (default workload manager is "slurm", if not needed set executor="local")
-- *preambles.groovy*: define module preamples if needed (or stay with default preambles)
-- *tools.groovy*: defines default versions and running environments for all installed pipeline tools. It needs to be updated accordingly if new tools or tool versions are installed on your system. If you want to use a different tool version for a certain project you can overwrite the default value in the pipeline-specific tools.groovy file in *NGSpipe2go/pipelines/<pipeline>/tools.groovy*.
+- *bpipe.config.groovy*: define workload manager resources (default workload manager is "slurm", if not needed set executor="local"). Important: external users need to modify the default Slurm queues ("bcfshort" and "bcflong") to e.g. "short" and "long" according to their Slurm environment. 
+- *preambles.groovy*: define module preambles if needed (or stay with default preambles)
+- *tools.groovy*: define default versions and running environments for all installed pipeline tools, modify accordingly if new tools or tool versions are installed on your system. If you want to use a different tool version for a certain project you can overwrite the default value in the pipeline-specific file *NGSpipe2go/pipelines/<pipeline>/tools.groovy*.
 
 ## Run a pipeline ##
 
-Copy the input FastQ files into the <project_dir>/rawdata folder.
+Copy the input FastQ files in the <project_dir>/rawdata folder.
 
 Load the bpipe module customised for the Slurm job manager (we recommend to use GNU Screen for persistence), e.g.
 

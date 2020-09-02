@@ -162,12 +162,14 @@ ChIPhelper.VennDiagram <- function(){
 		cat(paste0("#### ", group), fill=T)
 		cat("\n", fill=T)
 		peak <- peak.ranges[peak.groups==group]
-		peaks.ov <- findOverlapsOfPeaks(peak)
-		makeVennDiagram(peaks.ov,
+    tryCatch({
+		  peaks.ov <- findOverlapsOfPeaks(peak)
+		  makeVennDiagram(peaks.ov,
 				margin=0.25, cat.default.pos="outer", cat.dist=0.15,
 				cat.fontface=rep("bold", length(peak)),
 				fill=brewer.pal(length(peak), "Accent")[1:length(peak)]
-				)
+      )
+    }, error=function(e) cat("No replicates in", group, " or no peaks were called"))
 		cat("\n", fill=T)
 	}
 

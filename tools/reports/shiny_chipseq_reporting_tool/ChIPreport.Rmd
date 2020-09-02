@@ -79,10 +79,10 @@ cat(ChIPhelper.Trackhub(), sep="\n")
 # for paired end design only
 
 cat("## Insert Size ##\n\n
-    The insert size distribution is given as histogram.")
+    The insert size distribution is given as histogram.\n")
 
 if (!file.exists(SHINYREPS_INSERTSIZE)) {
-	cat("Insert size data not available.")
+	cat("Insert size data not available.\n")
 	} else {
 	ChIPhelper.insertsize()
 	p <- ChIPhelper.insertsize.plot()
