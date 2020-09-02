@@ -2,7 +2,7 @@
 // available to all pipelines
 //
 // If you install a new tool to be used in a pipeline:
-//   * add the corresponding entry in tools_prepare_env for that tool + version + runenv
+//   * add the corresponding entry in tools_envs for that tool + version + runenv
 //   * add default version + runenv in tools_defaults
 //   * if needed, override the defaults in ${PIPELINE_ROOT}/pipelines/<pipeline>/tools.groovy
 //
@@ -22,7 +22,7 @@ def conda_tools       = "/fsimb/common/conda_tools"
 def singularity_tools = "/fsimb/common/singularity_tools"
 
 // default runenvs and versions for each tools.
-// Names should match those of tools_prepare_env
+// Names should match those of tools_envs
 tools_defaults = [
     R          : [ runenv: "lmod", version: "3.6.0"        ],
     bamqc      : [ runenv: "lmod", version: "0.1.25_devel" ],
@@ -65,7 +65,7 @@ tools_defaults = [
 //   * 1st level: tool name
 //   * 2nd level: version --> version *string*
 //   * 3rd level: runenv  --> one of [lmod|singularity|conda]
-tools_prepare_env = [
+tools_envs = [
     R: [
         "3.5.1": [
             lmod: "module load R/3.5.1_debian9"
@@ -342,15 +342,15 @@ tools_prepare_env = [
 //
 // prepare_tool_env
 // 
-// Given a tool, version and run env, return its tools_prepare_env string.
+// Given a tool, version and run env, return its tools_envs string.
 // If any of the keys doesn't exist, returns the POSIX shell null command.
 //
 String prepare_tool_env (String tool, String version, String runenv) {
 
-    if(tools_prepare_env.containsKey(tool) &&
-       tools_prepare_env[tool].containsKey(version) &&
-       tools_prepare_env[tool][version].containsKey(runenv)) {
-        return tools_prepare_env[tool][version][runenv]
+    if(tools_envs.containsKey(tool) &&
+       tools_envs[tool].containsKey(version) &&
+       tools_envs[tool][version].containsKey(runenv)) {
+        return tools_envs[tool][version][runenv]
     } else {
         return ":"   // return the POSIX shell null command
     }
