@@ -18,6 +18,10 @@ knitr::opts_chunk[['set']](dev='CairoPNG')
 source('ChIP.shinyrep.helpers.R')
 loadGlobalVars()
 isPaired <- tolower(SHINYREPS_PAIRED) == "yes"
+runPeakAnno <- SHINYREPS_RUN_PEAK_ANNOTATION=="true"
+runDiffbind <- SHINYREPS_RUN_DIFFBIND=="true"
+runEnrich <- SHINYREPS_RUN_ENRICHMENT=="true"
+
 targets <<- ChIPhelper.init("readTargets")
 
 ## parallel pipeline branches
@@ -25,7 +29,7 @@ targets <<- ChIPhelper.init("readTargets")
 # One sub-directory may be "" as default output folder.
 # Modules producing output files with names uniquely distinguishable for all branches may be stored in the same output folder. 
 # If a subset of these files shall be selected they can be grepped by a character substring
-branches <- c(unique="filtered", dupmarked="unfiltered") # value is sub-directory, name is file tag in case of subsetting  
+branches <- c(filtered="filtered", unfiltered="unfiltered") # value is sub-directory, name is file tag in case of subsetting  
 
 ``` 
 
@@ -182,6 +186,7 @@ peaksAllBranches <- lapply(branches, function(peaksdir) {
   })
   p <- Reduce(function(x,y) {
       z <- merge(x,y,all=T,by=0)
+      colnames(z)[-1] <- paste0(colnames(z)[-1],".") # avoid warning of duplicated column names 'y.x', 'y.y'
       rownames(z) <- z[,1]
       z[,-1]
   },l)
@@ -239,7 +244,7 @@ venncombined <- lapply(names(peakscovcombReorder), function(x) {
     makeVennDiagram(peaks.ov,
                     margin=0.25, cat.default.pos="outer", cat.dist=0.15,
                     cat.fontface=rep("bold", length(peakscovcombReorder[[x]])),
-                    fill=brewer.pal(length(peakscovcombReorder[[x]]), "Accent")[1:length(peakscovcombReorder[[x]])]
+                    fill=brewer.pal(max(3,length(peakscovcombReorder[[x]])), "Accent")[1:length(peakscovcombReorder[[x]])]
                     )
     cat("\n", fill=T)
   }
@@ -323,13 +328,15 @@ UpSetplots <- lapply(branches, function(peaksdir) {
 ```
 
 
-## Enrichment Analysis ##
+
+```{r Enrichment_paragraph, echo=F, results='asis', error=F, warning=F, message=F, fig.align="center", eval=runEnrich}
+cat("\n## Enrichment Analysis ##
 
 Enrichment Analysis is carried out using GREAT (http://great.stanford.edu). It assigns each gene a regulatory domain consisting of basal domain that extends 5 kb upstream and 1 kb downstream from its transcription start site, and and an extension up to the basal regulatory domain of the nearest upstream and downstream genes within 1 Mb. GREAT performs both the binomial test over genomic regions and the hypergeometric test over genes to provide an accurate picture of annotation enrichments for genomic regions. The ontology terms reported below are ranked by the binomial FDR q-value.   
 
-Note that GREAT (> v4.0.0) supports recent assemblies of the well-annotated human (UCSC hg19 and UCSC hg38) and mouse (UCSC mm9 and UCSC mm10) genomes.
+Note that GREAT (> v4.0.0) supports recent assemblies of the well-annotated human (UCSC hg19 and UCSC hg38) and mouse (UCSC mm9 and UCSC mm10) genomes.\n")
 
-```{r Enrichment_paragraph, echo=F, results='asis', error=F, warning=F, message=F, fig.align="center"}
+
 resultsenrich <- lapply(branches, function(peaksdir) {
     if(length(branches)>1) {cat(paste("\n\n### Enrichment results from", if(peaksdir==""){"default"} else {peaksdir}, "pipeline branch\n"))}
 
@@ -406,13 +413,18 @@ resultsenrich <- lapply(branches, function(peaksdir) {
 ```
 
 
-## Differential binding analysis {.tabset}
 
-```{r diffbind, echo=F, results='asis', error=F, warning=F, message=F, fig.align="center"}
+```{r diffbind, echo=F, results='asis', error=F, warning=F, message=F, fig.align="center", fig.height=4, fig.width=10, eval=runDiffbind}
+cat("\n## Differential binding analysis\n\n")
+cat("The DiffBind package (https://bioconductor.org/packages/release/bioc/html/DiffBind.html) is used for identifying sites that are statistically significantly differentially bound between sample groups based on evidence of binding affinity (measured by differences in read densities).\n 
+After the occupancy data obtained from the peak caller (peak sets) is read in, a merging function finds all overlapping peaks and derives a single set of unique genomic intervals covering all the supplied peaks (a consensus peakset for the experiment). Then the supplied sequence read files (bam files) are used to count how many reads overlap each interval for each unique sample. The proportion of reads for each sample that overlap a peak in the consensus peakset is reported as 'FRiP' (Fraction of Reads in Peaks, see below), and can be used to indicate which samples show more enrichment overall. Optionally, e.g. for narrow peaks obtained from transcription factor binding, the peaks in the consensus peakset may be re-centered and trimmed based on calculating their summits (point of greatest read overlap) in order to provide more standardized peak intervals (not applied here).\n 
+The final result of counting is a binding affinity matrix containing a (normalized) read count for each sample at every potential binding site (affinity scores). This matrix is used for further QC plotting and differential binding analysis for the contrasts defined in 'contrasts_diffbind.txt'. For this, DiffBind uses statistical routines developed in an RNA-Seq context (primarily the Bioconductor packages edgeR and DESeq2). It will assign a p-value and FDR to each candidate binding site indicating confidence that they are differentially bound given the respective contrast.\n")
+
 diffplots <- lapply(branches, function(dir) {
     if(length(branches)>1) {cat(paste("\n\n### Diffbind results from", if(dir==""){"default"} else {dir}, "pipeline branch\n"))}
-    invisible(ChIPhelper.diffbind(subdir=dir))
+    ChIPhelper.diffbind(subdir=dir)
 })
+
 ```
 
 

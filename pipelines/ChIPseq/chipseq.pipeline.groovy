@@ -33,20 +33,6 @@ load PIPELINE_ROOT + "/modules/miscellaneous/collect_tool_versions.header"
 load PIPELINE_ROOT + "/modules/miscellaneous/collectbpipes.module.2.header"
 load PIPELINE_ROOT + "/modules/ChIPseq/shinyreports.header"
 
-// quality control modules specific to paired end (pe) or single end (se) design
-qc_paired = segment {
-	[
-		bamCoverage,
-		InsertSize
-	]
-}
-
-qc_single = segment {
-	[
-		extend + bamCoverage, 
-		phantompeak
-	]
-}
 
 //MAIN PIPELINE TASK
 dontrun = { println "didn't run $module" }

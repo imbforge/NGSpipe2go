@@ -28,6 +28,8 @@
 options(stringsAsFactors=FALSE)
 library(DiffBind)
 library(openxlsx)
+library(dplyr)
+library(ggplot2)
 
 ##
 ## get arguments from the command line
@@ -45,7 +47,7 @@ run_custom_code <- function(x) {
 
 args <- commandArgs(T)
 FTARGETS   <- parseArgs(args,"targets=","targets.txt")     # file describing the targets
-FCONTRASTS <- parseArgs(args,"contrasts=","contrasts.txt") # file describing the contrasts
+FCONTRASTS <- parseArgs(args,"contrasts=","contrasts_diffbind.txt") # file describing the contrasts
 CWD        <- parseArgs(args,"cwd=","./")     # current working directory
 BAMS       <- parseArgs(args,"bams=",paste0(CWD, "/mapped"))  # directory with the bam files
 PEAKS      <- parseArgs(args,"peaks=",paste0(CWD, "/results/macs2"))  # directory with the peak files
@@ -107,11 +109,22 @@ targets <- data.frame(
 # Construct DBA object
 db <- dba(sampleSheet=targets, config=data.frame(fragmentSize=FRAGSIZE, bCorPlot=F, singleEnd=!PE))
 
+# create DBA object containing consensus peaks per group
+db2 <- dba.peakset(db, consensus=DBA_CONDITION)
+
+# Heatmap using occupancy (peak caller score) data
+png(paste0(OUT, "/heatmap_occupancy.png"), width = 150, height = 150, units = "mm", res=300)
+dba.plotHeatmap(db, main="Correlation heatmap\noccupancy data")
+dev.off()
+
+# plot Overlap rate
 png(paste0(OUT, "/Overlap_rate_plot.png"), width = 150, height = 150, units = "mm", res=300)
   olap.rate <- dba.overlap(db, mode=DBA_OLAP_RATE)
   plot(olap.rate, type='b', ylab='# peaks', xlab='Overlap at least this many peaksets', main="Overlap rate plot")
 dev.off()
 
+# identify all overlapping peaks and derives a consensus peakset for the experiment. 
+# Then count how many reads overlap each interval for each unique sample.
 db <- dba.count(db, bUseSummarizeOverlaps=PE)  # bUseSummarizeOverlaps method slower and memory hungry, mandatory only for PE data
 
 # apply the contrasts
@@ -129,14 +142,42 @@ db <- dba.count(db, bUseSummarizeOverlaps=PE)  # bUseSummarizeOverlaps method sl
   db <- dba.analyze(db, bSubControl=SUBSTRACTCONTROL, bFullLibrarySize=FULLLIBRARYSIZE, bTagwise=TAGWISEDISPERSION)
 
 # PCA plot
-png(paste0(OUT, "/pca_plot.png"), width = 150, height = 150, units = "mm", res=300)
+png(paste0(OUT, "/pca_plot_all_samples.png"), width = 150, height = 150, units = "mm", res=300)
   dba.plotPCA(db, DBA_CONDITION, label=DBA_CONDITION)
 dev.off()
 
-# Heatmap
-png(paste0(OUT, "/read_count_heatmap.png"), width = 150, height = 150, units = "mm", res=300)
-  dba.plotHeatmap(db)
+# Heatmap using affinity (read count) data
+png(paste0(OUT, "/heatmap_affinity_scores.png"), width = 150, height = 150, units = "mm", res=300)
+  dba.plotHeatmap(db, main="Correlation heatmap\naffinity scores")
 dev.off()
+
+
+# Boxplot of consensus peaks
+  lpeaks <- db2$peaks # db2 contains Consensus peaks subsequent to samples 
+  dfcolnames <- colnames(lpeaks[[1]]) # Consensus peak dfs don't have colnames, therefore name columns 
+  lpeaks <- lapply(1:length(lpeaks), function(x) setNames(lpeaks[[x]], dfcolnames) )
+  
+  names(lpeaks) <- names(db2$masks$Consensus) # name list elements
+  names(lpeaks)[db2$masks$Consensus] <- paste0("Consensus\n", names(lpeaks)[db2$masks$Consensus])
+  
+  lpeaks <- lapply(lpeaks, function(x) { # calculate peak sizes
+    x$width <- abs(x$end - x$start)
+    return(x)
+  })
+  
+  for(x in unique(db2$samples$Condition)) { # concatenate peak sizes of samples from the same group
+    lpeaks[[paste0("Replicates\n", x)]] <- dplyr::bind_rows(lpeaks[which(db2$samples$Condition==x)])
+  }
+  lpeaks <- lpeaks[grepl("(Consensus)|(Replicates)", names(lpeaks))] # samples not needed anymore
+  
+  plotdata <- dplyr::bind_rows(lpeaks, .id="group") # create data.frame for plotting
+  
+png(paste0(OUT, "/peak_width_boxplot.png"), width = 150, height = 150, units = "mm", res=300)
+ try(ggplot(plotdata, aes(x=group, y=width, fill=group)) + geom_boxplot(show.legend = FALSE) + 
+      theme(text = element_text(size=15), axis.text.x = element_text(angle=90, vjust=0.5)) + 
+      labs(title="Size of consensus peaks") + theme(plot.title = element_text(hjust = 0.5)) )
+dev.off()
+  
 
 # Venn diagram of all contrasts
 png(paste0(OUT, "/venn_plot_all_contrasts.png"), width = 150, height = 150, units = "mm", res=300)
@@ -144,10 +185,12 @@ png(paste0(OUT, "/venn_plot_all_contrasts.png"), width = 150, height = 150, unit
 dev.off()
 
 
+# prepare results and plots for each contrast
   result <- lapply(1:nrow(conts), function(cont) {
     cont.name <- substr(gsub("(.+)=\\((.+)\\)", "\\2", conts[cont,1]), 1, 31)
     #cont.name <- gsub("(.+)=(.+)", "\\1", conts[cont,1])
     #cat(cont.name, fill=T)
+    
     png(paste0(OUT, "/", cont.name, "_ma_plot.png"), width = 150, height = 150, units = "mm", res=300)
       try(dba.plotMA(db, contrast=cont))
     dev.off()
@@ -155,19 +198,24 @@ dev.off()
       try(dba.plotBox(db, contrast=cont))   # try, in case there are no significant peaks
     dev.off()
     png(paste0(OUT, "/", cont.name, "_volcano_plot.png"), width = 150, height = 150, units = "mm", res=300)
-      try(dba.plotVolcano(db, contrast=cont))
+      rep <- try(dba.report(db, contrast=cont, th=1)) # scale dot size by Conc (max dot size set to 4)
+      try(dba.plotVolcano(db, contrast=cont, dotSize=4*rep$Conc/max(rep$Conc)))
+    dev.off()
+    png(paste0(OUT, "/", cont.name, "_correlation_heatmap.png"), width = 150, height = 150, units = "mm", res=300)
+      try(dba.plotHeatmap(db, contrast=cont))   # try, in case there are no significant peaks
+    dev.off()
+    png(paste0(OUT, "/", cont.name, "_pca_plot.png"), width = 150, height = 150, units = "mm", res=300)
+      try(dba.plotPCA(db, contrast=cont, label=DBA_ID))   # try, in case there are no significant peaks
     dev.off()
     
     # plot consensus peaks
     vennmask <- dba.mask(db, DBA_CONDITION, factor(dba.show(db, bContrast=T)[cont,c("Group1", "Group2")]))
-    if(sum(vennmask) <= 4) {        # if less than 2 replicates per group (or 4 replicates in total)
+    if(sum(vennmask) <= 4) {   # if less than 2 replicates per group (or 4 replicates in total)
       png(paste0(OUT, "/", cont.name, "_venn_plot.png"), width = 150, height = 150, units = "mm", res=300)
         try(dba.plotVenn(db, mask=vennmask, main="Binding Site Overlaps Per Sample"))    # plot all relevant samples together
       dev.off()
-    } else {                       # generate a consensus peakset otherwise
-       db2 <- dba(sampleSheet=targets, config=data.frame(fragmentSize=FRAGSIZE, bCorPlot=F, singleEnd=!PE))
-       db2 <- dba.peakset(db2, consensus=DBA_CONDITION)
-       vennmask2 <- dba.mask(db2, DBA_CONDITION, factor(dba.show(db2, bContrast=T)[cont,c("Group1", "Group2")]))
+    } else {  # generate a consensus peakset otherwise
+       vennmask2 <- dba.mask(db2, DBA_CONDITION, factor(dba.show(db2, bContrast=T)[cont,c("Group1", "Group2")])) # db2 see above
        png(paste0(OUT, "/", cont.name, "_venn_plot.png"), width = 150, height = 150, units = "mm", res=300)
           try(dba.plotVenn(db2, main="Binding Site Overlaps Per Group",
                         mask=db2$masks$Consensus & names(db2$masks$Consensus) %in% factor(dba.show(db, bContrast=T)[cont,c("Group1", "Group2")]) ))
@@ -176,6 +224,7 @@ dev.off()
 
     tryCatch(dba.report(db, contrast=cont, bCalled=T), 
                     error=function(e) NULL) # dba.report crashes if there is exactly 1 significant hit to report
+    
   })
 
 

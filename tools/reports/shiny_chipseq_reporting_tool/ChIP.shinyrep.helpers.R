@@ -177,7 +177,7 @@ ChIPhelper.VennDiagram <- function(subdir=""){
     makeVennDiagram(peaks.ov,
                     margin=0.25, cat.default.pos="outer", cat.dist=0.15,
                     cat.fontface=rep("bold", length(peak)),
-                    fill=brewer.pal(length(peak), "Accent")[1:length(peak)]
+                    fill=brewer.pal(max(3,length(peak)), "Accent")[1:length(peak)] # brewer.pal requires min n=3
     )
     cat("\n", fill=T)
   }
@@ -832,17 +832,33 @@ ChIPhelper.diffbind <- function(subdir="") {
     db <- dba.load(dir=file.path(SHINYREPS_DIFFBIND, subdir), file='diffbind', pre="")
     
     if(!is.integer(SHINYREPS_PLOTS_COLUMN) | SHINYREPS_PLOTS_COLUMN < 2) {
-      SHINYREPS_PLOTS_COLUMN <- 3L    # default to 4 columns
+      SHINYREPS_PLOTS_COLUMN <- 3L    # default to 3 columns
     }
     
+    cat(paste0("\nDataset in DiffBind analysis (", db$totalMerged, " sites in matrix):\n\n"))
+    cat(knitr::kable(data.frame(db$samples[,c("SampleID", "Condition", "Replicate")], FRiP=db$SN), 
+                     format="markdown"),sep="\n")
+    cat("\n\n")
     
     # plots for 1st panel (independent from contrasts)
+    cat("\nCorrelation heatmaps to inspect sample relatedness are generated based on the initial 
+    peak caller data (occupancy) as well as based on the affinity scores, which might show a 
+    slightly different clustering. The PCA plot given below is based on affinity scores as well.
+    The boxplot compares the sizes of consensus peaks with the sizes of the initial sample peaks
+    (data of replicates is joined for each group). If the consensus peaks are much larger than the 
+    initial sample peaks it should be considered to use intersected peaks instead of union peaks
+    as consensus. The overlap rate plot shows the number of peaks that appear in multiple peaksets. 
+    These curves typically exhibit a roughly geometric drop-off, with the number of overlapping 
+    sites halving as the overlap criterion becomes stricter by one site. When the drop-off is 
+    extremely steep, this is an indication that the peaksets do not agree very well. If there are
+    replicates you expect to agree, there may be a problem with the experiment.
+    Finally, the Venn diagramm shows overlapping differentially bound sites for all analysed contrasts.\n\n")
+    
     cat("\n\n")   
     plotsPanel1 <- file.path(SHINYREPS_DIFFBIND, subdir, 
-                             c("pca_plot.png",  "Overlap_rate_plot.png", 
-                               "venn_plot_all_contrasts.png")) #"read_count_heatmap.png"
-    existsPanel1 <- file.exists(plotsPanel1)
-    plotsPanel1 <- plotsPanel1[existsPanel1]
+                             c("heatmap_occupancy.png", "heatmap_affinity_scores.png", "pca_plot_all_samples.png", 
+                               "peak_width_boxplot.png", "Overlap_rate_plot.png", "venn_plot_all_contrasts.png"))
+    plotsPanel1 <- plotsPanel1[file.exists(plotsPanel1)]
     
     COLUMNS <- min(length(plotsPanel1), SHINYREPS_PLOTS_COLUMN)
     panel1 <- paste0("![diffbind img](", plotsPanel1, ")")
@@ -853,23 +869,34 @@ ChIPhelper.diffbind <- function(subdir="") {
     cat("\n\n")
     
     
-    # for each contrast
-    #Map(x=res, x.name=names(res), f=function(x, x.name) {
-    temp <- lapply(1:length(res), function(cont) {
+    ### for each contrast
+    lapply(1:length(res), function(cont) {
       
-      cat("\n\n#### Contrast:", names(res)[cont], "\n", nrow(res[[cont]]), "differential peaks at FDR 5%.\n", fill=TRUE)
+      maxTableEntries = 20
+      cat("\n\n#### Contrast:", names(res)[cont], "\n", nrow(res[[cont]]), "differential peaks at FDR 5%", 
+          if(nrow(res[[cont]])>maxTableEntries){paste("(top", maxTableEntries, "entries shown)")}, "\n", fill=TRUE)
       
       if(nrow(res[[cont]])>=1) {
-        cat(knitr::kable(res[[cont]][,names(res[[cont]]) %in% c("seqnames",	"start", "end", "width", "strand", "Conc", 
-                         "Fold", "p.value", "FDR", "annotation", "geneId", "distanceToTSS")], 
-                         format="markdown"),sep="\n")
+        
+        res_table <- res[[cont]][,names(res[[cont]]) %in% c("seqnames",	"start", "end", "width", "strand", "Conc",
+                                                            "Fold", "p.value", "FDR", "annotation", "geneId", "distanceToTSS")]
+        
+        cat(knitr::kable(res_table[1:min(nrow(res[[cont]]), maxTableEntries),], format="markdown"),sep="\n")
+        # DT::datatable(res_table)
+        
+        cat("\nThe 'Conc' column of the result table shows the mean read concentration over all the samples 
+           (the default calculation uses log2 normalized ChIP read counts with control read counts subtracted).
+           The 'Fold' column indicates the difference in mean concentrations between the two groups of the contrast,
+           with a positive value indicating increased binding affinity in group1 and a negative value indicating 
+           increased binding affinity in group2. The additional columns give gene annotation data and confidence 
+           measures for identifying these sites as differentially bound, with a raw p-value and a multiple testing 
+           corrected FDR.\n")
         
         # plots for 2nd panel 
         cat("\n\n")   
         plotsPanel2 <- file.path(SHINYREPS_DIFFBIND, subdir, paste0(names(res)[cont],
-                                                                    c("_ma_plot.png", "_volcano_plot.png", "_venn_plot.png")))
-        existsPanel2 <- file.exists(plotsPanel2)
-        plotsPanel2 <- plotsPanel2[existsPanel2]
+                                                                    c("_pca_plot.png", "_venn_plot.png", "_volcano_plot.png")))
+        plotsPanel2 <- plotsPanel2[file.exists(plotsPanel2)]
         
         COLUMNS <- min(length(plotsPanel2), SHINYREPS_PLOTS_COLUMN)
         panel2 <- paste0("![diffbind img](", plotsPanel2, ")")
@@ -879,18 +906,29 @@ ChIPhelper.diffbind <- function(subdir="") {
         cat(kable(as.data.frame(panel2), output=F, align="c", format="markdown"), sep="\n")
         cat("\n\n")
         
-        # plots for 3rd panel
+        
+        # plots for 3rd panel (always 3 elements plotted newly)
         cat("\n\n")   
-        opar <- par(mfrow=c(1, 3))
+        COLUMNS <- min(3, SHINYREPS_PLOTS_COLUMN)
+        opar <- par(mfrow=c(ceiling(3/COLUMNS), COLUMNS))
+        try(dba.plotMA(db, contrast=cont, cex.main=0.8))  # col.main="white"     
         freq <- table(res[[cont]]$seqnames)
-        barplot(freq[rev(order(gsub("chr", "", names(freq))))], horiz=TRUE, las=1, xlab="number of peaks")
-        hist(res[[cont]]$Fold, main="", xlab="log fold change", ylab="number of peaks", col="grey")#,
+        barplot(freq[rev(order(gsub("chr", "", names(freq))))], horiz=TRUE, las=1, xlab="number of significant peaks")
+        hist(res[[cont]]$Fold, main="", xlab="log fold change", ylab="number of significant peaks", col="grey")#,
         abline(v=0, lty=2, col="blue")
-        plot(res[[cont]]$Conc, res[[cont]]$Fold, main="", xlab="log read concentration", ylab="log fold change")#,
-        abline(h=0, lty=2, col="blue")
+        # plot(res[[cont]]$Conc, res[[cont]]$Fold, main="", xlab="log read concentration", ylab="log fold change") 
+        # abline(h=0, lty=2, col="blue") # is basically a MA plot showing significant peaks only. Replaced by regular MA plot.
         par(opar)
         
-        invisible(NULL)
+        cat("\nThe PCA plot given here uses only the differentially bound sites of the respective contrast, 
+            while the venn diagramm shows overlapping binding sites for the samples of this contrast.
+            The dot size of the volcano plots represent the mean read concentration of each site. Significant 
+            sites are highlighted in red.
+            The MA plot helps to visualize the effect of the data normalization. Points in red represent sites 
+            identified as differentially bound.
+            The last 2 plots illustrate the distribution of significant peaks across the genome as well as
+            the distrbution of fold changes.\n")
+        
       }
     })
   }, error=function(e) cat("Differential binding analysis not available.\n", fill=TRUE))
