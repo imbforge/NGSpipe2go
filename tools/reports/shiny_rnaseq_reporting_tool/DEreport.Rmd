@@ -29,16 +29,69 @@ resMM <- local({    # load in a local environment to avoid colliding with the an
 
 The raw sequence reads of all samples are analysed with the popular FastQC tool (http://www.bioinformatics.babraham.ac.uk/projects/fastqc/).
 
-1. The "Read qualities" heatmap plot summarizes the mean quality score at each position.
-The color on the graph shows the Phred quality scores, which are logarithmically related to the base-calling error probabilities. The higher the score the better the base call. The background of the graph divides the y axis into very good quality calls (green), calls of reasonable quality (yellow), and calls of poor quality (red). Typically, the majority of calls on all base positions fall into the green area.
 
-2. The "Sequence bias" heatmap plot shows the proportion of each base (% G, A, T and C) at each position. In a random library there would be little difference between the positions of a sequence run, so the lines in this plot should run parallel with each other. But most RNA-seq libraries show sequence imbalance in the first 10-12 read positions due to RT priming biases, which should however look fairly similar in all samples.
+#### Read quality
 
-3. The "GC Content" plot shows the GC% distribution of all reads and the ideal normal distribution based on the data (black line). Typically, the lines should tightly overlap and look essentially the same in all samples. An unusually shaped distribution could indicate a contaminated library.
+The "read qualities" plot summarizes the mean quality score at each position.
+The color on the graph shows the Phred quality scores, which are logarithmically related to the base-calling error probabilities. The higher the score the better the base call. The background of the graph divides the y axis into very good quality calls (green), calls of reasonable quality (yellow), and calls of poor quality (red). Typically, the majority of calls on all base positions fall into the green area. Due to binning of quality score in recent sequencing technologies (e.g. Illumina NextSeq), sequencing qualities are the same on many position and, thus, also samples appear to have very similar or almost identical sequencing qualities.
 
-```{r FastQC_paragraph, echo=F,results='asis',error=F,warning=F,message=F,fig.align='center'}
-DEhelper.ngsReports.Fastqc()
+```{r FastQC_qual_summarized, echo=F,results='asis',error=F,warning=F,message=F,fig.align='center'}
+
+if (SHINYREPS_FASTQC_SUMMARIZED) {
+    fastqc_summary_plot <- DEhelper.Fastqc.custom(web=F,summarizedPlots=T)
+    plot(fastqc_summary_plot$p.qual)
+    cat("\n", fill = T)
+} else {
+    fastqc_summary_plot <- DEhelper.Fastqc.custom(web=F,summarizedPlots=F)
+}
+
 ```
+
+```{r FastQC_qual, echo=F,results='asis',error=F,warning=F,message=F,fig.align='center',fig.height=round((3*fastqc_summary_plot$no.of.samples)/4)+1}
+
+if (SHINYREPS_FASTQC_SUMMARIZED == FALSE) {
+    plot(fastqc_summary_plot$p.qual)
+    cat("\n", fill = T)
+}
+
+```
+
+#### Sequence bias
+
+The "sequence bias" plot shows the proportion of each base (% G, A, T and C) at each position. In a random library there would be little difference between the positions of a sequence run, so the lines in this plot should run parallel with each other. But most RNA-seq libraries show sequence imbalance in the first 10-12 read positions due to RT priming biases, which should however look fairly similar in all samples. In case the nucleotide content is summarized in a heatmap for all samples, gray colored fields represent a balanced nucleotide content.
+
+
+```{r FastQC_nuc_content_summarized, echo=F,results='asis',error=F,warning=F,message=F,fig.align='center'}
+
+if (SHINYREPS_FASTQC_SUMMARIZED) {
+    plot(fastqc_summary_plot$p.content)
+    cat("\n", fill = T)
+} else {
+    fastqc_summary_plot <- DEhelper.Fastqc.custom(web=F,summarizedPlots=F)
+}
+
+```
+
+```{r FastQC_nuc_content, echo=F,results='asis',error=F,warning=F,message=F,fig.align='center',fig.height=round((3*fastqc_summary_plot$no.of.samples)/4)+1}
+
+if (SHINYREPS_FASTQC_SUMMARIZED == FALSE) {
+    plot(fastqc_summary_plot$p.content)
+    cat("\n", fill = T)
+}
+
+```
+
+#### GC content
+
+The "GC content" plot shows the GC% distribution of all reads and the ideal normal distribution based on the data (black line). Typically, the lines should tightly overlap and look essentially the same in all samples. An unusually shaped distribution could indicate a contaminated library.
+
+```{r FastQC_GC, echo=F,results='asis',error=F,warning=F,message=F,fig.align='center'}
+
+plot(fastqc_summary_plot$p.gc)
+cat("\n", fill = T)
+
+```
+
 
 ## Read mapping ##
 
@@ -48,20 +101,27 @@ The mapping statistics below show the number and percentage of: (i) input raw re
 
 While both unique and multi-mapped reads are included in the generation of browser coverage tracks, only uniquely mapped reads are typically taken into account in the DESeq2 differential expression analysis in order to avoid potential false-positives. However, this standard analysis approach may also exclude some recently duplicated genes or gene-pseudogene pairs, resulting in false-negatives. To investigate the potential expression changes in such genes, a side branch of DESeq2 is run using all mapped reads and the results of both branches are compared.
 
-```{r STAR_paragraph, echo=F, results='asis', error=F, warning=F, message=F, fig.align="center", out.width="100%"}
+```{r STAR_paragraph, echo=F, results='asis', error=F, warning=F, message=F, fig.align="center", out.width="100%", fig.height=(0.2*fastqc_summary_plot$no.of.samples)+4}
 
 star_stats <- DEhelper.STAR()
 
-plot(star_stats$p_perc)
-cat("\n", fill = T)
-
-plot(star_stats$p_count)
+cat("#### Mapping summary:\n", fill=T)
+plot(star_stats$p_perc_count)
 cat("\n", fill = T)
 
 cat("#### Mapping statistics:\n", fill=T)
 cat(star_stats$stat, sep="\n")
 cat("\n", fill = T)
-``` 
+
+```
+
+#### Competitive mapping to rRNAs and the genome
+
+A competitive mapping to the reference genome and all known rRNAs was performed with FastQScreen (http://www.bioinformatics.babraham.ac.uk/projects/fastq_screen/).
+
+```{r fastqscreen_paragraph, echo=F, results='asis', error=F, warning=F, message=F}
+cat(DEhelper.fastqscreen(), sep="\n")
+```
 
 
 ## UCSC Genome Browser tracks ##
@@ -130,7 +190,7 @@ cat(DEhelper.geneBodyCov(web=F), sep="\n")
 
 ## Strand specificity ##
 
-The table below shows the fraction of reads mapped in sense or antisense to gene exons - around 0.5 for non-stranded library prep protocols and close to 0 or 1 for strand-specific RNA-seq protocols.
+The table below shows the fraction of reads mapped in sense or antisense to gene exons - around 0.5 for non-stranded library prep protocols and close to 0 or 1 for strand-specific RNA-seq protocols. The strandedness is calculated as the percentage of unambiguous reads that are on the strand, which is expected by the library preparation protocol. 
 
 ```{r echo=F, results='asis', error=F, warning=F, message=F}
 cat(DEhelper.strandspecificity(), sep="\n")
@@ -308,7 +368,7 @@ for(i in 1:nrow(conts)) {
         	r       <- min(10, nrow(enrich))
         	enrich  <- as.data.frame(enrich)
         	enrich$geneID <- ifelse(nchar(enrich$geneID) > 10, paste0(substr(enrich$geneID, 0, 35), "..."), enrich$geneID) # shorten long lines
-        	cat(kable(enrich[1:r, cols], row.names=T, align="r"), sep="\n") # show only the top min or top 10 biological processes
+        	cat(kable(enrich[1:r, cols], row.names=T, align="r", format="markdown"), sep="\n") # show only the top min or top 10 biological processes
         	cat("\n", fill=T)
 
     	} else {
