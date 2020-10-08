@@ -38,9 +38,8 @@ load PIPELINE_ROOT + "/modules/ChIPseq/shinyreports.header"
 dontrun = { println "didn't run $module" }
 
 Bpipe.run {
-    "%.fastq.gz" * [ FastQC ] + 
 	(RUN_IN_PAIRED_END_MODE ? "%.R*.fastq.gz" : "%.fastq.gz") * [
-		(ESSENTIAL_USE_BOWTIE1 ? bowtie1 : bowtie2) + BAMindexer + BamQC +   
+		FastQC + (ESSENTIAL_USE_BOWTIE1 ? bowtie1 : bowtie2) + BAMindexer + BamQC +   
 
          [ // parallel branches with and without multi mappers
 
@@ -64,7 +63,7 @@ Bpipe.run {
 		        macs2.using(subdir:"filtered") 
 		]  
             ]
-        ] 
+        ] // end parallel branches
 
       ] + 
     [(RUN_PEAK_ANNOTATION ? peak_annotation.using(subdir:"unfiltered") : dontrun.using(module:"peak_annotation")) +

@@ -9,7 +9,7 @@ All analysis steps are illustrated in the pipeline [flowchart](https://www.draw.
 ### The pipelines includes
 - raw data quality control with FastQC, BamQC and MultiQC
 - mapping reads or read pairs to the reference genome using bowtie2 (default) or bowtie1
-- filter out multimapping reads from bowtie2 output with samtools (optional)
+- filter out multimapping reads from bowtie2 output with samtools (performed in parallel pipeline branch)
 - identify and remove duplicate reads with Picard MarkDuplicates (performed in parallel pipeline branch) 
 - generation of bigWig tracks for visualisation of alignment with deeptools bamCoverage. For single end design, reads are extended to the average fragment size
 - characterization of insert size using Picard CollectInsertSizeMetrics (for paired end libraries only)
@@ -44,12 +44,13 @@ All analysis steps are illustrated in the pipeline [flowchart](https://www.draw.
   - ESSENTIAL_FRAGLEN: mean length of library inserts and also minimum peak size called by MACS2
   - ESSENTIAL_THREADS: number of threads for parallel tasks
   - ESSENTIAL_USE_BOWTIE1: if true use bowtie1 for read mapping, otherwise bowtie2 by default
-
-- additional (more specialized) parameter can be given in the var.groovy-files of the individual pipeline modules 
+  - ESSENTIAL_FULLLIBRARYSIZE: if true (default) use total number of reads in bam for normalization in DiffBind analysis (if false only reads overlapping peaks)
+ 
+- additional (more specialized) parameter can be given in the header files of the individual pipeline modules 
 
 If differential binding analysis is selected it is required additionally:
 
-- contrasts_diffbind.txt: indicate intended group comparisions for differential binding analysis, e.g. *KOvsWT=(KO-WT)* if targets.txt contains the groups *KO* and *WT*. Give 1 contrast per line.  
+- contrasts_diffbind.txt: indicate intended group comparisions for differential binding analysis, e.g. *KOvsWT=(KO-WT)* if targets.txt contains the groups *KO* and *WT*. Give 1 contrast per line.
 
 
 ## Programs required

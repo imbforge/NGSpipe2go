@@ -89,9 +89,13 @@ donefiles <- list.files(PEAKS,pattern=".done$")
 bam_suffix <- sub("^[^\\.]*\\.", "", gsub("_macs2.done$", "", donefiles[1]))
 bam_suffix <- paste0(bam_suffix, ".bam")
 
+# check if blacklist filtering was applied
 peakfiles <- list.files(PEAKS,pattern=".xls")
-isBlacklistFilt <- any(grepl("blacklist_filtered", peakfiles))
+isBlacklistFilt <- any(grepl("blacklist_filtered", peakfiles)) 
 peak_suffix <- if(isBlacklistFilt) {"_macs2_blacklist_filtered_peaks.xls"} else {"_macs2_peaks.xls"}
+
+# check if any targets$INPUT is indicated as "none". If so, Peak calling was done without Input samples.
+isInputNone <- any(tolower(targets$INPUT) == "none")
 
 # create modified targets file for diffbind
 targets <- data.frame(
@@ -101,9 +105,13 @@ targets <- data.frame(
   bamReads= paste0(BAMS, "/", targets$IP, ".", bam_suffix),
   ControlID= targets$INPUTname,
   bamControl= paste0(BAMS, "/", targets$INPUT, ".", bam_suffix),
-  Peaks= paste0(PEAKS, "/", targets$IPname, ".vs.", targets$INPUTname, peak_suffix),
+  Peaks= paste0(PEAKS, "/", targets$IPname, if(!isInputNone) {paste0(".vs.", targets$INPUTname)}, peak_suffix),
   PeakCaller= targets$PeakCaller
 )
+if(isInputNone) {
+  targets$ControlID <- NULL
+  targets$bamControl <- NULL
+}
 
 
 # Construct DBA object

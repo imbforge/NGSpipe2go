@@ -1,7 +1,7 @@
 macs2 = {
     doc title: "MACS2",
         desc:  "MACS2 wrapper",
-        constraints: "Only performs treatment versus control peak calling",
+        constraints: "Performs treatment versus control peak calling. If no input control sample is available, the INPUT field in the targets.txt file must be given as none.",
         bpipe_version: "tested with bpipe 0.9.8.7",
         author: "Sergi Sayols, Frank Rühle"
 
@@ -39,10 +39,17 @@ macs2 = {
                 INPUTname=\$(echo $TARGET | tr '\t' ' ' | cut -f4 -d" ");
 
                 if [ "\$BAM" != "\$INPUT" ]; then
-                    echo "\${IPname} vs \${INPUTname}" >> $output &&
-                    macs2 callpeak -t ${macs2_vars.mapped}/\$IP -c ${macs2_vars.mapped}/\$INPUT -n $subdir\${IPname}.vs.\${INPUTname}_macs2 $MACS2_FLAGS &&
+                    if [ "\$INPUT" != "none.\$extension" ]; then
+                        NAMEoutput="\${IPname}.vs.\${INPUTname}" &&
+                        INPUTflag="-c ${macs2_vars.mapped}/\$INPUT";
+                    else
+                        NAMEoutput="\${IPname}" &&
+                        INPUTflag="";
+                    fi &&   
+                    echo "\$NAMEoutput" >> $output &&
+                    macs2 callpeak -t ${macs2_vars.mapped}/\$IP \$INPUTflag -n $subdir\${NAMEoutput}_macs2 $MACS2_FLAGS &&
                     if [ \$? -ne 0 ]; then rm $output; fi &&
-                    find . -maxdepth 1 -name "$subdir\${IPname}.vs.\${INPUTname}_macs2*" -exec sh -c 'mv "\$1" "$output.dir/\${1#./$subdir}"' _ {} \\;;
+                    find . -maxdepth 1 -name "$subdir\${NAMEoutput}_macs2*" -exec sh -c 'mv "\$1" "$output.dir/\${1#./$subdir}"' _ {} \\;;
                 fi;
             done
         ""","macs2"
