@@ -83,7 +83,7 @@ if (SHINYREPS_FASTQC_SUMMARIZED == FALSE) {
 
 #### GC content
 
-The "GC content" plot shows the GC% distribution of all reads and the ideal normal distribution based on the data (black line). Typically, the lines should tightly overlap and look essentially the same in all samples. An unusually shaped distribution could indicate a contaminated library.
+The "GC content" plot shows the GC% distribution of all reads and all samples. Typically, the lines should tightly overlap and look essentially the same in all samples. An unusually shaped distribution could indicate a contaminated library.
 
 ```{r FastQC_GC, echo=F,results='asis',error=F,warning=F,message=F,fig.align='center'}
 
@@ -294,6 +294,8 @@ for(i in 1:nrow(conts)) {
 
 
 ## Enrichment Analysis ##
+
+The R/Bioconductor package clusterProfiler (https://bioconductor.org/packages/release/bioc/html/clusterProfiler.html) was used to find enriched GO terms in the groups of significantly up-regulated and significantly down-regulated genes.
 
 ```{r Enrichment_paragraph, echo=F, results='asis', error=F, warning=F, message=F, fig.align="center"}
 
