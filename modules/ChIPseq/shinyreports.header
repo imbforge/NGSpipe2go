@@ -26,7 +26,7 @@ shinyReports_vars=[
     peak_annotation : peak_annotation_vars.outdir, // where the peak annotation results lie
     great           : GREAT_vars.outdir,    // where the GO enrichment results lie
     diffbind        : diffbind_vars.outdir, // results folder with diffbind.rds results file
-    trackhub_done   : PROJECT + "/trackhub.done",   // contains trackhub URL
+    trackhub_done   : TRACKS + "/trackhub.done",   // contains trackhub URL
     tool_versions   : collectToolVersions_vars.outdir + "/tool_versions.txt" //where the tool versions listed
 ]
 
