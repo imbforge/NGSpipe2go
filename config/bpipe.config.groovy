@@ -5,7 +5,9 @@
 // 
 config {
   executor="slurm"
-  queue="bcfshort"
+  short_queue="short"
+  long_queue="long"
+  queue=short_queue   // default queue
   commands {
     AddR { 
       walltime="04:00:00" 
@@ -23,7 +25,7 @@ config {
       memory="1"
     }
     BWA_pe { 
-      queue="bcflong" 
+      queue=long_queue 
       walltime="24:00:00" 
       procs="16" 
       memory="32"
@@ -60,24 +62,24 @@ config {
     }
     BaseRecalibration { 
       walltime="48:00:00" 
-      queue="bcflong" 
+      queue=long_queue 
       procs="8" 
       memory="50"
     }
     bowtie1 { 
-      queue="bcflong" 
+      queue=long_queue 
       walltime="24:00:00" 
       procs="4" 
       memory="24"
     }
     bowtie2 { 
-      queue="bcflong" 
+      queue=long_queue 
       walltime="24:00:00" 
       procs="4" 
       memory="24"
     }
     bowtie2_pe { 
-      queue="bcflong" 
+      queue=long_queue 
       walltime="24:00:00" 
       procs="4" 
       memory="24"
@@ -224,7 +226,7 @@ config {
     }
     IndelRealignment { 
       walltime="24:00:00" 
-      queue="bcflong" 
+      queue=long_queue 
       procs="8" 
       memory="50"
     }
@@ -264,7 +266,7 @@ config {
       memory="8"
     }
     MULTIQC {
-      queue="bcflong"
+      queue=long_queue
       walltime="12:00:00"
       procs="4"
       memory="50"
@@ -300,13 +302,13 @@ config {
       memory="4"
     }
     RepEnrich { 
-      queue="bcflong" 
+      queue=long_queue 
       walltime="24:00:00" 
       procs="16" 
       memory="8"
     }
     RepEnrichPE { 
-      queue="bcflong" 
+      queue=long_queue 
       walltime="24:00:00" 
       procs="16" 
       memory="8"
@@ -342,7 +344,7 @@ config {
       memory="4"
     }
     SplitNCigarReads { 
-      queue="bcflong" 
+      queue=long_queue 
       procs="8" 
       memory="24"
     }
@@ -363,19 +365,19 @@ config {
     }
     VariantCallHC { 
       walltime="48:00:00" 
-      queue="bcflong" 
+      queue=long_queue 
       procs="2" 
       memory="20"
     }
     VariantCallUG { 
       walltime="24:00:00" 
-      queue="bcflong" 
+      queue=long_queue 
       procs="8" 
       memory="20"
     }
     VariantEval { 
       walltime="24:00:00" 
-      queue="bcflong" 
+      queue=long_queue 
       procs="8" 
       memory="20"
     }
@@ -386,7 +388,7 @@ config {
     }
     VariantFuseHC { 
       walltime="24:00:00" 
-      queue="bcflong" 
+      queue=long_queue 
       procs="2" 
       memory="20"
     }
