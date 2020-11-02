@@ -1084,7 +1084,7 @@ DEhelper.Fastqc.custom <- function(web=TRUE, summarizedPlots=TRUE) {
     fastqc.stats <- ngsReports::FastqcDataList(f)
 
     # create proper name vectoir as labels
-    lbls <- gsub(".R1_fastqc.zip$|.R2_fastqc.zip$", "", names(fastqc.stats))
+    lbls <- gsub(".R1_fastqc.zip$|.R2_fastqc.zip$|_fastqc.zip$", "", names(fastqc.stats))
     names(lbls) <- gsub("_fastqc.zip", ".fastq.gz", names(fastqc.stats))
 
     if(file.exists(SHINYREPS_TARGET)){
