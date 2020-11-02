@@ -81,7 +81,7 @@ conts   <- read.delim(FCONTRASTS, head=F, comment.char="#")
 targets <- read.delim(FTARGETS, head=T, colClasses="character", comment.char="#")
 db <- dba(sampleSheet=targets, config=data.frame(fragmentSize=FRAGSIZE, bCorPlot=F, singleEnd=!PE))
 db <- dba.count(db, bUseSummarizeOverlaps=PE)  # bUseSummarizeOverlaps method slower and memory hungry, mandatory only for PE data
-dba.plotPCA(db, DBA_CONDITION, label=DBA_CONDITION)
+dba.plotPCA(db, DBA_CONDITION, label=DBA_ID)
 
 # parse the formula in cont and do the analysis
 result <- lapply(conts[, 1], function(cont) {

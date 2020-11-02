@@ -17,7 +17,7 @@ require(Cairo)
 knitr::opts_chunk[['set']](dev='CairoPNG')
 source('DE.shinyrep.helpers.R')
 loadGlobalVars()
-load(SHINYREPS_DE_DESEQ, envir=.GlobalEnv)		# the outcome from the DE analysis
+load(SHINYREPS_DE_DESEQ, envir=.GlobalEnv)        # the outcome from the DE analysis
 resMM <- local({    # load in a local environment to avoid colliding with the analysis w/o MM
     load(SHINYREPS_DE_DESEQ_MM)
     res
@@ -141,16 +141,16 @@ cat(DEhelper.Trackhub(), sep="\n")
 ```{r echo=F, error=F, fig.width=15, message=FALSE, warning=FALSE, results='asis'}
 
 if (!file.exists(SHINYREPS_INSERTSIZE)) {
-	cat("Insert size data not available.")
-	} else {
-	cat(DEhelper.insertsize(), sep="\n")
-	p <- DEhelper.insertsize.plot()
-	sample_length <- length(list.files(SHINYREPS_INSERTSIZE, 
-	                                   pattern = "insertsizemetrics.tsv$"))
+    cat("Insert size data not available.")
+    } else {
+    cat(DEhelper.insertsize(), sep="\n")
+    p <- DEhelper.insertsize.plot()
+    sample_length <- length(list.files(SHINYREPS_INSERTSIZE, 
+                                       pattern = "insertsizemetrics.tsv$"))
   DEhelper.subchunkify(p, 
                        fig_height = 3*sample_length,
                        fig_width = 15)
-	}
+    }
 
 
 ```
@@ -204,7 +204,7 @@ Please note that reads overlapping an exon as well as an intron/intergenic regio
 
 
 ```{r echo=F, results='asis', error=F, warning=F, message=F}
-cat(DEhelper.Qualimap(), sep="\n")		# sample Qualimap 
+cat(DEhelper.Qualimap(), sep="\n")        # sample Qualimap 
 ```
 
 ## Sample relatedness ##
@@ -212,7 +212,7 @@ cat(DEhelper.Qualimap(), sep="\n")		# sample Qualimap
 The plot below depicts sample similarity based on priniciple component analysis (PCA) with the 500 genes showing the highest variance. Overall, replicates are expected to show relatively small distances between them, while sample groups often show higher distances between them, depending on the magnitude of expression changes. If the samples cluster other than by group, there might be sample prep batch effects or some other unaccounted biological/technical factors in the experiment. 
 
 ```{r MDSplot_paragraph, echo=F, error=F, warning=F, message=F, fig.align="center", out.width="100%"}
-DEhelper.DESeq2.MDS()		# sample MDS 
+DEhelper.DESeq2.MDS()        # sample MDS 
 ```
 
 A heatmap clustogram of the Euclidean distances between the samples gives an intuitive measure of sample similarity (similarities of samples to themselves (diagonal) are set to NA):
@@ -224,7 +224,7 @@ DEhelper.DESeq2.corr()          # heatmap of sample to sample distances
 Additionally, hierarchical clustering of the samples based on the most variable genes reveals replicate consistency and can spot batches of samples related by other characteristics rather than condition.
 
 ```{r Heatmap1_paragraph_sd, echo=F, error=F, warning=F, message=F, fig.align="center"}
-DEhelper.DESeq2.cluster.sd()	# heatmap of top variant 'n' genes of the rlog transformed counts (normalized and stabilized)
+DEhelper.DESeq2.cluster.sd()    # heatmap of top variant 'n' genes of the rlog transformed counts (normalized and stabilized)
 ```
 
 Finally, a hierarchical clustering of the samples based on the genes with the highest average expression is shown below.
@@ -242,52 +242,52 @@ Note that the default DESeq2 analysis uses only a statistical (FDR) filter and i
 ```{r DifferentialExpression_paragraph, echo=F, results='asis', error=F, warning=F, message=F, fig.align="center"}
 for(i in 1:nrow(conts)) {
 
-	# subsection
-	cont.name <- gsub("(.+)=(.+)","\\1",conts[i,1])
-  	cat("### ", cont.name, fill=T)
-	cat("", fill=T)
-	
-	# pairwise PCA plot 
-	cat("##### PCA plot", fill=T)
-	cat("Priniciple component analysis (PCA) plot with the samples of the two analysed groups.", "\n", "\n")
-        DEhelper.DESeq2.pairwisePCA(i)
-        cat("\n", fill=T)
+    # subsection
+    cont.name <- gsub("(.+)=(.+)","\\1",conts[i,1])
+    cat("### ", cont.name, fill=T)
+    cat("", fill=T)
 
-	# Sample to sample distance
-        cat("##### Sample to sample distance (diagonal set to NA)", fill=T)
-        DEhelper.DESeq2.corr.pairwise(i)
-        cat("\n", fill=T)
+    # pairwise PCA plot 
+    cat("##### PCA plot", fill=T)
+    cat("Priniciple component analysis (PCA) plot with the samples of the two analysed groups.", "\n", "\n")
+    DEhelper.DESeq2.pairwisePCA(i)
+    cat("\n", fill=T)
 
-        # most variable genes
-        cat("##### Most variable genes", fill=T)
-        DEhelper.DESeq2.cluster.sd.pairwise(i,40)
-        cat("\n", fill=T)
+    # Sample to sample distance
+    cat("##### Sample to sample distance (diagonal set to NA)", fill=T)
+    DEhelper.DESeq2.corr.pairwise(i)
+    cat("\n", fill=T)
 
-	# MA plot
-	cat("##### MA plot", fill=T)
-	fdr <- if(exists("input")) { if(!is.null(input$slider_pval)) input$slider_pval else .01 } else .01
-	genes <- DEhelper.DESeq2.DEgenes(i)
-	cat("MA plot showing expression fold change vs. mean expression level of all annotated genes. There are", sum(genes$padj < fdr, na.rm=T), "genes highlighted in the MA plot with corrected pvalue (Benjamini and Hochberg, FDR) <", fdr, ".", "\n")
-	DEhelper.DESeq2.MAplot(i, fdr)	# should be fine at taking the value from the UI slider
-	cat("\n", fill=T)
-            	
-	# Volcano Plot
-	cat("##### Volcano plot", fill=T)	
-	cat("Volcano plot of all DESeq2-tested genes depicting their expression fold change vs. statistical significance. The FDR <" , fdr, "hits are highlighted in red and the top 25 DEGs are labelled.", "\n", "\n")
-	DEhelper.DESeq2.VolcanoPlot(i, fdr, web=F)
-	cat("\n", fill=T)
-	
-	# and DE table
-	cat("##### Top hits", fill=T)
-        cat("", fill=T)
-	cat("The table below shows the top 25 DEGs with their mean normalised counts (baseMean), expression change (log2FoldChange) and statistical significance (padj = FDR-adjusted p-value). The complete DESeq2 results table including RPKM-normalised expression data for all genes in each sample is available in CSV and Excel format.", fill=T)
-	cat("", fill=T)
-	genes$baseMean       <- round(genes$baseMean, 2)
-	genes$log2FoldChange <- round(genes$log2FoldChange, 2)
-	genes$padj           <- format(genes$padj, digits=3, scientific=TRUE)
+    # most variable genes
+    cat("##### Most variable genes", fill=T)
+    DEhelper.DESeq2.cluster.sd.pairwise(i,40)
+    cat("\n", fill=T)
+
+    # MA plot
+    cat("##### MA plot", fill=T)
+    fdr <- if(exists("input")) { if(!is.null(input$slider_pval)) input$slider_pval else .01 } else .01
+    genes <- DEhelper.DESeq2.DEgenes(i)
+    cat("MA plot showing expression fold change vs. mean expression level of all annotated genes. There are", sum(genes$padj < fdr, na.rm=T), "genes highlighted in the MA plot with corrected pvalue (Benjamini and Hochberg, FDR) <", fdr, ".", "\n")
+    DEhelper.DESeq2.MAplot(i, fdr)    # should be fine at taking the value from the UI slider
+    cat("\n", fill=T)
+
+    # Volcano Plot
+    cat("##### Volcano plot", fill=T)    
+    cat("Volcano plot of all DESeq2-tested genes depicting their expression fold change vs. statistical significance. The FDR <" , fdr, "hits are highlighted in red and the top 25 DEGs are labelled.", "\n", "\n")
+    DEhelper.DESeq2.VolcanoPlot(i, fdr, web=F)
+    cat("\n", fill=T)
+
+    # and DE table
+    cat("##### Top hits", fill=T)
+    cat("", fill=T)
+    cat("The table below shows the top 25 DEGs with their mean normalised counts (baseMean), expression change (log2FoldChange) and statistical significance (padj = FDR-adjusted p-value). The complete DESeq2 results table including RPKM-normalised expression data for all genes in each sample is available in CSV and Excel format.", fill=T)
+    cat("", fill=T)
+    genes$baseMean       <- round(genes$baseMean, 2)
+    genes$log2FoldChange <- round(genes$log2FoldChange, 2)
+    genes$padj           <- format(genes$padj, digits=3, scientific=TRUE)
     cols <- c("gene_name", "baseMean", "log2FoldChange", "padj")
-	cat(kable(genes[1:25, cols], row.names=T, align="r", format="markdown"), sep="\n")	# show only the top 25 genes
-	cat("", fill=T)
+    cat(kable(genes[1:25, cols], row.names=T, align="r", format="markdown"), sep="\n")    # show only the top 25 genes
+    cat("", fill=T)
 
 }
 ```
@@ -301,140 +301,147 @@ The R/Bioconductor package clusterProfiler (https://bioconductor.org/packages/re
 
 for(i in 1:nrow(conts)) {
 
-        # subsection
-	cont.name <- gsub("(.+)=(.+)","\\1",conts[i,1])
-  	cat("### ", cont.name, fill=T)
-        cat("", fill=T)
+    # subsection
+    cont.name <- gsub("(.+)=(.+)","\\1",conts[i,1])
+    cat("### ", cont.name, fill=T)
+    cat("", fill=T)
 
-	# GO Enrichment Plot
-	# up-regulated genes
-	cat("#### GO terms enriched in up-regulated genes (Biological Process, BP)", fill=T)
+    # GO Enrichment Plot
+    # up-regulated genes
+    cat("#### GO terms enriched in up-regulated genes (Biological Process, BP)", fill=T)
 
-	#cat("##### Biological Process (BP)", fill=T)
+    #cat("##### Biological Process (BP)", fill=T)
 
-    	GO_bar_up     <- paste0(SHINYREPS_GO_ENRICHMENT, "/", gsub("=.*", "", conts[i,1]),"_GO_Barplot_up_genes.png")
-        GO_cnet_up    <- paste0(SHINYREPS_GO_ENRICHMENT, "/", gsub("=.*", "", conts[i,1]),"_GO_cnetplot_up_genes.png")
-    	GO_table_up   <- paste0(SHINYREPS_GO_ENRICHMENT, "/", gsub("=.*", "", conts[i, 1]), "_GO_Enrichment_up_genes.csv")
-    
-	# if there are GO enrichment results (the barplot was created)
-    	if(file.exists(GO_bar_up)) {
+    GO_bar_up     <- paste0(SHINYREPS_GO_ENRICHMENT, "/", gsub("=.*", "", conts[i, 1]), "_GO_Barplot_up_genes.png")
+    GO_treemap_up <- paste0(SHINYREPS_GO_ENRICHMENT, "/", gsub("=.*", "", conts[i, 1]), "_GO_treemap_up_genes.png")
+    GO_cnet_up    <- paste0(SHINYREPS_GO_ENRICHMENT, "/", gsub("=.*", "", conts[i, 1]), "_GO_cnetplot_up_genes.png")
+    GO_table_up   <- paste0(SHINYREPS_GO_ENRICHMENT, "/", gsub("=.*", "", conts[i, 1]), "_GO_Enrichment_up_genes.csv")
 
-        	# GO enriched terms in a barplot
-        	cat("Gene Ontology enrichment barplot of the up-regulated genes with FDR < 0.01.", fill=T)
-        	cat("![GO_Analysis img](", GO_bar_up, ")\n", fill=T)
+    # if there are GO enrichment results (the barplot was created)
+    if(file.exists(GO_bar_up)) {
 
-        	# GO enriched terms in a cnetplot
-        	cat("The Gene-Concept Network plot of the up-regulated genes with FDR < 0.01. This plot depicts the linkages of genes and biological concepts (GO terms) as a network.", fill=T)
-            cat("![GO_Analysis img](", GO_cnet_up, ")\n", fill=T)
+        # GO enriched terms in a barplot
+        cat("Top enriched Gene Ontology non-redundant Biological Processes of the up-regulated genes with FDR < 0.01.", fill=T)
+        cat("![GO_Analysis img](", GO_bar_up, ")\n", fill=T)
 
-        	# and table of OG enriched terms
-        	cat("Gene Ontology enrichment table of the up-regulated genes with FDR < 0.01. The table shows the enriched biological proccesses:\n", fill=T)
-        	enrich  <- read.csv(file=GO_table_up)
-        	cols    <- c("ID", "Description", "GeneRatio", "BgRatio", "pvalue", "p.adjust", "qvalue", "geneID")
-        	r       <- min(10, nrow(enrich))
-        	enrich  <- as.data.frame(enrich)
-        	enrich$geneID <- ifelse(nchar(enrich$geneID) > 10, paste0(substr(enrich$geneID, 0, 35), "..."), enrich$geneID) # shorten long lines
-        	cat(kable(enrich[1:r, cols], row.names=T, align="r", format="markdown"), sep="\n") # show only the top min or top 10 biological processes
-        	cat("\n", fill=T)
+        # GO enriched terms in a treemap
+        cat("Gene Ontology Biological Processes (all) of the up-regulated genes with FDR < 0.01, grouped by similarity. Color and area represent the cluster and the significance (-log10 adjusted p-value) of the enrihcment, respectively.", fill=T)
+        cat("![GO_Analysis img](", GO_treemap_up, ")\n", fill=T)
 
-    	} else {
-        	cat("no GO enrichment results of the up-regulated genes available\n", fill=T)
-    	}
+        # GO enriched terms in a cnetplot
+        cat("The Gene-Concept Network plot of the up-regulated genes with FDR < 0.01. This plot depicts the linkages of genes and biological concepts (GO terms) as a network.", fill=T)
+        cat("![GO_Analysis img](", GO_cnet_up, ")\n", fill=T)
 
-	
-	# GO Enrichment Plot
-    	# down-regulated genes
-    	cat("#### GO terms enriched in down-regulated genes (Biological Process, BP)", fill=T)
+        # and table of OG enriched terms
+        cat("Top enriched Gene Ontology non-redundant Biological Processes of the up-regulated genes with FDR < 0.01:\n", fill=T)
+        enrich <- read.csv(file=GO_table_up)
+        enrich <- enrich[enrich$ID == enrich$parent, ] # get non-redundant terms only
+        cols   <- c("ID", "Description", "GeneRatio", "BgRatio", "pvalue", "p.adjust", "geneID")
+        r      <- min(10, nrow(enrich))
+        enrich$geneID <- ifelse(nchar(enrich$geneID) > 40, paste0(substr(enrich$geneID, 1, 35), "..."), enrich$geneID) # shorten long lines
+        cat(kable(enrich[1:r, cols], row.names=F, align="r", format="markdown"), sep="\n") # show only the top min or top 10 biological processes
+        cat("\n", fill=T)
 
-    	#cat("##### Biological Process (BP)", fill=T)
-	
-    	GO_bar_down     <- paste0(SHINYREPS_GO_ENRICHMENT, "/", gsub("=.*", "", conts[i,1]),"_GO_Barplot_down_genes.png")
-        GO_cnet_down      <- paste0(SHINYREPS_GO_ENRICHMENT, "/", gsub("=.*", "", conts[i,1]),"_GO_cnetplot_down_genes.png")
-    	GO_table_down   <- paste0(SHINYREPS_GO_ENRICHMENT, "/", gsub("=.*", "", conts[i, 1]), "_GO_Enrichment_down_genes.csv")
-    
-	# if there are GO enrichment results (the barplot was created)
-    	if(file.exists(GO_bar_down)) {
+    } else {
+        cat("no GO enrichment results of the up-regulated genes available\n", fill=T)
+    }
 
-        	# GO enriched terms in a barplot
-        	cat("Gene Ontology enrichment barplot of the down-regulated genes with FDR < 0.01.", fill=T)
-        	cat("![GO_Analysis img](", GO_bar_down, ")\n", fill=T)
+    # GO Enrichment Plot
+    # down-regulated genes
+    cat("#### GO terms enriched in down-regulated genes (Biological Process, BP)", fill=T)
 
-        	# GO enriched terms in a cnetplot
-        	cat("The Gene-Concept Network plot of the down-regulated genes with FDR < 0.01. This plot depicts the linkages of genes and biological concepts (GO terms) as a network.", fill=T)
-            cat("![GO_Analysis img](", GO_cnet_down, ")\n", fill=T)
-        
-        	# and table of OG enriched terms
-        	cat("Gene Ontology enrichment table of the down-regulated genes with FDR < 0.01. The table shows the enriched biological proccesses:\n", fill=T)
-        	enrich  <- read.csv(file=GO_table_down)
-        	cols    <- c("ID", "Description", "GeneRatio", "BgRatio", "pvalue", "p.adjust", "qvalue", "geneID")
-        	r       <- min(10, nrow(enrich))
-        	enrich  <- as.data.frame(enrich)
-        	enrich$geneID <- ifelse(nchar(enrich$geneID) > 10, paste0(substr(enrich$geneID, 0, 35), "..."), enrich$geneID) # shorten long lines
-        	cat(kable(enrich[1:r, cols], row.names=T, align="r", format="markdown"), sep="\n") # show only the top min or top 10 biological processes
-        	cat("\n", fill=T)
+    #cat("##### Biological Process (BP)", fill=T)
 
-    	} else {
-        	cat("no GO enrichment results of the down-regulated genes available\n", fill=T)
-    	}
+    GO_bar_down     <- paste0(SHINYREPS_GO_ENRICHMENT, "/", gsub("=.*", "", conts[i, 1]), "_GO_Barplot_down_genes.png")
+    GO_treemap_down <- paste0(SHINYREPS_GO_ENRICHMENT, "/", gsub("=.*", "", conts[i, 1]), "_GO_treemap_down_genes.png")
+    GO_cnet_down    <- paste0(SHINYREPS_GO_ENRICHMENT, "/", gsub("=.*", "", conts[i, 1]), "_GO_cnetplot_down_genes.png")
+    GO_table_down   <- paste0(SHINYREPS_GO_ENRICHMENT, "/", gsub("=.*", "", conts[i, 1]), "_GO_Enrichment_down_genes.csv")
+
+    # if there are GO enrichment results (the barplot was created)
+    if(file.exists(GO_bar_down)) {
+
+        # GO enriched terms in a barplot
+        cat("Top enriched Gene Ontology non-redundant Biological Processes of the down-regulated genes with FDR < 0.01.", fill=T)
+        cat("![GO_Analysis img](", GO_bar_down, ")\n", fill=T)
+
+        # GO enriched terms in a treemap
+        cat("Gene Ontology Biological Processes (all) of the down-regulated genes with FDR < 0.01, grouped by similarity. Color and area represent the cluster and the significance (-log10 adjusted p-value) of the enrihcment, respectively.", fill=T)
+        cat("![GO_Analysis img](", GO_treemap_down, ")\n", fill=T)
+
+        # GO enriched terms in a cnetplot
+        cat("The Gene-Concept Network plot of the down-regulated genes with FDR < 0.01. This plot depicts the linkages of genes and biological concepts (GO terms) as a network.", fill=T)
+        cat("![GO_Analysis img](", GO_cnet_down, ")\n", fill=T)
+
+        # and table of OG enriched terms
+        cat("Top enriched Gene Ontology non-redundant Biological Processes of the down-regulated genes with FDR < 0.01:\n", fill=T)
+        enrich  <- read.csv(file=GO_table_down)
+        enrich <- enrich[enrich$ID == enrich$parent, ] # get non-redundant terms only
+        cols    <- c("ID", "Description", "GeneRatio", "BgRatio", "pvalue", "p.adjust", "geneID")
+        r       <- min(10, nrow(enrich))
+        enrich$geneID <- ifelse(nchar(enrich$geneID) > 40, paste0(substr(enrich$geneID, 1, 35), "..."), enrich$geneID) # shorten long lines
+        cat(kable(enrich[1:r, cols], row.names=F, align="r", format="markdown"), sep="\n") # show only the top min or top 10 biological processes
+        cat("\n", fill=T)
+
+    } else {
+        cat("no GO enrichment results of the down-regulated genes available\n", fill=T)
+    }
+
+     # Pathway Enrichment Plot
+     # up-regulated genes
+     cat("#### Pathways enriched in up-regulated genes", fill=T)
+
+     Pathway_bar_up     <- paste0(SHINYREPS_GO_ENRICHMENT, "/", gsub("=.*", "", conts[i,1]),"_Reactome_Barplot_up_genes.png")
+     Pathway_table_up   <- paste0(SHINYREPS_GO_ENRICHMENT, "/", gsub("=.*", "", conts[i, 1]), "_Reactome_Pathway_Enrichment_up_genes.csv")
+
+     # if there are Pathway enrichment results (the barplot was created)
+     if(file.exists(Pathway_bar_up)) {
+
+         # Pathways enriched in a barplot
+         cat("Pathway enrichment barplot of the up-regulated genes with FDR < 0.01.", fill=T)
+         cat("![GO_Analysis img](", Pathway_bar_up, ")\n", fill=T)
+
+         # and table of Pathways enriched
+         cat("Pathways enrichment table of the up-regulated genes with FDR < 0.01:\n", fill=T)
+         enrich  <- read.csv(file=Pathway_table_up)
+         cols    <- c("ID", "Description", "GeneRatio", "BgRatio", "pvalue", "p.adjust", "geneID")
+         r       <- min(10, nrow(enrich))
+         enrich  <- as.data.frame(enrich)
+         enrich$geneID <- ifelse(nchar(enrich$geneID) > 10, paste0(substr(enrich$geneID, 0, 35), "..."), enrich$geneID) # shorten long lines
+         cat(kable(enrich[1:r, cols], row.names=F, align="r", format="markdown"), sep="\n") # show only the top min or top 10 pathways
+         cat("\n", fill=T)
+
+     } else {
+         cat("no Pathway enrichment results of the up-regulated genes available\n", fill=T)
+    }
 
 
-        # Pathway Enrichment Plot
-        # up-regulated genes
-        cat("#### Pathways enriched in up-regulated genes", fill=T)
+    # Pathway Enrichment Plot
+    # down-regulated genes
+    cat("#### Pathways enriched in down-regulated genes", fill=T)
 
-    	Pathway_bar_up     <- paste0(SHINYREPS_GO_ENRICHMENT, "/", gsub("=.*", "", conts[i,1]),"_Reactome_Barplot_up_genes.png")
-    	Pathway_table_up   <- paste0(SHINYREPS_GO_ENRICHMENT, "/", gsub("=.*", "", conts[i, 1]), "_Reactome_Pathway_Enrichment_up_genes.csv")
-   
-    	# if there are Pathway enrichment results (the barplot was created)
-    	if(file.exists(Pathway_bar_up)) {
+    Pathway_bar_down     <- paste0(SHINYREPS_GO_ENRICHMENT, "/", gsub("=.*", "", conts[i,1]),"_Reactome_Barplot_down_genes.png")
+    Pathway_table_down   <- paste0(SHINYREPS_GO_ENRICHMENT, "/", gsub("=.*", "", conts[i, 1]), "_Reactome_Pathway_Enrichment_down_genes.csv")
 
-        	# Pathways enriched in a barplot
-        	cat("Pathway enrichment barplot of the up-regulated genes with FDR < 0.01.", fill=T)
-        	cat("![GO_Analysis img](", Pathway_bar_up, ")\n", fill=T)
-        
-        	# and table of Pathways enriched
-        	cat("Pathways enrichment table of the up-regulated genes with FDR < 0.01:\n", fill=T)
-        	enrich  <- read.csv(file=Pathway_table_up)
-        	cols    <- c("ID", "Description", "GeneRatio", "BgRatio", "pvalue", "p.adjust", "qvalue", "geneID")
-        	r       <- min(10, nrow(enrich))
-        	enrich  <- as.data.frame(enrich)
-        	enrich$geneID <- ifelse(nchar(enrich$geneID) > 10, paste0(substr(enrich$geneID, 0, 35), "..."), enrich$geneID) # shorten long lines
-        	cat(kable(enrich[1:r, cols], row.names=T, align="r", format="markdown"), sep="\n") # show only the top min or top 10 pathways
-        	cat("\n", fill=T)
+    # if there are Pathway enrichment results (the barplot was created)
+    if(file.exists(Pathway_bar_down)) {
 
-    	} else {
-        	cat("no Pathway enrichment results of the up-regulated genes available\n", fill=T)
-   	}
+        # Pathways enriched in a barplot
+        cat("Pathway enrichment barplot of the down-regulated genes with FDR < 0.01.", fill=T)
+        cat("![GO_Analysis img](", Pathway_bar_down, ")\n", fill=T)
 
+        # and table of Pathways enriched
+        cat("Pathways enrichment table of the down-regulated genes with FDR < 0.01:\n", fill=T)
+        enrich  <- read.csv(file=Pathway_table_down)
+        cols    <- c("ID", "Description", "GeneRatio", "BgRatio", "pvalue", "p.adjust", "geneID")
+        r       <- min(10, nrow(enrich))
+        enrich  <- as.data.frame(enrich)
+        enrich$geneID <- ifelse(nchar(enrich$geneID) > 10, paste0(substr(enrich$geneID, 0, 35), "..."), enrich$geneID) # shorten long lines
+        cat(kable(enrich[1:r, cols], row.names=F, align="r", format="markdown"), sep="\n") # show only the top min or top 10 pathways
+        cat("\n", fill=T)
 
-	# Pathway Enrichment Plot
-    	# down-regulated genes
-    	cat("#### Pathways enriched in down-regulated genes", fill=T)
-
-    	Pathway_bar_down     <- paste0(SHINYREPS_GO_ENRICHMENT, "/", gsub("=.*", "", conts[i,1]),"_Reactome_Barplot_down_genes.png")
-    	Pathway_table_down   <- paste0(SHINYREPS_GO_ENRICHMENT, "/", gsub("=.*", "", conts[i, 1]), "_Reactome_Pathway_Enrichment_down_genes.csv")
-   
-    	# if there are Pathway enrichment results (the barplot was created)
-    	if(file.exists(Pathway_bar_down)) {
-
-        	# Pathways enriched in a barplot
-        	cat("Pathway enrichment barplot of the down-regulated genes with FDR < 0.01.", fill=T)
-        	cat("![GO_Analysis img](", Pathway_bar_down, ")\n", fill=T)
-        
-        	# and table of Pathways enriched
-        	cat("Pathways enrichment table of the down-regulated genes with FDR < 0.01:\n", fill=T)
-        	enrich  <- read.csv(file=Pathway_table_down)
-        	cols    <- c("ID", "Description", "GeneRatio", "BgRatio", "pvalue", "p.adjust", "qvalue", "geneID")
-        	r       <- min(10, nrow(enrich))
-        	enrich  <- as.data.frame(enrich)
-        	enrich$geneID <- ifelse(nchar(enrich$geneID) > 10, paste0(substr(enrich$geneID, 0, 35), "..."), enrich$geneID) # shorten long lines
-        	cat(kable(enrich[1:r, cols], row.names=T, align="r", format="markdown"), sep="\n") # show only the top min or top 10 pathways
-        	cat("\n", fill=T)
-
-    	} else {
-        	cat("no Pathway enrichment results of the down-regulated genes available\n", fill=T)
-    	}
-
+    } else {
+        cat("no Pathway enrichment results of the down-regulated genes available\n", fill=T)
+    }
 }
 ```
 
