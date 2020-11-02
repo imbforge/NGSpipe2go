@@ -5,8 +5,8 @@
 // 
 config {
   executor="slurm"
-  short_queue="short"
-  long_queue="long"
+  short_queue="groups".execute().text =~ /imb-bioinfocf/ ? "bcfshort" : "short"
+  long_queue="groups".execute().text =~ /imb-bioinfocf/ ? "bcflong" : "long"
   queue=short_queue   // default queue
   commands {
     AddR { 
