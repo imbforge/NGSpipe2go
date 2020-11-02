@@ -42,7 +42,7 @@ Adjust the project-specific information in the pipeline dependent files (see pip
 - *xxx.pipeline.groovy* describes the steps of the selected pipeline and the location of the respective modules
 - *targets.txt* and *contrasts.txt* contain the sample names and the differential group comparisons
 
-Adjust general pipeline settings defined in the NGSpipe2go ***config*** folder:
+Optionally adjust some general pipeline settings defined in the NGSpipe2go ***config*** folder:
 
 - *bpipe.config.groovy*: define workload manager resources (default workload manager is "slurm", if not needed set executor="local")
 - *preambles.groovy*: define module preambles if needed (or stay with default preambles)
