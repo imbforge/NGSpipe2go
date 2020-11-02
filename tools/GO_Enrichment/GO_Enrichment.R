@@ -26,6 +26,7 @@ library(clusterProfiler)
 library(ReactomePA)
 library(Cairo)
 library(ggplot2)
+library(rrvgo)
 
 # supported organisms
 orgDb <- c(human="org.Hs.eg.db",
@@ -114,18 +115,38 @@ processContrast <-  function(x) {
         enrichedReactome <- gsfilter(enrichedReactome, by = "Count", min = 2)
                                    
         # write GO and Pathway enrichment tables into output file 
-        write.csv(as.data.frame(enriched),
+        write.csv(as.data.frame(enriched), row.names=FALSE,
                   file=paste0(out, "/", contrast, "_GO_Enrichment_", suffix, "_genes.csv"))
-        write.csv(as.data.frame(enrichedKEGG),
+        write.csv(as.data.frame(enrichedKEGG), row.names=FALSE,
                   file=paste0(out, "/", contrast, "_KEGG_Pathway_Enrichment_", suffix, "_genes.csv"))
-        write.csv(as.data.frame(enrichedReactome),
+        write.csv(as.data.frame(enrichedReactome), row.names=FALSE,
                   file=paste0(out, "/", contrast, "_Reactome_Pathway_Enrichment_", suffix, "_genes.csv"))
 
 
         if(!is.null(enriched) && nrow(enriched) > 0) {
+            # calculate reduced terms and generate reduced term plots and table
+            go_analysis  <- as.data.frame(enriched)
+            scores       <- setNames(-log10(go_analysis$qvalue), go_analysis$ID)
+            simMatrix    <- calculateSimMatrix(go_analysis$ID, orgdb=orgDb[org], ont="BP", method="Rel")
+            reducedTerms <- reduceSimMatrix(simMatrix, scores, threshold=0.7, orgdb=orgDb[org])
+            CairoPNG(file=paste0(out, "/", contrast, "_GO_scatterplot_", suffix, "_genes.png"), width=1200, height=800)
+            print(scatterPlot(simMatrix, reducedTerms))
+            dev.off()
+            CairoPNG(file=paste0(out, "/", contrast, "_GO_treemap_", suffix, "_genes.png"), width=1200, height=800)
+            treemapPlot(reducedTerms)
+            dev.off()
+
+            # overwrite GO enrichment table with parent term information
+            x <- merge(go_analysis, reducedTerms, by=1, all.x=TRUE)  # first column is term ID
+            write.csv(x, row.names=FALSE, file=paste0(out, "/", contrast, "_GO_Enrichment_", suffix, "_genes.csv"))
+
+            # remove redundant terms form enrichGO enrichment results, and do barplot and cnetplot of top terms
+            enriched_reduced <- enriched
+            enriched_reduced@result <- subset(enriched_reduced@result, ID %in% unique(reducedTerms$parent))
+
             # create barplot showing GO category
             CairoPNG(file=paste0(out, "/", contrast, "_GO_Barplot_", suffix, "_genes.png"), width=700, height=500)
-            print(barplot(enriched, showCategory=plotCategory) + ylab("Number of genes"))
+            print(barplot(enriched_reduced, showCategory=plotCategory) + ylab("Number of genes"))
             dev.off()
       
             # create network plot for the results
@@ -135,7 +156,7 @@ processContrast <-  function(x) {
 
             # create cnetplot for the results
             CairoPNG(file=paste0(out, "/", contrast, "_GO_cnetplot_", suffix, "_genes.png"), width=1200, height=800)
-            print(cnetplot(enriched, categorySize="pvalue", foldChange=entrezDeIdLfc))
+            print(cnetplot(enriched_reduced, categorySize="pvalue", foldChange=entrezDeIdLfc))
             dev.off()
         }
 
