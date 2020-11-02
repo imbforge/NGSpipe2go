@@ -44,7 +44,7 @@ Adjust the project-specific information in the pipeline dependent files (see pip
 
 Adjust general pipeline settings defined in the NGSpipe2go ***config*** folder:
 
-- *bpipe.config.groovy*: define workload manager resources (default workload manager is "slurm", if not needed set executor="local"). Important: external users need to modify the default Slurm queues ("bcfshort" and "bcflong") to e.g. "short" and "long" according to their Slurm environment. 
+- *bpipe.config.groovy*: define workload manager resources (default workload manager is "slurm", if not needed set executor="local")
 - *preambles.groovy*: define module preambles if needed (or stay with default preambles)
 - *tools.groovy*: define default versions and running environments for all installed pipeline tools, modify accordingly if new tools or tool versions are installed on your system. If you want to use a different tool version for a certain project you can overwrite the default value in the pipeline-specific file *NGSpipe2go/pipelines/<pipeline>/tools.groovy*.
 
