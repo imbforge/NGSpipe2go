@@ -1238,8 +1238,7 @@ DEhelper.fastqscreen <- function() {
         paste0("![fastqscreen img](", QC, "/", f, ")")
     })
 
-    # put sample names and output an md table of SHINYREPS_PLOTS_COLUMN columns
-    while(length(df) %% SHINYREPS_PLOTS_COLUMN != 0) df <- c(df, "")
+    # sample names
     samples <- sapply(samples, function(x) {
         gsub("_screen.png","", basename(x)) 
     })
@@ -1252,11 +1251,13 @@ DEhelper.fastqscreen <- function() {
 
         # replace files names with nicer sample names given in targets file
         # if sample is missing in targets file, use reduced file name
-        samples <- sapply(samples, function(i) { ifelse(gsub(".R1|.R2","",i) %in% targets$sample_ext,
-                                                        ifelse(gsub(".R1","",i) %in% targets$sample_ext,
-                                                               paste0(targets[targets$sample_ext == gsub(".R1","",i),"sample"],".R1"),
-                                                               paste0(targets[targets$sample_ext == gsub(".R2","",i),"sample"],".R2")),
-                                                        gsub(paste0("^",SHINYREPS_PREFIX),"",i))})
+        samples <- sapply(samples, function(i) { ifelse(i %in% targets$sample_ext,
+                                                        targets[targets$sample_ext == i,"sample"],
+                                                        ifelse(gsub(".R1|.R2","",i) %in% targets$sample_ext,
+                                                               ifelse(gsub(".R1","",i) %in% targets$sample_ext,
+                                                                      paste0(targets[targets$sample_ext == gsub(".R1","",i),"sample"],".R1"),
+                                                                      paste0(targets[targets$sample_ext == gsub(".R2","",i),"sample"],".R2")),
+                                                               gsub(paste0("^",SHINYREPS_PREFIX),"",i)))})
     } else {
         if(!is.na(SHINYREPS_PREFIX)) {
             samples <- gsub(paste0("^",SHINYREPS_PREFIX), "", samples)
@@ -1266,6 +1267,10 @@ DEhelper.fastqscreen <- function() {
     # sort alphabetically
     samples <- samples[order(samples)]
     df <- df[names(samples)]
+
+    # fill up additional columns if number of samples is not a multiple of SHINYREPS_PLOTS_COLUMN
+    while(length(df) %% SHINYREPS_PLOTS_COLUMN != 0) df <- c(df, "")
+    while(length(samples) %% SHINYREPS_PLOTS_COLUMN != 0) samples <- c(samples, "")
 
     df      <- matrix(df     , ncol=SHINYREPS_PLOTS_COLUMN, byrow=T)
     samples <- matrix(samples, ncol=SHINYREPS_PLOTS_COLUMN, byrow=T)
@@ -1305,8 +1310,7 @@ DEhelper.dupRadar <- function(web=TRUE) {
         paste0("![dupRadar img](", QC, "/", basename(f), ")")
     })
     
-    # put sample names and output an md table of SHINYREPS_PLOTS_COLUMN columns
-    while(length(df) %% SHINYREPS_PLOTS_COLUMN != 0) df <- c(df, "")
+    # sample names 
     samples <- sapply(df, function(x) {
         gsub(".dupmarked_dupRadar.png)$", "", basename(x))
     })
@@ -1331,6 +1335,10 @@ DEhelper.dupRadar <- function(web=TRUE) {
     # sort alphabetically
     samples <- samples[order(samples)]
     df <- df[names(samples)]
+
+    # fill up additional columns if number of samples is not a multiple of SHINYREPS_PLOTS_COLUMN
+    while(length(df) %% SHINYREPS_PLOTS_COLUMN != 0) df <- c(df, "")
+    while(length(samples) %% SHINYREPS_PLOTS_COLUMN != 0) samples <- c(samples, "")
 
     df      <- matrix(df     , ncol=SHINYREPS_PLOTS_COLUMN, byrow=T)
     samples <- matrix(samples, ncol=SHINYREPS_PLOTS_COLUMN, byrow=T)
@@ -1445,10 +1453,9 @@ DEhelper.geneBodyCov <- function(web=TRUE) {
         paste0("![geneBodyCov img](", QC, "/", basename(f), ")")
     })
     
-    # put sample names and output an md table of SHINYREPS_PLOTS_COLUMN columns
-    while(length(df) %% SHINYREPS_PLOTS_COLUMN != 0) df <- c(df, "")
+    # sample names
     samples <- sapply(df, function(x) {
-        gsub(".dupmarked_geneBodyCov.png)$", "", basename(x))
+        gsub("_geneBodyCov.png)$", "", basename(x))
     })
 
     if(file.exists(SHINYREPS_TARGET)){
@@ -1471,6 +1478,10 @@ DEhelper.geneBodyCov <- function(web=TRUE) {
     # sort alphabetically
     samples <- samples[order(samples)]
     df <- df[names(samples)]
+
+    # fill up additional columns if number of samples is not a multiple of SHINYREPS_PLOTS_COLUMN
+    while(length(df) %% SHINYREPS_PLOTS_COLUMN != 0) df <- c(df, "")
+    while(length(samples) %% SHINYREPS_PLOTS_COLUMN != 0) samples <- c(samples, "")
 
     df      <- matrix(df     , ncol=SHINYREPS_PLOTS_COLUMN, byrow=T)
     samples <- matrix(samples, ncol=SHINYREPS_PLOTS_COLUMN, byrow=T)
