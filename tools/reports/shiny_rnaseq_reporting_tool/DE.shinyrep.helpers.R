@@ -1644,8 +1644,7 @@ DEhelper.Qualimap <- function() {
         paste0("![qualimap img](", QC, "/", f, ")")
     })
     
-    # put sample names and output an md table of 2 columns
-    while(length(df) %% 2 != 0) df <- c(df, "")
+    # sample names
     samples <- sapply(samples, function(x) {
         gsub("_counts_qualimap", "", gsub("/.*", "", dirname(x)))
     })
@@ -1667,11 +1666,13 @@ DEhelper.Qualimap <- function() {
         }
     }
 
-    while(length(samples) %% 2 != 0) samples <- c(samples, "")
-
     # sort alphabetically
     samples <- samples[order(samples)]
     df <- df[names(samples)]
+
+    # fill up additional columns if number of samples is not a multiple of 2
+    while(length(df) %% 2 != 0) df <- c(df, "")
+    while(length(samples) %% 2 != 0) samples <- c(samples, "")
 
     df      <- matrix(df     , ncol=2, byrow=T)
     samples <- matrix(samples, ncol=2, byrow=T)
