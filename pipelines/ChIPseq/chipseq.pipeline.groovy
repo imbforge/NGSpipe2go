@@ -1,5 +1,5 @@
 PIPELINE="ChIPseq"
-PIPELINE_VERSION="1.2"
+PIPELINE_VERSION="1.2.1"
 PIPELINE_ROOT="./NGSpipe2go"
 
 load PIPELINE_ROOT + "/pipelines/ChIPseq/essential.vars.groovy"
@@ -18,6 +18,7 @@ load PIPELINE_ROOT + "/modules/ChIPseq/macs2.header"
 load PIPELINE_ROOT + "/modules/ChIPseq/pbc.header"
 load PIPELINE_ROOT + "/modules/ChIPseq/peak_annotation.header"
 load PIPELINE_ROOT + "/modules/ChIPseq/phantompeak.header"
+load PIPELINE_ROOT + "/modules/NGS/cutadapt.header"
 load PIPELINE_ROOT + "/modules/NGS/bamcoverage.header"
 load PIPELINE_ROOT + "/modules/NGS/bamindexer.header"
 load PIPELINE_ROOT + "/modules/NGS/extend.header"
@@ -39,7 +40,9 @@ dontrun = { println "didn't run $module" }
 
 Bpipe.run {
 	(RUN_IN_PAIRED_END_MODE ? "%.R*.fastq.gz" : "%.fastq.gz") * [
-		FastQC + (ESSENTIAL_USE_BOWTIE1 ? bowtie1 : bowtie2) + BAMindexer + BamQC +   
+		FastQC +  
+                (RUN_CUTADAPT ? Cutadapt : dontrun.using(module:"Cutadapt")) +
+                (ESSENTIAL_USE_BOWTIE1 ? bowtie1 : bowtie2) + BAMindexer + BamQC +   
 
          [ // parallel branches with and without multi mappers
 
@@ -50,17 +53,18 @@ Bpipe.run {
                                                   [extend + bamCoverage.using(subdir:"unfiltered"), 
                                                    phantompeak.using(subdir:"unfiltered")]), 
                 	ipstrength.using(subdir:"unfiltered"), 
-		        macs2.using(subdir:"unfiltered")                   
+		        macs2.using(subdir:"unfiltered") + blacklist_filter.using(subdir:"unfiltered")                  
 		]
             ], 
-            [ filbowtie2unique + BAMindexer + RmDups + BAMindexer + 
+            [ filbowtie2unique + BAMindexer +  
+               (ESSENTIAL_DEDUPLICATION ? [RmDups + BAMindexer] : [MarkDups + BAMindexer]) + 
                 [       // QC specific to paired end (pe) or single end (se) design
 	    		(RUN_IN_PAIRED_END_MODE ? [bamCoverage.using(subdir:"filtered"), 
                                                    InsertSize.using(subdir:"filtered")] : 
                                                   [extend + bamCoverage.using(subdir:"filtered"), 
                                                    phantompeak.using(subdir:"filtered")]), 
                 	ipstrength.using(subdir:"filtered"), 
-		        macs2.using(subdir:"filtered") 
+		        macs2.using(subdir:"filtered") + blacklist_filter.using(subdir:"filtered")
 		]  
             ]
         ] // end parallel branches
@@ -73,7 +77,8 @@ Bpipe.run {
      (RUN_DIFFBIND ? diffbind.using(subdir:"filtered") : dontrun.using(module:"diffbind")) +
      (RUN_ENRICHMENT ? GREAT.using(subdir:"filtered") : dontrun.using(module:"GREAT")),
     ] +
-    // (RUN_TRACKHUB ? trackhub_config + trackhub : dontrun.using(module:"trackhub")) +
-    collectToolVersions + collectBpipeLogs + MultiQC + shinyReports
+    (RUN_TRACKHUB ? trackhub_config + trackhub : dontrun.using(module:"trackhub")) +
+    collectToolVersions + collectBpipeLogs + MultiQC + 
+    shinyReports
 }
 
