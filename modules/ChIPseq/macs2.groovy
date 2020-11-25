@@ -10,8 +10,8 @@ macs2 = {
 
     def MACS2_FLAGS =
         (macs2_vars.gsize  ? " -g "           + macs2_vars.gsize  : "") +
-        (macs2_vars.bwidth ? " --bw "         + macs2_vars.bwidth : "") +
         (macs2_vars.minlen ? " --min-length " + macs2_vars.minlen : "") +
+        (macs2_vars.broad  ? " --broad "                          : "") +
         (macs2_vars.paired ? " --format BAMPE"                    : "") +
         (macs2_vars.extra  ? " " + macs2_vars.extra               : "")
 
