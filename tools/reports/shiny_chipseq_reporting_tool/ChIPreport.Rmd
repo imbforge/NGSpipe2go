@@ -13,11 +13,12 @@ output:
 ```{r Initialise, echo=F,result='hide',error=F,warning=F,message=F}
 require(rmarkdown)
 require(knitr)
-require(Cairo)                                                    
+require(Cairo)
 knitr::opts_chunk[['set']](dev='CairoPNG')
 source('ChIP.shinyrep.helpers.R')
 loadGlobalVars()
 isPaired <- tolower(SHINYREPS_PAIRED) == "yes"
+runCutadapt <- SHINYREPS_RUN_CUTADAPT=="true"
 runPeakAnno <- SHINYREPS_RUN_PEAK_ANNOTATION=="true"
 runDiffbind <- SHINYREPS_RUN_DIFFBIND=="true"
 runEnrich <- SHINYREPS_RUN_ENRICHMENT=="true"
@@ -48,6 +49,30 @@ The color on the graph shows the Phred quality scores, which are logarithmically
 ```{r FastQC_paragraph, echo=F,results='asis',error=F,warning=F,message=F,fig.align='center'}
 ChIPhelper.ngsReports.Fastqc()
 ```
+
+
+
+
+```{r cutadapt, echo=F, results='asis', error=F, warning=F, message=F, eval=runCutadapt}
+##### parameters to set:
+# define categories of targets.txt to be used for dot color in the plot (one plot per element of colorByFactor will be created). 
+# The function will try to map the data from targets$sample to the cutadapt log file names (for this, the unique part given in  
+# sampleColumnName must be a substring of file the name). Otherwise pruned file names will be used by default. 
+# In case of pooled library design the targets object will be modified accordingly. 
+#####
+
+cat("## Adapter trimming with Cutadapt
+
+The following plot shows the amount of reads trimmed for the selected adapter sequences. The column 'tooshort' gives the percentage of reads removed due to a length cutoff after trimming. Additional to the column 'trimmed', which is for all adapters combined, there are columns for every adapter giving the percentage of reads trimmed for this adapter.\n")
+
+ChIPhelper.cutadapt(targetsdf=targets, colorByFactor="group", sampleColumnName =c("IP", "INPUT"))
+```
+
+
+
+
+
+
 
 ## Read mapping ##
 

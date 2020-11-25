@@ -6,9 +6,11 @@ shinyReports_vars=[
     prefix          : ESSENTIAL_SAMPLE_PREFIX,
     targets         : "targets.txt",
     paired          : ESSENTIAL_PAIRED,
+    run_cutadapt    : RUN_CUTADAPT,    
     run_peakanno    : RUN_PEAK_ANNOTATION,    
     run_diffbind    : RUN_DIFFBIND,    
     run_enrich      : RUN_ENRICHMENT,
+    cutadapt_logs   : LOGS + "/Cutadapt",              // cutadapt log files
     bowtie_log      : LOGS + (ESSENTIAL_USE_BOWTIE1 ? "/bowtie1" : "/bowtie2"),  //where the Bowtie logs lie
     bamindex_log    : LOGS + "/BAMindexer", //where the Samtools/BamIndexer logs lie
     markdups_log    : LOGS + "/MarkDups",   //where the MarkDups logs lie
