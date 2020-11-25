@@ -1,11 +1,12 @@
 diffbind_vars=[
-    targets          : "targets.txt",               //targets file. Check the bin directory for the format
-    contrasts        : "contrasts_diffbind.txt",    //contrasts file. Check the bin directory for the format
-    cwd              : PROJECT,                     //current working directory
-    outdir           : RESULTS + "/diffbind",       //output directory
+    targets          : "targets.txt",               // targets file. Check the bin directory for the format
+    contrasts        : "contrasts_diffbind.txt",    // contrasts file. Check the bin directory for the format
+    cwd              : PROJECT,                     // current working directory
+    outdir           : RESULTS + "/diffbind",       // output directory
     bams             : MAPPED,                      // directory with the bam files
     peaks            : RESULTS + "/macs2",          // directory with peak caller output
     fragsize         : Integer.toString(ESSENTIAL_FRAGLEN), // average fragment size
+    summits          : Integer.toString(0),         // re-center peaks around consensus summit with peak width 2x summits (0 means no re-centering). If summits is >0, bUseSummarizeOverlaps in dba.count is set to FALSE.
     substractcontrol : true,                        // substract input
     fulllibrarysize  : ESSENTIAL_FULLLIBRARYSIZE,   // use total number of reads in bam for normalization (FALSE=only peaks)
     tagwisedispersion: true,                        // calculate dispersion tagwise (use FALSE if no replicates)
@@ -14,7 +15,7 @@ diffbind_vars=[
     txdb             : ESSENTIAL_TXDB,              // Bioconductor transcript database, for annotation
     annodb           : ESSENTIAL_ANNODB,            // Bioconductor gene annotation database
     paired           : (ESSENTIAL_PAIRED == "yes"), // Paired end experiment?
-    extra            : ""                           //extra parms to sent to the tool
+    extra            : ""                           // extra parms to sent to the tool
 ]
 
 load PIPELINE_ROOT + "/modules/ChIPseq/diffbind.groovy"

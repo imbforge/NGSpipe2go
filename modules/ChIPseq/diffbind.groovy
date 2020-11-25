@@ -16,6 +16,7 @@ diffbind = {
         (diffbind_vars.bams              ? " bams="              + diffbind_vars.bams                : "") +
         (diffbind_vars.peaks             ? " peaks="             + diffbind_vars.peaks + "/$subdir"  : "") +
         (diffbind_vars.fragsize          ? " fragsize="          + diffbind_vars.fragsize            : "") +
+        (diffbind_vars.summits           ? " summits="           + diffbind_vars.summits             : "") +
         (diffbind_vars.substractcontrol  ? " substractControl="  + diffbind_vars.substractcontrol    : "") +
         (diffbind_vars.fulllibrarysize   ? " fullLibrarySize="   + diffbind_vars.fulllibrarysize     : "") +
         (diffbind_vars.tagwisedispersion ? " tagwiseDispersion=" + diffbind_vars.tagwisedispersion   : "") +

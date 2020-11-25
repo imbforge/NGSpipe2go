@@ -53,6 +53,7 @@ BAMS       <- parseArgs(args,"bams=",paste0(CWD, "/mapped"))  # directory with t
 PEAKS      <- parseArgs(args,"peaks=",paste0(CWD, "/results/macs2"))  # directory with the peak files
 OUT        <- parseArgs(args,"out=", paste0(CWD, "/results")) # directory where the output files will go
 FRAGSIZE   <- parseArgs(args,"fragsize=", 200, "as.numeric")# fragment size
+SUMMITS    <- parseArgs(args,"summits=", 0, "as.numeric") # summits for re-centering consensus peaks
 SUBSTRACTCONTROL  <- parseArgs(args,"substractControl=", TRUE, "as.logical")  # substract input
 FULLLIBRARYSIZE   <- parseArgs(args,"fullLibrarySize=", TRUE, "as.logical")   # use total number of reads in bam for normalization (FALSE=only peaks)
 TAGWISEDISPERSION <- parseArgs(args,"tagwiseDispersion=", TRUE, "as.logical") # calculate dispersion tagwise (use FALSE if no replicates)
@@ -62,7 +63,7 @@ TSS        <- parseArgs(args,"tss=", "c(-3000,3000)", "run_custom_code") # regio
 TXDB       <- parseArgs(args,"txdb=", "TxDb.Mmusculus.UCSC.mm9.knownGene") # Bioconductor transcript database, for annotation 
 ANNODB     <- parseArgs(args,"annodb=", "org.Mm.eg.db") # Bioconductor gene annotation database
 
-runstr <- "Rscript diffbind.R [targets=targets.txt] [contrasts=contrasts.txt] [cwd=./] [bams=./mapped] [peaks=./results/macs2] [out=./results] [fragsize=200] [annotate=TRUE] [pe=TRUE] [tss=c(-3000,3000)] [txdb=TxDb.Mmusculus.UCSC.mm9.knownGene] [annodb=org.Mm.eg.db]"
+runstr <- "Rscript diffbind.R [targets=targets.txt] [contrasts=contrasts.txt] [cwd=./] [bams=./mapped] [peaks=./results/macs2] [out=./results] [fragsize=200] [summits=0] [annotate=TRUE] [pe=TRUE] [tss=c(-3000,3000)] [txdb=TxDb.Mmusculus.UCSC.mm9.knownGene] [annodb=org.Mm.eg.db]"
 if(!file.exists(CWD))        stop("Dir",CWD,"does NOT exist. Run with:\n",runstr)
 setwd(CWD)
 if(!file.exists(FTARGETS))   stop("File",FTARGETS,"does NOT exist. Run with:\n",runstr)
@@ -70,6 +71,7 @@ if(!file.exists(FCONTRASTS)) stop("File",FCONTRASTS,"does NOT exist. Run with:\n
 if(!file.exists(BAMS))       stop("Dir",BAMS,"does NOT exist. Run with:\n",runstr)
 if(!file.exists(PEAKS))      stop("Dir",PEAKS,"does NOT exist. Run with:\n",runstr)
 if(!is.numeric(FRAGSIZE))    stop("Fragment size not numeric. Run with:\n",runstr)
+if(!is.numeric(SUMMITS))     stop("Summits is not numeric. Run with:\n",runstr)
 if(!is.logical(ANNOTATE))    stop("Annotate not logical. Run with:\n",runstr)
 if(!is.logical(PE))          stop("Paired end (pe) not logical. Run with:\n",runstr)
 if(ANNOTATE & !is.numeric(TSS)) stop("Region around TSS not numeric. Run with:\n",runstr)
@@ -133,7 +135,15 @@ dev.off()
 
 # identify all overlapping peaks and derives a consensus peakset for the experiment. 
 # Then count how many reads overlap each interval for each unique sample.
-db <- dba.count(db, bUseSummarizeOverlaps=PE)  # bUseSummarizeOverlaps method slower and memory hungry, mandatory only for PE data
+
+if(SUMMITS>0) {
+  db <- dba.count(db, bUseSummarizeOverlaps=F, summits=SUMMITS) 
+  } else {
+    db <- dba.count(db, bUseSummarizeOverlaps=PE) 
+}
+# bUseSummarizeOverlaps method is slower and memory hungry, mandatory only for PE data.
+# If summits is set (even to 0 or F), bUseSummarizeOverlaps must be set to FALSE
+
 
 # apply the contrasts
  for (cont in conts[, 1]) {
