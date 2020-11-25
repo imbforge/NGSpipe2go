@@ -3,7 +3,7 @@ FastqScreen = {
         desc:  "Quality control of input file against various contaminants",
         constraints: "Only supports compressed FASTQ files",
         bpipe_version: "tested with bpipe 0.9.8.7",
-        author: "Nastasja Kreim"
+        author: "Nastasja Kreim, modified by Frank Ruehle"
 
     output.dir = FastqScreen_vars.outdir
     def FASTQSCREEN_FLAGS = 
@@ -13,7 +13,7 @@ FastqScreen = {
     def TOOL_ENV = prepare_tool_env("fastqscreen", tools["fastqscreen"]["version"], tools["fastqscreen"]["runenv"])
     def PREAMBLE = get_preamble("FastqScreen")
 
-    transform(".fastq.gz") to("_fastqscreen.done") {
+    transform("*.fastq.gz") to("_fastqscreen.done") {
         exec """
             ${TOOL_ENV} &&
             ${PREAMBLE} &&
@@ -27,11 +27,11 @@ FastqScreen = {
                 reference=(\${references[i]//::/ });
                 echo -e "DATABASE\t\${reference[0]}\t\${reference[1]}" >> $output.prefix/fastqscreen.conf;
             done;
-            fastq_screen $FASTQSCREEN_FLAGS --conf $output.prefix/fastqscreen.conf --outdir $output.prefix $input;
-            touch $output
+            fastq_screen $FASTQSCREEN_FLAGS --conf $output.prefix/fastqscreen.conf --outdir $output.prefix $inputs;
+            touch $outputs
         ""","FastqScreen"
     }
 
-    forward input
+    forward inputs
 }
 
