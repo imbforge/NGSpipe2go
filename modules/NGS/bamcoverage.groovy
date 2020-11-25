@@ -10,7 +10,7 @@ bamCoverage = {
 
     def BAMCOVERAGE_FLAGS =
         (bamCoverage_vars.cores     ? " --numberOfProcessors " + bamCoverage_vars.cores : "") +
-        (bamCoverage_vars.fragments ? " --extendReads "                                 : "") +
+        (bamCoverage_vars.fragments ? " --extendReads " + (bamCoverage_vars.paired ? "" : bamCoverage_vars.fraglength + " ") : "") +
         (bamCoverage_vars.extra     ? " "                      + bamCoverage_vars.extra : "")
 
     def TOOL_ENV = prepare_tool_env("deeptools", tools["deeptools"]["version"], tools["deeptools"]["runenv"])
