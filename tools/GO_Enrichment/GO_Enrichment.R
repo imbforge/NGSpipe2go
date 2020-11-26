@@ -26,7 +26,6 @@ library(clusterProfiler)
 library(ReactomePA)
 library(Cairo)
 library(ggplot2)
-library(rrvgo)
 
 # supported organisms
 orgDb <- c(human="org.Hs.eg.db",
@@ -228,6 +227,7 @@ if(cores > 1 && length(res) > 1) {
         library(ReactomePA)
         library(Cairo)
         library(ggplot2)
+        library(rrvgo)
         library(orgDb[org], character.only=TRUE)
     })
     parLapply(cl, zipup(res, names(res)), processContrast)
@@ -238,6 +238,7 @@ if(cores > 1 && length(res) > 1) {
     library(ReactomePA)
     library(Cairo)
     library(ggplot2)
+    library(rrvgo)
     library(orgDb[org], character.only=TRUE)
     lapply(zipup(res, names(res)), processContrast)
 }
