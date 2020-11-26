@@ -218,19 +218,19 @@ DEhelper.DESeq2.MDS()        # sample MDS
 A heatmap clustogram of the Euclidean distances between the samples gives an intuitive measure of sample similarity (similarities of samples to themselves (diagonal) are set to NA):
 
 ```{r Heatmap2_paragraph, echo=F, error=F, warning=F, message=F, fig.align="center"}
-DEhelper.DESeq2.corr()          # heatmap of sample to sample distances
+DEhelper.DESeq2.heatmap(type="distance")         # heatmap of sample to sample distances
 ```
 
 Additionally, hierarchical clustering of the samples based on the most variable genes reveals replicate consistency and can spot batches of samples related by other characteristics rather than condition.
 
 ```{r Heatmap1_paragraph_sd, echo=F, error=F, warning=F, message=F, fig.align="center"}
-DEhelper.DESeq2.cluster.sd()    # heatmap of top variant 'n' genes of the rlog transformed counts (normalized and stabilized)
+DEhelper.DESeq2.heatmap(type="cluster_sd")   # heatmap of top variant 'n' genes of the rlog transformed counts (normalized and stabilized)
 ```
 
 Finally, a hierarchical clustering of the samples based on the genes with the highest average expression is shown below.
 
 ```{r Heatmap1_paragraph_mean, echo=F, error=F, warning=F, message=F, fig.align="center"}
-DEhelper.DESeq2.cluster.mean()    # heatmap of top variant 'n' genes of the rlog transformed counts (normalized and stabilized)
+DEhelper.DESeq2.heatmap(type="cluster_mean")    # heatmap of top variant 'n' genes of the rlog transformed counts (normalized and stabilized)
 ```
 
 ## Differential Expression Analysis ##
@@ -255,12 +255,12 @@ for(i in 1:nrow(conts)) {
 
     # Sample to sample distance
     cat("##### Sample to sample distance (diagonal set to NA)", fill=T)
-    DEhelper.DESeq2.corr.pairwise(i)
+    DEhelper.DESeq2.heatmap(i, dds=pairwise.dds,  logTransform=T, type="distance")
     cat("\n", fill=T)
 
     # most variable genes
     cat("##### Most variable genes", fill=T)
-    DEhelper.DESeq2.cluster.sd.pairwise(i,40)
+    DEhelper.DESeq2.heatmap(i, dds=pairwise.dds,  logTransform=T, type="cluster_sd")
     cat("\n", fill=T)
 
     # MA plot

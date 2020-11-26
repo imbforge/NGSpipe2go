@@ -22,7 +22,7 @@ STAR = {
         " --runMode alignReads "        +
         " --genomeLoad NoSharedMemory " +
         " --outStd SAM "                +
-        " --outSAMattributes Standard " +
+        (STAR_vars.attributes   ? " --outSAMattributes " + STAR_vars.attributes   : " --outSAMattributes Standard ") +
         " --outSJfilterReads Unique "   +
         " --readFilesCommand zcat "     +
         " --outFileNamePrefix "         + STAR_vars.logdir + "/" + OUTPUTFILE +
