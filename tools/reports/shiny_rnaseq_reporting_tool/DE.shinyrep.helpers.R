@@ -808,6 +808,12 @@ DEhelper.Fastqc.custom <- function(web=TRUE, summarizedPlots=TRUE) {
         lbls <- sapply(lbls, function(i) { ifelse(i %in% targets$sample_ext,
                                                   targets[targets$sample_ext == i,"sample"],
                                                   gsub(paste0("^",SHINYREPS_PREFIX),"",i))})
+
+        if(SHINYREPS_PAIRED == "yes") {
+            x <- names(lbls)
+            lbls <- paste0(lbls, ifelse(grepl("R1", names(lbls)), "_R1", "_R2"))
+            names(lbls) <- x
+        }
     } else {
         
         if(!is.na(SHINYREPS_PREFIX)) {
