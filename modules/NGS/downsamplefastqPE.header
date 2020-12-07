@@ -1,0 +1,7 @@
+DownsamplefastqPE_vars=[
+    outdir: PROJECT + "/downsampled",
+    amount: 2500000
+]
+
+load PIPELINE_ROOT + "/modules/NGS/downsamplefastqPE.groovy"
+

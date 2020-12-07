@@ -1,0 +1,6 @@
+trackhub_vars=[
+    config: PROJECT + "/trackhub.yaml"  // trackhub configuration file
+]
+
+load PIPELINE_ROOT + "/modules/NGS/trackhub.groovy"
+

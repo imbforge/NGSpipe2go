@@ -130,9 +130,14 @@ DEhelper.Fastqc <- function(web=TRUE, ...) {
 
 
 ##
-##DEhelper.cutadapt:  get the strandspecifity from the qc and display them
+## MPShelper.cutadapt: get cutadapt statistics from the log folder and display them
 ## 
-DEhelper.cutadapt <- function(colorByFactor=NULL, targetsdf=targets, ...){
+#' @param targetsdf targets object
+#' @param colorByFactor character with column name of sample table to be used for coloring the plot. Coloring by filename if NULL. 
+#' @param sampleColumnName character with column name(s) of targets table containing file names
+#'
+#' @return plot cutadapt statistics as side effect
+MPShelper.cutadapt <- function(targetsdf=targets, colorByFactor="group", sampleColumnName =c("sample_file_name"), ...){
   
   # logs folder
   if(!all(sapply(SHINYREPS_CUTADAPT_LOGS, file.exists))) {
@@ -141,66 +146,96 @@ DEhelper.cutadapt <- function(colorByFactor=NULL, targetsdf=targets, ...){
   
   x <- list.files(SHINYREPS_CUTADAPT_LOGS,pattern='*cutadapt.log$',full.names=TRUE) 
   
-  # select subset of samples for fastqc figures (e.g. merged singlecell pools) or use all samples for samplePattern=NULL
-  x <- selectSampleSubset(x, ...)
-  if(length(x) == 0) {
-    return("No samples matched with this pattern...")
-  }
+  # get Command line parameters of first file
+  cutadaptpars <- system(paste("grep \"Command line parameters\"", x[1]), intern=T)
+  
+  paired <- grepl("(-p )|(--paired-output )", cutadaptpars) # output for R2 available?
   
   x <- sapply(x, function(f) { 
-    total.reads <- system(paste("grep \"Total reads processed\"", f, "| awk '{print $4}'"), intern=TRUE)
-    total.reads <- gsub(",", "", total.reads)
     
-    trimmed.reads.perc <- system(paste("grep \"Reads with adapters\"", f, "| awk '{print $5}'"), intern=TRUE)
-    trimmed.reads.perc <- gsub("\\(|\\)|\\%", "", trimmed.reads.perc)
+    trimmed.R1.perc <- trimmed.R2.perc <- trimmed.reads.perc <- tooshort.reads.perc <- NULL # initialise with NULL in case not needed
     
-    tooshort.reads.perc <- system(paste("grep \"Reads that were too short\"", f, "| awk '{print $7}'"), intern=TRUE)
+    if(paired) { # log lines slightly differ dependent on se or pe
+      total.reads <- system(paste("grep \"Total read pairs processed\"", f, "| awk '{print $5}'"), intern=TRUE)
+      total.reads <- gsub(",", "", total.reads)
+      trimmed.R1.perc <- system(paste("grep \"Read 1 with adapter\"", f, "| awk '{print $6}'"), intern=TRUE)
+      trimmed.R1.perc <- gsub("\\(|\\)|\\%", "", trimmed.R1.perc)
+      trimmed.R2.perc <- system(paste("grep \"Read 2 with adapter\"", f, "| awk '{print $6}'"), intern=TRUE)
+      trimmed.R2.perc <- gsub("\\(|\\)|\\%", "", trimmed.R2.perc)
+      
+    } else {
+      total.reads <- system(paste("grep \"Total reads processed\"", f, "| awk '{print $4}'"), intern=TRUE)
+      total.reads <- gsub(",", "", total.reads)
+      trimmed.reads.perc <- system(paste("grep \"Reads with adapters\"", f, "| awk '{print $5}'"), intern=TRUE)
+      trimmed.reads.perc <- gsub("\\(|\\)|\\%", "", trimmed.reads.perc)
+    }
+    
+    tooshort.reads.perc <- system(paste("grep \"that were too short\"", f, "| awk '{print $7}'"), intern=TRUE)
     tooshort.reads.perc <- gsub("\\(|\\)|\\%", "", tooshort.reads.perc)
     
     # trimming of each adapter
     adapters <- system(paste("grep Sequence:", f, "| awk '{print $9}'"), intern=T)
     adapters.perc <- round(100*(as.numeric(adapters) / as.numeric(total.reads)),2)
-    names(adapters.perc) <- gsub(" *=== *", "", system(paste("grep \"=== Adapter\"", f), intern=T))
+    adapterprime <- gsub(";", "", system(paste("grep Sequence:", f, "| awk '{print $5}'"), intern=T))
     
-    # get Command line parameters
-    cutadaptpars <- system(paste("grep \"Command line parameters\"", f), intern=T)
+    names(adapters.perc) <- gsub(" *=== *", "", system(paste("grep \"=== .*Adapter\"", f), intern=T))
+    namespart1 <- gsub("First read:.*", "R1_", names(adapters.perc))
+    namespart1 <- gsub("Second read:.*", "R2_", namespart1)
+    namespart2 <- gsub("^.*Adapter", "Adapter", names(adapters.perc))
+    names(adapters.perc) <- paste0(if(paired) {namespart1} else {""}, adapterprime, namespart2)
     
     ## add trimmed reads for each adapter here
-    return(c(total.reads, trimmed.reads.perc, tooshort.reads.perc, adapters.perc, cutadaptpars=cutadaptpars))
+    return(c(total_reads=total.reads, trimmed_R1=trimmed.R1.perc, trimmed_R2=trimmed.R2.perc, 
+             trimmed=trimmed.reads.perc, tooshort=tooshort.reads.perc, adapters.perc))
   })
   
-  cutadaptpars <- x["cutadaptpars", 1] # use first cutadapt call for naming adapters
-  cutadaptpars <- unlist(strsplit(cutadaptpars, split=" "))
-  indexAdapter <- grep("--adapter", cutadaptpars)
-  indexPoly <- grep("^-a$", cutadaptpars) 
-  
-  # set row and column names
-  x.df <- as.data.frame(t(x[rownames(x)!="cutadaptpars",])) 
-  colnames(x.df)[1:3] <- c("total.reads", "trimmed","tooshort")
+  # transpose dataframe
+  x.df <- as.data.frame(t(x), make.names=F, stringsAsFactors = F) 
   x.df <- as.data.frame(lapply(x.df, as.numeric))
+  colnames(x.df) <- rownames(x)
   
-  # rename those adapters columns trimmed by -a commands (e.g. polyA, polyT)
-  if (length(indexPoly>0)) {
-    colnames(x.df)[grepl("Adapter", colnames(x.df))][-which(c(indexAdapter, indexPoly) %in% indexAdapter)] <- cutadaptpars[indexPoly+1]
+  # use cutadapt call from first log file for naming some of the unnamed adapters 
+  cutadaptpars <- unlist(strsplit(cutadaptpars, split=" ")) 
+  indexAdapter <- grep("(^-a$)|(--adapter)|(^-g$)|(--front)|(^-A$)|(^-G$)", cutadaptpars) # index of all adapters applied
+  indexAdapterSelected <- indexAdapter[grep("[ACGT].[[:digit:]]*}", cutadaptpars[indexAdapter+1])] # select e.g. polyA, polyT
+  
+  # rename those adapters columns trimmed by -a commands 
+  if (length(indexAdapterSelected>0)) {
+    colnames(x.df)[grepl("Adapter", colnames(x.df))][match(indexAdapterSelected, indexAdapter)] <- 
+      paste0(gsub("Adapter.*$", "", colnames(x.df)[grepl("Adapter", colnames(x.df))][match(indexAdapterSelected, indexAdapter)]), cutadaptpars[indexAdapterSelected+1])
   }
   
   #reduce length of file names 
   row.names(x.df) <- basename(colnames(x))
   x.df$filename_unmod <- factor(row.names(x.df))
-  row.names(x.df)  <- gsub(lcSuffix(row.names(x.df) ), "", row.names(x.df) )
-  row.names(x.df)  <- gsub(lcPrefix(row.names(x.df) ), "", row.names(x.df) )
+  if(nrow(x.df)>1){
+    row.names(x.df)  <- gsub(lcSuffix(row.names(x.df) ), "", row.names(x.df) )
+    row.names(x.df)  <- gsub(lcPrefix(row.names(x.df) ), "", row.names(x.df) )
+  }
   
   # passing the different factors given in targetsdf to x.df which was created from cutadapt logfile names 
   if(!is.null(colorByFactor)) { # add information to x.df
     
-    targetsdf$filename <- gsub(lcSuffix(targetsdf$sample ), "", targetsdf$sample ) # shorten filename suffix
+    if(is.null(targetsdf)) {stop("If 'colorByFactor' is given you must also provide 'targetsdf'!")}
+    
+    if(length(sampleColumnName>1)) { # melt in case of multiple file name columns (as for ChIP-Seq)
+      targetsdf <- targetsdf[,c(colorByFactor, sampleColumnName)]
+      targetsdf <- melt(targetsdf, id.vars= colorByFactor, measure.vars=sampleColumnName, value.name = "filename")
+      for (i in colorByFactor) {targetsdf[, i] <- paste(targetsdf[, i], targetsdf$variable, sep="_")}
+      targetsdf[,c(colorByFactor, "filename")] <- lapply(targetsdf[,c(colorByFactor, "filename")], factor)
+      
+    } else {
+      targetsdf$filename <- targetsdf[,sampleColumnName]
+    }
+    
+    targetsdf$filename <- gsub(lcSuffix(targetsdf$filename ), "", targetsdf$filename ) # shorten filename suffix
     targetsdf$filename <- gsub(lcPrefix(targetsdf$filename ), "", targetsdf$filename ) # shorten filename prefix
     
     index <- sapply(targetsdf$filename, grep, x.df$filename_unmod, ignore.case = T) # grep sample name in file names
     targetsdf <- targetsdf[sapply(index, length) ==1, ] # remove targetsdf entries not (uniquely) found in x.df
     
     if(!identical(sort(unname(unlist(index))), 1:nrow(x.df))) {
-      return("There seem to be ambiguous sample names in targets. Can't assign them uniquely to cutadapt logfile names")
+      stop("There seem to be ambiguous sample names in targets. Can't assign them uniquely to cutadapt logfile names")
     }
     
     x.df <- data.frame(x.df[unlist(index),], targetsdf, check.names =F)
@@ -222,7 +257,9 @@ DEhelper.cutadapt <- function(colorByFactor=NULL, targetsdf=targets, ...){
   }
   
   # melt data frame for plotting
-  x.melt <- melt(x.df, measure.vars=c("trimmed", "tooshort", grep("(Adapter)|(})", colnames(x.df), value=T)), variable="reads")
+  x.melt <- melt(x.df, measure.vars=c(grep("trimmed", colnames(x.df), value=T), 
+                                      "tooshort", 
+                                      grep("(Adapter)|(})", colnames(x.df), value=T)), variable="reads")
   # everything which is not a value should be a factor
   
   # now we do a violin plot of the trimmed/too_short/etc. ones and color it
@@ -237,13 +274,13 @@ DEhelper.cutadapt <- function(colorByFactor=NULL, targetsdf=targets, ...){
     p <- ggplot(x.melt, aes_string(x="reads",
                                    y="value",
                                    color=color.value ))+
-      geom_quasirandom() +
+      geom_quasirandom(groupOnX=TRUE) +
       scale_color_manual(values=getPalette(colourCount)) + # creates as many colors as needed
       ylab(ylab) +
       xlab("") +
-      scale_y_continuous( breaks=seq(0, max(x.melt$value), 10),
-                          limits = c(0, max(x.melt$value))) + 
-      theme(axis.text.x=element_text(angle=45, vjust=1, hjust=1)) 
+      #      scale_y_continuous( breaks=seq(0, ceiling(max(x.melt$value)), 10),
+      #                          limits = c(0, ceiling(max(x.melt$value)))) + 
+      theme(axis.text.x=element_text(angle=30, vjust=1, hjust=1)) 
     
     return(p)
   }
@@ -255,8 +292,14 @@ DEhelper.cutadapt <- function(colorByFactor=NULL, targetsdf=targets, ...){
     plot(violin.list[[i]])
   }
   
-  DT::datatable(x.df[,c("total.reads", "trimmed","tooshort", grep("(Adapter)|(})", colnames(x.df), value=T))], options = list(pageLength= 20))
+  DT::datatable(x.df[,c("total_reads", 
+                        grep("trimmed", colnames(x.df), value=T),
+                        "tooshort", 
+                        grep("(Adapter)|(})", colnames(x.df), value=T))], 
+                options = list(pageLength= 20))
 }
+
+
 
 
 ##

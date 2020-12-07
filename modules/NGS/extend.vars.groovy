@@ -1,5 +1,0 @@
-extend_vars=[
-    outdir          : MAPPED,
-    fraglen         : ESSENTIAL_FRAGLEN - ESSENTIAL_READLEN,  //the average fragment length
-    samtools_threads: Integer.toString(ESSENTIAL_THREADS)
-]

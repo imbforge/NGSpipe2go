@@ -1,0 +1,17 @@
+pear_vars=[
+    outdir  : PROJECT + "/rawdata_assembled",
+    logdir  : LOGS + "/pear",
+    pvalue  : "", // (default 0.01) Specify a p-value threshold for the statistical test. Valid options are: 0.0001, 0.001, 0.01, 0.05 and 1.0. Setting 1.0 disables the test.
+    minoverlap: "", // (default 10) Specify the minimum overlap size.
+    quality_threshold: "", //  (default 0) Specify  the  quality  score  threshold for trimming the low quality  part  of  a  read.
+    min_trim_length: "", // (default 1) Specify the minimum length of reads after trimming the low quality part
+    max_uncalled_base: "", // (default 1) Specify the maximal proportion of uncalled bases in a read.
+    test_method: "", // (default 1) Specify the type of statistical test. 1: Given the minimum allowed overlap, test using the highest OES. 2: Use the acceptance probability (m.a.p).
+    score_method: "", // (default 2) Specify the scoring method. 1. OES with +1 for match and -1 for mm. 2: Assembly score (AS). Use +1 for match and -1 for mm multiplied by base quality scores. 3: Ignore quality scores and use +1 for match and -1 for mm.
+    phred_base: "", // (default: 33) Base PHRED quality score.
+    cap: "", // (default: 40) Specify the upper bound for the resulting quality score. If set to zero, capping is disabled.
+    threads : Integer.toString(ESSENTIAL_THREADS), // Number of threads to use
+    extra   : " --min-assembly-length 30"                            // extra parms to sent to the tool // --min-assembly-length default 50
+]
+
+load PIPELINE_ROOT + "/modules/DNAampliconseq/pear.groovy"

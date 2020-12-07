@@ -17,8 +17,9 @@ output:
 # Processing
 
 Bpipe.run {
-    "%.fastq.gz" * [ FastQC ] +
-    (RUN_IN_PAIRED_END_MODE ? "%.R*.fastq.gz" : "%.fastq.gz") * [
+   (RUN_IN_PAIRED_END_MODE ? "%.R*.fastq.gz" : "%.fastq.gz") * [
+        FastQC +
+        (RUN_CUTADAPT ? Cutadapt + FastQC : dontrun.using(module:"Cutadapt")) +
         (RUN_PEAR ? pear : dontrun.using(module:"pear")) +
                AddUMIBarcodeToFastq + barcode_count
     ] +
@@ -32,7 +33,7 @@ Bpipe.run {
 source("mps.shinyrep.helpers.R")
 
 # load required packages
-attach_packages(c("rmarkdown", "knitr", "Cairo", "gplots", "ggplot2", "plotly", "RColorBrewer", "ggrepel", "parallel",
+notYetAttached <- attach_packages(c("rmarkdown", "knitr", "Cairo", "gplots", "ggplot2", "plotly", "RColorBrewer", "ggrepel", "parallel",
                   "grid", "gridExtra", "rtracklayer", "ggbeeswarm", "dplyr", "tidyr", "forcats", "gtools", "Biobase",
                   "scales", "kableExtra", "reshape2", "vipor", "corrplot", "limma", "viridis", "pkgmaker", "DT", "htmltools",
                   "igraph", "shinydashboard"))
@@ -58,6 +59,7 @@ theme_set(theme_bw() + theme(axis.text=element_text(colour="grey30",size=12),
 									legend.title=element_text(size=12,colour="grey30")))
 
 
+run_cutadapt <- dir.exists(SHINYREPS_CUTADAPT_LOGS)
 run_pear_assembly <- dir.exists(SHINYREPS_PEAR_LOG)
 run_whitelist_extraction <- dir.exists(SHINYREPS_UMIEXTRACT_LOGWL)
 run_nested_extraction <-any(grepl("nested", list.files(SHINYREPS_UMIEXTRACT_LOG))) 
@@ -103,12 +105,53 @@ The y-axis on the graph shows the Phred quality scores, which are logarithmicall
 # If you want to exclude samples according to the given certain pattern (instead of including), set exclude=T. 
 # If you set argument 'maxno', the maximum sample number will be restricted accordingly to the first 'maxno' plots. 
 #
-samplePattern=SHINYREPS_PATTERNFASTQC
+samplePattern=SHINYREPS_PATTERNFASTQC2
 maxno=SHINYREPS_MAXNO        
 ##### 
 
+cat(DEhelper.Fastqc(web=F, samplePattern=samplePattern, exclude=T, maxno=maxno), sep="\n")
+```
+
+
+
+
+```{r cutadapt, echo=F, results='asis', error=F, warning=F, message=F, eval=run_cutadapt}
+##### parameters to set:
+# define categories of targets.txt to be used for dot color in the plot (one plot per element of colorByFactor will be created). 
+# The function will try to map the data from targets$sample to the cutadapt log file names (for this, the unique part given in  
+# sampleColumnName must be a substring of file the name). Otherwise pruned file names will be used by default. 
+# In case of pooled library design the targets object will be modified accordingly. 
+#####
+
+cat("## Adapter trimming with Cutadapt
+
+The following plot shows the amount of reads trimmed for the selected adapter sequences. The column 'tooshort' gives the percentage of reads removed due to a length cutoff after trimming. Additional to the column 'trimmed', which is for all adapters combined, there are columns for every adapter giving the percentage of reads trimmed for this adapter.\n")
+
+MPShelper.cutadapt(targetsdf=NULL, colorByFactor=NULL)
+```
+
+
+
+```{r FastQC_paragraph2, echo=F, results='asis', error=F, warning=F, message=F, eval=run_cutadapt}
+##### parameters to set:
+# Select samples for which you would like to include fastqc results in the report. For huge experiments, 
+# you may want to restrict the total number of plots. If you provide a regular expression in 'samplePattern' only those 
+# filenames will be included which match this expression, e.g. setting samplePattern="R1" yields only those fastq 
+# files containing read1 of a read pair. 
+# For samplePattern=NULL all fastq files will be included.
+# If you want to exclude samples according to the given certain pattern (instead of including), set exclude=T. 
+# If you set argument 'maxno', the maximum sample number will be restricted accordingly to the first 'maxno' plots. 
+#
+samplePattern=SHINYREPS_PATTERNFASTQC2
+maxno=SHINYREPS_MAXNO        
+##### 
+
+cat("## FastQC after adapter trimming\n")
+
 cat(DEhelper.Fastqc(web=F, samplePattern=samplePattern, maxno=maxno), sep="\n")
 ```
+
+
 
 
 
@@ -121,7 +164,7 @@ colorByFactor = SHINYREPS_COLORBYFACTOR
 #####
 
 cat("# Read assembly with PEAR\n")
-cat("\n\nThe 2 reads of a readpair are assembled to a single read. PEAR stats for assembly:\n")
+cat("\n\nThe 2 reads of a readpair are assembled to a single read. PEAR stats are given below.\n\n")
 
 MPShelper.pear(samplePattern=samplePattern, colorByFactor=colorByFactor, targetsdf=targets)
 ```
@@ -137,7 +180,7 @@ colorByFactor = SHINYREPS_COLORBYFACTOR
 #####
 
 cat("# Whitelist extraction with UMI-tools\n")
-cat("The whitelist option offers to estimate likely true cell barcodes which can then be used to filter (and optionally correct) the barcodes extracted from the fastq files. The obtained whitelist contains the observed deviations from the 'real' variable regions (including their frequency). The extracted whitelists for each sample are available as tsv files in the", gsub(SHINYREPS_PROJECT, "", SHINYREPS_UMIEXTRACT_LOGWL),"folder. They contain 4 tab-separated columns: 1) whitelisted cell barcode, 2) Other cell barcode(s) (comma-separated) to correct to the whitelisted barcode, 3) Count for whitelisted cell barcodes, 4) Count(s) for the other cell barcode(s) (comma-separated).\n")
+cat("\nThe whitelist option offers to estimate likely true cell barcodes which can then be used to filter (and optionally correct) the barcodes extracted from the fastq files. The obtained whitelist contains the observed deviations from the 'real' variable regions (including their frequency). The extracted whitelists for each sample are available as tsv files in the", gsub(SHINYREPS_PROJECT, "", SHINYREPS_UMIEXTRACT_LOGWL),"folder. They contain 4 tab-separated columns: 1) whitelisted cell barcode, 2) Other cell barcode(s) (comma-separated) to correct to the whitelisted barcode, 3) Count for whitelisted cell barcodes, 4) Count(s) for the other cell barcode(s) (comma-separated).\n")
 
 cat("\n\nKnee plots for barcode selection:\n")
 MPShelper.whitelistextraction(samplePattern=samplePattern)
@@ -149,7 +192,7 @@ MPShelper.umiextract(samplePattern=samplePattern, colorByFactor=colorByFactor, t
 
 
 
-## Extract barcodes with UMI-tools
+# Extract barcodes with UMI-tools
 
 Barcodes and UMIs (if applicable) are extracted from sequences in fastq files and are appended to the corresponding read names for later counting. UMIs will be used for deduplication of barcodes. Mismatches are allowed in UMIs as defined in project settings. 
 
@@ -200,7 +243,7 @@ for(f in histofiles) {
 ```{r PSIperNuc, results='asis', eval=PSIavailable}
 cat("## PSIs calculated per nucleotides
     
-    Protein stability indices have been calculated per nucleotide sequence from normalized count data. The statistics given in the table are calculated from count data of all fractions per sub_experiment and sequence. 'nfractions' gives the number of fractions with counts detected, while 'totalfractions' contains the total number of fractions for this sub_experiment.\n")
+Protein stability indices have been calculated per nucleotide sequence from normalized count data. The statistics given in the table are calculated from count data of all fractions per sub_experiment and sequence. 'nfractions' gives the number of fractions with counts detected, while 'totalfractions' contains the total number of fractions for this sub_experiment.\n")
 
  htmltools::tagList(
    lapply(unique(targets$experiment), function(x) {
@@ -219,7 +262,7 @@ cat("## PSIs calculated per nucleotides
 ```{r PSIperAA, results='asis', eval=PSIavailable}
 cat("## PSIs calculated per amino acids
     
-    Median protein stability indices per amino acid sequence have been calculated as median of PSIs from all nucleotide sequences translated into the same amino acid sequence. Additionally, pooled PSIs are calculated directly from normalized count data by pooling counts from all nucleotide sequences translated into the same amino acid sequence. The statistics given in the table refer to the pooled approach. 'nsequences' gives the number of nucleotide sequences tranlated into the same amino acid sequence, 'nfractions' gives the number of fractions with counts detected, while 'totalfractions' contains the total number of fractions for this sub_experiment.\n")
+Median protein stability indices per amino acid sequence have been calculated as median of PSIs from all nucleotide sequences translated into the same amino acid sequence. Additionally, pooled PSIs are calculated directly from normalized count data by pooling counts from all nucleotide sequences translated into the same amino acid sequence. The statistics given in the table refer to the pooled approach. 'nsequences' gives the number of nucleotide sequences tranlated into the same amino acid sequence, 'nfractions' gives the number of fractions with counts detected, while 'totalfractions' contains the total number of fractions for this sub_experiment.\n")
 
  htmltools::tagList(
    lapply(unique(targets$experiment), function(x) {
@@ -239,7 +282,8 @@ cat("## PSIs calculated per amino acids
 cat("# Background subtracted count data\n")
     
 cat("## Histograms of count data after background subtraction\n
-    To remove background noise, a Gaussian mixture model is fitted to each sample and then the mean of the background distribution subtracted from the raw count data. All downstream processing steps are performed as for the raw count data.\n")
+
+To remove background noise, a Gaussian mixture model is fitted to each sample and then the mean of the background distribution subtracted from the raw count data. All downstream processing steps are performed as for the raw count data.\n")
 
 histofiles <- list.files(file.path(SHINYREPS_MPSPROFILING_OUT, "plots"), full.names =T)
 histofiles <- histofiles[grep("histogram", basename(histofiles))] # filter for histograms
@@ -255,7 +299,7 @@ for(f in histofiles) {
 ```{r PSIperNuc_bgsubt, results='asis', eval=(PSIavailable && "bgsubt" %in% names(bynuc_all))}
 cat("## PSIs calculated per nucleotides
     
-    Protein stability indices have been calculated per nucleotide sequence from normalized count data after background subtraction.\n")
+Protein stability indices have been calculated per nucleotide sequence from normalized count data after background subtraction.\n")
 
  htmltools::tagList(
    lapply(unique(targets$experiment), function(x) {
@@ -273,7 +317,7 @@ cat("## PSIs calculated per nucleotides
 ```{r PSIperAA_bgsubt, results='asis', eval=(PSIavailable && "bgsubt" %in% names(byaa_all))}
 cat("## PSIs calculated per amino acids
     
-    Median protein stability indices per amino acid sequence have been calculated from background subtracted count data.\n")
+Median protein stability indices per amino acid sequence have been calculated from background subtracted count data.\n")
 
   htmltools::tagList(
    lapply(unique(targets$experiment), function(x) {

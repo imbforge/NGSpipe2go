@@ -8,17 +8,20 @@ An opinionated framework for building pipelines. It comprises set of NGS data an
 
 ## DNAampliconseq_MPS pipeline
 
-This pipeline performs multiplexed protein stability (MPS) profiling of DNA amplicon-seq data as described in the [publication](https://www.sciencedirect.com/science/article/pii/S1097276518302363) of Kats I, Khmelinskii A, Kschonsak M, Huber F, Knieß RA, Bartosik A, Knop M (2018). *Mapping Degradation Signals and Pathways in a Eukaryotic N-terminome.* Mol Cell. 2018 May 3;70(3):488-501.e5. doi: 10.1016/j.molcel.2018.03.033. It is designed as alternative or addition to the [CombinatorialProfiler](https://github.com/ilia-kats/CombinatorialProfiler) tool allowing for flexible amplicon design and UMI-deduplication. Barcode extraction and UMI deduplication is implemented using [UMI-tools](https://umi-tools.readthedocs.io/en/latest/index.html). The downstream processing of the count data to calculate protein stabilty indicies is analogous to CombinatorialProfiler. All processing steps are illustrated in the pipeline [flowchart](https://www.draw.io/?lightbox=1&highlight=0000ff&edit=_blank&layers=1&nav=1#G1Z44xRviBaLQYeuWo4pYM1tH6W63oMt6h). 
+This pipeline performs multiplexed protein stability (MPS) profiling of DNA amplicon-seq data as described in the [publication](https://www.sciencedirect.com/science/article/pii/S1097276518302363) of Kats I, Khmelinskii A, Kschonsak M, Huber F, Knieß RA, Bartosik A, Knop M (2018). *Mapping Degradation Signals and Pathways in a Eukaryotic N-terminome.* Mol Cell. 2018 May 3;70(3):488-501.e5. doi: 10.1016/j.molcel.2018.03.033. It is designed as alternative or addition to the [CombinatorialProfiler](https://github.com/ilia-kats/CombinatorialProfiler) tool allowing for flexible amplicon design and UMI-deduplication. UMI deduplication and extraction of the variable region of the amplicon is implemented using [UMI-tools](https://umi-tools.readthedocs.io/en/latest/index.html). The variable region of interest is referred to as cell barcode within the UMI-tools regular expression describing the amplicon structure. The downstream processing of the count data like background subtraction and calculation of protein stabilty indicies (PSI) is analogous to CombinatorialProfiler. All processing steps are illustrated in the pipeline [flowchart](https://www.draw.io/?lightbox=1&highlight=0000ff&edit=_blank&layers=1&nav=1#G1Z44xRviBaLQYeuWo4pYM1tH6W63oMt6h). 
 
 ### The pipeline includes
 
-- FastQC and MultiQC for rawdata quality control
-- read pair assembly with PEAR
+- FastQC for rawdata quality control.
+- optional adapter trimming with Cutadapt.
+- read pair assembly with PEAR.
 - extract UMI-sequences and cell barcodes with UMI-tools extract. Barcodes and UMIs are attached to the read names. Definition of the required regular expressions is explained [here](https://umi-tools.readthedocs.io/en/latest/reference/extract.html#barcode-extraction).
 - optionally, generate custom whitelist for filtering and correction of cell barcodes according to the observed barcode (and UMI) distribution. 
-- deduplication of PCR duplicates by UMI-sequences using UMI-tools 
-- barcode counting with UMI-tools count_tab (or awk depending on experiment design)
-- calculate protein stability indices (PSI) for sample fractions coming from the different signal intensity bins 
+- deduplication of PCR duplicates by UMI-sequences using UMI-tools.
+- optional sample demultiplexing by 2nd barcode sequence (as in "amplicon3" experimental design).
+- barcode counting with UMI-tools count_tab (or awk depending on experiment design).
+- remove background noise by fitting a Gaussian mixture model to each sample and subtract the mean of the background distribution.
+- calculate protein stability indices (with and without background subtraction) for sample fractions coming from the different signal intensity bins.
 
 ### Implemented experiment designs
 
@@ -29,6 +32,7 @@ This pipeline performs multiplexed protein stability (MPS) profiling of DNA ampl
 
 ### Programs required
 
+- Cutadapt
 - FastQC
 - MultiQC
 - PEAR
@@ -58,15 +62,15 @@ Go to your <project_dir> and make symlinks for the pipeline in the main project 
   - experiment design (see below)
   - regular expressions for barcode and UMI extraction
   - whitelist options: you may provide user-prepared barcode whitelists to filter the extracted barcodes using the ESSENTIAL_WHITELIST option. If ESSENTIAL_CORRECT_CB is set true, non matching barcodes will be corrected to barcode alternatives given in the whitelist. It also possible to generate a whitelist with likely true barcodes from the data set (as described [here](https://umi-tools.readthedocs.io/en/latest/reference/whitelist.html)) by using the ESSENTIAL_EXTRACT_WHITELIST flag. This whitelist would also contain possible barcode alternatives for correcting if possible. For each barcode extraction the user may use either the ESSENTIAL_WHITELIST or the ESSENTIAL_EXTRACT_WHITELIST option (but not both).
-- additional (more specialized) parameter can be given in the var.groovy-files of the individual pipeline modules (e.g. Hamming distance for correction of barcodes to whitelist barcode in *addumibarcodetofastq.vars.groovy*)
-- *targets.txt*: comma-separated txt-file giving information about the analysed samples. The following columns are required (additional columns ignored) 
+- additional (more specialized) parameter can be given in the header-files of the individual pipeline modules (e.g. Hamming distance for correction of barcodes to whitelist barcode in *addumibarcodetofastq.header*). The flowchart given above links to the header files of each module to inspect the default parameter set.
+- *targets.txt*: comma-separated txt-file giving information about the analysed samples. The following columns are required (additional columns ignored): 
   - experiment: experiment name
   - sub_experiment: summarizes those samples, which have been distributed to stability bins and belong together for PSI calculation
-  - unique_sample_id: sample identifier. If no demultiplexing necessary, may be same as pruned_file_name
-  - pruned_file_name: Unique short form of the input fastq file name (common prefixes and suffixes can be removed). These names are grepped against the count file names to merge targets.txt to the count data.
+  - unique_sample_id: sample identifier. If no sample demultiplexing by a 2nd barcode is necessary, may be same as pruned_file_name
+  - pruned_file_name: Unique short form of the input fastq file name (common prefixes and suffixes can be removed). These names are grepped against the count file names to merge the *targets.txt* information to the count data.
   - fraction: fraction of cells assigned to each bin
   - bin: index number of signal intensity bin
-  - barcode_demultiplex: (only required if design is "amplicon3") barcodes for demultiplexing samples from count file
+  - barcode_demultiplex: (only required if design is "amplicon3") 2nd barcode for demultiplexing samples from count file
 
 ## Run the pipeline ##
 
@@ -87,3 +91,10 @@ The results of the pipeline modules will be saved in the ./results folder. The f
     
     R usage:
     rmarkdown::render("reports/mps.report.Rmd")
+
+## PSI result tables in report file ##
+
+The mps.report.html file contains overview statistics for every step performed in the pipeline. Finally, 4 result tables are given with PSIs calculated with and without background subtraction in two versions:
+- PSIs calculated per nucleotides: Protein stability indices are calculated per nucleotide sequence from normalized count data. The statistics given in the table refer to count data of all fractions per sub_experiment and sequence. Column ‘nfractions’ gives the number of fractions (bins) with counts detected, while ‘totalfractions’ contains the total number of fractions for this sub_experiment.
+- PSIs calculated per amino acids: Median protein stability indices per amino acid sequence are calculated as median of PSIs from all nucleotide sequences translated into the same amino acid sequence. Additionally, pooled PSIs are calculated directly from normalized count data by pooling counts from all nucleotide sequences translated into the same amino acid sequence. The statistics given in the table refer to the pooled approach. Column ‘nsequences’ gives the number of nucleotide sequences translated into the same amino acid sequence, ‘nfractions’ gives the number of fractions with counts detected for these sequences, while ‘totalfractions’ contains the total number of fractions for this sub_experiment. 
+

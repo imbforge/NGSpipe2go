@@ -17,7 +17,9 @@
 ## threshold_rel_countssum=0        # threshold for first qc filtering (proportion of sample sum from mean sample sum)
 ## excludeSeqsNotInAllFractions =F  # discard all sequences per sub_experiment, which were not detected in all fractions of this sub_eperiment
 ######################################
+
 options(stringsAsFactors=FALSE)
+
 library(reshape)
 library(kableExtra)
 library(plyr)
@@ -54,7 +56,7 @@ expdesign  <- parseArgs(args,"expdesign=","amplicon1")
 threshold_rel_countssum  <- parseArgs(args,"threshold_rel_countssum=", 0, convert="as.numeric")  # threshold for first qc filtering (proportion of sample sum from mean sample sum)
 excludeSeqsNotInAllFractions  <- parseArgs(args,"excludeSeqsNotInAllFractions=", FALSE, convert="as.logical")  # discard all sequences per sub_experiment, which were not detected in all fractions of this sub_experiment
 
-remove_NA_bynuc_PSI <- TRUE # remove entries with PSI == NA from bynuc and byaa files (exeption: there are no different bins at all for calculation of PSIs)
+remove_NA_bynuc_PSI <- TRUE # remove entries with PSI == NA from bynuc and byaa files (exception: there are no different bins at all for calculation of PSIs)
 remove_NA_byaa_pooledPSI <- TRUE
 
 runstr <- "Rscript MPSprofiling.R [targets=targets.txt] [prefix=RE] [suffix=RE] [inputdir=.] [out=MPSprofiling] [expdesign=amplicon1] [threshold_rel_countssum=0] [excludeSeqsNotInAllFractions=F]"
@@ -165,7 +167,7 @@ targets <- targets[,required_target_columns]
     counts$f <- (counts$bin_rank -1) / (counts$totalfractions -1) 
   
     
-  # in case there are sequences with zero counts, these entries are removed
+  # in case there are sequences with zero counts, these entries can be removed
   removeZerosRaw = FALSE # there are no zero counts since only observed sequences are counted
   if(removeZerosRaw) {
     logindex_nocounts <- counts$count==0
@@ -267,7 +269,7 @@ targets <- targets[,required_target_columns]
                    plot=plot_histo, 
                    width = 200, height = 150, 
                    units = c("mm"),  dpi = 600, device="png")
-        }
+            }
         
       ## cell distribution per variant normalised by bin countsum and cell fraction:
       # divide raw counts by sum counts for all sequences from one sub_experiment and bin

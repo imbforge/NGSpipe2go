@@ -1,0 +1,6 @@
+collectToolVersions_vars=[
+    outdir: LOGS
+]
+
+load PIPELINE_ROOT + "/modules/miscellaneous/collect_tool_versions.groovy"
+

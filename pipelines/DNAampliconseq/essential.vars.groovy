@@ -1,4 +1,4 @@
-ESSENTIAL_PROJECT="your/project/folder/"
+ESSENTIAL_PROJECT="/your/project/folder/"
 ESSENTIAL_THREADS=4
 
 ESSENTIAL_EXPDESIGN="amplicon1"  // design of DNA Amplicon-Seq experiment.
@@ -48,14 +48,23 @@ ESSENTIAL_EXTRACTMETHOD="regex" // either "string" or "regex"
 // whitelist options
 ESSENTIAL_WHITELIST="" //the barcode list should be a list of valid barcodes separated by newline. Barcodes will be filtered (and corrected) against the whitelist.
 ESSENTIAL_WHITELIST2="" // list of valid barcodes for 2nd run of umi_tools extract (if needed)
-ESSENTIAL_EXTRACT_WHITELIST=true  // extract whitelist from data instead providing an external whitelist.
+ESSENTIAL_EXTRACT_WHITELIST=false  // extract whitelist from data instead providing an external whitelist.
 ESSENTIAL_CORRECT_CB=false // correct cell barcodes to whitelist (alternatives must be given in whitelist). If false, just filter against whitelist. Omitted if no whitelist is given (neither external or extracted).
 ESSENTIAL_EXTRACT_WHITELIST2=false // // extract whitelist in optional 2nd run of umi_tools extract
 ESSENTIAL_CORRECT_CB2=false // correct cell barcodes to whitelist2
 
+
+//Adapter trimming with Cutadapt (optional).
+RUN_CUTADAPT=false
+ESSENTIAL_ADAPTER_SEQUENCE="IlluminaR1=AGATCGGAAGAGCACACGTCTGAAC" // standard sequence to trim illumina reads (IlluminaR2=AGATCGGAAGAGCGTCGTGTAGGGA, set in cutadapt header if needed)
+ESSENTIAL_MINADAPTEROVERLAP=3  // minimal overlap of the read and the adapter for an adapter to be found (cutadapt default 3)
+ESSENTIAL_MINREADLENGTH=15     // minimal length of reads to be kept (cutadapt default 0)
+
+
 //global vars that will be reused in some global vars
 PROJECT=ESSENTIAL_PROJECT
 LOGS=PROJECT + "/logs"
+TRIMMED=PROJECT + "/trimmed"
 MAPPED=PROJECT + "/mapped"
 QC=PROJECT + "/qc"
 REPORTS=PROJECT + "/reports"

@@ -1,0 +1,7 @@
+MultiQC_vars=[
+    outdir: QC + "/multiqc",
+    extra : ""
+]
+
+load PIPELINE_ROOT + "/modules/NGS/multiqc.groovy"
+

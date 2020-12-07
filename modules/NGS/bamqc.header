@@ -1,0 +1,7 @@
+BamQC_vars=[
+    outdir: QC + "/bamqc",
+    extra : "--extract --quiet"
+]
+
+load PIPELINE_ROOT + "/modules/NGS/bamqc.groovy"
+
