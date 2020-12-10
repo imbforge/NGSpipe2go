@@ -5,7 +5,7 @@ Here we provide the tools to perform paired end or single read ChIP-Seq analysis
 
 
 ## Pipeline Workflow
-All analysis steps are illustrated in the pipeline [flowchart](https://www.draw.io/?lightbox=1&highlight=0000ff&edit=_blank&layers=1&nav=1#G1sfhhIib0KGAMbqAvbqYkbM8wFCXXymwB). Specify the desired analysis details for your data in the *essential.vars.groovy* file (see below) and run the pipeline *chipseq.pipeline.groovy* as described [here](https://gitlab.rlp.net/imbforge/NGSpipe2go/-/blob/master/README.md). A markdown file *ChIPreport.Rmd* will be generated in the output reports folder after running the pipeline. Subsequently, the *ChIPreport.Rmd* file can be converted to a final html report using the *knitr* R-package.
+All analysis steps are illustrated in the pipeline [flowchart](https://viewer.diagrams.net/?highlight=0000ff&edit=_blank&layers=1&nav=1#G1sfhhIib0KGAMbqAvbqYkbM8wFCXXymwB). Specify the desired analysis details for your data in the *essential.vars.groovy* file (see below) and run the pipeline *chipseq.pipeline.groovy* as described [here](https://gitlab.rlp.net/imbforge/NGSpipe2go/-/blob/master/README.md). A markdown file *ChIPreport.Rmd* will be generated in the output reports folder after running the pipeline. Subsequently, the *ChIPreport.Rmd* file can be converted to a final html report using the *knitr* R-package.
 
 
 ### The pipelines includes
@@ -52,7 +52,7 @@ All analysis steps are illustrated in the pipeline [flowchart](https://www.draw.
   - ESSENTIAL_USE_BOWTIE1: if true use bowtie1 for read mapping, otherwise bowtie2 by default.
   - ESSENTIAL_FULLLIBRARYSIZE: if true (default) use total number of reads in bam for normalization in DiffBind analysis (if false only reads overlapping peaks).
  
-- additional (more specialized) parameter can be given in the header files of the individual pipeline modules.
+- additional (more specialized) parameter can be given in the header files of the individual pipeline modules (see module header files linked in the flowchart for default parameter).
 
 If differential binding analysis is selected it is required additionally:
 
