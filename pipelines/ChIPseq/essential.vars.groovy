@@ -20,11 +20,6 @@ ESSENTIAL_TXDB="TxDb.Scerevisiae.UCSC.sacCer3.sgdGene" // needed for peak annota
 ESSENTIAL_ANNODB="org.Sc.sgd.db"                    // needed for peak annotation
 ESSENTIAL_READLEN=51           // read length
 ESSENTIAL_FRAGLEN=200          // mean length of library inserts (default 200)
-ESSENTIAL_MACS2_BROAD=false    // use broad setting for broad peak calling in MACS2 (default false)
-ESSENTIAL_PEAK_MINLENGTH=200   // MACS2 minimum peak length. MACS2 default is fragment size. Should be increased if broad option is used.
-ESSENTIAL_DEDUPLICATION=false  // Remove duplicated reads in filtered branch (default false is strongly recommended for single end data!).  
-ESSENTIAL_DUP="auto"           // how MACS2 deals with duplicated reads or fragments ("auto", "all" or 1)
-ESSENTIAL_MACS2_GSIZE="10000000"  // mapable genome size for MACS2 (use approx. number or "hs" for human, "mm" for mouse, "ce" for worm, "dm" for fly)
 ESSENTIAL_BLACKLIST=""         // path to bed file with blacklisted regions (default: empty string). Peaks in these regions will be removed from the peakset. 
 ESSENTIAL_THREADS=4            // number of threads for parallel tasks
 ESSENTIAL_DB="sacCer3"         // UCSC assembly version for GREAT analysis (only for UCSC hg19, hg38, mm9 and mm10)
@@ -33,13 +28,23 @@ ESSENTIAL_PAIRED="no"          // to perform MACS2 peak calling in SR mode ("no"
 ESSENTIAL_STRANDED="no"        // library prep protocol strandness: no|yes|reverse
 ESSENTIAL_BAMCOVERAGE="--binSize 10 --normalizeUsing CPM"  // deepTools options for making normalised bigWig tracks
 ESSENTIAL_USE_BOWTIE1=false    // bowtie1 may be used for se design with very short readlength (<50nt). By default (false) bowtie2 is used.
-ESSENTIAL_FULLLIBRARYSIZE=true // use total number of reads in bam for normalization in DiffBind analysis (default true; false: use only reads overlapping peaks)
 
-//Adapter trimming with Cutadapt (optional). Not necessary for paired end libraries.
+// Adapter trimming with Cutadapt (optional). Not necessary for paired end libraries.
 RUN_CUTADAPT=false
 ESSENTIAL_ADAPTER_SEQUENCE="Illumina=CTGTCTCTTATACACATCT" // standard sequence to trim illumina reads 
 ESSENTIAL_MINADAPTEROVERLAP=3  // minimal overlap of the read and the adapter for an adapter to be found (default 3)
 ESSENTIAL_MINREADLENGTH=20     // minimal length of reads to be kept
+
+// Peak calling with MACS2
+ESSENTIAL_MACS2_BROAD=false    // use broad setting for broad peak calling in MACS2 (default false)
+ESSENTIAL_PEAK_MINLENGTH=200   // MACS2 minimum peak length. MACS2 default is fragment size. Should be increased if broad option is used.
+ESSENTIAL_DEDUPLICATION=false  // Remove duplicated reads in filtered branch (default false is strongly recommended for single end data!).  
+ESSENTIAL_DUP="auto"           // how MACS2 deals with duplicated reads or fragments ("auto", "all" or 1)
+ESSENTIAL_MACS2_GSIZE="10000000"  // mapable genome size for MACS2 (use approx. number or "hs" for human, "mm" for mouse, "ce" for worm, "dm" for fly)
+
+// Differential binding analysis with DiffBind
+ESSENTIAL_FULLLIBRARYSIZE=true // use total number of reads in bam for normalization in DiffBind analysis (default true; false: use only reads overlapping peaks)
+
 
 
 // project folders

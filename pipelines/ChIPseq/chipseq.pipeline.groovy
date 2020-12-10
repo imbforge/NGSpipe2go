@@ -1,5 +1,5 @@
 PIPELINE="ChIPseq"
-PIPELINE_VERSION="1.2.1"
+PIPELINE_VERSION="1.2.2"
 PIPELINE_ROOT="./NGSpipe2go"
 
 load PIPELINE_ROOT + "/pipelines/ChIPseq/essential.vars.groovy"
@@ -41,7 +41,7 @@ dontrun = { println "didn't run $module" }
 Bpipe.run {
 	(RUN_IN_PAIRED_END_MODE ? "%.R*.fastq.gz" : "%.fastq.gz") * [
 		FastQC +  
-                (RUN_CUTADAPT ? Cutadapt : dontrun.using(module:"Cutadapt")) +
+                (RUN_CUTADAPT ? Cutadapt + FastQC : dontrun.using(module:"Cutadapt")) +
                 (ESSENTIAL_USE_BOWTIE1 ? bowtie1 : bowtie2) + BAMindexer + BamQC +   
 
          [ // parallel branches with and without multi mappers

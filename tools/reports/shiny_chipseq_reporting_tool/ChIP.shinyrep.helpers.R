@@ -356,7 +356,7 @@ ChIPhelper.Fastqc <- function(web=TRUE) {
 ##
 ## ChIPhelper.ngsReports.Fastqc: joint FastQC report of all samples in the experiment
 ##
-ChIPhelper.ngsReports.Fastqc <- function() {
+ChIPhelper.ngsReports.Fastqc <- function(...) {
   
   # output folder
   if(!file.exists(SHINYREPS_FASTQC)) {
@@ -365,6 +365,10 @@ ChIPhelper.ngsReports.Fastqc <- function() {
   
   # Loading FastQC Data 
   f <- list.files(SHINYREPS_FASTQC, pattern="fastqc.zip$", full.names=TRUE)
+
+  # select subset of samples for fastqc figures (e.g. with or without cutadapt suffix)
+  f <- selectSampleSubset(f, ...)
+  
   x <- ngsReports::FastqcDataList(f)
   lbls <- gsub(paste0("(^", SHINYREPS_PREFIX, "|.fastqc.zip$)"), "", names(x))
   names(lbls) <- gsub(".fastqc.zip", ".fastq.gz", names(x))

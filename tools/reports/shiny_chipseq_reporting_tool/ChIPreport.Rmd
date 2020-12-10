@@ -9,6 +9,7 @@ output:
 
 <div class="contentbox">
 
+Sample sheet used for analysis:
 
 ```{r Initialise, echo=F,result='hide',error=F,warning=F,message=F}
 require(rmarkdown)
@@ -32,6 +33,9 @@ targets <<- ChIPhelper.init("readTargets")
 # If a subset of these files shall be selected they can be grepped by a character substring
 branches <- c(filtered="filtered", unfiltered="unfiltered") # value is sub-directory, name is file tag in case of subsetting  
 
+# print targets file
+DT::datatable(targets, caption="targets file (sample sheet) used for analysis")
+
 ``` 
 
 
@@ -47,9 +51,8 @@ The color on the graph shows the Phred quality scores, which are logarithmically
 3. The "Sequence bias" plots show the proportion of each base (% G, A, T and C) at each position. In a typical ChIP-seq library there would be little difference between the positions of a sequence run, so the lines in this plot should run parallel with each other, G being similar to C and A to T. 
 
 ```{r FastQC_paragraph, echo=F,results='asis',error=F,warning=F,message=F,fig.align='center'}
-ChIPhelper.ngsReports.Fastqc()
+ChIPhelper.ngsReports.Fastqc(samplePattern="cutadapt", exclude=T)
 ```
-
 
 
 
@@ -68,10 +71,10 @@ The following plot shows the amount of reads trimmed for the selected adapter se
 ChIPhelper.cutadapt(targetsdf=targets, colorByFactor="group", sampleColumnName =c("IP", "INPUT"))
 ```
 
-
-
-
-
+```{r FastQC_paragraph, echo=F,results='asis',error=F,warning=F,message=F,fig.align='center', eval=runCutadapt}
+cat("## FastQC after adapter trimming\n")
+ChIPhelper.ngsReports.Fastqc(samplePattern="cutadapt")
+```
 
 
 ## Read mapping ##
@@ -442,7 +445,7 @@ resultsenrich <- lapply(branches, function(peaksdir) {
 ```{r diffbind, echo=F, results='asis', error=F, warning=F, message=F, fig.align="center", fig.height=4, fig.width=10, eval=runDiffbind}
 cat("\n## Differential binding analysis\n\n")
 cat("The DiffBind package (https://bioconductor.org/packages/release/bioc/html/DiffBind.html) is used for identifying sites that are statistically significantly differentially bound between sample groups based on evidence of binding affinity (measured by differences in read densities).\n 
-After the occupancy data obtained from the peak caller (peak sets) is read in, a merging function finds all overlapping peaks and derives a single set of unique genomic intervals covering all the supplied peaks (a consensus peakset for the experiment). Then the supplied sequence read files (bam files) are used to count how many reads overlap each interval for each unique sample. The proportion of reads for each sample that overlap a peak in the consensus peakset is reported as 'FRiP' (Fraction of Reads in Peaks, see below), and can be used to indicate which samples show more enrichment overall. Optionally, e.g. for narrow peaks obtained from transcription factor binding, the peaks in the consensus peakset may be re-centered and trimmed based on calculating their summits (point of greatest read overlap) in order to provide more standardized peak intervals (not applied here).\n 
+After the occupancy data obtained from the peak caller (peak sets) is read in, a merging function finds all overlapping peaks and derives a single set of unique genomic intervals covering all the supplied peaks (a consensus peakset for the experiment). Then the supplied sequence read files (bam files) are used to count how many reads overlap each interval for each unique sample. The proportion of reads for each sample that overlap a peak in the consensus peakset is reported as 'FRiP' (Fraction of Reads in Peaks, see below), and can be used to indicate which samples show more enrichment overall. Optionally, e.g. for narrow peaks obtained from transcription factor binding, the peaks in the consensus peakset may be re-centered and trimmed based on calculating their summits (point of greatest read overlap) in order to provide more standardized peak intervals.\n 
 The final result of counting is a binding affinity matrix containing a (normalized) read count for each sample at every potential binding site (affinity scores). This matrix is used for further QC plotting and differential binding analysis for the contrasts defined in 'contrasts_diffbind.txt'. For this, DiffBind uses statistical routines developed in an RNA-Seq context (primarily the Bioconductor packages edgeR and DESeq2). It will assign a p-value and FDR to each candidate binding site indicating confidence that they are differentially bound given the respective contrast.\n")
 
 diffplots <- lapply(branches, function(dir) {
