@@ -9,6 +9,10 @@ output:
 
 <div class="contentbox">
 
+## Summary
+
+Your project description
+
 Sample sheet used for analysis:
 
 ```{r Initialise, echo=F,result='hide',error=F,warning=F,message=F}
@@ -71,8 +75,8 @@ The following plot shows the amount of reads trimmed for the selected adapter se
 ChIPhelper.cutadapt(targetsdf=targets, colorByFactor="group", sampleColumnName =c("IP", "INPUT"))
 ```
 
-```{r FastQC_paragraph, echo=F,results='asis',error=F,warning=F,message=F,fig.align='center', eval=runCutadapt}
-cat("## FastQC after adapter trimming\n")
+```{r FastQC_paragraph2, echo=F,results='asis',error=F,warning=F,message=F,fig.align='center', eval=runCutadapt}
+cat("### FastQC after adapter trimming\n")
 ChIPhelper.ngsReports.Fastqc(samplePattern="cutadapt")
 ```
 
@@ -319,7 +323,9 @@ peakscov <- lapply(branches, function(peaksdir) {
 ```
 
 
-```{r peak_annotation_coverage_combined, echo=F, results='asis', error=F, fig.width= 10, warning=F, message=F}
+```{r peak_annotation_coverage_combined, echo=F, results='asis', error=F, fig.width= 10, warning=F, message=F, eval=F}
+# covplot seems not to work anymore with lists or GRangesList in ChIPseeker 1.26.0 
+
 if(length(branches)>1) {
 cat("\n\n#### Overlap of peaks from different pipeline branches\n")  
   
@@ -459,6 +465,17 @@ diffplots <- lapply(branches, function(dir) {
 ## Used tools and versions for this analysis ##
 ```{r ToolVersions_paragraph, echo=F, results='asis', error=F, warning=F, message=F}
 cat(Toolhelper.ToolVersions(), sep="\n")
+cat("\n")
 ```
+
+
+### R session info
+
+```{r R_sessionInfo, echo=F, results='asis', error=F, warning=F, message=F}
+cat("\n")
+sessionInfo()
+```
+
+
 
 </div>
