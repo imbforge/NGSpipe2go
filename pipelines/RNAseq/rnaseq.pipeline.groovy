@@ -37,7 +37,7 @@ load PIPELINE_ROOT + "/modules/RNAseq/shinyreports.header"
 dontrun = { println "didn't run $module" }
 
 Bpipe.run {
-    "%.fastq.gz" * [ FastQC ] +
+    "%.fastq.gz" * [ FastQC, (RUN_FASTQSCREEN ? FastqScreen : dontrun.using(module: "FastqScreen")) ] +
     (RUN_IN_PAIRED_END_MODE ? "%.R*.fastq.gz" : "%.fastq.gz") * [
         STAR + BAMindexer + [
             subread_count + filter2htseq,
