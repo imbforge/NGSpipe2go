@@ -931,72 +931,106 @@ DEhelper.Fastqc.custom <- function(web=TRUE, summarizedPlots=TRUE) {
 
 
 ##
-## DEhelper.fastqscreen: add FastqScreen plot to report
+## DEhelper.fastqscreen: add FastqScreen data to and plot it as a barplot
 ##
 DEhelper.fastqscreen <- function() {
-
-    # logs folder
-    if(!file.exists(SHINYREPS_FASTQSCREEN_OUT)) {
-        return("FastQScreen statistics not available")
+  
+  # logs folder
+  if(!file.exists(SHINYREPS_FASTQSCREEN_OUT)) {
+    return("FastQScreen statistics not available")
+  }
+  
+  # construct the folder name, which is different for web and noweb
+  QC <- SHINYREPS_FASTQSCREEN_OUT
+  
+  
+  # construct the image url from the folder contents (skip current dir .)
+  samples <- list.files(SHINYREPS_FASTQSCREEN_OUT, pattern="_screen.txt$", recursive=T, full.names=T)
+  df <- lapply(samples, function(f) {
+    #we read in the file 
+    screen_data <- read.delim(f, header=T, skip=1)
+    #the last line is our %hit_no_genomes
+    no_hit <- as.numeric(gsub("%Hit_no_genomes: ", "",screen_data[nrow(screen_data),1]))
+    screen_data <- screen_data[-nrow(screen_data),]
+    rownames(screen_data) <- screen_data$Genome
+    screen_data <- screen_data[, !(colnames(screen_data)=="Genome")]
+    #we get the number of unique/multiple hits per one genome and calculate sum (of the percentages)
+    one_genome <- data.frame(perc=rowSums(screen_data[, 
+                                                      grepl("one_genome.1",
+                                                            colnames(screen_data))]))
+    one_genome$genome <- rownames(one_genome)
+    one_genome$category <- "one_genome"
+    multi_genome <- data.frame(perc=rowSums(screen_data[, colnames(screen_data) %in% 
+                                                          c("X.One_hit_multiple_genomes.1",
+                                                            "X.Multiple_hits_multiple_genomes")]))
+    multi_genome$genome <- rownames(multi_genome)
+    multi_genome$category <- "multi_genome"
+    
+    mapping_info <- rbind(one_genome, multi_genome)
+    mapping_info <- rbind(mapping_info, c(perc=no_hit, genome="no_hit", category="no_hit"))
+    mapping_info$category <- paste0(mapping_info$genome, "_", mapping_info$category)
+    mapping_info$category <- gsub("no_hit_no_hit", "no_hit", mapping_info$category)
+    mapping_info$perc <- as.numeric(mapping_info$perc)
+    mapping_info$category <- factor(mapping_info$category,
+                                    levels=mapping_info$category[
+                                      order(match(mapping_info$genome,
+                                                  c(rownames(one_genome),"no_hit")))])
+    return(mapping_info)
+  })
+  
+  #since we now have all the mapping infos
+  #we can plot the rest
+  # sample names
+  samples <- gsub("_screen.txt", "", basename(samples))
+  
+  if(file.exists(SHINYREPS_TARGET)){
+    
+    # get target names
+    targets <- read.delim(SHINYREPS_TARGET)
+    targets$sample_ext <- gsub(paste0(SHINYREPS_RNATYPES_SUFFIX,"$"), "",targets$file)
+    
+    # replace files names with nicer sample names given in targets file
+    # if sample is missing in targets file, use reduced file name
+    samples <- sapply(samples, function(i) { ifelse(i %in% targets$sample_ext,
+                                                    targets[targets$sample_ext == i,"sample"],
+                                                    ifelse(gsub(".R1|.R2","",i) %in% targets$sample_ext,
+                                                           ifelse(gsub(".R1","",i) %in% targets$sample_ext,
+                                                                  paste0(targets[targets$sample_ext == gsub(".R1","",i),"sample"],".R1"),
+                                                                  paste0(targets[targets$sample_ext == gsub(".R2","",i),"sample"],".R2")),
+                                                           gsub(paste0("^",SHINYREPS_PREFIX),"",i)))})
+  } else {
+    if(!is.na(SHINYREPS_PREFIX)) {
+      samples <- gsub(paste0("^",SHINYREPS_PREFIX), "", samples)
     }
-
-    # construct the folder name, which is different for web and noweb
-    QC <- SHINYREPS_FASTQSCREEN_OUT
-
-    SHINYREPS_PLOTS_COLUMN <- tryCatch(as.integer(SHINYREPS_PLOTS_COLUMN),error=function(e){4})
-    if(SHINYREPS_PLOTS_COLUMN < 2) {
-        SHINYREPS_PLOTS_COLUMN <- 3L    # default to 3 columns
-    }
-
-    # construct the image url from the folder contents (skip current dir .)
-    samples <- list.files(SHINYREPS_FASTQSCREEN_OUT, pattern=".png$", recursive=T)
-    df <- sapply(samples, function(f) {
-        paste0("![fastqscreen img](", QC, "/", f, ")")
-    })
-
-    # sample names
-    samples <- sapply(samples, function(x) {
-        gsub("_screen.png","", basename(x)) 
-    })
-
-    if(file.exists(SHINYREPS_TARGET)){
-
-        # get target names
-        targets <- read.delim(SHINYREPS_TARGET)
-        targets$sample_ext <- gsub(paste0(SHINYREPS_RNATYPES_SUFFIX,"$"), "",targets$file)
-
-        # replace files names with nicer sample names given in targets file
-        # if sample is missing in targets file, use reduced file name
-        samples <- sapply(samples, function(i) { ifelse(i %in% targets$sample_ext,
-                                                        targets[targets$sample_ext == i,"sample"],
-                                                        ifelse(gsub(".R1|.R2","",i) %in% targets$sample_ext,
-                                                               ifelse(gsub(".R1","",i) %in% targets$sample_ext,
-                                                                      paste0(targets[targets$sample_ext == gsub(".R1","",i),"sample"],".R1"),
-                                                                      paste0(targets[targets$sample_ext == gsub(".R2","",i),"sample"],".R2")),
-                                                               gsub(paste0("^",SHINYREPS_PREFIX),"",i)))})
-    } else {
-        if(!is.na(SHINYREPS_PREFIX)) {
-            samples <- gsub(paste0("^",SHINYREPS_PREFIX), "", samples)
-        }
-    }
-
-    # sort alphabetically
-    samples <- samples[order(samples)]
-    df <- df[names(samples)]
-
-    # fill up additional columns if number of samples is not a multiple of SHINYREPS_PLOTS_COLUMN
-    while(length(df) %% SHINYREPS_PLOTS_COLUMN != 0) df <- c(df, "")
-    while(length(samples) %% SHINYREPS_PLOTS_COLUMN != 0) samples <- c(samples, "")
-
-    df      <- matrix(df     , ncol=SHINYREPS_PLOTS_COLUMN, byrow=T)
-    samples <- matrix(samples, ncol=SHINYREPS_PLOTS_COLUMN, byrow=T)
-
-    # add a row with the sample names
-    df.names <- matrix(sapply(1:nrow(df), function(i) { c(df[i, ], samples[i, ]) }),
-                       ncol=SHINYREPS_PLOTS_COLUMN, byrow=T)
-    colnames(df.names) <- rep(" ", SHINYREPS_PLOTS_COLUMN)
-
-    kable(as.data.frame(df.names), align="c", output=F, format="markdown")
+  }
+  
+  names(df) <- samples
+  #createing a df out of the lists
+  df <- melt(df, value.name="perc")
+  colnames(df) <- gsub("L1", "sample", colnames(df))
+  # sort alphabetically
+  df$sample <- factor(df$sample, levels=unique(df$sample)[order(unique(df$sample))])
+  #now we create one plot
+  cols <- c()
+  if(length(levels(df$category)) < 14 ){ #if we have less than 14 groups we get the paired values and add grey for the new hit
+    mycols <- c(brewer.pal(length(levels(df$category))-1, "Paired"), "#A9A9A9")
+  }else{
+    
+    mycols <- c(colorRampPalette(brewer.pal(12, "Paired"))(length(levels(df$category))-1), "#A9A9A9")
+  } 
+  p <- ggplot(df, aes(x=sample, y=perc, fill=category, group=category)) +
+    geom_col( position=position_stack(reverse=T)) +
+    scale_fill_manual( values=mycols) +
+    scale_y_continuous(breaks=seq(0,100,by=10)) +
+    theme_bw(base_size=14) +
+    labs(y=" % mapped",
+         title = "Contamination Screening") +
+    theme(axis.text.x = element_text(vjust=0.5, angle=90),
+          legend.position = "top",
+          legend.title = element_blank()) +
+    coord_flip()
+  
+  return(p)      
 }
 
 
