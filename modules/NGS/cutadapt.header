@@ -3,18 +3,21 @@ Cutadapt_vars=[
     logdir             : LOGS + "/Cutadapt",
     paired             : RUN_IN_PAIRED_END_MODE,       // run in se or pe mode    
     adapter_sequence   : ESSENTIAL_ADAPTER_SEQUENCE,   // adapter to be trimmed off the 3' end (paired data: of the first read)
-    polya              : " -a A{100} ",                // trim polyA stretches off the 3' end (paired data: of the first read)
-    minimum_overlap    : ESSENTIAL_MINADAPTEROVERLAP,  // minimal overlap of the read and the adapter
+    minimum_overlap    : ESSENTIAL_MINADAPTEROVERLAP,  // minimal overlap of the read and the adapter for an adapter to be found (default 3)
     minimum_length_keep: ESSENTIAL_MINREADLENGTH,      // minimal length of reads to be kept
-    errorrate          : "0.1",                        // default 0.1
-    extra              : "-a T{100} --times 3" // MARS-Seq: included 5 random bases on 5'sequence --cut 5
+    errorrate          : "0.1",                        // maximum allowed error rate as value between 0 and 1 (default 0.1 =10%)
+    extra              : ""                            // add additional parameter for further adapter trimming here
 ]
 
 // additional adapter settings which may be used in 'extra' (replace "ADAPTER" with the actual adapter sequence) 
-// -a ADAPTER     // Sequence of an adapter ligated to the 3' end (additional to the one given in ESSENTIAL_ADAPTER_SEQUENCE)
-// -g ADAPTER     // Sequence of an adapter ligated to the 5' end
+// -a ADAPTER     // Sequence of an adapter ligated to the 3' end (Read1) (additional to the one given in ESSENTIAL_ADAPTER_SEQUENCE)
+// -g ADAPTER     // Sequence of an adapter ligated to the 5' end (Read1)
 // -A ADAPTER     // 3' adapter to be removed from second read in a pair
 // -G ADAPTER     // 5' adapter to be removed from second read in a pair
+// -a A{100}      // trim polyA stretches off the 3' end (Read1) 
+// --times 3      // Remove up to this many adapters from each read (default 1)
+// --cut 1        // Remove bases from each read (first read only if paired). This is applied before adapter trimming.
+// -U 1           // Remove bases from second read in a pair
 
 load PIPELINE_ROOT + "/modules/NGS/cutadapt.groovy"
 
