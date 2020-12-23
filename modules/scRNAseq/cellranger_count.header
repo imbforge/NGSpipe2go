@@ -1,0 +1,13 @@
+cellranger_count_vars=[
+//    outdir          : MAPPED,
+//    logdir          : LOGS + "/cellranger",
+    transcriptome   : ESSENTIAL_TENX_TRANSCRIPTOME, 
+    expect_cells    : ESSENTIAL_TENX_EXPECTED_CELLS,
+    cores           : 8,
+    localmem        : 64,
+    extra           : " --chemistry=SC3Pv3"               // extra parms to sent to the tool
+]
+
+load PIPELINE_ROOT + "/modules/scRNAseq/cellranger_count.groovy"
+
+

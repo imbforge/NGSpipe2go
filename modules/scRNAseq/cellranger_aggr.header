@@ -1,0 +1,14 @@
+cellranger_aggr_vars=[
+    outdir       : RESULTS + "/",
+//    logdir     : LOGS + "/cellranger",
+    targetscsv   : "targets.txt", 
+    id           : "aggr",
+    normalize    : "mapped",
+    cores        : 8,
+    localmem     : 64,
+    extra        : ""               // extra parms to sent to the tool
+]
+
+load PIPELINE_ROOT + "/modules/scRNAseq/cellranger_aggr.groovy"
+
+
