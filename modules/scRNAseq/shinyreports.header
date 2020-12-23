@@ -6,12 +6,17 @@ shinyReports_vars=[
     log             : LOGS,             //where the logs lie
     qc              : QC,               //where the QC lie
     res             : RESULTS,          //where the results lie
+    cellranger_aggr_id: cellranger_aggr_vars.id, // folder name for results from cellranger aggr
     prefix          : ESSENTIAL_SAMPLE_PREFIX, //standard sample prefix
+    strandedness    : ESSENTIAL_STRANDED,             //strandedness of the library [no|yes|reverse]
     star_log        : STAR_vars.logdir,        //where the STAR logs lie
     star_suffix     : "Log.final.out",         //extension given to the STAR log files
     starparms_suffix: "Log.out",               //extension given to the STAR log files
     fastqc_out      : FastQC_vars.outdir,      //where the Fastqc output lie
     fastqc_log      : LOGS + "/FastQC",        //where the Fastqc logs lie
+    fastqc_summarized   : "FALSE",                        //should FastQC plots be summarized in the report?
+    fastqscreen_out : FastqScreen_vars.outdir,        //where the FastQScreen output lie
+    fastqscreen_log : LOGS + "/FastQScreen",          //where the FastQScreen log lie
     bamindex_log    : LOGS + "/BAMindexer",    //where the Samtools/BamIndexer logs lie
     dupradar_log    : dupRadar_vars.outdir,    //where dupRadar results lie
     rnatypes_log    : LOGS + "/RNAtypes",      //where the RNAtypes logs lie
@@ -31,14 +36,15 @@ shinyReports_vars=[
     qualimap_logs   : qualimap_vars.outdir,          //where the qualimap output files are
     trackhub_done   : PROJECT + "/trackhub.done",    //contains trackhub URL
     tool_versions   : collectToolVersions_vars.outdir + "/tool_versions.txt", //where the tool versions listed
+    run_cutadapt    : RUN_CUTADAPT,    
     cutadapt_logs   : Cutadapt_vars.logdir,          // cutadapt log files
     gtf             : ESSENTIAL_GENESGTF, 
-    seqtype         : (PIPELINE == "scRNAseq_marsseq" ? "MARSseq" : "SmartSeq2"),
+    seqtype         : PIPELINE,
     target          : new File(PIPELINE_ROOT + "/pipelines/scRNAseq/targets.txt").getCanonicalPath(),
     mtgenes         : ESSENTIAL_MTGENES,
     // filtering module output in report
-    patternFastQC   : "R1_", // pattern for sample names to select do display in report
-    patternFastQC2  : "cutadapt", // pattern2 for sample names to select do display in report (e.g. after adapter trimming)
+    samplepattern1  : "R1_", // pattern for sample names to select do display in report
+    samplepattern2  : "cutadapt", // pattern2 for sample names to select do display in report (e.g. after adapter trimming)
     maxno           : "NULL", //the maximum plot number will be restricted accordingly to the first 'maxno' plots. NULL means no restriction
     colorByFactor   : "group", // default variables for grouping and plotting (max 2)
     // Criteria for filtering out low quality cells
