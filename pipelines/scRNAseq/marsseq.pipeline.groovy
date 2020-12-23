@@ -1,5 +1,5 @@
-PIPELINE="scRNAseq_marsseq"
-PIPELINE_VERSION="1.0"
+PIPELINE="MARSseq"
+PIPELINE_VERSION="1.1"
 PIPELINE_ROOT="./NGSpipe2go/"    // may need adjustment for some projects
 
 load PIPELINE_ROOT + "/pipelines/scRNAseq/essential.vars.groovy"
@@ -34,8 +34,8 @@ dontrun = { println "didn't run $module" }
 
 Bpipe.run {
     "%.fastq.gz" * [ FastQC ] + "%.R*.fastq.gz" * [
-        AddUMIBarcodeToFastq + Cutadapt + [
-            FastQC,
+        AddUMIBarcodeToFastq + 
+        (RUN_CUTADAPT ? Cutadapt + FastQC : dontrun.using(module:"Cutadapt")) + [
             STAR + BAMindexer + [
                 subread_count + BAMindexer + umicount,
                 bamCoverage,
