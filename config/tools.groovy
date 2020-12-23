@@ -30,6 +30,7 @@ tools_defaults = [
     bedtools   : [ runenv: "lmod", version: "2.27"         ],
     bowtie     : [ runenv: "lmod", version: "1.2.2"        ],
     bowtie2    : [ runenv: "lmod", version: "2.3.4"        ],
+    cellranger : [ runenv: "lmod", version: "3.1.0"        ],
     bwa        : [ runenv: "lmod", version: "0.7.15"       ],
     cutadapt   : [ runenv: "lmod", version: "1.18"         ],
     deeptools  : [ runenv: "lmod", version: "3.1"          ],
@@ -111,6 +112,11 @@ tools_envs = [
     bwa: [
         "0.7.15": [
             lmod: "module load bwa/0.7.15"
+        ]
+    ],
+    cellranger: [
+        "3.1.0": [
+            lmod: "module load cellranger/3.1.0_debian9"
         ]
     ],
     cutadapt: [

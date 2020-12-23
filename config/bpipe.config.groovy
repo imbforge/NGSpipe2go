@@ -94,6 +94,18 @@ config {
       procs="1" 
       memory="2"
     }
+    cellranger_count { 
+      queue=long_queue 
+      walltime="20:00:00" 
+      procs="8" 
+      memory="64"
+    }
+    cellranger_aggr { 
+      queue=long_queue 
+      walltime="20:00:00" 
+      procs="8" 
+      memory="64"
+    }
     CollectPlots { 
       walltime="01:00:00" 
       procs="1" 
@@ -398,9 +410,10 @@ config {
       memory="2"
     }
     bamCoverage { 
-      walltime="03:00:00" 
+      walltime="20:00:00" 
+      queue=long_queue 
       procs="8" 
-      memory="16"
+      memory="32"
     }
     blacklist_filter { 
       walltime="01:00:00" 
@@ -438,9 +451,9 @@ config {
       memory="1"
     }
     geneBodyCov2 { 
-      walltime="01:00:00" 
+      walltime="03:00:00" 
       procs="4" 
-      memory="16"
+      memory="32"
     }
     inferexperiment { 
       walltime="02:00:00" 
