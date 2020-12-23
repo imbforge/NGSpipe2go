@@ -20,17 +20,18 @@ Enter project description here
 Enter data processing here
 
 
+
 ```{r setup, echo=F, result='hide', error=F, warning=F, message=F}
 
 # source helper functions
 source("sc.shinyrep.helpers.R")
 
 # load required packages
-attach_packages(c("rmarkdown", "knitr", "Cairo", "gplots", "ggplot2", "plotly", "RColorBrewer", "ggrepel", "parallel",
-                  "grid", "gridExtra", "rtracklayer", "scater", "scran", "ggbeeswarm", "dplyr", "tidyr", "forcats",
-                  "scales", "kableExtra", "reshape2", "M3Drop", "vipor", "corrplot", "limma", "pheatmap",
-                  "VennDiagram", "edgeR", "DESeq2", "GeneOverlap", "viridis", "Biobase", "batchelor", "SC3", "pkgmaker",
-                  "igraph", "pheatmap", "cluster", "dendextend", "dynamicTreeCut", "shinydashboard", "umap", "SingleR"))
+not_yet_attached <- attach_packages(c("tidyverse", "AnnotationDbi", "batchelor", "Biobase", "BiocSingular", "bluster", "Cairo", "celldex", 
+          "cluster", "corrplot", "dendextend", "DESeq2", "dynamicTreeCut", "edgeR", "GeneOverlap", "ggbeeswarm", "ggrepel", 
+          "gplots", "grid", "gridExtra", "igraph", "kableExtra", "knitr", "limma", "M3Drop", "Matrix", "parallel", 
+          "pheatmap", "plotly", "pkgmaker", "RColorBrewer", "reshape2", "rmarkdown", "rtracklayer", "Rtsne","SC3", "scales", 
+          "scater", "scDblFinder", "scran", "shinydashboard", "SingleR", "uwot", "VennDiagram", "vipor", "viridis"))
 
 # load global variables
 loadGlobalVars(f="shinyReports.txt")
@@ -58,39 +59,62 @@ theme_set(theme_bw() + theme(axis.text=element_text(colour="grey30",size=12),
 									legend.text=element_text(size=12,colour="grey30"),
 									legend.title=element_text(size=12,colour="grey30")))
 
-# load list of mitochondrial genes
-mito.genes <- tryCatch(read.delim(file.path(SHINYREPS_PROJECT,SHINYREPS_MTGENES))[, 1], error=function(e) NA)
+# load list of mitochondrial genes (not needed, instead we use all genes starting with "MT-")
+# mito.genes <- tryCatch(read.delim(file.path(SHINYREPS_PROJECT,SHINYREPS_MTGENES))[, 1], error=function(e) NA)
 
-## load targets file for all cells. 
-targets <- read.delim(SHINYREPS_TARGET, sep=",")
-group.vars <- colnames(targets)[!colnames(targets) %in% c("sample", "barcode", "row", "col", "cells")] 
-targets[,group.vars] <- lapply(targets[,group.vars], factor)
+# check for selected pipeline modules 
+runCutadapt <- SHINYREPS_RUN_CUTADAPT=="true"
 
-required_cols <- c("sample", "plate", "row", "col", "cells", "group")
-if(SHINYREPS_SEQTYPE=="MARSseq") {required_cols <- c(required_cols, "barcode", "pool")}
-if(!all(required_cols) %in% colnames(targets)) {
-  stop("required target columns missing: ", paste(required_cols[!required_cols %in% colnames(targets)], collapse=", "))
-}
 
-## create targets4plot (needed for pool-based libraries like MARS-Seq with 1 count file for all samples of a pool)
-  if(SHINYREPS_SEQTYPE=="MARSseq") {
-  targets4plot <- targets[!duplicated(targets$pool), !colnames(targets) %in% c("barcode", "row", "col", "cells"), drop=F]
-  targets4plot$sample <- targets4plot$pool # for pool-based designs pool id is used for merging to count files 
-  targets4plot <- sapply(targets4plot, factor)
-  } else {
-    targets4plot <- targets
-  }
+## load or create specific targets file for all cells. 
+switch(SHINYREPS_SEQTYPE,
+    MARSseq={
+    # Columns required: "sample", "barcode", "row", "col", "cells", "group", "pool"   
+      targets <- read.delim(SHINYREPS_TARGET, sep=",")
+      group.vars <- colnames(targets)[!colnames(targets) %in% c("sample", "barcode", "row", "col")] 
+      targets[,group.vars] <- lapply(targets[,group.vars], factor)
+      # create targets_pools from targets
+      targets4plots <- targets_pools
+      colorByFactor <- "cells" # default for pipeline overview plots
+      colorByFactor2 <- "group" # default for downstream plots (up to 2 categories)
+   }, 
+    SmartSeq2={
+    # Columns required: "sample", "barcode", "row", "col", "cells", "group"
+      targets <- read.delim(SHINYREPS_TARGET, sep=",")
+      group.vars <- colnames(targets)[!colnames(targets) %in% c("sample", "barcode", "row", "col")] 
+      targets[,group.vars] <- lapply(targets[,group.vars], factor)
+      targets4plots <- targets
+      colorByFactor <- "cells" # default for pipeline overview plots
+      colorByFactor2 <- "group" # default for downstream plots (up to 2 categories)
+    },
+    tenX={
+      #Columns required: "library_id", "molecule_h5"
+      targets_pools <- read.delim(SHINYREPS_TARGET, sep=",")
+      matrix_dir = file.path(SHINYREPS_RES, SHINYREPS_CELLRANGERAGGR_ID, "outs/filtered_feature_bc_matrix/") 
+      targets = read.delim(paste0(matrix_dir, "barcodes.tsv.gz"), header = FALSE, stringsAsFactors = FALSE)
+      names(targets) = "cell_barcode"
+      targets <- cbind(targets, targets_pools[as.numeric(gsub("^.*-", "", targets$cell_barcode)), 
+                                              !colnames(targets_pools) %in% "molecule_h5"])
+      rownames(targets) <- targets$cell_barcode
+      group.vars <- colnames(targets)[!colnames(targets) %in% c("cell_barcode", "library_id")] 
+      targets4plots <- targets_pools
+      colorByFactor <- "sample" # default for pipeline overview plots
+      colorByFactor2 <- "sample" # default for downstream plots (up to 2 categories)
+   },
+    stop(c("Don't find seqtype:", SHINYREPS_SEQTYPE))   
+)
+
 
 # print targets file
 DT::datatable(targets, caption="targets file (sample sheet) used for analysis")
 
 ```
 
-```{r read_annotation, cache=TRUE}
+```{r read_annotation}
 # load gene annotation provided in essential.vars.groovy
 gtf <- import.gff(SHINYREPS_GTF, format="gtf", feature.type="exon")
-gtf.flat <- unlist(reduce(split(gtf, elementMetadata(gtf)$gene_id)))
-gene.lengths <- tapply(width(gtf.flat), names(gtf.flat), sum)
+#gtf.flat <- unlist(reduce(split(gtf, elementMetadata(gtf)$gene_id)))
+#gene.lengths <- tapply(width(gtf.flat), names(gtf.flat), sum)
 gene.names <- unique(as.data.frame(gtf)[, c("gene_id", "gene_name")])
 
 ```
@@ -124,39 +148,42 @@ The y-axis on the graph shows the Phred quality scores, which are logarithmicall
 # This is e.g. for excluding the trimmed fastq files which contain "cutadapt" in the file name (see below). 
 # If you set argument 'maxno', the maximum sample number will be restricted accordingly to the first 'maxno' plots. 
 #
-samplePattern=SHINYREPS_PATTERNFASTQC
-maxno=SHINYREPS_MAXNO        
+# NOTE: this should be moved as parameters into shinyreports.vars.groovy
+samplePattern="cutadapt" # "_R1\\."
+excludePattern=T  # default FALSE
+maxno=30        # default NULL
 ##### 
 
-cat(DEhelper.Fastqc(web=F, samplePattern=samplePattern, maxno=maxno), sep="\n")
+cat(DEhelper.Fastqc(web=F, samplePattern=samplePattern, exclude=excludePattern, maxno=maxno), sep="\n")
+# These options also apply for the helper functions following below
 ```
 
 
-## Adapter trimming with Cutadapt
-
-The following plot shows the amount of reads trimmed for the selected adapter sequences including polyA/polyT sequences if specified. The column "tooshort" gives the percentage of reads removed due to a length of less than 30 bases after trimming. Additionally to the column "trimmed" which is for all adapters combined, there are columns for every single adapter giving the percentage of reads trimmed for this adapter.
-
-```{r cutadapt, echo=F, results='asis', error=F, warning=F, message=F}
+```{r cutadapt, echo=F, results='asis', error=F, warning=F, message=F, eval=runCutadapt}
 ##### parameters to set:
+# define subset of cutadapt log files if desired (samplePattern=NULL (default) includes all files).
+# NOTE: this should be moved as parameters into shinyreports.vars.groovy
 # define categories of targets.txt to be used for dot color in the plot (one plot per element of colorByFactor will be created). 
 # The function will try to map the data from targets$sample to the cutadapt log file names (for this, the unique part of 
-# targets$sample must be a substring of file name). Otherwise pruned file names will be used by default. 
-# In case of pooled library design the targets object will be modified accordingly. 
-colorByFactor = SHINYREPS_COLORBYFACTOR 
+# targets$sample must be a substring of file name). If you have cutadapt log files from pooled fastq files but cell-wise 
+# information in targets.txt as in MARS-Seq, you may provide another customized targets object in 'targetsdf'. 
+# Otherwise pruned file names will be used by default.
 #####
 
-DEhelper.cutadapt(colorByFactor=colorByFactor, targetsdf=targets4plot)
+cat("## Adapter trimming with Cutadapt\n")
+
+cat("\nThe following plot shows the amount of reads trimmed for the selected adapter sequences including polyA/polyT sequences if specified. The column 'tooshort' gives the percentage of reads removed due to a length of less than 30 bases after trimming. Additionally to the column 'trimmed' which is for all adapters combined, there are columns for every single adapter giving the percentage of reads trimmed for this adapter.\n")
+
+DEhelper.cutadapt(colorByFactor=colorByFactor, targetsdf=targets4plots)
 ```
 
-
-## FastQC after adapter trimming
-
-Quality control plots of fastq files after adapter trimming with cutadapt.
-
-```{r FastQC_paragraph2, echo=F, results='asis', error=F, warning=F, message=F}
+```{r FastQC_paragraph2, echo=F, results='asis', error=F, warning=F, message=F, eval=runCutadapt}
 # Applying FastQC again after adapter trimming (fastq file names contain "cutadapt" as part of their name)
-
-cat(DEhelper.Fastqc(web=F, samplePattern=SHINYREPS_PATTERNFASTQC2), sep="\n") 
+excludePattern=F  # default FALSE
+maxno=30        # default NULL
+##
+cat("### FastQC after adapter trimming\n")
+cat(DEhelper.Fastqc(web=F, samplePattern="cutadapt", exclude=excludePattern, maxno=maxno), sep="\n") 
 ```
 
 
@@ -168,11 +195,12 @@ The plots below show meta-gene profiles of 5' to 3' read coverage and can reveal
 cat(DEhelper.geneBodyCov(web=F), sep="\n")
 ```
 
-## Strand specificity ##
-
-The table below shows the fraction of reads mapped in sense or antisense to gene exons - around 0.5 for non-stranded library prep protocols and close to 0 or 1 for strand-specific RNA-seq protocols.
 
 ```{r echo=F, results='asis', error=F, warning=F, message=F}
+cat("## Strand specificity\n")
+
+cat("\nThe table below shows the fraction of reads mapped in sense or antisense to gene exons - around 0.5 for non-stranded library prep protocols and close to 0 or 1 for strand-specific RNA-seq protocols. The strandedness is calculated as the percentage of unambiguous reads that are on the strand, which is expected by the library preparation protocol.\n\n")
+
 cat(DEhelper.strandspecificity(), sep="\n")
 ```
 
@@ -195,59 +223,91 @@ DEhelper.RNAtypes()
 ```
 
 
-
 # Mapping Statistics
-
-apping to the reference genome & transcriptome is performed with STAR (https://github.com/alexdobin/STAR). The program version, genome assembly and software parameters are described in the table at the end of the report.
-
-The mapping statistics below show the number and percentage of: (i) input raw reads, (ii) uniquely mapped reads, (iii) multi-mapped reads aligning equally well to multiple (up to 20) positions in the genome, (iv) reads that align to too many (>20) genome loci are discarded, (v) unmapped reads. For the multimapped reads, one random alignment among the best mapping positions is retained. 
-
-While both unique and multi-mapped reads are included in the generation of browser coverage tracks, only uniquely mapped reads are typically taken into account in the differential expression analysis in order to avoid potential false-positives. However, this standard analysis approach may also exclude some recently duplicated genes or gene-pseudogene pairs, resulting in false-negatives. To investigate the potential expression changes in such genes, a side branch of DESeq2 may be used for using all mapped reads.
-
-The browser tracks are generated using bamCoverage tool in [deepTools](https://deeptools.readthedocs.io/en/develop/) and they are normalized using the Counts Per Million mapped reads (CPM) method. The CPM formula is: CPM  = number of reads per bin (20 bp) / number of mapped reads (in millions).
 
 ```{r mapping_stats, fig.height=10, fig.width=12, results='asis', message=FALSE, warning=FALSE}
 ##### parameters to set:
+# define subset of Star log files if desired. samplePattern=NULL (default) includes all files.
 # define categories of targets.txt to be used for dot color in the summary plot (one plot per element of colorByFactor will be created). 
 # The function will try to map the data from targets$sample to the cutadapt log file names (for this, the unique part of 
-# targets$sample must be a substring of file name). Otherwise pruned file names will be used by default. 
-# In case of pooled library design the targets object will be modified accordingly.  
-colorByFactor = SHINYREPS_COLORBYFACTOR 
+# targets$sample must be a substring of file name). If you have cutadapt log files from pooled fastq files but cell-wise 
+# information in targets.txt as in MARS-Seq, you may provide another customized targets object in 'targetsdf'. 
+# Otherwise pruned file names will be used by default.
 #####
+if (SHINYREPS_SEQTYPE=="tenX") {
+  cat("\nMapping Statistics can be found in the cellranger web summary.\n")
+} else {
+  
+  cat("\nMapping to the reference genome & transcriptome is performed with STAR (https://github.com/alexdobin/STAR). The program version, genome assembly and software parameters are described in the table at the end of the report.
 
-DEhelper.STAR(targetsdf=targets4plot, colorByFactor=colorByFactor)
+The mapping statistics below show the number and percentage of: (i) input raw reads, (ii) uniquely mapped reads, (iii) multi-mapped reads aligning equally well to multiple (up to 20) positions in the genome, (iv) reads that align to too many (>20) genome loci are discarded, (v) unmapped reads. For the multimapped reads, one random alignment among the best mapping positions is retained.\n")
+  
+  DEhelper.STAR(targetsdf=targets4plots, colorByFactor=colorByFactor)
+}
 ```
 
 
 
 ```{r umicount, echo=F, results='asis', error=F, warning=F, message=F, eval= (SHINYREPS_SEQTYPE=="MARSseq")}
 ##### parameters to set:
+# define subset of umicount log files if desired (samplePattern=NULL (default) includes all files).
 # define categories of targets.txt to be used for dot color in the plot (one plot per element of colorByFactor will be created). 
 # The function will try to map the data from targets$sample to the umicount log file names (for this, the unique part of 
-# targets$sample must be a substring of the file name). Otherwise pruned file names will be used by default. 
-# In case of pooled library design the targets object will be modified accordingly. 
-colorByFactor = SHINYREPS_COLORBYFACTOR 
+# targets$sample must be a substring of the file name). If you have umi-tools log files from pooled fastq files but cell-wise 
+# information in targets.txt as in MARS-Seq, you may provide another customized targets object in 'targetsdf'. 
+# Otherwise pruned file names will be used by default.
 #####
 
 cat("## Read de-duplication and feature counting with UMI-tools
 
 UMI-tools counts the mapped reads per feature obtained after de-duplication. UMI-tools uses the uniquely mapped reads from STAR as well as as the multimapped reads (but not those which are mapped to too many loci) as input reads.")
 
-DEhelper.umicount(colorByFactor=colorByFactor, targetsdf=targets4plot)
+DEhelper.umicount(colorByFactor=colorByFactor, targetsdf=targets4plots)
+```
+
+
+## Competetive mapping to rRNAs and other contaminats:
+
+A competitive mapping to the reference genome and known rRNAs (H.sapiens, M.musculus, C.elegans, D.melanogaster, D.rerio, X.tropicalis) as well as frequently occuring Mycoplasma species (M. arginini, M. fermentans, M. hominis, M. hyorhinis,M. orale, and Acholeplasma laidlawii), E.coli and Bos taurus was performed with FastQScreen (http://www.bioinformatics.babraham.ac.uk/projects/fastq_screen/).
+
+In the following plot the "one_genome" label refers to the amount of reads mapping to that genome only regardlessly if they are multi mapping or uniquely mapping reads.
+The "multiple_genome" label refers to the amount of read mapping to this genome but also to other genomes in the screening regardless if they are multi mapping on the genome or uniquely mapping to that genome.
+Since the reads mapping to multiple genomes are referred to for each individual genome the total percentages of reads mapping can be larger than a 100%. 
+
+```{r fastqscreen_paragraph, echo=F, results='asis', fig.width=10, error=F, warning=F, message=F}
+plot(DEhelper.fastqscreen())
+     
 ```
 
 
 
+## UCSC Genome Browser tracks ##
+
+The browser tracks are generated using bamCoverage tool in [deepTools](https://deeptools.readthedocs.io/en/develop/) and they are normalized using the Counts Per Million mapped reads (CPM) method. Both unique and multi-mapped reads are included in the generation of browser coverage tracks.
+
+To view the tracks in the UCSC Genome Browser, navigate to the [UCSC Genome Browser Track Hub page](https://genome-euro.ucsc.edu/cgi-bin/hgHubConnect) and enter the following line into the `URL` field:
+
+```{r Trackhub, echo=F, results='asis', error=F, warning=F, message=F}
+cat(DEhelper.Trackhub(), sep="\n")
+```
+
+
+## Library complexity assessment ##
+
+Measuring the fraction of duplicated reads is commonly used to control for excessive PCR over-amplification during library preparation and/or for suboptimal amount of input material. However, in RNA-seq duplicated reads may also arise naturally due to the highly expressed (e.g. housekeeping) genes, which makes the overall read duplication rate useless. The IMB-developed tool dupRadar (http://bioconductor.org/packages/release/bioc/html/dupRadar.html) gives an informative insight into the duplication problem by graphically relating the gene expression levels and the observed duplication rates. Thus, problematic samples can be easily identified by visual inspection.
+
+```{r Dupradar_paragraph, echo=F, results='asis', error=F, warning=F, message=F}
+cat(DEhelper.dupRadar(web=F), sep="\n")
+```
 
 
 
 
 # Low-level analysis of single-cell RNAseq data
 
-The analysis workflow is based on the Bioconductor package *scater* and the Bioconductor workshop published in F1000 Research: Lun, A. T. L., McCarthy, D. J., & Marioni, J. C. (2016). *A step-by-step workflow for low-level analysis of single-cell RNA-seq data.* F1000Research, 5(0), 2122. http://doi.org/10.12688/f1000research.9501.1
+The analysis workflow is based on the Bioconductor packages *scater* and *scran* as well as the Bioconductor workflows by Lun ATL, McCarthy DJ, & Marioni JC *A step-by-step workflow for low-level analysis of single-cell RNA-seq data.* F1000Res. 2016 Aug 31 [revised 2016 Oct 31];5:2122 and Amezquita RA, Lun ATL et al. *Orchestrating Single-Cell Analysis with Bioconductor* Nat Methods. 2020 Feb;17(2):137-145.
 
-
-```{r loading_counts, echo=F, message=FALSE, error=TRUE, warning=TRUE, cache=F}
+```{r loading_counts, echo=F, message=FALSE, error=TRUE, warning=TRUE}
 
 ## load counts for MARSseq design (pooled count files) 
 switch(SHINYREPS_SEQTYPE,
@@ -266,7 +326,7 @@ switch(SHINYREPS_SEQTYPE,
             if(sum(grepl(i, names(counts), ignore.case = T)) !=1) {stop("\ncannot unambiguously assign pool ID given in targets.txt to count filename")}
             current_pool <- targets[targets$pool ==i, ]
             countname <- grep(i, names(counts), ignore.case = T, value=T )
-            colnames(counts[[countname]]) <- current_pool[match(colnames(counts[[countname]]), current_pool$barcode), "sample"] # replace barcode with sample name
+            colnames(counts[[countname]]) <- current_pool[match(colnames(counts[[countname]]), current_pool$barcode), "sample"]
         }
         
         # merge pools into one dataset with union of genelists
@@ -308,7 +368,17 @@ switch(SHINYREPS_SEQTYPE,
        counts <- counts[,unlist(logindex_targetsfile)] # cols in same order as rows in targets   
        colnames(counts) <- targets$sample
     },
-    stop(c("Don't find seqtype:", SHINYREPS_SEQTYPE))  
+    tenX={
+      # matrix_dir already defined above 
+      barcode.path <- paste0(matrix_dir, "barcodes.tsv.gz")
+      features.path <- paste0(matrix_dir, "features.tsv.gz")
+      matrix.path <- paste0(matrix_dir, "matrix.mtx.gz")
+      counts <- readMM(file = matrix.path)
+      colnames(counts) = targets$cell_barcode
+      feature.names = read.delim(features.path, header = FALSE, stringsAsFactors = FALSE)
+      rownames(counts) = feature.names$V1
+    },
+    stop(c("Don't find seqtype:", SHINYREPS_SEQTYPE))   
 )
 
 
@@ -329,8 +399,8 @@ dup.name <- new.names %in% new.names[duplicated(new.names)]
 new.names[dup.name] <- paste0(new.names, "_", rowData(sce)$ENSEMBL)[dup.name]
 rowData(sce)$SYMBOL <- new.names
 
-# add gene length information
-rowData(sce)$genelength <- gene.lengths[ match(rownames(sce),names(gene.lengths)) ]
+# add gene length information (not needed)
+# rowData(sce)$genelength <- gene.lengths[ match(rownames(sce),names(gene.lengths)) ]
 
 ```
 
@@ -346,32 +416,32 @@ To assess if the sequenced libraries are usable and the RNA captured represents 
 To remove outliers, these criteria may be filtered either for relative thresholds using the median absolute deviation (MAD) or by setting absolute threshold after inspecting the quality control plots.
 
 ```{r quality_plots_of_cells}
-
 ##### parameters to set:
 # define set of categories used to annotate cells in the plots (e.g.: annoFactors <- c("group", "pool"))
-# By default, all columns given in 'targets.txt' ar used except for "sample", "barcode", "row" and "col".
-annoFactors <- SHINYREPS_COLORBYFACTOR 
+annoFactors <- colorByFactor2
 #####
 
-annoFactors <- unique(c(annoFactors, "cells")) # cells will be included anyway
-
 # define mitochondrial genes as control features
-is.mito  <- row.names(sce) %in% mito.genes
+# is.mito  <- row.names(sce) %in% mito.genes # use predefined list with mitochondrial genes
+is.mito <- grepl("^MT-", rowData(sce)$SYMBOL, ignore.case = TRUE) # use all genes starting with "MT-"
+
 # calculate QC metrics
-sce <- calculateQCMetrics(sce, feature_controls=list(Mt=is.mito)) # Mt=is.mito, Rb=is.ribosomal
+sce <- addPerCellQC(sce, percent_top =2, subsets=list(Mito=is.mito))  
+
+
 qc.frame <- colData(sce)
-qc.frame$Lib.size <- sce$total_counts/1e3 # library size in thousands
+qc.frame$Lib.size <- qc.frame$sum/1e3 # library size in thousands
 qc.frame <- as.data.frame(qc.frame)
 
 # generate plots for Lib.size, total_features, pct_amount_Mt for each selected category 
 # histograms
-qc.plots <- lapply(c("Lib.size", "total_features_by_counts", "pct_counts_Mt"), function(to.plot){ 
+qc.plots <- lapply(c("Lib.size", "detected", "subsets_Mito_percent"), function(to.plot){ 
       if(to.plot=="Lib.size"){
         xlabel="Lib. sizes in thousands"
          }else{
            xlabel=to.plot}
   
-      if(to.plot=="pct_counts_Mt"){
+      if(to.plot=="subsets_Mito_percent"){
         madOrient="high"
       }else{
         madOrient="low"}
@@ -393,7 +463,7 @@ qc.plots <- lapply(c("Lib.size", "total_features_by_counts", "pct_counts_Mt"), f
 })
 
 # violinplots
-qc.plots.violin <- lapply(c("Lib.size", "total_features_by_counts", "pct_counts_Mt"), function(to.plot){ 
+qc.plots.violin <- lapply(c("Lib.size", "detected", "subsets_Mito_percent"), function(to.plot){ 
   if(to.plot=="Lib.size"){
     ylabel <- "Lib. sizes in thousands"
   }else{
@@ -421,32 +491,30 @@ qc.plots.violin <- lapply(c("Lib.size", "total_features_by_counts", "pct_counts_
 **Top 2% biggest libraries (based on mapped reads on features)**
 
 ```{r top_1perc_cells}
-
 # Output the cells with a library size in the top 2%
-highest.lib.size <- colData(sce)[sce$total_counts > quantile(sce$total_counts, 0.98),
-              c("total_counts",
-               "total_counts_endogenous",
-               "total_counts_Mt",
+highest.lib.size <- colData(sce)[sce$sum > quantile(sce$sum, 0.98),
+              c("sum",
+               "detected", 
+               "subsets_Mito_percent",
                group.vars)]
-highest.lib.size <- highest.lib.size[order(highest.lib.size$total_counts, decreasing = T),]
-kable(highest.lib.size,
-      format="markdown",
-      caption="2% cells with the highest library size")
+highest.lib.size <- highest.lib.size[order(highest.lib.size$sum, decreasing = T),]
 
+DT::datatable(as.data.frame(highest.lib.size), caption="2% cells with the highest library size")
 ```
 
-## Count distribution per plate position
 
-The plots below visualise the count data distribution (not log-transformed) via plate position for the categories 'total_features_by_counts_endogenous', 'total_counts' and 'pct_counts_Mt' indicated by spot size. 0-cell and 10-cell controls are indicated in blue and orange, respectively. Symbol shape is defined by custom grouping. For each category the plates are plotted row-wise with plate number in increasing order.
-
-```{r total_counts_per_plate_position, fig.width=8}
+```{r total_counts_per_plate_position, fig.width=8, eval= (SHINYREPS_SEQTYPE %in% c("MARSseq", "SmartSeq2"))}
 ##### parameters to set:
 # define one category to be used for symbol shape in the plots.
-annoFactors <- SHINYREPS_COLORBYFACTOR[1]
+annoFactors <- colorByFactor2
 #####
 
+cat("## Count distribution per plate position
+
+The plots below visualize the count data distribution (not log-transformed) via plate position for the categories 'total_features_by_counts_endogenous', 'total_counts' and 'pct_counts_Mt' indicated by spot size. 0-cell and 10-cell controls are indicated in blue and orange, respectively. Symbol shape is defined by custom grouping. For each category the plates are plotted row-wise with plate number in increasing order.\n")
+
 sce$plate_position <- paste0(sce$row, sce$col) # column "plate_position" needed for plotPlatePosition
-for (size in c("total_counts", "total_features_by_counts_endogenous", "pct_counts_Mt")) {
+for (size in c("Lib.size", "detected", "subsets_Mito_percent")) {
   cat(paste("Plotting", size, "as spot size\n"))
   plates <- list()
   for (p in as.character(sort(unique(sce$plate)))) {
@@ -465,24 +533,20 @@ for (size in c("total_counts", "total_features_by_counts_endogenous", "pct_count
 ```{r corr_plots}
 ##### parameters to set:
 # define one category to be used for symbol color in the plots.
-annoFactors <- SHINYREPS_COLORBYFACTOR[1]
+annoFactors <- colorByFactor2
 #####
-
-qc.data <- colData(sce)
-qc.data$Lib.Size.million <- qc.data$total_counts/1e6
-qc.data <- as.data.frame(qc.data)
 
 if(!is.null(annoFactors)) {annoFactors <- rlang::ensym(annoFactors)} 
 
-lib.size.scatter <- ggplot(qc.data, aes(x=total_features_by_counts, 
-                                        y=Lib.Size.million,
+lib.size.scatter <- ggplot(qc.frame, aes(x=detected, 
+                                        y=Lib.size,
                                         color=!!annoFactors)) +
                              geom_point() +
                              scale_color_hue(l=40, c=60) +
-                             ylab("Library size (millions)") +
+                             ylab("Lib. sizes in thousands") +
                              xlab("Number of expressed genes")
 
-mit.perc.scatter <- lib.size.scatter + aes(y=pct_counts_Mt) + ylab("% mitochondrial reads")
+mit.perc.scatter <- lib.size.scatter + aes(y=subsets_Mito_percent) + ylab("% mitochondrial reads")
 grid.arrange(lib.size.scatter,  mit.perc.scatter)
 
 ```
@@ -497,34 +561,34 @@ Summary of cells that don't pass the QC:
 ##### parameter to set:
 # define filtering criteria based on previous QC plots
 type_of_threshold = SHINYREPS_TYPE_OF_THRESHOLD # either "absolute" or "relative" (i.e. using MAD)
-threshold_total_counts_min = as.numeric(SHINYREPS_THRESHOLD_TOTAL_COUNTS_MIN)
+threshold_total_counts_min = 10000
 threshold_total_counts_max = as.numeric(SHINYREPS_THRESHOLD_TOTAL_COUNTS_MAX)
-threshold_total_features_by_counts_endogenous = as.numeric(SHINYREPS_THRESHOLD_TOTAL_FEATURES_BY_COUNTS_ENDOGENOUS)
-threshold_pct_counts_Mt = as.numeric(SHINYREPS_THRESHOLD_PCT_COUNTS_MT)
+threshold_total_detected = 1000
+threshold_pct_counts_Mt = 20
 NMADS = as.numeric(SHINYREPS_NMADS) # number of absolute deviations from median. Only relevant if type_of_threshold = "relative".
 # define QC metrics to be used for PCA
-qcmetrics = c("pct_counts_in_top_100_features", "total_features_by_counts", "pct_counts_feature_control", "total_features_by_counts_feature_control", "log10_total_counts_endogenous", "log10_total_counts_feature_control")
+qcmetrics = c("sum", "detected", "percent.top_2", "subsets_Mito_percent")
 # define one category to be used for symbol shape in the plot.
-annoFactors <- SHINYREPS_COLORBYFACTOR[1]
+annoFactors <- colorByFactor2
 #####
 
-if(!exists("sce.beforefiltMincount")) {sce.beforefiltMincount <- sce}
+# if(!exists("sce.beforefiltMincount")) {sce.beforefiltMincount <- sce}
 
 if(type_of_threshold=="relative") {
   # Before we apply QC filters we remove all the cells which hardly have any counts to avoid bias for relative thresholds
   min_readcount <- 100
-  count.drop <- sce$total_counts < min_readcount
+  count.drop <- sce$sum < min_readcount
   cat("We drop ", sum(count.drop), " cells, because they have less than", min_readcount, "reads counted.\n") 
   sce <- sce[,!count.drop]
 }
 
 # apply thresholds
-qc.drop <-  data.frame(row.names = colnames(sce)) # initialise
+qc.drop <-  data.frame(row.names = colnames(sce)) # initialize
 
 if(SHINYREPS_TYPE_OF_THRESHOLD=="absolute") {
-  qc.drop$libsize <- (sce$total_counts < threshold_total_counts_min) | (sce$total_counts > min(threshold_total_counts_max, max(sce$total_counts), na.rm=T))
-  qc.drop$feature_count <- sce$total_features_by_counts < threshold_total_features_by_counts_endogenous
-  qc.drop$mito <- sce$pct_counts_Mt > threshold_pct_counts_Mt
+  qc.drop$libsize <- (sce$sum < threshold_total_counts_min) | (sce$sum > min(threshold_total_counts_max, max(sce$sum), na.rm=T))
+  qc.drop$detected <- sce$detected < threshold_total_detected
+  qc.drop$mito <- sce$subsets_Mito_percent > threshold_pct_counts_Mt
   qc.drop$pass <- !apply(qc.drop, 1, any)
   qc.drop <- qc.drop[match(colnames(sce), rownames(qc.drop)), ]  # sort to match the 'sce' cell order
 
@@ -532,17 +596,17 @@ if(SHINYREPS_TYPE_OF_THRESHOLD=="absolute") {
         } else {threshold_total_counts_max <- NULL}   # prepare string for output
   
   qcfailed <- data.frame(criterion=c(paste("total counts <", threshold_total_counts_min, threshold_total_counts_max),
-                                     paste("total features <", threshold_total_features_by_counts_endogenous),
+                                     paste("total features <", threshold_total_detected),
                                      paste("% mitochondrial counts >", threshold_pct_counts_Mt),
                                      paste("remaining")), 
-                         cell_count=c(sum(qc.drop$libsize), sum(qc.drop$feature_count), sum(qc.drop$mito), sum(qc.drop$pass)))
+                         cell_count=c(sum(qc.drop$libsize), sum(qc.drop$detected), sum(qc.drop$mito), sum(qc.drop$pass)))
   kable(qcfailed, format="markdown", caption="QC filtering") %>% kable_styling()
   
   } else {
     if(SHINYREPS_TYPE_OF_THRESHOLD=="relative") {
-     qc.drop$libsize <- isOutlier(sce$total_counts, nmads=NMADS, type="lower", log=TRUE)
-     qc.drop$feature_count <- isOutlier(sce$total_features_by_counts, nmads=NMADS, type="lower", log=TRUE) 
-     qc.drop$mito <- isOutlier(sce$pct_counts_Mt, nmads=NMADS, type="higher")
+     qc.drop$libsize <- isOutlier(sce$sum, nmads=NMADS, type="lower", log=TRUE)
+     qc.drop$detected <- isOutlier(sce$detected, nmads=NMADS, type="lower", log=TRUE) 
+     qc.drop$mito <- isOutlier(sce$subsets_Mito_percent, nmads=NMADS, type="higher")
      qc.drop$pass <- !apply(qc.drop, 1, any)
      qc.drop <- qc.drop[match(colnames(sce), rownames(qc.drop)), ]  # sort to match the 'sce' cell order
      
@@ -550,7 +614,7 @@ if(SHINYREPS_TYPE_OF_THRESHOLD=="absolute") {
                                      paste("total features <", NMADS, "MAD"),
                                      paste("% mitochondrial counts >", NMADS, "MAD"),
                                      paste("remaining")), 
-                         cell_count=c(sum(qc.drop$libsize), sum(qc.drop$feature_count), sum(qc.drop$mito), sum(qc.drop$pass)))
+                         cell_count=c(sum(qc.drop$libsize), sum(qc.drop$detected), sum(qc.drop$mito), sum(qc.drop$pass)))
      kable(qcfailed, format="markdown", caption="QC filtering") %>% kable_styling()
 
   } else {stop("\ntype_of_threshold must be either 'absolute' or 'relative'")}
@@ -569,16 +633,14 @@ Removed samples/cells:
 ```{r remove_low_qual_cells_and_control_wells}
 ##### parameters to set:
 # define up to 2 categories to be used for output tables.
-SHINYREPS_COLORBYFACTOR <- SHINYREPS_COLORBYFACTOR[SHINYREPS_COLORBYFACTOR != "cells"] # column "cells" not needed anymore
-annoFactors <- SHINYREPS_COLORBYFACTOR
+annoFactors <- colorByFactor2
 #####
 
-
 # output overview of remaining cells and table of removed cells
-j <- c("total_counts", "total_features_by_counts", "pct_counts_Mt", annoFactors) 
+j <- c("sum", "detected", "subsets_Mito_percent", annoFactors) 
 x <- cbind(qc.drop, colData(sce)[match(rownames(qc.drop), rownames(colData(sce))), j])
 # knitr::kable(as.data.frame(apply(qc.drop, 2, sum)), col.names="cells", caption="")
-x$pct_counts_Mt   <- round(x$pct_counts_Mt  , digits=2) 
+x$subsets_Mito_percent   <- round(x$subsets_Mito_percent, digits=2) 
 x <- as.data.frame(x)
 DT::datatable(x[!x$pass, ])
 
@@ -592,12 +654,13 @@ colnames_table <- if(length(annoFactors)==1) {c(annoFactors, "cell count")} else
 knitr::kable(table(colData(sce)[, annoFactors, drop=F]), col.names=colnames_table, caption="Amount of cells remaining after QC filtering") %>% kable_styling()
 
 # filter out control wells with 0 or 10 cells
+if("cells" %in% colnames(colData(sce))) {
 sce <- sce[, colData(sce)$cells == "1c"]
 sce$wells <- gsub("_S[0-9]+$", "", gsub("_1c", "", colnames(sce)))
 
 # overview of remaining cells after removing control wells 
 knitr::kable(table(colData(sce)[, annoFactors, drop=F]), col.names=colnames_table, caption="Amount of cells remaining after filtering for control wells (0c/10c)") %>% kable_styling() 
-
+}
 ```
 
 
@@ -606,7 +669,7 @@ knitr::kable(table(colData(sce)[, annoFactors, drop=F]), col.names=colnames_tabl
 ```{r pca2, fig.height=8, fig.width=10}
 ##### parameters to set:
 # define up to 2 categories to be indicated in the PCA plot by color and shape.
-annoFactors <- SHINYREPS_COLORBYFACTOR
+annoFactors <- colorByFactor2
 #####
 
 try(plotPCAfromQCmetrics(sce, qcmetrics, anno=annoFactors))
@@ -634,9 +697,9 @@ Average counts per gene should correlate with number of cells expressing it (see
 Low abundance genes are likely to be dominated by drop-out events (Poisson noise in different cells). They do not contain enough information for statistical inference, and may compromise accuracy of continuous approximations when fitting the data (edgeR biological coefficient of variation (BCV) estimation). Here, we filter out genes with no expression in 95% of the cells.
 
 ```{r remove_low_abundance_genes}
-avg.counts <- calcAverage(sce, use_size_factors=F) 
+rowData(sce)$ave.count <- calculateAverage(sce) 
 expressed.cells <- nexprs(sce, byrow=TRUE)   # number of cells expressing the gene
-smoothScatter(log10(avg.counts), expressed.cells,
+smoothScatter(log10(rowData(sce)$ave.count), expressed.cells,
               xlab=expression("Log10 average count"), ylab= "Number of expressing cells")
 # is.ercc <- isSpike(sce, type="ERCC")
 # points(log10(ave.counts[is.ercc]), numcells[is.ercc], col="red", pch=16, cex=0.5)
@@ -646,9 +709,9 @@ genes2keep <- expressed.cells > ceiling(.05 * ncol(sce))
 cat(sum(genes2keep), "of", length(genes2keep), "genes remain after filtering for low abundance genes.\n")
 sce <- sce[genes2keep, ]
 
-# remove feature controls
-cat("Remove", sum(rowData(sce)$is_feature_control), "feature controls from dataset.\n")
-sce <- sce[!rowData(sce)$is_feature_control,]
+# # remove feature controls
+# cat("Remove", sum(rowData(sce)$is_feature_control), "feature controls from dataset.\n")
+# sce <- sce[!rowData(sce)$is_feature_control,]
 
 ```
 
@@ -664,13 +727,12 @@ Size factors can be calculated with DESeq2 or edgeR, but these methods do not wo
 ```{r size_factors_and_normalize, warning=FALSE, message=FALSE}
 ##### parameters to set:
 # define up to 2 categories to be indicated in the plot by color and shape.
-annoFactors <- SHINYREPS_COLORBYFACTOR
+annoFactors <- colorByFactor2
 #####
-
-high.ave <- rowData(sce)$ave.count >= 0.1
 
 cat("\nSummary size factors")
 sce <- computeSumFactors(sce, sizes=seq(21, 101, 5))
+#lib.sf <- librarySizeFactors(sce)
 summary(sizeFactors(sce))
 
 # cat("\nSummary size factors for ERCC spike-ins\n")
@@ -688,7 +750,7 @@ if(length(annoFactors)>=2) {
 }
 
 to.plot <- data.frame(sizeFactors=sizeFactors(sce),
-                 total_counts=sce$total_counts/1e6,
+                 total_counts=sce$sum/1e6,
                  colData(sce)[,annoFactors, drop=F])
 ggplot(to.plot, aes(x=sizeFactors, 
                     y=total_counts,
@@ -696,37 +758,39 @@ ggplot(to.plot, aes(x=sizeFactors,
   geom_point()+ ylab("Library size (millions)") + scale_color_hue(l=40, c=40)
 
 # normalise
-sce <- scater::normalize(sce) # adds normalized logcounts matrix
+sce <- scater::logNormCounts(sce) # adds normalized logcounts matrix
 ```
 
 
-### Normalized log2-expression of top50 genes with highest average expression
 
-```{r plot_violin_top50, fig.width=12, fig.height=10}
+```{r plot_violin_top50, fig.width=12, fig.height=10, eval=T}
 ##### parameters to set:
 # define up to 2 categories to be indicated in the plot by color and shape.
-annoFactors <- SHINYREPS_COLORBYFACTOR
+annoFactors <- colorByFactor2
 #####
+
+cat("\n")
+cat("### Normalized log2-expression of top50 genes with highest average expression\n")
 
 # use tmp.sce to change rownames to SYMBOL for the plot
 tmp.sce <- sce
 rownames(tmp.sce) <- rowData(sce)$SYMBOL
 
 # re-calculate averages, using newly determined size factors
-ave.counts.new <- calcAverage(tmp.sce)
+ave.counts.new <- calculateAverage(tmp.sce)
 rowData(tmp.sce)$ave.count.new <- ave.counts.new
 
 top.sce.aver.size <- head(rowData(tmp.sce)[order(rowData(tmp.sce)$ave.count.new,decreasing=TRUE),],50)
 
-dotcol <- annoFactors[1]
+dotcolour <- annoFactors[1]
 if(length(annoFactors)>=2) { 
-    dotshape <- annoFactors[2]
+  dotshape <- annoFactors[2]
 } else {
-    dotshape <- NULL
+  dotshape <- NULL
 }
 
-plotExpression(tmp.sce, top.sce.aver.size$SYMBOL[1:25], colour_by=dotcol, shape_by = dotshape) + ggtitle("highest avg. expression 1:25")
-plotExpression(tmp.sce, top.sce.aver.size$SYMBOL[26:50], colour_by=dotcol, shape_by = dotshape) + ggtitle("highest avg. expression 26:50")
+scater::plotExpression(tmp.sce, features=top.sce.aver.size$SYMBOL[1:25], colour_by=dotcolour, shape_by = dotshape) + ggtitle("highest avg. expression 1:25")
+scater::plotExpression(tmp.sce, features=top.sce.aver.size$SYMBOL[26:50], colour_by=dotcolour, shape_by = dotshape) + ggtitle("highest avg. expression 26:50")
 ```
 
 
@@ -741,15 +805,15 @@ if the G2/M score is above 0.5 and greater than the G1 score; and in S phase if 
 ##### parameters to set:
 # define organism (either "human" or "mouse")
 org <- SHINYREPS_ORG
-# define one category to be used for symbol colour in the plot.
-annoFactors <- SHINYREPS_COLORBYFACTOR[1]
+# define one category to be used for symbol color in the plot.
+annoFactors <- colorByFactor2
 #####
 
 if(!exists("sce.no.ccp")) {sce.no.ccp <- sce}
 set.seed(100)
 
 # load gene.pairs: "mouse_cycle_markers.rds" or "human_cycle_markers.rds"
-gene.pairs <- readRDS(system.file("exdata", paste0(org, "_cycle_markers.rds"), package="scran")) # mouse_cycle_markers.rds
+gene.pairs <- readRDS(system.file("exdata", paste0(org, "_cycle_markers.rds"), package="scran")) # 
 
 # determine cell cycle phase:
 # in "human_cycle_markers.rds" ensembl names are without the ".number" at the very end, but 
@@ -790,22 +854,23 @@ We check whether there are technical factors that contribute substantially to th
 ```{r explanatorx_variables, echo=F, error=F, warning=F, message=F}
 ##### parameters to set:
 # define potential explanatory variables to be tested for their effect
-explanatoryVariables <- group.vars
-var2color <- group.vars
+explanatoryVariables <- c(colorByFactor2, "phases")
+var2color <- c(colorByFactor2, "phases")
 #####
 
 plotExplanatoryVariables(sce, variables=explanatoryVariables, exprs_values = "logcounts") +    
     ggtitle("Explanatory variables")
 
 cat("\nPCA plots of top 500 genes colored by potential confounder variables\n\n")  
+  sce <-scater::runPCA(sce, name = "PCA")
 lapply(var2color, function(x) {
-  set.seed(100) # plotPCASCE # plotTSNE # plotUMAP
-  scater::plotPCASCE(sce, rerun=T, ncomponents = 4, run_args= list(exprs_values="logcounts"), point_size=1, colour_by=x) + 
+  scater::plotPCASCE(sce, ncomponents = 4, point_size=1, colour_by=x) + 
     ggtitle(paste("PCA plots colored by", x))
   })
 
 ```
 
+## Adjust for confounder variables
 
 
 ```{r limma_blocking_confounder, eval=T}
@@ -815,14 +880,15 @@ var2adjust <- NULL
 adjust_ccp <- F # adjust for cell cycle phase 
 ######
 
-if(adjust_ccp || !is.null(var2adjust)) {
+if(adjust_ccp | !is.null(var2adjust)) {
   
   cat("## Adjust for confounder variables")
 
-  if(adjust_ccp) {
-      cat("We can account for possible cell cycle effect on downstream analysis, using the G1 and G2M assignment scores as a continuous blocking factor to estimate the variance. This is more graduated than using a strict assignment of each cell to a specific phase, as the magnitude of the score considers the uncertainty of the assignment. The phase covariates in the design matrix will absorb any phase-related effects on expression such that they will not affect estimation of the effects of other experimental factors. Any additionial batch variable can be included via the 'batch'-argument of the 'removeBatchEffect' function.")
-      
-      
+
+if(adjust_ccp) {
+    cat("We can account for possible cell cycle effect on downstream analysis, using the G1 and G2M assignment scores as a continuous blocking factor to estimate the variance. This is more graduated than using a strict assignment of each cell to a specific phase, as the magnitude of the score considers the uncertainty of the assignment. The phase covariates in the design matrix will absorb any phase-related effects on expression such that they will not affect estimation of the effects of other experimental factors. Any additionial batch variable can be included via the 'batch'-argument of the 'removeBatchEffect' function.")
+    
+    
     # filter out cells with undetermined cell cycle
      scoresFilteredNA <- assignments$scores[!is.na(assignments$phases), ] # NA entries are not used
      cat(sum(is.na(sce$phases)), "cells not assigned to a cell cycle phase are removed from the dataset.\n")
@@ -868,26 +934,25 @@ if(adjust_ccp || !is.null(var2adjust)) {
   }
 
 
-  ## switch assay channel for downstream processing
-  assay(sce, "logcounts_not_adjusted") <- assay(sce, "logcounts")
-  assay(sce, "logcounts") <- assay(sce, "corrected")
-  assay(sce, "corrected") <- NULL
-  
-  # plotting
-  if(adjust_ccp) {
-      cat("\nPCA plot of top 500 genes colored by G1 and G2M score\n")
-      set.seed(100)
-      out1 <- plotPCASCE(sce.no_block, ncomponents=2, rerun=T, # use_dimred="PCA", 
-               colour_by="G1score", size_by="G2Mscore") + ggtitle("Before ccp adjustment")
-      # After blocking on the phase scores
-      set.seed(100)
-      out2 <- plotPCASCE(sce, ncomponents=2, rerun=T, # use_dimred="PCA", 
-                colour_by="G1score", size_by="G2Mscore") + ggtitle("After ccp adjustment")
-      multiplot(out1, out2, cols=2)
-  }
+## switch assay channel for downstream processing
+assay(sce, "logcounts_not_adjusted") <- assay(sce, "logcounts")
+assay(sce, "logcounts") <- assay(sce, "corrected")
+assay(sce, "corrected") <- NULL
 
+# plotting
+if(adjust_ccp) {
+    cat("\nPCA plot of top 500 genes colored by G1 and G2M score\n")
+    set.seed(100)
+    out1 <- plotPCASCE(sce.no_block, ncomponents=2, rerun=T, # use_dimred="PCA", 
+             colour_by="G1score", size_by="G2Mscore") + ggtitle("Before ccp adjustment")
+    # After blocking on the phase scores
+    set.seed(100)
+    out2 <- plotPCASCE(sce, ncomponents=2, rerun=T, # use_dimred="PCA", 
+              colour_by="G1score", size_by="G2Mscore") + ggtitle("After ccp adjustment")
+    multiplot(out1, out2, cols=2)
+  }
 } else {
-  final_var2adjust <- NULL
+    cat("\nno adjustment applied")
 }
 ```
 
@@ -899,10 +964,6 @@ library(batchelor)
 var2adjust <- NULL
 adjust_ccp <- F # adjust for cell cycle phase (default = FALSE)
 #####
-
-if(adjust_ccp || !is.null(var2adjust)) {
-  
-  cat("## Adjust for confounder variables")
 
 cat("Counfounder variables like batch effects can be adjusted using the mutual nearest neighbors method (MNN). The effect from cell cycle phase can be removed from the dataset (if necessary) via linear regression treating each phase as a separate batch. If both a confounder variable and cell cycle shall be adjusted for, a new categorical variable is composed from both factors and used for MNN correction.")
 
@@ -952,34 +1013,34 @@ if(is.null(var2adjust) & adjust_ccp) {
 
   } else {
   
-    if(!is.null(var2adjust)) {
+  if(!is.null(var2adjust)) {
+    
+      # filter out cells with missing value for var2adjust
+      cat(sum(is.na(colData(sce)[,var2adjust])), "cells with missing value for", var2adjust, "are removed from the dataset.\n")
+      sce <- sce[,!is.na(colData(sce)[,var2adjust])] 
+    
+      # create final_var2adjust (factor composed from var2adjust and optionally cell cycle phase)
+      sce$final_var2adjust <- if(adjust_ccp) {paste(colData(sce)[,var2adjust], sce$phases, sep="_")} else {colData(sce)[,var2adjust]}
+      sce$final_var2adjust <- as.factor(sce$final_var2adjust)
       
-        # filter out cells with missing value for var2adjust
-        cat(sum(is.na(colData(sce)[,var2adjust])), "cells with missing value for", var2adjust, "are removed from the dataset.\n")
-        sce <- sce[,!is.na(colData(sce)[,var2adjust])] 
+      # adjust for final_var2adjust as batch effect (mutual nearest neighbours, MNN)
+      cat("\nadjusting for", var2adjust, if(adjust_ccp) {"and cell cycle phase"}, "using MNN")
+      set.seed(100)
+      sce.adjust <- batchelor::fastMNN(sce, batch=sce$final_var2adjust, assay.type = "logcounts")
+      reducedDim(sce, "corrected") <- reducedDim(sce.adjust, "corrected") # will be compared with PCA slot
+      assay(sce, "logcounts") <- assay(sce.adjust, "reconstructed") # class LowRankMatrix (not compatible with trendVar) 
       
-        # create final_var2adjust (factor composed from var2adjust and optionally cell cycle phase)
-        sce$final_var2adjust <- if(adjust_ccp) {paste(colData(sce)[,var2adjust], sce$phases, sep="_")} else {colData(sce)[,var2adjust]}
-        sce$final_var2adjust <- as.factor(sce$final_var2adjust)
-        
-        # adjust for final_var2adjust as batch effect (mutual nearest neighbours, MNN)
-        cat("\nadjusting for", var2adjust, if(adjust_ccp) {"and cell cycle phase"}, "using MNN")
-        set.seed(100)
-        sce.adjust <- batchelor::fastMNN(sce, batch=sce$final_var2adjust, assay.type = "logcounts")
-        reducedDim(sce, "corrected") <- reducedDim(sce.adjust, "corrected") # will be compared with PCA slot
-        assay(sce, "logcounts") <- assay(sce.adjust, "reconstructed") # class LowRankMatrix (not compatible with trendVar) 
-        
-    } else {
-      cat("\nno adjustment applied")
-    }
+  } else {
+    cat("\nno adjustment applied")
   }
-} else {
-  final_var2adjust <- NULL
 }
+
 ```
 
 
-```{r explanatory_variables_2, echo=F, error=F, warning=F, message=F, fig.width=8, fig.height=6, results='asis', eval=(adjust_ccp || !is.null(var2adjust))}
+```{r explanatory_variables_2, echo=F, error=F, warning=F, message=F, fig.width=8, fig.height=6, results='asis', eval=(adjust_ccp | !is.null(var2adjust))}
+
+# eval= (!is.null(var2adjust) | adjust_ccp)
 
 if(!is.null(var2adjust)) {
   cat("\nRe-plot explanatory variables after adjustment\n")
@@ -989,8 +1050,8 @@ if(!is.null(var2adjust)) {
 
 cat("\nPCA plots of top 500 genes colored by potential confounder variables after correction\n\n")
 lapply(var2color, function(x) {
-  set.seed(100) # plotPCASCE # plotTSNE # plotUMAP
-  scater::plotPCASCE(sce, rerun=T, ncomponents = 4, run_args= list(exprs_values="logcounts"), point_size=1, colour_by=x) +
+  sce <-scater::runPCA(sce, name = "PCA")
+  scater::plotPCASCE(sce, ncomponents = 4, point_size=1, colour_by=x) +
         ggtitle(paste("PCA plots after adjustment colored by", x))
   })
 
@@ -1000,60 +1061,36 @@ lapply(var2color, function(x) {
 
 # Identifying highly variable genes (HVGs)
 
-Estimation of the variance in expression for each gene, followed by decomposition of the variance into biological and technical components. The technical component would be estimated by fitting a mean-variance trend to the spike-in transcripts using the trendVar function. The biological component of the variance can then be calculated by subtracting the technical component from the total variance of each gene with the decomposeVar function.
+The per-gene variation is quantified by computing the variance of the log-normalized expression values for each gene across all cells in the population (A. T. L. Lun, McCarthy, and Marioni 2016). This has an advantage in that the feature selection is based on the same log-values that are used for later downstream steps. In particular, genes with the largest variances in log-values will contribute the most to the Euclidean distances between cells. By using log-values here, we ensure that our quantitative definition of heterogeneity is consistent throughout the entire analysis.
+
+Calculation of the per-gene variance is simple but feature selection requires modelling of the mean-variance relationship. The log-transformation does not achieve perfect variance stabilization, which means that the variance of a gene is driven more by its abundance than its underlying biological heterogeneity. To account for this effect, we use the modelGeneVar() function to fit a trend to the variance with respect to abundance across all genes (see scatter plot below).
 
 ```{r trendVar, echo=F, error=F, warning=F, message=F}
 # estimate highly variable genes
-decVar.list <- lapply(setNames(nm="all"), function(type){ # no subsetting of cell groups
-    sce.tmp <- sce
-    var.fit <- trendVar(sce.tmp, method="loess",
-                        loess.args=list(span=0.3),
-                        use.spikes=F)
-    decVar <- decomposeVar(sce.tmp, var.fit)
-    return(list(decVar=decVar, var.fit=var.fit))
-})
+decVar <- modelGeneVar(sce)
+var.fit <- metadata(decVar)
+
+plot(var.fit$mean, var.fit$var, xlab="Mean of log-expression",
+    ylab="Variance of log-expression")
+curve(var.fit$trend(x), col="dodgerblue", add=TRUE, lwd=2)
 ```
 
 
-The scatter plot below shows the mean log expression vs. the total variance, while the blue line shows the technical part of the variance.
+At any given abundance, we assume that the expression profiles of most genes are dominated by random technical noise. Under this assumption, our trend represents an estimate of the technical noise as a function of abundance. We then break down the total variance of each gene into the technical component, i.e., the fitted value of the trend at that gene’s abundance; and the biological component, defined as the difference between the total variance and the technical component. This biological component represents the “interesting” variation for each gene and can be used as the metric for HVG selection.
 
-```{r plot_trendVar, echo=F, error=F, warning=F, message=F}
-# plot mean log expression vs. the total variance
-for(to.plot in names(decVar.list)){
-    decVar.tmp  <- decVar.list[[to.plot]]$decVar 
-    var.fit.tmp <- decVar.list[[to.plot]]$var.fit 
-    plot(decVar.tmp$mean, decVar.tmp$total, pch=16, cex=0.6, col="#00000050",
-         xlab="Mean log-expression", ylab="Variance of log-expression",
-         main=paste("Plot for", to.plot, "cells"))
-    #cur.spike <- isSpike(sce, type="ERCC")
-    #points(decVar.tmp$mean[cur.spike], decVar.tmp$total[cur.spike], col="red", pch=16)
-    o <- order(decVar.tmp$mean)
-    lines(decVar.tmp$mean[o], decVar.tmp$tech[o], col="dodgerblue", lwd=2)
-}
-
-```
-
-HVGs are defined as genes with biological components that are significantly greater than zero at a false discovery rate (FDR) of 5%. We only consider a gene to be a HVG if it has a biological component greater or equal than 0.5 (assuming the log-expression values are normally distributed with a variance of 0.5, this means an average difference of 2-fold between 2 cells).
-
-The number of HVGs found is:
+Once we have quantified the per-gene variation, the next step is to select the subset of HVGs to use in downstream analyses. A larger subset will reduce the risk of discarding interesting biological signal by retaining more potentially relevant genes, at the cost of increasing noise from irrelevant genes that might obscure said signal. Here, we consider the top 10% of genes with the highest biological components as HVGs for downstream analysis.
 
 ```{r get_hvg, fig.width=11, echo=F, error=F, warning=F, message=F}
-##### parameters to set:
-# define up to 2 categories to be indicated in the plot by color and shape.
-annoFactors <- SHINYREPS_COLORBYFACTOR
-#####
+annoFactors <- colorByFactor2
 
+# Ordering by most interesting genes for inspection.
+decVar_ordered <- decVar[order(decVar$bio, decreasing=TRUE),] 
+hvg <- getTopHVGs(decVar, prop=0.1)
+rowSubset(sce, "HVGs") <- hvg
 
-# count number of HVGs
-hvg.list <- lapply(names(decVar.list), function(x){
-    decVar <- decVar.list[[x]]$decVar
-    hvg <- decVar[which(decVar$FDR <= 0.05 & decVar$bio >= 0.5), ]
-    hvg <- hvg[order(hvg$bio, decreasing=TRUE), ]
-    cat("Number of HVGs for", x, "cells:", nrow(hvg), "\n")
-    cat("\n")
-    return(hvg)
-})
-names(hvg.list) <- names(decVar.list)
+cat(paste(length(hvg), "genes are considered as HVGs.\n"))
+DT::datatable(as.data.frame(decVar_ordered)[hvg,])
+
 
 # plot top 10 HVGs
 if(length(annoFactors)>2) {stop("\nno more than 2 categories allowed in 'anno'.")}
@@ -1064,86 +1101,41 @@ if(length(annoFactors)==2) {
     dotshape <- NULL
 }
 
-for(type in names(hvg.list)){
-    hvg <- hvg.list[[type]]
-    if(nrow(hvg) == 0) {
-        cat("\nNo highly variable genes found passing the thresholds.\n")
-        next
-    }
-
-    if(type=="all"){
-      tmp.sce <- sce
-    }else{
-      tmp.sce <- sce[,sce$type==type] # if desired to subset this plot for subgroups of cells
-    }
-    rownames(tmp.sce) <- rowData(tmp.sce)$SYMBOL
-    if(type=="all"){
-        print(
+if(length(hvg) == 0) {
+    cat("\nNo highly variable genes found.\n")
+} else {
+  tmp.sce <- sce    
+  rownames(tmp.sce) <- rowData(tmp.sce)$SYMBOL
+  print(
           plotExpression(tmp.sce, 
-                         na.omit(gtf$gene_name[match(rownames(hvg), gtf$gene_id)])[1:10],
+                         features = rownames(tmp.sce[rowData(tmp.sce)$ENSEMBL %in% hvg[1:10], ]),
                          colour_by=dotcol,
                          shape_by=dotshape) + 
             ggtitle("Top 10 HGVs for all cells") +
             scale_color_hue(c=40, l=50, name= dotcol) +
             facet_grid(~colour_by)
         )
-    }else{ # if it desired later to subset this plot for subgroups of cells
-        print(
-          plotExpression(tmp.sce, 
-                         na.omit(gtf$gene_name[match(rownames(hvg), gtf$gene_id)])[1:10],
-                         colour_by=dotcol,
-                         shape_by=dotshape) +
-               scale_fill_hue(c=40, l=50, name=dotcol)+ 
-               ggtitle(paste("10 highest HGVs for", type))
-        )   
-    }
 }
-```
-
-## Identify correlated HVGs
-
-Another useful procedure is to identify the HGVs that are highly correlated with one another. This distinguishes between HVGs caused by random noise and those involved in driving systematic differences between sub-populations. Correlations between genes are quantified by computing Spearman's rho, which accomodates non-linear relationships in the expression value. Gene pairs with significantly large positive or negative values of rho are identified using the correlatePairs function. 
-
-```{r get_hvg_corr, echo=F, error=F, warning=F, message=F}
-# Identify correlated HVGs
-hvg.cor.list <- lapply(names(hvg.list), function(type){
-  if(type=="all"){
-    tmp.sce <- sce
-  }else{
-    tmp.sce <- sce[, sce$type == type]
-  }
-  set.seed(100)
-  hvg.cor <- correlatePairs(tmp.sce, subset.row=rownames(hvg.list[[type]] ))
-
-  hvg.cor$gene1SYMBOL <- gtf$gene_name[match(hvg.cor$gene1, gtf$gene_id)]
-  hvg.cor$gene2SYMBOL <- gtf$gene_name[match(hvg.cor$gene2, gtf$gene_id)]
-  hvg.cor$sig.cor = hvg.cor$FDR <= .05
-  top.hvg    <- unique(c(hvg.cor$gene1[hvg.cor$sig.cor], hvg.cor$gene2[hvg.cor$sig.cor]))
-  write.table(file=paste0("report_files/hvg_cor_", type, ".tsv"), hvg.cor, sep="\t", quote=FALSE, row.names=FALSE)
-  cat(paste("number of genes part of min 1 significant correlation:", length(top.hvg), "\n"))
-
-  return(list(hvg.cor=hvg.cor, sig.cor=hvg.cor$sig.cor, top.hvg=top.hvg))
-})
-names(hvg.cor.list) <- names(hvg.list)
 
 ```
 
 
-# Using correlated HVGs for further data exploration
 
-## PCA based on significantly correlated HVGs
+# Using HVGs for further data exploration
+
+## PCA based on significantly HVGs
 
 ```{r hvg_pca, echo=F, error=F, warning=F, message=F, fig.height=5, fig.width=10}
 ##### parameters to set:
 # define up to 2 categories to be indicated in the plot by color and shape.
-annoFactors <- SHINYREPS_COLORBYFACTOR  
+annoFactors <- colorByFactor2 
 ncomponents=2  
 exprs_values="logcounts"
 #####
 
 # HVG 
  set.seed(100)
-  sce <- scater::runPCA(sce, name = "PCA", ncomponents=ncomponents, feature_set=hvg.cor.list[["all"]]$top.hvg, exprs_values=exprs_values)
+  sce <- scater::runPCA(sce, name = "PCA", ncomponents=ncomponents, subset_row=hvg, exprs_values=exprs_values)
 
 # all genes
  set.seed(100)
@@ -1161,7 +1153,7 @@ if(length(annoFactors)>2) {stop("\nno more than 2 categories allowed in 'annoFac
       scater::plotReducedDim(sce, dimred = d, 
         by_exprs_values = exprs_values,
         colour_by=dotcol, shape_by = dotshape, point_size=2) +  
-        ggtitle(paste("PCA plot of", if(grepl("allgenes", d)) {"all genes"} else {"cor HVGs"}))
+        ggtitle(paste("PCA plot of", if(grepl("allgenes", d)) {"all genes"} else {"HVGs"}))
 
   }, mc.cores=1), cols=2)
   
@@ -1181,7 +1173,7 @@ Identification of sub-populations with t-SNE, trying different perplexity values
 ```{r TSNE_plot_various_perplexities, fig.height=10, fig.width=10, echo=F, error=F, warning=F, message=F}
 ##### parameters to set:
 # define up to 2 categories to be indicated in the plot by color and shape.
-annoFactors <- SHINYREPS_COLORBYFACTOR
+annoFactors <- colorByFactor2
 ncomponents=2  
 perplexity=c(25, 50)
 exprs_values="logcounts"
@@ -1197,7 +1189,7 @@ if(length(annoFactors)>2) {stop("\nno more than 2 categories allowed in 'annoFac
     for (p in perplexity) {
     set.seed(100) # HWE
     sce <- scater::runTSNE(sce, name = paste0("TSNE_p", p), ncomponents=ncomponents, 
-                           perplexity=p, dimred = NULL, feature_set=hvg.cor.list[["all"]]$top.hvg, exprs_values=exprs_values)
+                           perplexity=p, dimred = NULL, subset_row=hvg, exprs_values=exprs_values)
     set.seed(100) # all genes
     sce <- scater::runTSNE(sce, name = paste0("TSNE_p", p, "_allgenes"), ncomponents=ncomponents, 
                            perplexity=p, dimred = NULL, ntop = nrow(sce), exprs_values=exprs_values)
@@ -1209,7 +1201,7 @@ if(length(annoFactors)>2) {stop("\nno more than 2 categories allowed in 'annoFac
       scater::plotReducedDim(sce, dimred = d, 
         by_exprs_values = exprs_values,
         colour_by=dotcol, shape_by = dotshape, point_size=2) +  
-        ggtitle(paste("TSNE plot of", if(grepl("allgenes", d)) {"all genes"} else {"cor HVGs"}, "with perplexity", gsub("^.*p", "", d)))
+        ggtitle(paste("TSNE plot of", if(grepl("allgenes", d)) {"all genes"} else {"HVGs"}, "with perplexity", gsub("^.*p", "", d)))
 
   }, mc.cores=1), cols=2)
   
@@ -1223,7 +1215,7 @@ Identification of sub-populations with UMAP plots (uniform manifold approximatio
 ```{r UMAP_plot, fig.height=5, fig.width=10, echo=F, error=F, warning=F, message=F}
 ##### parameters to set:
 # define up to 2 categories to be indicated in the plot by color and shape.
-annoFactors <- SHINYREPS_COLORBYFACTOR
+annoFactors <- colorByFactor2
 ncomponents=2  
 n_neighbors = 15
 exprs_values="logcounts"
@@ -1239,7 +1231,7 @@ if(length(annoFactors)>2) {stop("\nno more than 2 categories allowed in 'annoFac
 # HVGs
  set.seed(100)
   sce <- scater::runUMAP(sce, name = "UMAP", ncomponents=ncomponents, n_neighbors = n_neighbors, 
-                         dimred = NULL, feature_set=hvg.cor.list[["all"]]$top.hvg, exprs_values=exprs_values)  
+                         dimred = NULL, subset_row=hvg, exprs_values=exprs_values)  
 # all genes  
  set.seed(100)
   sce <- scater::runUMAP(sce, name = "UMAP_allgenes", ncomponents=ncomponents, n_neighbors = n_neighbors, 
@@ -1251,7 +1243,7 @@ if(length(annoFactors)>2) {stop("\nno more than 2 categories allowed in 'annoFac
       scater::plotReducedDim(sce, dimred = d, 
         by_exprs_values = exprs_values,
         colour_by=dotcol, shape_by = dotshape, point_size=2) +  
-        ggtitle(paste("UMAP plot of", if(grepl("allgenes", d)) {"all genes"} else {"cor HVGs"}))
+        ggtitle(paste("UMAP plot of", if(grepl("allgenes", d)) {"all genes"} else {"HVGs"}))
 
   }, mc.cores=1), cols=2)
  
@@ -1297,7 +1289,7 @@ rowData(sce)$feature_symbol <- rowData(sce)$SYMBOL # columns needed for SC3
     cat("\n", sum(rowData(sce)$sc3_gene_filter), "of", nrow(sce), "genes were used for clustering")
         
 # print cluster assignment
-  knitr::kable(table(colData(sce)[, paste0("sc3_", nr_clusters, "_clusters")]), caption="cells per cluster", col.names=c("Cluster", "Freq")) %>% kable_styling() 
+  knitr::kable(t(table(colData(sce)[, paste0("sc3_", nr_clusters, "_clusters")])), align = "l", format="simple", caption="cells per cluster") %>% kable_styling(full_width = F) 
 
 # store cluster assignments 
 dir_sc3 <- file.path("report_files", "cluster", "SC3")
@@ -1306,7 +1298,7 @@ write.table(colData(sce)[,c(group.vars, grep("sc3_", colnames(colData(sce)), val
 
 
 ### plot SC3 clustering
-annoFactors <- c(paste0("sc3_", nr_clusters, "_clusters"), "group")  
+annoFactors <- c(paste0("sc3_", nr_clusters, "_clusters"), colorByFactor2[1])  
 
 if(length(annoFactors)>2) {stop("\nno more than 2 categories allowed in 'annoFactors'.")}
   dotcol <- annoFactors[1]
@@ -1356,10 +1348,10 @@ Clustering is applied on the respective dimension reduction slot (i.e. PCA, TSNE
 library(igraph)
 library(pheatmap)
 exprs_values = "logcounts"
-dotshape <- SHINYREPS_COLORBYFACTOR[1]
+dotshape <- colorByFactor2[1]
 numberNearestNeighbors <- c(10, 20) # number of nearest neighbors k
 # available clustering strategies in igraph
-cluster_algo <- c("cluster_walktrap", "cluster_louvain", "cluster_infomap", "cluster_fast_greedy", "cluster_label_prop", "cluster_leading_eigen")
+cluster_algo <- c("cluster_walktrap", "cluster_louvain", "cluster_infomap", "cluster_fast_greedy", "cluster_label_prop", "cluster_leading_eigen")[1:2]
 
 sce_buildgraph <- list()
 sce_igraphclust <- list()
@@ -1371,9 +1363,9 @@ for(d in reducedDimNames(sce)) {
   for(k in numberNearestNeighbors) {
   
     set.seed(100)
-    sce_buildgraph[[paste(d, paste0("k",k), sep="_")]] <- buildSNNGraph(sce, k=k, use.dimred = d, assay.type = exprs_values) # type= rank, number, jaccard
+    sce_buildgraph[[paste(d, paste0("k",k), sep="_")]] <- buildSNNGraph(sce, k=k, use.dimred = d) # type= rank, number, jaccard
     
-    for (clu in cluster_algo[1:2]) {
+    for (clu in cluster_algo) {
       
       clu <- gsub("^cluster_", "", clu)
       clusterfun <- switch(clu, 
@@ -1390,7 +1382,7 @@ for(d in reducedDimNames(sce)) {
       
   # Assessing cluster separation
   set.seed(100)
-  clmod[[paste(d, paste0("k",k), clu, sep="_")]] <- clusterModularity(sce_buildgraph[[paste(d, paste0("k",k), sep="_")]], sce_igraphclust[[paste(d, paste0("k",k), clu, sep="_")]], get.weights=F, as.ratio = TRUE)
+  clmod[[paste(d, paste0("k",k), clu, sep="_")]] <- bluster::pairwiseModularity(sce_buildgraph[[paste(d, paste0("k",k), sep="_")]], sce_igraphclust[[paste(d, paste0("k",k), clu, sep="_")]], get.weights=F, as.ratio = TRUE)
   cluster.gr[[paste(d, paste0("k",k), clu, sep="_")]] <- igraph::graph_from_adjacency_matrix(clmod[[paste(d, paste0("k",k), clu, sep="_")]], mode="upper", weighted=TRUE, diag=FALSE)
 
     }
@@ -1398,7 +1390,11 @@ for(d in reducedDimNames(sce)) {
 }    
 
 cat("\nOverview cluster assignments\n", fill=T)
-lapply(names(sce_igraphclust), function(x) {kable(t(table(sce_igraphclust[[x]])), align = "l", caption=x) %>% kable_styling()})  
+for (x in names(sce_igraphclust)) {
+  print(kable(t(table(sce_igraphclust[[x]])), align = "l", format="simple", caption=x) %>% kable_styling(full_width = F))
+  cat("\n")
+}
+
 
 # store cluster assignments
 dir_igraph <- file.path("report_files", "cluster", "igraph")
@@ -1483,7 +1479,7 @@ library(dynamicTreeCut)
 hclust_methods <- c("ward.D2")
 minClusterSize <- c(10, 100)
 exprs_values <- "logcounts"
-dotshape <- SHINYREPS_COLORBYFACTOR[1]
+dotshape <- colorByFactor2[1]
 
 dist_sce <- list()
 tree_sce <- list()
@@ -1520,8 +1516,11 @@ for(d in reducedDimNames(sce)) {
 }    
 
 
-cat("\nOverview cluster assignments\n", fill = T)
-lapply(names(clust_sce), function(x) {kable(t(table(clust_sce[[x]])), align = "l", caption=x) %>% kable_styling()})  
+cat("\nOverview cluster assignments\n", fill=T)
+for (x in names(clust_sce)) {
+  print(kable(t(table(clust_sce[[x]])), align = "l", format="simple", caption=x) %>% kable_styling(full_width = F))
+  cat("\n")
+}
 
 # store cluster assignments
 dir_hclust <- file.path("report_files", "cluster", "hclust")
@@ -1579,7 +1578,7 @@ if (!file.exists(dir_hclust)) {dir.create(dir_hclust, recursive=T) }
 
 ```{r select_clustering}
      
-  selected_clustering_method <- "igraph_TSNE_p25_allgenes_k10_louvain"    
+  selected_clustering_method <- "hclust_TSNE_p25_ward.D2_cs100"    
   name_dimred <- gsub("^.*(((TSNE)(_p[[:digit:]]+)*|(UMAP)|(PCA))(_allgenes)*).*$", "\\1",  selected_clustering_method) # get corresponding reducedDimName
   cat("Selected clustering:", selected_clustering_method, "\nreducedDimName:", name_dimred, "\n\n")
 
@@ -1600,8 +1599,6 @@ if (!file.exists(dir_hclust)) {dir.create(dir_hclust, recursive=T) }
 
 
 
-
-
 # Detect marker genes for each cluster
 
 Next we identify the genes that drive separation between clusters of the final clustering setting. These marker genes allow us to assign biological meaning to each cluster based on their functional annotation. In the most obvious case, the marker genes for each cluster are a priori associated with particular cell types, allowing us to treat the clustering as a proxy for cell type identity. We use a one-sided t-test to identify genes that are upregulated in each cluster compared to the others (test for log foldchange > 1).
@@ -1613,11 +1610,10 @@ For each cluster, every gene is assigned with the highest rank which from compar
 
 ```{r findmarkers_per_cluster, fig.width=11, fig.height=20, results='asis'}
 
-DE_var2adjust <- if(is.null(final_var2adjust)) {NULL} else {"final_var2adjust"} 
+DE_var2adjust <-  NULL
 clustervar <- selected_clustering_method
-groupingvar <- SHINYREPS_COLORBYFACTOR[1] # still to implement: use findMarkers for differential expression analysis within clusters
-# unadjusted logcounts shall be used as assay.type for findMarkers (adjustment is done with DE_var2adjust if needed)
-assay.type <- c("logcounts_not_adjusted", "logcounts", "counts")[c("logcounts_not_adjusted", "logcounts", "counts") %in% names(assays(sce))][1]
+groupingvar <- colorByFactor2 # still to implement: use findMarkers for differential expression analysis within clusters
+assay.type <- if(adjust_ccp | !is.null(var2adjust)) {"logcounts_not_adjusted"} else {"logcounts"}
 ###############################################
 
 
@@ -1699,13 +1695,10 @@ if(nlevels(factor(colData(sce)[,clustervar])) >=2) {
 
 
 
-
-
-
-```{r cell_type_annotation, results='asis', eval=org %in% c("human", "mouse")}
+```{r cell_type_annotation, results='asis', message=F,  eval=(org %in% c("human", "mouse"))}
 library(SingleR)
 
-cat("# Cell type / GO annotation")
+cat("# Cell type / GO annotation\n")
 
 dir_anno_per_cluster <- file.path("report_files", "annotation_per_cluster", selected_clustering_method)
 if (!file.exists(dir_anno_per_cluster)) {dir.create(dir_anno_per_cluster, recursive=T) }
@@ -1717,32 +1710,32 @@ if(org=="human") {
   countdata <- logcounts(sce)
   rownames(countdata) <- rowData(sce)$SYMBOL
   ref <- BlueprintEncodeData() # human bulk RNA-seq data from Blueprint and ENCODE
-  pred <- SingleR(test=sce, ref=ref, labels=ref$label.main) # alternative: ref$label.fine
-  table(pred$labels)
+  pred <- SingleR(test=countdata, ref=ref, labels=ref$label.main) # alternative: ref$label.fine
+  #table(pred$labels)
   plotScoreHeatmap(pred)
-  plotScoreDistribution(pred)
+  #plotScoreDistribution(pred)
   
   tab <- table(Assigned=pred$pruned.labels, Cluster=colData(sce)[,selected_clustering_method])
   # Adding a pseudo-count of 10 to avoid strong color jumps with just 1 cell.
   pheatmap(log2(tab+10), color=colorRampPalette(c("white", "blue"))(101))
+  cat("\n")
 }
 
   switch(org,
-         human={
-            library(org.Hs.eg.db)
-            orgdb <- org.Hs.eg.db
-            species="Hs"
-         },
-         mouse={
-            library(org.Mm.eg.db)
-            orgdb <- org.Mm.eg.db
-            species="Mm"
-         }
+           human={
+              library(org.Hs.eg.db)
+              orgdb <- org.Hs.eg.db
+              species="Hs"
+           },
+           mouse={
+              library(org.Mm.eg.db)
+              orgdb <- org.Mm.eg.db
+              species="Mm"
+           }
   )
     
 ## Assigning cluster labels from markers
-cat("
-    Perform a gene set enrichment analysis on the marker genes defining each cluster. This identifies the pathways and processes that are (relatively) active in each cluster based on upregulation of the associated genes compared to other clusters. We will use gene sets defined by the Gene Ontology (GO) project, which describe a comprehensive range of biological processes and functions. We define our subset of relevant marker genes at a FDR of 5% and apply the goana function from the limma package. This performs a hypergeometric test to identify GO terms that are overrepresented in our marker subset. We keep only biological process terms that are not overly general (<=200 genes) and which are significantly enriched (p<0.05).\n\n")
+cat("\nPerform a gene set enrichment analysis on the marker genes defining each cluster. This identifies the pathways and processes that are (relatively) active in each cluster based on upregulation of the associated genes compared to other clusters. We will use gene sets defined by the Gene Ontology (GO) project, which describe a comprehensive range of biological processes and functions. We define our subset of relevant marker genes at a FDR of 5% and apply the goana function from the limma package. This performs a hypergeometric test to identify GO terms that are overrepresented in our marker subset. We keep only biological process terms that are not overly general (<=200 genes) and which are significantly enriched (p<0.05).\n\n")
  
 anno.results <- list()
 
@@ -1766,7 +1759,7 @@ for (i in levels(colData(sce)[,selected_clustering_method])) {
     go.out <- go.out[order(go.out$P.DE),]
     go.useful <- go.out[go.out$Ont=="BP" & go.out$N <= 200 & go.out$P.DE < 0.05,]
     
-    print(kable(go.useful[1:10,]) %>% kable_styling())
+    print(kable(go.useful[1:10,], align = "l", format="simple") %>% kable_styling(full_width = F))
     write.table(data.frame(GOID=rownames(go.useful), go.useful), 
                 file =file.path(dir_anno_per_cluster, paste0("GOannotation_cluster_", i, ".txt")),
                 quote = F, row.names = F,  sep="\t")
@@ -1786,7 +1779,15 @@ for (i in levels(colData(sce)[,selected_clustering_method])) {
 ```
 
 
-# Differential expression analysis
+
+```{r diff_expression, results='asis', eval=T}
+library(edgeR)
+
+DE_var2adjust <- "final_var2adjust" # "pool" # NULL
+varDiffGroups <- colorByFactor2[1]
+########################################
+
+cat("# Differential expression analysis
 
 Differential analyses of multi-condition scRNA-seq experiments can be broadly split into two categories: differential expression (DE) and differential abundance (DA) analyses. The former tests for changes in expression between conditions for cells of the same type that are present in both conditions, while the latter tests for changes in the composition of cell types (or states, etc.) between conditions.
 
@@ -1799,13 +1800,9 @@ Motivations behind the use of pseudo-bulking:
 - Variance between cells within each sample is masked, provided it does not affect variance across (replicate) samples. This avoids penalizing DEGs that are not uniformly up- or down-regulated for all cells in all samples of one condition. Masking is generally desirable as DEGs - unlike marker genes - do not need to have low within-sample variance to be interesting, e.g., if the treatment effect is consistent across replicate populations but heterogeneous on a per-cell basis. 
     
 The DE analysis will be performed using quasi-likelihood (QL) methods from the edgeR package (Robinson, McCarthy, and Smyth 2010; Chen, Lun, and Smyth 2016). This uses a negative binomial generalized linear model (NB GLM) to handle overdispersed count data in experiments with limited replication. We test for differences in expression using glmQLFTest(). DEGs are defined as those with non-zero log-fold changes at a false discovery rate of 5%.
+")
 
-```{r diff_expression, results='asis'}
-library(edgeR)
 
-DE_var2adjust <- if(is.null(final_var2adjust)) {NULL} else {"final_var2adjust"} 
-varDiffGroups <- SHINYREPS_COLORBYFACTOR[1]
-########################################
 
 dir_DE_per_cluster <- file.path("report_files", "DE_per_cluster", selected_clustering_method)
 if (!file.exists(dir_DE_per_cluster)) {dir.create(dir_DE_per_cluster, recursive=T) }
@@ -1823,13 +1820,17 @@ if(is.null(DE_var2adjust)) {
 
 
 # Creating pseudo-bulk samples from clusters uses (unnormalised "counts" matrix)
-  summed <- scater::aggregateAcrossCells(sce, ids=DataFrame(
-                cluster=colData(sce)[,selected_clustering_method], 
-                variable2adjust=colData(sce)[, DE_var2adjust],
-                diffgroups=colData(sce)[, varDiffGroups]),
-                exprs_values = "counts"
-                )
+  # summed <- aggregateAcrossCells(sce, ids=DataFrame(
+  #               cluster=colData(sce)[,selected_clustering_method], 
+  #               variable2adjust=colData(sce)[, DE_var2adjust],
+  #               diffgroups=colData(sce)[, varDiffGroups]),
+  #               use.assay.type = "counts"
+  #               )
 
+  summed <- aggregateAcrossCells(sce, ids=colData(sce)[,c(selected_clustering_method, varDiffGroups)], #  
+                use.assay.type = "counts")
+  
+  
 de.results <- list()
 
 for (i in levels(colData(sce)[,selected_clustering_method])) {
@@ -1855,7 +1856,7 @@ for (i in levels(colData(sce)[,selected_clustering_method])) {
     
     # Statistical modelling
     design <- try(
-        model.matrix(~factor(variable2adjust) + factor(diffgroups), y$samples),
+        model.matrix(~ factor(variable2adjust) + factor(diffgroups), y$samples), # 
         silent=TRUE
     )
     if (is(design, "try-error") || 
@@ -1896,7 +1897,7 @@ for (i in levels(colData(sce)[,selected_clustering_method])) {
     cat("\nDifferential expression results for", varDiffGroups, "in cluster", i, "\n")
     res <- glmQLFTest(fit, coef=ncol(design))
     #summary(decideTests(res))
-    print(kable(as.data.frame(topTags(res))) %>% kable_styling())
+    print(kable(as.data.frame(topTags(res)), align = "l", format="simple") %>% kable_styling(full_width = F)) 
     write.table(data.frame(EnsemblID=rownames(topTags(res, n=nrow(res))), topTags(res, n=nrow(res))), 
                 file =file.path(dir_DE_per_cluster, paste0("DEgenes_cluster_", i, ".txt")),
                 quote = F, row.names = F,  sep="\t")
@@ -1907,9 +1908,39 @@ for (i in levels(colData(sce)[,selected_clustering_method])) {
 cat("\nSummary for all clusters\n")    
 summaries <- lapply(de.results, FUN=function(x) summary(decideTests(x))[,1])
 sum.tab <- do.call(rbind, summaries)
-print(kable(sum.tab) %>% kable_styling())
+print(kable(sum.tab, align = "l", format="simple") %>% kable_styling(full_width = F))
 
 ```
+
+
+
+```{r doublet_detection_by_simulation, results='asis'}
+cat("# Doublet detection by simulation\n")
+
+cat("\nThis doublet detection strategy involves in silico simulation of doublets from the single-cell expression profiles (Dahlin et al. 2018). This is performed using the computeDoubletDensity() function from the scDblFinder package.\n")
+
+
+library(BiocSingular)
+
+set.seed(100)
+
+# Setting up the parameters for consistency with denoisePCA();
+# this can be changed depending on your feature selection scheme.
+dbl.dens <- computeDoubletDensity(sce, subset.row=hvg, d=ncol(reducedDim(sce)))
+#summary(dbl.dens)
+
+sce$DoubletScore <- dbl.dens
+
+TSNE_DoubletScore <- plotReducedDim(sce, dimred=name_dimred, colour_by="DoubletScore")
+TSNE_DoubletScore
+
+plotCluster_DoubletScore <- plotColData(sce, x=selected_clustering_method, y="DoubletScore", colour_by = selected_clustering_method)
+plotCluster_DoubletScore
+
+#multiplot(plotlist=list(TSNE_DoubletScore, plotCluster_DoubletScore), cols=1)
+
+```
+
 
 
 
@@ -1940,9 +1971,9 @@ save.image("report_files/WS.RData")
 # create files for shiny app 
 library(shinydashboard)
 
-dir_shinyapp <- file.path("report_files", "shinyapp")
+dir_shinyapp <- file.path("report_files/shinyapp")
 if (!file.exists(dir_shinyapp)) {dir.create(dir_shinyapp) }
-  top.hvg <- hvg.cor.list[["all"]]$top.hvg
+  top.hvg <- hvg
   genes <- gene.names[gene.names$gene_id %in% rownames(sce), ]
   save(sce, genes, top.hvg, file=file.path(dir_shinyapp, "data4shiny.RData"))
   
