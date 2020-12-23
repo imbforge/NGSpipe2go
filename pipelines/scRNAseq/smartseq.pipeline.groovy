@@ -1,5 +1,5 @@
-PIPELINE="scRNAseq_smartseq2"
-PIPELINE_VERSION="1.0"
+PIPELINE="SmartSeq2"
+PIPELINE_VERSION="1.1"
 PIPELINE_ROOT="./NGSpipe2go/"    // may need adjustment for some projects
 
 load PIPELINE_ROOT + "/pipelines/scRNAseq/essential.vars.groovy"
@@ -32,9 +32,10 @@ load PIPELINE_ROOT + "/modules/NGS/multiqc.header"
 dontrun = { println "didn't run $module" }
 
 Bpipe.run { 
-    "%.fastq.gz" * [ FastQC ] + 
     (RUN_IN_PAIRED_END_MODE ? "%.R*.fastq.gz" : "%.fastq.gz") * [
-        Cutadapt + FastQC + STAR + BAMindexer + [
+        FastQC + 
+        (RUN_CUTADAPT ? Cutadapt + FastQC : dontrun.using(module:"Cutadapt")) + 
+        STAR + BAMindexer + [
             subread_count + filter2htseq, 
             subread2rnatypes,
             MarkDups2 + BAMindexer + [
