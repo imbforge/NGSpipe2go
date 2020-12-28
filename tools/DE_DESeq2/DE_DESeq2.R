@@ -183,12 +183,24 @@ pairwise.dds.and.res <- lapply(conts[,1],function(cont) {
     # write the results
     x <- merge(res[, c("gene_name", "chr", "start", "end", "strand", "baseMean", "log2FoldChange", "padj")], quantification, by=0)
     x <- x[order(x$padj),]
+
+    #separate the data from x into the tested genes, the upregulated genes and the downregulated genes
+    tested_genes <- x[!is.na(x$padj),]
+    x_info <- list(up     = tested_genes[tested_genes$log2FoldChange > 0, ],
+                   down   = tested_genes[tested_genes$log2FoldChange < 0, ],
+                   tested = tested_genes)
     
     colnames(x)[which(colnames(x) %in% c("baseMean", "log2FoldChange", "padj"))] <- mcols(res)$description[match(c("baseMean", "log2FoldChange", "padj"), colnames(res))]
     colnames(x)[1] <- "gene_id"
 
     write.csv(x, file=paste0(out, "/", cont.name, ".csv"), row.names=F)
-    write.xlsx(x, file=paste0(out, "/", cont.name, ".xlsx"), row.names=F)
+    #we also have to replace the columnnames within the x_info list
+    x_info <- lapply(x_info, function(y){
+                       colnames(y)[which(colnames(y) %in% c("baseMean", "log2FoldChange", "padj"))] <- mcols(res)$description[match(c("baseMean", "log2FoldChange", "padj"), colnames(res))]
+                       colnames(y)[1] <- "gene_id"
+                       return(y)
+                   })
+    write.xlsx(x_info, file=paste0(out, "/", cont.name, ".xlsx"), row.names=F)
     
     list(dds,res)
 })
