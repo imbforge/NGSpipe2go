@@ -111,13 +111,15 @@ rangeCov <- mclapply(gtf, function(gene){
 ##
 ## calculate the per bin average across all genes
 ##
-png(paste0(OUTDIR, "/", gsub(".bam$", "_geneBodyCov.png", basename(BAM))), type="cairo")
+filename <- (paste0(OUTDIR, "/", gsub(".bam$", "_geneBodyCov.png", basename(BAM))))
+png(filename, type="cairo")
 try({
   rangeCov <- do.call(rbind, rangeCov)  # flatten the list
   rangeCov <- rangeCov[apply(rangeCov, 1, function(x) any(x > 0)), ]  # suppress not expressed genes
   avg <- apply(rangeCov, 2, mean) # and calculate the average per bin
   avg <- avg / max(avg) # which is then normalized again, as it seems to be in geneBodyCoverage.py from RSeQC
-
+  names(avg) <- 1:100
+  write.csv(avg, gsub("png", "csv", filename))
   # and plot
   plot(1:100, avg, type="l", ylim=c(0, 1), main=basename(BAM), xlab="Gene body percentile 5'->3'", ylab="Average normalized coverage")
   lines(lowess(1:100, avg, f=1/4), col="red", lwd=2)
