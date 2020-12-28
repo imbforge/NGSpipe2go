@@ -1245,6 +1245,69 @@ DEhelper.geneBodyCov <- function(web=TRUE) {
 }
 
 ##
+## DEhelper.geneBodyCov2: go through geneBodyCov output dir and plot into one plot
+##
+DEhelper.geneBodyCov2 <- function(web=TRUE) {
+    
+    # logs folder
+    if(!file.exists(SHINYREPS_GENEBODYCOV_LOG)) {
+        return("geneBodyCov statistics not available")
+    }
+    
+    # construct the folder name, which is different for web and noweb
+    QC <- if(web) "/geneBodyCov" else SHINYREPS_GENEBODYCOV_LOG
+    
+    # construct the image url from the folder contents (skip current dir .)
+    samples <- list.files(SHINYREPS_GENEBODYCOV_LOG, pattern=".csv$", full.names=T)
+    names(samples) <- gsub(".dupmarked_geneBodyCov.csv", "", basename(samples))
+    
+    if(file.exists(SHINYREPS_TARGET)){
+        
+        # get target names
+        targets <- read.delim(SHINYREPS_TARGET)
+        targets$sample_ext <- gsub(paste0(SHINYREPS_RNATYPES_SUFFIX,"$"), "",targets$file )
+
+        # replace files names with nicer sample names given in targets file
+	# if sample is missing in targets file, use reduced file name
+        names(samples) <- sapply(names(samples), function(i) { ifelse(i %in% targets$sample_ext,
+                                                        targets[targets$sample_ext == i,"sample"],
+                                                        gsub(paste0("^",SHINYREPS_PREFIX),"",i))})
+    } else {
+        if(!is.na(SHINYREPS_PREFIX)) {
+            names(samples) <- gsub(paste0("^",SHINYREPS_PREFIX), "", names(samples))
+        }
+    }
+    
+    l <- lapply(1:length(samples), function(i) {
+             df <- read.csv(samples[[i]]) 
+             colnames(df) <- c("perc", names(samples)[i])
+             return(df[,2, drop=F])
+      })
+    df <- do.call(cbind, l)
+    df$perc <- 1:nrow(df) #these are the 100 bins used in the original plot
+    df <- melt(df, id.vars="perc", variable.name="sample", value.name="cov")
+    #sort the samples either by the group order of the targets file or alphabetically
+    #if we do not have a targets file
+    if(file.exists(SHINYREPS_TARGET)){
+       sample_order <- targets$sample[order(paste0(targets$group, targets$sample))]
+       df$sample <- factor(df$sample, levels = sample_order)
+    }else{
+      # sort alphabetically
+      df$sample <- factor(df$sample, levels = sort(unique(df$sample)))  
+    }
+    
+    #now we plot it
+    p <- ggplot(df, aes(x=perc, y=cov, color=sample)) +
+           geom_line() +
+           labs(title="Genebody coverage per sample",
+                x = "Genebody percentile 5' -> 3'",
+                y = "Averaged normalised covrage") +
+           scale_color_hue( c=50, l=70) +
+           ylim(0,1) +
+           theme_bw() 
+  return(p)
+}
+##
 ##DEhelper.strandspecifity: get the strandspecifity from the qc and display them
 ##
 DEhelper.strandspecificity <- function(){
