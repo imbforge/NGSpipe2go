@@ -209,7 +209,7 @@ Please note that reads overlapping an exon as well as an intron/intergenic regio
 
 
 ```{r echo=F, results='asis', error=F, warning=F, message=F}
-cat(DEhelper.Qualimap(), sep="\n")        # sample Qualimap 
+DEhelper.Qualimap()        # sample Qualimap 
 ```
 
 ## Sample relatedness ##
