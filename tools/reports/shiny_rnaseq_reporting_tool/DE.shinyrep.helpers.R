@@ -1449,19 +1449,27 @@ DEhelper.Qualimap <- function() {
     
     QC <- SHINYREPS_QUALIMAP_LOGS    
     # construct the image url from the folder contents (skip current dir .)
-    samples <- list.files(QC, pattern="Reads.*.png$", recursive=T)
+    samples <- list.files(QC, pattern="rnaseq_qc_results.txt$", recursive=T)
     if(length(samples) == 0) {
         return("Qualimap report not available")
     }
-    df <- sapply(samples, function(f) {
-        paste0("![qualimap img](", QC, "/", f, ")")
-    })
+    sample_names <- gsub("_counts_qualimap", "", dirname(samples))
     
-    # sample names
-    samples <- sapply(samples, function(x) {
-        gsub("_counts_qualimap", "", gsub("/.*", "", dirname(x)))
+    samples <- paste0(QC, "/", samples)
+    samples <- sapply(samples, function(f){
+      l <- readLines(f)
+      l <- l[grep("exonic|intronic|intergenic|overlapping exon", l)] 
+      l <- strsplit(gsub(" ", "", l), "=")
+      names(l) <- c("exonic","intronic","intergenic","overlapping_exon")
+      l <- sapply(l, function(x){
+           as.numeric(gsub("\\%\\)", "", strsplit(x[[2]], "\\(")[[1]][2]))    
+      })
     })
-
+    colnames(samples) <- sample_names
+    #no we have to correct the precentages, the exonic category also includes the overlapping _exon
+    #if we want to display it we have reduce the exonic amount by this
+    samples["exonic", ] <- samples["exonic",] - samples["overlapping_exon",]
+    #Todo fix the naming scheme, the levels and then put it in the barplot 
     if(file.exists(SHINYREPS_TARGET)){
 
         # get target names
@@ -1470,31 +1478,38 @@ DEhelper.Qualimap <- function() {
 
         # replace files names with nicer sample names given in targets file
         # if sample is missing in targets file, use reduced file name
-        samples <- sapply(samples, function(i) { ifelse(i %in% targets$sample_ext,
+        colnames(samples) <- sapply(colnames(samples), function(i) { ifelse(i %in% targets$sample_ext,
                                                         targets[targets$sample_ext == i,"sample"],
                                                         gsub(paste0("^",SHINYREPS_PREFIX),"",i))})
     } else {
         if(!is.na(SHINYREPS_PREFIX)) {
-            samples <- gsub(paste0("^",SHINYREPS_PREFIX), "", samples)
+            colnames(samples) <- gsub(paste0("^",SHINYREPS_PREFIX), "", colnames(samples))
         }
     }
-
-    # sort alphabetically
-    samples <- samples[order(samples)]
-    df <- df[names(samples)]
-
-    # fill up additional columns if number of samples is not a multiple of 2
-    while(length(df) %% 2 != 0) df <- c(df, "")
-    while(length(samples) %% 2 != 0) samples <- c(samples, "")
-
-    df      <- matrix(df     , ncol=2, byrow=T)
-    samples <- matrix(samples, ncol=2, byrow=T)
     
-    # add a row with the sample names
-    df.names <- matrix(sapply(1:nrow(df), function(i) { c(df[i, ], samples[i, ]) }), ncol=2, byrow=T)
-    colnames(df.names) <- c(" ", " ")
-    
-    kable(as.data.frame(df.names), align="c", output=F, format="markdown")
+    # sort according to the groups and samplenames in the targets or alphabetically
+    samples <- melt(samples, value.name="perc")
+    colnames(samples) <- c("class", "sample", "perc")
+    #sort the samples either by the group order of the targets file or alphabetically
+    #if we do not have a targets file
+    if(file.exists(SHINYREPS_TARGET)){
+       sample_order <- targets$sample[order(paste0(targets$group, targets$sample))]
+       samples$sample <- factor(samples$sample, levels = sample_order)
+    }else{
+      # sort alphabetically
+      samples$sample <- factor(samples$sample, levels = sort(unique(samples$sample)))  
+    }
+    samples$class <- factor(samples$class, levels=c("intergenic", "intronic", "overlapping_exon", "exonic" )) 
+    #now we plot it
+    p <- ggplot(samples, aes(x=sample,y=perc,fill=class)) +
+           geom_col() +
+           labs(title="% Overlap with different gene regions",
+                x = "Sample",
+                y = "% of mapped reads") +
+           scale_fill_brewer( palette = "Dark2") +
+           coord_flip() +
+           theme_bw() 
+  return(p)
 }
 
 ##
