@@ -1,5 +1,4 @@
-load MODULE_FOLDER + "SmallRNAseq/select_unmapped.vars.groovy"
-
+//rule for task SelectUnMapped from catalog NGS, version 1
 SelectUnMapped = {
    doc title: "SelectUnMapped",
       desc:  "Call samtools to create a new BAM with only the reads that failed to map to the genome.",
@@ -13,6 +12,7 @@ SelectUnMapped = {
 
          samtools view -hb -f 4 $input | samtools sort -@ $BOWTIE_THREADS - -o $output &&
          samtools index $output
+         
       ""","SelectUnMapped"
    }
 }

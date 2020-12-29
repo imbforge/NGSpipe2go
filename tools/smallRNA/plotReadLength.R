@@ -26,7 +26,7 @@ files <- list.files(
   recursive=TRUE,
   full.names=TRUE
   )
-out_fig_path <- paste0(output_dir, "/plots")
+out_fig_path <- paste0(output_dir, "/figure")
 dir.create(file.path(out_fig_path), showWarnings = FALSE)
 
 counts <- lapply(files[!grepl('family|class', files)], readWithFileName)

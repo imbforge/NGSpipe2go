@@ -1,5 +1,5 @@
-load MODULE_FOLDER + "SmallRNAseq/subread.vars.groovy"
-
+//rule for task feature_count from Subread package, version 1
+//desc: Counting reads in features with featureCounts
 SubReadCount = {
    doc title: "subread_count_se",
    desc:  "Counting reads in features with feature-count out of the subread package",

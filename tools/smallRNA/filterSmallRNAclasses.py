@@ -6,16 +6,17 @@ from __future__ import (absolute_import, division,
                         print_function)
 import argparse
 import pysam
+import string
 import sys
 
 usage = '''
    Filter classes of small RNAs from library.
-   Classes are defined by read sequence length
+   Classes are defined by read sequence length and/or a nucleotide in a particular sequence position.
+   NOTE: assumes bowtie mapping, and thus sequence alignments in the reverse strand will be reverse complemented before testing for nucleotide position. The output bam will keep the same sequence alignment as the original bam.
    '''
 
 
 def getArgs():
-    """Parse sys.argv"""
     parser = argparse.ArgumentParser(
         description=usage,
         formatter_class=argparse.ArgumentDefaultsHelpFormatter
@@ -25,14 +26,14 @@ def getArgs():
         '-i', '--inputBam',
         required=True,
         type=str,
-        help='Path to alignments (bam) to be filtered. The bam file needs to be indexed.'
+        help='Path to alignments (bam) to be filtered. The bam file needs to be indexed. Use "stdin" to read input from standard input (stream). If stdin the file is assumed to be sam and the header is included. Example: samtools view -h data/ah.bam | filterReads/filterSmallRNAclasses.py -i stdin -m 21 -M21 -n "A" -p last -o stdout'
     )
 
     parser.add_argument(
         '-o', '--outputBam',
         required=True,
         type=str,
-        help='Output Bam file to store filtered results. Use "stdout" to write output to standard out'
+        help='Output Bam file to store filtered results. Use "stdout" to write output to standard out (stream).'
     )
 
     parser.add_argument(
@@ -57,18 +58,31 @@ def getArgs():
     )
 
     parser.add_argument(
-        '-n', '--nuc',
+        '-n', '--nucleotide',
         required=False,
         type=str,
-        help='Alignments with nuc at the first position, or the reverse complement at the the last position if read is mapped in the reverse strand, will be kept.'
+        choices=('T', 'G', 'A', 'C'),
+        help='Filter by nucleotide'
+    )
+
+    parser.add_argument(
+        '-p', '--position',
+        required=False,
+        type=str,
+        choices=('first', 'last'),
+        help='Should the nucleotide be in the first or last sequence position (5\' or 3\' end). Here sequence is considered to be original sequenced DNA, so if the is mapped in the reverse strand the alignment sequence will be reverse completed.'
     )
 
     args = parser.parse_args()
 
-    if not (args.min or args.max or args.nuc):
+    if not (args.min or args.max or args.nucleotide):
         parser.error(
-            'Filter option not set. Add at least one of the following filtering options:\n --min, --max or --nuc'
+            'Filter option not set. Add at least one of the following filtering options:\n --min, --max or --nucleotide'
             )
+
+    if args.nucleotide and not args.position:
+        parser.error("Filtering by nucleotide requires the position argument.")
+
     return args
 
 
@@ -81,29 +95,26 @@ def eprint(*args, **kwargs):
     print(*args, file=sys.stderr, **kwargs)
 
 
+def reverseComplement(seq):
+    # credit to: https://bioinformatics.stackexchange.com/a/3585/108
+    tab = str.maketrans("ACTG", "TGAC")
+    return seq.translate(tab)[::-1]
+
+
 if __name__ == '__main__':
     args = getArgs()
     in_file = args.inputBam
     out_file = args.outputBam
-
-    if args.nuc:
-        if args.nuc == "T":
-            nucleotide_for = "T"
-            nucleotide_rev = "A"
-        elif args.nuc == "A":
-            nucleotide_for = "A"
-            nucleotide_rev = "T"
-        elif args.nuc == "G":
-            nucleotide_for = "G"
-            nucleotide_rev = "C"
-        elif args.nuc == "C":
-            nucleotide_for = "C"
-            nucleotide_rev = "G"
-        else:
-            eprint("Not a valid nucleotide. Use one of: A, C, G, T")
+    min_length = args.min
+    max_length = args.max
+    nucleotide = args.nucleotide
+    position = args.position
 
 
-    inbam = pysam.AlignmentFile(in_file, "rb")
+    if in_file == "stdin":
+        inbam = pysam.AlignmentFile("-", "r")
+    else:
+        inbam = pysam.AlignmentFile(in_file, "rb")
 
     if out_file == "stdout":
         outbam = pysam.AlignmentFile("-", "wb", template=inbam)
@@ -112,23 +123,34 @@ if __name__ == '__main__':
 
     reads_total = 0
     reads_kept = 0
+
     for read in inbam.fetch():
         reads_total = reads_total + 1
-        if args.min:
-            if read.qlen < args.min:
+        if min_length:
+            if read.qlen < min_length:
                 continue
-        if args.max:
-            if read.qlen > args.max:
+        if max_length:
+            if read.qlen > max_length:
                 continue
-        if args.nuc:
+
+        if args.nucleotide:
+            if read.is_reverse is True:
+                sequence = reverseComplement(read.seq)
+            else:
+                sequence = read.seq
+
             if (
-                read.is_reverse is True and
-                read.seq.endswith(nucleotide_rev) is False):
+                position == "first" and
+                sequence.startswith(nucleotide) is False
+            ):
                 continue
+
             if (
-                read.is_reverse is False and
-                read.seq.startswith(nucleotide_for) is False):
+                position == "last" and
+                sequence.endswith(nucleotide) is False
+            ):
                 continue
+
         reads_kept = reads_kept + 1
         outbam.write(read)
     inbam.close()

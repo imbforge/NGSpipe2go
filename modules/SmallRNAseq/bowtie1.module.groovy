@@ -1,11 +1,11 @@
-load MODULE_FOLDER + "SmallRNAseq/bowtie1.vars.groovy"
-
+//rule for task bowtie_se from catalog ChIPseq, version 1
+//desc: Align single end reads
 Bowtie_se = {
    doc title: "Bowtie SE alignment",
       desc:  "Align single end reads",
       constraints: "Only works with compressed input. Samtools multithreaded version expected (>=0.1.19).",
       bpipe_version: "tested with bpipe 0.9.8.7",
-      author: "Sergi Sayols"
+      author: "Sergi Sayols and modified by Antonio Domingues"
 
    output.dir = MULTIMAP_OUT_DIR
 
@@ -14,27 +14,21 @@ Bowtie_se = {
                        " "   + BOWTIE_BEST     +
                        " -p " + Integer.toString(BOWTIE_THREADS) +
                        " -v " + Integer.toString(BOWTIE_MM)       +
-                       " -M " + Integer.toString(BOWTIE_MULTIREPORT) 
+                       " -M " + Integer.toString(BOWTIE_MULTIREPORT) +
+                       " --trim5 " + Integer.toString(BOWTIE_TRIMM5)  +
+                       " --trim3 " + Integer.toString(BOWTIE_TRIMM3)
 
-   transform(".cutadapt.highQ.deduped.trimmed.fastq.gz") to (".bam") {
-
-      def SAMPLE_NAME = output.prefix
+  // keep only the file name without any extensions.
+   def SAMPLE_NAME = input.split("/")[-1].split("\\.")[0]
+   
+   produce(SAMPLE_NAME + ".bam") {
+   branch.totalBams = output
 
       exec """
-            module load bowtie/${BOWTIE_VERSION} &&
-            module load samtools/${SAMTOOLS_VERSION} &&
+         module load bowtie/${BOWTIE_VERSION}     &&
+         module load samtools/${SAMTOOLS_VERSION} &&
 
-      if [ ! -e $TMP ]; then
-        mkdir -p $TMP;
-      fi &&
-
-      SAMPLENAME_BASE=\$(basename ${SAMPLE_NAME}) &&
-
-      echo 'BOWTIE_FLAGS' $BOWTIE_FLAGS > $output.dir/\${SAMPLENAME_BASE}.bowtie.log &&
-      echo 'BOWTIE_REF' $BOWTIE_REF >> $output.dir/\${SAMPLENAME_BASE}.bowtie.log && 
-
-      zcat $input | bowtie $BOWTIE_FLAGS $BOWTIE_REF - 2>> $output.dir/\${SAMPLENAME_BASE}.bowtie.log | awk '{if (\$1~/^@/) print; else {if(\$5 == 255) print \$0"\tNH:i:1"; else print \$0"\tNH:i:2";}}' | samtools view -bhSu - | samtools sort -@ $BOWTIE_THREADS -T $TMP/\$(basename $output.prefix)_bowtie1_sort - -o $output
-
+         zcat $input | bowtie $BOWTIE_FLAGS $BOWTIE_REF - 2> $output.dir/${SAMPLE_NAME}.bt.log | samtools view -bhSu - | samtools sort -@ $BOWTIE_THREADS - -o $output
       ""","Bowtie_se"
    }
 }

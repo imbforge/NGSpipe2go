@@ -1,21 +1,19 @@
-load MODULE_FOLDER + "SmallRNAseq/sensor_coverage.vars.groovy"
-
 SensorCoverage = {
-    doc title: "SensorCoverage",
-        desc:  "Coverage at a small RNA sensor construct.",
-        author: "António Domingues"
+	doc title: "SensorCoverage",
+		desc:  "Coverage at a small RNA sensor construct.",
+		author: "António Domingues"
 
-    output.dir = SENSOR_COVERAGE_OUTDIR
+	output.dir = SENSOR_COVERAGE_OUTDIR
 
-    transform(".bam") to(".plus.cov", ".minus.cov") {
-        exec """
+	transform(".bam") to(".plus.cov", ".minus.cov") {
+		exec """
 
-            module load bedtools/${BEDTOOLS_VERSION} &&
+			module load bedtools/${BEDTOOLS_VERSION} &&
 
-            genomeCoverageBed -ibam $input -d -strand "+" | grep "21U_mCherry_sensor" > $output1 &&
-            genomeCoverageBed -ibam $input -d -strand "-" | grep "21U_mCherry_sensor" > $output2
+			genomeCoverageBed -ibam $input -d -strand "+" | grep "21U_mCherry_sensor" > $output1 &&
+			genomeCoverageBed -ibam $input -d -strand "-" | grep "21U_mCherry_sensor" > $output2
 
-        ""","SensorCoverage"
-    }
+		""","SensorCoverage"
+	}
 }
 

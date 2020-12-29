@@ -1,4 +1,5 @@
-load MODULE_FOLDER + "SmallRNAseq/bam2fastq.vars.groovy"
+//rule for task Bam2FastQ from catalog NGS, version 1
+//desc: Convert Bam to FastQ using bedtools
 Bam2FastQ = {
    doc title: "Bam2FastQ",
       desc:  "Call bedtools to create a new BAM with only the reads mapped to the genome.",

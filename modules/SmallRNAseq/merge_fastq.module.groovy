@@ -1,5 +1,5 @@
-load MODULE_FOLDER + "SmallRNAseq/merge_fastq.vars.groovy"
-
+//rule for task CatFastQ from catalog NGS, version 1
+//desc: Merge SE FastQ files
 CatFastQ = {
    doc title: "CatFastQ",
       desc:  "merge single ended fastq files.",

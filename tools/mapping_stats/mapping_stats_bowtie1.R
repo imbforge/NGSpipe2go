@@ -10,7 +10,7 @@ theme_set(theme_bw(16))
 ###############
 
 ## create plot directory:
-dir.create(file.path("figure"), showWarnings = FALSE)
+# dir.create(file.path("figure"), showWarnings = FALSE)
 
 
 bams <- list.files(pattern='*.bam$')
@@ -66,7 +66,7 @@ stattable$String <- ifelse(is.na(stattable$Percentage ), "",
 ##########
 ## Plot ##
 
-outputname <- 'figure/totalReads.pdf'
+outputname <- 'totalReads.pdf'
 plotter <- ggplot(stattable, aes(x=Name, y=Counts,fill=Reads)) +
    geom_bar(stat="identity", position="dodge", width=0.7) +
    ggtitle("Mapping Statistics") +
@@ -78,5 +78,5 @@ plotter <- ggplot(stattable, aes(x=Name, y=Counts,fill=Reads)) +
    scale_fill_brewer(palette="Set1")
 
 ggsave(outputname, plotter, height=7,width=10)
-outputname <- 'figure/totalReads.png'
+outputname <- 'totalReads.png'
 ggsave(outputname, plotter, height=7,width=10)

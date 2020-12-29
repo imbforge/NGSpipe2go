@@ -1,5 +1,3 @@
-load MODULE_FOLDER + "SmallRNAseq/repenrichPE.vars.groovy"
-
 RepEnrichPE = {
     doc title: "Quantification of Transposons",
         desc:  "Quantifies transposon expression/targeting using RepEnrich. First does unique mapping to the genome keeping the multimapped reads in a fastq file (--max). Both the uniquely mapped and multimapping reads are then used for repEnrich. Intermediate results are removed.",
@@ -33,11 +31,11 @@ RepEnrichPE = {
         echo "Mapping:" &&
 
 
-        bowtie -p $REPENRICH_ESSENTIAL_THREADS $BOWTIE_RE_OTHER --max $output.dir/${EXP}".multimap.fastq"  $ESSENTIAL_BOWTIE_REF -1 $INPUT_TMP1 -2 $INPUT_TMP2 2> $output1 | samtools view -bhSu - | samtools sort -@ $REPENRICH_ESSENTIAL_THREADS -o $output.dir/${EXP}".bam" -T ${EXP} - &&
+        bowtie -p $REPENRICH_CORES $BOWTIE_RE_OTHER --max $output.dir/${EXP}".multimap.fastq"  $ESSENTIAL_BOWTIE_REF -1 $INPUT_TMP1 -2 $INPUT_TMP2 2> $output1 | samtools view -bhSu - | samtools sort -@ $REPENRICH_CORES -o $output.dir/${EXP}".bam" -T ${EXP} - &&
         samtools index $output.dir/${EXP}".bam" &&
 
         echo "Repeat counting:" &&
-
+        
         python RepEnrich.py ${REPEAT_MASKER} $output.dir ${EXP} ${REPEAT_REF} $output.dir/${EXP}.multimap_1.fastq --fastqfile2 $output.dir/${EXP}.multimap_2.fastq $output.dir/${EXP}".bam" --cpus ${REPENRICH_CORES} --is_bed ${REPENRICH_BED} --pairedend TRUE &&
 
         rm $INPUT_TMP1 $INPUT_TMP2

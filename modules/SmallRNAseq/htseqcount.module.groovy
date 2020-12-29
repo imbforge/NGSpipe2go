@@ -1,5 +1,5 @@
-load MODULE_FOLDER + "SmallRNAseq/htseqcount.vars.groovy"
-
+//rule for task feature_count from htseq-count package, version 1
+//desc: Counting reads in features with htseq-count
 HTseqCount = {
    doc title: "subread_count_se",
    desc:  "Counting reads in features with htseq-count",
@@ -31,6 +31,10 @@ HTseqCount = {
    // run the chunk
    transform(".bam") to (".counts") {
       exec """
+         if [ -n "\$LSB_JOBID" ]; then
+            export TMPDIR=/jobdir/\${LSB_JOBID};
+         fi &&
+
 
          htseq-count $HTSEQCOUNT_FLAGS $input $HTSEQCOUNT_GENESGTF > $output 2> ${output.prefix}_htseqcountlog.stderr
 

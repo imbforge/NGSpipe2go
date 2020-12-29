@@ -1,5 +1,5 @@
-load MODULE_FOLDER + "SmallRNAseq/bowtie2.vars.groovy"
-
+//rule for task bowtie_se from catalog ChIPseq, version 1
+//desc: Align single end reads
 Bowtie2_se = {
    doc title: "Bowtie2 SE alignment",
       desc:  "Align single end reads",
@@ -28,7 +28,7 @@ Bowtie2_se = {
                        " --trim5 " + Integer.toString(BOWTIE2_TRIMM5)  +
                        " --trim3 " + Integer.toString(BOWTIE2_TRIMM3)
 
-   transform(".cutadapt.highQ.deduped.trimmed.fastq.gz") to (".bam") {
+   transform(".deduped_barcoded.fastq.gz") to (".bam") {
 
       def SAMPLE_NAME = input.prefix.prefix
 
