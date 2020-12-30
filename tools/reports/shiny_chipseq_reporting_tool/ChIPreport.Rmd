@@ -243,6 +243,15 @@ peaksAllBranches <- lapply(branches, function(peaksdir) {
 
 ## Correlation of peaks ##
 
+```{r peak_upset_paragraph, echo=F,results='asis',error=F,warning=F,message=F}
+upset <- lapply(branches, function(peaksdir) {
+  if(length(branches)>1) {cat(paste("### Peaks from", if(peaksdir==""){"default"} else {peaksdir}, "pipeline branch\n\n"))}
+  ChIPhelper.UpSetPlot(peaksdir)
+})
+```
+
+## Correlation of peaks per group ##
+
 The following Venn diagrams correlate the peaks called in the sample groups.
 
 ```{r peak_venn_paragraph, echo=F,results='asis',error=F,warning=F,message=F}

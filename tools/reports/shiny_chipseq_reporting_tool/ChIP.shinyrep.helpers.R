@@ -16,7 +16,7 @@ library("ggplot2")
 library("ngsReports")
 library("DT")
 library("DiffBind")
-
+library("ComplexHeatmap")
 ##
 ## loadGlobalVars: read configuration from bpipe vars
 ##
@@ -188,6 +188,71 @@ ChIPhelper.VennDiagram <- function(subdir=""){
   
 }
 
+##
+## ChIPhelper.UpsetPlot: shows a upset plot for the peaks called in one branch 
+##
+ChIPhelper.UpSetPlot <- function(subdir="", setsize=20){
+  #create granges from the peaks
+  peaks <- ChIPhelper.init("readPeaks", subdir)
+  peak.ranges <- lapply(peaks, function(x){
+    x <- GRanges(seqnames=x$chr,
+                 IRanges(x$start,
+                         end=x$end),
+                 strand="*"
+    )
+    
+  })
+  
+    cat(paste0("#### Overlap of peaks per peak number:"), fill=T)
+    cat("\n", fill=T)
+    #this upset plot is based on the number of peaks which are overlapping (value_fun is length)
+	  upset_matrix <- make_comb_mat(peak.ranges, top_n_sets=setsize, value_fun = length)
+	  ht <- draw(UpSet(upset_matrix,
+	                   comb_order = order(comb_size(upset_matrix), decreasing = T),
+	                   comb_col = "steelblue",
+	                   bg_col = "#F0F0FF",
+	                   column_title=paste("# of regions for branch", subdir, "\nmax.", setsize, "sets are shown"),
+	                   #right_annotation = NULL,
+	                   right_annotation = upset_right_annotation(upset_matrix, 
+	                                                             gp = gpar(fill = "steelblue"),
+	                                                             )
+	  ))
+	  od = column_order(ht)
+	  cs = comb_size(upset_matrix)
+	  decorate_annotation("Intersection\nsize", {
+	    grid.text(format(cs[od], scientific=T, digits=2),
+	              x = seq_along(cs), y = unit(cs[od], "native") + unit(20, "pt"), 
+	              default.units = "native", just = "bottom", gp = gpar(fontsize = 8), rot=90)
+	  })
+    cat("\n", fill=T)
+    cat("\n", fill=T)
+    cat(paste0("#### Overlap of peaks based on bp:"), fill=T)
+    cat("\n", fill=T)
+    cat("\n", fill=T)
+    cat("\n", fill=T)
+    #this upset plot is based on the number of bp which are overlapping 
+	  upset_matrix <- make_comb_mat(peak.ranges, top_n_sets=setsize)
+	  ht <- draw(UpSet(upset_matrix,
+	                   comb_order = order(comb_size(upset_matrix), decreasing = T),
+	                   comb_col = "steelblue",
+	                   bg_col = "#F0F0FF",
+	                   column_title=paste("# overlap in bp for branch", subdir,"\n max.", setsize, "sets are shown"),
+	                   #right_annotation = NULL,
+	                   right_annotation = upset_right_annotation(upset_matrix, 
+	                                                             gp = gpar(fill = "steelblue"),
+	                                                             )
+	  ))
+	  od = column_order(ht)
+	  cs = comb_size(upset_matrix)
+	  decorate_annotation("Intersection\nsize", {
+	    grid.text(format(cs[od], scientific=T, digits=2),
+	              x = seq_along(cs), y = unit(cs[od], "native") + unit(20, "pt"), 
+	              default.units = "native", just = "bottom", gp = gpar(fontsize = 8), rot=90)
+	  })
+  
+  cat("\n", fill=T)
+  cat("\n", fill=T)
+}
 ##
 ## ChIPhelper.BOWTIE: parse bowtie log files and create a md table
 ##
