@@ -5,7 +5,7 @@ RepEnrich = {
         bpipe_version: "tested with bpipe 0.9.8.7",
         author: "Antonio Domingues"
 
-    def SAMPLE_NAME = input.split("/")[-1].replaceAll(".deduped_barcoded.trimmed.fastq.gz", "")
+   def SAMPLE_NAME = input.split("/")[-1].split("\\.")[0]
     output.dir = REPENR_OUT_DIR + "/" + SAMPLE_NAME
 
     def REPENRICH_FLAGS = " -q --sam -t"  +
@@ -27,12 +27,12 @@ RepEnrich = {
         MULTI=${SAMPLE_NAME}".multimap.fastq" 
         UNIQ=${SAMPLE_NAME}".bam"
 
-        zcat $input | bowtie $REPENRICH_FLAGS --max $output.dir/${MULTI} $REPENRICH_REF - 2> $output1 | samtools view -bhSu - | samtools sort -@ $REPENRICH_THREADS - -o $output.dir/${UNIQ} &&
-        samtools index $output.dir/${UNIQ} &&
+        zcat $input | bowtie $REPENRICH_FLAGS --max $output.dir/\${MULTI} $REPENRICH_REF - 2> $output1 | samtools view -bhSu - | samtools sort -@ $REPENRICH_THREADS - -o $output.dir/\${UNIQ} &&
+        samtools index $output.dir/\${UNIQ} &&
 
-        RepEnrich.py ${REPEAT_MASKER} $output.dir ${SAMPLE_NAME} ${REPEAT_REF} $output.dir/${MULTI} $output.dir/${UNIQ} --cpus ${REPENRICH_THREADS} --is_bed ${REPENRICH_BED} &&
+        RepEnrich.py ${REPEAT_MASKER} $output.dir ${SAMPLE_NAME} ${REPEAT_REF} $output.dir/\${MULTI} $output.dir/\${UNIQ} --cpus ${REPENRICH_THREADS} --is_bed ${REPENRICH_BED} &&
 
-        rm $output.dir/${MULTI} $output.dir/${UNIQ}
+        rm $output.dir/\${MULTI} $output.dir/\${UNIQ}
 
         ""","RepEnrich"
     }
