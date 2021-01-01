@@ -132,7 +132,7 @@ def countNucleotidePerPosition(sequences):
 
     source: http://stackoverflow.com/a/21103385/1274242
     '''
-    print 'Counting nucleotides ' + timeStamp()
+    print('Counting nucleotides', timeStamp())
     df = pd.DataFrame([list(s) for s in sequences])
     counts = df.apply(pd.value_counts).transpose()
     return(counts)
@@ -172,7 +172,7 @@ def getSequencesFrom5prime(coordinates, fasta, upstream, downstream, chromsizes)
     Input: BedTools object
     Output: a list of strings with defined size surrounding a genomic location
     '''
-    print 'Fetching 5\' sequences ' + timeStamp()
+    print('Fetching 5\' sequences', timeStamp())
     seq_len = upstream + downstream - 1
     start = coordinates.each(five_prime, upstream=upstream, downstream=downstream, genome=chromsizes).filter(greater_than, seq_len).saveas()
     clean_seq = parseSequence(getSequences(start, fasta))
@@ -185,7 +185,7 @@ def getSequencesFrom3prime(coordinates, fasta, upstream, downstream, chromsizes)
     Input: BedTools object
     Output: a list of strings with defined size surrounding a genomic location
     '''
-    print 'Fetching 3\' sequences ' + timeStamp()
+    print('Fetching 3\' sequences', timeStamp())
     seq_len = upstream + downstream - 1
     start = coordinates.each(three_prime, upstream=upstream, downstream=downstream, genome=chromsizes).filter(greater_than, seq_len).saveas()
     clean_seq = parseSequence(getSequences(start, fasta))
@@ -199,7 +199,7 @@ def convertSGVImages(image, res=300):
     '''
     image_out = image.replace('.svg', '.png')
     command = 'convert -density ' + str(res) + ' ' + image + ' ' + image_out
-    print 'converting logo to PNG: ' + timeStamp()
+    print('converting logo to PNG:', timeStamp())
     os.system(command)
 
 
@@ -209,7 +209,7 @@ def createMotif(sequences, fname):
     Input: list of strings with the sequences; file path to save the logo.
     Output: an image file with the logo.
     '''
-    print 'Generating motif ' + timeStamp()
+    print('Generating motif', timeStamp())
     try:
         os.makedirs('figure')
     except OSError:
@@ -218,12 +218,13 @@ def createMotif(sequences, fname):
     from Bio.Seq import Seq
     from Bio import motifs
     from Bio.Alphabet import IUPAC
-    import urllib2
+    import urllib.request
+    import urllib.error
     # m = motif.motif(alphabet=IUPAC.unambiguous_dna) # initialize motif
     instances = []
     for sequence in sequences:
         if len(sequence) < 40:
-            print sequence
+            print(sequence)
         instances.append(Seq(sequence, alphabet=IUPAC.ambiguous_dna))
     m = motifs.create(instances)
     flogo = 'figure/' + fname
@@ -232,7 +233,7 @@ def createMotif(sequences, fname):
         try:
             m.weblogo(flogo, format='SVG')
             break
-        except urllib2.HTTPError, detail:
+        except urllib.error.HTTPError as detail:
             if detail.errno == 500:
                 time.sleep(5)
                 continue
@@ -248,7 +249,7 @@ def intersectBamWithBed(inbam, inbed):
     Output: list of tuples with a name (str) and the reads for sense and antisense piRNAs (bedTool)
     '''
     # convert bam to bed
-    print 'Separating sense and antisense piRNAs ' + timeStamp()
+    print('Separating sense and antisense piRNAs', timeStamp())
     piRNA = BedTool(inbam).bam_to_bed()
 
     ## create bedtool for genomic features
@@ -268,7 +269,7 @@ def intersectBamWithBed(inbam, inbed):
 
 if __name__ == '__main__':
     args = getArgs()
-    print args
+    print(args)
     fasta = BedTool(args.fasta)
     inbam = args.bam
     inbed = args.intervals
@@ -278,22 +279,22 @@ if __name__ == '__main__':
     if args.genome is not None and not "none":
         chromsizes = pybedtools.chromsizes(args.genome)
     else:
-        print 'Retrieving custom chromosome lengths ' + timeStamp()
+        print('Retrieving custom chromosome lengths', timeStamp())
         chromsizes = get_chrom_lengths(inbam)
 
     exp_name = os.path.split(inbam)[1].split(".")[0] + os.path.split(inbed)[1].split(".")[0]
     exp_folder = out_folder + '/' + exp_name
     createAndChangeDir(out_folder)
-    print 'Starting analysis for ' + inbam + ' ' + timeStamp()
+    print('Starting analysis for', inbam, timeStamp())
 
     strand_piRNAs = intersectBamWithBed(inbam, inbed)
     for direction in strand_piRNAs:
-        print 'piRNAs in ' + direction[0] + ' ' + timeStamp()
-        print 'Fetching 5\' sequences ' + timeStamp()
+        print('piRNAs in', direction[0], timeStamp())
+        print('Fetching 5\' sequences', timeStamp())
         five_out = direction[0] + '.5prime.count.csv'
         five = getSequencesFrom5prime(direction[1], fasta, upstream=up, downstream=down, chromsizes=chromsizes)
 
-        print 'Fetching 3\' sequences ' + timeStamp()
+        print('Fetching 3\' sequences', timeStamp())
         three_out = direction[0] + '.3prime.count.csv'
         three = getSequencesFrom3prime(direction[1], fasta, upstream=up, downstream=down, chromsizes=chromsizes)
 
@@ -321,7 +322,7 @@ if __name__ == '__main__':
         m_out_three = direction[0] + '.3prime.logo.svg'
         createMotif(three, m_out_three)
 
-    print 'Plotting results ' + timeStamp()
+    print('Plotting results', timeStamp())
     script_dirname = os.path.dirname(os.path.realpath(sys.argv[0]))
     plot_script_path = script_dirname + '/piRNABaseTerminalBasesPlot.R'
     os.system("Rscript " + plot_script_path)
