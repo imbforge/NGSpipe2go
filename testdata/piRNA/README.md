@@ -7,7 +7,7 @@ ml sratoolkit bowtie
 
 ## get rawdata
 mkdir -p rawdata/drerio
-parallel --xapply -j4 "fastq-dump -X 1000000 --stdout {1} | gzip > rawdata/drerio/{2}.fastq.gz" ::: SRR3231361 SRR3231362 SRR3231358 SRR3231359 ::: input_1 input_2 Tdrd6a_IP_1 Tdrd6a_IP_2
+parallel --xapply -j4 "fastq-dump -X 1000000 --stdout {1} | gzip > rawdata/drerio/{2}.fastq.gz" ::: SRR10863042 SRR10863043 ::: 10dpf_PGCs_rep3 10dpf_PGCs_rep2
 
 # get zebrafish reference & annotation
 mkdir -p ref/drerio
@@ -49,7 +49,7 @@ cvbio UpdateContigNames \
     --skip-missing true
 
 ## it's essential that column 7 has the class name
-egrep "LINE|SINE|DNA" ref/drerio/GRCz11.repeat_masker.ens.bed > ref/drerio/GRCz11.transposons.bed
+egrep "LINE|SINE|DNA" ref/drerio/GRCz11.repeat_masker.ens.bed | grep -v "CHR_" > ref/drerio/GRCz11.transposons.bed
 
 ## create repRenrich reference
 ## here only DNA, SINE, LINE elements were used
