@@ -26,28 +26,28 @@ def getArgs():
     parser = argparse.ArgumentParser(
         description=usage,
         formatter_class=argparse.RawDescriptionHelpFormatter
-        )
+    )
 
     parser.add_argument(
         '-f', '--fasta',
         required=True,
         type=str,
         help='Path to fasta to retrieve sequences.'
-        )
+    )
 
     parser.add_argument(
         '-b', '--bam',
         required=True,
         type=str,
         help='Path to alignments (bam) to look for motif.'
-        )
+    )
 
     parser.add_argument(
         '-i', '--intervals',
         required=True,
         type=str,
         help='Path to genomic intervals (bed), usually containing the genomic locations of repeat elements. This will be used to determine sense or antisense of read mapping'
-        )
+    )
 
     parser.add_argument(
         '-u', '--upstream',
@@ -55,7 +55,7 @@ def getArgs():
         type=int,
         default=20,
         help='Number of nucleotides upstream of the read (genomic sequence). Default is 20'
-        )
+    )
 
     parser.add_argument(
         '-d', '--downstream',
@@ -70,7 +70,7 @@ def getArgs():
         required=False,
         type=str,
         help='The genome to retrieve chromosome lengths, e.g., hg19, mm10, danRer7...'
-        )
+    )
 
     parser.add_argument(
         '-o', '--outFolder',
@@ -110,7 +110,7 @@ def createAndChangeDir(dir_name):
 
 def get_chrom_lengths(path_to_bam):
     '''
-    Uses pysam to retrieve chromosome sizes form bam.
+    Uses pysam to retrieve chromosome sizes from bam.
     Useful helper to use with some pybedtools functions (e.g. coverage), when a bam was mapped with custom genome not available in UCSC.
     Input: path to bam file (should be indexed)
     Output: dictionary.
@@ -174,7 +174,8 @@ def getSequencesFrom5prime(coordinates, fasta, upstream, downstream, chromsizes)
     '''
     print('Fetching 5\' sequences', timeStamp())
     seq_len = upstream + downstream - 1
-    start = coordinates.each(five_prime, upstream=upstream, downstream=downstream, genome=chromsizes).filter(greater_than, seq_len).saveas()
+    start = coordinates.each(five_prime, upstream=upstream, downstream=downstream,
+                             genome=chromsizes).filter(greater_than, seq_len).saveas()
     clean_seq = parseSequence(getSequences(start, fasta))
     return clean_seq
 
@@ -187,7 +188,8 @@ def getSequencesFrom3prime(coordinates, fasta, upstream, downstream, chromsizes)
     '''
     print('Fetching 3\' sequences', timeStamp())
     seq_len = upstream + downstream - 1
-    start = coordinates.each(three_prime, upstream=upstream, downstream=downstream, genome=chromsizes).filter(greater_than, seq_len).saveas()
+    start = coordinates.each(three_prime, upstream=upstream, downstream=downstream,
+                             genome=chromsizes).filter(greater_than, seq_len).saveas()
     clean_seq = parseSequence(getSequences(start, fasta))
     return clean_seq
 
@@ -203,43 +205,43 @@ def convertSGVImages(image, res=300):
     os.system(command)
 
 
-def createMotif(sequences, fname):
-    '''
-    Creates and saves a motif (logo) from a list of input sequences.
-    Input: list of strings with the sequences; file path to save the logo.
-    Output: an image file with the logo.
-    '''
-    print('Generating motif', timeStamp())
-    try:
-        os.makedirs('figure')
-    except OSError:
-        if not os.path.isdir('figure'):
-         raise
-    from Bio.Seq import Seq
-    from Bio import motifs
-    from Bio.Alphabet import IUPAC
-    import urllib.request
-    import urllib.error
-    # m = motif.motif(alphabet=IUPAC.unambiguous_dna) # initialize motif
-    instances = []
-    for sequence in sequences:
-        if len(sequence) < 40:
-            print(sequence)
-        instances.append(Seq(sequence, alphabet=IUPAC.ambiguous_dna))
-    m = motifs.create(instances)
-    flogo = 'figure/' + fname
-    while True:
-        # source: http://stackoverflow.com/a/9986206/1274242
-        try:
-            m.weblogo(flogo, format='SVG')
-            break
-        except urllib.error.HTTPError as detail:
-            if detail.errno == 500:
-                time.sleep(5)
-                continue
-            else:
-                raise
-    convertSGVImages(flogo)
+# def createMotif(sequences, fname):
+#     '''
+#     Creates and saves a motif (logo) from a list of input sequences.
+#     Input: list of strings with the sequences; file path to save the logo.
+#     Output: an image file with the logo.
+#     '''
+#     print('Generating motif', timeStamp())
+#     try:
+#         os.makedirs('figure')
+#     except OSError:
+#         if not os.path.isdir('figure'):
+#          raise
+#     from Bio.Seq import Seq
+#     from Bio import motifs
+#     from Bio.Alphabet import IUPAC
+#     import urllib2
+
+#     # m = motif.motif(alphabet=IUPAC.unambiguous_dna) # initialize motif
+#     instances = []
+#     for sequence in sequences:
+#         if len(sequence) < 40:
+#             print(sequence)
+#         instances.append(Seq(sequence, alphabet=IUPAC.ambiguous_dna))
+#     m = motifs.create(instances)
+#     flogo = 'figure/' + fname
+#     while True:
+#         # source: http://stackoverflow.com/a/9986206/1274242
+#         try:
+#             m.weblogo(flogo, format='SVG')
+#             break
+#         except urllib2.HTTPError, detail:
+#             if detail.errno == 500:
+#                 time.sleep(5)
+#                 continue
+#             else:
+#                 raise
+#     convertSGVImages(flogo)
 
 
 def intersectBamWithBed(inbam, inbed):
@@ -251,14 +253,11 @@ def intersectBamWithBed(inbam, inbed):
     # convert bam to bed
     print('Separating sense and antisense piRNAs', timeStamp())
     piRNA = BedTool(inbam).bam_to_bed()
-
-    ## create bedtool for genomic features
-    bed = BedTool(inbed)
-
+    # create bedtool for genomic features
+    bed = BedTool(inbed)   
     # outname = inbam.replace('.bam', '')
     # outsense = outname + "sense.bed"
     # outantisense = outname + "antisense.bed"
-
     antisense = piRNA.intersect(bed, S=True)
     sense = piRNA.intersect(bed, s=True)
     piRNAs = [
@@ -282,7 +281,8 @@ if __name__ == '__main__':
         print('Retrieving custom chromosome lengths', timeStamp())
         chromsizes = get_chrom_lengths(inbam)
 
-    exp_name = os.path.split(inbam)[1].split(".")[0] + os.path.split(inbed)[1].split(".")[0]
+    exp_name = os.path.split(inbam)[1].split(
+        ".")[0] + os.path.split(inbed)[1].split(".")[0]
     exp_folder = out_folder + '/' + exp_name
     createAndChangeDir(out_folder)
     print('Starting analysis for', inbam, timeStamp())
@@ -292,36 +292,37 @@ if __name__ == '__main__':
         print('piRNAs in', direction[0], timeStamp())
         print('Fetching 5\' sequences', timeStamp())
         five_out = direction[0] + '.5prime.count.csv'
-        five = getSequencesFrom5prime(direction[1], fasta, upstream=up, downstream=down, chromsizes=chromsizes)
-
+        five = getSequencesFrom5prime(
+            direction[1], fasta, upstream=up, downstream=down, chromsizes=chromsizes)
+        
         print('Fetching 3\' sequences', timeStamp())
         three_out = direction[0] + '.3prime.count.csv'
-        three = getSequencesFrom3prime(direction[1], fasta, upstream=up, downstream=down, chromsizes=chromsizes)
-
+        three = getSequencesFrom3prime(
+            direction[1], fasta, upstream=up, downstream=down, chromsizes=chromsizes)
+        
         # print 'Counting in parallel ' + timeStamp()
         # pool = multiprocessing.Pool(processes=2)
         # five_count, three_count = pool.map(countNucleotidePerPosition,
         #   (five, three))
         # pool.close()
         # pool.join()
-
+        
         five_count = countNucleotidePerPosition(five)
-        index = list(range(-up, 0) + range(1, down+1))
+        index = list(range(-up, 0) + range(1, down + 1))
         five_count['Position'] = index
         five_count.to_csv(five_out, index=False)
-
+        
         three_count = countNucleotidePerPosition(three)
         # reversed_index = [i * -1 for i in list(reversed(range(-up, 0) + range(1, down+1)))]
         three_count['Position'] = list(reversed(index))
         three_count.to_csv(three_out, index=False)
-
-        ## create motifs:
-        m_out_five = direction[0] + '.5prime.logo.svg'
-        createMotif(five, m_out_five)
-
-        m_out_three = direction[0] + '.3prime.logo.svg'
-        createMotif(three, m_out_three)
-
+        
+        # create motifs:
+        # m_out_five = direction[0] + '.5prime.logo.svg'
+        # createMotif(five, m_out_five)
+        
+        # m_out_three = direction[0] + '.3prime.logo.svg'
+        # createMotif(three, m_out_three)
     print('Plotting results', timeStamp())
     script_dirname = os.path.dirname(os.path.realpath(sys.argv[0]))
     plot_script_path = script_dirname + '/piRNABaseTerminalBasesPlot.R'
