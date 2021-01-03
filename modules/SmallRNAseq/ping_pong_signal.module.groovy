@@ -7,7 +7,7 @@ PingPongSignal = {
    output.dir = PINGPONG_OUTDIR
    def SAMPLE_NAME = input.split("/")[-1].replaceAll(".bam", "")
    def OUT_FOLDER = output.dir + "/" + SAMPLE_NAME
-   produce(OUT_FOLDER + "/figure/" + SAMPLE_NAME + ".ppPlot.pdf") {
+   produce(OUT_FOLDER + "/" + SAMPLE_NAME + ".ppPlot.pdf") {
 
       exec """
          module load R/${R_VERSION} &&

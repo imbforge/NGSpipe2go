@@ -18,8 +18,9 @@ Cutadapt = {
 
          module load cutadapt/${CUTADAPT_VERSION} &&
 
-         cutadapt $ADAPTER_SEQUENCE -O $MINIMUM_OVERLAP -m $MINIMUM_LENGTH_KEEP -M $MAXIMUM_LENGTH_KEEP -o $output1 --too-long-output $output2 $input 2>&1 >> ${CUTADAPT_OUTDIR}/${EXP}.cutadapt.log
+         cutadapt $ADAPTER_SEQUENCE -O $MINIMUM_OVERLAP -m $MINIMUM_LENGTH_KEEP -M $MAXIMUM_LENGTH_KEEP -o $output1 --too-long-output $output2 $input 2>&1 >> ${CUTADAPT_LOGDIR}/${EXP}.cutadapt.log
          
       ""","Cutadapt"
    }
+   forward output1
 }

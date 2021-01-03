@@ -7,6 +7,12 @@ FastQQualityFilter = {
     output.dir = FASTQ_QUALITY_FILTER_OUTDIR
     def EXP = input.split("/")[-1].replaceAll(".cutadapt.fastq.gz", "")
 
+    // create the log folder if it doesn't exists
+    def FASTQ_QUALITY_FILTER_LOGDIR = new File( FASTQ_QUALITY_FILTER_OUTDIR + "/logs")
+    if (!FASTQ_QUALITY_FILTER_LOGDIR.exists()) {
+        FASTQ_QUALITY_FILTER_LOGDIR.mkdirs()
+    }
+
     def FASTQ_QUALITY_FILTER_FLAGS = " -q "   + MIN_QUAL  +
                                  " -p "   + MIN_PERCENT  +
                                  " -Q " + QUAL_FORMAT +
@@ -18,7 +24,7 @@ FastQQualityFilter = {
         exec """
             module load fastx_toolkit/${FASTX_VERSION} &&
 
-            zcat $input | fastq_quality_filter $FASTQ_QUALITY_FILTER_FLAGS -o $output 2>&1 >> ${FASTQ_QUALITY_FILTER_OUTDIR}/${EXP}.fastq_quality_filter.log
+            zcat $input | fastq_quality_filter $FASTQ_QUALITY_FILTER_FLAGS -o $output 2>&1 >> ${FASTQ_QUALITY_FILTER_LOGDIR}/${EXP}.fastq_quality_filter.log
             
       ""","FastQQualityFilter"
    }

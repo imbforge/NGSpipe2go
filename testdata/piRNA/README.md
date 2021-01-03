@@ -7,13 +7,13 @@ ml sratoolkit bowtie
 
 ## get rawdata
 mkdir -p rawdata/drerio
-parallel --xapply -j4 "fastq-dump -X 1000000 --stdout {1} | gzip > rawdata/drerio/{2}.fastq.gz" ::: SRR10863042 SRR10863043 ::: 10dpf_PGCs_rep3 10dpf_PGCs_rep2
+parallel --xapply -j4 "fastq-dump -X 1000000 --stdout {1} | gzip > rawdata/drerio/{2}.fastq.gz" ::: SRR6345658 SRR6345657 ::: tdrd6a_het tdrd6a_mut
 
 # get zebrafish reference & annotation
 mkdir -p ref/drerio
-wget -qO- ftp://ftp.ensembl.org/pub/release-98/fasta/danio_rerio/dna/Danio_rerio.GRCz11.dna.primary_assembly.fa.gz | gzip -cd > ref/drerio/GRCz11.fa
+wget -qO- ftp://hgdownload.soe.ucsc.edu/goldenPath/danRer10/bigZips/danRer10.fa.gz | gzip -cd > ref/drerio/danRer10.fa
 
-bowtie-build --threads 8 ref/drerio/GRCz11.fa ref/drerio/GRCz11
+sbatch --job-name=bt_index  --partition=long --time=10:00:00 --nodes=1 --cpus-per-task=8 --mem-per-cpu=8G --wrap="bowtie-build --threads 8 ref/drerio/danRer10.fa ref/drerio/danRer10"
 
 ## rrna reference
 ml R
@@ -22,45 +22,27 @@ bowtie-build --threads 8 ref/drerio/rrna.fa ref/drerio/rrna
 
 
 ## Gene annotations
-wget -qO- ftp://ftp.ensembl.org/pub/release-98/gtf/danio_rerio/Danio_rerio.GRCz11.98.gtf.gz | gzip -cd > ref/drerio/GRCz11.gtf
+wget -qO- ftp://ftp.ensembl.org/pub/release-87/gtf/danio_rerio/Danio_rerio.GRCz10.87.chr.gtf.gz | gzip -cd > ref/drerio/danRer10.gtf
+
+# convert gene names to UCSC:
+wget --no-check-certificate -qO- http://raw.githubusercontent.com/dpryan79/ChromosomeMappings/master/GRCz10_ensembl2UCSC.txt \
+   | awk '{if($1!=$2) print "s/^"$1"/"$2"/g"}' > remap.sed
+cat remap.sed
+cat ref/drerio/danRer10.gtf | sed -f remap.sed  > ref/drerio/danRer10.chr.gtf
+
+cut -f1 ref/drerio/danRer10.chr.gtf | sort | uniq -c
+
 
 ## repeats and transposons
-rsync -a -P rsync://hgdownload.cse.ucsc.edu/goldenPath/danRer11/database/rmsk.txt.gz ref/drerio/
-
-zcat ref/drerio/rmsk.txt.gz > ref/drerio/GRCz11.repeat_masker.txt
-cat ref/drerio/GRCz11.repeat_masker.txt | \
-    awk -v OFS='\t' '{print $6, $7, $8, $13, $11, $10, $12}' | \
-    sort -k1,1 -k2,2n > ref/drerio/GRCz11.repeat_masker.bed 
-
-## sanity check
-egrep "LINE|SINE|DNA" ref/drerio/GRCz11.repeat_masker.bed | cut -f 7 | sort | uniq
-
-## convert to Ensembl contig names:
-##conda activate base 
-##conda install -c bioconda cvbio 
-curl https://raw.githubusercontent.com/dpryan79/ChromosomeMappings/master/GRCz11_UCSC2ensembl.txt > ref/drerio/GRCz11_UCSC2ensembl.txt
-
-cvbio UpdateContigNames \
-    -i ref/drerio/GRCz11.repeat_masker.bed \
-    -o ref/drerio/GRCz11.repeat_masker.ens.bed \
-    -m ref/drerio/GRCz11_UCSC2ensembl.txt \
-    --comment-chars '#' \
-    --columns 0 \
-    --skip-missing true
-
-## it's essential that column 7 has the class name
-egrep "LINE|SINE|DNA" ref/drerio/GRCz11.repeat_masker.ens.bed | grep -v "CHR_" > ref/drerio/GRCz11.transposons.bed
-
-## create repRenrich reference
-## here only DNA, SINE, LINE elements were used
-awk -v FS='\t' -v OFS='\t' '{print $1,$2,$3,$5,$7,$4}' ref/drerio/GRCz11.transposons.bed > ref/drerio/GRCz11.transposons_repEnrich.bed
+wget -qO- http://www.repeatmasker.org/genomes/danRer10/RepeatMasker-rm406-dfam2.0/danRer10.fa.out.gz | gzip -cd | egrep -v 'Simple_repeat|Low_complexity' > ref/drerio/danRer10.RepeatMasker.fa.out
 
 module load bedtools/2.27.1_debian9 
 module load samtools/1.5_debian9 
 module load bowtie/0.12.8 
 module load RepEnrich/1.2_py3
 
-RepEnrich_setup.py ref/drerio/GRCz11.transposons_repEnrich.bed ref/drerio/GRCz11.fa ref/drerio/RepEnrich --is_bed TRUE
+sbatch --job-name=bt_index  --partition=long --time=10:00:00 --nodes=1 --cpus-per-task=8 --mem-per-cpu=8G --wrap="RepEnrich_setup.py ref/drerio/danRer10.RepeatMasker.fa.out ref/drerio/danRer10.fa ref/drerio/RepEnrich"
+
 ```
 
 

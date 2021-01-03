@@ -7,20 +7,26 @@ FilterDuplicates = {
 
 	output.dir = REMOVE_DUP_OUTDIR
 
+    // create the log folder if it doesn't exists
+    def REMOVE_DUP_LOGDIR = new File( REMOVE_DUP_OUTDIR + "/logs")
+    if (!REMOVE_DUP_LOGDIR.exists()) {
+        REMOVE_DUP_LOGDIR.mkdirs()
+    }
+
 	transform(".fastq.gz") to (".deduped.fastq.gz") {
 
-      def SAMPLE_NAME = input.prefix.prefix.prefix
-      def LOG_FILE = REMOVE_DUP_OUTDIR + "/dedup.stats.txt"
+        def SAMPLE_NAME = input.prefix.prefix.prefix
+        def LOG_FILE = REMOVE_DUP_OUTDIR + "/dedup.stats.txt"
 
-      exec """
-         EXP=\$(basename ${SAMPLE_NAME})
-         nreads=\$(zcat $input | echo \$((`wc -l`/4))) &&
-         echo \$nreads \${EXP}.highQ >> ${LOG_FILE} &&
+        exec """
+             EXP=\$(basename ${SAMPLE_NAME})
+             nreads=\$(zcat $input | echo \$((`wc -l`/4))) &&
+             echo \$nreads \${EXP}.highQ >> ${LOG_FILE} &&
 
-			zcat $input | paste -d, - - - - | sort -u -t, -k2,2 | tr ',' '\\n' | gzip > $output &&
+    		 zcat $input | paste -d, - - - - | sort -u -t, -k2,2 | tr ',' '\\n' | gzip > $output &&
 
-         nreads=\$(zcat $output | echo \$((`wc -l`/4))) &&
-         echo \$nreads ${EXP}.unique >> ${LOG_FILE}
+             nreads=\$(zcat $output | echo \$((`wc -l`/4))) &&
+             echo \$nreads ${EXP}.unique >> ${REMOVE_DUP_LOGDIR}/\${EXP}.dedup_stats.txt
 
 		""","FilterDuplicates"
 	}

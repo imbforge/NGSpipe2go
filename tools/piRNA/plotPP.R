@@ -89,8 +89,8 @@ plotPP <- function(pp_file){
        panel.border = element_blank(),
        panel.background = element_blank())
 
-   ggsave(paste("figure/", tt, ".ppPlot.pdf", sep=""), pp_plot)
-   ggsave(paste("figure/", tt, ".ppPlot.png", sep=""), pp_plot)
+   ggsave(paste(tt, ".ppPlot.pdf", sep=""), pp_plot)
+   ggsave(paste(tt, ".ppPlot.png", sep=""), pp_plot)
 }
 
 pp_files <- list.files(pattern='pp_freq.txt')

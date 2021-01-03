@@ -8,7 +8,7 @@ Bam2bw = {
 
 	output.dir=TRACKS
 	
-	def SAMPLE_NAME = input.split("/")[-1].split("\\.", 2)[0]
+	def SAMPLE_NAME = input.split("/")[-1].replaceAll(".bam", "")
 
 	transform(".bam") to (".scaled.bw") {
 		exec """
@@ -28,7 +28,7 @@ Bam2bw = {
 			SCALE=\$(echo "1000000/\$TOTAL_MAPPED" | bc -l) &&
 			genomeCoverageBed -ibam -split -scale \${SCALE} -bg -i ${input} | bedSort stdin stdout > ${output.prefix}.bedgraph &&
 			bedGraphToBigWig ${output.prefix}.bedgraph \${CHRSIZES} $output &&
-			rm \${CHRSIZES} ${output.prefix}.bedgraph
+			rm ${CHRSIZES} ${output.prefix}.bedgraph
 		""","Bam2bw"
 	}
 }

@@ -28,7 +28,7 @@ Bowtie_se = {
          module load bowtie/${BOWTIE_VERSION}     &&
          module load samtools/${SAMTOOLS_VERSION} &&
 
-         zcat $input | bowtie $BOWTIE_FLAGS $BOWTIE_REF - 2> $output.dir/${SAMPLE_NAME}.bt.log | samtools view -bhSu - | samtools sort -@ $BOWTIE_THREADS - -o $output
+         zcat $input | bowtie $BOWTIE_FLAGS $BOWTIE_REF - 2> $output.dir/${SAMPLE_NAME}.bowtie.log | samtools view -bhSu - | samtools sort -@ $BOWTIE_THREADS - -o $output
       ""","Bowtie_se"
    }
 }

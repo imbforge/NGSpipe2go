@@ -6,9 +6,10 @@ CountReads = {
 
 
    output.dir = COUNT_READS_OUTDIR
-   def SAMPLE_NAME = input.split("/")[-1].replaceAll(".bam", "")
+   def EXP = input.split("/")[-1].replaceAll(".bam", "")
+   def SAMPLE_NAME = EXP.replaceAll(".bai", "")
 
-   produce(COUNT_READS_OUTDIR + "/" + SAMPLE_NAME + ".sense.counts",
+   from(".bam") produce(COUNT_READS_OUTDIR + "/" + SAMPLE_NAME + ".sense.counts",
            COUNT_READS_OUTDIR + "/" + SAMPLE_NAME + ".antisense.counts") {
 
 

@@ -3,15 +3,16 @@ PIPELINE_VERSION="1.0"
 PIPELINE_ROOT="./NGSpipe2go/"    // may need adjustment for some projects
 
 load PIPELINE_ROOT + "/pipelines/SmallRNAseq/piRNA.essential.vars.groovy"
-load PIPELINE_ROOT + "/pipelines/SmallRNAseq/tools.groovy"
 
 MODULE_FOLDER="NGSpipe2go/modules/" // adjust to your projects needs
 /*load MODULE_FOLDER + "SmallRNAseq/piRNA.essential.vars.groovy"
 load MODULE_FOLDER + "SmallRNAseq/tool.versions.groovy"
 */
 load MODULE_FOLDER + "smallRNAseq_BCF/tool.locations.groovy"
+load PIPELINE_ROOT + "/pipelines/SmallRNAseq/tools.groovy"
 
 load MODULE_FOLDER + "SmallRNAseq/aggregate_mapped_counts.module.groovy"
+
 load MODULE_FOLDER + "SmallRNAseq/fastqc.vars.groovy"
 load MODULE_FOLDER + "SmallRNAseq/fastqc.module.groovy"
 
@@ -38,8 +39,8 @@ load MODULE_FOLDER + "SmallRNAseq/select_uniq_mappers.vars.groovy"
 
 load MODULE_FOLDER + "SmallRNAseq/bamindexer.module.groovy"
 
-load MODULE_FOLDER + "smallRNAseq_BCF/mapping_stats.module.groovy"
-load MODULE_FOLDER + "smallRNAseq_BCF/mapping_stats.vars.groovy"
+load MODULE_FOLDER + "SmallRNAseq/mapping_stats.module.groovy"
+load MODULE_FOLDER + "SmallRNAseq/mapping_stats.vars.groovy"
 
 load MODULE_FOLDER + "SmallRNAseq/read_count.module.groovy"
 load MODULE_FOLDER + "SmallRNAseq/read_count.vars.groovy"
@@ -89,21 +90,40 @@ load MODULE_FOLDER + "smallRNAseq_BCF/cutadapt_stats.vars.groovy"
 load MODULE_FOLDER + "smallRNAseq_BCF/fastq_quality_filter_stats.module.groovy"
 load MODULE_FOLDER + "smallRNAseq_BCF/fastq_quality_filter_stats.vars.groovy"
 
-load MODULE_FOLDER + "smallRNAseq_BCF/combined_stats.vars.groovy"
-load MODULE_FOLDER + "smallRNAseq_BCF/combined_stats.module.groovy"
+load MODULE_FOLDER + "SmallRNAseq/collect_plots.module.groovy"
+load MODULE_FOLDER + "SmallRNAseq/collect_plots.vars.groovy"
 
 load MODULE_FOLDER + "smallRNAseq_BCF/subread2rnatypes.vars.groovy"
 load MODULE_FOLDER + "RNAseq/subread2rnatypes.module.groovy"
 
 load MODULE_FOLDER + "miscellaneous/collectbpipes.module.2.groovy"
 
+load MODULE_FOLDER + "smallRNAseq_BCF/combined_stats.module.groovy"
+
 load MODULE_FOLDER + "smallRNAseq_BCF/shinyreports.vars.groovy"
 load MODULE_FOLDER + "smallRNAseq_BCF/shinyreports.module.groovy"
 //MAIN PIPELINE TASK
 run {
-    "%.fastq.gz" * [ FastQC , Cutadapt + FastQQualityFilter + FilterDuplicates + TrimUMIs ] +
-    "%.cutadapt.highQ.deduped.trimmed.fastq.gz" * [ FastQC, FastQScreen, Bowtie_se + [ BAMindexer, SelectUniqMappers + [ NucleotideSignature, PingPongSignal, PingPongPro] ] ] +
-    "%.bam" * [ SubreadCount + Filter2HTSeq, CountReads, CountMappedReads, Bam2bw, SplitReadStrands + "%sense.bam" * [Bam2bw] ] +
-    [ CutadaptStats, FastQQualityFilterStats, DedupStats, MappingStats, CombinedStats, AggregateMappedCounts, CountReadsSummary ] +
-    collectBpipeLogs + shinyReports
+    "%.fastq.gz" *
+        [ FastQC , Cutadapt + FastQQualityFilter + FilterDuplicates + TrimUMIs ] +
+    "%.cutadapt.highQ.deduped.trimmed.fastq.gz" *
+   [ FastQC, Bowtie_se + [ BAMindexer, SelectUniqMappers + [  PingPongSignal, PingPongPro, NucleotideSignature] ] ] +
+    "%.bam" *
+        [ CountReads, CountMappedReads, Bam2bw, SplitReadStrands +
+            "%sense.bam" * [Bam2bw]
+      ] +
+    [ CutadaptStats, FastQQualityFilterStats, DedupStats, MappingStats, CombinedStats, AggregateMappedCounts, CountReadsSummary ] 
 }
+
+
+/*run {
+    "%.fastq.gz" *
+        [ FastQC , Cutadapt + FastQQualityFilter + FilterDuplicates + TrimUMIs ] +
+    "%.cutadapt.highQ.deduped.trimmed.fastq.gz" *
+   [ FastQC, Bowtie_se + [ BAMindexer, SelectUniqMappers + [  PingPongSignal, PingPongPro, NucleotideSignature] ] ] +
+   "%.bam" *
+   [ CountReads, Bam2bw, SplitReadStrands +
+      "%sense.bam" * [ Bam2bw ] ] +
+    [ CutadaptStats, FastQQualityFilterStats, DedupStats, MappingStats, CombinedStats, AggregateMappedCounts, CountReadsSummary ] 
+}*/
+
