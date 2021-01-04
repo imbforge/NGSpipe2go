@@ -69,6 +69,7 @@ def getArgs():
         '-g', '--genome',
         required=False,
         type=str,
+        default="none",
         help='The genome to retrieve chromosome lengths, e.g., hg19, mm10, danRer7...'
     )
 
@@ -275,8 +276,11 @@ if __name__ == '__main__':
     up = args.upstream
     down = args.downstream
     out_folder = args.outFolder
-    if args.genome is not None and not "none":
-        chromsizes = pybedtools.chromsizes(args.genome)
+    genome=args.genome
+    
+    if genome is not "none":
+        print('Retrieving chromosome lengths from UCSC for', genome)
+        chromsizes = pybedtools.chromsizes(genome)
     else:
         print('Retrieving custom chromosome lengths', timeStamp())
         chromsizes = get_chrom_lengths(inbam)
