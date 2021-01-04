@@ -118,11 +118,12 @@ def get_chrom_lengths(path_to_bam):
     Example output:
     {'chr4': (0, 1351857), 'chr3L': (0, 24543557), 'chr2L': (0, 23011544), '*': (0, 0), 'chrX': (0, 22422827), 'chr2R': (0, 21146708), 'chr3R': (0, 27905053)}
     '''
-    idx = pysam.idxstats(path_to_bam).splitlines()
+    lines = pysam.idxstats(path_to_bam)
+    
     chromsizes = {}
-    for element in idx:
-        stats = element.split("\t")
-        chromsizes[stats[0]] = (0, int(stats[1]))
+    for line in lines:
+        _seqname, _seqlen, nmapped, _nunmapped = line.split()
+        chromsizes[_seqname] = (0, int(_seqlen))
     return chromsizes
 
 
@@ -277,7 +278,7 @@ if __name__ == '__main__':
     down = args.downstream
     out_folder = args.outFolder
     genome=args.genome
-    
+
     if genome is not "none":
         print('Retrieving chromosome lengths from UCSC for', genome)
         chromsizes = pybedtools.chromsizes(genome)
