@@ -6,12 +6,12 @@
 /*COMMENT OUT THE SPECIES TO BE ANALYSED*/
 // ZEBRAFISH
 ESSENTIAL_PROJECT="/fsimb/groups/imb-kettinggr/adomingues/projects/test_pipeline"
-ESSENTIAL_BOWTIE_REF="/fsimb/groups/imb-kettinggr/genomes/Danio_rerio/Ensembl/Zv10/index/bowtie/1.2.1.1/GRCz10"
-ESSENTIAL_GENOME_REF="/fsimb/groups/imb-kettinggr/genomes/Danio_rerio/Ensembl/Zv10/Sequence/WholeGenomeFastaTopLevel/genome.fa"
-ESSENTIAL_FEATURES="/fsimb/groups/imb-kettinggr/genomes/Danio_rerio/Ensembl/Zv10/Annotation/Genes/pipeline/transposons.bed"
-ESSENTIAL_GENESGTF="/fsimb/groups/imb-kettinggr/genomes/Danio_rerio/Ensembl/Zv10/Annotation/Genes/pipeline/Danio_rerio_and_repeat_masker.GRCz10.80.chr.gtf"
+ESSENTIAL_BOWTIE_REF="/fsimb/groups/imb-kettinggr/adomingues/projects/test_pipeline/ref/drerio/danRer10"
+ESSENTIAL_GENOME_REF="/fsimb/groups/imb-kettinggr/adomingues/projects/test_pipeline/ref/drerio/danRer10.fa"
+ESSENTIAL_FEATURES="/fsimb/groups/imb-kettinggr/adomingues/projects/test_pipeline/ref/drerio/danRer10.transposons.bed"
+ESSENTIAL_GENESGTF="/fsimb/groups/imb-kettinggr/adomingues/projects/test_pipeline/ref/drerio/danRer10.gtf"
 ESSENTIAL_RRNA_BOWTIE_REF="/fsimb/groups/imb-kettinggr/adomingues/projects/test_pipeline/ref/drerio/rrna" // necessary for fastqscreen
-ESSENTIAL_REPEAT_MASKER="/home/adomingu/imb-kettinggr/genomes/Danio_rerio/Ensembl/Zv10/Sequence/repEnrichNoSimpleLow"
+ESSENTIAL_REPEAT_MASKER="/fsimb/groups/imb-kettinggr/adomingues/projects/test_pipeline/ref/drerio/danRer10.RepeatMasker.fa.out"
 ESSENTIAL_REPEAT_REF="/fsimb/groups/imb-kettinggr/adomingues/projects/test_pipeline/ref/drerio/RepEnrich"
 REPENRICH_BED="FALSE" 
 ESSENTIAL_THREADS=4

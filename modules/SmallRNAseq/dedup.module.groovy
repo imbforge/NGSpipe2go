@@ -16,12 +16,11 @@ FilterDuplicates = {
 	transform(".fastq.gz") to (".deduped.fastq.gz") {
 
         def SAMPLE_NAME = input.prefix.prefix.prefix
-        def LOG_FILE = REMOVE_DUP_OUTDIR + "/dedup.stats.txt"
 
         exec """
              EXP=\$(basename ${SAMPLE_NAME})
              nreads=\$(zcat $input | echo \$((`wc -l`/4))) &&
-             echo \$nreads \${EXP}.highQ >> ${LOG_FILE} &&
+             echo \$nreads \${EXP}.highQ >> ${REMOVE_DUP_LOGDIR}/\${EXP}.dedup_stats.txt &&
 
     		 zcat $input | paste -d, - - - - | sort -u -t, -k2,2 | tr ',' '\\n' | gzip > $output &&
 

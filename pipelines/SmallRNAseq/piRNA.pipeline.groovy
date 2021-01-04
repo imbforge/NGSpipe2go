@@ -114,16 +114,3 @@ run {
       ] +
     [ CutadaptStats, FastQQualityFilterStats, DedupStats, MappingStats, CombinedStats, AggregateMappedCounts, CountReadsSummary ] 
 }
-
-
-/*run {
-    "%.fastq.gz" *
-        [ FastQC , Cutadapt + FastQQualityFilter + FilterDuplicates + TrimUMIs ] +
-    "%.cutadapt.highQ.deduped.trimmed.fastq.gz" *
-   [ FastQC, Bowtie_se + [ BAMindexer, SelectUniqMappers + [  PingPongSignal, PingPongPro, NucleotideSignature] ] ] +
-   "%.bam" *
-   [ CountReads, Bam2bw, SplitReadStrands +
-      "%sense.bam" * [ Bam2bw ] ] +
-    [ CutadaptStats, FastQQualityFilterStats, DedupStats, MappingStats, CombinedStats, AggregateMappedCounts, CountReadsSummary ] 
-}*/
-
