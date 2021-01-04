@@ -72,7 +72,7 @@ run {
    "%.fastq.gz" *
       [ FastQC, Cutadapt + FastQQualityFilter + FilterDuplicates + TrimUMIs ] +
    "%.cutadapt.highQ.deduped.trimmed.fastq.gz" *
-      [ FastQC, FastQScreen, RepEnrich, Bowtie_se + [ BAMindexer ] ] +
+      [ FastQC, CountReadLengths, Bowtie_se + [ BAMindexer ] ] +
    "%.bam" *
          [ FilterNonStructuralReads ] +
    "%.non_structural.bam" *
