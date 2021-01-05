@@ -84,8 +84,4 @@ ln -s NGSpipe2go/pipelines/SmallRNAseq/* .
 ml bpipe/0.9.9.8.slurm
 bpipe run siRNA.pipeline.groovy rawdata/celegans/*.fastq.gz
 bpipe run siRNA_sensor.pipeline.groovy rawdata/celegans_sensor/*.fastq.gz
-
-
-module load bpipe/0.9.9.3.slurm
-bpipe run piRNA.pipeline.groovy rawdata/drerio/*.fastq.gz
 ```
