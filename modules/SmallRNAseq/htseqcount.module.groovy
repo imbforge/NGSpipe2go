@@ -31,6 +31,8 @@ HTseqCount = {
    // run the chunk
    transform(".bam") to (".counts") {
       exec """
+         module load htseq/${HTSEQ_VERSION} &&
+         
          if [ -n "\$LSB_JOBID" ]; then
             export TMPDIR=/jobdir/\${LSB_JOBID};
          fi &&
