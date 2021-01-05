@@ -47,8 +47,8 @@ load MODULE_FOLDER + "SmallRNAseq/htseqcount.vars.groovy"
 
 load MODULE_FOLDER + "SmallRNAseq/bamindexer.module.groovy"
 
-load MODULE_FOLDER + "SmallRNAseq/maping_stats.module.groovy"
-load MODULE_FOLDER + "SmallRNAseq/maping_stats.vars.groovy"
+load MODULE_FOLDER + "SmallRNAseq/mapping_stats.vars.groovy"
+load MODULE_FOLDER + "SmallRNAseq/mapping_stats.module.groovy"
 
 load MODULE_FOLDER + "SmallRNAseq/bam2bw.module.groovy"
 load MODULE_FOLDER + "SmallRNAseq/bam2bw.vars.groovy"
@@ -79,5 +79,5 @@ run {
          [ FilterRNAClasses, HTseqCount, FilterSensorClasses ] +
       "%.non_structural.bam" * [ Bam2bw ] +
     "%.sensor.22G.bam" * [ SensorCoverage ] +   
-      [  MappingStatsPlot, PlotReadLengths ]           
+      [  MappingStats, PlotReadLengths ]           
 }
