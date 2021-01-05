@@ -12,7 +12,6 @@ parallel --xapply -j4 "fastq-dump -X 1000000 --stdout {1} | gzip > rawdata/dreri
 # get zebrafish reference & annotation
 mkdir -p ref/drerio
 
-
 ## to convert gene names to UCSC:
 wget --no-check-certificate -qO- http://raw.githubusercontent.com/dpryan79/ChromosomeMappings/master/GRCz10_ensembl2UCSC.txt \
    | awk '{if($1!=$2) print "s/^"$1"/"$2"/g"}' > remap.sed

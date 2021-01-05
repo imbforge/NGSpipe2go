@@ -33,6 +33,7 @@ bowtie-build --threads 8 ref/rrna.fa ref/rrna
 
 ```
 
+This will create the GTF annotations needed to filter small RNA classes:
 
 ```R
 library("rtracklayer")
@@ -70,18 +71,21 @@ export(anno_structural, "ref/structural.pipeline.gtf")
 ```
 
 
+## Run the pipeline
+
 ```bash
 PROJECT='/fsimb/groups/imb-kettinggr/adomingues/projects/test_pipeline'
 cd ${PROJECT}
 
 rsync --exclude='/.git' -r -t -x -v --progress -u -l -z -s /fsimb/groups/imb-kettinggr/adomingues/projects/NGSpipe2go/ ${PROJECT}/NGSpipe2go/
-ln -s NGSpipe2go/pipelines/SmallRNAseq/smallrnaseq_ce.pipeline.groovy ./
-ln -s NGSpipe2go/pipelines/SmallRNAseq/bpipe.config ./
-ln -s NGSpipe2go/modules/SmallRNAseq/essential.vars.groovy ./
 
+ln -s NGSpipe2go/pipelines/SmallRNAseq/* .
 
 ml bpipe/0.9.9.8.slurm
-bpipe run smallrnaseq_ce.pipeline.groovy rawdata/celegans/*.fastq.gz
+bpipe run siRNA.pipeline.groovy rawdata/celegans/*.fastq.gz
+bpipe run siRNA_sensor.pipeline.groovy rawdata/celegans_sensor/*.fastq.gz
+
+
+module load bpipe/0.9.9.3.slurm
+bpipe run piRNA.pipeline.groovy rawdata/drerio/*.fastq.gz
 ```
-
-
