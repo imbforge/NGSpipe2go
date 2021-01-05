@@ -11,7 +11,18 @@ parallel --xapply -j4 "fastq-dump -X 1000000 --stdout {1} | gzip > rawdata/dreri
 
 # get zebrafish reference & annotation
 mkdir -p ref/drerio
-wget -qO- ftp://hgdownload.soe.ucsc.edu/goldenPath/danRer10/bigZips/danRer10.fa.gz | gzip -cd > ref/drerio/danRer10.fa
+
+
+## to convert gene names to UCSC:
+wget --no-check-certificate -qO- http://raw.githubusercontent.com/dpryan79/ChromosomeMappings/master/GRCz10_ensembl2UCSC.txt \
+   | awk '{if($1!=$2) print "s/^"$1"/"$2"/g"}' > remap.sed
+cat remap.sed
+
+## genome sequence
+wget ftp://ftp.ensembl.org/pub/release-88/fasta/danio_rerio/dna/Danio_rerio.GRCz10.dna.toplevel.fa.gz 
+
+## this will take a while
+zcat Danio_rerio.GRCz10.dna.toplevel.fa.gz | sed -f remap.sed   > ref/drerio/danRer10.fa
 
 sbatch --job-name=bt_index  --partition=long --time=10:00:00 --nodes=1 --cpus-per-task=8 --mem-per-cpu=8G --wrap="bowtie-build --threads 8 ref/drerio/danRer10.fa ref/drerio/danRer10"
 
@@ -24,10 +35,6 @@ bowtie-build --threads 8 ref/drerio/rrna.fa ref/drerio/rrna
 ## Gene annotations
 wget -qO- ftp://ftp.ensembl.org/pub/release-87/gtf/danio_rerio/Danio_rerio.GRCz10.87.chr.gtf.gz | gzip -cd > ref/drerio/danRer10.gtf
 
-# convert gene names to UCSC:
-wget --no-check-certificate -qO- http://raw.githubusercontent.com/dpryan79/ChromosomeMappings/master/GRCz10_ensembl2UCSC.txt \
-   | awk '{if($1!=$2) print "s/^"$1"/"$2"/g"}' > remap.sed
-cat remap.sed
 cat ref/drerio/danRer10.gtf | sed -f remap.sed  > ref/drerio/danRer10.chr.gtf
 
 cut -f1 ref/drerio/danRer10.chr.gtf | sort | uniq -c

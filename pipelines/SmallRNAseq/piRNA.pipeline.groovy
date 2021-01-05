@@ -114,3 +114,4 @@ run {
       ] +
     [ CutadaptStats, FastQQualityFilterStats, DedupStats, MappingStats, CombinedStats, AggregateMappedCounts, CountReadsSummary ] 
 }
+
