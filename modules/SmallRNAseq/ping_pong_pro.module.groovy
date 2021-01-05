@@ -8,9 +8,7 @@ PingPongPro = {
    def SAMPLE_NAME = input.split("/")[-1].replaceAll(".bam", "")
    def OUT_FOLDER = output.dir + "/" + SAMPLE_NAME
 
-   produce(
-            OUT_FOLDER + "/ping-pong_signatures.tsv",
-            OUT_FOLDER + "/transposons.tsv") {
+   produce(OUT_FOLDER + "/transposons.tsv") {
 
       exec """
 

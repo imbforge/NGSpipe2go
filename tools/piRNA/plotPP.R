@@ -13,26 +13,6 @@ libs=c(
 
 lapply(libs, require, character.only=T)
 
-# new_theme <- theme_minimal(16) + theme(
-#    panel.grid.major = element_blank(),
-#    panel.grid.minor = element_blank(),
-#    axis.ticks = element_blank()
-#   )
-# theme_set(new_theme)
-
-## create plot directory:
-dir.create(file.path("figure"), showWarnings = FALSE)
-
-# if (file.exists("pp_freq.txt")){
-#    pp_file <- "pp_freq.txt"
-# } else {
-#    if (file.exists("heterotypical.pp_freq.txt")){
-#       pp_file <- "heterotypical.pp_freq.txt"
-#    } else {
-#       stop("No file with the summary of ping-pong pairs was found")
-#    }
-# }
-
 testEmptyFile <- function(file_path){
    info = file.info(file_path)
    size = info$size
@@ -89,8 +69,8 @@ plotPP <- function(pp_file){
        panel.border = element_blank(),
        panel.background = element_blank())
 
-   ggsave(paste(tt, ".ppPlot.pdf", sep=""), pp_plot)
-   ggsave(paste(tt, ".ppPlot.png", sep=""), pp_plot)
+   ggsave("ppPlot.pdf", pp_plot)
+   ggsave("ppPlot.png", pp_plot)
 }
 
 pp_files <- list.files(pattern='pp_freq.txt')
