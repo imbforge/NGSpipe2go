@@ -1,10 +1,10 @@
 // Essential Variables
 
 // General
-ESSENTIAL_PROJECT="/your/project/directory/"
-ESSENTIAL_SAMPLE_PREFIX=""
+ESSENTIAL_PROJECT="/your/project/folder/"
+ESSENTIAL_SAMPLE_PREFIX="imb_gcf_2020_03_hco_20_"
 ESSENTIAL_PAIRED="no"           // paired end design ("no" for MARS-Seq and 10X, because R2 in MARS_Seq and R1 in 10X contain UMI and barcodes only)
-ESSENTIAL_STRANDED="no"         // strandness: no|yes|reverse // defaults per pipeline: "yes" for tenX
+ESSENTIAL_STRANDED="yes"         // strandness: no|yes|reverse // defaults per pipeline: "yes" for tenX
 ESSENTIAL_READLENGTH=130        // added for STAR version > 2.4.1a
 ESSENTIAL_THREADS=4             // number of threads for parallel tasks
 ESSENTIAL_FRAGMENT_USAGE="no"   //should fragments be reconstituted? should always be no for rnaseq
@@ -19,7 +19,7 @@ ESSENTIAL_TENX_EXPECTED_CELLS=7000 // cellranger default
 ESSENTIAL_TENX_AGGRCSV="aggregation.csv"
 ESSENTIAL_TENX_NORMALIZED="mapped"
 
-// Refernce genomes for FastqScreen
+// Reference genomes for FastqScreen
 ESSENTIAL_FASTQSCREEN_GENOME="Human::/fsimb/common/genomes/homo_sapiens/gencode/release-25_GRCh38.p7/full/index/bowtie2/GRCh38.p7.genome"  //bowtie2 reference for the genome the samples are from, this is used for the fastqscreen
 ESSENTIAL_FASTQSCREEN=ESSENTIAL_FASTQSCREEN_GENOME + ",PHIX::/fsimb/common/genomes/phix/19930428/NCBI/index/bowtie2/2.3.4.3/ncbi_phix,ERCC::/fsimb/common/genomes/ERCC/index/bowtie2/2.3.4.3/ERCC92,rRNA::/fsimb/common/genomes/contaminants/fastqscreen_references/rrna/v1/index/bowtie2/2.3.4.3/hs_mm_ce_dm_rn_dr_xt_rRNA,Mycoplasma::/fsimb/common/genomes/contaminants/fastqscreen_references/mycoplasma/v1/index/bowtie2/2.3.4.3/mycoplasma_all_ref,E.coli::/fsimb/common/genomes/Escherichia_coli/ensembl/full/index/bowtie2/Escherichia_coli_str_k_12_substr_dh10b.ASM1942v1.31.dna.genome,B.taurus::/fsimb/common/genomes/bos_taurus/ensembl/3.1/full/index/bowtie2/2.2.9/UMD3.1" //references for fastqscreen to use if run, this are our standard references please include yours 
 
@@ -30,7 +30,7 @@ ESSENTIAL_CHROMSIZES="/fsimb/common/genomes/homo_sapiens/10X/grch38_ensembl98/re
 ESSENTIAL_FEATURETYPE="gene_type" //gencode (also 10X Genomics) uses gene_type; ensemble uses gene_biotype
 ESSENTIAL_ORG="human"           // UCSC organism
 ESSENTIAL_DB="hg38"              // UCSC assembly version
-ESSENTIAL_MTGENES=""  // list with gene_id of mitochondrial genes (give path within ESSENTIAL_PROJECT)
+ESSENTIAL_MTGENES=""  // list with gene_id of mitochondrial genes (give path within ESSENTIAL_PROJECT). If not given (empty string), all genes annotated on the mitochondrial chromosome are used by default.
 
 
 // Barcodes (used for UMI and barcode extraction in MARS-Seq)

@@ -41,7 +41,6 @@ Bpipe.run {
             inferexperiment,
             qualimap,
             subread2rnatypes,
-            // MarkDups2 + BAMindexer + // cellranger marks duplicates
             dupRadar,
             geneBodyCov2
         ]
