@@ -81,9 +81,10 @@ shinyReports = {
             echo "SHINYREPS_TYPE_OF_THRESHOLD=${shinyReports_vars.type_of_threshold}" >> $output &&
             echo "SHINYREPS_THRESHOLD_TOTAL_COUNTS_MIN=${shinyReports_vars.threshold_total_counts_min}" >> $output &&
             echo "SHINYREPS_THRESHOLD_TOTAL_COUNTS_MAX=${shinyReports_vars.threshold_total_counts_max}" >> $output &&
-            echo "SHINYREPS_THRESHOLD_TOTAL_FEATURES_BY_COUNTS_ENDOGENOUS=${shinyReports_vars.threshold_total_features_by_counts_endogenous}" >> $output &&
+            echo "SHINYREPS_THRESHOLD_TOTAL_FEATURES_DETECTED=${shinyReports_vars.threshold_total_features_detected}" >> $output &&
             echo "SHINYREPS_THRESHOLD_PCT_COUNTS_MT=${shinyReports_vars.threshold_pct_counts_Mt}" >> $output &&
-            echo "SHINYREPS_NMADS=${shinyReports_vars.nmads}" >> $output
+            echo "SHINYREPS_NMADS=${shinyReports_vars.nmads}" >> $output &&
+            echo "SHINYREPS_APPLY_QCFILTER_BY_FACTOR=${shinyReports_vars.apply_QCfilter_by_factor}" >> $output
         ""","shinyReports"
     }
 }
