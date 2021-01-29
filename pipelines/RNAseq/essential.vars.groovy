@@ -29,6 +29,9 @@ TMP=PROJECT + "/tmp"
 TRACKS=PROJECT + "/tracks"
 FUSION=PROJECT + "/fusion"
 
+//DESeq2 sepcific wars
+ESSENTIAL_DESEQ2_FDR=0.01 // FDR filter used to retrieve the results in DESeq2
+ESSENTIAL_DESEQ2_FC=1     // FC filter used to retrieve the result in DESeq2 (non log2)!
 // optional pipeline stages to include
 RUN_TRACKHUB=false
 RUN_IN_PAIRED_END_MODE=(ESSENTIAL_PAIRED == "yes")
