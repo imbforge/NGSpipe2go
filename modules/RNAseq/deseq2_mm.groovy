@@ -17,7 +17,9 @@ DE_DESeq2_MM = {
         (DE_DESeq2_MM_vars.cwd       ? " cwd="       + DE_DESeq2_MM_vars.cwd       : "") +
         (DE_DESeq2_MM_vars.outdir    ? " out="       + DE_DESeq2_MM_vars.outdir    : "") +
         (DE_DESeq2_MM_vars.genes     ? " gtf="       + DE_DESeq2_MM_vars.genes     : "") +
-        (DE_DESeq2_vars.pattern      ? " pattern="   + DE_DESeq2_vars.pattern      : "") +
+        (DE_DESeq2_MM_vars.pattern   ? " pattern="   + DE_DESeq2_MM_vars.pattern      : "") +
+        (DE_DESeq2_MM_vars.FDR       ? " FDR="       + DE_DESeq2_MM_vars.FDR        : "") +
+        (DE_DESeq2_MM_vars.FC        ? " FC="        + DE_DESeq2_MM_vars.FC        : "") +
         (DE_DESeq2_MM_vars.extra     ? " "           + DE_DESeq2_MM_vars.extra     : "") 
 
     def TOOL_ENV = prepare_tool_env("R", tools["R"]["version"], tools["R"]["runenv"])

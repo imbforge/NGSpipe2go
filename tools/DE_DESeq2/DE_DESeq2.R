@@ -63,8 +63,10 @@ suf          <- parseArgs(args,"suffix=","_readcounts.tsv")    # suffix to remov
 cwd          <- parseArgs(args,"cwd=","./")     # current working directory
 out          <- parseArgs(args,"out=","DE.DESeq2") # output filename
 pattern      <- parseArgs(args,"pattern=","\\.readcounts.tsv") # output filename
+FC           <- parseArgs(args, "FC=", 1 , convert="as.numeric") # FC filter non log2 
+FDR           <- parseArgs(args, "FDR=", 0.01 , convert="as.numeric") # filter FDR 
 
-runstr <- "Rscript DE.DESeq2.R [targets=targets.txt] [contrasts=contrasts.txt] [mmatrix=~condition] [gtf=] [filter=TRUE] [prefix=RE] [suffix=RE] [cwd=.] [base=] [out=DE.DESeq2] [pattern=RE]"
+runstr <- "Rscript DE.DESeq2.R [targets=targets.txt] [contrasts=contrasts.txt] [mmatrix=~condition] [gtf=] [filter=TRUE] [prefix=RE] [suffix=RE] [cwd=.] [base=] [out=DE.DESeq2] [pattern=RE] [FC=1] [FDR=0.01]"
 if(!file.exists(ftargets))   stop(paste("File",ftargets,"does NOT exist. Run with:\n",runstr))
 if(!file.exists(fcontrasts)) stop(paste("File",fcontrasts,"does NOT exist. Run with:\n",runstr))
 if(!file.exists(cwd))        stop(paste("Dir",cwd,"does NOT exist. Run with:\n",runstr))
@@ -164,7 +166,12 @@ pairwise.dds.and.res <- lapply(conts[,1],function(cont) {
 
     # create DESeq object
     dds <- DESeq(dds)
-    res <- results(dds, independentFiltering=filter.genes, format="DataFrame")
+    #we call it with the specified threshold for FC and for FDR
+    res <- results(dds, 
+                   independentFiltering=filter.genes,
+                   format="DataFrame",
+                   lfcThreshold =log2(FC),
+                   alpha = FDR)
 
     # calculate quantification (RPKM if gene model provided, rlog transformed values otherwise)
     quantification <- apply(fpm(dds), 2, function(x, y) 1e3 * x / y, gene.lengths[rownames(fpm(dds))])
@@ -186,9 +193,11 @@ pairwise.dds.and.res <- lapply(conts[,1],function(cont) {
 
     #separate the data from x into the tested genes, the upregulated genes and the downregulated genes
     tested_genes <- x[!is.na(x$padj),]
-    x_info <- list(up     = tested_genes[tested_genes$log2FoldChange > 0, ],
-                   down   = tested_genes[tested_genes$log2FoldChange < 0, ],
-                   tested = tested_genes)
+    #create the output list 
+    x_info <- list(up     = tested_genes[tested_genes$log2FoldChange > log2(FC) & tested_genes$padj < FDR, ],
+                   down   = tested_genes[tested_genes$log2FoldChange < log2(FC) & tested_genes$padj < FDR, ],
+                   tested = tested_genes,
+                   all_genes = res)
     
     colnames(x)[which(colnames(x) %in% c("baseMean", "log2FoldChange", "padj"))] <- mcols(res)$description[match(c("baseMean", "log2FoldChange", "padj"), colnames(res))]
     colnames(x)[1] <- "gene_id"
@@ -200,6 +209,8 @@ pairwise.dds.and.res <- lapply(conts[,1],function(cont) {
                        colnames(y)[1] <- "gene_id"
                        return(y)
                    })
+    #add a description before writing out the the excel file
+    x_info[["Description"]] <-data.frame(Descripton=paste("This DESeq2 analysis was performed using a FC filter of ", FC, "and a filter for the adjusted p-value of ", FDR, "."))
     write.xlsx(x_info, file=paste0(out, "/", cont.name, ".xlsx"), row.names=F)
     
     list(dds,res)

@@ -17,6 +17,8 @@ DE_DESeq2 = {
         (DE_DESeq2_vars.outdir    ? " out="       + DE_DESeq2_vars.outdir    : "") +
         (DE_DESeq2_vars.genes     ? " gtf="       + DE_DESeq2_vars.genes     : "") +
         (DE_DESeq2_vars.pattern   ? " pattern="   + DE_DESeq2_vars.pattern   : "") +
+        (DE_DESeq2_vars.FDR       ? " FDR="       + DE_DESeq2_vars.FDR       : "") +
+        (DE_DESeq2_vars.FC        ? " FC="        + DE_DESeq2_vars.FC        : "") +
         (DE_DESeq2_vars.extra     ? " "           + DE_DESeq2_vars.extra     : "") 
 
     def TOOL_ENV = prepare_tool_env("R", tools["R"]["version"], tools["R"]["runenv"])
