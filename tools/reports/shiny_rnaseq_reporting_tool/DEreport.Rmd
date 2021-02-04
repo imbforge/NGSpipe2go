@@ -244,6 +244,8 @@ Pairwise differential expression analysis between the experimental groups is per
 
 Note that the default DESeq2 analysis uses only a statistical (FDR) filter and is thus testing for evidence that the expression changes between two sample groups is different from zero. Performing post hoc filtering on fold changes is therefore not recommended by the software developers and should be avoided. If desirable, the differential expression analysis can be repeated including an additional fold-change threshold directly in the DESeq2 statistical testing model, which will result in a more conservative DEG estimates compared to post hoc filtering.
 
+In this  anlysis the FC filter was `r SHINYREPS_DE_DESEQ_FC` and the FDR filter was `r SHINYREPS_DE_DESEQ_FDR`.  
+
 ```{r DifferentialExpression_paragraph, echo=F, results='asis', error=F, warning=F, message=F, fig.align="center"}
 for(i in 1:nrow(conts)) {
 
@@ -270,9 +272,16 @@ for(i in 1:nrow(conts)) {
 
     # MA plot
     cat("##### MA plot", fill=T)
-    fdr <- if(exists("input")) { if(!is.null(input$slider_pval)) input$slider_pval else .01 } else .01
+    fdr <- as.numeric(SHINYREPS_DE_DESEQ_FDR)
+    FC  <- as.numeric(SHINYREPS_DE_DESEQ_FC)
     genes <- DEhelper.DESeq2.DEgenes(i)
-    cat("MA plot showing expression fold change vs. mean expression level of all annotated genes. There are", sum(genes$padj < fdr, na.rm=T), "genes highlighted in the MA plot with corrected pvalue (Benjamini and Hochberg, FDR) <", fdr, ".", "\n")
+    #filtering for tested genes
+    genes <- genes[!is.na(genes$padj), ]
+    cat("MA plot showing expression fold change vs. mean expression level of all annotated genes. There are", 
+        sum((genes$padj < fdr) & (abs(genes$log2FoldChange) > log2(FC)), na.rm=T), "genes with a minimal FC of", FC, "highlighted in the MA plot with corrected pvalue (Benjamini and Hochberg, FDR) <", fdr, ".", "\n")
+    #we do not need an additional filter for the FC here
+    #since only genes with a mininaml foldchange of FC are
+    #significant for the significance level chosen in the analysis
     DEhelper.DESeq2.MAplot(i, fdr)    # should be fine at taking the value from the UI slider
     cat("\n", fill=T)
 
@@ -326,7 +335,7 @@ for(i in 1:nrow(conts)) {
     if(file.exists(GO_bar_up)) {
 
         # GO enriched terms in a barplot
-        cat("Top enriched Gene Ontology non-redundant Biological Processes of the up-regulated genes with FDR < 0.01.", fill=T)
+        cat("Top enriched Gene Ontology non-redundant Biological Processes of the up-regulated genes with FDR < 0.01", fill=T)
         cat("![GO_Analysis img](", GO_bar_up, ")\n", fill=T)
 
         # GO enriched terms in a treemap
