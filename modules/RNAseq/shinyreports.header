@@ -24,6 +24,8 @@ shinyReports_vars=[
     genebodycov_log     : geneBodyCov2_vars.outdir,
     de_deseq            : DE_DESeq2_vars.outdir + "/DE_DESeq2.RData",   //where the DE_DESeq2 output lies
     de_deseq_mm         : DE_DESeq2_MM_vars.outdir + "/DE_DESeq2.RData",//where the DE_DESeq2_MM output lies
+    de_deseq_FDR        : DE_DESeq2_vars.FDR,              //which FDR threshold was used for the DESeq2 analysis
+    de_deseq_FC         : DE_DESeq2_vars.FC,               //which FC threshold was used for the DESeq2 analysis
     subread             : subread_count_vars.outdir,      // location of the subread counts
     subread_suffix      : ".raw_readcounts.tsv.summary",  // the extension of the subread stats file
     subread_log         : LOGS + "/subread_count",        //where the Subread/FeatureCounts logs lie
