@@ -1297,15 +1297,18 @@ DEhelper.geneBodyCov2 <- function(web=TRUE) {
     }
     
     #now we plot it
-    p <- ggplot(df, aes(x=perc, y=cov, color=sample)) +
-           geom_line() +
+    
+    plot_df <- highlight_key(df, ~sample)
+    p <- ggplot(plot_df, aes(x=perc, y=cov, group=sample)) +
+           geom_line(color="darkgrey") +
            labs(title="Genebody coverage per sample",
                 x = "Genebody percentile 5' -> 3'",
                 y = "Averaged normalised covrage") +
            scale_color_hue( c=50, l=70) +
            ylim(0,1) +
-           theme_bw() 
-  return(p)
+           theme_bw()
+    gg <- ggplotly(p) 
+  return(gg)
 }
 ##
 ##DEhelper.strandspecifity: get the strandspecifity from the qc and display them
