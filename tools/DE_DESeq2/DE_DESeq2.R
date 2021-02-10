@@ -197,7 +197,7 @@ pairwise.dds.and.res <- lapply(conts[,1],function(cont) {
     x_info <- list(up     = tested_genes[tested_genes$log2FoldChange > log2(FC) & tested_genes$padj < FDR, ],
                    down   = tested_genes[tested_genes$log2FoldChange < log2(FC) & tested_genes$padj < FDR, ],
                    tested = tested_genes,
-                   all_genes = res)
+                   all_genes = x)
     
     colnames(x)[which(colnames(x) %in% c("baseMean", "log2FoldChange", "padj"))] <- mcols(res)$description[match(c("baseMean", "log2FoldChange", "padj"), colnames(res))]
     colnames(x)[1] <- "gene_id"
