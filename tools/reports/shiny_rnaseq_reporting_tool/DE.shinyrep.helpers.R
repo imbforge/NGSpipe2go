@@ -805,13 +805,13 @@ DEhelper.Fastqc.custom <- function(web=TRUE, summarizedPlots=TRUE) {
   
         # replace files names with nicer sample names given in targets file 
         # if sample is missing in targets file, use reduced file name
-        lbls <- sapply(lbls, function(i) { ifelse(i %in% targets$sample_ext,
-                                                  targets[targets$sample_ext == i,"sample"],
+        lbls <- sapply(lbls, function(i) { ifelse(gsub(".R1$|.R2$","",i) %in% targets$sample_ext,
+                                                  targets[targets$sample_ext == gsub(".R1$|.R2$","",i),"sample"],
                                                   gsub(paste0("^",SHINYREPS_PREFIX),"",i))})
 
         if(SHINYREPS_PAIRED == "yes") {
             x <- names(lbls)
-            lbls <- paste0(lbls, ifelse(grepl("R1", names(lbls)), "_R1", "_R2"))
+            lbls <- paste0(lbls, ifelse(grepl("R1", names(lbls)), ".R1", ".R2"))
             names(lbls) <- x
         }
     } else {
