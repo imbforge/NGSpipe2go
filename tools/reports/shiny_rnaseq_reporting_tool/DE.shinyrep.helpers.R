@@ -1009,25 +1009,29 @@ DEhelper.fastqscreen <- function() {
   df <- melt(df, value.name="perc")
   colnames(df) <- gsub("L1", "sample", colnames(df))
   # sort alphabetically
-  df$sample <- factor(df$sample, levels=unique(df$sample)[order(unique(df$sample))])
-  #now we create one plot
-  cols <- c()
-  if(length(levels(df$category)) < 14 ){ #if we have less than 14 groups we get the paired values and add grey for the new hit
-    mycols <- c(brewer.pal(length(levels(df$category))-1, "Paired"), "#A9A9A9")
-  }else{
-    
-    mycols <- c(colorRampPalette(brewer.pal(12, "Paired"))(length(levels(df$category))-1), "#A9A9A9")
-  } 
+  df$sample <- factor(df$sample, levels=unique(df$sample)[order(unique(df$sample),decreasing=TRUE)])
+  
+  # define colors
+  if (length(levels(df$category)) < 18 ){ # if we have less than 18 groups, we use up to eight colors of Set1 (in two different shades) and add grey for last group
+    base.cols <- brewer.pal((length(levels(df$category))-1)/2, "Set1")
+  } else {
+    base.cols <- colorRampPalette(brewer.pal(8, "Set1"))((length(levels(df$category))-1)/2)
+  }
+  mycols <- c(rep(base.cols,each=2),"#A9A9A9") 
+
+  # create the plot
   p <- ggplot(df, aes(x=sample, y=perc, fill=category, group=category)) +
     geom_col( position=position_stack(reverse=T)) +
-    scale_fill_manual( values=mycols) +
+    scale_fill_manual(values=alpha(mycols,c(rep(c(1,0.6),(length(levels(df$category))-1)/2),1))) +
     scale_y_continuous(breaks=seq(0,100,by=10)) +
     theme_bw(base_size=14) +
-    labs(y=" % mapped",
+    labs(x     = "",
+	 y     = "% mapped",
          title = "Contamination Screening") +
     theme(axis.text.x = element_text(vjust=0.5, angle=90),
           legend.position = "top",
           legend.title = element_blank()) +
+    guides(fill=guide_legend(nrow=4)) +
     coord_flip()
   
   return(p)      
