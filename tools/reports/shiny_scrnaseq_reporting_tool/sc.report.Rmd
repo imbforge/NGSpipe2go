@@ -60,6 +60,7 @@ CORES <- 2
 pal   <- brewer.pal(9, "Set1")
 pal_rb <- colorRampPalette(c(pal[1], "white", pal[2]))(20)
 pal_y  <- colorRampPalette(c("black", "yellow"))(100)
+plot_pointsize <- 1 # point size for plotReducedDim plots
 
 knitr::opts_chunk$set(cache=F,
                       echo=F,
@@ -160,17 +161,17 @@ The y-axis on the graph shows the Phred quality scores, which are logarithmicall
 # filenames will be included which match this expression, e.g. setting samplePattern="R1" yields only those fastq 
 # files containing read1 of a read pair. This is recommended e.g. for MARS-Seq, where Read2 contains barcode information only.
 # For samplePattern=NULL (default) all fastq files will be included.
-# If you want to exclude samples according to the given certain pattern (instead of including), set exclude=T. 
+# If you want to exclude samples according to the given certain pattern (instead of including), define it in excludePattern. 
 # This is e.g. for excluding the trimmed fastq files which contain "cutadapt" in the file name (see below). 
 # If you set argument 'maxno', the maximum sample number will be restricted accordingly to the first 'maxno' plots. 
 #
 # NOTE: this should be moved as parameters into shinyreports.vars.groovy
-samplePattern=SHINYREPS_SAMPLEPATTERN2 # "_R1\\."
-excludePattern=T  # default FALSE
+samplePattern=SHINYREPS_SAMPLEPATTERN1 
+excludePattern=SHINYREPS_SAMPLEPATTERN2 
 maxno=as.numeric(SHINYREPS_MAXNO)        # default NULL
 ##### 
 
-cat(DEhelper.Fastqc(web=F, samplePattern=samplePattern, exclude=excludePattern, maxno=maxno), sep="\n")
+cat(DEhelper.Fastqc(web=F, samplePattern=samplePattern, excludePattern=excludePattern, maxno=maxno), sep="\n")
 # These options also apply for the helper functions following below
 ```
 
@@ -195,11 +196,10 @@ DEhelper.cutadapt(colorByFactor=colorByFactor, targetsdf=targets4plots)
 ```{r FastQC_paragraph2, echo=F, results='asis', error=F, warning=F, message=F, eval=runCutadapt}
 # Applying FastQC again after adapter trimming (fastq file names contain "cutadapt" as part of their name)
 samplePattern=SHINYREPS_SAMPLEPATTERN2
-excludePattern=F  # default FALSE
 maxno=as.numeric(SHINYREPS_MAXNO) # default NULL
 ##
 cat("### FastQC after adapter trimming\n")
-cat(DEhelper.Fastqc(web=F, samplePattern=samplePattern, exclude=excludePattern, maxno=maxno), sep="\n") 
+cat(DEhelper.Fastqc(web=F, samplePattern=samplePattern, maxno=maxno), sep="\n") 
 ```
 
 
@@ -208,7 +208,7 @@ cat(DEhelper.Fastqc(web=F, samplePattern=samplePattern, exclude=excludePattern, 
 The plots below show meta-gene profiles of 5' to 3' read coverage and can reveal biases due to RNA degradation or specific library prep protocol; polyA-selection protocols are particularly prone of producing 3' coverage bias upon RNA degradation. The grey line depicts the actual read coverage and the red line shows the overall trend.
 
 ```{r GeneBodyCoverage_paragraph, echo=F, results='asis', error=F, warning=F, message=F}
-cat(DEhelper.geneBodyCov(web=F), sep="\n")
+cat(DEhelper.geneBodyCov(web=F, samplePattern=SHINYREPS_SAMPLEPATTERN1), sep="\n")
 ```
 
 
@@ -217,7 +217,7 @@ cat("## Strand specificity\n")
 
 cat("\nThe table below shows the fraction of reads mapped in sense or antisense to gene exons - around 0.5 for non-stranded library prep protocols and close to 0 or 1 for strand-specific RNA-seq protocols. The strandedness is calculated as the percentage of unambiguous reads that are on the strand, which is expected by the library preparation protocol.\n\n")
 
-cat(DEhelper.strandspecificity(), sep="\n")
+cat(DEhelper.strandspecificity(samplePattern=SHINYREPS_SAMPLEPATTERN1), sep="\n")
 ```
 
 
@@ -226,7 +226,7 @@ cat(DEhelper.strandspecificity(), sep="\n")
 Illustrate genomic origin of reads
 
 ```{r Qualimap}
-DEhelper.Qualimap()
+DEhelper.Qualimap(samplePattern=SHINYREPS_SAMPLEPATTERN1)
 ```
 
 
@@ -235,7 +235,7 @@ DEhelper.Qualimap()
 The following plot shows the fraction of reads assigned to various RNA classes. These plots help in determining if the sample prep protocol worked well and may reveal issues with rRNA contamination. 
 
 ```{r RNAtypes_paragraph, echo=F, results='asis', error=F, warning=F, message=F}
-DEhelper.RNAtypes()
+DEhelper.RNAtypes(samplePattern=SHINYREPS_SAMPLEPATTERN1)
 ```
 
 
@@ -291,7 +291,7 @@ The "multiple_genome" label refers to the amount of read mapping to this genome 
 Since the reads mapping to multiple genomes are referred to for each individual genome the total percentages of reads mapping can be larger than a 100%. 
 
 ```{r fastqscreen_paragraph, echo=F, results='asis', fig.width=10, error=F, warning=F, message=F}
-plot(DEhelper.fastqscreen())
+plot(DEhelper.fastqscreen(samplePattern=SHINYREPS_SAMPLEPATTERN1))
      
 ```
 
@@ -313,7 +313,7 @@ cat(DEhelper.Trackhub(), sep="\n")
 Measuring the fraction of duplicated reads is commonly used to control for excessive PCR over-amplification during library preparation and/or for suboptimal amount of input material. However, in RNA-seq duplicated reads may also arise naturally due to the highly expressed (e.g. housekeeping) genes, which makes the overall read duplication rate useless. The IMB-developed tool dupRadar (http://bioconductor.org/packages/release/bioc/html/dupRadar.html) gives an informative insight into the duplication problem by graphically relating the gene expression levels and the observed duplication rates. Thus, problematic samples can be easily identified by visual inspection.
 
 ```{r Dupradar_paragraph, echo=F, results='asis', error=F, warning=F, message=F}
-cat(DEhelper.dupRadar(web=F), sep="\n")
+cat(DEhelper.dupRadar(web=F, samplePattern=SHINYREPS_SAMPLEPATTERN1), sep="\n")
 ```
 
 
@@ -422,13 +422,14 @@ rowData(sce)$SYMBOL <- new.names
 ```
 
 
-```{r droplets_emptyDrops, echo=F, message=FALSE, results='asis', eval=F}
+```{r droplets_emptyDrops, echo=F, message=FALSE, results='asis', eval=(SHINYREPS_SEQTYPE == "tenX" && grepl("raw_feature_bc_matrix", matrix_dir))}
 
 ## ATTENTION: CellRanger version 3 automatically performs cell calling using an algorithm similar to emptyDrops().
 # Since we load the FILTERED count matrix, we can go straight to computing other QC metrics and do
 # not need to run this code chunk.
-# However, sometimes it may be desirable to load the UNFILTERED matrix and apply emptyDrops() ourselves, 
+# However, sometimes it may be desirable to load the UNFILTERED (raw) matrix and apply emptyDrops() ourselves, 
 # on occasions where more detailed inspection or control of the cell-calling statistics is desired.
+# If intended to do so, specify the path to the raw matrix in 'matrix_dir' above.
 
 cat("## Detect empty droplets\n\n")
 
@@ -462,8 +463,7 @@ all.out <- emptyDrops(counts(sce), lower=limit, test.ambient=TRUE)
 hist(all.out$PValue[all.out$Total <= limit & all.out$Total > 0],
     xlab="P-value", main="", col="grey80") 
 
-cat("\nIdeally, the distribution should be close to uniform. Large peaks near zero indicate that barcodes with total counts below lower are not all ambient in origin. This can be resolved by decreasing lower further to ensure that barcodes corresponding to droplets with very small cells are not used to estimate the ambient profile. Once we are satisfied with the performance of emptyDrops(), we subset our SingleCellExperiment 
-# object to retain only the detected cells.\n")
+cat("\nIdeally, the distribution should be close to uniform. Large peaks near zero indicate that barcodes with total counts below lower are not all ambient in origin. This can be resolved by decreasing lower further to ensure that barcodes corresponding to droplets with very small cells are not used to estimate the ambient profile. Once we are satisfied with the performance of emptyDrops(), we subset our SingleCellExperiment object to retain only the detected cells.\n")
 
 sce <- sce[,which(e.out$FDR <= 0.001)]
 
@@ -474,7 +474,7 @@ sce <- sce[,which(e.out$FDR <= 0.001)]
 # to remove non-empty droplets containing cell fragments or stripped nuclei that were not caught by the mitochondrial filter. 
 # However, this should be weighed against the risk of losing genuine cell types.
 
-# For routine analyses, there is usually no need to remove the ambient contamination from each library.
+cat("\nFor routine analyses, there is usually no need to remove the ambient contamination from each library.\n")
 
 ```
 
@@ -510,39 +510,33 @@ if (!is.na(mito.genes)) {
 # calculate QC metrics
 sce <- addPerCellQC(sce, percent_top =2, subsets=list(Mito=is.mito))  
 
-
 qc.frame <- colData(sce)
 qc.frame$Lib.size <- qc.frame$sum/1e3 # library size in thousands
 qc.frame <- as.data.frame(qc.frame)
 
-# generate plots for Lib.size, total_features, pct_amount_Mt for each selected category 
-# histograms
-qc.plots <- lapply(c("Lib.size", "detected", "subsets_Mito_percent"), function(to.plot){ 
+# generate plots for Lib.size, detected features, subsets_Mito_percent
+# histograms 
+# todo: include 2nd lapply for separating by multiple annoFactors including no separation at all (need 2nd for loop for printing below).
+# todo: Also include MAD lines separated by annoFactor but first remove all the cells which hardly have any counts to avoid bias for relative thresholds (as done in filtering below). Create temporary qc.frame for this.
+qc.plots <- lapply(c("Lib.size", "detected", "subsets_Mito_percent"), function(to.plot){
       if(to.plot=="Lib.size"){
         xlabel="Lib. sizes in thousands"
          }else{
            xlabel=to.plot}
-  
-      if(to.plot=="subsets_Mito_percent"){
-        madOrient="high"
-      }else{
-        madOrient="low"}
-
-  plot.list <- lapply(annoFactors, function(separation){
-      p <- ggplot(qc.frame, aes_string(to.plot, fill=separation))+ 
-            geom_histogram(position="identity", alpha=0.5, bins=100, col="grey80") +
-            geom_vline(aes(xintercept = median(na.omit(qc.frame[,to.plot])), col="median"), linetype=2)  +
-            geom_vline(aes(xintercept = MAD(na.omit(qc.frame[,to.plot]), as.numeric(SHINYREPS_NMADS))[[madOrient]], col=madOrient), linetype=2) +
-            #scale_color_manual(name = "Statistics", values = c(median = "blue", high="red")) +
+      # if(to.plot=="subsets_Mito_percent") { madOrient="high"} else {madOrient="low"}
+      # plot.list <- lapply(annoFactors, function(separation){}) # 2nd lapply for annofactors
+      p <- ggplot(qc.frame, aes_string(to.plot, fill=annoFactors[1]))+ 
+            geom_histogram(position="identity", alpha=0.5, bins=100) + # , col="grey80"
+            # geom_vline(aes(xintercept = median(na.omit(qc.frame[,to.plot])), col="median"), linetype=2)  +
+            # geom_vline(aes(xintercept = MAD(na.omit(qc.frame[,to.plot]), as.numeric(SHINYREPS_NMADS))[[madOrient]], col=madOrient), linetype=2) +
+            # scale_color_manual(name = "Statistics", values = c(median = "blue", high="red")) +
             scale_fill_brewer(palette = "Set1") +
-            #scale_x_log10() +
             xlab(xlabel) +
-            ylab(paste0("# cells"))
-          plot(p)
+            ylab(paste0("# cells")) + 
+            theme(legend.position="top")
           return(p)
-  })
-  return(plot.list)
 })
+
 
 # violinplots
 qc.plots.violin <- lapply(c("Lib.size", "detected", "subsets_Mito_percent"), function(to.plot){ 
@@ -552,19 +546,21 @@ qc.plots.violin <- lapply(c("Lib.size", "detected", "subsets_Mito_percent"), fun
     ylabel <- to.plot
   }
   
-  plot.list <- lapply(annoFactors, function(separation){
-    p <- ggplot(qc.frame, aes_string(separation,to.plot,color=separation))+
+  p <- ggplot(qc.frame, aes_string(annoFactors[1],to.plot,color=annoFactors[1]))+
       geom_violin() +
       geom_quasirandom() +
       scale_fill_hue(l=40, c=40) +
       ylab(ylabel) +
-      xlab(separation) +
-      theme(axis.text.x=element_text(angle=45, vjust=1, hjust=1))
-    plot(p)
+      xlab(annoFactors[1]) +
+      theme(axis.text.x=element_text(angle=45, vjust=1, hjust=1)) + 
+      theme(legend.position="top")
     return(p)
-  })
-  return(plot.list)
-})
+ })
+
+
+for(i in 1:length(qc.plots)) {
+  grid.arrange(qc.plots[[i]], qc.plots.violin[[i]], ncol=2)
+}
 
 ```
 
@@ -593,7 +589,7 @@ annoFactors <- colorByFactor2
 
 cat("## Count distribution per plate position
 
-The plots below visualize the count data distribution (not log-transformed) via plate position for the categories 'total_features_by_counts_endogenous', 'total_counts' and 'pct_counts_Mt' indicated by spot size. 0-cell and 10-cell controls are indicated in blue and orange, respectively. Symbol shape is defined by custom grouping. For each category the plates are plotted row-wise with plate number in increasing order.\n")
+The plots below visualize the count data distribution (not log-transformed) via plate position for the categories library size, detected features and percentage of mitochondrial reads indicated by spot size. 0-cell and 10-cell controls are indicated in blue and orange, respectively. Symbol shape is defined by custom grouping. For each category the plates are plotted row-wise with plate number in increasing order.\n")
 
 sce$plate_position <- paste0(sce$row, sce$col) # column "plate_position" needed for plotPlatePosition
 for (size in c("Lib.size", "detected", "subsets_Mito_percent")) {
@@ -604,7 +600,7 @@ for (size in c("Lib.size", "detected", "subsets_Mito_percent")) {
                             by_exprs_values = "counts", theme_size = 10,  point_alpha = 0.6, point_size = 3, add_legend = F)  
   } # plotPlatePosition uses by_exprs_values = "logcounts" by default. But if not available, uses "counts" instead
 
-  multiplot(plotlist=plates, layout=matrix(c(1:ceiling(length(plates))), ncol=2, byrow=TRUE))
+  grid.arrange(grobs=plates, layout_matrix=matrix(c(1:ceiling(length(plates))), ncol=2, byrow=TRUE))
 }
 
 ```
@@ -658,21 +654,16 @@ annoFactors <- colorByFactor2
 
 # if(!exists("sce.beforeFilt")) {sce.beforeFilt <- sce}
 
-if(type_of_threshold=="relative") {
-  # Before we apply relative QC filters we remove all the cells which hardly have any counts to avoid bias for relative thresholds
-  min_readcount <- 100
-  count.drop <- sce$sum < min_readcount
-  cat("We drop ", sum(count.drop), " cells, because they have less than", min_readcount, "reads counted.\n") 
-  sce <- sce[,!count.drop]
-}
 
-# apply thresholds
-qc.drop <-  data.frame(row.names = colnames(sce)) # initialize
+## visualize selected thresholds
 
-if(type_of_threshold=="absolute") {
+if(type_of_threshold=="absolute") { ### use absolute thresholds
+  
+  qc.drop <-  data.frame(row.names = colnames(sce)) # initialize
   qc.drop$libsize <- (sce$sum < threshold_total_counts_min) | (sce$sum > min(threshold_total_counts_max, max(sce$sum), na.rm=T))
   qc.drop$detected <- sce$detected < threshold_total_detected
   qc.drop$mito <- sce$subsets_Mito_percent > threshold_pct_counts_Mt
+  qc.drop$cells <- if("cells" %in% colnames(colData(sce))) {colData(sce)$cells != "1c"} else {F}
   qc.drop$pass <- !apply(qc.drop, 1, any)
   qc.drop <- qc.drop[match(colnames(sce), rownames(qc.drop)), ]  # sort to match the 'sce' cell order
 
@@ -680,57 +671,117 @@ if(type_of_threshold=="absolute") {
     threshold_total_counts_max <- paste("or >", threshold_total_counts_max)
         } else {threshold_total_counts_max <- NULL}   # prepare string for output
   
-  qcfailed <- data.frame(criterion=c(paste("total counts <", threshold_total_counts_min, threshold_total_counts_max),
-                                     paste("total features <", threshold_total_detected),
-                                     paste("% mitochondrial counts >", threshold_pct_counts_Mt),
-                                     paste("remaining")), 
-                         cell_count=c(sum(qc.drop$libsize), sum(qc.drop$detected), sum(qc.drop$mito), sum(qc.drop$pass)))
-  kbl(qcfailed, caption="QC filtering") %>% kable_styling()
+ 
+  if(!is.null(annoFactors)) { # prepare cell counts by factor if present
+    data_by_factor <- cbind(qc.drop, tempfactor=factor(colData(sce)[,annoFactors])) %>%
+      dplyr::group_by(tempfactor) %>%
+      dplyr::summarize(counts_unfiltered = paste0(length(libsize), " (", sprintf("%1.1f%%", 100*length(libsize)/ncol(sce)), ")"),
+                       libsize = paste0(sum(libsize), " (", sprintf("%1.1f%%", 100*sum(libsize)/length(libsize)), ")"),
+                       detected = paste0(sum(detected), " (", sprintf("%1.1f%%", 100*sum(detected)/length(detected)), ")"),
+                       mito = paste0(sum(mito), " (", sprintf("%1.1f%%", 100*sum(mito)/length(mito)), ")"),
+                       cells = paste0(sum(cells), " (", sprintf("%1.1f%%", 100*sum(cells)/length(cells)), ")"),
+                       pass = paste0(sum(pass), " (", sprintf("%1.1f%%", 100*sum(pass)/length(pass)), ")")) %>%
+      dplyr::ungroup() %>%
+      column_to_rownames('tempfactor') %>%
+      t()
+  } else {data_by_factor <- NULL}
+  
+  qcfailed <- cbind(
+      criterion=c(counts_unfiltered = "counts unfiltered", 
+                  libsize = paste("total counts <", threshold_total_counts_min, threshold_total_counts_max),
+                  detected = paste("total features <", threshold_total_detected),
+                  mito = paste0("mitochondrial counts > ", threshold_pct_counts_Mt, "%"),
+                  cells = "control wells (0c, 10c)",
+                  pass = paste("remaining")),
+      data_by_factor, 
+      cell_count_total=c(ncol(sce),
+                         paste0(sum(qc.drop$libsize), " (", sprintf("%1.1f%%", 100*sum(qc.drop$libsize)/ncol(sce)), ")"),
+                         paste0(sum(qc.drop$detected), " (", sprintf("%1.1f%%", 100*sum(qc.drop$detected)/ncol(sce)), ")"),
+                         paste0(sum(qc.drop$mito), " (", sprintf("%1.1f%%", 100*sum(qc.drop$mito)/ncol(sce)), ")"),
+                         paste0(sum(qc.drop$cells), " (", sprintf("%1.1f%%", 100*sum(qc.drop$cells)/ncol(sce)), ")"),
+                         paste0(sum(qc.drop$pass), " (", sprintf("%1.1f%%", 100*sum(qc.drop$pass)/ncol(sce)), ")")
+                         )
+      )
+
   
   } else {
-    if(type_of_threshold=="relative") {
+    if(type_of_threshold=="relative") { ### use relative thresholds
+      
+     # Before we apply relative QC filters we remove all the cells which hardly have any counts to avoid bias for relative thresholds
+     min_readcount <- 100
+     count.drop <- sce$sum < min_readcount
+     cat("We drop ", sum(count.drop), " cells with less than", min_readcount, "reads counted, because cells which hardly have any counts would bias the relative thresholding\n") 
+     sce <- sce[,!count.drop]
+  
+     qc.drop <-  data.frame(row.names = colnames(sce)) # initialize
      qc.drop$libsize <- isOutlier(sce$sum, nmads=NMADS, type="lower", log=TRUE, batch=apply_QCfilter_by_factor)
      qc.drop$detected <- isOutlier(sce$detected, nmads=NMADS, type="lower", log=TRUE, batch=apply_QCfilter_by_factor) 
      qc.drop$mito <- isOutlier(sce$subsets_Mito_percent, nmads=NMADS, type="higher", batch=apply_QCfilter_by_factor)
+     qc.drop$cells <- if("cells" %in% colnames(colData(sce))) {colData(sce)$cells != "1c"} else {F}
      qc.drop$pass <- !apply(qc.drop, 1, any)
      qc.drop <- qc.drop[match(colnames(sce), rownames(qc.drop)), ]  # sort to match the 'sce' cell order
+
+     if(!is.null(annoFactors)) { # prepare cell counts by factor if present
+      data_by_factor <- cbind(qc.drop, tempfactor=factor(colData(sce)[,annoFactors])) %>%
+        dplyr::group_by(tempfactor) %>%
+        dplyr::summarize(libsize = paste0(sum(libsize), " (", sprintf("%1.1f%%", 100*sum(libsize)/length(libsize)), ")"),
+                         detected = paste0(sum(detected), " (", sprintf("%1.1f%%", 100*sum(detected)/length(detected)), ")"),
+                         mito = paste0(sum(mito), " (", sprintf("%1.1f%%", 100*sum(mito)/length(mito)), ")"),
+                         cells = paste0(sum(cells), " (", sprintf("%1.1f%%", 100*sum(cells)/length(cells)), ")"),
+                         pass = paste0(sum(pass), " (", sprintf("%1.1f%%", 100*sum(pass)/length(pass)), ")")) %>%
+        dplyr::ungroup() %>%
+        column_to_rownames('tempfactor') %>%
+        t()
+      } else {data_by_factor <- NULL}
      
-     qcfailed <- data.frame(criterion=c(paste("total counts <", NMADS, "MAD"),
-                                     paste("total features <", NMADS, "MAD"),
-                                     paste("% mitochondrial counts >", NMADS, "MAD"),
-                                     paste("remaining")), 
-                         cell_count=c(sum(qc.drop$libsize), sum(qc.drop$detected), sum(qc.drop$mito), sum(qc.drop$pass)))
-     kbl(qcfailed, caption="QC filtering") %>% kable_styling()
+      qcfailed <- cbind(
+        criterion=c(paste("total counts <", NMADS, "MAD"),
+                    paste("total features <", NMADS, "MAD"),
+                    paste("% mitochondrial counts >", NMADS, "MAD"),
+                    cells = "control wells (0c, 10c)",
+                    paste("remaining")), 
+       data_by_factor, 
+       cell_count_total=c(paste0(sum(qc.drop$libsize), " (", sprintf("%1.1f%%", 100*sum(qc.drop$libsize)/ncol(sce)), ")"),
+                          paste0(sum(qc.drop$detected), " (", sprintf("%1.1f%%", 100*sum(qc.drop$detected)/ncol(sce)), ")"),
+                          paste0(sum(qc.drop$mito), " (", sprintf("%1.1f%%", 100*sum(qc.drop$mito)/ncol(sce)), ")"),
+                          paste0(sum(qc.drop$cells), " (", sprintf("%1.1f%%", 100*sum(qc.drop$cells)/ncol(sce)), ")"),
+                          paste0(sum(qc.drop$pass), " (", sprintf("%1.1f%%", 100*sum(qc.drop$pass)/ncol(sce)), ")")
+                          )
+       ) 
 
   } else {stop("\ntype_of_threshold must be either 'absolute' or 'relative'")}
 }
 
+if(!"cells" %in% colnames(colData(sce))) { # exclude row with control wells if not applicable
+  qcfailed <- qcfailed[!rownames(qcfailed) %in% c("cells"), ]
+}
 
-cat("\nVioline plots with applied thresholds indicated\n")
-qc.drop.mod <- qc.drop[,!colnames(qc.drop) %in% c("pass")]
-qc.drop.mod <- sapply(qc.drop.mod, function(x) ifelse(x==TRUE, "removed", "kept"))
+kbl(qcfailed, caption="QC filtering", row.names=F) %>% kable_styling()
 
 # plot violin plots with indicated thresholds
+cat("\nVioline plots with applied thresholds indicated\n")
+qc.drop.mod <- qc.drop[,!colnames(qc.drop) %in% c("pass", "cells")]
+qc.drop.mod <- sapply(qc.drop.mod, function(x) ifelse(x==TRUE, "removed", "kept"))
 qc.plots.violin.thresholds <- lapply(qcmetrics, function(to.plot){ 
   color_threshold <- switch(to.plot, "sum" = "libsize", "detected" = "detected", "subsets_Mito_percent" = "mito")
-  plotColData(sce, x=annoFactors[1], y=to.plot, colour_by=I(qc.drop.mod[,color_threshold])) + 
+  p <- plotColData(sce, x=annoFactors[1], y=to.plot, colour_by=I(qc.drop.mod[,color_threshold])) + 
     theme(legend.position = "top", legend.text = element_text(size = 14))  
-})
+   return(p)
+  })
 
-  gridExtra::grid.arrange(grobs=qc.plots.violin.thresholds, ncol=3)
+  gridExtra::grid.arrange(grobs=qc.plots.violin.thresholds, ncol=if(is.null(annoFactors) || nlevels(factor(colData(sce)[,annoFactors])) <=3) {3} else {1})
 
 
 # plot QC metrics as PCA
 cat("\nThe quality metrics are summarized in a PCA\n")
-plotPCAfromQCmetrics(sce, metrics=qcmetrics, anno=annoFactors, qc.drop=qc.drop)
-
+plotPCAfromQCmetrics(sce, metrics=qcmetrics, anno=annoFactors, qc.drop=qc.drop[,!colnames(qc.drop) %in% c("cells")])
 
 ```
 
 
 
 
-Removed samples/cells:
+Removed cells:
 
 ```{r remove_low_qual_cells_and_control_wells, results='asis'}
 ##### parameters to set:
@@ -739,30 +790,19 @@ annoFactors <- colorByFactor2
 #####
 
 # output overview of remaining cells and table of removed cells
-j <- c("sum", "detected", "subsets_Mito_percent", annoFactors) 
+j <- unique(c("sum", "detected", "subsets_Mito_percent", "cells", annoFactors))
+j <- j[j %in% names(colData(sce))]
 x <- cbind(qc.drop, colData(sce)[match(rownames(qc.drop), rownames(colData(sce))), j])
-# kbl(as.data.frame(apply(qc.drop, 2, sum)), col.names="cells", caption="")
+if(!"cells" %in% colnames(colData(sce))) {x$cells <- NULL}
 x$subsets_Mito_percent   <- round(x$subsets_Mito_percent, digits=2) 
-x <- as.data.frame(x)
+colnames(x) <- gsub("subsets_", "", colnames(x))
 DT::datatable(x[!x$pass, ])
 
 # filter out cells failing QC
-if(length(qc.drop$pass) == ncol(sce)) { # if block is executed multiple times
+if(length(qc.drop$pass) == ncol(sce)) { # if chunk is executed multiple times
     sce <- sce[, qc.drop$pass]
 }
 
-# overview of remaining cells after QC filtering
-colnames_table <- if(length(annoFactors)==1) {c(annoFactors, "cell count")} else {NA}
-kbl(table(colData(sce)[, annoFactors, drop=F]), col.names=colnames_table, caption="Amount of cells remaining after QC filtering") %>% kable_styling()
-
-# filter out control wells with 0 or 10 cells
-if("cells" %in% colnames(colData(sce))) {
-sce <- sce[, colData(sce)$cells == "1c"]
-sce$wells <- gsub("_S[0-9]+$", "", gsub("_1c", "", colnames(sce)))
-
-# overview of remaining cells after removing control wells 
-kbl(table(colData(sce)[, annoFactors, drop=F]), col.names=colnames_table, caption="Amount of cells remaining after filtering for control wells (0c/10c)") %>% kable_styling() 
-}
 ```
 
 
@@ -808,7 +848,7 @@ smoothScatter(log10(rowData(sce)$ave.count), expressed.cells,
 
 # filtering for low abundance genes
 genes2keep <- expressed.cells > ceiling(.05 * ncol(sce))
-cat(sum(genes2keep), "of", length(genes2keep), "genes remain after filtering for low abundance genes.\n")
+cat("\n\n", sum(genes2keep), "of", length(genes2keep), "genes remain after filtering for low abundance genes.\n")
 sce <- sce[genes2keep, ]
 
 # # remove feature controls
@@ -914,10 +954,8 @@ org <- SHINYREPS_ORG
 annoFactors <- colorByFactor2
 #####
 
-if(!exists("sce.no.ccp")) {sce.no.ccp <- sce}
-set.seed(100)
-
 # load gene.pairs: "mouse_cycle_markers.rds" or "human_cycle_markers.rds"
+set.seed(100)
 gene.pairs <- readRDS(system.file("exdata", paste0(org, "_cycle_markers.rds"), package="scran")) # 
 
 # determine cell cycle phase:
@@ -927,18 +965,39 @@ assignments <- cyclone(sce, pairs=gene.pairs, gene.names=sub("\\..*$","",rowData
 sce$phases <- assignments$phases
 cat(sum(is.na(sce$phases)), "out of", length(sce$phases),
     "cells could not be assigned to a cell cycle phase.", fill=TRUE)
+
 if(any(!is.na(sce$phases))) {
-    print(kbl(table(sce$phases), col.names=c("phases", "freq"), caption="Cell cycle phases", align = "l", format="simple") %>% kable_styling(full_width = F))
+  
+  # print cell cycle table
+   ccptable <- data.frame(tempfactor=factor(colData(sce)[, c(annoFactors[1])]), phases=sce$phases) %>%
+     dplyr::group_by(tempfactor) %>%
+     dplyr::summarize(G1 = paste0(sum(phases=="G1"), " (", sprintf("%1.1f%%", 100*sum(phases=="G1")/length(phases)), ")"),
+                      G2M = paste0(sum(phases=="G2M"), " (", sprintf("%1.1f%%", 100*sum(phases=="G2M")/length(phases)), ")"),
+                      S = paste0(sum(phases=="S"), " (", sprintf("%1.1f%%", 100*sum(phases=="S")/length(phases)), ")")
+                      ) %>%
+     dplyr::ungroup() %>%
+     column_to_rownames('tempfactor') %>%
+     t() %>%
+     as.data.frame()
+   
+     ccptable$total <- c(paste0(sum(sce$phases=="G1"), " (", sprintf("%1.1f%%", 100*sum(sce$phases=="G1")/ncol(sce)), ")"),
+                         paste0(sum(sce$phases=="G2M"), " (", sprintf("%1.1f%%", 100*sum(sce$phases=="G2M")/ncol(sce)), ")"),
+                         paste0(sum(sce$phases=="S"), " (", sprintf("%1.1f%%", 100*sum(sce$phases=="S")/ncol(sce)), ")")
+                         )
+   
+    print(kbl(ccptable, caption="Cell cycle phases", align = "l", format="simple") %>% kable_styling()) 
     cat("\n")
+    
+    # plot cell cycle phases
     plot(0, xlim=c(0, 1), ylim=c(0, 1), type="n", xlab="G1 score", ylab="G2/M score")
-    points(assignments$scores$G1, assignments$scores$G2M, col=scales::alpha(pal[factor(colData(sce)[,annoFactors])], .5) )   # pch=16
+    points(assignments$scores$G1, assignments$scores$G2M, col=scales::alpha(pal[factor(colData(sce)[,annoFactors[1]])], .5) )   # pch=16
     # abline(h=.5, v=.5, lty=2, col="red")
     arrows(0.5,0.5,1,1, length=0, col="red", lty=2)
     arrows(0,0.5,0.5,0.5, length=0, col="red", lty=2)
     arrows(0.5,0,0.5,0.5, length=0, col="red", lty=2)
 
     text(x=c(.25, .75, .25, .75), y=c(.75, .75, .25, .25), labels=c("G2", " ", "S", "G1"))
-    legend("bottomleft", col=c(pal[1:4]), pch=16, legend=c(levels(factor(colData(sce)[,annoFactors]))))
+    legend("bottomleft", col=c(pal[1:4]), pch=16, legend=c(levels(factor(colData(sce)[,annoFactors[1]]))))
 }
 
 ## Info: adjustment for cell cycle phases (https://osca.bioconductor.org/cell-cycle-assignment.html)
@@ -1195,6 +1254,8 @@ annoFactors <- colorByFactor2
 
 # Ordering by most interesting genes for inspection.
 decVar_ordered <- decVar[order(decVar$bio, decreasing=TRUE),] 
+decVar_ordered <- apply(decVar_ordered, 2, signif, digits=4)
+decVar_ordered <- data.frame(SYMBOL=rowData(sce)$SYMBOL[match(rownames(decVar_ordered), rownames(sce))], decVar_ordered)
 hvg <- getTopHVGs(decVar, prop=0.1)
 rowSubset(sce, "HVGs") <- hvg
 
@@ -1214,18 +1275,48 @@ if(length(annoFactors)==2) {
 if(length(hvg) == 0) {
     cat("\nNo highly variable genes found.\n")
 } else {
-  tmp.sce <- sce    
-  rownames(tmp.sce) <- rowData(tmp.sce)$SYMBOL
-  print(
-          plotExpression(tmp.sce, 
-                         features = rownames(tmp.sce[rowData(tmp.sce)$ENSEMBL %in% hvg[1:10], ]),
-                         colour_by=dotcol,
-                         shape_by=dotshape) + 
-            ggtitle("Top 10 HGVs for all cells") +
-            scale_color_hue(c=40, l=50, name= dotcol) +
-            facet_grid(~colour_by)
-        )
-}
+  
+  # # print violinplots summarized by sample
+  # tmp.sce <- sce    
+  # rownames(tmp.sce) <- rowData(tmp.sce)$SYMBOL
+  # print(
+  #         plotExpression(tmp.sce, 
+  #                        features = rownames(tmp.sce[rowData(tmp.sce)$ENSEMBL %in% hvg[1:10], ]),
+  #                        colour_by=dotcol,
+  #                        shape_by=dotshape) +
+  #           geom_boxplot(color = "darkgrey", alpha = 0.2) +
+  #           ggtitle("Top 10 HGVs for all cells") +
+  #           scale_color_hue(c=40, l=50, name= dotcol) +
+  #           facet_grid(~colour_by)
+  #       )
+
+
+  # print violinplots summarized by gene
+  hvg2plot <- t(logcounts(sce)[hvg[1:10],])
+  hvg2plot <- data.frame(hvg2plot, colData(sce)[,annoFactors[1]])
+  colnames(hvg2plot)[length(colnames(hvg2plot))] <- annoFactors[1]
+  HVGplot <- lapply(hvg[1:10], function(h) {
+        ggplot(hvg2plot, aes_string(annoFactors[1],h,color=annoFactors[1]))+
+        geom_violin() +
+        geom_quasirandom() +
+        #scale_fill_hue(l=40, c=40) +
+        geom_boxplot(color = "darkgrey", alpha = 0.2) +
+        ylab("expression (logcounts)") +
+        xlab(annoFactors[1]) +
+        ggtitle(rowData(sce)$SYMBOL[match(h, rownames(sce))]) +
+        theme(axis.text.x=element_text(angle=45, vjust=1, hjust=1), legend.position = "none")
+  })
+  maxViolPerRow = 10 # i.e. #genes x #groups
+  nGridCol <- floor(maxViolPerRow/nlevels(factor(colData(sce)[,annoFactors[1]])))
+  splitGridList <- split(HVGplot, ceiling(seq_along(HVGplot)/nGridCol))
+  
+  plot_splitGridList <- lapply(splitGridList, function(gl) { 
+  gridExtra::grid.arrange(grobs=gl, ncol=nGridCol, 
+               top=paste0("Top 10 HGVs for all cells (", parent.frame()$i[], "/", length(splitGridList), ")"))
+  
+  })
+
+} 
 
 ```
 
@@ -1264,7 +1355,7 @@ if(length(annoFactors)>2) {stop("\nno more than 2 categories allowed in 'annoFac
  
       scater::plotReducedDim(sce, dimred = d, 
         by_exprs_values = exprs_values,
-        colour_by=dotcol, shape_by = dotshape, point_size=2) +  
+        colour_by=dotcol, shape_by = dotshape, point_size=plot_pointsize) +  
         ggtitle(paste("PCA plot of", if(grepl("allgenes", d)) {"all genes"} else {"HVGs"}))
 
   }), ncol=2)
@@ -1311,7 +1402,7 @@ if(length(annoFactors)>2) {stop("\nno more than 2 categories allowed in 'annoFac
  
       scater::plotReducedDim(sce, dimred = d, 
         by_exprs_values = exprs_values,
-        colour_by=dotcol, shape_by = dotshape, point_size=2) +  
+        colour_by=dotcol, shape_by = dotshape, point_size=plot_pointsize) +  
         ggtitle(paste("TSNE plot of", if(grepl("allgenes", d)) {"all genes"} else {"HVGs"}, "with perplexity", gsub("^.*p", "", d)))
 
   }), ncol=2)
@@ -1356,7 +1447,7 @@ if(length(annoFactors)>2) {stop("\nno more than 2 categories allowed in 'annoFac
  
       scater::plotReducedDim(sce, dimred = d, 
         by_exprs_values = exprs_values,
-        colour_by=dotcol, shape_by = dotshape, point_size=2) +  
+        colour_by=dotcol, shape_by = dotshape, point_size=plot_pointsize) +  
         ggtitle(paste("UMAP plot of", if(grepl("allgenes", d)) {"all genes"} else {"HVGs"}))
 
   }), ncol=2)
@@ -1401,7 +1492,8 @@ rowData(sce)$feature_symbol <- rowData(sce)$SYMBOL # column feature_symbol neede
 # store cluster assignments 
 dir_sc3 <- file.path("report_files", "cluster", "SC3")
 if (!file.exists(dir_sc3)) {dir.create(dir_sc3, recursive=T) }
-write.table(colData(sce)[,c(group.vars, grep("sc3_", colnames(colData(sce)), value=T))], file =file.path(dir_sc3, paste0("SC3_", nr_clusters, "_cluster.txt")), sep="\t", quote = F, row.names = F)
+write.table(data.frame(cell_ID=colnames(sce), colData(sce)[,c(group.vars, grep("sc3_", colnames(colData(sce)), value=T))]), 
+            file =file.path(dir_sc3, paste0("SC3_", nr_clusters, "_cluster_assignments.txt")), sep="\t", quote = F, row.names = F)
 
 
 ### plot SC3 clustering
@@ -1437,7 +1529,7 @@ cat(paste0("\nClustering is applied on the gene list filtered by SC3 (", sum(row
         plot_cluster <- mclapply(plot_Items, function(i) {
                   scater::plotReducedDim(sceSC3,  # use sceSC3 instead of sce
                     dimred = i,
-                    colour_by=dotcol, shape_by = dotshape, point_size=1.5) +
+                    colour_by=dotcol, shape_by = dotshape, point_size=plot_pointsize) +
                     scale_color_discrete(name="cluster") +
                     guides(color=guide_legend(ncol=2)) +
                     ggtitle(paste(gsub("_", " ", i), "SC3")) + theme(aspect.ratio = 1)
@@ -1476,8 +1568,8 @@ numberNearestNeighbors <- c(10, 20) # number of nearest neighbors k
 cluster_algo <- c("cluster_walktrap", "cluster_louvain", "cluster_infomap", "cluster_fast_greedy", "cluster_label_prop", "cluster_leading_eigen")[1:2]
 
 cat(paste0("\nClustering is applied on the respective dimension reduction slot, i.e. PCA, TSNE (with perplexity ", paste(paste0("p=",perplexity), collapse=", "), ") or UMAP (with n_neighbors=", paste(n_neighbors, collapse = ", "), "), which were calculated either based on the highly variable genes (HVGs) or on all genes (see suffix 'allgenes').\n"))
-cat("\nGraph-based clustering algorithms applied:", cluster_algo, "\n")
-cat("\nNumber of nearest neighbors k to consider during graph construction:", numberNearestNeighbors, "\n")
+cat("\nGraph-based clustering algorithms applied:", paste(cluster_algo, collapse = ", "), "\n")
+cat("\nNumber of nearest neighbors k to consider during graph construction:", paste(numberNearestNeighbors, collapse = ", "), "\n")
 
 sce_buildgraph <- list()
 sce_igraphclust <- list()
@@ -1525,7 +1617,7 @@ for (x in names(sce_igraphclust)) {
 # store cluster assignments
 dir_igraph <- file.path("report_files", "cluster", "igraph")
 if (!file.exists(dir_igraph)) {dir.create(dir_igraph, recursive=T) }
-      write.table(colData(sce)[,c(group.vars, grep("igraph", names(colData(sce)), value=T))], 
+      write.table(data.frame(cell_ID=colnames(sce), colData(sce)[,c(group.vars, grep("igraph", names(colData(sce)), value=T))]), 
       file = file.path(dir_igraph, paste0("igraph_cluster_assignments.txt")), sep="\t", quote=F, row.names=F)
 
 
@@ -1539,7 +1631,7 @@ if (!file.exists(dir_igraph)) {dir.create(dir_igraph, recursive=T) }
                   scater::plotReducedDim(sce, 
                     dimred = sub("^([A-Z]*[_p0-9]*[_allgenes]*)_.*", "\\1", i),
                     by_exprs_values = exprs_values,
-                    colour_by=paste0("igraph_", i), shape_by = dotshape, point_size=2) +
+                    colour_by=paste0("igraph_", i), shape_by = dotshape, point_size=plot_pointsize) +
                     scale_color_discrete(name="cluster") +
                     guides(color=guide_legend(ncol=2)) + theme(aspect.ratio = 1) +
                     ggtitle(gsub("_", " ", i))
@@ -1608,8 +1700,8 @@ exprs_values <- "logcounts"
 dotshape <- colorByFactor2[1]
 
 cat(paste0("\nClustering is applied on the respective dimension reduction slot, i.e. PCA, TSNE (with perplexity ", paste(paste0("p=",perplexity), collapse=", "), ") or UMAP (with n_neighbors=", paste(n_neighbors, collapse = ", "), "), which were calculated either based on the highly variable genes (HVGs) or on all genes (see suffix 'allgenes').\n"))
-cat("\nHierarchical clustering algorithms applied:", hclust_methods, "\n")
-cat("\nMinimum cluster size cs:", minClusterSize, "\n")
+cat("\nHierarchical clustering algorithms applied:", paste(hclust_methods, collapse = ", "), "\n")
+cat("\nMinimum cluster size cs:", paste(minClusterSize, collapse = ", "), "\n")
 
 dist_sce <- list()
 tree_sce <- list()
@@ -1656,7 +1748,7 @@ for (x in names(clust_sce)) {
 # store cluster assignments
 dir_hclust <- file.path("report_files", "cluster", "hclust")
 if (!file.exists(dir_hclust)) {dir.create(dir_hclust, recursive=T) }
-      write.table(colData(sce)[,c(group.vars, grep("hclust", names(colData(sce)), value=T))], 
+      write.table(data.frame(cell_ID=colnames(sce), colData(sce)[,c(group.vars, grep("hclust", names(colData(sce)), value=T))]), 
       file = file.path(dir_hclust, paste0("hclust_cluster_assignments.txt")), sep="\t", quote=F, row.names=F)
 
 
@@ -1669,7 +1761,7 @@ if (!file.exists(dir_hclust)) {dir.create(dir_hclust, recursive=T) }
                   scater::plotReducedDim(sce, 
                     dimred = sub("^([A-Z]*[_p0-9]*[_allgenes]*)_.*", "\\1", i),
                     by_exprs_values = exprs_values,
-                    colour_by=paste0("hclust_", i), shape_by = dotshape, point_size=3) +
+                    colour_by=paste0("hclust_", i), shape_by = dotshape, point_size=plot_pointsize) +
                     scale_color_discrete(name="cluster") +
                     guides(color=guide_legend(ncol=2)) +
                     ggtitle(gsub("_", " ", i)) + theme(aspect.ratio = 1)
@@ -1715,19 +1807,41 @@ if (!file.exists(dir_hclust)) {dir.create(dir_hclust, recursive=T) }
   
   colLabels(sce) <- factor(colData(sce)[, selected_clustering_method])
   
-   plot_selected <- scater::plotReducedDim(sce, 
+  plot_selected <- scater::plotReducedDim(sce, 
                       dimred = name_dimred,
                       by_exprs_values = exprs_values,
-                      colour_by=selected_clustering_method, shape_by = dotshape, point_size=3) +
+                      colour_by=selected_clustering_method, point_size=plot_pointsize) + # shape_by = dotshape, 
                       scale_color_discrete(name="cluster") +
-                      guides(color=guide_legend(ncol=2)) +
-                      ggtitle(gsub("_", " ", selected_clustering_method)) + theme(aspect.ratio = 1)
+                      #guides(color=guide_legend(ncol=2)) +
+                      #ggtitle(gsub("_", " ", selected_clustering_method)) + 
+                      theme(legend.position = "top", aspect.ratio = 1)
    
-   plot_selected
+  plot_selected_annofactor <- scater::plotReducedDim(sce, 
+                      dimred = name_dimred,
+                      by_exprs_values = exprs_values,
+                      colour_by=colorByFactor2[1], point_size=plot_pointsize) +
+                      #ggtitle(paste(gsub("_", " ", name_dimred), "colored by", colorByFactor2[1])) + 
+                      theme(legend.position = "top", aspect.ratio = 1)
    
    ggsave(plot=plot_selected, filename= file.path("report_files", "cluster", paste0(selected_clustering_method, "_selected_cluster_plot.png")),
           width = 120, height = 120, units = c("mm"),  dpi = 300)
+
+gridExtra::grid.arrange(plot_selected, plot_selected_annofactor, ncol=2, top=gsub("_", " ", selected_clustering_method))
+
 cat("\n")
+
+# store table with mean logcounts per cluster
+meanLogcountsByCluster <- data.frame(cbind(cluster=colLabels(sce), t(logcounts(sce)))) %>%
+      dplyr::group_by(cluster) %>%
+      dplyr::summarize_all(mean, na.rm = T) %>%
+      dplyr::ungroup() %>%
+      column_to_rownames('cluster') %>%
+      t()
+
+write.table(data.frame(gene=rownames(meanLogcountsByCluster), symbol=rowData(sce)$SYMBOL, meanLogcountsByCluster, check.names = F), 
+            file=file.path("report_files", "cluster", paste0(selected_clustering_method, "_mean_logcounts.txt")), 
+            sep="\t", quote=F, row.names=F)
+
 ```
 
 
@@ -1736,12 +1850,22 @@ cat("\n")
 library(scDblFinder)
 cat("# Doublet detection\n\n")
 
+cat("\nThe methods applied here are complementary to doublets identified via cell hashes and SNPs in multiplexed samples: while hashing/genotypes can identify doublets formed by cells of the same type (homotypic doublets) from two samples loaded to the same GEM well, which are often nearly undistinguishable from real cells transcriptionally (and hence generally unidentifiable through the present package), it cannot identify doublets made by cells of the same sample, even if they are heterotypic (formed by different cell types). Instead, the methods presented here are primarily geared towards the identification of heterotypic doublets, which for most purposes are also the most critical ones.\n\n")
+
 cat("## Doublet detection with clusters\n")
 
-cat("\n\nThe findDoubletClusters() function from the scDblFinder package identifies clusters with expression profiles lying between two other clusters (Bach et al. 2017). We consider every possible triplet of clusters consisting of a query cluster and two putative “source” clusters. Under the null hypothesis that the query consists of doublets from the two sources, we compute the number of genes (num.de) that are differentially expressed in the same direction in the query cluster compared to both of the source clusters. Such genes would be unique markers for the query cluster and provide evidence against the null hypothesis. For each query cluster, the best pair of putative sources is identified based on the lowest num.de. Clusters are then ranked by num.de where those with the few unique genes are more likely to be composed of doublets.\n")
+cat("\n\nThe findDoubletClusters function from the scDblFinder package identifies clusters with expression profiles lying between two other clusters (Bach et al. 2017, https://doi.org/10.1038/s41467-017-02001-5). We consider every possible triplet of clusters consisting of a query cluster and two putative “source” clusters. Under the null hypothesis that the query consists of doublets from the two sources, we compute the number of genes (num.de) that are differentially expressed in the same direction in the query cluster compared to both of the source clusters. Such genes would be unique markers for the query cluster and provide evidence against the null hypothesis (for a doublet we would expect an intermediate gene expression respective to the 2 source clusters). For each query cluster, the best pair of putative sources is identified based on the lowest num.de. 
+    \nClusters are then ranked by num.de where those with the few unique genes are more likely to be composed of doublets. Further characteristics indicating potential doublet clusters comprise a reasonable proportion of cells in the cluster (given in 'prop') with respect to the experimental protocol. The function also reports the ratio of the median library size in each source to the median library size in the query (lib.size fields). For a cluster made of doublets, the library sizes of the source clusters should be below that of the query cluster, i.e. lib.size values below unity. This assumes that the doublet cluster will contain more RNA and have more counts than either of the two source clusters. The top gene with the lowest adjusted p-value against the doublet hypothesis is given in the 'best' column. The reported p.value is of little use in a statistical sense, and is only provided for inspection.\n")
+
+# Technically, the p.value could be treated as the Simes combined p-value against the doublet hypothesis for the query cluster. However, this does not account for the multiple testing across all pairs of clusters for each chosen cluster, especially as we are choosing the pair that is most concordant with the doublet null hypothesis. 
 
 dbl.out <- findDoubletClusters(sce, clusters=colData(sce)[,selected_clustering_method])
-kbl(DataFrame(cluster=rownames(dbl.out), dbl.out), caption="Doublet detection with clusters") %>% kable_styling()
+dbl.out <- DataFrame(cluster=rownames(dbl.out), dbl.out[,1:which(colnames(dbl.out)=="best")], 
+                      symbol=rowData(sce)$SYMBOL[match(dbl.out$best, rownames(sce))],
+                      dbl.out[,(1+which(colnames(dbl.out)=="best")):ncol(dbl.out)])
+dbl.out[,c("p.value", "lib.size1", "lib.size2", "prop")] <- sapply(dbl.out[,c("p.value", "lib.size1", "lib.size2", "prop")], signif, digits=3)
+
+kbl(dbl.out, caption="Doublet detection with clusters") %>% kable_styling()
 
 ```
 
@@ -1752,7 +1876,8 @@ annoFactors <- colorByFactor2
 
 cat("## Doublet detection by simulation\n")
 
-cat("\nThis doublet detection strategy involves in silico simulation of doublets from the single-cell expression profiles (Dahlin et al. 2018). This is performed using the computeDoubletDensity() function from the scDblFinder package. This function simulates thousands of doublets by adding together two randomly chosen single-cell profiles, computes the density of simulated doublets in the surrounding neighborhood for each original cell, computes the density of other observed cells in the neighborhood and returns the ratio between the two densities as a “doublet score” for each cell.\n")
+cat("\nThis doublet detection strategy involves in silico simulation of doublets from the single-cell expression profiles (Dahlin et al. 2018, 
+https://doi.org/10.1182/blood-2017-12-821413). This is performed using the computeDoubletDensity() function from the scDblFinder package. This function simulates doublets by adding the count vectors for two randomly chosen cells in the dataset. For each original cell, we compute the density of neighboring simulated doublets and compare it to the density of neighboring original cells. Genuine doublets should have a high density of simulated doublets relative to the density of its neighbourhood. Thus, the doublet score for each cell is defined as the ratio of densities of simulated doublets to the density of the original cells.\n")
 
 
 library(BiocSingular)
@@ -1771,11 +1896,8 @@ TSNE_DoubletScore
 
 plotCluster_DoubletScore <- plotColData(sce, x=selected_clustering_method, y="DoubletScore", colour_by = annoFactors, shape_by = annoFactors)
 plotCluster_DoubletScore
-#gridExtra::grid.arrange(grobs=list(TSNE_DoubletScore, plotCluster_DoubletScore), ncol=1)
 
-# Simply removing cells with high doublet scores will not be sufficient to eliminate real doublets from the data set. In some cases, only a subset of the cells in the putative doublet cluster actually have high scores, and removing these would still leave enough cells in that cluster to mislead downstream analyses. In fact, even defining a threshold on the doublet score is difficult as the interpretation of the score is relative. There is no general definition for a fixed threshold above which libraries are to be considered doublets.
-
-# We recommend interpreting the computeDoubletDensity() scores in the context of cluster annotation. All cells from a cluster with a large average doublet score should be considered suspect, and close neighbors of problematic clusters should also be treated with caution.
+cat("\n\nSimply removing cells with high doublet scores will not be sufficient to eliminate real doublets from the data set. In some cases, only a subset of the cells in the putative doublet cluster actually have high scores, and removing these would still leave enough cells in that cluster to mislead downstream analyses. In fact, even defining a threshold on the doublet score is difficult as the interpretation of the score is relative. There is no general definition for a fixed threshold above which libraries are to be considered doublets. We recommend interpreting the computeDoubletDensity() scores in the context of cluster annotation. All cells from a cluster with a large average doublet score should be considered suspect, and close neighbors of problematic clusters should also be treated with caution.")
 
 ```
 
@@ -1784,18 +1906,19 @@ plotCluster_DoubletScore
 
 # Detect marker genes for each cluster
 
-Next we identify the genes that drive separation between clusters of the final clustering setting. These marker genes allow us to assign biological meaning to each cluster based on their functional annotation. In the most obvious case, the marker genes for each cluster are a priori associated with particular cell types, allowing us to treat the clustering as a proxy for cell type identity. We use a one-sided t-test to identify genes that are upregulated in each cluster compared to the others (test for log foldchange > 1).
+Next we identify the genes that drive separation between clusters of the final clustering setting. These marker genes allow us to assign biological meaning to each cluster based on their functional annotation. In the most obvious case, the marker genes for each cluster are a priori associated with particular cell types, allowing us to treat the clustering as a proxy for cell type identity. Identification of marker genes is usually based around the retrospective detection of differential expression between clusters. Genes that are more strongly differentially expressed are more likely to have caused separate clustering of cells in the first place. 
 
-Additionally, we use a cluster specific approach. Instead of identifying genes upregulated compared to any of the other clusters, we only consider genes that are up-regulated in all pairwise comparisons involving the cluster of interest. To achieve this, we use an intersection-union test where the combined p-value for each gene is the maximum of the p-values from all pairwise comparisons (apply setting pval.type="all"). A gene will only achieve a low combined p-value if it is strongly DE in all comparisons to other clusters.
+Several different statistical tests are available to quantify the differences in expression profiles, and different approaches can be used to consolidate test results into a single ranking of genes for each cluster. We apply pairwise comparisons of clusters rather than comparing each cluster to the average of all other cells to avoid influence by population composition. Pairwise comparisons naturally provide more information to interpret the utility of a marker, e.g., by providing log-fold changes to indicate which clusters are distinguished by each gene. Here, we use the findMarkers function from the scran package to apply a one-sided t-test to identify genes that are up-regulated in each cluster compared to other clusters (test for log foldchange > 1). The idea of this function is to identify a combination of marker genes that - together - uniquely define one cluster against the rest. To this end, we collect the top DE genes from each pairwise comparison involving a particular cluster to assemble a set of candidate markers for that cluster. For each cluster, we obtain a list of ranked marker candidates. Genes with a rank of 1 comprise the genes with the lowest p-value from each comparison. These ranks are provided in the supplementary marker tables provided with this report (column 'top'). Additionally, these tables contain the log2-fold changes of expression for this cluster over each other cluster (as plotted in the heatmaps below), along with a combined p-value across the pairwise comparisons involving the respective cluster obtained by applying Simes’ method (Simes, R. J. 1986. “An Improved Bonferroni Procedure for Multiple Tests of Significance.” Biometrika 73 (3): 751–54.). The summary.logFC column serves as summary of the direction and effect size for each gene and is defined as the log-fold change from the comparison with the lowest p-value.
 
-For each cluster, every gene is assigned with the highest rank which from comparisons with all other clusters. E.g. the set of genes with top rank <= n contains the top n genes from each comparison. These genes which distinguish that cluster from any other cluster are visualized in a heatmap across all clusters.
+In addition to that, we use a more stringent cluster specific approach. Instead of identifying genes up-regulated compared to any of the other clusters, we only consider genes that are up-regulated in all pairwise comparisons involving the cluster of interest. To achieve this, we use an intersection-union test where the combined p-value for each gene is the maximum of the p-values from all pairwise comparisons (apply setting pval.type="all"). A gene will only achieve a low combined p-value if it is strongly differentially expressed in all comparisons to other clusters.
 
 
 ```{r findmarkers_per_cluster, fig.width=11, fig.height=20, results='asis'}
 DE_var2adjust <- "final_var2adjust" # it will be checked if DE_var2adjust exists in sce. Can also be NULL.
 clustervar <- selected_clustering_method
-groupingvar <- colorByFactor2 # still to implement: use findMarkers for differential expression analysis within clusters
+groupingvar <- colorByFactor2 
 assay.type <- if(adjust_ccp | !is.null(var2adjust)) {"logcounts_not_adjusted"} else {"logcounts"}
+rank_threshold <- 5
 ###############################################
 
 
@@ -1830,24 +1953,30 @@ if(nlevels(factor(colData(sce)[,clustervar])) >=2) {
                          row.data=rowData(sce)[,"SYMBOL", drop=F], direction="up", pval.type="all")
                          # use pval.type="some" if "all" is too stringent 
   
-     list_heatmaps <- NULL
-     list_heatmaps_spec <- NULL
+   
+cat("\nFor each cluster heatmap, we include all genes with an assigned rank <=", rank_threshold, ", i.e. the top", rank_threshold, "genes from each comparison. These genes distinguish that cluster from the other clusters. For the heatmaps showing genes which are up-regulated in a specific cluster only, we use include the same number of top genes as defined for the previous heatmap.\n\n")
+   
+   list_heatmaps <- NULL
+   list_heatmaps_spec <- NULL
+  
    marker_heatmaps <- lapply(names(markers), function(cl) { 
     
          # all upregulated markers per cluster
         write.table(markers[[cl]], sep="\t", quote=F, row.names=F, 
                     file=file.path(dir_marker, paste0("gene_marker_upregulated_in_cluster_", cl, ".txt")) )
-        best_set <- markers[[cl]][markers[[cl]]$Top <= 5,]
-        logFCs <- as.matrix(best_set[,grepl("logFC", colnames(best_set))])
-        colnames(logFCs) <- sub("logFC.", "", colnames(logFCs))
+        best_set <- markers[[cl]][markers[[cl]]$Top <= rank_threshold,]
+        logFCs <- getMarkerEffects(best_set, prefix = "logFC")
+        #logFCs <- as.matrix(best_set[,grepl("logFC", colnames(best_set))])
+        #colnames(logFCs) <- sub("logFC.", "", colnames(logFCs))
         logFCs <- logFCs[, colSums(is.na(logFCs)) != nrow(logFCs)] # remove columns with only NA (cannot be plotted in heatmap)
         
         # markers upregulated in 1 cluster only   
         write.table(markers_spec[[cl]], sep="\t", quote=F, row.names=F, 
                     file=file.path(dir_marker, paste0("gene_marker_upregulated_in_cluster_", cl, "_only.txt")))
         best_set_spec <- markers_spec[[cl]][1:nrow(best_set), ] # select same number of genes displayed as in best_set
-        logFCs_spec <- as.matrix(best_set_spec[,grepl("logFC", colnames(best_set_spec))])
-        colnames(logFCs_spec) <- sub("logFC.", "", colnames(logFCs_spec))
+        logFCs_spec <- getMarkerEffects(best_set_spec, prefix = "logFC")
+        #logFCs_spec <- as.matrix(best_set_spec[,grepl("logFC", colnames(best_set_spec))])
+        #colnames(logFCs_spec) <- sub("logFC.", "", colnames(logFCs_spec))
         logFCs_spec <- logFCs_spec[, colSums(is.na(logFCs_spec)) != nrow(logFCs_spec)] # remove columns with only NA 
         
         if(length(names(markers)) >=3) { # create heatmaps if at least 3 groups, i.e. at least 2 hetmap columns.
@@ -2120,14 +2249,17 @@ countslist <- lapply(names(assays(sce)), function(x) {
 
   if (!file.exists(file.path(dir_countdata, x))) {dir.create(file.path(dir_countdata, x), recursive = T)}
 
-  write.table(data.frame(gene=rownames(sce), symbol=rowData(sce)$SYMBOL, assay(sce, x)), 
-              file =file.path(dir_countdata, x, paste0(x, "_all.txt")), sep="\t", quote = F, row.names = F)
+  table2write <- data.frame(gene=rownames(sce), symbol=rowData(sce)$SYMBOL, assay(sce, x))
+  #table2write <- rbind(cluster=c("cluster", " ", colLabels(sce)), table2write)
+  write.table(table2write, file =file.path(dir_countdata, x, paste0(x, ".txt")), sep="\t", quote = F, row.names = F)
 
-  lapply(unique(colData(sce)$pool), function(y) {
-    sce.subset <- sce[, colData(sce)$pool == y]
-    write.table(data.frame(gene=rownames(sce.subset), symbol=rowData(sce.subset)$SYMBOL, assay(sce.subset, x)), 
-                file = file.path(dir_countdata, x, paste0(x, "_", y, ".txt")), sep="\t", quote = F, row.names = F)
-  })
+  if(!gtools::invalid(colorByFactor) && length(unique(colData(sce)[,colorByFactor])) >1) {
+      lapply(unique(colData(sce)[,colorByFactor]), function(y) {
+        sce.subset <- sce[, colData(sce)[,colorByFactor] == y]
+        write.table(data.frame(gene=rownames(sce.subset), symbol=rowData(sce.subset)$SYMBOL, assay(sce.subset, x)), 
+                    file = file.path(dir_countdata, x, paste0(x, "_", y, ".txt")), sep="\t", quote = F, row.names = F)
+      })
+  }
 })
 
 # save workspace

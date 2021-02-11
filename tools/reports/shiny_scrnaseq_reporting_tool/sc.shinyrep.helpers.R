@@ -1580,7 +1580,7 @@ DEhelper.strandspecificity <- function(...){
   rownames(strandspecifity) <- c("ambiguous", "sense", "antisense")
   
   # sort alphabetically for report
-  strandspecifity <- as.data.frame(t(strandspecifity)[order(rownames(t(strandspecifity))),])
+  strandspecifity <- as.data.frame(t(strandspecifity)[order(rownames(t(strandspecifity))),,drop=F])
   
   # add another column specifying the strandedness based on which strandedness is expected [no|yes|reverse]
   if (SHINYREPS_STRANDEDNESS == "yes") {
@@ -1947,7 +1947,7 @@ DEhelper.Qualimap <- function(...) {
   QC <- SHINYREPS_QUALIMAP_LOGS    
   # construct the image url from the folder contents (skip current dir .)
   samples <- list.files(QC, pattern="Reads.*.png$", recursive=T)
-  samples <- selectSampleSubset(samples, ...)
+  samples <- selectSampleSubset(samples, grepInBasename=F, ...)
   if(length(samples) == 0) {
     return("Qualimap report not available")
   }
@@ -2110,25 +2110,34 @@ plotPCAfromQCmetrics <- function(sce, metrics, anno, qc.drop=NULL){
 ##
 #' selectSampleSubset: select subset of samples for including in report (e.g. in case of multiple fastq files in scRNA-seq) 
 #'
-#' @param samples character vector with sample names
-#' @param samplePattern regular expression to apply on \code{samples}
-#' @param exclude logical indicating if selected samples shall be excluded or included
+#' @param samples character vector with sample names. 
+#' @param samplePattern regular expression to filter (include) on \code{samples}. No filtering if NULL or NA.
+#' @param excludePattern regular expression to filter (exclude) on \code{samples}. No filtering if NULL or NA.
 #' @param grepInBasename logical. If \code{TRUE} apply pattern to filename, not to full path.
 #'
 #' @return character vector with selected sample names
-selectSampleSubset <- function(samples, samplePattern=NULL, exclude=F, grepInBasename=T, maxno=NULL) {
-    # use all samples for samplePattern=NULL
-    if(!is.null(samplePattern)) {
-      
-        x <- if(grepInBasename) {basename(samples)} else {samples} # if TRUE apply pattern to filename, not to full path
-        samples <- samples[grep(samplePattern, x, invert=exclude)]
-      
-      if(length(samples)==0) {stop("\nYou have selected no files!\n")}
+selectSampleSubset <- function(samples, samplePattern=NULL, excludePattern=NULL, grepInBasename=T, maxno=NULL) {
+  
+  if(!gtools::invalid(samplePattern)) {
+    x <- if(grepInBasename) {basename(samples)} else {samples} # if TRUE apply pattern to filename, not to full path
+    if(!any(grepl(samplePattern, x))) {
+      warning(paste("\nYour pattern", samplePattern, "was not found in sample names and is ignored.\n")) 
+    } else {
+      samples <- samples[grep(samplePattern, x, invert=F)]
     }
-    if(!gtools::invalid(maxno)) {
-      samples <- samples[1:min(length(samples), maxno)]
-      if(maxno > length(samples)) {cat("\nSample number restricted to", maxno)}
-    }
-    return(samples)
+    if(length(samples)==0) {stop("\nYou have selected no files!\n")}
   }
+  
+  if(!gtools::invalid(excludePattern)) {
+    x <- if(grepInBasename) {basename(samples)} else {samples} # if TRUE apply pattern to filename, not to full path
+    samples <- samples[grep(samplePattern, x, invert=T)]
+    if(length(samples)==0) {stop("\nYou have selected no files!\n")}
+  }
+  
+  if(!gtools::invalid(maxno) && is.numeric(maxno)) {
+    samples <- samples[1:min(length(samples), maxno)]
+    if(maxno > length(samples)) {cat("\nSample number restricted to", maxno)}
+  }
+  return(samples)
+}
 
