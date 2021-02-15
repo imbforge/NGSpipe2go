@@ -1263,7 +1263,7 @@ DEhelper.geneBodyCov2 <- function(web=TRUE) {
     
     # construct the image url from the folder contents (skip current dir .)
     samples <- list.files(SHINYREPS_GENEBODYCOV_LOG, pattern=".csv$", full.names=T)
-    names(samples) <- gsub(".dupmarked_geneBodyCov.csv", "", basename(samples))
+    names(samples) <- gsub("_geneBodyCov.csv", "", basename(samples))
     
     if(file.exists(SHINYREPS_TARGET)){
         
@@ -1317,8 +1317,13 @@ DEhelper.geneBodyCov2 <- function(web=TRUE) {
     gg <- ggplotly(p) 
     #since plotly does not work for everyone we should additionally create some plots
     #first we create plots based on the targets groups per group an label it with color
-    #maybe also try additionally with color and linetype 
-    cols <- colorRampPalette(brewer.pal(12, "Paired"))(length(unique(df$sample)))
+    #maybe also try additionally with color and linetype
+    num_samples <- length(unique(df$sample))
+    if(num_samples < 10){ #we only have 9 colors Set1
+      cols <- brewer.pal(num_samples, "Set1")
+    }else{
+      cols <- colorRampPalette(brewer.pal(9, "Set1"))(num_samples)
+    }
     plot_list <- list()
     p_per_sample <- ggplot(df, aes(x=perc,
                               y=cov,
