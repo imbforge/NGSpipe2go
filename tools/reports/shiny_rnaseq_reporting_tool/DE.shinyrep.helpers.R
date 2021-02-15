@@ -1294,7 +1294,10 @@ DEhelper.geneBodyCov2 <- function(web=TRUE) {
     #if we do not have a targets file
     if(file.exists(SHINYREPS_TARGET)){
        sample_order <- targets$sample[order(paste0(targets$group, targets$sample))]
+       if(all(sample_order %in% df$sample)){
        df$sample <- factor(df$sample, levels = sample_order)
+       df$group <- targets$group[match(df$sample, targets$sample)]
+       }
     }else{
       # sort alphabetically
       df$sample <- factor(df$sample, levels = sort(unique(df$sample)))  
@@ -1331,8 +1334,8 @@ DEhelper.geneBodyCov2 <- function(web=TRUE) {
     plot_list[["per_sample"]] <- p_per_sample
     if("group" %in% colnames(df)){
       p_per_group <- p_per_sample + facet_wrap(~group) 
+      plot_list[["per_group"]] <- p_per_group
     }
-    plot_list[["per_group"]] <- p_per_group
     plot_list[["plotly"]] <- gg
   return(plot_list)
 }
