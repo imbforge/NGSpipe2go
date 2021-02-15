@@ -188,12 +188,24 @@ DEhelper.RNAtypes()
 
 The plots below show meta-gene profiles of 5' to 3' read coverage and can reveal biases due to RNA degradation or specific library prep protocol; polyA-selection protocols are particularly prone of producing 3' coverage bias upon RNA degradation. The grey line depicts the actual read coverage and the red line shows the overall trend.
 
-```{r GeneBodyCoverage_paragraph, echo=F, error=F, warning=F, message=F}
+```{r GeneBodyCoverage_paragraph, echo=F, error=F, warning=F, message=F, results='asis'}
 #cat(DEhelper.geneBodyCov(web=F), sep="\n")
 #htmltools::tagList(
-DEhelper.geneBodyCov2(web=F) %>%
+plot_list <- DEhelper.geneBodyCov2(web=F)
+cat("### Geneobdycoverage per sample: plotly")
+cat("\n\n", fill=T)
+plot_list$plotly %>%
     highlight(dynamic=T, selectize=T, persistent=T) 
 cat("\n\n")
+#then we plot per sample
+cat("### Genebodycoverage per sample: ")
+cat("\n\n", fill=T)
+plot_list$per_sample
+cat("\n\n", fill=T)
+if("per_group" %in% names(plot_list)){
+  cat("### Genebodycoverage per sample group : ")
+  plot_list$per_group
+}
 ```
 
 ## Strand specificity ##

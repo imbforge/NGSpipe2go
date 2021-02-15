@@ -1308,7 +1308,29 @@ DEhelper.geneBodyCov2 <- function(web=TRUE) {
            ylim(0,1) +
            theme_bw()
     gg <- ggplotly(p) 
-  return(gg)
+    #since plotly does not work for everyone we should additionally create some plots
+    #first we create plots based on the targets groups per group an label it with color
+    #maybe also try additionally with color and linetype 
+    cols <- colorRampPalette(brewer.pal(12, "Paired"))(length(unique(df$sample)))
+    plot_list <- list()
+    p_per_sample <- ggplot(df, aes(x=perc,
+                              y=cov,
+                              group=sample,
+                              color=sample)) +
+           geom_line(aes(linetype=sample)) +
+           labs(title="Genebody coverage per sample",
+                x = "Genebody percentile 5' -> 3'",
+                y = "Averaged normalised covrage") +
+           scale_color_manual( values=cols) +
+           ylim(0,1) +
+           theme_bw() 
+    plot_list[["per_sample"]] <- p_per_sample
+    if("group" %in% colnames(df)){
+      p_per_group <- p_per_sample + facet_wrap(~group) 
+    }
+    plot_list[["per_group"]] <- p_per_group
+    plot_list[["plotly"]] <- gg
+  return(plot_list)
 }
 ##
 ##DEhelper.strandspecifity: get the strandspecifity from the qc and display them
