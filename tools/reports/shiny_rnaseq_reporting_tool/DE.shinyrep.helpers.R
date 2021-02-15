@@ -1308,8 +1308,8 @@ DEhelper.geneBodyCov2 <- function(web=TRUE) {
     plot_df <- highlight_key(df, ~sample)
     p <- ggplot(plot_df, aes(x=perc, y=cov, group=sample)) +
            geom_line(color="darkgrey") +
-           labs(title="Genebody coverage per sample",
-                x = "Genebody percentile 5' -> 3'",
+           labs(title="",
+                x = "Gene body percentile 5' -> 3'",
                 y = "Averaged normalised covrage") +
            scale_color_hue( c=50, l=70) +
            ylim(0,1) +
@@ -1330,8 +1330,8 @@ DEhelper.geneBodyCov2 <- function(web=TRUE) {
                               group=sample,
                               color=sample)) +
            geom_line(aes(linetype=sample)) +
-           labs(title="Genebody coverage per sample",
-                x = "Genebody percentile 5' -> 3'",
+           labs(title="",
+                x = "Gene body percentile 5' -> 3'",
                 y = "Averaged normalised covrage") +
            scale_color_manual( values=cols) +
            ylim(0,1) +
