@@ -76,6 +76,25 @@ shorten <- function(x, max.len=40, ini=20, end=15) {
     if(l > max.len) paste(substr(x, 1, ini), substr(x, (l-end), l), sep="...") else x
 }
 
+#'
+#' Define a group color palette.
+#'
+#' @param num - number of groups
+#'
+#' @return a color vector
+#'
+#' @examples group.colors <- define.group.palette(length(levels(colData(dds)[,"group"])))
+#'           
+define.group.palette <- function(num) {
+
+    if (num <=9) {
+        group.palette <- brewer.pal(9,"Set1")[1:num]
+    } else {
+        group.palette <- colorRampPalette(brewer.pal(9,"Set1"))(num)
+    }
+    return(group.palette)
+}
+
 ##
 ## DESeq2 DE analysis
 ##
@@ -110,7 +129,7 @@ DEhelper.DESeq2.MDS <- function() {
  		xlab(paste0("PC1: ",percentVar[1],"% variance")) +
   		ylab(paste0("PC2: ",percentVar[2],"% variance")) + 
   		coord_fixed() + 
-  		scale_color_manual(values=brewer.pal(9,"Set1")[1:length(levels(colData(dds)[,"group"]))]) +
+  		scale_color_manual(values=define.group.palette(length(levels(colData(dds)[,"group"])))) +
   		geom_text_repel(aes(label=colData(dds)[,"replicate"]), show.legend=FALSE) + 
   		theme_bw()
 
@@ -177,7 +196,7 @@ DEhelper.DESeq2.pairwisePCA <- function(i=1) {
 #'           # rld is taken from environment
 #'           DEhelper.DESeq2.heatmap()
 #'           
-DEhelper.DESeq2.heatmap <- function(i=NULL, dds=rld, logTransform=F, anno_factors = c("group"), type="distance", n=40) {
+DEhelper.DESeq2.heatmap <- function(i=NULL, dds=rld, logTransform=F, anno_factors = c("group","replicate"), type="distance", n=40) {
   
   # for pairwise object select ith element
   if(!is.null(i)) {dds <- dds[[i]]}
@@ -252,12 +271,14 @@ DEhelper.DESeq2.heatmap <- function(i=NULL, dds=rld, logTransform=F, anno_factor
     
     for (f in anno_factors) {
       
-      if(length(unique(colData(dds)[,f])) <=12) {
-        mypalette <- brewer.pal(12,"Paired")[1:length(unique(colData(dds)[,f]))]
-        if(length(unique(colData(dds)[,f])) <=8) {mypalette <- brewer.pal(8,"Dark2")[1:length(unique(colData(dds)[,f]))]}
-        if(length(unique(colData(dds)[,f])) <=2) {mypalette <- c("red", "blue")[1:length(unique(colData(dds)[,f]))]}
+      if (f == "group") {
+        mypalette <- define.group.palette(length(unique(colData(dds)[,f])))
       } else {
-        mypalette <- rainbow(length(unique(colData(dds)[,f])))
+        if(length(unique(colData(dds)[,f])) <=8) {
+          mypalette <- brewer.pal(8,"Dark2")[1:length(unique(colData(dds)[,f]))]
+        } else {
+          mypalette <- colorRampPalette(brewer.pal(8,"Dark2"))(length(unique(colData(dds)[,f])))
+        }
       }
       
       legend_colors[[f]] <- setNames(mypalette, unique(colData(dds)[,f]))
@@ -1033,7 +1054,7 @@ DEhelper.fastqscreen <- function() {
           legend.title = element_blank()) +
     guides(fill=guide_legend(nrow=4)) +
     coord_flip()
-  
+ 
   return(p)      
 }
 

@@ -117,7 +117,7 @@ cat("\n", fill = T)
 
 ## Competetive mapping to rRNAs and other contaminats:
 
-A competitive mapping to the reference genome and known rRNAs (H.sapiens, M.musculus, C.elegans, D.melanogaster, D.rerio, X.tropicalis) as well as frequently occuring Mycoplasma species (M. arginini, M. fermentans, M. hominis, M. hyorhinis,M. orale, and Acholeplasma laidlawii), E.coli and Bos taurus was performed with FastQScreen (http://www.bioinformatics.babraham.ac.uk/projects/fastq_screen/).
+A competitive mapping to the reference genome and known rRNAs (H.sapiens, M.musculus, C.elegans, D.melanogaster, D.rerio, X.tropicalis) as well as frequently occuring Mycoplasma species (M. arginini, M. fermentans, M. hominis, M. hyorhinis,M. orale, and Acholeplasma laidlawii), PhiX and ERCC spike-in sequences, E.coli and B.taurus was performed with FastQScreen (http://www.bioinformatics.babraham.ac.uk/projects/fastq_screen/).
 
 In the following plot the "one_genome" label refers to the amount of reads mapping to that genome only reagardlessly if they are multi mapping or uniquely mapping reads.
 The "multiple_genome" label refers to the amount of read mapping to this genome but also to other genomes in the screening regardless if they are multi mapping on the genome or uniquely mapping to that genome.
