@@ -95,6 +95,25 @@ define.group.palette <- function(num) {
     return(group.palette)
 }
 
+#'
+#' Define a replicate color palette.
+#'
+#' @param num - number of replicates
+#'
+#' @return a color vector
+#'
+#' @examples replicate.colors <- define.replicate.palette(length(levels(colData(dds)[,"replicate"])))
+#'           
+define.replicate.palette <- function(num) {
+
+    if (num <=9) {
+        replicate.palette <- brewer.pal(8,"Dark2")[1:num]
+    } else {
+        replicate.palette <- colorRampPalette(brewer.pal(8,"Dark2"))(num)
+    }
+    return(replicate.palette)
+}
+
 ##
 ## DESeq2 DE analysis
 ##
@@ -270,18 +289,13 @@ DEhelper.DESeq2.heatmap <- function(i=NULL, dds=rld, logTransform=F, anno_factor
     legend_colors <- list()
     
     for (f in anno_factors) {
-      
       if (f == "group") {
-        mypalette <- define.group.palette(length(unique(colData(dds)[,f])))
+        mypalette <- define.group.palette(length(levels(colData(dds)[,f])))
+        legend_colors[[f]] <- setNames(mypalette, levels(colData(dds)[,f]))
       } else {
-        if(length(unique(colData(dds)[,f])) <=8) {
-          mypalette <- brewer.pal(8,"Dark2")[1:length(unique(colData(dds)[,f]))]
-        } else {
-          mypalette <- colorRampPalette(brewer.pal(8,"Dark2"))(length(unique(colData(dds)[,f])))
-        }
+        mypalette <- define.replicate.palette(length(unique(colData(dds)[,f])))
+        legend_colors[[f]] <- setNames(mypalette, sort(unique(colData(dds)[,f])))
       }
-      
-      legend_colors[[f]] <- setNames(mypalette, unique(colData(dds)[,f]))
     }
   } else {
     legend.df <- NA
@@ -963,8 +977,7 @@ DEhelper.fastqscreen <- function() {
   
   # construct the folder name, which is different for web and noweb
   QC <- SHINYREPS_FASTQSCREEN_OUT
-  
-  
+   
   # construct the image url from the folder contents (skip current dir .)
   samples <- list.files(SHINYREPS_FASTQSCREEN_OUT, pattern="_screen.txt$", recursive=T, full.names=T)
   df <- lapply(samples, function(f) {
@@ -980,27 +993,20 @@ DEhelper.fastqscreen <- function() {
                                                       grepl("one_genome.1",
                                                             colnames(screen_data))]))
     one_genome$genome <- rownames(one_genome)
-    one_genome$category <- "one_genome"
+    one_genome$category <- "one genome"
     multi_genome <- data.frame(perc=rowSums(screen_data[, colnames(screen_data) %in% 
                                                           c("X.One_hit_multiple_genomes.1",
                                                             "X.Multiple_hits_multiple_genomes")]))
     multi_genome$genome <- rownames(multi_genome)
-    multi_genome$category <- "multi_genome"
+    multi_genome$category <- "multiple genomes"
     
     mapping_info <- rbind(one_genome, multi_genome)
-    mapping_info <- rbind(mapping_info, c(perc=no_hit, genome="no_hit", category="no_hit"))
-    mapping_info$category <- paste0(mapping_info$genome, "_", mapping_info$category)
-    mapping_info$category <- gsub("no_hit_no_hit", "no_hit", mapping_info$category)
+    mapping_info <- rbind(mapping_info, c(perc=no_hit, genome="no hit", category="no hit"))
     mapping_info$perc <- as.numeric(mapping_info$perc)
-    mapping_info$category <- factor(mapping_info$category,
-                                    levels=mapping_info$category[
-                                      order(match(mapping_info$genome,
-                                                  c(rownames(one_genome),"no_hit")))])
+    mapping_info$category <- factor(mapping_info$category, levels=c("one genome","multiple genomes","no hit"))
     return(mapping_info)
   })
   
-  #since we now have all the mapping infos
-  #we can plot the rest
   # sample names
   samples <- gsub("_screen.txt", "", basename(samples))
   
@@ -1032,30 +1038,25 @@ DEhelper.fastqscreen <- function() {
   # sort alphabetically
   df$sample <- factor(df$sample, levels=unique(df$sample)[order(unique(df$sample),decreasing=TRUE)])
   
-  # define colors
-  if (length(levels(df$category)) < 18 ){ # if we have less than 18 groups, we use up to eight colors of Set1 (in two different shades) and add grey for last group
-    base.cols <- brewer.pal((length(levels(df$category))-1)/2, "Set1")
-  } else {
-    base.cols <- colorRampPalette(brewer.pal(8, "Set1"))((length(levels(df$category))-1)/2)
-  }
-  mycols <- c(rep(base.cols,each=2),"#A9A9A9") 
+  # create one bar per genome, split/wrap per genome, gray
+  df$genome <- factor(df$genome, levels=unique(df$genome))
 
-  # create the plot
-  p <- ggplot(df, aes(x=sample, y=perc, fill=category, group=category)) +
-    geom_col( position=position_stack(reverse=T)) +
-    scale_fill_manual(values=alpha(mycols,c(rep(c(1,0.6),(length(levels(df$category))-1)/2),1))) +
-    scale_y_continuous(breaks=seq(0,100,by=10)) +
-    theme_bw(base_size=14) +
-    labs(x     = "",
-	 y     = "% mapped",
-         title = "Contamination Screening") +
-    theme(axis.text.x = element_text(vjust=0.5, angle=90),
-          legend.position = "top",
-          legend.title = element_blank()) +
-    guides(fill=guide_legend(nrow=4)) +
-    coord_flip()
- 
-  return(p)      
+  p.category.wrap <- ggplot(df, aes(x=sample, y=perc, fill=category)) +
+          geom_col(position=position_stack(reverse=T),width=0.8) +
+          scale_fill_manual(values=c(alpha("#4281a4",0.8),alpha("#ffa62b",0.8),"gray60")) +   
+          scale_y_continuous(breaks=seq(0,100,by=10)) +
+          theme_bw(base_size=10) +
+          labs(x = "",
+               y = "% mapped") +
+          theme(axis.text.x = element_text(vjust=0.5, angle=90),
+                legend.position = "top") +
+          guides(fill=guide_legend(title="mapped to", ncol=3)) +
+          facet_wrap(~genome,ncol=2) +
+          coord_flip()
+  
+  return(list(p.category.wrap=p.category.wrap,
+              no.of.genomes=length(unique(df$genome)),
+              no.of.samples=length(unique(df$sample))))      
 }
 
 
@@ -1316,16 +1317,20 @@ DEhelper.geneBodyCov2 <- function(web=TRUE) {
     if(file.exists(SHINYREPS_TARGET)){
        sample_order <- targets$sample[order(paste0(targets$group, targets$sample))]
        if(all(sample_order %in% df$sample)){
-       df$sample <- factor(df$sample, levels = sample_order)
-       df$group <- targets$group[match(df$sample, targets$sample)]
+          df$sample <- factor(df$sample, levels = sample_order)
+          df$group <- factor(as.character(targets$group[match(df$sample, targets$sample)]),
+                             levels = sort(unique(targets$group)))
+          if("replicate" %in% colnames(targets)){
+             df$replicate <- factor(as.character(targets$replicate[match(df$sample, targets$sample)]), 
+                                    levels = sort(unique(as.character(targets$replicate))))
+          }
        }
     }else{
       # sort alphabetically
       df$sample <- factor(df$sample, levels = sort(unique(df$sample)))  
     }
     
-    #now we plot it
-    
+    # plot
     plot_df <- highlight_key(df, ~sample)
     p <- ggplot(plot_df, aes(x=perc, y=cov, group=sample)) +
            geom_line(color="darkgrey") +
@@ -1336,33 +1341,82 @@ DEhelper.geneBodyCov2 <- function(web=TRUE) {
            ylim(0,1) +
            theme_bw()
     gg <- ggplotly(p) 
-    #since plotly does not work for everyone we should additionally create some plots
-    #first we create plots based on the targets groups per group an label it with color
-    #maybe also try additionally with color and linetype
+
+    # since plotly might not work for everyone we should additionally create some static plots
     num_samples <- length(unique(df$sample))
     if(num_samples < 10){ #we only have 9 colors Set1
-      cols <- brewer.pal(num_samples, "Set1")
+      sample.cols <- brewer.pal(num_samples, "Set1")
     }else{
-      cols <- colorRampPalette(brewer.pal(9, "Set1"))(num_samples)
+      sample.cols <- colorRampPalette(brewer.pal(9, "Set1"))(num_samples)
     }
+
     plot_list <- list()
-    p_per_sample <- ggplot(df, aes(x=perc,
-                              y=cov,
-                              group=sample,
-                              color=sample)) +
-           geom_line(aes(linetype=sample)) +
+    plot_list[["plotly"]] <- gg
+
+    if(!any(c("group","replicate") %in% colnames(df))){
+       p_per_sample <- ggplot(df, aes(x=perc,
+                                      y=cov,
+                                      group=sample,
+                                      color=sample)) +
+           geom_line() +
            labs(title="",
                 x = "Gene body percentile 5' -> 3'",
                 y = "Averaged normalised covrage") +
-           scale_color_manual( values=cols) +
+           scale_color_manual(values=sample.cols) +
            ylim(0,1) +
-           theme_bw() 
-    plot_list[["per_sample"]] <- p_per_sample
-    if("group" %in% colnames(df)){
-      p_per_group <- p_per_sample + facet_wrap(~group) 
-      plot_list[["per_group"]] <- p_per_group
+           theme_bw() +
+           theme(legend.title=element_blank()) 
+       plot_list[["p_per_sample"]] <- p_per_sample
     }
-    plot_list[["plotly"]] <- gg
+
+    if(("group" %in% colnames(df)) && !("replicate" %in% colnames(df))){
+       p_per_sample_splitByGroup <- p_per_sample + 
+                                      facet_wrap(~group,ncol=3) +
+                                      theme(legend.position="top",
+ 					   plot.title=element_blank()) +
+                                      guides(color=guide_legend(ncol=3))
+       plot_list[["p_per_sample_splitByGroup"]] <- p_per_sample_splitByGroup
+    }
+
+    if(all(c("group","replicate") %in% colnames(df))){
+       num_groups <- length(unique(df$group))
+       num_replicates <- length(unique(df$replicate))
+       plot_list[["num_groups"]] <- num_groups
+       plot_list[["num_replicates"]] <- num_replicates
+       
+       p_per_replicate_splitByGroup <- ggplot(df, aes(x=perc,
+                                                      y=cov,
+                                                      group=sample,
+                                                      color=replicate)) +
+           geom_line() +
+           labs(x = "Gene body percentile 5' -> 3'",
+                y = "Averaged normalised covrage") +
+           scale_color_manual(values=define.replicate.palette(num_replicates)) +
+           ylim(0,1) +
+           theme_bw() + 
+           theme(legend.position="top") +
+           guides(color=guide_legend(ncol=6)) +
+	   facet_wrap(~group,ncol=3)
+
+       plot_list[["p_per_replicate_splitByGroup"]] <- p_per_replicate_splitByGroup
+
+       p_per_replicate_splitByReplicate <- ggplot(df, aes(x=perc,
+                                                          y=cov,
+                                                          group=sample,
+                                                          color=group)) +
+           geom_line() +
+           labs(x = "Gene body percentile 5' -> 3'",
+                y = "Averaged normalised covrage") +
+           scale_color_manual(values=define.group.palette(num_groups)) +
+           ylim(0,1) +
+           theme_bw() +
+	   theme(legend.position="top") +
+	   guides(color=guide_legend(ncol=3)) +
+           facet_wrap(~replicate,ncol=3)
+
+       plot_list[["p_per_replicate_splitByReplicate"]] <- p_per_replicate_splitByReplicate
+
+    }
   return(plot_list)
 }
 ##
