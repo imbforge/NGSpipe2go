@@ -657,7 +657,7 @@ DEhelper.STAR <- function() {
     p_perc_count <- ggplot() + 
       geom_bar(data=df_melt[df_melt$value_info == "reads" & df_melt$mapping_stat!="input",], 
                mapping=aes(x = sample, y = reads, fill = mapping_stat), 
-               stat = "identity", position = "fill") + 
+               stat = "identity", position = "fill", width = 0.8) + 
       geom_point(data=df_melt[df_melt$mapping_stat=="input",], 
                  mapping=aes(x = sample, y = reads/max.reads), 
                  size=2, fill=my.color, color=my.color, shape=18) +
@@ -667,8 +667,7 @@ DEhelper.STAR <- function() {
       scale_y_continuous(sec.axis = sec_axis(~ . *max.reads, name="# sequenced reads"),
                          labels = scales::percent_format()) + 
       labs(x = "",
-           y = "% of sequenced reads",
-           title = "") + 
+           y = "% of sequenced reads") + 
       theme(axis.text.y = element_text(size = 8),
             axis.title.x.top=element_text(color=my.color), 
             axis.text.x.top=element_text(color=my.color), 

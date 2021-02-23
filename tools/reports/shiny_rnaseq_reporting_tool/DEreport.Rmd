@@ -101,7 +101,7 @@ The mapping statistics below show the number and percentage of: (i) input raw re
 
 While both unique and multi-mapped reads are included in the generation of browser coverage tracks, only uniquely mapped reads are typically taken into account in the DESeq2 differential expression analysis in order to avoid potential false-positives. However, this standard analysis approach may also exclude some recently duplicated genes or gene-pseudogene pairs, resulting in false-negatives. To investigate the potential expression changes in such genes, a side branch of DESeq2 is run using all mapped reads and the results of both branches are compared.
 
-```{r STAR_paragraph, echo=F, results='asis', error=F, warning=F, message=F, fig.align="center", out.width="100%", fig.height=(0.2*fastqc_summary_plot$no.of.samples)+4}
+```{r STAR_paragraph, echo=F, results='asis', error=F, warning=F, message=F, fig.align="center", out.width="100%", fig.height=(fastqc_summary_plot$no.of.samples/5)+2}
 
 star_stats <- DEhelper.STAR()
 
