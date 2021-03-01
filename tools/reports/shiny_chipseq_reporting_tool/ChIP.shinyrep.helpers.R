@@ -206,7 +206,10 @@ ChIPhelper.UpSetPlot <- function(subdir="", setsize=20){
     cat(paste0("#### Overlap of peaks per peak number:"), fill=T)
     cat("\n", fill=T)
     #this upset plot is based on the number of peaks which are overlapping (value_fun is length)
-	  upset_matrix <- make_comb_mat(peak.ranges, top_n_sets=setsize, value_fun = length)
+	  #upset_matrix <- make_comb_mat(peak.ranges, top_n_sets=setsize, value_fun = length)
+	  upset_matrix <- make_comb_mat(peak.ranges, value_fun = length)
+    #we subset the matrix to only display the top sets
+    upset_matrix <- upset_matrix[1:setsize]
 	  ht <- draw(UpSet(upset_matrix,
 	                   comb_order = order(comb_size(upset_matrix), decreasing = T),
 	                   comb_col = "steelblue",
@@ -219,7 +222,7 @@ ChIPhelper.UpSetPlot <- function(subdir="", setsize=20){
 	  ))
 	  od = column_order(ht)
 	  cs = comb_size(upset_matrix)
-	  decorate_annotation("Intersection\nsize", {
+	  decorate_annotation("intersection_size", {
 	    grid.text(format(cs[od], scientific=T, digits=2),
 	              x = seq_along(cs), y = unit(cs[od], "native") + unit(20, "pt"), 
 	              default.units = "native", just = "bottom", gp = gpar(fontsize = 8), rot=90)
