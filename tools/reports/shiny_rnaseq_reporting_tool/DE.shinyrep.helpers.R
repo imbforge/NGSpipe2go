@@ -967,7 +967,14 @@ DEhelper.Fastqc.custom <- function(web=TRUE, summarizedPlots=TRUE) {
 ##
 ## DEhelper.fastqscreen: add FastqScreen data to and plot it as a barplot
 ##
-DEhelper.fastqscreen <- function() {
+#' DEhelper.fastqscreen: summarizes FastQScreen results, creates summarized barplots, only relevant contanimants shown
+#'
+#' @param perc.to.plot - a numeric vector of length 1 setting the percent cutoff of relevant contaminants, if any sample
+#'                       shows more than perc.to.plot, contaminant will be shown in plot
+#'
+#' @return a list including a plot, the number of samples, and the number of plotted contaminants
+#'
+DEhelper.fastqscreen <- function(perc.to.plot = 1) {
   
   # logs folder
   if(!file.exists(SHINYREPS_FASTQSCREEN_OUT)) {
@@ -1034,10 +1041,19 @@ DEhelper.fastqscreen <- function() {
   #createing a df out of the lists
   df <- melt(df, value.name="perc")
   colnames(df) <- gsub("L1", "sample", colnames(df))
+
+  # filter for relevant contaminants (e.g. showing >=1% (perc.to.plot) in any sample)
+  max.per.genome <- aggregate(df$perc,list(df$genome),max)
+  relevant.genomes <- max.per.genome[max.per.genome[,2]>=perc.to.plot,1]
+  df <- df[df$genome %in% relevant.genomes,]
+
   # sort alphabetically
   df$sample <- factor(df$sample, levels=unique(df$sample)[order(unique(df$sample),decreasing=TRUE)])
   
-  # create one bar per genome, split/wrap per genome, gray
+  # replace "Mycoplasma" by "Mycoplasma species", FastQScreen itself cannot deal with space characters
+  df$genome <- gsub("Mycoplasma","Mycoplasma species",df$genome)
+
+  # split/wrap per genome
   df$genome <- factor(df$genome, levels=unique(df$genome))
 
   p.category.wrap <- ggplot(df, aes(x=sample, y=perc, fill=category)) +
