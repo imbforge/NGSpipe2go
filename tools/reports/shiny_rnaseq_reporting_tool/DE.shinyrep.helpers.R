@@ -1585,17 +1585,17 @@ DEhelper.Qualimap <- function() {
     samples <- paste0(QC, "/", samples)
     samples <- sapply(samples, function(f){
       l <- readLines(f)
-      l <- l[grep("exonic|intronic|intergenic|overlapping exon", l)] 
+      l <- l[grep("exonic|intronic|intergenic", l)] 
       l <- strsplit(gsub(" ", "", l), "=")
-      names(l) <- c("exonic","intronic","intergenic","overlapping_exon")
+      names(l) <- c("exonic","intronic","intergenic")
       l <- sapply(l, function(x){
            as.numeric(gsub("\\%\\)", "", strsplit(x[[2]], "\\(")[[1]][2]))    
       })
     })
     colnames(samples) <- sample_names
-    #no we have to correct the precentages, the exonic category also includes the overlapping _exon
-    #if we want to display it we have reduce the exonic amount by this
-    samples["exonic", ] <- samples["exonic",] - samples["overlapping_exon",]
+    # qualimap outputs an additional category "overlapping_exon", which is part of intron or intergenic,
+    # but since it is not specified, which of the two, we will not display this category here.
+
     #Todo fix the naming scheme, the levels and then put it in the barplot 
     if(file.exists(SHINYREPS_TARGET)){
 
@@ -1626,16 +1626,18 @@ DEhelper.Qualimap <- function() {
       # sort alphabetically
       samples$sample <- factor(samples$sample, levels = sort(unique(samples$sample)))  
     }
-    samples$class <- factor(samples$class, levels=c("intergenic", "intronic", "overlapping_exon", "exonic" )) 
+    samples$class <- factor(samples$class, levels=c("intergenic", "intronic", "exonic" )) 
     #now we plot it
     p <- ggplot(samples, aes(x=sample,y=perc,fill=class)) +
-           geom_col() +
-           labs(title="% Overlap with different gene regions",
-                x = "Sample",
+           geom_col(width = 0.8) +
+           labs(x = "",
                 y = "% of mapped reads") +
-           scale_fill_brewer( palette = "Dark2") +
-           coord_flip() +
-           theme_bw() 
+           theme_bw() +
+           theme(axis.text.y = element_text(size = 8),
+                 legend.position = "top") +
+           guides(fill=guide_legend(nrow=1,title="",reverse=TRUE)) +
+           scale_fill_brewer(palette = "Dark2") +
+           coord_flip()
   return(p)
 }
 
