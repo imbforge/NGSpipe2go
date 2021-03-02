@@ -418,9 +418,9 @@ config {
       memory="8"
     }
     dupRadar { 
-      walltime="02:00:00" 
+      walltime="05:00:00" 
       procs="4" 
-      memory="1"
+      memory="10"
     }
     extend { 
       walltime="01:00:00" 

@@ -1103,7 +1103,7 @@ DEhelper.dupRadar <- function(web=TRUE) {
     
     # sample names 
     samples <- sapply(df, function(x) {
-        gsub(".dupmarked_dupRadar.png)$", "", basename(x))
+        gsub("_dupRadar.png)$", "", basename(x))
     })
 
     if(file.exists(SHINYREPS_TARGET)){

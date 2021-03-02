@@ -44,7 +44,7 @@ Bpipe.run {
             bamCoverage,
             inferexperiment,
             subread2rnatypes,
-            MarkDups2 + BAMindexer + dupRadar,
+            dupRadar,
             geneBodyCov2,
             (RUN_IN_PAIRED_END_MODE ? InsertSize : dontrun.using(module: "InsertSize"))
         ]
