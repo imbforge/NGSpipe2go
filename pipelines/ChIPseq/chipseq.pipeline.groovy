@@ -1,5 +1,5 @@
 PIPELINE="ChIPseq"
-PIPELINE_VERSION="1.2.2"
+PIPELINE_VERSION="1.2.3"
 PIPELINE_ROOT="./NGSpipe2go"
 
 load PIPELINE_ROOT + "/pipelines/ChIPseq/essential.vars.groovy"
@@ -11,7 +11,8 @@ load PIPELINE_ROOT + "/modules/ChIPseq/GREAT.header"
 load PIPELINE_ROOT + "/modules/ChIPseq/blacklist_filter.header"
 load PIPELINE_ROOT + "/modules/ChIPseq/bowtie1.header"
 load PIPELINE_ROOT + "/modules/ChIPseq/bowtie2.header"
-load PIPELINE_ROOT + "/modules/ChIPseq/diffbind.header"
+load PIPELINE_ROOT + "/modules/ChIPseq/diffbind3.header" 
+load PIPELINE_ROOT + "/modules/ChIPseq/diffbind2.header" 
 load PIPELINE_ROOT + "/modules/ChIPseq/filbowtie2unique.header"
 load PIPELINE_ROOT + "/modules/ChIPseq/ipstrength.header"
 load PIPELINE_ROOT + "/modules/ChIPseq/macs2.header"
@@ -24,6 +25,7 @@ load PIPELINE_ROOT + "/modules/NGS/bamindexer.header"
 load PIPELINE_ROOT + "/modules/NGS/extend.header"
 load PIPELINE_ROOT + "/modules/NGS/bamqc.header"
 load PIPELINE_ROOT + "/modules/NGS/fastqc.header"
+load PIPELINE_ROOT + "/modules/NGS/fastqscreen.header"
 load PIPELINE_ROOT + "/modules/NGS/insertsize.header"
 load PIPELINE_ROOT + "/modules/NGS/markdups.header"
 load PIPELINE_ROOT + "/modules/NGS/rmdups.header"
@@ -41,7 +43,7 @@ dontrun = { println "didn't run $module" }
 Bpipe.run {
 	(RUN_IN_PAIRED_END_MODE ? "%.R*.fastq.gz" : "%.fastq.gz") * [
 		FastQC +  
-                (RUN_CUTADAPT ? Cutadapt + FastQC : dontrun.using(module:"Cutadapt")) +
+                (RUN_CUTADAPT ? Cutadapt + FastQC.using(subdir:"trimmed") + FastqScreen.using(subdir:"trimmed") : dontrun.using(module:"Cutadapt")) +
                 (ESSENTIAL_USE_BOWTIE1 ? bowtie1 : bowtie2) + BAMindexer + BamQC +   
 
          [ // parallel branches with and without multi mappers
@@ -67,14 +69,14 @@ Bpipe.run {
 		        macs2.using(subdir:"filtered") + blacklist_filter.using(subdir:"filtered")
 		]  
             ]
-        ] // end parallel branches
+        ] // end parallel branches with and without multi mappers
 
       ] + 
     [(RUN_PEAK_ANNOTATION ? peak_annotation.using(subdir:"unfiltered") : dontrun.using(module:"peak_annotation")) +
-     (RUN_DIFFBIND ? diffbind.using(subdir:"unfiltered") : dontrun.using(module:"diffbind")) +
+     (RUN_DIFFBIND ? (ESSENTIAL_DIFFBIND_VERSION >= 3 ? diffbind3.using(subdir:"unfiltered") : diffbind2.using(subdir:"unfiltered")) : dontrun.using(module:"diffbind")) +
      (RUN_ENRICHMENT ? GREAT.using(subdir:"unfiltered") : dontrun.using(module:"GREAT")),
      (RUN_PEAK_ANNOTATION ? peak_annotation.using(subdir:"filtered") : dontrun.using(module:"peak_annotation")) +
-     (RUN_DIFFBIND ? diffbind.using(subdir:"filtered") : dontrun.using(module:"diffbind")) +
+     (RUN_DIFFBIND ? (ESSENTIAL_DIFFBIND_VERSION >= 3 ? diffbind3.using(subdir:"filtered") : diffbind2.using(subdir:"filtered")) : dontrun.using(module:"diffbind")) +
      (RUN_ENRICHMENT ? GREAT.using(subdir:"filtered") : dontrun.using(module:"GREAT")),
     ] +
     (RUN_TRACKHUB ? trackhub_config + trackhub : dontrun.using(module:"trackhub")) +
