@@ -10,7 +10,7 @@ shinyReports_vars=[
     run_peakanno    : RUN_PEAK_ANNOTATION,    
     run_diffbind    : RUN_DIFFBIND,    
     run_enrich      : RUN_ENRICHMENT,
-    cutadapt_logs   : LOGS + "/Cutadapt",              // cutadapt log files
+    cutadapt_stats  : Cutadapt_vars.statsdir,              // cutadapt stat files
     bowtie_log      : LOGS + (ESSENTIAL_USE_BOWTIE1 ? "/bowtie1" : "/bowtie2"),  //where the Bowtie logs lie
     bamindex_log    : LOGS + "/BAMindexer", //where the Samtools/BamIndexer logs lie
     markdups_log    : LOGS + "/MarkDups",   //where the MarkDups logs lie
@@ -29,8 +29,9 @@ shinyReports_vars=[
     plots_column    : "4",                  //number of columns to splits the plot grids (ipstrength, phantompeaks...). Min=2
     insertsize      : QC + "/insertsize",     //where the insertsize statistics are found (for paired end only)
     peak_annotation : peak_annotation_vars.outdir, // where the peak annotation results lie
+    db              : ESSENTIAL_DB, // 
     great           : GREAT_vars.outdir,    // where the GO enrichment results lie
-    diffbind        : diffbind_vars.outdir, // results folder with diffbind.rds results file
+    diffbind        : (ESSENTIAL_DIFFBIND_VERSION >= 3 ? diffbind3_vars.outdir : diffbind2_vars.outdir), // results folder with diffbind.rds results file
     trackhub_done   : PROJECT + "/trackhub.done",   // contains trackhub URL
     tool_versions   : collectToolVersions_vars.outdir + "/tool_versions.txt" //where the tool versions listed
 ]
