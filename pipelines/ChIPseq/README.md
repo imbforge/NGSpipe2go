@@ -20,7 +20,7 @@ All analysis steps are illustrated in the pipeline [flowchart](https://viewer.di
 - characterize phantom peaks by cross correlation analysis using the spp R-package (for single read libraries only).
 - peak calling of IP samples vs. corresponding input controls using MACS2.
 - peak annotation using the ChIPseeker R-package (optional).
-- differential binding analysis using the diffbind R-package (optional). For this, contrasts of interest must be given in *NGSpipe2go/pipelines/ChIPseq/contrasts_diffbind.txt* (see below).
+- differential binding analysis using the diffbind R-package (optional). For this, contrasts of interest must be given in *NGSpipe2go/pipelines/ChIPseq/contrasts_diffbind.txt* (see below). 
 
 
 ### Pipeline-specific parameter settings
@@ -32,31 +32,41 @@ All analysis steps are illustrated in the pipeline [flowchart](https://viewer.di
   - group: variable for sample grouping (e.g. by condition).
   - Replicate: number of replicate (needed if differential binding analysis is selected).
   - PeakCaller: name of peak caller (in this pipeline it is macs; needed if differential binding analysis is selected).
-
+  - optional further columns which may be used in multifactor model design: 'Tissue', 'Factor', 'Treatment'. 
 
 - essential.vars.groovy: essential parameter describing the experiment including: 
   - ESSENTIAL_PROJECT: your project folder name.
+  - ESSENTIAL_THREADS: number of threads for parallel tasks.
+  - ESSENTIAL_SAMPLE_PREFIX: sample name prefix to be trimmed in the results.
   - ESSENTIAL_BOWTIE_REF: full path to bowtie2 indexed reference genome (bowtie1 indexed reference genome if bowtie1 is selected as mapper).
   - ESSENTIAL_BOWTIE_GENOME: full path to the reference genome FASTA file.
-  - ESSENTIAL_BSGENOME: Bioconductor genome sequence annotation package.
-  - ESSENTIAL_TXDB: Bioconductor transcript-related annotation package.
-  - ESSENTIAL_ANNODB: Bioconductor genome annotation package.
-  - ESSENTIAL_BLACKLIST: path to bed file with problematic 'blacklist regions' to be excluded from analysis (optional).
   - ESSENTIAL_PAIRED: either paired end ("yes") or single read ("no") design.
   - ESSENTIAL_READLEN: read length of library.
   - ESSENTIAL_FRAGLEN: mean length of library inserts.
+  - ESSENTIAL_USE_BOWTIE1: if true use bowtie1 for read mapping, otherwise bowtie2 by default.
+  - ESSENTIAL_BSGENOME: Bioconductor genome sequence annotation package.
+  - ESSENTIAL_TXDB: Bioconductor transcript-related annotation package.
+  - ESSENTIAL_ANNODB: Bioconductor genome annotation package.
+  - ESSENTIAL_DB: UCSC assembly version for GREAT analysis (only for UCSC hg19, hg38, mm9 and mm10)
+  - ESSENTIAL_BLACKLIST: path to bed file with problematic 'blacklist regions' to be excluded from analysis (optional).
+  - ESSENTIAL_ADAPTER_SEQUENCE: adapter sequence to trim with Cutadapt (optional)
   - ESSENTIAL_MACS2_BROAD: use broad setting for broad peak calling in MACS2 (default false).
   - ESSENTIAL_PEAK_MINLENGTH: MACS2 minimum peak length. Can be set to the same value as ESSENTIAL_FRAGLEN (MACS2 default is fragment size to filter out smaller peaks). For paired end data it may be beneficial to use a value below the fragment length. Should be increased for filtering if broad option is used.
-  - ESSENTIAL_DEDUPLICATION: remove duplicated reads in filtered branch (default false is strongly recommended for single end data!).  
-  - ESSENTIAL_THREADS: number of threads for parallel tasks.
-  - ESSENTIAL_USE_BOWTIE1: if true use bowtie1 for read mapping, otherwise bowtie2 by default.
-  - ESSENTIAL_FULLLIBRARYSIZE: if true (default) use total number of reads in bam for normalization in DiffBind analysis (if false only reads overlapping peaks).
- 
+  - ESSENTIAL_DEDUPLICATION: remove duplicated reads in filtered branch (default false is strongly recommended for single end data). 
+  - ESSENTIAL_DUP: how MACS2 deals with duplicated reads or fragments.
+  - ESSENTIAL_MACS2_GSIZE: mapable genome size for MACS2
+  - ESSENTIAL_DIFFBIND_VERSION: DiffBind version 2 or 3 to use.
+  - ESSENTIAL_DIFFBIND_LIBRARY: DiffBind method to calculate library sizes. One of "full", "RiP", "background" and "default" ("default" refers to method "full", see [DiffBind documentation](http://bioconductor.org/packages/release/bioc/vignettes/DiffBind/inst/doc/DiffBind.pdf) for explanation). For DiffBind version 2, any other method than RiP refers to TRUE, i.e. use total number of reads instead of reads overlapping peaks.
+  - ESSENTIAL_DIFFBIND_NORM: DiffBind method to calculate normalization factors. One of "lib", "RLE", "TMM", "native" and "default" ("default" refers to method "lib", see [DiffBind documentation](http://bioconductor.org/packages/release/bioc/vignettes/DiffBind/inst/doc/DiffBind.pdf) for explanation). Not applicable for DiffBind version2.
+  
 - additional (more specialized) parameter can be given in the header files of the individual pipeline modules (see module header files linked in the flowchart for default parameter).
 
 If differential binding analysis is selected it is required additionally:
 
 - contrasts_diffbind.txt: indicate intended group comparisions for differential binding analysis, e.g. *KOvsWT=(KO-WT)* if targets.txt contains the groups *KO* and *WT*. Give 1 contrast per line.
+
+
+This pipeline supports 2 different DiffBind versions (v2 and v3) for differential binding analysis. Beginning with version 3, DiffBind has included new functionalities and modified default settings. The major change in version 3.0 is in how the data are modeled. In previous versions, a separate model was derived for each contrast, including data only for those samples present in the contrast. Model design options were implicit and limited to either a single factor, or a subset of two-factor "blocked" designs. Starting in version 3.0, the default mode is to include all the data in a single model, allowing for any allowable design formula and any set of allowable contrasts. There are also more normalization options and a new option to generate greylists as described in the [GreyListChIP](https://bioconductor.org/packages/release/bioc/vignettes/GreyListChIP/inst/doc/GreyList-demo.pdf) vignette (see diffbind3.header for default settings). The purpose of greylists is to identify regions with anomalous signal in the input or control sample, so that reads in those regions may be removed prior to analysis. 
 
 
 ## Programs required
@@ -69,6 +79,6 @@ If differential binding analysis is selected it is required additionally:
 - MACS2
 - MultiQC
 - Picard
-- R with packages ChIPSeeker, diffbind, GenomicAlignments, spp and genome annotation packages
+- R with packages ChIPSeeker, DiffBind, GenomicAlignments, spp and genome annotation packages
 - Samtools
 - UCSC utilities
