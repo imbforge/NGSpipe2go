@@ -124,24 +124,32 @@ processContrast <-  function(x) {
 
         if(!is.null(enriched) && nrow(enriched) > 0) {
             # calculate reduced terms and generate reduced term plots and table
-            go_analysis  <- as.data.frame(enriched)
-            scores       <- setNames(-log10(go_analysis$qvalue), go_analysis$ID)
-            simMatrix    <- calculateSimMatrix(go_analysis$ID, orgdb=orgDb[org], ont="BP", method="Rel")
-            reducedTerms <- reduceSimMatrix(simMatrix, scores, threshold=0.7, orgdb=orgDb[org])
-            CairoPNG(file=paste0(out, "/", contrast, "_GO_scatterplot_", suffix, "_genes.png"), width=1200, height=800)
-            print(scatterPlot(simMatrix, reducedTerms))
-            dev.off()
-            CairoPNG(file=paste0(out, "/", contrast, "_GO_treemap_", suffix, "_genes.png"), width=1200, height=800)
-            treemapPlot(reducedTerms)
-            dev.off()
+            # reduction is only possible, if more than one term enriched
+            if (nrow(enriched) > 1) {
+                go_analysis  <- as.data.frame(enriched)
+                scores       <- setNames(-log10(go_analysis$qvalue), go_analysis$ID)
+                simMatrix    <- calculateSimMatrix(go_analysis$ID, orgdb=orgDb[org], ont="BP", method="Rel")
+                reducedTerms <- reduceSimMatrix(simMatrix, scores, threshold=0.7, orgdb=orgDb[org])
+                # this scatter plot can only be created when nrow(enriched)>2, otherwise the scatterPlot function crashes
+                if (nrow(enriched) > 2) {
+                    CairoPNG(file=paste0(out, "/", contrast, "_GO_scatterplot_", suffix, "_genes.png"), width=1200, height=800)
+                    print(scatterPlot(simMatrix, reducedTerms))
+                    dev.off()
+                }
+                CairoPNG(file=paste0(out, "/", contrast, "_GO_treemap_", suffix, "_genes.png"), width=1200, height=800)
+                treemapPlot(reducedTerms)
+                dev.off()
 
-            # overwrite GO enrichment table with parent term information
-            x <- merge(go_analysis, reducedTerms, by=1, all.x=TRUE)  # first column is term ID
-            write.csv(x, row.names=FALSE, file=paste0(out, "/", contrast, "_GO_Enrichment_", suffix, "_genes.csv"))
+                # overwrite GO enrichment table with parent term information
+                x <- merge(go_analysis, reducedTerms, by=1, all.x=TRUE)  # first column is term ID
+                write.csv(x, row.names=FALSE, file=paste0(out, "/", contrast, "_GO_Enrichment_", suffix, "_genes.csv"))
 
-            # remove redundant terms form enrichGO enrichment results, and do barplot and cnetplot of top terms
-            enriched_reduced <- enriched
-            enriched_reduced@result <- subset(enriched_reduced@result, ID %in% unique(reducedTerms$parent))
+                # remove redundant terms form enrichGO enrichment results, and do barplot and cnetplot of top terms
+                enriched_reduced <- enriched
+                enriched_reduced@result <- subset(enriched_reduced@result, ID %in% unique(reducedTerms$parent))
+            } else {
+                enriched_reduced <- enriched
+            }
 
             # create barplot showing GO category
             CairoPNG(file=paste0(out, "/", contrast, "_GO_Barplot_", suffix, "_genes.png"), width=700, height=500)
