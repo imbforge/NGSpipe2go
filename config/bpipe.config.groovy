@@ -416,7 +416,12 @@ config {
       procs="1" 
       memory="1"
     }
-    diffbind { 
+    diffbind2 { 
+      walltime="01:00:00" 
+      procs="8" 
+      memory="32"
+    }
+    diffbind3 { 
       walltime="01:00:00" 
       procs="8" 
       memory="32"
