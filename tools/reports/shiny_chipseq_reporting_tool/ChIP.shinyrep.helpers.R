@@ -6,8 +6,10 @@
 library("knitr")        # for markdown output
 library("ggbeeswarm")
 library("ChIPpeakAnno")	#for peak venn diagrams
+library("GenomicFeatures")
 library("RColorBrewer")
 library("gridExtra")
+library("gtools")
 library("plyr")
 library("dplyr")
 library("tidyr")
@@ -56,7 +58,7 @@ ChIPhelper.init <- function(task, subdir="", peaks_as="data.frame") {
       return("Targets file not available")
     }
     
-    return(read.delim(TARGETS))
+    return(read.delim(TARGETS, stringsAsFactors=F))
   }
   
   # read peaks from MACS2 output
@@ -80,7 +82,7 @@ ChIPhelper.init <- function(task, subdir="", peaks_as="data.frame") {
     if(file.exists(paste0(file.path(SHINYREPS_MACS2,peaksSubdir), "/", targets$IPname, ".vs.", targets$INPUTname,"_macs2_blacklist_filtered_peaks.xls"))[1]) {
       peaks <- lapply(paste0(file.path(SHINYREPS_MACS2,peaksSubdir), "/", targets$IPname, ".vs.", targets$INPUTname, "_macs2_blacklist_filtered_peaks.xls"), function(x) {
         if(as=="data.frame") {
-          x <- tryCatch(read.delim(x, comment.char="#"), error=function(e) as.data.frame(matrix(ncol=10)))
+          x <- tryCatch(read.delim(x, comment.char="#", stringsAsFactors=F), error=function(e) as.data.frame(matrix(ncol=10)))
           colnames(x) <- plyr::revalue(colnames(x), replace=columnNames2replace , warn_missing = F)
           x[order(x$chr, x$start, x$end),  !colnames(x) %in% c("-log10 pval", "name")]
         } else {
@@ -90,7 +92,7 @@ ChIPhelper.init <- function(task, subdir="", peaks_as="data.frame") {
     } else {
       peaks <- lapply(paste0(file.path(SHINYREPS_MACS2,peaksSubdir), "/", targets$IPname, ".vs.", targets$INPUTname, "_macs2_peaks.xls"), function(x) {
         if(as=="data.frame") {
-          x <- tryCatch(read.delim(x, comment.char="#"), error=function(e) as.data.frame(matrix(ncol=10)))
+          x <- tryCatch(read.delim(x, comment.char="#", stringsAsFactors=F), error=function(e) as.data.frame(matrix(ncol=10)))
           colnames(x) <- plyr::revalue(colnames(x), replace=columnNames2replace , warn_missing = F)
           x[order(x$chr, x$start, x$end),  !colnames(x) %in% c("-log10 pval", "name")]
         } else {
@@ -188,71 +190,125 @@ ChIPhelper.VennDiagram <- function(subdir=""){
   
 }
 
+
 ##
 ## ChIPhelper.UpsetPlot: shows a upset plot for the peaks called in one branch 
 ##
-ChIPhelper.UpSetPlot <- function(subdir="", setsize=20){
+ChIPhelper.UpSetPlot <- function(subdir="", Mode = "distinct", setsize=20, targetsdf=NULL, addBarAnnotation=T){
   #create granges from the peaks
-  peaks <- ChIPhelper.init("readPeaks", subdir)
-  peak.ranges <- lapply(peaks, function(x){
-    x <- GRanges(seqnames=x$chr,
-                 IRanges(x$start,
-                         end=x$end),
-                 strand="*"
-    )
-    
-  })
+  peak.ranges <- ChIPhelper.init("readPeaks", subdir, peaks_as="GRanges")
   
-    cat(paste0("#### Overlap of peaks per peak number:"), fill=T)
-    cat("\n", fill=T)
-    #this upset plot is based on the number of peaks which are overlapping (value_fun is length)
-	  upset_matrix <- make_comb_mat(peak.ranges, top_n_sets=setsize, value_fun = length)
-	  ht <- draw(UpSet(upset_matrix,
-	                   comb_order = order(comb_size(upset_matrix), decreasing = T),
-	                   comb_col = "steelblue",
-	                   bg_col = "#F0F0FF",
-	                   column_title=paste("# of regions for branch", subdir, "\nmax.", setsize, "sets are shown"),
-	                   #right_annotation = NULL,
-	                   right_annotation = upset_right_annotation(upset_matrix, 
-	                                                             gp = gpar(fill = "steelblue"),
-	                                                             )
-	  ))
-	  od = column_order(ht)
-	  cs = comb_size(upset_matrix)
-	  decorate_annotation("Intersection\nsize", {
-	    grid.text(format(cs[od], scientific=T, digits=2),
-	              x = seq_along(cs), y = unit(cs[od], "native") + unit(20, "pt"), 
-	              default.units = "native", just = "bottom", gp = gpar(fontsize = 8), rot=90)
-	  })
-    cat("\n", fill=T)
-    cat("\n", fill=T)
-    cat(paste0("#### Overlap of peaks based on bp:"), fill=T)
-    cat("\n", fill=T)
-    cat("\n", fill=T)
-    cat("\n", fill=T)
-    #this upset plot is based on the number of bp which are overlapping 
-	  upset_matrix <- make_comb_mat(peak.ranges, top_n_sets=setsize)
-	  ht <- draw(UpSet(upset_matrix,
-	                   comb_order = order(comb_size(upset_matrix), decreasing = T),
-	                   comb_col = "steelblue",
-	                   bg_col = "#F0F0FF",
-	                   column_title=paste("# overlap in bp for branch", subdir,"\n max.", setsize, "sets are shown"),
-	                   #right_annotation = NULL,
-	                   right_annotation = upset_right_annotation(upset_matrix, 
-	                                                             gp = gpar(fill = "steelblue"),
-	                                                             )
-	  ))
-	  od = column_order(ht)
-	  cs = comb_size(upset_matrix)
-	  decorate_annotation("Intersection\nsize", {
-	    grid.text(format(cs[od], scientific=T, digits=2),
-	              x = seq_along(cs), y = unit(cs[od], "native") + unit(20, "pt"), 
-	              default.units = "native", just = "bottom", gp = gpar(fontsize = 8), rot=90)
-	  })
+  cat(paste0("#### Overlap of peaks per peak number:"), fill=T)
+  cat("\n", fill=T)
+  #this upset plot is based on the number of peaks which are overlapping (value_fun is length)
+  #upset_matrix <- make_comb_mat(peak.ranges, top_n_sets=setsize, value_fun = length)
+  upset_matrix <- make_comb_mat(peak.ranges, mode = Mode, value_fun = length)
+  #we subset the matrix to only display the top sets
+  upset_matrix <- upset_matrix[order(comb_size(upset_matrix), decreasing = T)[1:setsize]]
+  
+  combColors <- fillColors <- "steelblue" # default color
+  
+  if(!is.null(targetsdf)) { # coloring setnames and respective combinations by group from targets file
+    targetsdf <- targetsdf[order(targetsdf$group, targetsdf$IPname), ]
+    mypalette <- define.group.palette(length(levels(factor(targetsdf$group))))
+    legend_colors <- setNames(mypalette, levels(factor(targetsdf$group)))
+    
+    setnamesOrderByTargetsdf <- match(targetsdf$IPname, gsub(".vs.*$", "", set_name(upset_matrix)))
+    fillColors <- legend_colors[targetsdf$group]
+    combColors <- rep("darkgrey", length.out=length(comb_name(upset_matrix))) 
+    for(i in targetsdf$group) { # assign color for all combinations involving a single group
+      comb <- paste0(ifelse(targetsdf$group==i, ".", 0), collapse="")
+      combColors[grep(comb, comb_name(upset_matrix))] <- legend_colors[i]
+    }
+  }
+  
+  ht <- draw(UpSet(upset_matrix,
+                   comb_order = order(comb_size(upset_matrix), decreasing = T),
+                   comb_col = combColors,
+                   bg_col = "#F0F0FF",
+                   set_order = if(is.null(targetsdf)) {order(set_size(upset_matrix), decreasing = TRUE)} else {setnamesOrderByTargetsdf},
+                   column_title=paste("# of regions for branch", subdir, "\nmax.", setsize, "sets are shown"),
+                   left_annotation = if(is.null(targetsdf)) {NULL} else {rowAnnotation(group = targetsdf$group, col=list(group=legend_colors))}, 
+                   right_annotation = upset_right_annotation(upset_matrix, gp = gpar(fill = fillColors) 
+                   )
+  ) )
+  if(addBarAnnotation){
+    od = column_order(ht)
+    cs = comb_size(upset_matrix)
+    currentvptree <- current.vpTree() # viewport name differs depending on package version
+    #print(paste("\ncurrent vptree:", currentvptree))
+    interactionsize_viewport <- c("intersection_size", "Intersection\nsize")
+    interactionsize_viewport <- interactionsize_viewport[sapply(interactionsize_viewport, grepl, currentvptree)]
+    if(length(interactionsize_viewport)==1) {
+      decorate_annotation(interactionsize_viewport, {
+        grid.text(format(cs[od], scientific=F),
+                  x = seq_along(cs), y = unit(cs[od], "native") + unit(20, "pt"), 
+                  default.units = "native", just = "bottom", gp = gpar(fontsize = 8), rot=90)        
+      })
+    } else {
+      warning("Viewpoint not found or ambiguous. decorate_annotation is omitted.")
+    }
+  }
+  
+  cat("\n", fill=T)
+  cat("\n", fill=T)
+  cat(paste0("#### Overlap of peaks based on bp:"), fill=T)
+  cat("\n", fill=T)
+  cat("\n", fill=T)
+  cat("\n", fill=T)
+  #this upset plot is based on the number of bp which are overlapping 
+  upset_matrix <- make_comb_mat(peak.ranges, mode = Mode)
+  #we subset the matrix to only display the top sets
+  upset_matrix <- upset_matrix[order(comb_size(upset_matrix), decreasing = T)[1:setsize]]
+  
+  if(!is.null(targetsdf)) { # coloring setnames and respective combinations by group from targets file
+    targetsdf <- targetsdf[order(targetsdf$group, targetsdf$IPname), ]
+    mypalette <- define.group.palette(length(levels(factor(targetsdf$group))))
+    legend_colors <- setNames(mypalette, levels(factor(targetsdf$group)))
+    
+    setnamesOrderByTargetsdf <- match(targetsdf$IPname, gsub(".vs.*$", "", set_name(upset_matrix)))
+    fillColors <- legend_colors[targetsdf$group]
+    combColors <- rep("darkgrey", length.out=length(comb_name(upset_matrix))) 
+    for(i in targetsdf$group) { # assign color for all combinations involving a single group
+      comb <- paste0(ifelse(targetsdf$group==i, ".", 0), collapse="")
+      combColors[grep(comb, comb_name(upset_matrix))] <- legend_colors[i]
+    }
+  }
+  
+  ht <- draw(UpSet(upset_matrix,
+                   comb_order = order(comb_size(upset_matrix), decreasing = T),
+                   comb_col = combColors,
+                   bg_col = "#F0F0FF",
+                   set_order = if(is.null(targetsdf)) {order(set_size(upset_matrix), decreasing = TRUE)} else {setnamesOrderByTargetsdf},
+                   column_title=paste("# overlap in bp for branch", subdir,"\nmax.", setsize, "sets are shown"),
+                   left_annotation = if(is.null(targetsdf)) {NULL} else {rowAnnotation(group = targetsdf$group, col=list(group=legend_colors))}, 
+                   right_annotation = upset_right_annotation(upset_matrix, gp = gpar(fill = fillColors)
+                   )
+  ))
+  if(addBarAnnotation){
+    od = column_order(ht)
+    cs = comb_size(upset_matrix)
+    currentvptree <- current.vpTree() # viewport name differs depending on package version
+    #print(paste("\ncurrent vptree:", currentvptree))
+    interactionsize_viewport <- c("intersection_size", "Intersection\nsize")
+    interactionsize_viewport <- interactionsize_viewport[sapply(interactionsize_viewport, grepl, currentvptree)]
+    if(length(interactionsize_viewport)==1) {
+      decorate_annotation(interactionsize_viewport, {
+        grid.text(format(cs[od], scientific=T, digits=2),
+                  x = seq_along(cs), y = unit(cs[od], "native") + unit(20, "pt"), 
+                  default.units = "native", just = "bottom", gp = gpar(fontsize = 8), rot=90)
+      })
+    } else {
+      warning("Viewpoint not found or ambiguous. decorate_annotation is omitted.")
+    }
+  }  
   
   cat("\n", fill=T)
   cat("\n", fill=T)
 }
+
+
+
 ##
 ## ChIPhelper.BOWTIE: parse bowtie log files and create a md table
 ##
@@ -391,18 +447,18 @@ ChIPhelper.Bowtie2 <- function() {
 ##
 ## ChIPhelper.Fastqc: go through Fastqc output dir and create a md table with the duplication & read quals & sequence bias plots
 ##
-ChIPhelper.Fastqc <- function(web=TRUE) {
+ChIPhelper.Fastqc <- function(web=TRUE, subdir="") {
   
   # logs folder
-  if(!file.exists(SHINYREPS_FASTQC)) {
+  if(!file.exists(file.path(SHINYREPS_FASTQC, subdir))) {
     return("Fastqc statistics not available")
   }
   
   # construct the folder name, which is different for web and noweb
-  QC <- if(web) "/fastqc" else SHINYREPS_FASTQC
+  QC <- if(web) "/fastqc" else file.path(SHINYREPS_FASTQC, subdir)
   
   # construct the image url from the folder ents (skip current dir .)
-  samples <- list.dirs(SHINYREPS_FASTQC, recursive=F)
+  samples <- list.dirs(file.path(SHINYREPS_FASTQC, subdir), recursive=F)
   df <- sapply(samples, function(f) {
     c(paste0("![fastq dup img](", QC, "/", basename(f), "/Images/duplication_levels.png)"), 
       paste0("![fastq qual img](", QC, "/", basename(f), "/Images/per_base_quality.png)"), 
@@ -421,17 +477,17 @@ ChIPhelper.Fastqc <- function(web=TRUE) {
 ##
 ## ChIPhelper.ngsReports.Fastqc: joint FastQC report of all samples in the experiment
 ##
-ChIPhelper.ngsReports.Fastqc <- function(...) {
+ChIPhelper.ngsReports.Fastqc <- function(subdir="", ...) {
   
   # output folder
-  if(!file.exists(SHINYREPS_FASTQC)) {
+  if(!file.exists(file.path(SHINYREPS_FASTQC, subdir))) {
     return("Fastqc statistics not available")
   }
   
   # Loading FastQC Data 
-  f <- list.files(SHINYREPS_FASTQC, pattern="fastqc.zip$", full.names=TRUE)
+  f <- list.files(file.path(SHINYREPS_FASTQC, subdir), pattern="fastqc.zip$", full.names=TRUE)
 
-  # select subset of samples for fastqc figures (e.g. with or without cutadapt suffix)
+  # select subset of samples for fastqc figures if desired
   f <- selectSampleSubset(f, ...)
   
   x <- ngsReports::FastqcDataList(f)
@@ -462,7 +518,8 @@ ChIPhelper.IPstrength<- function(web=TRUE, subdir="") {
     return("IPstrength statistics not available")
   }
   
-  if(!is.integer(SHINYREPS_PLOTS_COLUMN) | SHINYREPS_PLOTS_COLUMN < 2) {
+  SHINYREPS_PLOTS_COLUMN <- tryCatch(as.integer(SHINYREPS_PLOTS_COLUMN),error=function(e){4})
+  if(SHINYREPS_PLOTS_COLUMN < 2) {
     SHINYREPS_PLOTS_COLUMN <- 4L    # default to 4 columns
   }
   
@@ -503,7 +560,8 @@ ChIPhelper.peakAnnotationCoverage <- function(web=TRUE, subdir="") {
     return("Peak annotation results not available")  
   }
   
-  if(!is.integer(SHINYREPS_PLOTS_COLUMN) | SHINYREPS_PLOTS_COLUMN < 2) {
+  SHINYREPS_PLOTS_COLUMN <- tryCatch(as.integer(SHINYREPS_PLOTS_COLUMN),error=function(e){2})
+  if(SHINYREPS_PLOTS_COLUMN < 2 | SHINYREPS_PLOTS_COLUMN > 3) {
     SHINYREPS_PLOTS_COLUMN <- 2L    # default to 2 columns
   }
   
@@ -541,7 +599,8 @@ ChIPhelper.peakAnnotationUpSet <- function(web=TRUE, subdir="") {
     return("Peak annotation results not available")  
   }
   
-  if(!is.integer(SHINYREPS_PLOTS_COLUMN) | SHINYREPS_PLOTS_COLUMN < 2) {
+  SHINYREPS_PLOTS_COLUMN <- tryCatch(as.integer(SHINYREPS_PLOTS_COLUMN),error=function(e){2})
+  if(SHINYREPS_PLOTS_COLUMN < 2 | SHINYREPS_PLOTS_COLUMN > 3) {
     SHINYREPS_PLOTS_COLUMN <- 2L    # default to 2 columns
   }
   
@@ -580,7 +639,8 @@ ChIPhelper.PhantomPeak <- function(web=TRUE, subdir="", ...) {
     return("PhantomPeak statistics not available")
   }
   
-  if(!is.integer(SHINYREPS_PLOTS_COLUMN) | SHINYREPS_PLOTS_COLUMN < 2) {
+  SHINYREPS_PLOTS_COLUMN <- tryCatch(as.integer(SHINYREPS_PLOTS_COLUMN),error=function(e){3})
+  if(SHINYREPS_PLOTS_COLUMN < 2 | SHINYREPS_PLOTS_COLUMN > 3) {
     SHINYREPS_PLOTS_COLUMN <- 3L    # default to 4 columns
   }
   
@@ -788,11 +848,12 @@ ChIPhelper.subchunkify <- function(g, fig_height=7, fig_width=5) {
 ##
 ChIPhelper.insertsize.plot <- function(subdir="", ...){
   # logs folder
-  SHINYREPS_PLOTS_COLUMN <- tryCatch(as.integer(SHINYREPS_PLOTS_COLUMN),
-                                     error=function(e){3})
-  if(SHINYREPS_PLOTS_COLUMN < 2) {
-    SHINYREPS_PLOTS_COLUMN <- 3L    # default to 3 columns
+
+  SHINYREPS_PLOTS_COLUMN <- tryCatch(as.integer(SHINYREPS_PLOTS_COLUMN),error=function(e){3})
+  if(SHINYREPS_PLOTS_COLUMN < 2 | SHINYREPS_PLOTS_COLUMN > 4) {
+    SHINYREPS_PLOTS_COLUMN <- 3L    # default to 4 columns
   }
+  
   if (SHINYREPS_PAIRED == "yes" &
       length(selectSampleSubset(list.files(path = file.path(SHINYREPS_INSERTSIZE, subdir),
                                            pattern = "insertsizemetrics.tsv$"), ...)) > 0) {
@@ -903,14 +964,21 @@ ChIPhelper.diffbind <- function(subdir="") {
     # read the results (if available
     res <- readRDS(file.path(SHINYREPS_DIFFBIND, subdir, "diffbind.rds"))
     db <- dba.load(dir=file.path(SHINYREPS_DIFFBIND, subdir), file='diffbind', pre="")
+    diffbindSettings <- read.table(file.path(SHINYREPS_DIFFBIND, subdir, "diffbind_settings.txt"), header=T, sep="\t", stringsAsFactors = F)
+    fdr_threshold  <- diffbindSettings[diffbindSettings$Parameter=="FDR threshold", "Value"]
+    fold_threshold <- diffbindSettings[diffbindSettings$Parameter=="Fold threshold", "Value"]
+    infodb <- read.table(file.path(SHINYREPS_DIFFBIND, subdir, "info_dba_object.txt"), header=T, sep="\t", stringsAsFactors = F)
     
-    if(!is.integer(SHINYREPS_PLOTS_COLUMN) | SHINYREPS_PLOTS_COLUMN < 2) {
+    SHINYREPS_PLOTS_COLUMN <- tryCatch(as.integer(SHINYREPS_PLOTS_COLUMN),error=function(e){3})
+    if(SHINYREPS_PLOTS_COLUMN > 3) {
       SHINYREPS_PLOTS_COLUMN <- 3L    # default to 3 columns
     }
     
+    cat("\nOverview of applied DiffBind Settings:\n\n")
+    cat(knitr::kable(diffbindSettings, format="markdown"), sep="\n")
+    
     cat(paste0("\nDataset in DiffBind analysis (", db$totalMerged, " sites in matrix):\n\n"))
-    cat(knitr::kable(data.frame(db$samples[,c("SampleID", "Condition", "Replicate")], FRiP=db$SN), 
-                     format="markdown"),sep="\n")
+    cat(knitr::kable(infodb, format="markdown"), sep="\n")
     cat("\n\n")
     
     # plots for 1st panel (independent from contrasts)
@@ -946,7 +1014,8 @@ ChIPhelper.diffbind <- function(subdir="") {
     lapply(1:length(res), function(cont) {
       
       maxTableEntries = 20
-      cat("\n\n#### Contrast:", names(res)[cont], "\n", nrow(res[[cont]]), "differential peaks at FDR 5%", 
+      cat("\n\n#### Contrast:", names(res)[cont], "\n", nrow(res[[cont]]), "differential peaks at FDR", fdr_threshold, 
+          "and log fold change threshold", fold_threshold, 
           if(nrow(res[[cont]])>maxTableEntries){paste("(top", maxTableEntries, "entries shown)")}, "\n", fill=TRUE)
       
       if(nrow(res[[cont]])>=1) {
@@ -968,7 +1037,7 @@ ChIPhelper.diffbind <- function(subdir="") {
         # plots for 2nd panel 
         cat("\n\n")   
         plotsPanel2 <- file.path(SHINYREPS_DIFFBIND, subdir, paste0(names(res)[cont],
-                                                                    c("_pca_plot.png", "_venn_plot.png", "_volcano_plot.png")))
+                                 c("_pca_plot.png", "_venn_plot.png", "_volcano_plot.png")))
         plotsPanel2 <- plotsPanel2[file.exists(plotsPanel2)]
         
         COLUMNS <- min(length(plotsPanel2), SHINYREPS_PLOTS_COLUMN)
@@ -984,13 +1053,21 @@ ChIPhelper.diffbind <- function(subdir="") {
         cat("\n\n")   
         COLUMNS <- min(3, SHINYREPS_PLOTS_COLUMN)
         opar <- par(mfrow=c(ceiling(3/COLUMNS), COLUMNS))
-        try(dba.plotMA(db, contrast=cont, cex.main=0.8))  # col.main="white"     
-        freq <- table(res[[cont]]$seqnames)
-        barplot(freq[rev(order(gsub("chr", "", names(freq))))], horiz=TRUE, las=1, xlab="number of significant peaks")
-        hist(res[[cont]]$Fold, main="", xlab="log fold change", ylab="number of significant peaks", col="grey")#,
-        abline(v=0, lty=2, col="blue")
-        # plot(res[[cont]]$Conc, res[[cont]]$Fold, main="", xlab="log read concentration", ylab="log fold change") 
-        # abline(h=0, lty=2, col="blue") # is basically a MA plot showing significant peaks only. Replaced by regular MA plot.
+          try(dba.plotMA(db, contrast=cont, cex.main=0.8))  # col.main="white"  
+          
+          hist(res[[cont]]$Fold, main="", xlab="log fold change", ylab="number of significant peaks", col="grey")
+          abline(v=0, lty=2, col="blue")
+        
+          chromInfo <- getChromInfoFromUCSC(SHINYREPS_DB)
+          colnames(chromInfo)[colnames(chromInfo)=="length"] <- "size" # in case of older GenomicFeatures versions which give colname "length"
+          rownames(chromInfo) <- chromInfo$chrom
+          freq <- table(res[[cont]]$seqnames)
+          freq <- freq[rev(order(gsub("chr", "", names(freq))))]
+          barplot(1e6 * freq/chromInfo[names(freq), "size"], horiz=TRUE, las=1, xlab="number of significant peaks per MB") # count normalized by chrom length
+          # barplot(freq, horiz=TRUE, las=1, xlab="number of significant peaks") # absolute sign peaks count instead of normalized count
+          
+          # plot(res[[cont]]$Conc, res[[cont]]$Fold, main="", xlab="log read concentration", ylab="log fold change") 
+          # abline(h=0, lty=2, col="blue") # is basically a MA plot showing significant peaks only. Replaced by regular MA plot.
         par(opar)
         
         cat("\nThe PCA plot given here uses only the differentially bound sites of the respective contrast, 
@@ -1009,21 +1086,26 @@ ChIPhelper.diffbind <- function(subdir="") {
 
 
 ##
-## ChIPhelper.cutadapt: get cutadapt statistics from the log folder and display them
+## ChIPhelper.cutadapt: get trimming statistics from the Cutadapt folder and display them
 ## 
 #' @param targetsdf targets object
 #' @param colorByFactor character with column name of sample table to be used for coloring the plot. Coloring by filename if NULL. 
 #' @param sampleColumnName character with column name(s) of targets table containing file names
+#' @param plotfun define function to be used for plotting
 #'
 #' @return plot cutadapt statistics as side effect
-ChIPhelper.cutadapt <- function(targetsdf=targets, colorByFactor="group", sampleColumnName =c("IP", "INPUT"), ...){
+ChIPhelper.cutadapt <- function(targetsdf=targets, colorByFactor="group", sampleColumnName =c("IP", "INPUT"), 
+                                plotfun=ChIPhelper.cutadapt.plot, ...){
   
   # logs folder
-  if(!all(sapply(SHINYREPS_CUTADAPT_LOGS, file.exists))) {
-    return(paste("Cutadapt statistics not available for", names(which(!sapply(SHINYREPS_CUTADAPT_LOGS, file.exists)))))
+  if(!all(sapply(SHINYREPS_CUTADAPT_STATS, file.exists))) {
+    return(paste("Cutadapt statistics not available for", names(which(!sapply(SHINYREPS_CUTADAPT_STATS, file.exists)))))
   }
   
-  x <- list.files(SHINYREPS_CUTADAPT_LOGS,pattern='*cutadapt.log$',full.names=TRUE) 
+  x <- list.files(SHINYREPS_CUTADAPT_STATS,pattern='*cutadapt.log$',full.names=TRUE) 
+
+  # select subset of samples if desired
+  x <- selectSampleSubset(x, ...)
   
   # get Command line parameters of first file
   cutadaptpars <- system(paste("grep \"Command line parameters\"", x[1]), intern=T)
@@ -1032,7 +1114,7 @@ ChIPhelper.cutadapt <- function(targetsdf=targets, colorByFactor="group", sample
   
   x <- sapply(x, function(f) { 
     
-    trimmed.R1.perc <- trimmed.R2.perc <- trimmed.reads.perc <- tooshort.reads.perc <- NULL # initialise with NULL in case not needed
+    trimmed.R1.perc <- trimmed.R2.perc <- trimmed.reads.perc <- tooshort.reads.perc <- NULL # initialize with NULL in case not needed
     
     if(paired) { # log lines slightly differ dependent on se or pe
       total.reads <- system(paste("grep \"Total read pairs processed\"", f, "| awk '{print $5}'"), intern=TRUE)
@@ -1054,7 +1136,7 @@ ChIPhelper.cutadapt <- function(targetsdf=targets, colorByFactor="group", sample
     
     # trimming of each adapter
     adapters <- system(paste("grep Sequence:", f, "| awk '{print $9}'"), intern=T)
-    adapters.perc <- round(100*(as.numeric(adapters) / as.numeric(total.reads)),2)
+    adapters.perc <- round(100*(as.numeric(adapters) / as.numeric(total.reads)),1)
     adapterprime <- gsub(";", "", system(paste("grep Sequence:", f, "| awk '{print $5}'"), intern=T))
     
     names(adapters.perc) <- gsub(" *=== *", "", system(paste("grep \"=== .*Adapter\"", f), intern=T))
@@ -1098,11 +1180,11 @@ ChIPhelper.cutadapt <- function(targetsdf=targets, colorByFactor="group", sample
     if(is.null(targetsdf)) {stop("If 'colorByFactor' is given you must also provide 'targetsdf'!")}
     
     if(length(sampleColumnName>1)) { # melt in case of multiple file name columns (as for ChIP-Seq)
-    targetsdf <- targetsdf[,c(colorByFactor, sampleColumnName)]
-    targetsdf <- melt(targetsdf, id.vars= colorByFactor, measure.vars=sampleColumnName, value.name = "filename")
-    for (i in colorByFactor) {targetsdf[, i] <- paste(targetsdf[, i], targetsdf$variable, sep="_")}
-    targetsdf[,c(colorByFactor, "filename")] <- lapply(targetsdf[,c(colorByFactor, "filename")], factor)
-    
+      targetsdf <- targetsdf[,c(colorByFactor, sampleColumnName)]
+      targetsdf <- reshape2::melt(targetsdf, id.vars= colorByFactor, measure.vars=sampleColumnName, value.name = "filename")
+      for (i in colorByFactor) {targetsdf[, i] <- paste0(targetsdf[, i], " (", targetsdf$variable, ")")}
+      targetsdf[,c(colorByFactor, "filename")] <- lapply(targetsdf[,c(colorByFactor, "filename")], factor)
+      
     } else {
       targetsdf$filename <- targetsdf[,sampleColumnName]
     }
@@ -1139,46 +1221,56 @@ ChIPhelper.cutadapt <- function(targetsdf=targets, colorByFactor="group", sample
   x.melt <- melt(x.df, measure.vars=c(grep("trimmed", colnames(x.df), value=T), 
                                       "tooshort", 
                                       grep("(Adapter)|(})", colnames(x.df), value=T)), variable="reads")
+  
   # everything which is not a value should be a factor
   
-  # now we do a violin plot of the trimmed/too_short/etc. ones and color it
-  # according to the different factors given in colorByFactor 
-  
-  # prepare palette of appropriate length
-  colourCount = length(unique(x.melt[,colorByFactor]))
-  getPalette = colorRampPalette(brewer.pal(9, "Set1"))
-  
-  create.violin <- function(x.melt, color.value){
-    ylab <- "% reads"
-    p <- ggplot(x.melt, aes_string(x="reads",
-                                   y="value",
-                                   color=color.value ))+
-      geom_quasirandom(groupOnX=TRUE) +
-      scale_color_manual(values=getPalette(colourCount)) + # creates as many colors as needed
-      ylab(ylab) +
-      xlab("") +
-      #      scale_y_continuous( breaks=seq(0, ceiling(max(x.melt$value)), 10),
-      #                          limits = c(0, ceiling(max(x.melt$value)))) + 
-      theme(axis.text.x=element_text(angle=30, vjust=1, hjust=1)) 
-    
-    return(p)
-  }
-  
   # one plot for each element of colorByFactor
-  violin.list <- lapply(colorByFactor, create.violin, x.melt=x.melt) # "colorByFactor" is submitted as color.value
+  violin.list <- lapply(colorByFactor, plotfun, data=x.melt) # "colorByFactor" is submitted as color.value
   
   for(i in 1:length(violin.list)){
     plot(violin.list[[i]])
   }
   
-  DT::datatable(x.df[,c("total_reads", 
+  DT::datatable(x.df[,c(colorByFactor, "total_reads", 
                         grep("trimmed", colnames(x.df), value=T),
                         "tooshort", 
                         grep("(Adapter)|(})", colnames(x.df), value=T))], 
                 options = list(pageLength= 20))
 }
 
-
+# plotting function for ChIPhelper.cutadapt 
+ChIPhelper.cutadapt.plot <- function(data, color.value){
+  
+  is_outlier <- function(x) { # function for identification of outlier
+    return(x < quantile(x, 0.25) - 1.5 * IQR(x) | x > quantile(x, 0.75) + 1.5 * IQR(x))
+  }
+  
+  data <- data %>%
+    dplyr::group_by(reads) %>%
+    dplyr::mutate(outlier=is_outlier(value)) %>%
+    dplyr::ungroup() %>%
+    dplyr::mutate(outlier=ifelse(outlier,filename,as.numeric(NA))) %>%
+    as.data.frame()
+  
+  ylab <- "% reads"
+  
+  # prepare palette of appropriate length according to the different factors given in colorByFactor
+  colourCount = length(unique(data[,color.value]))
+  getPalette = colorRampPalette(brewer.pal(9, "Set1"))
+  
+  p <- ggplot(data, aes_string(x="reads",
+                               y="value",
+                               color=color.value ))+
+    geom_quasirandom(groupOnX=TRUE) +
+    geom_boxplot(color = "darkgrey", alpha = 0.2, outlier.shape = NA) + 
+    ggrepel::geom_text_repel(data=. %>% filter(!is.na(outlier)), aes(label=filename), show.legend=F) +
+    scale_color_manual(values=getPalette(colourCount)) + # creates as many colors as needed
+    ylab(ylab) +
+    xlab("") +
+    theme(axis.text.x=element_text(angle=30, vjust=1, hjust=1)) 
+  
+  return(p)
+}
 
 
 
@@ -1186,25 +1278,71 @@ ChIPhelper.cutadapt <- function(targetsdf=targets, colorByFactor="group", sample
 ##
 #' selectSampleSubset: select subset of samples for including in report (e.g. in case of multiple fastq files in scRNA-seq) 
 #'
-#' @param samples character vector with sample names
-#' @param samplePattern regular expression to apply on \code{samples}
-#' @param exclude logical indicating if selected samples shall be excluded or included
+#' @param samples character vector with sample names. 
+#' @param samplePattern regular expression to filter (include) on \code{samples}. No filtering if NULL or NA.
+#' @param excludePattern regular expression to filter (exclude) on \code{samples}. No filtering if NULL or NA.
 #' @param grepInBasename logical. If \code{TRUE} apply pattern to filename, not to full path.
 #'
 #' @return character vector with selected sample names
-selectSampleSubset <- function(samples, samplePattern=NULL, exclude=F, grepInBasename=T, maxno=NULL) {
-  # use all samples for samplePattern=NULL
-  if(!is.null(samplePattern)) {
-    
+selectSampleSubset <- function(samples, samplePattern=NULL, excludePattern=NULL, grepInBasename=T, maxno=NULL) {
+  
+  if(!gtools::invalid(samplePattern)) {
     x <- if(grepInBasename) {basename(samples)} else {samples} # if TRUE apply pattern to filename, not to full path
-    samples <- samples[grep(samplePattern, x, invert=exclude)]
-    
+    if(!any(grepl(samplePattern, x))) {
+      warning(paste("\nYour pattern", samplePattern, "was not found in sample names and is ignored.\n")) 
+    } else {
+      samples <- samples[grep(samplePattern, x, invert=F)]
+    }
     if(length(samples)==0) {stop("\nYou have selected no files!\n")}
   }
-  if(!is.null(maxno)) {
+  
+  if(!gtools::invalid(excludePattern)) {
+    x <- if(grepInBasename) {basename(samples)} else {samples} # if TRUE apply pattern to filename, not to full path
+    samples <- samples[grep(samplePattern, x, invert=T)]
+    if(length(samples)==0) {stop("\nYou have selected no files!\n")}
+  }
+  
+  if(!gtools::invalid(maxno) && is.numeric(maxno)) {
     samples <- samples[1:min(length(samples), maxno)]
-    if(maxno < length(samples)) {cat("\nSample number restricted to", maxno)}
+    if(maxno > length(samples)) {cat("\nSample number restricted to", maxno)}
   }
   return(samples)
 }
 
+#'
+#' Define a group color palette.
+#'
+#' @param num - number of groups
+#'
+#' @return a color vector
+#'
+#' @examples group.colors <- define.group.palette(length(levels(colData(dds)[,"group"])))
+#'           
+define.group.palette <- function(num) {
+  
+  if (num <=9) {
+    group.palette <- brewer.pal(9,"Set1")[1:num]
+  } else {
+    group.palette <- colorRampPalette(brewer.pal(9,"Set1"))(num)
+  }
+  return(group.palette)
+}
+
+#'
+#' Define a replicate color palette.
+#'
+#' @param num - number of replicates
+#'
+#' @return a color vector
+#'
+#' @examples replicate.colors <- define.replicate.palette(length(levels(colData(dds)[,"replicate"])))
+#'           
+define.replicate.palette <- function(num) {
+  
+  if (num <=9) {
+    replicate.palette <- brewer.pal(8,"Dark2")[1:num]
+  } else {
+    replicate.palette <- colorRampPalette(brewer.pal(8,"Dark2"))(num)
+  }
+  return(replicate.palette)
+}
