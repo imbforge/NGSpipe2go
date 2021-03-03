@@ -302,7 +302,7 @@ ChIPhelper.UpSetPlot <- function(subdir="", Mode = "distinct", setsize=20, targe
       warning("Viewpoint not found or ambiguous. decorate_annotation is omitted.")
     }
   }  
-  
+
   cat("\n", fill=T)
   cat("\n", fill=T)
 }
