@@ -43,7 +43,7 @@ dontrun = { println "didn't run $module" }
 Bpipe.run {
 	(RUN_IN_PAIRED_END_MODE ? "%.R*.fastq.gz" : "%.fastq.gz") * [
 		FastQC +  
-                (RUN_CUTADAPT ? Cutadapt + FastQC.using(subdir:"trimmed") + FastqScreen.using(subdir:"trimmed") : dontrun.using(module:"Cutadapt")) +
+                (RUN_CUTADAPT ? Cutadapt + FastQC.using(subdir:"trimmed") : dontrun.using(module:"Cutadapt")) +
                 (ESSENTIAL_USE_BOWTIE1 ? bowtie1 : bowtie2) + BAMindexer + BamQC +   
 
          [ // parallel branches with and without multi mappers
