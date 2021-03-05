@@ -641,7 +641,7 @@ ChIPhelper.PhantomPeak <- function(web=TRUE, subdir="", ...) {
   
   SHINYREPS_PLOTS_COLUMN <- tryCatch(as.integer(SHINYREPS_PLOTS_COLUMN),error=function(e){3})
   if(SHINYREPS_PLOTS_COLUMN < 2 | SHINYREPS_PLOTS_COLUMN > 3) {
-    SHINYREPS_PLOTS_COLUMN <- 3L    # default to 4 columns
+    SHINYREPS_PLOTS_COLUMN <- 3L    # default to 3 columns
   }
   
   # construct the folder name, which is different for web and noweb
@@ -1103,7 +1103,7 @@ ChIPhelper.cutadapt <- function(targetsdf=targets, colorByFactor="group", sample
   }
   
   x <- list.files(SHINYREPS_CUTADAPT_STATS,pattern='*cutadapt.log$',full.names=TRUE) 
-
+  
   # select subset of samples if desired
   x <- selectSampleSubset(x, ...)
   
@@ -1146,8 +1146,8 @@ ChIPhelper.cutadapt <- function(targetsdf=targets, colorByFactor="group", sample
     names(adapters.perc) <- paste0(if(paired) {namespart1} else {""}, adapterprime, namespart2)
     
     ## add trimmed reads for each adapter here
-    return(c(total_reads=total.reads, trimmed_R1=trimmed.R1.perc, trimmed_R2=trimmed.R2.perc, 
-             trimmed=trimmed.reads.perc, tooshort=tooshort.reads.perc, adapters.perc))
+    return(c("total reads"=total.reads, trimmed_R1=trimmed.R1.perc, trimmed_R2=trimmed.R2.perc, 
+             trimmed=trimmed.reads.perc, "too short"=tooshort.reads.perc, adapters.perc))
   })
   
   # transpose dataframe
@@ -1219,7 +1219,7 @@ ChIPhelper.cutadapt <- function(targetsdf=targets, colorByFactor="group", sample
   
   # melt data frame for plotting
   x.melt <- melt(x.df, measure.vars=c(grep("trimmed", colnames(x.df), value=T), 
-                                      "tooshort", 
+                                      "too short", 
                                       grep("(Adapter)|(})", colnames(x.df), value=T)), variable="reads")
   
   # everything which is not a value should be a factor
@@ -1231,12 +1231,13 @@ ChIPhelper.cutadapt <- function(targetsdf=targets, colorByFactor="group", sample
     plot(violin.list[[i]])
   }
   
-  DT::datatable(x.df[,c(colorByFactor, "total_reads", 
+  DT::datatable(x.df[,c(colorByFactor, "total reads", 
                         grep("trimmed", colnames(x.df), value=T),
-                        "tooshort", 
+                        "too short", 
                         grep("(Adapter)|(})", colnames(x.df), value=T))], 
                 options = list(pageLength= 20))
 }
+
 
 # plotting function for ChIPhelper.cutadapt 
 ChIPhelper.cutadapt.plot <- function(data, color.value){
