@@ -17,6 +17,7 @@ shinyReports_vars=[
     fastqscreen_out     : FastqScreen_vars.outdir,        //where the FastQScreen output lie
     fastqscreen_log     : LOGS + "/FastQScreen",          //where the FastQScreen log lie
     fastqscreen_perc    : ESSENTIAL_FASTQSCREEN_PERC,     //contaminant percentage to be plotted
+    cutadapt_stats      : Cutadapt_vars.statsdir,         // cutadapt stat files
     bamindex_log        : LOGS + "/BAMindexer",           //where the Samtools/BamIndexer logs lie
     dupradar_log        : dupRadar_vars.outdir,           //where the dupRadar logs lie
     rnatypes_log        : QC + "/RNAtypes",               //where the RNAtypes logs lie
