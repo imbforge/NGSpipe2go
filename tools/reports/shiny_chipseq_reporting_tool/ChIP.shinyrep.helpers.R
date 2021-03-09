@@ -447,7 +447,7 @@ ChIPhelper.Bowtie2 <- function() {
 ##
 ## ChIPhelper.Fastqc: go through Fastqc output dir and create a md table with the duplication & read quals & sequence bias plots
 ##
-ChIPhelper.Fastqc <- function(web=TRUE, subdir="") {
+ChIPhelper.Fastqc <- function(web=FALSE, subdir="") {
   
   # logs folder
   if(!file.exists(file.path(SHINYREPS_FASTQC, subdir))) {
@@ -455,10 +455,10 @@ ChIPhelper.Fastqc <- function(web=TRUE, subdir="") {
   }
   
   # construct the folder name, which is different for web and noweb
-  QC <- if(web) "/fastqc" else file.path(SHINYREPS_FASTQC, subdir)
+  QC <- if(web) paste0("/fastqc/", subdir) else file.path(SHINYREPS_FASTQC, subdir)
   
   # construct the image url from the folder ents (skip current dir .)
-  samples <- list.dirs(file.path(SHINYREPS_FASTQC, subdir), recursive=F)
+  samples <- list.dirs(QC, recursive=F)
   df <- sapply(samples, function(f) {
     c(paste0("![fastq dup img](", QC, "/", basename(f), "/Images/duplication_levels.png)"), 
       paste0("![fastq qual img](", QC, "/", basename(f), "/Images/per_base_quality.png)"), 
@@ -511,7 +511,7 @@ ChIPhelper.ngsReports.Fastqc <- function(subdir="", ...) {
 ## ChIPhelper.IPstrength: go through IPstrength output dir and create a md table with
 ##     the plots
 ##
-ChIPhelper.IPstrength<- function(web=TRUE, subdir="") {
+ChIPhelper.IPstrength<- function(web=FALSE, subdir="") {
   
   # logs folder
   if(!file.exists(file.path(SHINYREPS_IPSTRENGTH, subdir))) {
@@ -527,7 +527,7 @@ ChIPhelper.IPstrength<- function(web=TRUE, subdir="") {
   QC <- if(web) file.path("/ipstrength", subdir) else file.path(SHINYREPS_IPSTRENGTH, subdir)
   
   # construct the image url from the folder contents (skip current dir .)
-  samples <- list.files(file.path(SHINYREPS_IPSTRENGTH, subdir), pattern=".png$")
+  samples <- list.files(QC, pattern=".png$")
   COLUMNS <- min(length(samples), SHINYREPS_PLOTS_COLUMN)
   df <- sapply(samples, function(f) {
     paste0("![IPstrength img](", QC, "/", basename(f), ")")
@@ -554,7 +554,7 @@ ChIPhelper.IPstrength<- function(web=TRUE, subdir="") {
 ## ChIPhelper.peakAnnotation: go through Peak_Annotation output dir and create a md table with 
 ##      the coverage plots
 ##
-ChIPhelper.peakAnnotationCoverage <- function(web=TRUE, subdir="") {
+ChIPhelper.peakAnnotationCoverage <- function(web=FALSE, subdir="") {
   # check if peak annotation results are available
   if(!file.exists(file.path(SHINYREPS_PEAK_ANNOTATION, subdir))){
     return("Peak annotation results not available")  
@@ -593,7 +593,7 @@ ChIPhelper.peakAnnotationCoverage <- function(web=TRUE, subdir="") {
 ## ChIPhelper.peakAnnotationUpSet: go through Peak_Annotation output dir and create a md table with 
 ##      the UpSet plots
 ##
-ChIPhelper.peakAnnotationUpSet <- function(web=TRUE, subdir="") {
+ChIPhelper.peakAnnotationUpSet <- function(web=FALSE, subdir="") {
   # check if peak annotation results are available
   if(!file.exists(file.path(SHINYREPS_PEAK_ANNOTATION, subdir))){
     return("Peak annotation results not available")  
@@ -632,7 +632,7 @@ ChIPhelper.peakAnnotationUpSet <- function(web=TRUE, subdir="") {
 ## ChIPhelper.PhantomPeak: go through PhantomPeak output dir and create a md table with
 ##     the plots
 ##
-ChIPhelper.PhantomPeak <- function(web=TRUE, subdir="", ...) {
+ChIPhelper.PhantomPeak <- function(web=FALSE, subdir="", ...) {
   
   # logs folder
   if(!file.exists(file.path(SHINYREPS_PHANTOMPEAK, subdir))) {
@@ -648,7 +648,7 @@ ChIPhelper.PhantomPeak <- function(web=TRUE, subdir="", ...) {
   QC <- if(web) file.path("/phantompeak", subdir) else file.path(SHINYREPS_PHANTOMPEAK, subdir)
   
   # construct the image url from the folder contents (skip current dir .)
-  samples <- list.files(file.path(SHINYREPS_PHANTOMPEAK, subdir), pattern=".png$")
+  samples <- list.files(QC, pattern=".png$")
   samples <- selectSampleSubset(samples, ...)
   COLUMNS <- min(length(samples), SHINYREPS_PLOTS_COLUMN)
   df <- sapply(samples, function(f) {
@@ -1299,7 +1299,7 @@ selectSampleSubset <- function(samples, samplePattern=NULL, excludePattern=NULL,
   
   if(!gtools::invalid(excludePattern)) {
     x <- if(grepInBasename) {basename(samples)} else {samples} # if TRUE apply pattern to filename, not to full path
-    samples <- samples[grep(samplePattern, x, invert=T)]
+    samples <- samples[grep(excludePattern, x, invert=T)]
     if(length(samples)==0) {stop("\nYou have selected no files!\n")}
   }
   
