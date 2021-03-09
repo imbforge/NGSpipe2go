@@ -190,8 +190,8 @@ DEhelper.DESeq2.pairwisePCA <- function(i=1) {
 
 
 ## DEhelper.DESeq2.heatmap 
-#' Heatmap of sample to sample distances, of top variant 'n' genes of the counts-per-milion table or 
-#' of top 'n' highest mean genes of the regularized log transformed counts-per-milion table 
+#' Heatmap of sample to sample distances, of top variant 'n' genes of the counts-per-million table or 
+#' of top 'n' highest mean genes of the regularized log transformed counts-per-million table 
 #' with or without rlog normalization.
 #' This function replaces the helper functions DEhelper.DESeq2.corr, DEhelper.DESeq2.corr.pairwise,
 #' DEhelper.DESeq2.cluster.sd, DEhelper.DESeq2.cluster.sd.pairwise, 
@@ -222,10 +222,13 @@ DEhelper.DESeq2.heatmap <- function(i=NULL, dds=rld, logTransform=F, anno_factor
   
   # extract assay, optionally logtransform (as for the pairwise.dds objects) and over-write gene_id in rownames with gene_name
   if(logTransform) {
-    assay.rld <- DESeq2::rlog(assay(dds))
-  } else {
-    assay.rld <- assay(dds)
-  }
+    if(class(dds) != "DESeqTransform") {
+      dds <- DESeq2::rlog(dds)
+    } else {
+      warning("The dds object is of class DESeqTransform, which means it is already transformed. Therefore, the log transformation selected here is omitted.")
+    }
+  } 
+  assay.rld <- assay(dds)
   
   gene_ids <- gtf$gene_name[match(rownames(assay(dds)), gtf$gene_id)]
   rownames(assay.rld) <- ifelse(is.na(gene_ids), rownames(assay(dds)), gene_ids)
@@ -1812,6 +1815,197 @@ DEhelper.Trackhub <- function() {
         return("UCSC GB Trackhub URL not available")
     }
 }
+
+
+##
+## DEhelper.cutadapt: get trimming statistics from the Cutadapt folder and display them
+## 
+#' @param targetsdf targets object
+#' @param colorByFactor character with column name of sample table to be used for coloring the plot. Coloring by filename if NULL. 
+#' @param sampleColumnName character with column name(s) of targets table containing file names
+#' @param plotfun define function to be used for plotting
+#'
+#' @return plot cutadapt statistics as side effect
+DEhelper.cutadapt <- function(targetsdf=targets, colorByFactor="group", sampleColumnName =c("sample"), 
+                              plotfun=DEhelper.cutadapt.plot, ...){
+  
+  # logs folder
+  if(!all(sapply(SHINYREPS_CUTADAPT_STATS, file.exists))) {
+    return(paste("Cutadapt statistics not available for", names(which(!sapply(SHINYREPS_CUTADAPT_STATS, file.exists)))))
+  }
+  
+  x <- list.files(SHINYREPS_CUTADAPT_STATS,pattern='*cutadapt.log$',full.names=TRUE) 
+  
+  # select subset of samples if desired
+  x <- selectSampleSubset(x, ...)
+  
+  # get Command line parameters of first file
+  cutadaptpars <- system(paste("grep \"Command line parameters\"", x[1]), intern=T)
+  
+  paired <- grepl("(-p )|(--paired-output )", cutadaptpars) # output for R2 available?
+  
+  x <- sapply(x, function(f) { 
+    
+    trimmed.R1.perc <- trimmed.R2.perc <- trimmed.reads.perc <- tooshort.reads.perc <- NULL # initialize with NULL in case not needed
+    
+    if(paired) { # log lines slightly differ dependent on se or pe
+      total.reads <- system(paste("grep \"Total read pairs processed\"", f, "| awk '{print $5}'"), intern=TRUE)
+      total.reads <- gsub(",", "", total.reads)
+      trimmed.R1.perc <- system(paste("grep \"Read 1 with adapter\"", f, "| awk '{print $6}'"), intern=TRUE)
+      trimmed.R1.perc <- gsub("\\(|\\)|\\%", "", trimmed.R1.perc)
+      trimmed.R2.perc <- system(paste("grep \"Read 2 with adapter\"", f, "| awk '{print $6}'"), intern=TRUE)
+      trimmed.R2.perc <- gsub("\\(|\\)|\\%", "", trimmed.R2.perc)
+      
+    } else {
+      total.reads <- system(paste("grep \"Total reads processed\"", f, "| awk '{print $4}'"), intern=TRUE)
+      total.reads <- gsub(",", "", total.reads)
+      trimmed.reads.perc <- system(paste("grep \"Reads with adapters\"", f, "| awk '{print $5}'"), intern=TRUE)
+      trimmed.reads.perc <- gsub("\\(|\\)|\\%", "", trimmed.reads.perc)
+    }
+    
+    tooshort.reads.perc <- system(paste("grep \"that were too short\"", f, "| awk '{print $7}'"), intern=TRUE)
+    tooshort.reads.perc <- gsub("\\(|\\)|\\%", "", tooshort.reads.perc)
+    
+    # trimming of each adapter
+    adapters <- system(paste("grep Sequence:", f, "| awk '{print $9}'"), intern=T)
+    adapters.perc <- round(100*(as.numeric(adapters) / as.numeric(total.reads)),1)
+    adapterprime <- gsub(";", "", system(paste("grep Sequence:", f, "| awk '{print $5}'"), intern=T))
+    
+    names(adapters.perc) <- gsub(" *=== *", "", system(paste("grep \"=== .*Adapter\"", f), intern=T))
+    namespart1 <- gsub("First read:.*", "R1_", names(adapters.perc))
+    namespart1 <- gsub("Second read:.*", "R2_", namespart1)
+    namespart2 <- gsub("^.*Adapter", "Adapter", names(adapters.perc))
+    names(adapters.perc) <- paste0(if(paired) {namespart1} else {""}, adapterprime, namespart2)
+    
+    ## add trimmed reads for each adapter here
+    return(c("total reads"=total.reads, trimmed_R1=trimmed.R1.perc, trimmed_R2=trimmed.R2.perc, 
+             trimmed=trimmed.reads.perc, "too short"=tooshort.reads.perc, adapters.perc))
+  })
+  
+  # transpose dataframe
+  x.df <- as.data.frame(t(x), make.names=F, stringsAsFactors = F) 
+  x.df <- as.data.frame(lapply(x.df, as.numeric))
+  colnames(x.df) <- rownames(x)
+  
+  # use cutadapt call from first log file for naming some of the unnamed adapters 
+  cutadaptpars <- unlist(strsplit(cutadaptpars, split=" ")) 
+  indexAdapter <- grep("(^-a$)|(--adapter)|(^-g$)|(--front)|(^-A$)|(^-G$)", cutadaptpars) # index of all adapters applied
+  indexAdapterSelected <- indexAdapter[grep("[ACGT].[[:digit:]]*}", cutadaptpars[indexAdapter+1])] # select e.g. polyA, polyT
+  
+  # rename those adapters columns trimmed by -a commands 
+  if (length(indexAdapterSelected>0)) {
+    colnames(x.df)[grepl("Adapter", colnames(x.df))][match(indexAdapterSelected, indexAdapter)] <- 
+      paste0(gsub("Adapter.*$", "", colnames(x.df)[grepl("Adapter", colnames(x.df))][match(indexAdapterSelected, indexAdapter)]), cutadaptpars[indexAdapterSelected+1])
+  }
+  
+  #reduce length of file names 
+  row.names(x.df) <- basename(colnames(x))
+  x.df$filename_unmod <- factor(row.names(x.df))
+  if(nrow(x.df)>1){
+    row.names(x.df)  <- gsub(lcSuffix(row.names(x.df) ), "", row.names(x.df) )
+    row.names(x.df)  <- gsub(lcPrefix(row.names(x.df) ), "", row.names(x.df) )
+  }
+  
+  # passing the different factors given in targetsdf to x.df which was created from cutadapt file names 
+  if(!is.null(colorByFactor)) { # add information to x.df
+    
+    if(is.null(targetsdf)) {stop("If 'colorByFactor' is given you must also provide 'targetsdf'!")}
+    
+    if(length(sampleColumnName>1)) { # melt in case of multiple file name columns (as for ChIP-Seq)
+      targetsdf <- targetsdf[,c(colorByFactor, sampleColumnName)]
+      targetsdf <- reshape2::melt(targetsdf, id.vars= colorByFactor, measure.vars=sampleColumnName, value.name = "filename")
+      for (i in colorByFactor) {targetsdf[, i] <- paste0(targetsdf[, i], " (", targetsdf$variable, ")")}
+      targetsdf[,c(colorByFactor, "filename")] <- lapply(targetsdf[,c(colorByFactor, "filename")], factor)
+      
+    } else {
+      targetsdf$filename <- targetsdf[,sampleColumnName]
+    }
+    
+    targetsdf$filename <- gsub(lcSuffix(targetsdf$filename ), "", targetsdf$filename ) # shorten filename suffix
+    targetsdf$filename <- gsub(lcPrefix(targetsdf$filename ), "", targetsdf$filename ) # shorten filename prefix
+    
+    index <- sapply(targetsdf$filename, grep, x.df$filename_unmod, ignore.case = T) # grep sample name in file names
+    targetsdf <- targetsdf[sapply(index, length) ==1, ] # remove targetsdf entries not (uniquely) found in x.df
+    
+    if(!identical(sort(unname(unlist(index))), 1:nrow(x.df))) {
+      stop("There seem to be ambiguous sample names in targets. Can't assign them uniquely to cutadapt logfile names")
+    }
+    
+    x.df <- data.frame(x.df[unlist(index),], targetsdf, check.names =F)
+    x.df <- x.df[order(rownames(x.df)),, drop=F]
+    rownames(x.df) <- x.df$filename
+    
+    if(any(!colorByFactor %in% colnames(x.df))) {
+      if(all(!colorByFactor %in% colnames(x.df))) {
+        cat("\nNone of the column names given in colorByFactor is available. Perhaps sample names are not part of fastq file names? Using filename instead.")
+        colorByFactor <- "filename"
+      } else { # one plot each element of colorByFactor
+        cat("\n", colorByFactor[!colorByFactor %in% colnames(x.df)], "not available. Using", colorByFactor[colorByFactor %in% colnames(x.df)], "instead.")
+        colorByFactor <- colorByFactor[colorByFactor %in% colnames(x.df)]
+      }
+    }
+  } else {
+    x.df$filename <- row.names(x.df)
+    colorByFactor <- "filename"
+  }
+  
+  # melt data frame for plotting
+  x.melt <- melt(x.df, measure.vars=c(grep("trimmed", colnames(x.df), value=T), 
+                                      "too short", 
+                                      grep("(Adapter)|(})", colnames(x.df), value=T)), variable="reads")
+  
+  # everything which is not a value should be a factor
+  
+  # one plot for each element of colorByFactor
+  violin.list <- lapply(colorByFactor, plotfun, data=x.melt) # "colorByFactor" is submitted as color.value
+  
+  for(i in 1:length(violin.list)){
+    plot(violin.list[[i]])
+  }
+  
+  DT::datatable(x.df[,c(colorByFactor, "total reads", 
+                        grep("trimmed", colnames(x.df), value=T),
+                        "too short", 
+                        grep("(Adapter)|(})", colnames(x.df), value=T))], 
+                options = list(pageLength= 20))
+}
+
+
+# plotting function for DEhelper.cutadapt 
+DEhelper.cutadapt.plot <- function(data, color.value){
+  
+  is_outlier <- function(x) { # function for identification of outlier
+    return(x < quantile(x, 0.25) - 1.5 * IQR(x) | x > quantile(x, 0.75) + 1.5 * IQR(x))
+  }
+  
+  data <- data %>%
+    dplyr::group_by(reads) %>%
+    dplyr::mutate(outlier=is_outlier(value)) %>%
+    dplyr::ungroup() %>%
+    dplyr::mutate(outlier=ifelse(outlier,filename,as.numeric(NA))) %>%
+    as.data.frame()
+  
+  ylab <- "% reads"
+  
+  # prepare palette of appropriate length according to the different factors given in colorByFactor
+  colourCount = length(unique(data[,color.value]))
+  getPalette = colorRampPalette(brewer.pal(9, "Set1"))
+  
+  p <- ggplot(data, aes_string(x="reads",
+                               y="value",
+                               color=color.value ))+
+    geom_quasirandom(groupOnX=TRUE) +
+    geom_boxplot(color = "darkgrey", alpha = 0.2, outlier.shape = NA) + 
+    ggrepel::geom_text_repel(data=. %>% filter(!is.na(outlier)), aes(label=filename), show.legend=F) +
+    scale_color_manual(values=getPalette(colourCount)) + # creates as many colors as needed
+    ylab(ylab) +
+    xlab("") +
+    theme(axis.text.x=element_text(angle=30, vjust=1, hjust=1)) 
+  
+  return(p)
+}
+
+
 
 ##		      
 ## extract tool versions
