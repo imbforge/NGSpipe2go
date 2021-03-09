@@ -9,6 +9,7 @@ diffbind2 = {
     output.dir = diffbind2_vars.outdir + "/$subdir"
 
     def DIFFBIND_FLAGS =
+        (diffbind2_vars.diffbindversion   ? " diffbindversion="   + diffbind2_vars.diffbindversion     : "") +
         (diffbind2_vars.targets           ? " targets="           + diffbind2_vars.targets             : "") +
         (diffbind2_vars.contrasts         ? " contrasts="         + diffbind2_vars.contrasts           : "") +
         (diffbind2_vars.cwd               ? " cwd="               + diffbind2_vars.cwd                 : "") +
