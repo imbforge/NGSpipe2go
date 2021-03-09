@@ -1,10 +1,10 @@
 #####################################
 ##
-## What: diffbind.R
-## Who : Sergi Sayols
-## When: 10-05-2016
+## What: diffbind3.R
+## Who : Sergi Sayols, Frank Rühle
+## When: 10-05-2016, updated 03-03-2021
 ##
-## Script to perform differential binding analysis between 2 conditions (pairwise)
+## Script to perform differential binding analysis between 2 conditions (pairwise) using DiffBind v3
 ##
 ## Args:
 ## -----
@@ -44,6 +44,7 @@ run_custom_code <- function(x) {
 }
 
 args <- commandArgs(T)
+DIFFBINDVERSION  <- parseArgs(args,"diffbindversion=", 3, "as.numeric") # selected DiffBind version
 FTARGETS   <- parseArgs(args,"targets=","targets.txt")     # file describing the targets
 FCONTRASTS <- parseArgs(args,"contrasts=","contrasts_diffbind.txt") # file describing the contrasts
 CWD        <- parseArgs(args,"cwd=","./")     # current working directory
@@ -56,7 +57,7 @@ GREYLIST   <- parseArgs(args,"greylist=", TRUE, "as.logical") # if true greylist
 SUMMITS    <- parseArgs(args,"summits=", 200, "as.numeric") # summits for re-centering consensus peaks
 FILTER     <- parseArgs(args,"filter=", 5, "as.numeric") # value to use for filtering intervals with low read counts
 ANALYSISMETHOD  <- parseArgs(args,"analysisMethod=", "DESeq2", "as.character") # method for which to normalize (either "DESeq2" or "edgeRGLM")
-LIBRARYSIZE     <- parseArgs(args,"librarySize=", LIBRARYSIZE, "as.character")   # use total number of reads in bam for normalization (FALSE=only peaks)
+LIBRARYSIZE     <- parseArgs(args,"librarySize=", "default", "as.character")   # use total number of reads in bam for normalization (FALSE=only peaks)
 NORMALIZATION   <- parseArgs(args,"normalization=", "default", "as.character")   # use total number of reads in bam for normalization (FALSE=only peaks)
 SUBSTRACTCONTROL<- parseArgs(args,"substractControl=", "default", "as.character")  # substract input
 CONDITIONCOLUMN <- parseArgs(args,"conditionColumn=", "group", "as.character") # this targets column is interpreted as 'Condition' and is used as for defining the default design
@@ -92,9 +93,11 @@ if(ANNOTATE & !require(TXDB, character.only=TRUE))   stop("Transcript DB", TXDB,
 if(ANNOTATE & !require(ANNODB, character.only=TRUE)) stop("Annotation DB", ANNODB, "not installed\n")
 
 # check for DiffBind version
-diffbindVersion <- packageVersion('DiffBind')
-if(diffbindVersion < 3) {
-  warning(paste0("You are using an outdated DiffBind version: ", diffbindVersion, ". Beginning with version 3, DiffBind has included new functionalities and modified default settings. This script is made for diffbind version 3 and may not work properly for older versions.\n"))
+currentDiffbindVersion <- packageVersion('DiffBind')
+DiffBindWarningText <- ""
+if(currentDiffbindVersion < 3) {
+  DiffBindWarningText <- "This script is made for diffbind version 3 and may not work properly for older versions."
+  warning(paste0("You are using an outdated DiffBind version: ", currentDiffbindVersion, ". Beginning with version 3, DiffBind has included new functionalities and modified default settings. ", DiffBindWarningText))
   }
 
 
@@ -351,7 +354,7 @@ if(ANNOTATE) {
   if(NORMALIZATION=="default") {explNormalization <- paste0("refers to method '", infoNorm$norm.method, "'. ", explNormalization)}
   
   # create overview table with diffbind settings
-  diffbindSettings <- rbind(c(Parameter="DiffBind package version", Value=as.character(diffbindVersion), Comment=""),
+  diffbindSettings <- rbind(c(Parameter="DiffBind package version", Value=as.character(currentDiffbindVersion), Comment= paste(if(currentDiffbindVersion$major != floor(DIFFBINDVERSION)) {paste0("Major version not concordant with intended DiffBind v", DIFFBINDVERSION, ". Please check R module." )} else {""}, DiffBindWarningText)),
                             c("Apply auto-generated blacklist", BLACKLIST, if(BLACKLIST){if(class(blacklist_generated)=="try-error") {"Skipped because blacklist not available."} else {"Blacklist successfully generatedand applied."}} else {""}),
                             c("Apply auto-generated greylist", GREYLIST, if(GREYLIST){if(class(greylist_generated)=="try-error") {"Skipped because greylist not available."} else {"Greylist successfully generated and applied."}} else {""}),
                             c("Fragment size", FRAGSIZE, ""),

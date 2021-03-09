@@ -1,10 +1,10 @@
 #####################################
 ##
-## What: diffbind.R
-## Who : Sergi Sayols
-## When: 10-05-2016
+## What: diffbind2.R
+## Who : Sergi Sayols, Frank Rühle
+## When: 10-05-2016, updated 03-03-2021
 ##
-## Script to perform differential binding analysis between 2 conditions (pairwise)
+## Script to perform differential binding analysis between 2 conditions (pairwise) using DiffBind v2
 ##
 ## Args:
 ## -----
@@ -46,6 +46,7 @@ run_custom_code <- function(x) {
 }
 
 args       <- commandArgs(T)
+DIFFBINDVERSION  <- parseArgs(args,"diffbindversion=", 2, "as.numeric") # selected DiffBind version
 FTARGETS   <- parseArgs(args,"targets=","targets.txt")     # file describing the targets
 FCONTRASTS <- parseArgs(args,"contrasts=","contrasts_diffbind.txt") # file describing the contrasts
 CWD        <- parseArgs(args,"cwd=","./")     # current working directory
@@ -91,11 +92,13 @@ if(ANNOTATE & !require(TXDB, character.only=TRUE))   stop("Transcript DB", TXDB,
 if(ANNOTATE & !require(ANNODB, character.only=TRUE)) stop("Annotation DB", ANNODB, "not installed\n")
 
 # check for DiffBind version
-diffbindVersion <- packageVersion('DiffBind')
-if(diffbindVersion < 3) {
-  warning(paste0("You are using an outdated DiffBind version: ", diffbindVersion, ". Beginning with version 3, DiffBind has included new functionalities and modified default settings. This script is written for the older version. However, you may also consider using the newer version.\n"))
+currentDiffbindVersion <- packageVersion('DiffBind')
+DiffBindWarningText <- ""
+if(currentDiffbindVersion < 3) {
+  warning(paste0("You are using an outdated DiffBind version: ", currentDiffbindVersion, ". Beginning with version 3, DiffBind has included new functionalities and modified default settings. This script is written for the older version. However, you may also consider using the newer version.\n"))
 } else {
-    warning(paste0("You are using DiffBind version: ", diffbindVersion, ", but this script is made for compatibility with older DiffBind versions < 3 and may not run properly for the newer DiffBind version. Please set ESSENTIAL_DIFFBIND_VERSION=3 to use the appropriate DiffBind script.\n"))
+  DiffBindWarningText <- "This script is made for compatibility with older DiffBind versions < 3 and may not run properly for the newer DiffBind version."
+  warning(paste0(DiffBindWarningText, " You are currently using DiffBind version ", currentDiffbindVersion, ". Please set ESSENTIAL_DIFFBIND_VERSION=", currentDiffbindVersion$major, " to use the appropriate DiffBind module.\n"))
   }
 # some function calls differ depending on DiffBind version
 
@@ -298,7 +301,7 @@ if(ANNOTATE) {
 }
 
   # create overview table with diffbind settings
-  diffbindSettings <- rbind(c(Parameter="DiffBind package version", Value=as.character(diffbindVersion), Comment=""),
+  diffbindSettings <- rbind(c(Parameter="DiffBind package version", Value=as.character(currentDiffbindVersion), Comment= paste(if(currentDiffbindVersion$major != floor(DIFFBINDVERSION)) {paste0("Major version not concordant with intended DiffBind v", DIFFBINDVERSION, ". Please check R module." )} else {""}, DiffBindWarningText)),
                             c("Fragment size", FRAGSIZE, ""),
                             c("Summits", SUMMITS, if(SUMMITS==0) {"no re-centering of peaks."} else {paste0("re-center peaks around consensus summit with peak width 2x", SUMMITS, ".", if(PE) {"'bUseSummarizeOverlaps' was set to FALSE."} else {""})}),
                             c("Filter threshold", FILTER, "threshold for filtering intervals with low read counts"),
