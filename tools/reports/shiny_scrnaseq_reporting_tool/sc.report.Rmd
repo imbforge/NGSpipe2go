@@ -42,9 +42,9 @@ Bpipe.run {
 source("sc.shinyrep.helpers.R")
 
 # load required packages
-not_yet_attached <- attach_packages(c("tidyverse", "AnnotationDbi", "batchelor", "Biobase", "BiocSingular", "bluster", "Cairo", "celldex", 
-          "cluster", "corrplot", "dendextend", "DESeq2", "DropletUtils", "dynamicTreeCut", "edgeR", "GeneOverlap", "ggbeeswarm", "ggrepel", 
-          "gplots", "grid", "gridExtra", "gtools", "igraph", "kableExtra", "knitr", "limma", "M3Drop", "Matrix", "parallel", 
+not_yet_attached <- attach_packages(c("tidyverse", "AnnotationDbi", "batchelor", "Biobase", "BiocSingular", "bluster", "Cairo", "celldex", "circlize",
+          "cluster", "ComplexHeatmap", "corrplot", "dendextend", "DESeq2", "DropletUtils", "dynamicTreeCut", "edgeR", "GeneOverlap", "ggbeeswarm",
+          "ggrepel", "gplots", "grid", "gridExtra", "igraph", "knitr", "kableExtra", "limma", "M3Drop", "Matrix", "parallel", 
           "pheatmap", "plotly", "pkgmaker", "RColorBrewer", "reshape2", "rmarkdown", "rtracklayer", "Rtsne","SC3", "scales", 
           "scater", "scDblFinder", "scran", "shinydashboard", "SingleR", "uwot", "VennDiagram", "vipor", "viridis"))
 
@@ -76,10 +76,12 @@ theme_set(theme_bw() + theme(axis.text=element_text(colour="grey30",size=12),
 									legend.title=element_text(size=12,colour="grey30")))
 
 # load list of mitochondrial genes (if not given, we will use all genes starting with "MT-")
-mito.genes <- tryCatch(read.delim(file.path(SHINYREPS_PROJECT,SHINYREPS_MTGENES))[, 1], error=function(e) NA)
+mito.genes <- if(file.exists(file.path(SHINYREPS_PROJECT,SHINYREPS_MTGENES))) {
+  read.delim(file.path(SHINYREPS_PROJECT,SHINYREPS_MTGENES))[, 1]
+} else {NA}
 
-# check for selected pipeline modules 
-runCutadapt <- SHINYREPS_RUN_CUTADAPT=="true"
+runCutadapt <- SHINYREPS_RUN_CUTADAPT=="true" # check for selected pipeline modules 
+org <- SHINYREPS_ORG # organism name needed for cell cycle and GO enrichment 
 
 
 ## load or create specific targets file for all cells. 
@@ -194,12 +196,12 @@ DEhelper.cutadapt(colorByFactor=colorByFactor, targetsdf=targets4plots)
 ```
 
 ```{r FastQC_paragraph2, echo=F, results='asis', error=F, warning=F, message=F, eval=runCutadapt}
-# Applying FastQC again after adapter trimming (fastq file names contain "cutadapt" as part of their name)
+# Applying FastQC again after adapter trimming
 samplePattern=SHINYREPS_SAMPLEPATTERN2
 maxno=as.numeric(SHINYREPS_MAXNO) # default NULL
 ##
 cat("### FastQC after adapter trimming\n")
-cat(DEhelper.Fastqc(web=F, samplePattern=samplePattern, maxno=maxno), sep="\n") 
+cat(DEhelper.Fastqc(web=F, subdir="trimmed", samplePattern=samplePattern, maxno=maxno), sep="\n") 
 ```
 
 
@@ -284,15 +286,16 @@ DEhelper.umicount(colorByFactor=colorByFactor, targetsdf=targets4plots)
 
 ## Competetive mapping to rRNAs and other contaminats:
 
-A competitive mapping to the reference genome and known rRNAs (H.sapiens, M.musculus, C.elegans, D.melanogaster, D.rerio, X.tropicalis) as well as frequently occuring Mycoplasma species (M. arginini, M. fermentans, M. hominis, M. hyorhinis,M. orale, and Acholeplasma laidlawii), E.coli and Bos taurus was performed with FastQScreen (http://www.bioinformatics.babraham.ac.uk/projects/fastq_screen/).
+A competitive mapping to the reference genome and known rRNAs (H. sapiens, M. musculus, C. elegans, D. melanogaster, D. rerio, X. tropicalis) as well as frequently occurring Mycoplasma species (M. arginini, M. fermentans, M. hominis, M. hyorhinis, M. orale, and Acholeplasma laidlawii), PhiX and ERCC spike-in sequences, E. coli and B. taurus (bovine) was performed with FastQScreen (http://www.bioinformatics.babraham.ac.uk/projects/fastq_screen/).
 
-In the following plot the "one_genome" label refers to the amount of reads mapping to that genome only regardlessly if they are multi mapping or uniquely mapping reads.
-The "multiple_genome" label refers to the amount of read mapping to this genome but also to other genomes in the screening regardless if they are multi mapping on the genome or uniquely mapping to that genome.
-Since the reads mapping to multiple genomes are referred to for each individual genome the total percentages of reads mapping can be larger than a 100%. 
+In the following plot only relevant contaminants are shown. A contaminant is considered relevant if it consumes `r SHINYREPS_FASTQSCREEN_PERC`% of reads or more in at least one sample. The "one genome" label refers to the amount of reads mapping to that genome only regardlessly if they are multi mapping or uniquely mapping reads. The "multiple genome" label refers to the amount of read mapping to this genome but also to other genomes in the screening regardless if they are multi mapping on the genome or uniquely mapping to that genome. 
 
 ```{r fastqscreen_paragraph, echo=F, results='asis', fig.width=10, error=F, warning=F, message=F}
-plot(DEhelper.fastqscreen(samplePattern=SHINYREPS_SAMPLEPATTERN1))
-     
+fastqscreen_plots <- DEhelper.fastqscreen(perc.to.plot=SHINYREPS_FASTQSCREEN_PERC)
+```
+
+```{r fastqscreen_paragraph2, echo=F,results='asis',error=F,warning=F,message=F,fig.align='center',fig.height=(round((3*fastqscreen_plots$no.of.genomes)/4)+1)*fastqscreen_plots$no.of.samples/8+1}
+plot(fastqscreen_plots$p.category.wrap)
 ```
 
 
@@ -946,10 +949,8 @@ We use the prediction method described by Scialdone et al. (2015) to classify ce
 
 Remark for adjustment: in routine scRNA-seq analyses it is not recommended to adjust for cell cycle. Compared to other differences between cell types it is a minor factor of variation and any attempt at removal would also need to assume that the cell cycle effect is orthogonal to other biological processes. For example, regression would potentially remove interesting signal if cell cycle activity varied across clusters or conditions. Cell cycle adjustment may be performed on an as-needed basis in populations with clear cell cycle effects.
 
-```{r find_cell_cycle, results='asis', fig.width=8, fig.height=8}
+```{r find_cell_cycle, results='asis', fig.width=8, fig.height=8, eval=(org %in% c("human", "mouse"))}
 ##### parameters to set:
-# define organism (either "human" or "mouse")
-org <- SHINYREPS_ORG
 # define one category to be used for symbol color in the plot.
 annoFactors <- colorByFactor2
 #####
@@ -1284,7 +1285,7 @@ if(length(hvg) == 0) {
   #                        features = rownames(tmp.sce[rowData(tmp.sce)$ENSEMBL %in% hvg[1:10], ]),
   #                        colour_by=dotcol,
   #                        shape_by=dotshape) +
-  #           geom_boxplot(color = "darkgrey", alpha = 0.2) +
+  #           geom_boxplot(color = "darkgrey", alpha = 0.2, outlier.shape = NA) +
   #           ggtitle("Top 10 HGVs for all cells") +
   #           scale_color_hue(c=40, l=50, name= dotcol) +
   #           facet_grid(~colour_by)
@@ -1300,7 +1301,7 @@ if(length(hvg) == 0) {
         geom_violin() +
         geom_quasirandom() +
         #scale_fill_hue(l=40, c=40) +
-        geom_boxplot(color = "darkgrey", alpha = 0.2) +
+        geom_boxplot(color = "darkgrey", alpha = 0.2, outlier.shape = NA) +
         ylab("expression (logcounts)") +
         xlab(annoFactors[1]) +
         ggtitle(rowData(sce)$SYMBOL[match(h, rownames(sce))]) +
@@ -1489,11 +1490,11 @@ rowData(sce)$feature_symbol <- rowData(sce)$SYMBOL # column feature_symbol neede
 # print cluster assignment
   kbl(t(table(colData(sce)[, paste0("sc3_", nr_clusters, "_clusters")])), align = "l", format="simple", caption="cells per cluster") %>% kable_styling(full_width = F) 
 
-# store cluster assignments 
+# store cluster assignments (csv file for compatibility with Loupe import)
 dir_sc3 <- file.path("report_files", "cluster", "SC3")
 if (!file.exists(dir_sc3)) {dir.create(dir_sc3, recursive=T) }
-write.table(data.frame(cell_ID=colnames(sce), colData(sce)[,c(group.vars, grep("sc3_", colnames(colData(sce)), value=T))]), 
-            file =file.path(dir_sc3, paste0("SC3_", nr_clusters, "_cluster_assignments.txt")), sep="\t", quote = F, row.names = F)
+write.table(data.frame(barcode=colnames(sce), colData(sce)[,c(group.vars, grep("sc3_", colnames(colData(sce)), value=T))]), 
+            file =file.path(dir_sc3, paste0("SC3_", nr_clusters, "_cluster_assignments.csv")), sep=",", quote = F, row.names = F)
 
 
 ### plot SC3 clustering
@@ -1556,11 +1557,8 @@ Graph-based clustering is a flexible and scalable technique for clustering large
 
 Graph construction avoids making strong assumptions about the shape of the clusters or the distribution of cells within each cluster, compared to other methods. k is the number of nearest neighbors used to construct the graph. This controls the resolution of the clustering where higher k yields a more inter-connected graph and broader clusters. Users can exploit this by experimenting with different values of k to obtain a satisfactory resolution.
 
-Clustering is applied on the respective dimension reduction slot (i.e. PCA, TSNE or UMAP).
 
 ```{r clustering_graphbased, results='asis'}
-library(igraph)
-library(pheatmap)
 exprs_values = "logcounts"
 dotshape <- colorByFactor2[1]
 numberNearestNeighbors <- c(10, 20) # number of nearest neighbors k
@@ -1607,22 +1605,8 @@ for(d in reducedDimNames(sce)) {
   }
 }    
 
-cat("\nOverview cluster assignments:\n", fill=T)
-for (x in names(sce_igraphclust)) {
-  print(kbl(t(table(sce_igraphclust[[x]])), align = "l", format="simple", caption=x) %>% kable_styling(full_width = F))
-  cat("\n")
-}
 
-
-# store cluster assignments
-dir_igraph <- file.path("report_files", "cluster", "igraph")
-if (!file.exists(dir_igraph)) {dir.create(dir_igraph, recursive=T) }
-      write.table(data.frame(cell_ID=colnames(sce), colData(sce)[,c(group.vars, grep("igraph", names(colData(sce)), value=T))]), 
-      file = file.path(dir_igraph, paste0("igraph_cluster_assignments.txt")), sep="\t", quote=F, row.names=F)
-
-
-
-### plot clusterings (separated for PCA, TSNE and UMAP)
+### plot graph-based clusterings (separated for PCA, TSNE and UMAP)
   for (d in c("PCA", "TSNE", "UMAP")) {
         plot_Items <- grep(d, names(sce_igraphclust), value=T)
         
@@ -1653,7 +1637,7 @@ for (d in c("PCA", "TSNE", "UMAP")) {
  plot_Items <- grep(d, names(clmod), value=T)
 
    cl_heatmap <-  mclapply(plot_Items, function(i) {
-                      pheatmap(log2(clmod[[i]]+1), cluster_rows=FALSE, cluster_cols=FALSE,
+                      pheatmap::pheatmap(log2(clmod[[i]]+1), cluster_rows=FALSE, cluster_cols=FALSE,
                           color=colorRampPalette(c("white", "blue"))(100), silent=T,
                           main= paste("cl heatmap", gsub("_", " ", i)))[["gtable"]]
                }, mc.cores=1)
@@ -1680,7 +1664,49 @@ for (d in c("PCA", "TSNE", "UMAP")) {
   par(mfrow = c(1, 1))
  }
       
+
+
 ```
+
+
+```{r clustering_graphbased_assignment_heatmap, results='asis', fig.height=3+0.5*length(sce_igraphclust), fig.width=12}
+
+# prepare single table with cell numbers per cluster for each clustering setting to display as heatmap
+list_igraph_clusterassign <- lapply(sce_igraphclust, table)
+igraph_clusterassign <- plyr::ldply(list_igraph_clusterassign, rbind) %>%
+  #replace(is.na(.), 0) %>%
+  column_to_rownames('.id') %>%
+  t()  
+
+
+# plot table as heatmap
+cat("\nOverview of cluster assignments (number of cells per cluster; note that the cluster IDs of the different cluster method settings do not relate to each other):\n\n", fill=T)
+Heatmap(igraph_clusterassign, cluster_rows = F, cluster_columns = F, name="#cells",
+        #column_title="Overview cluster assignment for all applied clustering settings", column_title_side = "bottom",
+        column_names_side="top", column_names_max_height = unit(7, "cm"), 
+        row_names_side="left", row_title = "Cluster ID", row_title_gp = gpar(fontface = "bold"), row_names_gp =  gpar(fontface = "bold"),
+        col= colorRamp2(c(0, max(igraph_clusterassign, na.rm = T)), c("white", "orange")), # rev(heat.colors(255)),
+        column_order= order(apply(igraph_clusterassign, 2, function(x) length(na.omit(x))), decreasing=T),
+        # heatmap_legend_param=list(title="#cells"),
+        cell_fun = function(j, i, x, y, width, height, fill) {
+          grid.text(replace(igraph_clusterassign[i, j], is.na(igraph_clusterassign[i, j]), ""), x, y) # , gp = gpar(fontsize = 10)
+          }
+        )
+
+# store cluster assignments
+dir_igraph <- file.path("report_files", "cluster", "igraph")
+if (!file.exists(dir_igraph)) {dir.create(dir_igraph, recursive=T) }
+      write.table(data.frame(barcode=colnames(sce), colData(sce)[,c(group.vars, grep("igraph", names(colData(sce)), value=T))]), 
+      file = file.path(dir_igraph, paste0("igraph_cluster_assignments.csv")), sep=",", quote=F, row.names=F)
+
+
+# cat("\nOverview cluster assignments:\n", fill=T) # outdated separate tables per clustering algorithm
+# for (x in names(sce_igraphclust)) {
+#   print(kbl(t(table(sce_igraphclust[[x]])), align = "l", format="markdown", caption=x) %>% kable_styling(full_width = F)) # format="simple"
+# }
+
+```
+
 
 
 ## Hierarchical clustering
@@ -1689,11 +1715,7 @@ Hierarchical clustering aims to generate a dendrogram containing a hierarchy of 
 
 The dendrogram describes the relationships between cells and subpopulations at various resolutions and in a quantitative manner based on the branch lengths. Users can cut the tree at different heights to define clusters with different granularity, where clusters defined at high resolution are guaranteed to be nested within those defined at a lower resolution. The dendrogram is also a natural representation of the data in situations where cells have descended from a relatively recent common ancestor. For larger datasets hierarchical clustering may be too slow.
 
-Clustering is applied on the respective dimension reduction slot (i.e. PCA, TSNE or UMAP).
-
 ```{r clustering_hierarchical, warning=F, results='asis'}
-library(dendextend)
-library(dynamicTreeCut)
 hclust_methods <- c("ward.D2")
 minClusterSize <- c(10, 100)
 exprs_values <- "logcounts"
@@ -1737,19 +1759,6 @@ for(d in reducedDimNames(sce)) {
      }
   }
 }    
-
-
-cat("\nOverview cluster assignments:\n", fill=T)
-for (x in names(clust_sce)) {
-  print(kbl(t(table(clust_sce[[x]])), align = "l", format="simple", caption=x) %>% kable_styling(full_width = F))
-  cat("\n")
-}
-
-# store cluster assignments
-dir_hclust <- file.path("report_files", "cluster", "hclust")
-if (!file.exists(dir_hclust)) {dir.create(dir_hclust, recursive=T) }
-      write.table(data.frame(cell_ID=colnames(sce), colData(sce)[,c(group.vars, grep("hclust", names(colData(sce)), value=T))]), 
-      file = file.path(dir_hclust, paste0("hclust_cluster_assignments.txt")), sep="\t", quote=F, row.names=F)
 
 
 ### plot clusterings (separated for PCA, TSNE and UMAP)
@@ -1796,6 +1805,41 @@ if (!file.exists(dir_hclust)) {dir.create(dir_hclust, recursive=T) }
 
 
 ```
+
+
+```{r clustering_hierarchical_assignment_heatmap, results='asis', fig.height=3+0.5*length(clust_sce), fig.width=12}
+
+# prepare single table with cell numbers per cluster for each clustering setting to display as heatmap
+list_hclust_clusterassign <- lapply(clust_sce, table)
+hclust_clusterassign <- plyr::ldply(list_hclust_clusterassign, rbind) %>%
+  #replace(is.na(.), 0) %>%
+  column_to_rownames('.id') %>%
+  t()  
+
+
+# plot table as heatmap
+cat("\nOverview of cluster assignments (number of cells per cluster; note that the cluster IDs of the different cluster method settings do not relate to each other):\n\n", fill=T)
+Heatmap(hclust_clusterassign, cluster_rows = F, cluster_columns = F, name="#cells",
+        #column_title="Overview cluster assignment for all applied clustering settings", column_title_side = "bottom",
+        column_names_side="top", column_names_max_height = unit(7, "cm"), 
+        row_names_side="left", row_title = "Cluster ID", row_title_gp = gpar(fontface = "bold"), row_names_gp =  gpar(fontface = "bold"),
+        col= colorRamp2(c(0, max(hclust_clusterassign, na.rm = T)), c("white", "orange")), # rev(heat.colors(255)),
+        column_order= order(apply(hclust_clusterassign, 2, function(x) length(na.omit(x))), decreasing=T),
+        # heatmap_legend_param=list(title="#cells"),
+        cell_fun = function(j, i, x, y, width, height, fill) {
+          grid.text(replace(hclust_clusterassign[i, j], is.na(hclust_clusterassign[i, j]), ""), x, y) # , gp = gpar(fontsize = 10)
+          }
+        )
+
+# store cluster assignments
+dir_hclust <- file.path("report_files", "cluster", "hclust")
+if (!file.exists(dir_hclust)) {dir.create(dir_hclust, recursive=T) }
+      write.table(data.frame(barcode=colnames(sce), colData(sce)[,c(group.vars, grep("hclust", names(colData(sce)), value=T))]), 
+      file = file.path(dir_hclust, paste0("hclust_cluster_assignments.csv")), sep=",", quote=F, row.names=F)
+
+```
+
+
 
 ## Clustering method selected for downstream processing
 
@@ -1980,10 +2024,10 @@ cat("\nFor each cluster heatmap, we include all genes with an assigned rank <=",
         logFCs_spec <- logFCs_spec[, colSums(is.na(logFCs_spec)) != nrow(logFCs_spec)] # remove columns with only NA 
         
         if(length(names(markers)) >=3) { # create heatmaps if at least 3 groups, i.e. at least 2 hetmap columns.
-            list_heatmaps <- pheatmap(logFCs, labels_row=best_set$SYMBOL, silent=T, breaks=seq(-5, 5, length.out=101), 
+            list_heatmaps <- pheatmap::pheatmap(logFCs, labels_row=best_set$SYMBOL, silent=T, breaks=seq(-5, 5, length.out=101), 
                                   main=paste("Top marker upregulated in cluster", cl))[["gtable"]]
   
-            list_heatmaps_spec <- pheatmap(logFCs_spec, labels_row=best_set_spec$SYMBOL, silent=T, breaks=seq(-5, 5, length.out=101), 
+            list_heatmaps_spec <- pheatmap::pheatmap(logFCs_spec, labels_row=best_set_spec$SYMBOL, silent=T, breaks=seq(-5, 5, length.out=101), 
                                        main=paste("Top marker upregulated in cluster", cl, "only"))[["gtable"]]
         
             filenamePlot <- file.path(dir_marker, paste0("heatmap_of_upregulated_gene_marker_cluster_", cl, ".png"))
@@ -2093,7 +2137,7 @@ cat("# Cell type annotation\n")
   cat("\n\nAssignments are compared with the clustering results to determine the identity of each cluster. The heatmap below shows the distribution of cells across labels and clusters in the dataset. Color scale is reported in the log10-number of cells for each cluster-label combination.\n\n")
   tab <- table(Assigned=pred$pruned.labels, Cluster=colData(sce)[,selected_clustering_method])
   # Adding a pseudo-count of 10 to avoid strong color jumps with just 1 cell.
-  pheatmap(log2(tab+10), color=colorRampPalette(c("white", "blue"))(101))
+  pheatmap::pheatmap(log2(tab+10), color=colorRampPalette(c("white", "blue"))(101))
   cat("\n")
 
 ```
@@ -2261,6 +2305,19 @@ countslist <- lapply(names(assays(sce)), function(x) {
       })
   }
 })
+
+# store projections (csv file for compatibility with Loupe import)
+dir_projections <- file.path("report_files", "projections")
+if (!file.exists(dir_projections)) {dir.create(dir_projections, recursive = T)}
+
+for (p in (reducedDimNames(sce))) {
+  projection <- data.frame(
+    Barcode=rownames(reducedDim(sce)),
+    X=reducedDim(sce, p)[,1],
+    Y=reducedDim(sce, p)[,2]
+  )
+  write.table(projection, file =file.path(dir_projections, paste0(p, ".csv")), sep=",", quote = F, row.names = F)
+  }
 
 # save workspace
 save.image("report_files/WS.RData")
