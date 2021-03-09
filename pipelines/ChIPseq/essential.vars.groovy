@@ -37,7 +37,7 @@ ESSENTIAL_BLACKLIST=""         // path to bed file with blacklisted regions (def
 
 
 // Adapter trimming with Cutadapt (optional). Not necessary for paired end libraries.
-RUN_CUTADAPT=true
+RUN_CUTADAPT=false
 ESSENTIAL_ADAPTER_SEQUENCE="Illumina=CTGTCTCTTATACACATCT" // standard sequence to trim illumina reads 
 ESSENTIAL_MINADAPTEROVERLAP=3  // minimal overlap of the read and the adapter for an adapter to be found (default 3)
 ESSENTIAL_MINREADLENGTH=20     // minimal length of reads to be kept
@@ -50,10 +50,11 @@ ESSENTIAL_DUP="auto"           // how MACS2 deals with duplicated reads or fragm
 ESSENTIAL_MACS2_GSIZE="10000000"  // mapable genome size for MACS2 (use approx. number or "hs" for human, "mm" for mouse, "ce" for worm, "dm" for fly)
 
 // Differential binding analysis with DiffBind
+// Note that DiffBind3 works with "default" parameters which depend on the context of other parameter settings (see DiffBind documentation for explanation).
 RUN_DIFFBIND=true
 ESSENTIAL_DIFFBIND_VERSION=3   // Beginning with version 3, DiffBind has included new functionalities and modified default settings. Earlier versions are also supported here.
-ESSENTIAL_DIFFBIND_LIBRARY="default" // DiffBind method to calculate library sizes. One of "full", "RiP", "background" and "default" (see DiffBind documentation for explanation). 
-ESSENTIAL_DIFFBIND_NORM="default" // DiffBind method to calculate normalization factors. One of "lib", "RLE", "TMM", "native" and "default" (see DiffBind documentation for explanation). Not applicable for DiffBind2.
+ESSENTIAL_DIFFBIND_LIBRARY="default" // DiffBind method to calculate library sizes. One of "full", "RiP", "background" and "default"  
+ESSENTIAL_DIFFBIND_NORM="default" // DiffBind method to calculate normalization factors. One of "lib", "RLE", "TMM", "native" and "default". Not applicable for DiffBind2.
 
 
 // further optional pipeline stages to include
