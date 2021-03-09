@@ -17,6 +17,7 @@ shinyReports_vars=[
     fastqc_summarized   : "FALSE",                        //should FastQC plots be summarized in the report?
     fastqscreen_out : FastqScreen_vars.outdir,        //where the FastQScreen output lie
     fastqscreen_log : LOGS + "/FastQScreen",          //where the FastQScreen log lie
+    fastqscreen_perc : ESSENTIAL_FASTQSCREEN_PERC,     //contaminant percentage to be plotted
     bamindex_log    : LOGS + "/BAMindexer",    //where the Samtools/BamIndexer logs lie
     dupradar_log    : dupRadar_vars.outdir,    //where dupRadar results lie
     rnatypes_log    : LOGS + "/RNAtypes",      //where the RNAtypes logs lie
@@ -37,7 +38,7 @@ shinyReports_vars=[
     trackhub_done   : PROJECT + "/trackhub.done",    //contains trackhub URL
     tool_versions   : collectToolVersions_vars.outdir + "/tool_versions.txt", //where the tool versions listed
     run_cutadapt    : RUN_CUTADAPT,    
-    cutadapt_logs   : Cutadapt_vars.logdir,          // cutadapt log files
+    cutadapt_stats  : Cutadapt_vars.statsdir,              // cutadapt stat files
     gtf             : ESSENTIAL_GENESGTF, 
     seqtype         : PIPELINE,
     target          : new File(PIPELINE_ROOT + "/pipelines/scRNAseq/targets.txt").getCanonicalPath(),
