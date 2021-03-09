@@ -97,10 +97,10 @@ targets <- targets[, c("sample", "file", "group", add_factors)]
                paste(targets$file[x], collapse=", "),
                "\ncount file names: ", paste(countfiles[unlist(index_targetsfile[x])], collapse=", "))
         }
-        warning(paste("Entries in targets.txt which are not found in list of count files are removed from targets.txt:", 
-                      targets$file[sapply(index_targetsfile, length)==0], collapse=", "))
+        warning(paste("Entries in targets.txt which are not found in list of count files are removed from targets table:", 
+                      paste(targets$file[sapply(index_targetsfile, length)==0], collapse=", ")))
         targets <- targets[!(sapply(index_targetsfile, length)==0),] # remove target entries
-        index_targetsfile <- sapply(targets$file, grep,  countfiles) # recreate index vector after removal of targets.txt entries
+        index_targetsfile <- sapply(targets$file, grep, countfiles) # recreate index vector after removal of targets.txt entries
       }
       
       if(any(x <- duplicated(index_targetsfile))) { # check for multiple target entries matching the same file name
@@ -110,7 +110,7 @@ targets <- targets[, c("sample", "file", "group", add_factors)]
       }
       
       if (length(unique(index_targetsfile)) < length(countfiles)) { # check for count file names not included
-        warning(paste("Count file names not included in targets.txt are ignored: ",  paste(countfiles[-index_targetsfile], collapse=", ")))
+        warning(paste("\nCount file names not included in targets.txt are ignored: ",  paste(countfiles[-index_targetsfile], collapse=", ")))
       }
   
   targets$file <- countfiles[index_targetsfile] # replace entries in targets$file by count file names
