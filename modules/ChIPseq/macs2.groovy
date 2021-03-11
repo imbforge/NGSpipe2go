@@ -41,10 +41,7 @@ macs2 = {
                 if [ "\$BAM" != "\$INPUT" ]; then
                     if [ "\$INPUT" != "none.\$extension" ]; then
                         NAMEoutput="\${IPname}.vs.\${INPUTname}" &&
-                        INPUTflag="-c ${macs2_vars.mapped}/\$INPUT" &&
-                        until [ -f ${macs2_vars.mapped}/\$INPUT ]; do
-                            sleep 10;
-                        done; 
+                        INPUTflag="-c ${macs2_vars.mapped}/\$INPUT";
                     else
                         NAMEoutput="\${IPname}" &&
                         INPUTflag="";
