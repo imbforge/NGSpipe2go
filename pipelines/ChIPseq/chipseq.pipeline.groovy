@@ -1,5 +1,5 @@
 PIPELINE="ChIPseq"
-PIPELINE_VERSION="1.2.3"
+PIPELINE_VERSION="1.2.4"
 PIPELINE_ROOT="./NGSpipe2go"
 
 load PIPELINE_ROOT + "/pipelines/ChIPseq/essential.vars.groovy"
@@ -25,7 +25,6 @@ load PIPELINE_ROOT + "/modules/NGS/bamindexer.header"
 load PIPELINE_ROOT + "/modules/NGS/extend.header"
 load PIPELINE_ROOT + "/modules/NGS/bamqc.header"
 load PIPELINE_ROOT + "/modules/NGS/fastqc.header"
-load PIPELINE_ROOT + "/modules/NGS/fastqscreen.header"
 load PIPELINE_ROOT + "/modules/NGS/insertsize.header"
 load PIPELINE_ROOT + "/modules/NGS/markdups.header"
 load PIPELINE_ROOT + "/modules/NGS/rmdups.header"
@@ -39,16 +38,17 @@ load PIPELINE_ROOT + "/modules/ChIPseq/shinyreports.header"
 
 //MAIN PIPELINE TASK
 dontrun = { println "didn't run $module" }
+collect_bams = { forward inputs.bam }
 
 Bpipe.run {
 	(RUN_IN_PAIRED_END_MODE ? "%.R*.fastq.gz" : "%.fastq.gz") * [
 		FastQC +  
                 (RUN_CUTADAPT ? Cutadapt + FastQC.using(subdir:"trimmed") : dontrun.using(module:"Cutadapt")) +
-                (ESSENTIAL_USE_BOWTIE1 ? bowtie1 : bowtie2) + BAMindexer + BamQC +   
+                (ESSENTIAL_USE_BOWTIE1 ? bowtie1 : bowtie2) + BAMindexer + BamQC ] + collect_bams +   
 
          [ // parallel branches with and without multi mappers
 
-            [ MarkDups + BAMindexer + pbc +
+            "%.bam" * [MarkDups + BAMindexer + pbc] + collect_bams + "%.bam" * // branch unfiltered 
 		[       // QC specific to paired end (pe) or single end (se) design
 	    		(RUN_IN_PAIRED_END_MODE ? [bamCoverage.using(subdir:"unfiltered"), 
                                                    InsertSize.using(subdir:"unfiltered")] : 
@@ -56,10 +56,9 @@ Bpipe.run {
                                                    phantompeak.using(subdir:"unfiltered")]), 
                 	ipstrength.using(subdir:"unfiltered"), 
 		        macs2.using(subdir:"unfiltered") + blacklist_filter.using(subdir:"unfiltered")                  
-		]
             ], 
-            [ filbowtie2unique + BAMindexer +  
-               (ESSENTIAL_DEDUPLICATION ? [RmDups + BAMindexer] : [MarkDups + BAMindexer]) + 
+            "%.bam" * [ filbowtie2unique + BAMindexer +  // branch filtered
+               (ESSENTIAL_DEDUPLICATION ? [RmDups + BAMindexer] : [MarkDups + BAMindexer])] + collect_bams + "%.bam" * 
                 [       // QC specific to paired end (pe) or single end (se) design
 	    		(RUN_IN_PAIRED_END_MODE ? [bamCoverage.using(subdir:"filtered"), 
                                                    InsertSize.using(subdir:"filtered")] : 
@@ -67,17 +66,17 @@ Bpipe.run {
                                                    phantompeak.using(subdir:"filtered")]), 
                 	ipstrength.using(subdir:"filtered"), 
 		        macs2.using(subdir:"filtered") + blacklist_filter.using(subdir:"filtered")
-		]  
-            ]
-        ] // end parallel branches with and without multi mappers
+		]
+  
+        ] + // end parallel branches
 
-      ] + 
     [(RUN_PEAK_ANNOTATION ? peak_annotation.using(subdir:"unfiltered") : dontrun.using(module:"peak_annotation")) +
      (RUN_DIFFBIND ? (ESSENTIAL_DIFFBIND_VERSION >= 3 ? diffbind3.using(subdir:"unfiltered") : diffbind2.using(subdir:"unfiltered")) : dontrun.using(module:"diffbind")) +
      (RUN_ENRICHMENT ? GREAT.using(subdir:"unfiltered") : dontrun.using(module:"GREAT")),
+
      (RUN_PEAK_ANNOTATION ? peak_annotation.using(subdir:"filtered") : dontrun.using(module:"peak_annotation")) +
      (RUN_DIFFBIND ? (ESSENTIAL_DIFFBIND_VERSION >= 3 ? diffbind3.using(subdir:"filtered") : diffbind2.using(subdir:"filtered")) : dontrun.using(module:"diffbind")) +
-     (RUN_ENRICHMENT ? GREAT.using(subdir:"filtered") : dontrun.using(module:"GREAT")),
+     (RUN_ENRICHMENT ? GREAT.using(subdir:"filtered") : dontrun.using(module:"GREAT"))
     ] +
     (RUN_TRACKHUB ? trackhub_config + trackhub : dontrun.using(module:"trackhub")) +
     collectToolVersions + collectBpipeLogs + MultiQC + 
