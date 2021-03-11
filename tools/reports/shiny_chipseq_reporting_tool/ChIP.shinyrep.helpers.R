@@ -1262,8 +1262,8 @@ ChIPhelper.cutadapt.plot <- function(data, color.value){
   p <- ggplot(data, aes_string(x="reads",
                                y="value",
                                color=color.value ))+
-    geom_quasirandom(groupOnX=TRUE) +
     geom_boxplot(color = "darkgrey", alpha = 0.2, outlier.shape = NA) + 
+    geom_quasirandom(groupOnX=TRUE) +
     ggrepel::geom_text_repel(data=. %>% filter(!is.na(outlier)), aes(label=filename), show.legend=F) +
     scale_color_manual(values=getPalette(colourCount)) + # creates as many colors as needed
     ylab(ylab) +
