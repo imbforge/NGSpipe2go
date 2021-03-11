@@ -121,7 +121,7 @@ targets <- targets[, c("sample", "file", "group", add_factors)]
 conts <- read.delim(fcontrasts,head=F,comment.char="#")
 
 ##
-## calculate gene lengths
+## calculate gene transcript lengths (union of all annotated exons) using rtracklayer & GenomicRanges
 ##
 gtf <- import.gff(gene.model, format="gtf", feature.type="exon")
 gtf.flat <- unlist(reduce(split(gtf, elementMetadata(gtf)$gene_id)))
