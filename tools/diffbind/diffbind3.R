@@ -230,7 +230,7 @@ dev.off()
 
 # PCA plot
 png(paste0(OUT, "/pca_plot_all_samples.png"), width = 150, height = 150, units = "mm", res=300)
-  dba.plotPCA(db, DBA_CONDITION, label=DBA_CONDITION)
+  dba.plotPCA(db, DBA_CONDITION, label=DBA_ID)
 dev.off()
 
 # Heatmap using affinity (read count) data
