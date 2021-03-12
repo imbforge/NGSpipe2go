@@ -119,7 +119,7 @@ cat("\n", fill = T)
 
 A competitive mapping to the reference genome and known rRNAs (H. sapiens, M. musculus, C. elegans, D. melanogaster, D. rerio, X. tropicalis) as well as frequently occurring Mycoplasma species (M. arginini, M. fermentans, M. hominis, M. hyorhinis, M. orale, and Acholeplasma laidlawii), PhiX and ERCC spike-in sequences, E. coli and B. taurus (bovine) was performed with FastQScreen (http://www.bioinformatics.babraham.ac.uk/projects/fastq_screen/).
 
-In the following plot only relevant contaminants are shown. A contaminant is considered relevant if it consumes `r SHINYREPS_FASTQSCREEN_PERC`% of reads or more in at least one sample. The "one genome" label refers to the amount of reads mapping to that genome only reagardlessly if they are multi mapping or uniquely mapping reads. The "multiple genome" label refers to the amount of read mapping to this genome but also to other genomes in the screening regardless if they are multi mapping on the genome or uniquely mapping to that genome. 
+In the following plot only relevant contaminants are shown. A contaminant is considered relevant if it consumes `r SHINYREPS_FASTQSCREEN_PERC`% of reads or more in at least one sample. The "one genome" label refers to the amount of reads mapping to that genome only, no matter if they are mapping uniquely or multiple times. The "multiple genome" label refers to the amount of read mapping to this genome but also to other genomes in the screening regardless of whether they are uniquely or multi mapping. 
 
 ```{r fastqscreen_paragraph, echo=F, results='asis', fig.width=10, error=F, warning=F, message=F}
 fastqscreen_plots <- DEhelper.fastqscreen(perc.to.plot=SHINYREPS_FASTQSCREEN_PERC)
@@ -288,9 +288,9 @@ DEhelper.DESeq2.heatmap(type="cluster_mean")    # heatmap of top variant 'n' gen
 
 Pairwise differential expression analysis between the experimental groups is performed with the popular R/Bioconductor package DESeq2 (https://bioconductor.org/packages/release/bioc/html/DESeq2.html). Default DESeq2 analysis includes an independent filtering procedure for lowly expressed genes which is meant to ameliorate the multiple testing problem thereby maximising the statistical power to detect differentially expressed genes (DEGs). In this standard analysis only uniquely mapped reads are taken into account to avoid "cross-talk" between different genes. 
 
-Note that the default DESeq2 analysis uses only a statistical (FDR) filter and is thus testing for evidence that the expression changes between two sample groups is different from zero. Performing post hoc filtering on fold changes is therefore not recommended by the software developers and should be avoided. If desirable, the differential expression analysis can be repeated including an additional fold-change threshold directly in the DESeq2 statistical testing model, which will result in a more conservative DEG estimates compared to post hoc filtering.
+Note that the default DESeq2 analysis uses only a statistical (FDR) filter and is thus testing for evidence that the expression changes between two sample groups is different from zero. Performing post hoc filtering on fold changes is therefore not recommended by the software developers and should be avoided. If desirable, the differential expression analysis can be repeated including an additional fold change (FC) threshold directly in the DESeq2 statistical testing model, which will result in more conservative DEG estimates compared to post hoc filtering.
 
-In this  anlysis the FC filter was `r SHINYREPS_DE_DESEQ_FC` and the FDR filter was `r SHINYREPS_DE_DESEQ_FDR`.  
+In this anlysis the FC filter was set to `r SHINYREPS_DE_DESEQ_FC`, the FDR filter was set to `r SHINYREPS_DE_DESEQ_FDR`.  
 
 ```{r DifferentialExpression_paragraph, echo=F, results='asis', error=F, warning=F, message=F, fig.align="center"}
 for(i in 1:nrow(conts)) {
@@ -326,7 +326,7 @@ for(i in 1:nrow(conts)) {
     cat("MA plot showing expression fold change vs. mean expression level of all annotated genes. There are", 
         sum((genes$padj < fdr) & (abs(genes$log2FoldChange) > log2(FC)), na.rm=T), "genes with a minimal FC of", FC, "highlighted in the MA plot with corrected pvalue (Benjamini and Hochberg, FDR) <", fdr, ".", "\n")
     #we do not need an additional filter for the FC here
-    #since only genes with a mininaml foldchange of FC are
+    #since only genes with a minimal fold change of FC are
     #significant for the significance level chosen in the analysis
     DEhelper.DESeq2.MAplot(i, fdr)    # should be fine at taking the value from the UI slider
     cat("\n", fill=T)
