@@ -507,6 +507,11 @@ config {
       procs="4" 
       memory="4"
     }
+    tpm {
+      walltime="00:30:00"
+      procs="1"
+      memory="4"
+    }
     trackhub { 
       walltime="00:05:00" 
       procs="1" 
