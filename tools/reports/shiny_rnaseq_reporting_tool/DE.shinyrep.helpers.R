@@ -1620,17 +1620,18 @@ DEhelper.Qualimap <- function() {
     # sort according to the groups and samplenames in the targets or alphabetically
     samples <- melt(samples, value.name="perc")
     colnames(samples) <- c("class", "sample", "perc")
-    #sort the samples either by the group order of the targets file or alphabetically
-    #if we do not have a targets file
-    if(file.exists(SHINYREPS_TARGET)){
-       sample_order <- targets$sample[order(paste0(targets$group, targets$sample))]
+
+    # sort the samples either by the group order of the targets file or alphabetically
+    if(file.exists(SHINYREPS_TARGET) & SHINYREPS_SORT_ALPHA==FALSE){
+       sample_order   <- targets$sample[order(paste0(targets$group, targets$sample), decreasing=TRUE)]
        samples$sample <- factor(samples$sample, levels = sample_order)
     }else{
-      # sort alphabetically
-      samples$sample <- factor(samples$sample, levels = sort(unique(samples$sample)))  
+       samples$sample <- factor(samples$sample, levels = sort(unique(samples$sample), decreasing=TRUE))  
     }
+
     samples$class <- factor(samples$class, levels=c("intergenic", "intronic", "exonic" )) 
-    #now we plot it
+
+    # plot
     p <- ggplot(samples, aes(x=sample,y=perc,fill=class)) +
            geom_col(width = 0.8) +
            labs(x = "",
