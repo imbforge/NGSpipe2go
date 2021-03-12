@@ -3,7 +3,7 @@ bowtie2 = {
         desc:  "Align single or paired end reads",
         constraints: "Only works with compressed input. Samtools multithreaded version expected (>=1.2).",
         bpipe_version: "tested with bpipe 0.9.9.8",
-        author: "Frank Rühle"
+        author: "Nastasja Kreim, Frank Rühle"
 
     output.dir = bowtie2_vars.mapped
    

@@ -9,20 +9,37 @@ output:
 
 <div class="contentbox">
 
+## Summary
+
+Your project description
+
+Sample sheet used for analysis:
+
 ```{r Initialise, echo=F,result='hide',error=F,warning=F,message=F}
 require(rmarkdown)
 require(knitr)
-require(Cairo)                                                    
+require(Cairo)
 knitr::opts_chunk[['set']](dev='CairoPNG')
 source('ChIP.shinyrep.helpers.R')
 loadGlobalVars()
+isPaired <- tolower(SHINYREPS_PAIRED) == "yes"
+runCutadapt <- SHINYREPS_RUN_CUTADAPT=="true"
+runPeakAnno <- SHINYREPS_RUN_PEAK_ANNOTATION=="true"
+runDiffbind <- SHINYREPS_RUN_DIFFBIND=="true"
+runEnrich <- SHINYREPS_RUN_ENRICHMENT=="true"
+
 targets <<- ChIPhelper.init("readTargets")
-peaks   <<- ChIPhelper.init("readPeaks")
-isPaired <- if(tolower(SHINYREPS_PAIRED) == "yes") {TRUE} else {
-                if(tolower(SHINYREPS_PAIRED) == "no") {FALSE} else {
-                  stop("Wrong input for ESSENTIAL_PAIRED, give either 'yes' or 'no'!")
-                } 
-              } 
+
+## parallel pipeline branches
+# most modules store results of different pipeline branches in separated sub-directories of the respective output folder. 
+# One sub-directory may be "" as default output folder.
+# Modules producing output files with names uniquely distinguishable for all branches may be stored in the same output folder. 
+# If a subset of these files shall be selected they can be grepped by a character substring
+branches <- c(filtered="filtered", unfiltered="unfiltered") # value is sub-directory, name is file tag in case of subsetting  
+
+# print targets file
+DT::datatable(targets, caption="targets file (sample sheet) used for analysis")
+
 ``` 
 
 
@@ -40,6 +57,29 @@ The color on the graph shows the Phred quality scores, which are logarithmically
 ```{r FastQC_paragraph, echo=F,results='asis',error=F,warning=F,message=F,fig.align='center'}
 ChIPhelper.ngsReports.Fastqc()
 ```
+
+
+
+```{r cutadapt, echo=F, results='asis', error=F, warning=F, message=F, eval=runCutadapt}
+##### parameters to set:
+# define categories of targets.txt to be used for dot color in the plot (one plot per element of colorByFactor will be created). 
+# The function will try to map the data from targets$sample to the cutadapt log file names (for this, the unique part given in  
+# sampleColumnName must be a substring of file the name). Otherwise pruned file names will be used by default. 
+# In case of pooled library design the targets object will be modified accordingly. 
+#####
+
+cat("## Adapter trimming with Cutadapt
+
+The following plot shows the amount of reads trimmed for the selected adapter sequences. The column 'tooshort' gives the percentage of reads removed due to a length cutoff after trimming. Additional to the column 'trimmed', which is for all adapters combined, there are columns for every adapter giving the percentage of reads trimmed for this adapter.\n")
+
+ChIPhelper.cutadapt(targetsdf=targets, colorByFactor="group", sampleColumnName =c("IP", "INPUT"))
+```
+
+```{r FastQC_paragraph2, echo=F,results='asis',error=F,warning=F,message=F,fig.align='center', eval=runCutadapt}
+cat("### FastQC after adapter trimming\n")
+ChIPhelper.ngsReports.Fastqc(subdir="trimmed")
+```
+
 
 ## Read mapping ##
 
@@ -77,27 +117,32 @@ cat(ChIPhelper.Trackhub(), sep="\n")
 
 ```{r InsertSize, echo=F, error=F, fig.width=15, message=FALSE, warning=FALSE, results='asis', eval=isPaired}
 # for paired end design only
+cat("## Insert Size ##\n\n")
 
-cat("## Insert Size ##\n\n
-    The insert size distribution is given as histogram.\n")
+insert <- lapply(branches[1], function(dir) {
+  if(length(branches)>1) {cat(paste("\n\n### Insert size metrics for bam files from", if(dir==""){"default"} else {dir}, "pipeline branch\n\n"))}
 
-if (!file.exists(SHINYREPS_INSERTSIZE)) {
-	cat("Insert size data not available.\n")
-	} else {
-	ChIPhelper.insertsize()
-	p <- ChIPhelper.insertsize.plot()
-	sample_length <- length(list.files(SHINYREPS_INSERTSIZE, 
-	                                   pattern = "insertsizemetrics.tsv$"))
-  ChIPhelper.subchunkify(p, 
-                       fig_height = 3*sample_length,
-                       fig_width = 15)
-	}
+  if (!file.exists(file.path(SHINYREPS_INSERTSIZE, dir))) {
+  	cat("Insert size data not available.\n")
+  	} else {
+  	  
+  	cat(ChIPhelper.insertsize(subdir=dir), sep="\n")
+  	
+  	cat("\nThe insert size distribution is given as histogram:\n\n")  
+  	 
+  	p <- ChIPhelper.insertsize.plot(subdir=dir)
+  	sample_length <- length(list.files(file.path(SHINYREPS_INSERTSIZE, dir), pattern = "insertsizemetrics.tsv$"))
+    ChIPhelper.subchunkify(p, 
+                         fig_height = 3*sample_length,
+                         fig_width = 15)
+  	}
+})
 ```
 
 
 ## PCR bottleneck coefficient ##
 
-The PBC (PCR bottleneck coefficient) is an approximate measure of library complexity. Provisionally, 0-0.5 is severe bottlenecking, 0.5-0.8 is moderate bottlenecking, 0.8-0.9 is mild bottlenecking, while 0.9-1.0 is no bottlenecking.
+The PBC (PCR bottleneck coefficient) is an approximate measure of library complexity (without duplicate removal). Provisionally, 0-0.5 is severe bottlenecking, 0.5-0.8 is moderate bottlenecking, 0.8-0.9 is mild bottlenecking, while 0.9-1.0 is no bottlenecking.
 
 Low values can indicate a technical problem, such as library complexity bottleneck. Nuclease-based assays (DNase, MNase) detecting features with base-pair resolution (transcription factor footprints, positioned nucleosomes) are expected to recover the same read multiple times, resulting in a lower PBC score for these assays. Note that the most complex library, random DNA, would approach 1.0, thus the very highest values can indicate technical problems with libraries. Some common numbers from ENCODE datasets are: 82% for TF ChIPs, 89% for Histone ChIPs, 77% for DNase, 98% for FAIRE, and 97% for control ENCODE datasets with no or mild bottlenecking.
 
@@ -117,7 +162,10 @@ To estimate the IP strength, we attempt to decompose the population of IP reads 
 For more details see Fig.2 of the CHANCE paper (https://doi.org/10.1186/gb-2012-13-10-r98).
 
 ```{r IPstrength_paragraph, echo=F,results='asis',error=F,warning=F,message=F}
-cat(ChIPhelper.IPstrength(web=F),sep="\n")
+ipstrength <- lapply(branches, function(dir) {
+  if(length(branches)>1) {cat(paste("\n### Fingerprint plots from", if(dir==""){"default"} else {dir}, "pipeline branch\n\n"))}
+  cat(ChIPhelper.IPstrength(web=F, subdir=dir),sep="\n")
+})
 ```
 
 
@@ -135,7 +183,11 @@ The NSC is the ratio of the maximal cross-correlation value (which occurs at str
 **Relative Strand Cross-correlation coefficient (RSC):**
 The RSC is the ratio of the fragment-length cross-correlation value minus the background cross-correlation value, divided by the phantom-peak cross-correlation value minus the background cross-correlation value. The minimum possible value is 0 (no signal), highly enriched experiments have values greater than 1.\n\n")
 
-cat(ChIPhelper.PhantomPeak(web=F),sep="\n")
+phantompeaks <- lapply(branches, function(dir) {
+  if(length(branches)>1) {cat(paste("\n### Cross-correlation plots from", if(dir==""){"default"} else {dir}, "pipeline branch\n\n"))}
+  cat(ChIPhelper.PhantomPeak(web=F, subdir=dir), sep="\n")
+})
+
 ```
 
 ## ChIP-seq peaks ##
@@ -145,173 +197,313 @@ The ENCODE consortium empirically identified 'blacklist regions' (BRs) for some 
 Note that these blacklists are applicable to human (hg38 and hg19), mouse (mm10 and mm9), worm (ce10) and fly (dm3) genomes.
 
 ```{r BLACKLISTFILTER_paragraph, echo=F,results='asis',error=F,warning=F,message=F}
-cat(ChIPhelper.BLACKLISTFILTER(),sep="\n")
+blacklistfilt <- lapply(branches, function(peaksdir) {
+  if(length(branches)>1) {cat(paste("\n\nBlacklist filter applied for peaks from", if(peaksdir==""){"default"} else {peaksdir}, "pipeline branch\n\n"))}
+  cat(ChIPhelper.BLACKLISTFILTER(subdir=peaksdir),sep="\n")
+})
 ```
 
 The number of peaks called at the default false-discovery rate (FDR) cutoff of 5% by MACS2 (https://github.com/taoliu/MACS/) in the different comparisons is shown below.
 
 ```{r PeakCall_paragraph, echo=F,results='asis',error=F,warning=F,message=F}
-peaks <- ChIPhelper.init("readPeaks")
+peaksAllBranches <- lapply(branches, function(peaksdir) {
 
-l <- lapply(peaks,function(x) {
-    x <- table(x$chr)
-    xx <- as.numeric(x)
-    names(xx) <- names(x)
-    xx
+  peaks <- ChIPhelper.init("readPeaks", subdir=peaksdir)
+
+  l <- lapply(peaks,function(x) {
+      x <- table(x$chr)
+      xx <- as.numeric(x)
+      names(xx) <- names(x)
+      xx
+  })
+  p <- Reduce(function(x,y) {
+      z <- merge(x,y,all=T,by=0)
+      colnames(z)[-1] <- paste0(colnames(z)[-1],".") # avoid warning of duplicated column names 'y.x', 'y.y'
+      rownames(z) <- z[,1]
+      z[,-1]
+  },l)
+  #colnames(p) <- 1:ncol(p)
+  colnames(p) <- names(l)
+  
+  # print the legend
+  #cat("",fill=T)
+  #cat(kable(data.frame(column=1:length(l),sample=names(l))),sep="\n")
+  #cat("",fill=T)
+  
+  if(length(branches)>1) {cat(paste("### Peaks from", if(peaksdir==""){"default"} else {peaksdir}, "pipeline branch\n\n"))}
+  # print the peaks table
+  cat("",fill=T)
+  cat(knitr::kable(p,row.names=T, format="markdown"),sep="\n")
+  cat("",fill=T)
+
+  return(peaks)
 })
-p <- Reduce(function(x,y) {
-    z <- merge(x,y,all=T,by=0)
-    rownames(z) <- z[,1]
-    z[,-1]
-},l)
-#colnames(p) <- 1:ncol(p)
-colnames(p) <- names(l)
-
-# print the legend
-#cat("",fill=T)
-#cat(kable(data.frame(column=1:length(l),sample=names(l))),sep="\n")
-#cat("",fill=T)
-
-# print the peaks table
-cat("",fill=T)
-cat(kable(p,row.names=T, format="markdown"),sep="\n")
-cat("",fill=T)
 ```
 
 
 ## Correlation of peaks ##
 
-The following Venn diagrams correlate the peaks called in the sample groups.
+The overlap of peaks is shown in distinct mode, i.e. overlaps are counted if they occur in the respective set but not in any other set. E.g. a combination 1 1 0 means a set of elements is both in set A and B, while not in C. Under this mode, the combination sets are mutually exclusive.
 
-```{r peak_venn_paragraph, echo=F,results='asis',error=F,warning=F,message=F}
-ChIPhelper.VennDiagram()
+```{r peak_upset_paragraph, echo=F,results='asis',error=F,warning=F,message=F}
+upset <- lapply(branches, function(peaksdir) {
+  if(length(branches)>1) {cat(paste("### Peaks from", if(peaksdir==""){"default"} else {peaksdir}, "pipeline branch\n\n"))}
+  ChIPhelper.UpSetPlot(peaksdir, Mode="distinct", targetsdf=NULL)
+})
+```
+
+
+
+## Correlation of peaks per group ##
+
+The overlap of peaks is shown in intersect mode and highlighted for better comparability of replicates within each group. Overlaps are counted if they occur in the respective set irrespective if they occur in any other set. E.g. a combination 1 1 0 means a set of elements is in set A and B, and they can also in C or not in C. Under this mode, the combination sets can overlap.
+
+```{r peak_upset_paragraph_by_groups, echo=F,results='asis',error=F,warning=F,message=F}
+upset <- lapply(branches, function(peaksdir) {
+  if(length(branches)>1) {cat(paste("### Peaks from", if(peaksdir==""){"default"} else {peaksdir}, "pipeline branch\n\n"))}
+  ChIPhelper.UpSetPlot(peaksdir, Mode="intersect", targetsdf=targets, addBarAnnotation=F)
+})
+```
+
+
+
+```{r peak_venn_paragraph_combined, echo=F, results='asis', error=F, warning=F, message=F, fig.height= (nrow(targets)*2+5)/2.54}
+if(length(branches)>1) {
+cat("\n\n### Overlap of peaks from different pipeline branches\n")  
+  
+peakscovcomb <- lapply(branches, function(peaksdir) {
+  x <- ChIPhelper.init("readPeaks", subdir=peaksdir, peaks_as="GRanges")
+})
+
+peakscovcombReorder <- list()
+for(b in names(peakscovcomb)) {
+ for(p in names(peakscovcomb[[b]])) {
+     peakscovcombReorder[[p]][[b]] <- data.frame()
+     peakscovcombReorder[[p]][[b]] <- peakscovcomb[[b]][[p]]
+  }
+}
+
+anno_list = list()
+us1 <- make_comb_mat(peakscovcombReorder[[1]], mode = c("distinct"))
+for(p in names(peakscovcombReorder)) {
+    anno_list[[ p ]] <- anno_barplot(comb_size(make_comb_mat(peakscovcombReorder[[p]], mode = c("distinct"))), 
+        gp = gpar(fill = "steelblue"), height = unit(2, "cm"))
+}
+ha = do.call(HeatmapAnnotation, anno_list) # gap = unit(2, "mm"), annotation_name_side = "left", annotation_name_rot = 0
+
+UpSet(us1, top_annotation = ha, right_annotation=NULL, row_names_side = "right", 
+      column_title="Overlap of peaks from different pipeline branches",
+      comb_col = "steelblue", bg_col = "#F0F0FF", height=unit(4, "cm") ) # height=3 # heatmap_height=unit(24, "cm")
+
+
+# outdated Venn diagrams
+# venncombined <- lapply(names(peakscovcombReorder), function(x) {
+#     cat(paste0("#### ", x), fill=T)
+#     cat("\n", fill=T)
+#     peaks.ov <- findOverlapsOfPeaks(peakscovcombReorder[[x]])
+#     makeVennDiagram(peaks.ov,
+#                     margin=0.25, cat.default.pos="outer", cat.dist=0.15,
+#                     cat.fontface=rep("bold", length(peakscovcombReorder[[x]])),
+#                     fill=brewer.pal(max(3,length(peakscovcombReorder[[x]])), "Accent")[1:length(peakscovcombReorder[[x]])]
+#                     )
+#     cat("\n", fill=T)
+#   }
+#  )
+}
 ```
 
 
 ## Functional annotation of peaks ##
 
-The following plot show the feature distribution based on their chromosome region 
+The following plots show the feature distribution based on their chromosome region 
 
 ### Feature distribution of peaks for all samples ###
 
 ```{r feature_distribution_paragraph, echo=F, results='asis', error=F, warning=F, message=F}
-functionalPlot <- paste0( SHINYREPS_PEAK_ANNOTATION, "/", "ChIPseq_Feature_Distribution_Barplot.png")
-cat("![Peak_Annotation img](", functionalPlot, ")",fill=T)
+featureDist <- lapply(branches, function(peaksdir) {
+  functionalPlot <- file.path( SHINYREPS_PEAK_ANNOTATION, peaksdir, "ChIPseq_Feature_Distribution_Barplot.png")
+  if(length(branches)>1) {cat(paste("\n\n#### Feature distribution from", if(peaksdir==""){"default"} else {peaksdir}, "pipeline branch\n"))}
+  cat("![Peak_Annotation img](", functionalPlot, ")",fill=T)
+  return(functionalPlot)
+})
 ```
 
 
 ### Distribution of TF-binding loci relative to TSS for all samples ### 
 
 ```{r feature_distribution_TSS_paragraph, echo=F, results='asis', error=F, warning=F, message=F}
-    functionalPlotTSS <- paste0( SHINYREPS_PEAK_ANNOTATION, "/", "ChIPseq_Feature_Distribution_Related_to_TSS_Barplot.png")
+TFbindingDist <- lapply(branches, function(peaksdir) {
+    functionalPlotTSS <- file.path( SHINYREPS_PEAK_ANNOTATION, peaksdir, "ChIPseq_Feature_Distribution_Related_to_TSS_Barplot.png")
+    if(length(branches)>1) {cat(paste("\n\n#### TF-binding loci distribution from", if(peaksdir==""){"default"} else {peaksdir}, "pipeline branch\n"))}
     cat("![Peak_Annotation img](", functionalPlotTSS, ")",fill=T)
+    return(functionalPlotTSS)
+})
 ```
 
 
 ### ChIP peaks coverage over Chromosomes ###  
 
 ```{r peak_annotation_coverage_paragraph, echo=F, results='asis', error=F, warning=F, message=F}
-    cat(ChIPhelper.peakAnnotationCoverage(web=F),sep="\n")
+peakscov <- lapply(branches, function(peaksdir) {
+    if(length(branches)>1) {cat(paste("\n\n#### ChIP peaks coverage from", if(peaksdir==""){"default"} else {peaksdir}, "pipeline branch\n"))}
+    cat(ChIPhelper.peakAnnotationCoverage(web=F, subdir=peaksdir),sep="\n")
+})
 ```
+
+
+```{r peak_annotation_coverage_combined, echo=F, results='asis', error=F, fig.width= 10, warning=F, message=F, eval=F}
+# covplot seems not to work anymore with lists or GRangesList in ChIPseeker 1.26.0 
+
+if(length(branches)>1) {
+cat("\n\n#### Overlap of peaks from different pipeline branches\n")  
+  
+peakscovcomb <- lapply(branches, function(peaksdir) {
+  x <- ChIPhelper.init("readPeaks", subdir=peaksdir, peaks_as="GRanges")
+})
+
+peakscovcombReorder <- list()
+for(b in names(peakscovcomb)) {
+ for(p in names(peakscovcomb[[b]])) {
+     peakscovcombReorder[[p]][[b]] <- data.frame()
+     peakscovcombReorder[[p]][[b]] <- peakscovcomb[[b]][[p]]
+     # sort by element size to print GRanges object with most peaks first and then objects with lesser amount of peaks
+     peakscovcombReorder[[p]] <- peakscovcombReorder[[p]][order(sapply(peakscovcombReorder[[p]], length), decreasing=T)]
+  }
+}
+
+plotcombined <- lapply(names(peakscovcombReorder), function(x) print(ChIPseeker::covplot(peakscovcombReorder[[x]], 
+                                                                                         weightCol = "X.log10.pvalue.", 
+                                                                                         title=x, ylab="-log10(pvalue)")))
+}
+```
+
+
 
 
 ### UpSet Plot ###
 
 ```{r peak_annotation_upset_paragraph, echo=F, results='asis', error=F, warning=F, message=F}
-    cat(ChIPhelper.peakAnnotationUpSet(web=F),sep="\n")
+UpSetplots <- lapply(branches, function(peaksdir) {
+    if(length(branches)>1) {cat(paste("\n\n#### ChIP peaks from", if(peaksdir==""){"default"} else {peaksdir}, "pipeline branch\n"))}
+    cat(ChIPhelper.peakAnnotationUpSet(web=F, subdir=peaksdir),sep="\n")
+})
 ```
 
 
-## Enrichment Analysis ##
+
+```{r Enrichment_paragraph, echo=F, results='asis', error=F, warning=F, message=F, fig.align="center", eval=runEnrich}
+cat("\n## Enrichment Analysis ##
 
 Enrichment Analysis is carried out using GREAT (http://great.stanford.edu). It assigns each gene a regulatory domain consisting of basal domain that extends 5 kb upstream and 1 kb downstream from its transcription start site, and and an extension up to the basal regulatory domain of the nearest upstream and downstream genes within 1 Mb. GREAT performs both the binomial test over genomic regions and the hypergeometric test over genes to provide an accurate picture of annotation enrichments for genomic regions. The ontology terms reported below are ranked by the binomial FDR q-value.   
 
-Note that GREAT supports recent assemblies of the well-annotated human (UCSC hg19 and UCSC hg18), mouse (UCSC mm9) and zebrafish (UCSC danRer7) genomes.
+Note that GREAT (> v4.0.0) supports recent assemblies of the well-annotated human (UCSC hg19 and UCSC hg38) and mouse (UCSC mm9 and UCSC mm10) genomes.\n")
 
-```{r Enrichment_paragraph, echo=F, results='asis', error=F, warning=F, message=F, fig.align="center"}
 
-for(i in 1:length(levels(targets$group))) {
+resultsenrich <- lapply(branches, function(peaksdir) {
+    if(length(branches)>1) {cat(paste("\n\n### Enrichment results from", if(peaksdir==""){"default"} else {peaksdir}, "pipeline branch\n"))}
 
-    # subsection
-    cat("### ", levels(targets$group)[i], fill=T)
-    cat("", fill=T)
-
-    # GO Enrichment Plot
-
-    cat("#### GO terms enriched (Biological Process, BP)", fill=T)
-
-    GO_bar     <- paste0(SHINYREPS_GREAT, "/", gsub("=.*", "", levels(targets$group)[i]),"_GO_Barplot.png")
-    GO_table   <- paste0(SHINYREPS_GREAT, "/", gsub("=.*", "", levels(targets$group)[i]), "_GO_Enrichment.csv")
+    for(i in 1:length(levels(factor(targets$group)))) {
     
-    # if there are GO enrichment results (the barplot was created)
-    if(file.exists(GO_bar)) {
-
-        # GO enriched terms in a barplot
-        cat("Listed are the top five enriched GO terms (BP) found using peaks with FDR < 0.01 detected in all replicates.", fill=T)
-        cat("![GREAT_analysis img](", GO_bar, ")\n", fill=T)
+        # subsection
+        cat("#### ", levels(factor(targets$group))[i], fill=T)
+        cat("", fill=T)
     
-        # and table of GO enriched terms
-        cat("The table shows the top 10 enriched GO terms (BP):\n", fill=T)
-        enrich  <- read.csv(file=GO_table, row.names=1)
-        r       <- min(10, nrow(enrich))
-        enrich  <- as.data.frame(enrich)
-        enrich  <- cbind(enrich[1], enrich[2], enrich[8], enrich[9], enrich[6], enrich[5], enrich[7])
-        colnames(enrich) <- c("GO ID","Term Name", "Binom Raw P-value", "Binom FDR Q-Val", "Binom Fold Enrichment", "Binom Observed Region Hits", "Binom Region Set Coverage" )
-        #colnames(enrich)  <- gsub("GO.Biological.Process.", "",  colnames(enrich))
-        #colnames(enrich)  <- gsub("\\.", " ", colnames(enrich))
-        cat(kable(enrich[1:r,], row.names=T, align="r", format="markdown"),  sep="\n") # show only the top min or top 10 biological processes
-
-        cat("\n", fill=T)
-
-    } else {
-        cat("no GO enrichment results available\n", fill=T)
+        # GO Enrichment Plot
+    
+        cat("##### GO terms enriched (Biological Process, BP)", fill=T)
+    
+        GO_bar     <- file.path(SHINYREPS_GREAT, peaksdir, gsub("=.*", "", levels(factor(targets$group))[i]),"_GO_Barplot.png")
+        GO_table   <- file.path(SHINYREPS_GREAT, peaksdir, gsub("=.*", "", levels(factor(targets$group))[i]), "_GO_Enrichment.csv")
+        
+        # if there are GO enrichment results (the barplot was created)
+        if(file.exists(GO_bar)) {
+    
+            # GO enriched terms in a barplot
+            cat("Listed are the top five enriched GO terms (BP) found using peaks with FDR < 0.01 detected in all replicates.", fill=T)
+            cat("![GREAT_analysis img](", GO_bar, ")\n", fill=T)
+        
+            # and table of GO enriched terms
+            cat("The table shows the top 10 enriched GO terms (BP):\n", fill=T)
+            enrich  <- read.csv(file=GO_table, row.names=1)
+            r       <- min(10, nrow(enrich))
+            enrich  <- as.data.frame(enrich)
+            enrich  <- cbind(enrich[1], enrich[2], enrich[8], enrich[9], enrich[6], enrich[5], enrich[7])
+            colnames(enrich) <- c("GO ID","Term Name", "Binom Raw P-value", "Binom FDR Q-Val", "Binom Fold Enrichment", "Binom Observed Region Hits", "Binom Region Set Coverage" )
+            #colnames(enrich)  <- gsub("GO.Biological.Process.", "",  colnames(enrich))
+            #colnames(enrich)  <- gsub("\\.", " ", colnames(enrich))
+            cat(kable(enrich[1:r,], row.names=T, align="r", format="markdown"),  sep="\n") # show only the top min or top 10 biological processes
+    
+            cat("\n", fill=T)
+    
+        } else {
+            cat("no GO enrichment results available\n", fill=T)
+        }
+    
+    
+    
+        # Pathway Enrichment Plot
+        # up-regulated genes
+        cat("##### Pathways enriched (Molecular Signatures Database, MSigDB)", fill=T)
+    
+        Pathway_bar     <- file.path(SHINYREPS_GREAT, peaksdir, "/", gsub("=.*", "", levels(factor(targets$group))[i]), "_MSigDB_Pathway_Barplot.png")
+        Pathway_table   <- file.path(SHINYREPS_GREAT, peaksdir, "/", gsub("=.*", "", levels(factor(targets$group))[i]), "_MSigDB_Pathway_Enrichment.csv")
+       
+        # if there are Pathway enrichment results (the barplot was created)
+        if(file.exists(Pathway_bar)) {
+    
+            # Pathways enriched in a barplot
+            cat("Listed are the top five enriched MSigDB Pathways found using peaks with FDR < 0.01 detected in all replicates.", fill=T)
+            cat("![GREAT_analysis img](", Pathway_bar, ")\n", fill=T)
+        
+            # and table of Pathways enriched
+            cat("The table shows the top 10 enriched MSigDB Pathways:\n", fill=T)
+            enrich  <- read.csv(file=Pathway_table, row.names=1)
+            r       <- min(10, nrow(enrich))
+            enrich  <- as.data.frame(enrich)
+            enrich$MSigDB.Pathway.ID <- ifelse(nchar(as.character(enrich$MSigDB.Pathway.ID)) > 10, paste0(substr(enrich$MSigDB.Pathway.ID, 0, 15), "..."), enrich$MSigDB.Pathway.ID) # shorten long lines
+            enrich  <- cbind(enrich[1], enrich[2], enrich[8], enrich[9], enrich[6], enrich[5], enrich[7])
+            colnames(enrich) <- c("Pathway ID","Term Name", "Binom Raw P-value", "Binom FDR Q-Val", "Binom Fold Enrichment", "Binom Observed Region Hits", "Binom Region Set Coverage" )
+            #colnames(enrich)  <- gsub("\\.", " ", colnames(enrich))
+            cat(kable(enrich[1:r,], row.names=T, align="r", format="markdown"), sep="\n") # show only the top min or top 10 pathways
+            cat("\n", fill=T)
+    
+        } else {
+            cat("no Pathway enrichment results available\n", fill=T)
+        }
     }
-
-
-
-    # Pathway Enrichment Plot
-    # up-regulated genes
-    cat("#### Pathways enriched (Molecular Signatures Database, MSigDB)", fill=T)
-
-    Pathway_bar     <- paste0(SHINYREPS_GREAT, "/", gsub("=.*", "", levels(targets$group)[i]), "_MSigDB_Pathway_Barplot.png")
-    Pathway_table   <- paste0(SHINYREPS_GREAT, "/", gsub("=.*", "", levels(targets$group)[i]), "_MSigDB_Pathway_Enrichment.csv")
-   
-    # if there are Pathway enrichment results (the barplot was created)
-    if(file.exists(Pathway_bar)) {
-
-        # Pathways enriched in a barplot
-        cat("Listed are the top five enriched MSigDB Pathways found using peaks with FDR < 0.01 detected in all replicates.", fill=T)
-        cat("![GREAT_analysis img](", Pathway_bar, ")\n", fill=T)
-    
-        # and table of Pathways enriched
-        cat("The table shows the top 10 enriched MSigDB Pathways:\n", fill=T)
-        enrich  <- read.csv(file=Pathway_table, row.names=1)
-        r       <- min(10, nrow(enrich))
-        enrich  <- as.data.frame(enrich)
-        enrich$MSigDB.Pathway.ID <- ifelse(nchar(as.character(enrich$MSigDB.Pathway.ID)) > 10, paste0(substr(enrich$MSigDB.Pathway.ID, 0, 15), "..."), enrich$MSigDB.Pathway.ID) # shorten long lines
-        enrich  <- cbind(enrich[1], enrich[2], enrich[8], enrich[9], enrich[6], enrich[5], enrich[7])
-        colnames(enrich) <- c("Pathway ID","Term Name", "Binom Raw P-value", "Binom FDR Q-Val", "Binom Fold Enrichment", "Binom Observed Region Hits", "Binom Region Set Coverage" )
-        #colnames(enrich)  <- gsub("\\.", " ", colnames(enrich))
-        cat(kable(enrich[1:r,], row.names=T, align="r", format="markdown"), sep="\n") # show only the top min or top 10 pathways
-        cat("\n", fill=T)
-
-    } else {
-        cat("no Pathway enrichment results available\n", fill=T)
-    }
-}
+})
 ```
 
 
-## Differential binding analysis {.tabset}
 
-```{r diffbind, echo=F, results='asis', error=F, warning=F, message=F, fig.align="center"}
-invisible(ChIPhelper.diffbind())
+```{r diffbind, echo=F, results='asis', error=F, warning=F, message=F, fig.align="center", fig.height=4, fig.width=10, eval=runDiffbind}
+cat("\n## Differential binding analysis\n\n")
+cat("The DiffBind package (https://bioconductor.org/packages/release/bioc/html/DiffBind.html) is used for identifying sites that are statistically significantly differentially bound between sample groups based on evidence of binding affinity (measured by differences in read densities).\n 
+After the occupancy data obtained from the peak caller (peak sets) is read in, a merging function finds all overlapping peaks and derives a single set of unique genomic intervals covering all the supplied peaks (a consensus peakset for the experiment). Then the supplied sequence read files (bam files) are used to count how many reads overlap each interval for each unique sample (refered to as 'fullLibSize', see below). The proportion of reads for each sample that overlap a peak in the consensus peakset is reported as 'FRiP' (Fraction of Reads in Peaks, see below), and can be used to indicate which samples show more enrichment overall. The total number of reads in consensus peaks is given as 'PeakReads' in the table below. Optionally, e.g. for narrow peaks obtained from transcription factor binding, the peaks in the consensus peakset may be re-centered and trimmed based on calculating their summits (point of greatest read overlap) in order to provide more standardized peak intervals.\n 
+The applied normalization procedures, the calculated normalization factors ('normFactors') and the normalized library size ('normLibSize') are given in the tables below. The final result of counting is a binding affinity matrix containing a (normalized) read count for each sample at every potential binding site (affinity scores). This matrix is used for further QC plotting and differential binding analysis for the contrasts defined in 'contrasts_diffbind.txt'. For this, DiffBind uses statistical routines developed in an RNA-Seq context (primarily the Bioconductor packages edgeR and DESeq2). It will assign a p-value and FDR to each candidate binding site indicating confidence that they are differentially bound given the respective contrast.\n")
+
+diffplots <- lapply(branches, function(dir) {
+    if(length(branches)>1) {cat(paste("\n\n### Diffbind results from", if(dir==""){"default"} else {dir}, "pipeline branch\n"))}
+    ChIPhelper.diffbind(subdir=dir)
+})
+
 ```
 
 
 ## Used tools and versions for this analysis ##
 ```{r ToolVersions_paragraph, echo=F, results='asis', error=F, warning=F, message=F}
 cat(Toolhelper.ToolVersions(), sep="\n")
+cat("\n")
 ```
+
+
+### R session info for generation of this report
+
+```{r R_sessionInfo, echo=F, results='asis', error=F, warning=F, message=F}
+cat("\n")
+sessionInfo()
+```
+
+
 
 </div>
