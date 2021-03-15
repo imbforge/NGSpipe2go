@@ -1,0 +1,28 @@
+diffbind2_vars=[
+    diffbindversion  : ESSENTIAL_DIFFBIND_VERSION,  // diffbind version to use
+    targets          : "targets.txt",               // targets file. Check the bin directory for the format
+    contrasts        : "contrasts_diffbind.txt",    // contrasts file. Check the bin directory for the format
+    cwd              : PROJECT,                     // current working directory
+    outdir           : RESULTS + "/diffbind",       // output directory
+    bams             : MAPPED,                      // directory with the bam files
+    peaks            : RESULTS + "/macs2",          // directory with peak caller output
+    fragsize         : Integer.toString(ESSENTIAL_FRAGLEN), // average fragment size
+    summits          : Integer.toString(0),         // re-center peaks around consensus summit with peak width 2x summits (0 means no re-centering). If summits is >0, bUseSummarizeOverlaps in dba.count is set to FALSE.
+    filter           : Integer.toString(0),         // value to use for filtering intervals with low read counts. 
+    analysisMethod   : "DESeq2", // either "DESeq2" or "edgeRGLM", underlying method by which to analyze differential binding affinity. 
+    librarySize      : ESSENTIAL_DIFFBIND_LIBRARY,  // for DiffBind version <3 either true (use total number of reads in bam for normalization) or false (only reads overlapping consensus peaks). All ESSENTIAL_DIFFBIND_LIBRARY options are interpreted as true except for "RiP", which is interpreted as false. 
+    tagwisedispersion: true,                        // calculate dispersion tagwise (use FALSE if no replicates)
+    substractControl : true,                        // subtract input
+    fdr_threshold    : 0.05,                         // FDR significance threshold for hits to be included in the DiffBind result
+    fold             : 0,                           // only sites with an absolute log Fold value greater than equal to this will be included in the DiffBind report.
+    annotate         : true,                        // annotate peaks after differential bindign analysis?
+    tss              : "'c(-3000,3000)'",           // region around the TSS to be considered as promoter
+    txdb             : ESSENTIAL_TXDB,              // Bioconductor transcript database, for annotation
+    annodb           : ESSENTIAL_ANNODB,            // Bioconductor gene annotation database
+    genomedb         : ESSENTIAL_DB,                // Bioconductor gene annotation database
+    paired           : (ESSENTIAL_PAIRED == "yes"), // Paired end experiment?
+    extra            : ""                           // extra parms to sent to the tool
+]
+
+load PIPELINE_ROOT + "/modules/ChIPseq/diffbind2.groovy"
+

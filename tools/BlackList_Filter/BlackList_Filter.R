@@ -29,9 +29,11 @@ peakData <- parseArgs(args,"peakData=") # .xls result from MACS2
 blacklistRegions <- parseArgs(args, "blacklistRegions=")
 out <- parseArgs(args,"out=", "macs2")
 
-
 runstr <- paste0("Call with: Rscript BlackList_Filter.R [peakData=",peakData,"] [blacklistRegions=",blacklistRegions,"] [out=",out,"]")
 cat(runstr)
+
+
+if(file.exists(blacklistRegions)) {
 
 
 peakFiles <-list.files(peakData,pattern=".xls", full.names = TRUE) # list of the full path of the .xls file 
@@ -64,4 +66,8 @@ write.csv(summary.table, file=paste0(out, "/peaks_detected_table.csv"), row.name
 writeLines(capture.output(sessionInfo()), paste(out, "/ChIPseq_BlackList_Filter_session_info.txt", sep=""))
 save(peakFiles,peaks,blacklist,filename,outputData, file=paste0(out,"/BlackList_Filter.RData"))
 
+} else {
+  cat("\nBlacklist filtering skipped because no valid blacklist provided\n")
+  save(blacklistRegions, file=paste0(out,"/BlackList_Filter.RData"))
+}
 

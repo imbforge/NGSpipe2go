@@ -15,13 +15,13 @@ RmDups = {
                    prepare_tool_env("picard", tools["picard"]["version"], tools["picard"]["runenv"])
     def PREAMBLE = get_preamble("RmDups")
 
-    transform(".bam") to (".dupmarked.bam") {
+    transform(".bam") to (".duprm.bam") {
         exec """
             ${TOOL_ENV} &&
             ${PREAMBLE} &&
 
-            java ${RmDups_vars.java_flags} -jar \${picard} MarkDuplicates $RMDUPS_FLAGS INPUT=$input OUTPUT=$output METRICS_FILE=${input.prefix}_dupmetrics.tsv TMP_DIR=\${TMP}
-        ""","MarkDups"
+            java ${RmDups_vars.java_flags} -jar \${picard} MarkDuplicates $RMDUPS_FLAGS INPUT=$input OUTPUT=$output METRICS_FILE=${input.prefix}_duprm_dupmetrics.tsv TMP_DIR=\${TMP}
+        ""","RmDups"
     }
 }
 

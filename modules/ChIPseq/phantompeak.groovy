@@ -5,7 +5,8 @@ phantompeak = {
         bpipe_version: "tested with bpipe 0.9.8.7",
         author: "Sergi Sayols"
 
-    output.dir = phantompeak_vars.outdir
+    var subdir : ""
+    output.dir = phantompeak_vars.outdir + "/$subdir" 
 
     def PHANTOMPEAK_FLAGS =
         (phantompeak_vars.minshift ? " " + phantompeak_vars.minshift : "") +
@@ -24,7 +25,8 @@ phantompeak = {
             ${PREAMBLE} &&
 
             Rscript ${PIPELINE_ROOT}/tools/ENCODEqc/phantompeak.R $input \$(basename $input.prefix) $PHANTOMPEAK_FLAGS &&
-            mv *_phantompeak.* $output.dir
+
+            mv \$(basename $input.prefix)_phantompeak.* $output.dir
         ""","phantompeak"
     }
 
