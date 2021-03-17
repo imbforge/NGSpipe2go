@@ -21,19 +21,19 @@ ESSENTIAL_BOWTIE_REF="/fsimb/common/genomes/saccharomyces_cerevisiae/ucsc/saccer
 ESSENTIAL_BOWTIE_GENOME="/fsimb/common/genomes/saccharomyces_cerevisiae/ucsc/saccer3/canonical/genome/genome.fa"  // full path to the reference genome FASTA file
 ESSENTIAL_CHROMSIZES="/fsimb/common/genomes/saccharomyces_cerevisiae/ucsc/saccer3/canonical/genome/genome.fa.fai" // chromosome sizes file of the reference genome
 ESSENTIAL_PAIRED="no"          // to perform MACS2 peak calling in SR mode ("no") or PE mode ("yes") 
-ESSENTIAL_STRANDED="no"  // library prep protocol strandness: no|yes|reverse
+ESSENTIAL_STRANDED="no"        // library prep protocol strandness: no|yes|reverse
 ESSENTIAL_READLEN=51           // read length
 ESSENTIAL_FRAGLEN=150          // mean length of library inserts (default 200)
-ESSENTIAL_FRAGMENT_USAGE="no"  // "no" for SR data; "yes" for PE data to make bigWig tracks with reconstituted fragments
+ESSENTIAL_FRAGMENT_USAGE="yes" // should fragments be reconstituted for generating bigwig tracks? se reads are extended to ESSENTIAL_FRAGLEN, pe reads are extended to match the fragment size defined by the two read mates.
 ESSENTIAL_BAMCOVERAGE="--binSize 10 --normalizeUsing CPM"  // deepTools options for making normalised bigWig tracks
 ESSENTIAL_USE_BOWTIE1=false    // bowtie1 may be used for se design with very short readlength (<50nt). By default (false) bowtie2 is used.
 
 // Annotation parameter
 ESSENTIAL_BSGENOME="BSgenome.Scerevisiae.UCSC.sacCer3"  // Bioconductor genome reference used by some modules
-ESSENTIAL_TXDB="TxDb.Scerevisiae.UCSC.sacCer3.sgdGene" // needed for peak annotation
-ESSENTIAL_ANNODB="org.Sc.sgd.db"                    // needed for peak annotation
-ESSENTIAL_DB="sacCer3"         // UCSC assembly version for GREAT analysis (only for UCSC hg19, hg38, mm9 and mm10)
-ESSENTIAL_BLACKLIST=""         // path to bed file with blacklisted regions (default: empty string). Peaks in these regions will be removed from the peakset. 
+ESSENTIAL_TXDB="TxDb.Scerevisiae.UCSC.sacCer3.sgdGene"  // needed for peak annotation
+ESSENTIAL_ANNODB="org.Sc.sgd.db"  // needed for peak annotation
+ESSENTIAL_DB="sacCer3"            // UCSC assembly version for GREAT analysis (only for UCSC hg19, hg38, mm9 and mm10)
+ESSENTIAL_BLACKLIST=""            // path to bed file with blacklisted regions (default: empty string). Peaks in these regions will be removed from the peakset. 
 
 
 // Adapter trimming with Cutadapt (optional). Not necessary for paired end libraries.
@@ -52,15 +52,15 @@ ESSENTIAL_MACS2_GSIZE="10000000"  // mapable genome size for MACS2 (use approx. 
 // Differential binding analysis with DiffBind
 // Note that DiffBind3 works with "default" parameters which depend on the context of other parameter settings (see DiffBind documentation for explanation).
 RUN_DIFFBIND=true
-ESSENTIAL_DIFFBIND_VERSION=3   // Beginning with version 3, DiffBind has included new functionalities and modified default settings. Earlier versions are also supported here.
+ESSENTIAL_DIFFBIND_VERSION=3         // Beginning with version 3, DiffBind has included new functionalities and modified default settings. Earlier versions are also supported here.
 ESSENTIAL_DIFFBIND_LIBRARY="default" // DiffBind method to calculate library sizes. One of "full", "RiP", "background" and "default"  
-ESSENTIAL_DIFFBIND_NORM="default" // DiffBind method to calculate normalization factors. One of "lib", "RLE", "TMM", "native" and "default". Not applicable for DiffBind2.
+ESSENTIAL_DIFFBIND_NORM="default"    // DiffBind method to calculate normalization factors. One of "lib", "RLE", "TMM", "native" and "default". Not applicable for DiffBind2.
 
 
 // further optional pipeline stages to include
 RUN_IN_PAIRED_END_MODE=(ESSENTIAL_PAIRED == "yes")
 RUN_PEAK_ANNOTATION=true
-RUN_ENRICHMENT=false
+RUN_ENRICHMENT=true
 RUN_TRACKHUB=false
 
 
