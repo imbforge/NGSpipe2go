@@ -78,17 +78,6 @@ config {
       procs="4" 
       memory="24"
     }
-    bowtie2_pe { 
-      queue=long_queue 
-      walltime="24:00:00" 
-      procs="4" 
-      memory="24"
-    }
-    bowtie_se { 
-      walltime="04:00:00" 
-      procs="8" 
-      memory="16"
-    }
     CatFastQ { 
       walltime="1:00:00" 
       procs="1" 
@@ -325,6 +314,11 @@ config {
       procs="16" 
       memory="8"
     }
+    RmDups { 
+      walltime="04:00:00" 
+      procs="1" 
+      memory="5"
+    }
     STAR { 
       walltime="04:00:00" 
       procs="4" 
@@ -425,10 +419,15 @@ config {
       procs="1" 
       memory="1"
     }
-    diffbind { 
+    diffbind2 { 
       walltime="01:00:00" 
-      procs="4" 
-      memory="8"
+      procs="8" 
+      memory="32"
+    }
+    diffbind3 { 
+      walltime="01:00:00" 
+      procs="8" 
+      memory="32"
     }
     dupRadar { 
       walltime="02:00:00" 

@@ -20,8 +20,8 @@ shinyReports = {
             cp ${PIPELINE_ROOT}/tools/reports/shiny_chipseq_reporting_tool/BustardSummary.toMD.xsl ${REPORTS} &&
             cp ${PIPELINE_ROOT}/tools/reports/shiny_chipseq_reporting_tool/styles.css ${REPORTS}              &&
 
-            if [ -e "${REPORTS}/DEreport.Rmd" ]; then
-                echo 'DEreport.Rmd already exists. Older copy will be kept and not overwritten';
+            if [ -e "${REPORTS}/ChIPreport.Rmd" ]; then
+                echo 'ChIPreport.Rmd already exists. Older copy will be kept and not overwritten';
             else
                 cp ${PIPELINE_ROOT}/tools/reports/shiny_chipseq_reporting_tool/ChIPreport.Rmd ${REPORTS};
             fi &&
@@ -35,6 +35,11 @@ shinyReports = {
             echo "SHINYREPS_RES=${shinyReports_vars.res}"         >> $output &&
             echo "SHINYREPS_TARGETS=${shinyReports_vars.targets}" >> $output &&
             echo "SHINYREPS_PAIRED=${shinyReports_vars.paired}"      >> $output &&
+            echo "SHINYREPS_RUN_CUTADAPT=${shinyReports_vars.run_cutadapt}"  >> $output &&
+            echo "SHINYREPS_RUN_PEAK_ANNOTATION=${shinyReports_vars.run_peakanno}"  >> $output &&
+            echo "SHINYREPS_RUN_DIFFBIND=${shinyReports_vars.run_diffbind}"  >> $output &&
+            echo "SHINYREPS_RUN_ENRICHMENT=${shinyReports_vars.run_enrich}"  >> $output &&
+ 	    echo "SHINYREPS_CUTADAPT_STATS=${shinyReports_vars.cutadapt_stats}" >> $output &&
             echo "SHINYREPS_BOWTIE_LOG=${shinyReports_vars.bowtie_log}"      >> $output &&
             echo "SHINYREPS_BAMINDEX_LOG=${shinyReports_vars.bamindex_log}"  >> $output &&
             echo "SHINYREPS_MARKDUPS_LOG=${shinyReports_vars.markdups_log}"  >> $output &&
@@ -54,6 +59,7 @@ shinyReports = {
             echo "SHINYREPS_PREFIX=${shinyReports_vars.prefix}"   >> $output &&
             echo "SHINYREPS_PLOTS_COLUMN=${shinyReports_vars.plots_column}" >> $output &&
             echo "SHINYREPS_PEAK_ANNOTATION=${shinyReports_vars.peak_annotation}" >> $output &&
+            echo "SHINYREPS_DB=${shinyReports_vars.db}"   >> $output &&
             echo "SHINYREPS_GREAT=${shinyReports_vars.great}" >> $output &&
             echo "SHINYREPS_DIFFBIND=${shinyReports_vars.diffbind}" >> $output           &&
             echo "SHINYREPS_TRACKHUB_DONE=${shinyReports_vars.trackhub_done}" >> $output &&

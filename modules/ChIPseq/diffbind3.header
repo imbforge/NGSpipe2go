@@ -1,0 +1,32 @@
+diffbind3_vars=[
+    diffbindversion  : ESSENTIAL_DIFFBIND_VERSION,  // diffbind version to use
+    targets          : "targets.txt",               // targets file. Check the bin directory for the format
+    contrasts        : "contrasts_diffbind.txt",    // contrasts file. Check the bin directory for the format
+    cwd              : PROJECT,                     // current working directory
+    outdir           : RESULTS + "/diffbind",       // output directory
+    bams             : MAPPED,                      // directory with the bam files
+    peaks            : RESULTS + "/macs2",          // directory with peak caller output
+    fragsize         : Integer.toString(ESSENTIAL_FRAGLEN), // average fragment size
+    blacklist        : false,  // if true, blacklist will be applied if available for that genome. Not necessary if the blacklist_filter module is used before.
+    greylist         : true,   // if true and if a valid BSgenome can be detected, a greylist will be generated for each Control.
+    summits          : Integer.toString(200),         // re-center peaks around consensus summit with peak width 2x summits (0 means no re-centering). 
+    filter           : Integer.toString(5),         // value to use for filtering intervals with low read counts. 
+    analysisMethod   : "DESeq2", // either "DESeq2" or "edgeRGLM", underlying method by which to analyze differential binding affinity. 
+    librarySize      : ESSENTIAL_DIFFBIND_LIBRARY,   // method to use to calculate library sizes 
+    normalization    : ESSENTIAL_DIFFBIND_NORM,   // method to use to calculate normalization factors
+    substractControl : "default",                        // logical indicating whether Control read counts are subtracted for each site in each sample before performing analysis. If "default", it will be set to TRUE unless a greylist is applied successfully.
+    conditionColumn  : "group",   // this targets column is interpreted as 'Condition' and is used as for defining the default design.
+    design           : true,        // design formula for multifactor modeling, e.g. "~Tissue + Condition". If "true", the default design is generated based on the factor given in 'conditionColumn'. If a design formula is specified, it must be composed from the following factors (which must be defined in targets; note that by default the targets column 'groups' is assigned as 'Condition'): 'Condition', 'Tissue', 'Factor', 'Treatment', 'Replicate'. 
+    fdr_threshold    : 0.05,                         // FDR significance threshold for sites to be included in the DiffBind result
+    fold             : 0,                           // only sites with an absolute log Fold value greater than equal to this will be included in the DiffBind report.
+    annotate         : true,                        // annotate peaks after differential bindign analysis?
+    tss              : "'c(-3000,3000)'",           // region around the TSS to be considered as promoter
+    txdb             : ESSENTIAL_TXDB,              // Bioconductor transcript database, for annotation
+    annodb           : ESSENTIAL_ANNODB,            // Bioconductor gene annotation database
+    genomedb         : ESSENTIAL_DB,                // Bioconductor gene annotation database
+    paired           : (ESSENTIAL_PAIRED == "yes"), // Paired end experiment?
+    extra            : ""                           // extra parms to sent to the tool
+]
+
+load PIPELINE_ROOT + "/modules/ChIPseq/diffbind3.groovy"
+

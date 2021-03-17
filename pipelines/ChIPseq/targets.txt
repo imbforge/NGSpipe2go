@@ -1,7 +1,5 @@
-IP	IPname	INPUT	INPUTname	group
-KO_1.bam	KO_1	input_KO_1.bam	input_KO_1	KO
-KO_2.bam	KO_2	input_KO_2.bam	input_KO_2	KO
-KO_2.bam	KO_3	input_KO_3.bam	input_KO_3	KO
-WT_1.bam	WT_1	input_WT_1.bam	input_WT_1	WT
-WT_2.bam	WT_2	input_WT_2.bam	input_WT_2	WT
-WT_2.bam	WT_3	input_WT_3.bam	input_WT_3	WT
+IP	IPname	INPUT	INPUTname	group	Replicate	PeakCaller
+wt_Pol2_1	wt_Pol2_1	wt_Input_1	wt_Input_1	wt_Pol2	1	macs
+wt_Pol2_2	wt_Pol2_2	wt_Input_2	wt_Input_2	wt_Pol2	2	macs
+mut_Pol2_1	mut_Pol2_1	mut_Input_1	mut_Input_1	mut_Pol2	1	macs
+mut_Pol2_2	mut_Pol2_2	mut_Input_2	mut_Input_2	mut_Pol2	2	macs

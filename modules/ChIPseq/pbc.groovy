@@ -5,7 +5,8 @@ pbc = {
         bpipe_version: "tested with bpipe 0.9.8.7",
         author: "Sergi Sayols"
 
-    output.dir = pbc_vars.outdir
+    var subdir : ""
+    output.dir = pbc_vars.outdir + "/$subdir"
 
     def TOOL_ENV = prepare_tool_env("R", tools["R"]["version"], tools["R"]["runenv"])
     def PREAMBLE = get_preamble("pbc")

@@ -1,16 +1,17 @@
 macs2 = {
     doc title: "MACS2",
         desc:  "MACS2 wrapper",
-        constraints: "Only performs treatment versus control peak calling",
+        constraints: "Performs treatment versus control peak calling. If no input control sample is available, the INPUT field in the targets.txt file must be given as none.",
         bpipe_version: "tested with bpipe 0.9.8.7",
-        author: "Sergi Sayols"
+        author: "Sergi Sayols, Frank Rühle"
 
-    output.dir = macs2_vars.outdir
+    var subdir : ""
+    output.dir = macs2_vars.outdir + "/$subdir" 
 
     def MACS2_FLAGS =
         (macs2_vars.gsize  ? " -g "           + macs2_vars.gsize  : "") +
-        (macs2_vars.bwidth ? " --bw "         + macs2_vars.bwidth : "") +
         (macs2_vars.minlen ? " --min-length " + macs2_vars.minlen : "") +
+        (macs2_vars.broad  ? " --broad "                          : "") +
         (macs2_vars.paired ? " --format BAMPE"                    : "") +
         (macs2_vars.extra  ? " " + macs2_vars.extra               : "")
 
@@ -28,18 +29,27 @@ macs2 = {
                 exit 0;
             fi;
 
-            BAM=\$(basename $input) &&
-            grep \$BAM ${macs2_vars.targets} | while read -r TARGET; do
-                IP=\$(       echo $TARGET | tr '\t' ' ' | cut -f1 -d" ") &&
+            BAM=\$(basename $input) &&           
+            extension="\${BAM#*.}" &&
+            BAM="\${BAM%%.*}" &&
+            grep "^\$BAM" ${macs2_vars.targets} | while read -r TARGET; do
+                IP=\$(       echo $TARGET | tr '\t' ' ' | cut -f1 -d" ").\$extension &&
                 IPname=\$(   echo $TARGET | tr '\t' ' ' | cut -f2 -d" ") &&
-                INPUT=\$(    echo $TARGET | tr '\t' ' ' | cut -f3 -d" ") &&
+                INPUT=\$(    echo $TARGET | tr '\t' ' ' | cut -f3 -d" ").\$extension &&
                 INPUTname=\$(echo $TARGET | tr '\t' ' ' | cut -f4 -d" ");
 
                 if [ "\$BAM" != "\$INPUT" ]; then
-                    echo "\${IPname} vs \${INPUTname}" >> $output &&
-                    macs2 callpeak -t ${macs2_vars.mapped}/\$IP -c ${macs2_vars.mapped}/\$INPUT -n \${IPname}.vs.\${INPUTname}_macs2 $MACS2_FLAGS &&
+                    if [ "\$INPUT" != "none.\$extension" ]; then
+                        NAMEoutput="\${IPname}.vs.\${INPUTname}" &&
+                        INPUTflag="-c ${macs2_vars.mapped}/\$INPUT";
+                    else
+                        NAMEoutput="\${IPname}" &&
+                        INPUTflag="";
+                    fi &&   
+                    echo "\$NAMEoutput" >> $output &&
+                    macs2 callpeak -t ${macs2_vars.mapped}/\$IP \$INPUTflag -n $subdir\${NAMEoutput}_macs2 $MACS2_FLAGS &&
                     if [ \$? -ne 0 ]; then rm $output; fi &&
-                    mv \${IPname}.vs.\${INPUTname}_macs2* $output.dir;
+                    find . -maxdepth 1 -name "$subdir\${NAMEoutput}_macs2*" -exec sh -c 'mv "\$1" "$output.dir/\${1#./$subdir}"' _ {} \\;;
                 fi;
             done
         ""","macs2"

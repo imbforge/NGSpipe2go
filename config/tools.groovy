@@ -74,6 +74,9 @@ tools_envs = [
         "3.6.0": [
             lmod: "module load R/3.6.0",
             singularity: "alias Rscript=\"singularity run --app Rscript ${singularity_tools}/R/3.6.0r0/R.simg\""
+        ],
+        "4.0.3": [
+            lmod: "module load R/4.0.3"
         ]
     ],
     bamqc: [

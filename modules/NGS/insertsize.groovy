@@ -5,7 +5,9 @@ InsertSize = {
         bpipe_version: "tested with bpipe 0.9.8.7",
         author: "Nastasja Kreim"
 
-    output.dir = InsertSize_vars.outdir
+    var subdir : ""
+    output.dir = InsertSize_vars.outdir + "/$subdir"
+
     def INSERTSIZE_FLAGS =
         (InsertSize_vars.extra ? " " + InsertSize_vars.extra : "")
 
