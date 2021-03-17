@@ -236,29 +236,49 @@ dds <- DESeqDataSetFromHTSeqCount(sampleTable=targets,
 dds <- DESeq(dds)
 rld <- rlog(dds)
 
+
+# define TPM function
+tpm <- function(counts, lengths) {
+   rate <- counts / lengths
+   rate / sum(rate) * 1e6
+}
+
 ## quantify all samples at the same time (necessary to get unique FPM per sample per gene, since robust FPMs
 ## depend on all samples in the data frame, not just on individual samples
 
 # quantify
-quantification <- as.data.frame(apply(fpm(dds,robust=TRUE), 2, function(x, y) 1e3 * x / y, gene.lengths[rownames(fpm(dds,robust=TRUE))]))
+robustRPKM <- as.data.frame(apply(fpm(dds,robust=TRUE), 2, function(x, y) 1e3 * x / y, gene.lengths[rownames(fpm(dds,robust=TRUE))]))
+TPM        <- as.data.frame(apply(assay(dds), 2, tpm, gene.lengths[rownames(assay(dds))]))
 
-# add comment "robustRPKM" to columns, such that it's clear what the value represents
-names(quantification) <- paste0(names(quantification),".robustRPKM")
+# add comment "robustRPKM" and "TPM" to columns, such that it's clear what the value represents
+names(robustRPKM) <- paste0(names(robustRPKM),".robustRPKM")
+names(TPM)        <- paste0(names(TPM),".TPM")
 
 # extract the gene_name and genomic coordinates of each gene
-names.df <- data.frame(gene_name=gtf$gene_name[match(rownames(quantification), gtf$gene_id)],row.names=rownames(quantification))
-i <- match(rownames(names.df), genes$gene_id)
-names.df$chr    <- genes$seqnames[i]
-names.df$start  <- genes$start[i]
-names.df$end    <- genes$end[i]
-names.df$strand <- genes$strand[i]
+names.rpkm.df <- data.frame(gene_name=gtf$gene_name[match(rownames(robustRPKM), gtf$gene_id)],row.names=rownames(robustRPKM))
+i <- match(rownames(names.rpkm.df), genes$gene_id)
+names.rpkm.df$chr    <- genes$seqnames[i]
+names.rpkm.df$start  <- genes$start[i]
+names.rpkm.df$end    <- genes$end[i]
+names.rpkm.df$strand <- genes$strand[i]
+names.tpm.df <- data.frame(gene_name=gtf$gene_name[match(rownames(TPM), gtf$gene_id)],row.names=rownames(TPM))
+i <- match(rownames(names.tpm.df), genes$gene_id)
+names.tpm.df$chr    <- genes$seqnames[i]
+names.tpm.df$start  <- genes$start[i]
+names.tpm.df$end    <- genes$end[i]
+names.tpm.df$strand <- genes$strand[i]
 
 # merge location and quantification
-quantification.names.df <- merge(names.df,quantification,by=0)
-colnames(quantification.names.df)[1] <- "gene_id"
+robustRPKM.names.df <- merge(names.rpkm.df,robustRPKM,by=0)
+TPM.names.df        <- merge(names.tpm.df,TPM,by=0)
+colnames(robustRPKM.names.df)[1] <- "gene_id"
+colnames(TPM.names.df)[1]        <- "gene_id"
 
-write.csv(quantification.names.df, file=paste0(out, "/allSamples.robustRPKM.csv"), row.names=F)
-write.xlsx(quantification.names.df, file=paste0(out, "/allSamples.robustRPKM.xlsx"), row.names=F)
+# write to file
+write.csv(robustRPKM.names.df, file=paste0(out, "/allSamples.robustRPKM.csv"), row.names=F)
+write.xlsx(robustRPKM.names.df, file=paste0(out, "/allSamples.robustRPKM.xlsx"), row.names=F)
+write.csv(TPM.names.df, file=paste0(out, "/allSamples.TPM.csv"), row.names=F)
+write.xlsx(TPM.names.df, file=paste0(out, "/allSamples.TPM.xlsx"), row.names=F)
 
 # extract rlog assay and change to user friendly gene identifiers
 assay.rld <- assay(rld)
