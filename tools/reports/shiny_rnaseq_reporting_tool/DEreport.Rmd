@@ -280,7 +280,7 @@ for(i in 1:nrow(conts)) {
     # and DE table
     cat("##### Top hits", fill=T)
     cat("", fill=T)
-    cat("The table below shows the top 25 DEGs with their mean normalised counts (baseMean), expression change (log2FoldChange) and statistical significance (padj = FDR-adjusted p-value). The complete DESeq2 results table including RPKM-normalised expression data for all genes in each sample is available in CSV and Excel format.", fill=T)
+    cat("The table below shows the top 25 DEGs with their mean normalised counts (baseMean), expression change (log2FoldChange) and statistical significance (padj = FDR-adjusted p-value). The complete DESeq2 results table including FPKM-normalised expression data for all genes in each sample is available in CSV and Excel format.", fill=T)
     cat("", fill=T)
     genes$baseMean       <- round(genes$baseMean, 2)
     genes$log2FoldChange <- round(genes$log2FoldChange, 2)
