@@ -10,6 +10,7 @@ subread_count = {
         "--donotsort " +
         (subread_count_vars.threads  ? " -T " + subread_count_vars.threads  : "") +
         (subread_count_vars.genesgtf ? " -a " + subread_count_vars.genesgtf : "") +
+        (subread_count_vars.feature  ? " -t " + subread_count_vars.feature  : "") +
         (subread_count_vars.paired   ? " -p "                               : "") +
         (subread_count_vars.extra    ? " "    + subread_count_vars.extra    : "") +
         (subread_count_vars.stranded == "no" ? " -s0 " : (subread2rnatypes_vars.stranded == "yes" ? " -s1 " : " -s2 "))
