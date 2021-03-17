@@ -10,11 +10,11 @@
 ##
 ## Args:
 ## -----
-## targets=targets.txt      # file describing the targets.
-##                          # Must fit the format expected in DESeqDataSetFromHTSeqCount
+## targets=targets.txt      # file describing the targets 
+##                          # must fit the format expected in DESeqDataSetFromHTSeqCount
 ## contrasts=contrasts.txt  # file describing the contrasts
-## mmatrix=~condition       # model matrix. Wrapper constrained to always use an intercept in the model
-## gtf=gene_model.gtf       # gene model in gtf format, for rpkm calculation
+## mmatrix=~condition       # model matrix - wrapper constrained to always use an intercept in the model
+## gtf=gene_model.gtf       # gene model in gtf format - for fpkm calculation
 ## filter=TRUE              # perform automatic independent filtering of lowly expressed genes to maximise power
 ## prefix=RE                # prefix to remove from the sample name
 ## suffix=RE                # suffix to remove from the sample name (usually _readcounts.tsv)
@@ -119,7 +119,7 @@ targets <- targets[, c("sample", "file", "group", add_factors)]
 conts <- read.delim(fcontrasts,head=F,comment.char="#")
 
 ##
-## calculate gene lengths
+## calculate gene transcript lengths (union of all annotated exons) using rtracklayer & GenomicRanges
 ##
 gtf <- import.gff(gene.model, format="gtf", feature.type="exon")
 gtf.flat <- unlist(reduce(split(gtf, elementMetadata(gtf)$gene_id)))
@@ -166,11 +166,11 @@ pairwise.dds.and.res <- lapply(conts[,1],function(cont) {
     dds <- DESeq(dds)
     res <- results(dds, independentFiltering=filter.genes, format="DataFrame")
 
-    # calculate quantification (RPKM if gene model provided, rlog transformed values otherwise)
+    # calculate quantification (FPKM if gene model provided, rlog transformed values otherwise)
     quantification <- apply(fpm(dds), 2, function(x, y) 1e3 * x / y, gene.lengths[rownames(fpm(dds))])
     
-    # add comment "robustRPKM" to columns, such that it's clear what the value represents
-    colnames(quantification) <- paste0(colnames(quantification),".robustRPKM")
+    # add comment "robustFPKM" to columns, such that it's clear what the value represents
+    colnames(quantification) <- paste0(colnames(quantification),".robustFPKM")
 
     # extract the gene_name and genomic coordinates of each gene
     res$gene_name <- gtf$gene_name[match(rownames(res), gtf$gene_id)]
@@ -219,8 +219,8 @@ rld <- rlog(dds)
 # quantify
 quantification <- as.data.frame(apply(fpm(dds,robust=TRUE), 2, function(x, y) 1e3 * x / y, gene.lengths[rownames(fpm(dds,robust=TRUE))]))
 
-# add comment "robustRPKM" to columns, such that it's clear what the value represents
-names(quantification) <- paste0(names(quantification),".robustRPKM")
+# add comment "robustFPKM" to columns, such that it's clear what the value represents
+names(quantification) <- paste0(names(quantification),".robustFPKM")
 
 # extract the gene_name and genomic coordinates of each gene
 names.df <- data.frame(gene_name=gtf$gene_name[match(rownames(quantification), gtf$gene_id)],row.names=rownames(quantification))
@@ -234,8 +234,8 @@ names.df$strand <- genes$strand[i]
 quantification.names.df <- merge(names.df,quantification,by=0)
 colnames(quantification.names.df)[1] <- "gene_id"
 
-write.csv(quantification.names.df, file=paste0(out, "/allSamples.robustRPKM.csv"), row.names=F)
-write.xlsx(quantification.names.df, file=paste0(out, "/allSamples.robustRPKM.xlsx"), row.names=F)
+write.csv(quantification.names.df, file=paste0(out, "/allSamples.robustFPKM.csv"), row.names=F)
+write.xlsx(quantification.names.df, file=paste0(out, "/allSamples.robustFPKM.xlsx"), row.names=F)
 
 # extract rlog assay and change to user friendly gene identifiers
 assay.rld <- assay(rld)
