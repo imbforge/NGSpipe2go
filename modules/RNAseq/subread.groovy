@@ -12,7 +12,7 @@ subread_count = {
         (subread_count_vars.genesgtf ? " -a " + subread_count_vars.genesgtf : "") +
         (subread_count_vars.paired   ? " -p "                               : "") +
         (subread_count_vars.extra    ? " "    + subread_count_vars.extra    : "") +
-        (subread_count_vars.stranded == "no" ? " -s0 " : (subread2rnatypes_vars.stranded == "yes" ? " -s1 " : " -s2 "))
+        (subread_count_vars.stranded == "no" ? " -s0 " : (subread_count_vars.stranded == "yes" ? " -s1 " : " -s2 "))
 
     def TOOL_ENV = prepare_tool_env("subread", tools["subread"]["version"], tools["subread"]["runenv"])
     def PREAMBLE = get_preamble("subread_count")
