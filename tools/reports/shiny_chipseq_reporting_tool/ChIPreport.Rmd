@@ -133,7 +133,7 @@ insert <- lapply(branches[1], function(dir) {
   	p <- ChIPhelper.insertsize.plot(subdir=dir)
   	sample_length <- length(list.files(file.path(SHINYREPS_INSERTSIZE, dir), pattern = "insertsizemetrics.tsv$"))
     ChIPhelper.subchunkify(p, 
-                         fig_height = 3*sample_length,
+                         fig_height = dim(p)[1] * 15/dim(p)[2],
                          fig_width = 15)
   	}
 })
