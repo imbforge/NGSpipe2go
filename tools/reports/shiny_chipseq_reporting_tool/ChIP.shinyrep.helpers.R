@@ -786,7 +786,7 @@ ChIPhelper.insertsize.helper <- function(metricsFile){
     separate( variable, 
               sep = "\\.",
               into = c("group", "counttype" )) %>%
-    rename( amount = value)
+    dplyr::rename( amount = value)
   #we also have to add the comulative sum per group to the whole shebang
   hist_long <- hist_long %>% group_by(group) %>% 
     arrange( desc(insert_size)) %>% 
@@ -851,7 +851,7 @@ ChIPhelper.insertsize.plot <- function(subdir="", ...){
 
   SHINYREPS_PLOTS_COLUMN <- tryCatch(as.integer(SHINYREPS_PLOTS_COLUMN),error=function(e){3})
   if(SHINYREPS_PLOTS_COLUMN < 2 | SHINYREPS_PLOTS_COLUMN > 4) {
-    SHINYREPS_PLOTS_COLUMN <- 3L    # default to 4 columns
+    SHINYREPS_PLOTS_COLUMN <- 3L    # default to 3 columns
   }
   
   if (SHINYREPS_PAIRED == "yes" &
