@@ -155,7 +155,7 @@ if (!file.exists(SHINYREPS_INSERTSIZE)) {
     sample_length <- length(list.files(SHINYREPS_INSERTSIZE, 
                                        pattern = "insertsizemetrics.tsv$"))
   DEhelper.subchunkify(p, 
-                       fig_height = 3*sample_length,
+                       fig_height = dim(p)[1] * 15/dim(p)[2],
                        fig_width = 15)
     }
 
