@@ -592,10 +592,10 @@ annoFactors <- colorByFactor2
 
 cat("## Count distribution per plate position
 
-The plots below visualize the count data distribution (not log-transformed) via plate position for the categories library size, detected features and percentage of mitochondrial reads indicated by spot size. 0-cell and 10-cell controls are indicated in blue and orange, respectively. Symbol shape is defined by custom grouping. For each category the plates are plotted row-wise with plate number in increasing order.\n")
+The plots below visualize the count data distribution (not log-transformed) via plate position for the categories library size, detected features and percentage of mitochondrial reads indicated by spot size. 0-cell and 10-cell controls are indicated in blue and orange, respectively. Symbol shape is defined by custom grouping. For each category the plates are plotted row-wise with plate number in increasing order.\n\n\n")
 
 sce$plate_position <- paste0(sce$row, sce$col) # column "plate_position" needed for plotPlatePosition
-for (size in c("Lib.size", "detected", "subsets_Mito_percent")) {
+for (size in c("sum", "detected", "subsets_Mito_percent")) {
   cat(paste("Plotting", size, "as spot size\n"))
   plates <- list()
   for (p in as.character(sort(unique(sce$plate)))) {
@@ -1016,10 +1016,11 @@ if(any(!is.na(sce$phases))) {
 
 We check whether there are technical factors that contribute substantially to the heterogeneity of gene expression. If so, the factor may need to be regressed out to ensure that it does not inflate the variances or introduce spurious correlations.
 
-```{r explanatorx_variables, results='asis', echo=F, error=F, warning=F, message=F}
+```{r explanatory_variables, results='asis', echo=F, error=F, warning=F, message=F}
 ##### parameters to set:
 # define potential explanatory variables to be tested for their effect
 explanatoryVariables <- c(group.vars, if("phases" %in% colnames(colData(sce))){"phases"} else {NULL})
+explanatoryVariables <- explanatoryVariables[!explanatoryVariables %in% c("cells", "pos")]
 #####
 
 explVar <- plotExplanatoryVariables(sce, variables=explanatoryVariables, exprs_values = "logcounts") +    
@@ -1036,7 +1037,7 @@ cat("\nPCA plots of top 500 genes colored by potential confounder variables\n\n"
   
 ```
 
-```{r plot_explanatorx_variables, results='asis', echo=F, error=F, warning=F, message=F, fig.height=6*length(explVar2plot)}
+```{r plot_explanatory_variables, results='asis', echo=F, error=F, warning=F, message=F, fig.height=6*length(explVar2plot)}
   gridExtra::grid.arrange(grobs=explVar2plot, ncol=1)
 ```
 
@@ -1574,6 +1575,9 @@ sce_igraphclust <- list()
 clmod <- list() # clusterModularity
 cluster.gr <- list() # cluster interaction graph
 
+dir_igraph <- file.path("report_files", "cluster", "igraph")
+if (!file.exists(dir_igraph)) {dir.create(dir_igraph, recursive=T) }
+
 for(d in reducedDimNames(sce)) {    
 
   for(k in numberNearestNeighbors) {
@@ -1694,10 +1698,8 @@ Heatmap(igraph_clusterassign, cluster_rows = F, cluster_columns = F, name="#cell
         )
 
 # store cluster assignments
-dir_igraph <- file.path("report_files", "cluster", "igraph")
-if (!file.exists(dir_igraph)) {dir.create(dir_igraph, recursive=T) }
-      write.table(data.frame(barcode=colnames(sce), colData(sce)[,c(group.vars, grep("igraph", names(colData(sce)), value=T))]), 
-      file = file.path(dir_igraph, paste0("igraph_cluster_assignments.csv")), sep=",", quote=F, row.names=F)
+  write.table(data.frame(barcode=colnames(sce), colData(sce)[,c(group.vars, grep("igraph", names(colData(sce)), value=T))]), 
+  file = file.path(dir_igraph, paste0("igraph_cluster_assignments.csv")), sep=",", quote=F, row.names=F)
 
 
 # cat("\nOverview cluster assignments:\n", fill=T) # outdated separate tables per clustering algorithm
@@ -1729,6 +1731,9 @@ dist_sce <- list()
 tree_sce <- list()
 dend <- list()
 clust_sce <- list()
+
+dir_hclust <- file.path("report_files", "cluster", "hclust")
+if (!file.exists(dir_hclust)) {dir.create(dir_hclust, recursive=T) }
 
 for(d in reducedDimNames(sce)) {    
     dist_sce[[d]] <- dist(reducedDim(sce, d))
@@ -1832,10 +1837,8 @@ Heatmap(hclust_clusterassign, cluster_rows = F, cluster_columns = F, name="#cell
         )
 
 # store cluster assignments
-dir_hclust <- file.path("report_files", "cluster", "hclust")
-if (!file.exists(dir_hclust)) {dir.create(dir_hclust, recursive=T) }
-      write.table(data.frame(barcode=colnames(sce), colData(sce)[,c(group.vars, grep("hclust", names(colData(sce)), value=T))]), 
-      file = file.path(dir_hclust, paste0("hclust_cluster_assignments.csv")), sep=",", quote=F, row.names=F)
+  write.table(data.frame(barcode=colnames(sce), colData(sce)[,c(group.vars, grep("hclust", names(colData(sce)), value=T))]), 
+  file = file.path(dir_hclust, paste0("hclust_cluster_assignments.csv")), sep=",", quote=F, row.names=F)
 
 ```
 
@@ -2087,7 +2090,9 @@ for (i in levels(colData(sce)[,selected_clustering_method])) {
     is.de <- cur.markers$FDR <= 0.05 
     # summary(is.de)
     
-    if(org=="human") {rownames(cur.markers) <- gsub("\\..*$", "", rownames(cur.markers))} # remove .version of human Ensembl IDs
+    if(org %in% c("human", "mouse")) {
+      rownames(cur.markers) <- gsub("\\..*$", "", rownames(cur.markers))
+      } # remove .version of Ensembl IDs
 
     entrez.ids <- mapIds(orgdb, keys=rownames(cur.markers), 
         column="ENTREZID", keytype="ENSEMBL")
