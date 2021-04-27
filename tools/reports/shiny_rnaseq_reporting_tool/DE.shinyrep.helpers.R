@@ -1655,7 +1655,9 @@ DEhelper.insertsize <- function(){
 		insertsizes <- lapply(filelist, read.table, sep="\t", header=TRUE, nrow=1)
 		insertsizes <- do.call(rbind, insertsizes)
 		samplenames <- basename(filelist)
+    if(!is.na(SHINYREPS_PREFIX)){
 		samplenames <- gsub(SHINYREPS_PREFIX, "", samplenames)
+    }
 		samplenames <- gsub("_insertsizemetrics.tsv","", samplenames)
 		rownames(insertsizes) <- samplenames 
 		insertsizes <- insertsizes[,c("MEDIAN_INSERT_SIZE","MEAN_INSERT_SIZE", "STANDARD_DEVIATION")]
