@@ -497,9 +497,9 @@ config {
       memory="1"
     }
     subread2rnatypes { 
-      walltime="01:00:00" 
+      walltime="02:00:00" 
       procs="4" 
-      memory="1"
+      memory="10"
     }
     subread_count { 
       walltime="00:30:00" 
