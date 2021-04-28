@@ -399,6 +399,8 @@ for(i in 1:nrow(conts)) {
         # and table of OG enriched terms
         cat("Top enriched Gene Ontology non-redundant Biological Processes of the up-regulated genes with FDR < 0.01:\n", fill=T)
         enrich <- read.csv(file=GO_table_up)
+        #we filter for terms which do not have an id or parent
+        enrich <- enrich[!(is.na(enrich$ID) | is.na(enrich$parent)),]
         enrich <- enrich[enrich$ID == enrich$parent, ] # get non-redundant terms only
         cols   <- c("ID", "Description", "GeneRatio", "BgRatio", "pvalue", "p.adjust", "geneID")
         r      <- min(10, nrow(enrich))
@@ -443,6 +445,9 @@ for(i in 1:nrow(conts)) {
         # and table of OG enriched terms
         cat("Top enriched Gene Ontology non-redundant Biological Processes of the down-regulated genes with FDR < 0.01:\n", fill=T)
         enrich  <- read.csv(file=GO_table_down)
+        #this does not work if the parent and the ID are NA
+        #we filter for terms which do not have an id or parent
+        enrich <- enrich[!(is.na(enrich$ID) | is.na(enrich$parent)),]
         enrich <- enrich[enrich$ID == enrich$parent, ] # get non-redundant terms only
         cols    <- c("ID", "Description", "GeneRatio", "BgRatio", "pvalue", "p.adjust", "geneID")
         r       <- min(10, nrow(enrich))
