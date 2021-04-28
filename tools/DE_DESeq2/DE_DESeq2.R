@@ -20,6 +20,9 @@
 ## suffix=RE                # suffix to remove from the sample name (usually _readcounts.tsv)
 ## cwd=.                    # current working directory where the files .tsv files are located
 ## out=DE.DESeq2            # prefix filename for output
+## pattern=","\\.readcounts.tsv" # pattern for the count files
+## FC=1                     # FC filter to use in the testing (non log2!)
+## FDR=0.01                 # FDR filter to use in the testing 
 ##
 ## IMPORTANT: This is a simplified wrapper to DESeq2 which is only able to do Wald tests on
 ##            simple experiments. It's meant only for pairwise comparisons in non-multifactor
@@ -72,6 +75,7 @@ if(!file.exists(fcontrasts)) stop(paste("File",fcontrasts,"does NOT exist. Run w
 if(!file.exists(cwd))        stop(paste("Dir",cwd,"does NOT exist. Run with:\n",runstr))
 if(is.na(filter.genes))      stop(paste("Filter genes has to be either TRUE or FALSE. Run with:\n",runstr))
 if(!file.exists(gene.model)) stop(paste("GTF File:", gene.model, " does NOT exist. Run with: \n", runstr))
+if(FDR>1| FDR < 0 )                    stop(paste("FDR has to be between 0 and 1! Run with: \n", runstr))
 
 ##
 ## create the design and contrasts matrix
@@ -253,8 +257,6 @@ TPM        <- as.data.frame(apply(assay(dds), 2, tpm, gene.lengths[rownames(assa
 # add comment "robustRPKM" and "TPM" to columns, such that it's clear what the value represents
 names(robustRPKM) <- paste0(names(robustRPKM),".robustRPKM")
 names(TPM)        <- paste0(names(TPM),".TPM")
-# add comment "robustFPKM" to columns, such that it's clear what the value represents
-names(quantification) <- paste0(names(quantification),".robustFPKM")
 
 # extract the gene_name and genomic coordinates of each gene
 names.rpkm.df <- data.frame(gene_name=gtf$gene_name[match(rownames(robustRPKM), gtf$gene_id)],row.names=rownames(robustRPKM))
@@ -281,11 +283,6 @@ write.csv(robustRPKM.names.df, file=paste0(out, "/allSamples.robustRPKM.csv"), r
 write.xlsx(robustRPKM.names.df, file=paste0(out, "/allSamples.robustRPKM.xlsx"), row.names=F)
 write.csv(TPM.names.df, file=paste0(out, "/allSamples.TPM.csv"), row.names=F)
 write.xlsx(TPM.names.df, file=paste0(out, "/allSamples.TPM.xlsx"), row.names=F)
-quantification.names.df <- merge(names.df,quantification,by=0)
-colnames(quantification.names.df)[1] <- "gene_id"
-
-write.csv(quantification.names.df, file=paste0(out, "/allSamples.robustFPKM.csv"), row.names=F)
-write.xlsx(quantification.names.df, file=paste0(out, "/allSamples.robustFPKM.xlsx"), row.names=F)
 
 # extract rlog assay and change to user friendly gene identifiers
 assay.rld <- assay(rld)
