@@ -487,7 +487,7 @@ DEhelper.DESeq2.ChrOverrepresentation <- function(i=1, fdr_de_gene=0.1, fdr_fish
 
 
 ##
-## DEhelper.STAR: parse STAR log files and create a md table
+## DEhelper.STARparms: parse STAR log files and extract all mapping parameters
 ##
 DEhelper.STARparms <- function() {
     

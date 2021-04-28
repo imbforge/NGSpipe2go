@@ -7,7 +7,7 @@ DE_DESeq2_vars=[
     suffix   : "",                         //suffix to be removed from file names
     cwd      : RESULTS + "/subread-count", //directory where the .tsv files with the gene counts are located
     outdir   : RESULTS + "/DE_DESeq2",     //output filename base pattern. If you change it here, change it also in the module file
-    genes    : ESSENTIAL_GENESGTF,         //gtf file to calculate RPKM
+    genes    : ESSENTIAL_GENESGTF,         //gtf gene annotation file needed to calculate robust FPKM values per gene
     pattern  : "\"\\.readcounts.tsv\"",    //pattern for filtering count files in cwd
     FDR      : ESSENTIAL_DESEQ2_FDR,       //Filter for the adjusted pvalue 
     FC       : ESSENTIAL_DESEQ2_FC,        //Filter for the FC (non log2!)
