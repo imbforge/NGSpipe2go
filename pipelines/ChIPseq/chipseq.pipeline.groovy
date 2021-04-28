@@ -52,7 +52,7 @@ Bpipe.run {
 		[       // QC specific to paired end (pe) or single end (se) design
 	    		(RUN_IN_PAIRED_END_MODE ? [bamCoverage.using(subdir:"unfiltered"), 
                                                    InsertSize.using(subdir:"unfiltered")] : 
-                                                  [extend + bamCoverage.using(subdir:"unfiltered"), 
+                                                  [bamCoverage.using(subdir:"unfiltered"), 
                                                    phantompeak.using(subdir:"unfiltered")]), 
                 	ipstrength.using(subdir:"unfiltered"), 
 		        macs2.using(subdir:"unfiltered") + blacklist_filter.using(subdir:"unfiltered")                  
@@ -62,7 +62,7 @@ Bpipe.run {
                 [       // QC specific to paired end (pe) or single end (se) design
 	    		(RUN_IN_PAIRED_END_MODE ? [bamCoverage.using(subdir:"filtered"), 
                                                    InsertSize.using(subdir:"filtered")] : 
-                                                  [extend + bamCoverage.using(subdir:"filtered"), 
+                                                  [bamCoverage.using(subdir:"filtered"), 
                                                    phantompeak.using(subdir:"filtered")]), 
                 	ipstrength.using(subdir:"filtered"), 
 		        macs2.using(subdir:"filtered") + blacklist_filter.using(subdir:"filtered")

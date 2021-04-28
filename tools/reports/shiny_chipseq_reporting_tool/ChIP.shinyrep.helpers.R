@@ -1161,7 +1161,7 @@ ChIPhelper.cutadapt <- function(targetsdf=targets, colorByFactor="group", sample
   indexAdapterSelected <- indexAdapter[grep("[ACGT].[[:digit:]]*}", cutadaptpars[indexAdapter+1])] # select e.g. polyA, polyT
   
   # rename those adapters columns trimmed by -a commands 
-  if (length(indexAdapterSelected>0)) {
+  if (length(indexAdapterSelected)>0) {
     colnames(x.df)[grepl("Adapter", colnames(x.df))][match(indexAdapterSelected, indexAdapter)] <- 
       paste0(gsub("Adapter.*$", "", colnames(x.df)[grepl("Adapter", colnames(x.df))][match(indexAdapterSelected, indexAdapter)]), cutadaptpars[indexAdapterSelected+1])
   }
@@ -1179,7 +1179,7 @@ ChIPhelper.cutadapt <- function(targetsdf=targets, colorByFactor="group", sample
     
     if(is.null(targetsdf)) {stop("If 'colorByFactor' is given you must also provide 'targetsdf'!")}
     
-    if(length(sampleColumnName>1)) { # melt in case of multiple file name columns (as for ChIP-Seq)
+    if(length(sampleColumnName)>1) { # melt in case of multiple file name columns (as for ChIP-Seq)
       targetsdf <- targetsdf[,c(colorByFactor, sampleColumnName)]
       targetsdf <- reshape2::melt(targetsdf, id.vars= colorByFactor, measure.vars=sampleColumnName, value.name = "filename")
       for (i in colorByFactor) {targetsdf[, i] <- paste0(targetsdf[, i], " (", targetsdf$variable, ")")}

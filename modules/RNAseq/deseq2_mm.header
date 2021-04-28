@@ -10,6 +10,8 @@ DE_DESeq2_MM_vars=[
     outdir   : RESULTS + "/DE_DESeq2_MM",     //output filename base pattern - if you change it here, change it also in the module file
     genes    : DE_DESeq2_vars.genes,          //gtf gene annotation file needed to calculate robust FPKM values per gene
     pattern  : "\"\\.readcounts.tsv\"",       //pattern for filtering count files in cwd
+    FDR      : DE_DESeq2_vars.FDR,             //FDR filter from DESeq2
+    FC       : DE_DESeq2_vars.FC,              //FC filter from DESeq2
     extra    : DE_DESeq2_vars.extra           //extra parms to sent to the tool
 ]
 

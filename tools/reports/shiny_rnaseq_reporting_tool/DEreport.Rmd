@@ -101,7 +101,7 @@ The mapping statistics below show the number and percentage of: (i) input raw re
 
 While both unique and multi-mapped reads are included in the generation of browser coverage tracks, only uniquely mapped reads are typically taken into account in the DESeq2 differential expression analysis in order to avoid potential false-positives. However, this standard analysis approach may also exclude some recently duplicated genes or gene-pseudogene pairs, resulting in false-negatives. To investigate the potential expression changes in such genes, a side branch of DESeq2 is run using all mapped reads and the results of both branches are compared.
 
-```{r STAR_paragraph, echo=F, results='asis', error=F, warning=F, message=F, fig.align="center", out.width="100%", fig.height=(0.2*fastqc_summary_plot$no.of.samples)+4}
+```{r STAR_paragraph, echo=F, results='asis', error=F, warning=F, message=F, fig.align="center", out.width="100%", fig.height=(fastqc_summary_plot$no.of.samples/5)+2}
 
 star_stats <- DEhelper.STAR()
 
@@ -115,14 +115,19 @@ cat("\n", fill = T)
 
 ```
 
-#### Competitive mapping to rRNAs and the genome
+## Competetive mapping to rRNAs and other contaminats:
 
-A competitive mapping to the reference genome and all known rRNAs was performed with FastQScreen (http://www.bioinformatics.babraham.ac.uk/projects/fastq_screen/).
+A competitive mapping to the reference genome and known rRNAs (H. sapiens, M. musculus, C. elegans, D. melanogaster, D. rerio, X. tropicalis) as well as frequently occurring Mycoplasma species (M. arginini, M. fermentans, M. hominis, M. hyorhinis, M. orale, and Acholeplasma laidlawii), PhiX and ERCC spike-in sequences, E. coli and B. taurus (bovine) was performed with FastQScreen (http://www.bioinformatics.babraham.ac.uk/projects/fastq_screen/).
 
-```{r fastqscreen_paragraph, echo=F, results='asis', error=F, warning=F, message=F}
-cat(DEhelper.fastqscreen(), sep="\n")
+In the following plot only relevant contaminants are shown. A contaminant is considered relevant if it consumes `r SHINYREPS_FASTQSCREEN_PERC`% of reads or more in at least one sample. The "one genome" label refers to the amount of reads mapping to that genome only, no matter if they are mapping uniquely or multiple times. The "multiple genome" label refers to the amount of read mapping to this genome but also to other genomes in the screening regardless of whether they are uniquely or multi mapping. 
+
+```{r fastqscreen_paragraph, echo=F, results='asis', fig.width=10, error=F, warning=F, message=F}
+fastqscreen_plots <- DEhelper.fastqscreen(perc.to.plot=SHINYREPS_FASTQSCREEN_PERC)
 ```
 
+```{r fastqscreen_paragraph2, echo=F,results='asis',error=F,warning=F,message=F,fig.align='center',fig.height=(round((3*fastqscreen_plots$no.of.genomes)/4)+1)*fastqscreen_plots$no.of.samples/8+1}
+plot(fastqscreen_plots$p.category.wrap)
+```
 
 ## UCSC Genome Browser tracks ##
 
@@ -138,6 +143,8 @@ cat(DEhelper.Trackhub(), sep="\n")
 
 ## Insert Size (for paired-end sequencing) ##
 
+The insert size is defined as the distance between the left-most mapping position of a read and the right-most mapping position of its mate. For DNA, this exactly represents the fragment length. However, in case of RNA, the estimated insert size can be a lot larger than the true insert size / fragment length, when e.g. the read pair overlaps introns or skipped exons. Thus, the insert size calculation can only be seen as a rough estimate of the true insert size / fragment length when looking at RNAseq data.
+
 ```{r echo=F, error=F, fig.width=15, message=FALSE, warning=FALSE, results='asis'}
 
 if (!file.exists(SHINYREPS_INSERTSIZE)) {
@@ -148,7 +155,7 @@ if (!file.exists(SHINYREPS_INSERTSIZE)) {
     sample_length <- length(list.files(SHINYREPS_INSERTSIZE, 
                                        pattern = "insertsizemetrics.tsv$"))
   DEhelper.subchunkify(p, 
-                       fig_height = 3*sample_length,
+                       fig_height = dim(p)[1] * 15/dim(p)[2],
                        fig_width = 15)
     }
 
@@ -182,10 +189,54 @@ DEhelper.RNAtypes()
 
 ## Gene body coverage ##
 
-The plots below show meta-gene profiles of 5' to 3' read coverage and can reveal biases due to RNA degradation or specific library prep protocol; polyA-selection protocols are particularly prone of producing 3' coverage bias upon RNA degradation. The grey line depicts the actual read coverage and the red line shows the overall trend.
+The plots below show meta-gene profiles of 5' to 3' read coverage and can reveal biases due to RNA degradation or specific library prep protocol; polyA-selection protocols are particularly prone of producing 3' coverage bias upon RNA degradation.
 
-```{r GeneBodyCoverage_paragraph, echo=F, results='asis', error=F, warning=F, message=F}
-cat(DEhelper.geneBodyCov(web=F), sep="\n")
+```{r GeneBodyCoverage_paragraph, echo=F, error=F, warning=F, message=F, results='asis', fig.align="center"}
+plot_list <- DEhelper.geneBodyCov2(web=F)
+cat("#### Gene body coverage per sample: plotly")
+cat("\n\n", fill=T)
+plot_list$plotly %>%
+    highlight(dynamic=T, selectize=T, persistent=T) 
+cat("\n\n")
+
+if("p_per_sample" %in% names(plot_list)){
+   cat("#### Gene body coverage per sample: \n", fill=T)
+   plot(plot_list$p_per_sample)
+   cat("\n", fill=T)
+}
+
+if("num_groups" %in% names(plot_list)) {
+   no.of.groups <- plot_list$num_groups
+} else {
+   no.of.groups <- 1
+}
+
+if("num_replicates" %in% names(plot_list)) {
+   no.of.replicates <- plot_list$num_replicates
+} else {
+   no.of.replicates <- 1
+}
+```
+
+```{r GeneBodyCoverage_splitByGroup, echo=F, error=F, warning=F, message=F, results='asis', fig.align="center", out.width="100%", fig.height=round((no.of.groups+1)/3)*2.5+0.5+ifelse(no.of.groups<3,1,0)}
+if("p_per_sample_splitByGroup" %in% names(plot_list)){
+   cat("#### Gene body coverage per sample split by group: \n", fill=T)
+   plot(plot_list$p_per_sample_splitByGroup)
+   cat("\n", fill=T)
+}
+if("p_per_replicate_splitByGroup" %in% names(plot_list)){
+  cat("#### Gene body coverage per sample split by group, colored by replicate: \n", fill=T)
+  plot(plot_list$p_per_replicate_splitByGroup)
+  cat("\n", fill=T)
+}
+```
+
+```{r GeneBodyCoverage_splitByReplicate, echo=F, error=F, warning=F, message=F, results='asis', fig.align="center", out.width="100%", fig.height=round((no.of.replicates+1)/3)*2.5+0.5+ifelse(no.of.replicates<3,1,0)}
+if("p_per_replicate_splitByReplicate" %in% names(plot_list)){
+  cat("#### Gene body coverage per sample split by replicate, colored by group: \n", fill=T)
+  plot(plot_list$p_per_replicate_splitByReplicate)
+  cat("\n", fill=T)
+}
 ```
 
 ## Strand specificity ##
@@ -198,13 +249,13 @@ cat(DEhelper.strandspecificity(), sep="\n")
 
 ## Distribution of reads on introns/exons and intergenic regions ##
 
-The following plots depict the fraction of reads mapped to exons, introns and intergenic regions. For mRNA-seq in well-annotated genomes the fraction of exonic reads is typically quite high, whereas for total RNA-seq intronic and intergenic reads may dominate.
+The following plot depicts the fraction of reads mapped to exons, introns and intergenic regions. For mRNA-seq in well-annotated genomes the fraction of exonic reads is typically quite high, whereas for total RNA-seq intronic and intergenic reads may dominate.
 
 Please note that reads overlapping an exon as well as an intron/intergenic region are counted differently by the tools used in this section (QualiMap) and the tool used for assignment of reads in section “Mapped reads annotation” (featureCounts). In the latter, all reads overlapping an exon by at least one base pair are considered exonic, while in the current section only reads fully located in exons are considered exonic and all reads overlapping an intron or intergenic region by at least on bp are considered intronic/intergenic. Thus, numbers do not fully agree between those two sections.
 
 
-```{r echo=F, results='asis', error=F, warning=F, message=F}
-cat(DEhelper.Qualimap(), sep="\n")        # sample Qualimap 
+```{r echo=F, results='asis', error=F, warning=F, message=F, fig.align="center", out.width="100%", fig.height=(fastqc_summary_plot$no.of.samples/5)+1.5}
+DEhelper.Qualimap()        # sample Qualimap 
 ```
 
 ## Sample relatedness ##
@@ -237,7 +288,9 @@ DEhelper.DESeq2.heatmap(type="cluster_mean")    # heatmap of top variant 'n' gen
 
 Pairwise differential expression analysis between the experimental groups is performed with the popular R/Bioconductor package DESeq2 (https://bioconductor.org/packages/release/bioc/html/DESeq2.html). Default DESeq2 analysis includes an independent filtering procedure for lowly expressed genes which is meant to ameliorate the multiple testing problem thereby maximising the statistical power to detect differentially expressed genes (DEGs). In this standard analysis only uniquely mapped reads are taken into account to avoid "cross-talk" between different genes. 
 
-Note that the default DESeq2 analysis uses only a statistical (FDR) filter and is thus testing for evidence that the expression changes between two sample groups is different from zero. Performing post hoc filtering on fold changes is therefore not recommended by the software developers and should be avoided. If desirable, the differential expression analysis can be repeated including an additional fold-change threshold directly in the DESeq2 statistical testing model, which will result in a more conservative DEG estimates compared to post hoc filtering.
+Note that the default DESeq2 analysis uses only a statistical (FDR) filter and is thus testing for evidence that the expression changes between two sample groups is different from zero. Performing post hoc filtering on fold changes is therefore not recommended by the software developers and should be avoided. If desirable, the differential expression analysis can be repeated including an additional fold change (FC) threshold directly in the DESeq2 statistical testing model, which will result in more conservative DEG estimates compared to post hoc filtering.
+
+In this anlysis the FC filter was set to `r SHINYREPS_DE_DESEQ_FC`, the FDR filter was set to `r SHINYREPS_DE_DESEQ_FDR`.  
 
 ```{r DifferentialExpression_paragraph, echo=F, results='asis', error=F, warning=F, message=F, fig.align="center"}
 for(i in 1:nrow(conts)) {
@@ -265,9 +318,16 @@ for(i in 1:nrow(conts)) {
 
     # MA plot
     cat("##### MA plot", fill=T)
-    fdr <- if(exists("input")) { if(!is.null(input$slider_pval)) input$slider_pval else .01 } else .01
+    fdr <- as.numeric(SHINYREPS_DE_DESEQ_FDR)
+    FC  <- as.numeric(SHINYREPS_DE_DESEQ_FC)
     genes <- DEhelper.DESeq2.DEgenes(i)
-    cat("MA plot showing expression fold change vs. mean expression level of all annotated genes. There are", sum(genes$padj < fdr, na.rm=T), "genes highlighted in the MA plot with corrected pvalue (Benjamini and Hochberg, FDR) <", fdr, ".", "\n")
+    #filtering for tested genes
+    genes <- genes[!is.na(genes$padj), ]
+    cat("MA plot showing expression fold change vs. mean expression level of all annotated genes. There are", 
+        sum((genes$padj < fdr) & (abs(genes$log2FoldChange) > log2(FC)), na.rm=T), "genes with a minimal FC of", FC, "highlighted in the MA plot with corrected pvalue (Benjamini and Hochberg, FDR) <", fdr, ".", "\n")
+    #we do not need an additional filter for the FC here
+    #since only genes with a minimal fold change of FC are
+    #significant for the significance level chosen in the analysis
     DEhelper.DESeq2.MAplot(i, fdr)    # should be fine at taking the value from the UI slider
     cat("\n", fill=T)
 
@@ -321,12 +381,16 @@ for(i in 1:nrow(conts)) {
     if(file.exists(GO_bar_up)) {
 
         # GO enriched terms in a barplot
-        cat("Top enriched Gene Ontology non-redundant Biological Processes of the up-regulated genes with FDR < 0.01.", fill=T)
+        cat("Top enriched Gene Ontology non-redundant Biological Processes of the up-regulated genes with FDR < 0.01", fill=T)
         cat("![GO_Analysis img](", GO_bar_up, ")\n", fill=T)
 
         # GO enriched terms in a treemap
-        cat("Gene Ontology Biological Processes (all) of the up-regulated genes with FDR < 0.01, grouped by similarity. Color and area represent the cluster and the significance (-log10 adjusted p-value) of the enrihcment, respectively.", fill=T)
-        cat("![GO_Analysis img](", GO_treemap_up, ")\n", fill=T)
+        cat("Gene Ontology Biological Processes (all) of the up-regulated genes with FDR < 0.01, grouped by similarity. Color and area represent the cluster and the significance (-log10 adjusted p-value) of the enrichment, respectively.", fill=T)
+        if (file.exists(GO_treemap_up)){
+            cat("![GO_Analysis img](", GO_treemap_up, ")\n", fill=T)
+        } else {
+            cat("This plot is only available, if at least two GO terms are enriched.\n", fill=T)
+        }
 
         # GO enriched terms in a cnetplot
         cat("The Gene-Concept Network plot of the up-regulated genes with FDR < 0.01. This plot depicts the linkages of genes and biological concepts (GO terms) as a network.", fill=T)
@@ -335,6 +399,8 @@ for(i in 1:nrow(conts)) {
         # and table of OG enriched terms
         cat("Top enriched Gene Ontology non-redundant Biological Processes of the up-regulated genes with FDR < 0.01:\n", fill=T)
         enrich <- read.csv(file=GO_table_up)
+        #we filter for terms which do not have an id or parent
+        enrich <- enrich[!(is.na(enrich$ID) | is.na(enrich$parent)),]
         enrich <- enrich[enrich$ID == enrich$parent, ] # get non-redundant terms only
         cols   <- c("ID", "Description", "GeneRatio", "BgRatio", "pvalue", "p.adjust", "geneID")
         r      <- min(10, nrow(enrich))
@@ -365,8 +431,12 @@ for(i in 1:nrow(conts)) {
         cat("![GO_Analysis img](", GO_bar_down, ")\n", fill=T)
 
         # GO enriched terms in a treemap
-        cat("Gene Ontology Biological Processes (all) of the down-regulated genes with FDR < 0.01, grouped by similarity. Color and area represent the cluster and the significance (-log10 adjusted p-value) of the enrihcment, respectively.", fill=T)
-        cat("![GO_Analysis img](", GO_treemap_down, ")\n", fill=T)
+        cat("Gene Ontology Biological Processes (all) of the down-regulated genes with FDR < 0.01, grouped by similarity. Color and area represent the cluster and the significance (-log10 adjusted p-value) of the enrichment, respectively.", fill=T)
+        if (file.exists(GO_treemap_down)) {
+            cat("![GO_Analysis img](", GO_treemap_down, ")\n", fill=T)
+        } else {
+            cat("This plot is only available, if at least two GO terms are enriched.\n", fill=T)
+        }
 
         # GO enriched terms in a cnetplot
         cat("The Gene-Concept Network plot of the down-regulated genes with FDR < 0.01. This plot depicts the linkages of genes and biological concepts (GO terms) as a network.", fill=T)
@@ -375,6 +445,9 @@ for(i in 1:nrow(conts)) {
         # and table of OG enriched terms
         cat("Top enriched Gene Ontology non-redundant Biological Processes of the down-regulated genes with FDR < 0.01:\n", fill=T)
         enrich  <- read.csv(file=GO_table_down)
+        #this does not work if the parent and the ID are NA
+        #we filter for terms which do not have an id or parent
+        enrich <- enrich[!(is.na(enrich$ID) | is.na(enrich$parent)),]
         enrich <- enrich[enrich$ID == enrich$parent, ] # get non-redundant terms only
         cols    <- c("ID", "Description", "GeneRatio", "BgRatio", "pvalue", "p.adjust", "geneID")
         r       <- min(10, nrow(enrich))

@@ -1325,7 +1325,7 @@ DEhelper.cutadapt <- function(colorByFactor=NULL, targetsdf=targets, sampleColum
   indexAdapterSelected <- indexAdapter[grep("[ACGT].[[:digit:]]*}", cutadaptpars[indexAdapter+1])] # select e.g. polyA, polyT
 
   # rename those adapters columns trimmed by -a commands 
-  if (length(indexAdapterSelected>0)) {
+  if (length(indexAdapterSelected)>0) {
     colnames(x.df)[grepl("Adapter", colnames(x.df))][match(indexAdapterSelected, indexAdapter)] <- 
       paste0(gsub("Adapter.*$", "", colnames(x.df)[grepl("Adapter", colnames(x.df))][match(indexAdapterSelected, indexAdapter)]), cutadaptpars[indexAdapterSelected+1])
   }

@@ -22,6 +22,7 @@ load PIPELINE_ROOT + "/modules/RNAseq/deseq2.header"
 load PIPELINE_ROOT + "/modules/RNAseq/subread.header"
 load PIPELINE_ROOT + "/modules/RNAseq/subread2rnatypes.header"
 load PIPELINE_ROOT + "/modules/RNAseq/filter2htseq.header"
+load PIPELINE_ROOT + "/modules/RNAseq/tpm.header"
 load PIPELINE_ROOT + "/modules/RNAseq/dupradar.header"
 load PIPELINE_ROOT + "/modules/RNAseq/deseq2_mm.header"
 load PIPELINE_ROOT + "/modules/RNAseq/genebodycov2.header"
@@ -37,14 +38,14 @@ load PIPELINE_ROOT + "/modules/RNAseq/shinyreports.header"
 dontrun = { println "didn't run $module" }
 
 Bpipe.run {
-    "%.fastq.gz" * [ FastQC ] +
+    "%.fastq.gz" * [ FastQC, (RUN_FASTQSCREEN ? FastqScreen : dontrun.using(module: "FastqScreen")) ] +
     (RUN_IN_PAIRED_END_MODE ? "%.R*.fastq.gz" : "%.fastq.gz") * [
         STAR + BAMindexer + [
             subread_count + filter2htseq,
             bamCoverage,
             inferexperiment,
             subread2rnatypes,
-            MarkDups2 + BAMindexer + dupRadar,
+            dupRadar,
             geneBodyCov2,
             (RUN_IN_PAIRED_END_MODE ? InsertSize : dontrun.using(module: "InsertSize"))
         ]

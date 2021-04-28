@@ -417,9 +417,9 @@ config {
       memory="32"
     }
     dupRadar { 
-      walltime="02:00:00" 
+      walltime="05:00:00" 
       procs="4" 
-      memory="1"
+      memory="10"
     }
     extend { 
       walltime="01:00:00" 
@@ -497,13 +497,18 @@ config {
       memory="1"
     }
     subread2rnatypes { 
-      walltime="01:00:00" 
+      walltime="02:00:00" 
       procs="4" 
-      memory="1"
+      memory="10"
     }
     subread_count { 
       walltime="00:30:00" 
       procs="4" 
+      memory="4"
+    }
+    tpm {
+      walltime="00:30:00"
+      procs="1"
       memory="4"
     }
     trackhub { 
