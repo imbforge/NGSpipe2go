@@ -131,7 +131,6 @@ insert <- lapply(branches[1], function(dir) {
   	cat("\nThe insert size distribution is given as histogram:\n\n")  
   	 
   	p <- ChIPhelper.insertsize.plot(subdir=dir)
-  	sample_length <- length(list.files(file.path(SHINYREPS_INSERTSIZE, dir), pattern = "insertsizemetrics.tsv$"))
     ChIPhelper.subchunkify(p, 
                          fig_height = dim(p)[1] * 15/dim(p)[2],
                          fig_width = 15)
@@ -243,31 +242,23 @@ peaksAllBranches <- lapply(branches, function(peaksdir) {
 
 ## Correlation of peaks ##
 
-The overlap of peaks is shown in distinct mode, i.e. overlaps are counted if they occur in the respective set but not in any other set. E.g. a combination 1 1 0 means a set of elements is both in set A and B, while not in C. Under this mode, the combination sets are mutually exclusive.
-
-```{r peak_upset_paragraph, echo=F,results='asis',error=F,warning=F,message=F}
-upset <- lapply(branches, function(peaksdir) {
-  if(length(branches)>1) {cat(paste("### Peaks from", if(peaksdir==""){"default"} else {peaksdir}, "pipeline branch\n\n"))}
-  ChIPhelper.UpSetPlot(peaksdir, Mode="distinct", targetsdf=NULL)
-})
-```
-
-
-
-## Correlation of peaks per group ##
-
-The overlap of peaks is shown in intersect mode and highlighted for better comparability of replicates within each group. Overlaps are counted if they occur in the respective set irrespective if they occur in any other set. E.g. a combination 1 1 0 means a set of elements is in set A and B, and they can also in C or not in C. Under this mode, the combination sets can overlap.
+The overlap of peaks is shown in 'intersect' mode with replicates within each group highlighted for comparison. Overlaps are counted if they occur in the respective set irrespective if they occur in any other set. E.g. a combination 1 1 0 means a set of elements is in set A and B, and they can also in C or not in C. Under this mode, the combination sets can overlap. For mutually exclusive combination sets, i.e. overlaps are counted if they occur in the respective set but not in any other set (combination 1 1 0 means a set of elements is both in set A and B, while not in C) select Mode="distinct".
 
 ```{r peak_upset_paragraph_by_groups, echo=F,results='asis',error=F,warning=F,message=F}
 upset <- lapply(branches, function(peaksdir) {
   if(length(branches)>1) {cat(paste("### Peaks from", if(peaksdir==""){"default"} else {peaksdir}, "pipeline branch\n\n"))}
-  ChIPhelper.UpSetPlot(peaksdir, Mode="intersect", targetsdf=targets, addBarAnnotation=F)
+  ChIPhelper.UpSetPlot(peaksdir, Mode="intersect", peakOverlapMode=c("peaknumber"), targetsdf=targets, addBarAnnotation=F)
 })
+# By default, the number of overlapping peaks is displayed (peakOverlapMode="peaknumber"). 
+# If you prefer to inspect overlap of peaks based on bp select peakOverlapMode="bp" 
+# or both peakOverlapMode=c("peaknumber", "bp"). 
+# Mind that calculating the combination matrix for an UpSet Plot is quite time consuming (may take hours for huge datasets).
 ```
 
 
 
-```{r peak_venn_paragraph_combined, echo=F, results='asis', error=F, warning=F, message=F, fig.height= (nrow(targets)*2+5)/2.54}
+
+```{r peak_venn_paragraph_combined, echo=F, results='asis', error=F, warning=F, message=F, fig.height= (nrow(targets)*2.1+5)/2.54}
 if(length(branches)>1) {
 cat("\n\n### Overlap of peaks from different pipeline branches\n")  
   
