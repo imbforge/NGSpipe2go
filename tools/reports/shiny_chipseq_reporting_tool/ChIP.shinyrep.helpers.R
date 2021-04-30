@@ -191,120 +191,132 @@ ChIPhelper.VennDiagram <- function(subdir=""){
   }
 }
 
-##
-## ChIPhelper.UpsetPlot: shows a upset plot for the peaks called in one branch 
-##
-ChIPhelper.UpSetPlot <- function(subdir="", Mode = "distinct", setsize=20, targetsdf=NULL, addBarAnnotation=T){
+
+
+#'
+#' ChIPhelper.UpsetPlot: shows a upset plot for the peaks called in one branch of the pipeline
+#'
+#' @param subdir character with sub-directory containing the peak files
+#' @param Mode character defining the mode for forming the combination set (one of "distinct", "intersect", "union")
+#' @param peakOverlapMode select the value function to calculate size of combination sets ("peaknumber" for number of beaks and/or "bp" for basepairs)
+#' @param setsize numeric, maximal number of sets shown
+#' @param targetsdf data.frame with targets data. If not NULL, combination sets are highlighted by exclusive sample groups.
+#' @param addBarAnnotation logical, whether the intersection sizes are printed on top pf the column annotation 
+
+ChIPhelper.UpSetPlot <- function(subdir="", Mode = "distinct", peakOverlapMode=c("peaknumber", "bp"), setsize=25, targetsdf=NULL, addBarAnnotation=T){
+  
   #create granges from the peaks
   peak.ranges <- ChIPhelper.init("readPeaks", subdir, peaks_as="GRanges")
   
-  cat(paste0("#### Overlap of peaks per peak number:"), fill=T)
-  cat("\n", fill=T)
-  #this upset plot is based on the number of peaks which are overlapping (value_fun is length)
-  #upset_matrix <- make_comb_mat(peak.ranges, top_n_sets=setsize, value_fun = length)
-  upset_matrix <- make_comb_mat(peak.ranges, mode = Mode, value_fun = length)
-  #we subset the matrix to only display the top sets
-  upset_matrix <- upset_matrix[order(comb_size(upset_matrix), decreasing = T)[1:setsize]]
-  
-  combColors <- fillColors <- "steelblue" # default color
-  
-  if(!is.null(targetsdf)) { # coloring setnames and respective combinations by group from targets file
-    targetsdf <- targetsdf[order(targetsdf$group, targetsdf$IPname), ]
-    mypalette <- define.group.palette(length(levels(factor(targetsdf$group))))
-    legend_colors <- setNames(mypalette, levels(factor(targetsdf$group)))
+  if("peaknumber" %in% peakOverlapMode) {
+    cat(paste0("#### Overlap of peaks per peak number"), fill=T)
+    cat("\n", fill=T)
+    #this upset plot is based on the number of peaks which are overlapping (value_fun is length)
+    upset_matrix <- make_comb_mat(peak.ranges, mode = Mode, value_fun = length)
+    #we subset the matrix to only display the top sets
+    upset_matrix <- upset_matrix[order(comb_size(upset_matrix), decreasing = T)[1:setsize]]
     
-    setnamesOrderByTargetsdf <- match(targetsdf$IPname, gsub(".vs.*$", "", set_name(upset_matrix)))
-    fillColors <- legend_colors[targetsdf$group]
-    combColors <- rep("darkgrey", length.out=length(comb_name(upset_matrix))) 
-    for(i in targetsdf$group) { # assign color for all combinations involving a single group
-      comb <- paste0(ifelse(targetsdf$group==i, ".", 0), collapse="")
-      combColors[grep(comb, comb_name(upset_matrix))] <- legend_colors[i]
-    }
-  }
-  
-  ht <- draw(UpSet(upset_matrix,
-                   comb_order = order(comb_size(upset_matrix), decreasing = T),
-                   comb_col = combColors,
-                   bg_col = "#F0F0FF",
-                   set_order = if(is.null(targetsdf)) {order(set_size(upset_matrix), decreasing = TRUE)} else {setnamesOrderByTargetsdf},
-                   column_title=paste("# of regions for branch", subdir, "\nmax.", setsize, "sets are shown"),
-                   left_annotation = if(is.null(targetsdf)) {NULL} else {rowAnnotation(group = targetsdf$group, col=list(group=legend_colors))}, 
-                   right_annotation = upset_right_annotation(upset_matrix, gp = gpar(fill = fillColors) 
-                   )
-  ) )
-  if(addBarAnnotation){
-    od = column_order(ht)
-    cs = comb_size(upset_matrix)
-    currentvptree <- current.vpTree() # viewport name differs depending on package version
-    #print(paste("\ncurrent vptree:", currentvptree))
-    interactionsize_viewport <- c("intersection_size", "Intersection\nsize")
-    interactionsize_viewport <- interactionsize_viewport[sapply(interactionsize_viewport, grepl, currentvptree)]
-    if(length(interactionsize_viewport)==1) {
-      decorate_annotation(interactionsize_viewport, {
-        grid.text(format(cs[od], scientific=F),
-                  x = seq_along(cs), y = unit(cs[od], "native") + unit(20, "pt"), 
-                  default.units = "native", just = "bottom", gp = gpar(fontsize = 8), rot=90)        
-      })
-    } else {
-      warning("Viewpoint not found or ambiguous. decorate_annotation is omitted.")
-    }
-  }
-  
-  cat("\n", fill=T)
-  cat("\n", fill=T)
-  cat(paste0("#### Overlap of peaks based on bp:"), fill=T)
-  cat("\n", fill=T)
-  cat("\n", fill=T)
-  cat("\n", fill=T)
-  #this upset plot is based on the number of bp which are overlapping 
-  upset_matrix <- make_comb_mat(peak.ranges, mode = Mode)
-  #we subset the matrix to only display the top sets
-  upset_matrix <- upset_matrix[order(comb_size(upset_matrix), decreasing = T)[1:setsize]]
-  
-  if(!is.null(targetsdf)) { # coloring setnames and respective combinations by group from targets file
-    targetsdf <- targetsdf[order(targetsdf$group, targetsdf$IPname), ]
-    mypalette <- define.group.palette(length(levels(factor(targetsdf$group))))
-    legend_colors <- setNames(mypalette, levels(factor(targetsdf$group)))
+    combColors <- fillColors <- "steelblue" # default color
     
-    setnamesOrderByTargetsdf <- match(targetsdf$IPname, gsub(".vs.*$", "", set_name(upset_matrix)))
-    fillColors <- legend_colors[targetsdf$group]
-    combColors <- rep("darkgrey", length.out=length(comb_name(upset_matrix))) 
-    for(i in targetsdf$group) { # assign color for all combinations involving a single group
-      comb <- paste0(ifelse(targetsdf$group==i, ".", 0), collapse="")
-      combColors[grep(comb, comb_name(upset_matrix))] <- legend_colors[i]
+    if(!is.null(targetsdf)) { # coloring setnames and respective combinations by group from targets file
+      targetsdf <- targetsdf[order(targetsdf$group, targetsdf$IPname), ]
+      mypalette <- define.group.palette(length(levels(factor(targetsdf$group))))
+      legend_colors <- setNames(mypalette, levels(factor(targetsdf$group)))
+      
+      setnamesOrderByTargetsdf <- match(targetsdf$IPname, gsub(".vs.*$", "", set_name(upset_matrix)))
+      fillColors <- legend_colors[targetsdf$group]
+      combColors <- rep("grey40", length.out=length(comb_name(upset_matrix))) 
+      for(i in targetsdf$group) { # assign color for all combinations involving a single group
+        comb <- paste0(ifelse(targetsdf$group==i, ".", 0), collapse="")
+        combColors[grep(comb, comb_name(upset_matrix))] <- legend_colors[i]
+      }
     }
+    
+    ht <- draw(UpSet(upset_matrix,
+                     comb_order = order(comb_size(upset_matrix), decreasing = T),
+                     comb_col = combColors,
+                     bg_col = "#F0F0FF",
+                     set_order = if(is.null(targetsdf)) {order(set_size(upset_matrix), decreasing = TRUE)} else {setnamesOrderByTargetsdf},
+                     column_title=paste("# of regions for branch", subdir, "\nmax.", setsize, "sets are shown"),
+                     left_annotation = if(is.null(targetsdf)) {NULL} else {rowAnnotation(group = targetsdf$group, col=list(group=legend_colors))}, 
+                     right_annotation = upset_right_annotation(upset_matrix, gp = gpar(fill = fillColors) 
+                     )
+    ) )
+    if(addBarAnnotation){
+      od = column_order(ht)
+      cs = comb_size(upset_matrix)
+      currentvptree <- current.vpTree() # viewport name differs depending on package version
+      #print(paste("\ncurrent vptree:", currentvptree))
+      interactionsize_viewport <- c("intersection_size", "Intersection\nsize")
+      interactionsize_viewport <- interactionsize_viewport[sapply(interactionsize_viewport, grepl, currentvptree)]
+      if(length(interactionsize_viewport)==1) {
+        decorate_annotation(interactionsize_viewport, {
+          grid.text(format(cs[od], scientific=F),
+                    x = seq_along(cs), y = unit(cs[od], "native") + unit(20, "pt"), 
+                    default.units = "native", just = "bottom", gp = gpar(fontsize = 8), rot=90)        
+        })
+      } else {
+        warning("Viewpoint not found or ambiguous. decorate_annotation is omitted.")
+      }
+    }
+    cat("\n", fill=T)
   }
   
-  ht <- draw(UpSet(upset_matrix,
-                   comb_order = order(comb_size(upset_matrix), decreasing = T),
-                   comb_col = combColors,
-                   bg_col = "#F0F0FF",
-                   set_order = if(is.null(targetsdf)) {order(set_size(upset_matrix), decreasing = TRUE)} else {setnamesOrderByTargetsdf},
-                   column_title=paste("# overlap in bp for branch", subdir,"\nmax.", setsize, "sets are shown"),
-                   left_annotation = if(is.null(targetsdf)) {NULL} else {rowAnnotation(group = targetsdf$group, col=list(group=legend_colors))}, 
-                   right_annotation = upset_right_annotation(upset_matrix, gp = gpar(fill = fillColors)
-                   )
-  ))
-  if(addBarAnnotation){
-    od = column_order(ht)
-    cs = comb_size(upset_matrix)
-    currentvptree <- current.vpTree() # viewport name differs depending on package version
-    #print(paste("\ncurrent vptree:", currentvptree))
-    interactionsize_viewport <- c("intersection_size", "Intersection\nsize")
-    interactionsize_viewport <- interactionsize_viewport[sapply(interactionsize_viewport, grepl, currentvptree)]
-    if(length(interactionsize_viewport)==1) {
-      decorate_annotation(interactionsize_viewport, {
-        grid.text(format(cs[od], scientific=T, digits=2),
-                  x = seq_along(cs), y = unit(cs[od], "native") + unit(20, "pt"), 
-                  default.units = "native", just = "bottom", gp = gpar(fontsize = 8), rot=90)
-      })
-    } else {
-      warning("Viewpoint not found or ambiguous. decorate_annotation is omitted.")
+  if("bp" %in% peakOverlapMode) {
+    cat("\n", fill=T)
+    cat(paste0("#### Overlap of peaks based on bp"), fill=T)
+    cat("\n", fill=T)
+    cat("\n", fill=T)
+    cat("\n", fill=T)
+    #this upset plot is based on the number of bp which are overlapping 
+    upset_matrix <- make_comb_mat(peak.ranges, mode = Mode)
+    #we subset the matrix to only display the top sets
+    upset_matrix <- upset_matrix[order(comb_size(upset_matrix), decreasing = T)[1:setsize]]
+    
+    if(!is.null(targetsdf)) { # coloring setnames and respective combinations by group from targets file
+      targetsdf <- targetsdf[order(targetsdf$group, targetsdf$IPname), ]
+      mypalette <- define.group.palette(length(levels(factor(targetsdf$group))))
+      legend_colors <- setNames(mypalette, levels(factor(targetsdf$group)))
+      
+      setnamesOrderByTargetsdf <- match(targetsdf$IPname, gsub(".vs.*$", "", set_name(upset_matrix)))
+      fillColors <- legend_colors[targetsdf$group]
+      combColors <- rep("grey40", length.out=length(comb_name(upset_matrix))) 
+      for(i in targetsdf$group) { # assign color for all combinations involving a single group
+        comb <- paste0(ifelse(targetsdf$group==i, ".", 0), collapse="")
+        combColors[grep(comb, comb_name(upset_matrix))] <- legend_colors[i]
+      }
     }
-  }  
-
-  cat("\n", fill=T)
-  cat("\n", fill=T)
+    
+    ht <- draw(UpSet(upset_matrix,
+                     comb_order = order(comb_size(upset_matrix), decreasing = T),
+                     comb_col = combColors,
+                     bg_col = "#F0F0FF",
+                     set_order = if(is.null(targetsdf)) {order(set_size(upset_matrix), decreasing = TRUE)} else {setnamesOrderByTargetsdf},
+                     column_title=paste("# overlap in bp for branch", subdir,"\nmax.", setsize, "sets are shown"),
+                     left_annotation = if(is.null(targetsdf)) {NULL} else {rowAnnotation(group = targetsdf$group, col=list(group=legend_colors))}, 
+                     right_annotation = upset_right_annotation(upset_matrix, gp = gpar(fill = fillColors)
+                     )
+    ))
+    if(addBarAnnotation){
+      od = column_order(ht)
+      cs = comb_size(upset_matrix)
+      currentvptree <- current.vpTree() # viewport name differs depending on package version
+      #print(paste("\ncurrent vptree:", currentvptree))
+      interactionsize_viewport <- c("intersection_size", "Intersection\nsize")
+      interactionsize_viewport <- interactionsize_viewport[sapply(interactionsize_viewport, grepl, currentvptree)]
+      if(length(interactionsize_viewport)==1) {
+        decorate_annotation(interactionsize_viewport, {
+          grid.text(format(cs[od], scientific=T, digits=2),
+                    x = seq_along(cs), y = unit(cs[od], "native") + unit(20, "pt"), 
+                    default.units = "native", just = "bottom", gp = gpar(fontsize = 8), rot=90)
+        })
+      } else {
+        warning("Viewpoint not found or ambiguous. decorate_annotation is omitted.")
+      }
+    }  
+    cat("\n", fill=T)
+    cat("\n", fill=T)
+  }
 }
 
 
@@ -850,7 +862,7 @@ ChIPhelper.insertsize.plot <- function(subdir="", ...){
   # logs folder
 
   SHINYREPS_PLOTS_COLUMN <- tryCatch(as.integer(SHINYREPS_PLOTS_COLUMN),error=function(e){3})
-  if(SHINYREPS_PLOTS_COLUMN < 2 | SHINYREPS_PLOTS_COLUMN > 4) {
+  if(SHINYREPS_PLOTS_COLUMN < 2 | SHINYREPS_PLOTS_COLUMN > 3) {
     SHINYREPS_PLOTS_COLUMN <- 3L    # default to 3 columns
   }
   
