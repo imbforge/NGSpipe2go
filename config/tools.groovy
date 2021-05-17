@@ -42,7 +42,7 @@ tools_defaults = [
     kentutils  : [ runenv: "lmod", version: "v365"         ],
     macs2      : [ runenv: "lmod", version: "2.1.2"        ],
     mirdeep2   : [ runenv: "lmod", version: "2.0.0.8"      ],
-    multiqc    : [ runenv: "lmod", version: "1.7"          ],
+    multiqc    : [ runenv: "lmod", version: "1.9"          ],
     pear       : [ runenv: "lmod", version: "0.9.11"       ],
     picard     : [ runenv: "lmod", version: "2.20"         ],
     pingpongpro: [ runenv: "lmod", version: "1.0"          ],
@@ -196,6 +196,9 @@ tools_envs = [
             lmod: "module load MultiQC/1.7",
             conda: "source activate ${conda_tools}/MultiQC/1.7",
             singularity: "alias multiqc=\"singularity run --app multiqc ${singularity_tools}/MultiQC/1.7/multiqc.simg\""
+        ],
+        "1.9": [
+            lmod: "module load MultiQC/1.9"
         ]
     ],
     pear: [
