@@ -471,6 +471,8 @@ ChIPhelper.Fastqc <- function(web=FALSE, subdir="") {
   
   # construct the image url from the folder ents (skip current dir .)
   samples <- list.dirs(QC, recursive=F)
+  samples <- samples[sapply(samples, function(x) {file.exists(file.path(x, "fastqc_data.txt"))})] # exclude potential subdir which is also listed by list.dirs
+
   df <- sapply(samples, function(f) {
     c(paste0("![fastq dup img](", QC, "/", basename(f), "/Images/duplication_levels.png)"), 
       paste0("![fastq qual img](", QC, "/", basename(f), "/Images/per_base_quality.png)"), 
