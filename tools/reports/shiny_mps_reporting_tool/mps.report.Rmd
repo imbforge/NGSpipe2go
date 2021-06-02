@@ -14,18 +14,6 @@ output:
 
 
 
-# Processing
-
-Bpipe.run {
-   (RUN_IN_PAIRED_END_MODE ? "%.R*.fastq.gz" : "%.fastq.gz") * [
-        FastQC +
-        (RUN_CUTADAPT ? Cutadapt + FastQC : dontrun.using(module:"Cutadapt")) +
-        (RUN_PEAR ? pear : dontrun.using(module:"pear")) +
-               AddUMIBarcodeToFastq + barcode_count
-    ] +
-            (RUN_MPSprofiling ? MPSprofiling : dontrun.using(module:"MPSprofiling")) +
-            MultiQC + collectToolVersions + collectBpipeLogs + shinyReports
-}
 
 ```{r setup, echo=F, result='hide', error=F, warning=F, message=F}
 
@@ -59,7 +47,8 @@ theme_set(theme_bw() + theme(axis.text=element_text(colour="grey30",size=12),
 									legend.title=element_text(size=12,colour="grey30")))
 
 
-run_cutadapt <- dir.exists(SHINYREPS_CUTADAPT_LOGS)
+run_cutadapt <- dir.exists(SHINYREPS_CUTADAPT_STATS)
+run_2ndQC_after_cutadapt <- F
 run_pear_assembly <- dir.exists(SHINYREPS_PEAR_LOG)
 run_whitelist_extraction <- dir.exists(SHINYREPS_UMIEXTRACT_LOGWL)
 run_nested_extraction <-any(grepl("nested", list.files(SHINYREPS_UMIEXTRACT_LOG))) 
@@ -102,14 +91,26 @@ The y-axis on the graph shows the Phred quality scores, which are logarithmicall
 # filenames will be included which match this expression, e.g. setting samplePattern="R1" yields only those fastq 
 # files containing read1 of a read pair. 
 # For samplePattern=NULL all fastq files will be included.
-# If you want to exclude samples according to the given certain pattern (instead of including), set exclude=T. 
+# If you want to exclude samples according to the given certain pattern (instead of including), use parameter excludePattern. 
 # If you set argument 'maxno', the maximum sample number will be restricted accordingly to the first 'maxno' plots. 
-#
-samplePattern=SHINYREPS_PATTERNFASTQC2
-maxno=SHINYREPS_MAXNO        
 ##### 
 
-cat(DEhelper.Fastqc(web=F, samplePattern=samplePattern, exclude=T, maxno=maxno), sep="\n")
+cat(MPShelper.Fastqc(web=F, samplePattern=SHINYREPS_SAMPLEPATTERN1, maxno=SHINYREPS_MAXNO), sep="\n")
+```
+
+
+```{r fastqscreen_paragraph, echo=F, results='asis', fig.width=10, error=F, warning=F, message=F}
+cat("## Competetive mapping to rRNAs and other contaminants
+
+A competitive mapping to the reference genome and known rRNAs (H. sapiens, M. musculus, C. elegans, D. melanogaster, D. rerio, X. tropicalis) as well as frequently occurring Mycoplasma species (M. arginini, M. fermentans, M. hominis, M. hyorhinis, M. orale, and Acholeplasma laidlawii), PhiX and ERCC spike-in sequences, E. coli and B. taurus (bovine) was performed with FastQScreen (http://www.bioinformatics.babraham.ac.uk/projects/fastq_screen/).
+
+In the following plot only relevant contaminants are shown. A contaminant is considered relevant if it consumes `r SHINYREPS_FASTQSCREEN_PERC`% of reads or more in at least one sample. The 'one genome' label refers to the amount of reads mapping to that genome only, no matter if they are mapping uniquely or multiple times. The 'multiple genome' label refers to the amount of read mapping to this genome but also to other genomes in the screening regardless of whether they are uniquely or multi mapping.\n\n")
+
+fastqscreen_plots <- MPShelper.fastqscreen(perc.to.plot=SHINYREPS_FASTQSCREEN_PERC, ncol=2)
+```
+
+```{r fastqscreen_paragraph_plot, echo=F,results='asis',error=F,warning=F,message=F,fig.align='center', fig.height=min(170, (round((1.5*fastqscreen_plots$no.of.rows))+1)*fastqscreen_plots$no.of.samples/8+1)}
+plot(fastqscreen_plots$p.category.wrap)
 ```
 
 
@@ -127,31 +128,26 @@ cat("## Adapter trimming with Cutadapt
 
 The following plot shows the amount of reads trimmed for the selected adapter sequences. The column 'tooshort' gives the percentage of reads removed due to a length cutoff after trimming. Additional to the column 'trimmed', which is for all adapters combined, there are columns for every adapter giving the percentage of reads trimmed for this adapter.\n")
 
-MPShelper.cutadapt(targetsdf=NULL, colorByFactor=NULL)
+MPShelper.cutadapt(targetsdf=targets, colorByFactor=NULL)
 ```
 
 
 
-```{r FastQC_paragraph2, echo=F, results='asis', error=F, warning=F, message=F, eval=run_cutadapt}
+```{r FastQC_paragraph2, echo=F, results='asis', error=F, warning=F, message=F, eval=run_cutadapt & run_2ndQC_after_cutadapt}
 ##### parameters to set:
 # Select samples for which you would like to include fastqc results in the report. For huge experiments, 
 # you may want to restrict the total number of plots. If you provide a regular expression in 'samplePattern' only those 
 # filenames will be included which match this expression, e.g. setting samplePattern="R1" yields only those fastq 
 # files containing read1 of a read pair. 
 # For samplePattern=NULL all fastq files will be included.
-# If you want to exclude samples according to the given certain pattern (instead of including), set exclude=T. 
+# If you want to exclude samples according to the given certain pattern (instead of including), use parameter excludePattern. 
 # If you set argument 'maxno', the maximum sample number will be restricted accordingly to the first 'maxno' plots. 
-#
-samplePattern=SHINYREPS_PATTERNFASTQC2
-maxno=SHINYREPS_MAXNO        
 ##### 
 
-cat("## FastQC after adapter trimming\n")
+cat("### FastQC after adapter trimming\n")
 
-cat(DEhelper.Fastqc(web=F, samplePattern=samplePattern, maxno=maxno), sep="\n")
+cat(MPShelper.Fastqc(web=F, subdir="trimmed", samplePattern=SHINYREPS_SAMPLEPATTERN1, maxno=SHINYREPS_MAXNO), sep="\n")
 ```
-
-
 
 
 
@@ -204,7 +200,7 @@ samplePattern=SHINYREPS_PATTERNUMITOOLS
 colorByFactor = SHINYREPS_COLORBYFACTOR 
 #####
 
-MPShelper.umiextract(samplePattern=samplePattern, exclude=T, colorByFactor=colorByFactor, targetsdf=targets)
+MPShelper.umiextract(excludePattern=samplePattern, colorByFactor=colorByFactor, targetsdf=targets)
 ```
 
 

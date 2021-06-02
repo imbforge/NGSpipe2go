@@ -17,7 +17,7 @@ attach_packages <- function(pkg) {
   for (p in pkg) { 
     require(p, character.only = TRUE) 
   }
-return(unique(not.yet.attached.pkg))
+  return(unique(not.yet.attached.pkg))
 }
 
 
@@ -37,17 +37,17 @@ return(unique(not.yet.attached.pkg))
 #'              SHINYREPS_PROJECT=projects/example_project
 #'              
 loadGlobalVars <- function(f="shinyReports.txt") {
-
+  
   conf_list <- lapply(f, function(f) {
     # read in the conf file(s)
     conf <- readLines(f)
     conf <- conf[grep("^SHINYREPS_", conf)]
     conf <-  sapply(conf, function(x) {
-        x <- unlist(strsplit(x, "=", fixed=T))
-        if(length(x) == 2)
-            x
-        else
-            c(x[1], NA)
+      x <- unlist(strsplit(x, "=", fixed=T))
+      if(length(x) == 2)
+        x
+      else
+        c(x[1], NA)
     })
     colnames(conf) <- conf[1,]
     conf <- conf[-1,, drop=F]
@@ -59,7 +59,7 @@ loadGlobalVars <- function(f="shinyReports.txt") {
   for(i in colnames(conf)) {
     assign(i, unique(conf[,i]), envir=.GlobalEnv)
   }
-
+  
   invisible(0)
 }
 
@@ -83,29 +83,30 @@ loadGlobalVars <- function(f="shinyReports.txt") {
 #'           ## [1] "This_..._shortened"
 #'           
 shorten <- function(x, max.len=40, ini=20, end=15) {
-    l <- nchar(x)
-    if(l > max.len) paste(substr(x, 1, ini), substr(x, (l-end), l), sep="...") else x
+  l <- nchar(x)
+  if(l > max.len) paste(substr(x, 1, ini), substr(x, (l-end), l), sep="...") else x
 }
 
 
 
 ##
-## DEhelper.Fastqc: go through Fastqc output dir and create a md table with the duplication & read quals & sequence bias plots
+## MPShelper.Fastqc: go through Fastqc output dir and create a md table with the duplication & read quals & sequence bias plots
 ##
-DEhelper.Fastqc <- function(web=TRUE, ...) {
+MPShelper.Fastqc <- function(web=FALSE, subdir="", ...) {
   
   # logs folder
-  if(!all(sapply(SHINYREPS_FASTQC_OUT, file.exists))) {
-    return(paste("Fastqc statistics not available for", names(which(!sapply(SHINYREPS_FASTQC_OUT, file.exists)))))
+  if(!all(sapply(file.path(SHINYREPS_FASTQC_OUT, subdir), file.exists))) {
+    return(paste("Fastqc statistics not available for", names(which(!sapply(file.path(SHINYREPS_FASTQC_OUT, subdir), file.exists)))))
   }
   
   # construct the folder name, which is different for web and noweb
-  QC <- if(web) "/fastqc" else SHINYREPS_FASTQC_OUT
+  QC <- if(web) paste0("/fastqc/", subdir) else file.path(SHINYREPS_FASTQC_OUT, subdir)
   
   # construct the image url from the folder contents (skip current dir .)
-  samples <- list.dirs(SHINYREPS_FASTQC_OUT, recursive=F, full.names = T)
+  samples <- list.dirs(QC, recursive=F, full.names = T)
+  samples <- samples[sapply(samples, function(x) {file.exists(file.path(x, "fastqc_data.txt"))})] # exclude potential subdir which is also listed by list.dirs
   
-  # select subset of samples for fastqc figures (e.g. merged singlecell pools) or use all samples for samplePattern=NULL
+  # select subset of samples for fastqc figures (e.g. merged single cell pools) or use all samples for samplePattern=NULL
   samples <- selectSampleSubset(samples, ...)
   if(length(samples) == 0) {
     return("No samples matched with this pattern...")
@@ -128,6 +129,317 @@ DEhelper.Fastqc <- function(web=TRUE, ...) {
 }
 
 
+##
+## MPShelper.ngsReports.Fastqc: joint FastQC report of all samples in the experiment
+##
+MPShelper.ngsReports.Fastqc <- function(subdir="", ...) {
+  
+  # output folder
+  if(!file.exists(file.path(SHINYREPS_FASTQC_OUT, subdir))) {
+    return("Fastqc statistics not available")
+  }
+  
+  # Loading FastQC Data 
+  f <- list.files(file.path(SHINYREPS_FASTQC_OUT, subdir), pattern="fastqc.zip$", full.names=TRUE)
+  
+  # select subset of samples for fastqc figures (e.g. merged singlecell pools) or use all samples for samplePattern=NULL
+  f <- selectSampleSubset(f, ...)
+  
+  x <- ngsReports::FastqcDataList(f)
+  lbls <- gsub(paste0("(^", SHINYREPS_PREFIX, "|.fastqc.zip$)"), "", names(x))
+  names(lbls) <- gsub(".fastqc.zip", ".fastq.gz", names(x))
+  
+  print(ngsReports::plotBaseQuals(x, labels=lbls))
+  print(ngsReports::plotSeqContent(x, labels=lbls) +
+          theme(legend.position="right") +
+          guides(fill=FALSE, color="legend") +
+          geom_point(mapping=aes(x=Inf, y=Inf, color=base),
+                     data=data.frame(base=c("T", "A", "C", "G")),
+                     inherit.aes=FALSE, show.legend=TRUE) +
+          scale_color_manual("", values=c("red", "green", "blue", "black"))
+  )
+  print(ngsReports::plotGcContent(x, plotType="line", gcType="Genome", theoreticalGC = F, labels=lbls))  
+}
+
+##
+## MPShelper.Fastqc.custom: prepare Fastqc summary plots
+##
+MPShelper.Fastqc.custom <- function(web=FALSE, summarizedPlots=TRUE, subdir="", ...) {
+  
+  # logs folder
+  if(!file.exists(file.path(SHINYREPS_FASTQC_OUT, subdir))) {
+    return("Fastqc statistics not available")
+  }
+  
+  # construct the folder name, which is different for web and noweb
+  QC <- if(web) paste0("/fastqc/", subdir) else file.path(SHINYREPS_FASTQC_OUT, subdir)
+  
+  # read fastqc results in the appropriate format
+  f <- list.files(QC, pattern="\\.zip$",full.names=T)
+  
+  # select subset of samples for fastqc figures (e.g. merged singlecell pools) or use all samples for samplePattern=NULL
+  f <- selectSampleSubset(f, ...)
+  
+  fastqc.stats <- ngsReports::FastqcDataList(f)
+  
+  # create proper name vector as labels
+  lbls <- gsub("_fastqc.zip$", "", names(fastqc.stats))
+  names(lbls) <- gsub("_fastqc.zip", ".fastq.gz", names(fastqc.stats))
+  
+  if(file.exists(SHINYREPS_TARGET)){
+    
+    # get target names
+    targets <- read.delim(SHINYREPS_TARGET)
+    targets$sample_ext <- gsub("\\..*$", "",targets$file )
+    
+    # replace files names with nicer sample names given in targets file 
+    # if sample is missing in targets file, use reduced file name
+    lbls <- sapply(lbls, function(i) { ifelse(i %in% targets$sample_ext,
+                                              targets[targets$sample_ext == gsub(".R1$|.R2$","",i),"sample"],
+                                              gsub(paste0("^",SHINYREPS_PREFIX),"",i))})
+    
+    targets <- targets[targets$sample %in% lbls,] # if sample subset selected, remove spare entries from targets
+    
+    if(SHINYREPS_PAIRED == "yes") {
+      x <- names(lbls)
+      lbls <- paste0(lbls, ifelse(grepl("R1", names(lbls)), "_R1", "_R2"))
+      names(lbls) <- x
+    }
+  } else {
+    
+    if(!is.na(SHINYREPS_PREFIX)) {
+      lbls <- gsub(paste0("^",SHINYREPS_PREFIX), "", lbls)
+    }
+  }
+  
+  # change names also in fastqc.stats (needed for seq. quality plot)
+  names(fastqc.stats) <- lbls
+  
+  if (summarizedPlots == TRUE) {
+    
+    # prepare for plotting  
+    df <- reshape::melt(lapply(fastqc.stats , function(x) x@Per_base_sequence_quality[, c("Base","Mean")]))
+    names(df)[names(df)=="L1"] <- "samplename"
+    
+    # color code the samples as done by fastqc:
+    # A warning will be issued if the lower quartile for any base is less than 10, or if the median for any base is less than 25.
+    # A failure will be raised if the lower quartile for any base is less than 5 or if the median for any base is less than 20. 
+    # (https://www.bioinformatics.babraham.ac.uk/projects/fastqc/Help/3%20Analysis%20Modules/2%20Per%20Base%20Sequence%20Quality.html)
+    cols <- c(pass    = "#5cb85c",
+              warning = "#f0ad4e",
+              fail    = "#d9534f")
+    colorcode <- do.call(rbind,lapply(names(fastqc.stats),
+                                      function(i) {
+                                        min.l.quart <- min(fastqc.stats[[i]]@Per_base_sequence_quality$Lower_Quartile)
+                                        min.med <- min(fastqc.stats[[i]]@Per_base_sequence_quality$Median)
+                                        col.sample <- ifelse(min.l.quart>=10 & min.med>=25, 
+                                                             cols["pass"],
+                                                             ifelse(min.l.quart>=5 & min.med>=20,
+                                                                    cols["warning"],
+                                                                    cols["fail"]))
+                                        return(data.frame(sample=i,
+                                                          min.lower.quart=min.l.quart,
+                                                          min.median=min.med,
+                                                          col=col.sample))
+                                      }
+    ))
+    
+    ## only label "warning"s and "fail"ures 
+    to.be.labelled <- colorcode[colorcode$col == cols["warning"] | colorcode$col == cols["fail"],]
+    
+    ## in case all samples "pass"ed, label "all" in legend
+    if (nrow(to.be.labelled) == 0) {
+      to.be.labelled <- data.frame(sample="overlay of all samples", col=cols["pass"], row.names=NULL)
+    } else {
+      to.be.labelled <- rbind(to.be.labelled,c("all other samples","","",col=cols["pass"]))
+    }
+    
+    # fix position on x-axis since there can be intervals of positions summarized in fastqc
+    df$position <- factor(df$Base, levels=unique(df$Base))
+    xlen <- length(unique(df$Base))
+    
+    p.qual <- ggplot(df, aes(x=as.numeric(position), y=value)) +
+      labs(x = "position in read (bp)",
+           y = "mean quality score (Phred)") +
+      geom_rect(aes(xmin = -Inf, xmax = Inf, ymin = -Inf, ymax = 20), fill = "#edc0c4", alpha = 0.3, color=NA) +
+      geom_rect(aes(xmin = -Inf, xmax = Inf, ymin = 20, ymax = 28), fill = "#f0e2cc", alpha = 0.3, color=NA) +
+      geom_rect(aes(xmin = -Inf, xmax = Inf, ymin = 28, ymax = Inf), fill = "#ceebd1", alpha = 0.3, color=NA) +
+      geom_line(aes(color=samplename)) +
+      scale_color_manual(values = as.character(colorcode$col),
+                         breaks = colorcode$sample,
+                         labels = colorcode$sample) +
+      geom_point(data=to.be.labelled,
+                 mapping=aes(x=NaN, y=NaN, fill=sample),
+                 inherit.aes=FALSE, show.legend=TRUE, size = 1.5, shape = 21, color = "white") +
+      scale_fill_manual(values = as.character(to.be.labelled$col),
+                        breaks = to.be.labelled$sample,
+                        labels = to.be.labelled$sample) +
+      geom_hline(yintercept = c(0,10,20,30,40),color="white",alpha=0.3) +
+      geom_vline(xintercept = seq(0,xlen,10),color="white",alpha=0.3) +
+      coord_cartesian(xlim = c(1,xlen), ylim = c(0,42)) +
+      guides(color=FALSE,
+             fill=guide_legend(title="",ncol=3)) +
+      theme(axis.text.x = element_text(size=6,angle=90,hjust=0.5,vjust=0.5),
+            axis.text.y = element_text(size=8),
+            axis.title  = element_text(size=10),
+            plot.title  = element_text(size=12),
+            legend.text = element_text(size=7),
+            legend.position = "top") +
+      scale_x_continuous(breaks=unique(as.numeric(df$position)),
+                         labels=unique(df$Base))
+    
+    ## use rev(lbls) to plot in reverse order
+    p.content <- ngsReports::plotSeqContent(fastqc.stats, labels=rev(lbls)) +
+      labs(y = "") +
+      theme(legend.position="right") +
+      guides(fill=FALSE, color="legend") +
+      geom_point(mapping=aes(x=Inf, y=Inf, color=base),
+                 data=data.frame(base=c("T", "A", "C", "G")),
+                 inherit.aes=FALSE, show.legend=TRUE) +
+      scale_color_manual("", values=c("red", "green", "blue", "black")) 
+    
+  } else {
+    
+    p.qual <- ngsReports::plotBaseQuals(fastqc.stats, labels=lbls, plotType="boxplot") +
+      theme(axis.text.x = element_text(size=5))
+    p.content <- ngsReports::plotSeqContent(fastqc.stats, labels=lbls, plotType="line") +
+      theme(axis.text.x = element_text(size=5),
+            legend.position = "top")
+  }
+  
+  # GC content line plot 
+  # in case you want to add a theoretical distribution to the plot, use function plotGcContent with 
+  # the following settings:
+  # ngsReports::plotGcContent(fastqc.stats, plotType="line", gcType="Genome", labels=lbls, theoreticalGC=TRUE, species=SPECIES)
+  # the default value for SPECIES is "Hsapiens", thus, if you don't specify it, human will be used as a default
+  p.gc <- ngsReports::plotGcContent(fastqc.stats, usePlotly=summarizedPlots, plotType="line", gcType="Genome", labels=lbls, theoreticalGC=FALSE) 
+  if(!summarizedPlots) {
+    p.gc <- p.gc + guides(color=guide_legend(title="",ncol=4)) + 
+      theme(legend.position = "top", legend.text = element_text(size=8)) 
+  }
+  return(list(no.of.samples=length(f), p.qual=p.qual, p.content=p.content, p.gc=p.gc))
+}
+
+
+
+#' MPShelper.fastqscreen: summarizes FastQScreen results, creates summarized barplots, only relevant contanimants shown
+#'
+#' @param perc.to.plot - a numeric vector of length 1 setting the percent cutoff of relevant contaminants, if any sample
+#'                       shows more than perc.to.plot, contaminant will be shown in plot
+#'
+#' @return a list including a plot, the number of samples, and the number of plotted contaminants
+#'
+MPShelper.fastqscreen <- function(subdir="", perc.to.plot = 1, ncol=2, ...) {
+  
+  # logs folder
+  if(!file.exists(SHINYREPS_FASTQSCREEN_OUT)) {
+    return("FastQScreen statistics not available")
+  }
+  
+  # construct the folder name, which is different for web and noweb
+  QC <- file.path(SHINYREPS_FASTQSCREEN_OUT, subdir)
+  
+  # construct the image url from the folder contents (skip current dir .)
+  #samples <- list.files(SHINYREPS_FASTQSCREEN_OUT, pattern="_screen.txt$", recursive=T, full.names=T) # does not exclude subdir
+  samples <- list.dirs(QC, recursive=F, full.names = T)
+  samples <- samples[sapply(samples, function(x) {file.exists(file.path(x, "fastqscreen.conf"))})] # exclude potential subdir which is also listed by list.dirs or recursive list.files
+  samples <- list.files(samples, pattern="_screen.txt$", recursive=F, full.names=T)
+  
+  # select subset of samples to plot
+  samples <- selectSampleSubset(samples, ...)
+  
+  df <- lapply(samples, function(f) {
+    #we read in the file 
+    screen_data <- read.delim(f, header=T, skip=1)
+    #the last line is our %hit_no_genomes
+    no_hit <- as.numeric(gsub("%Hit_no_genomes: ", "",screen_data[nrow(screen_data),1]))
+    screen_data <- screen_data[-nrow(screen_data),]
+    rownames(screen_data) <- screen_data$Genome
+    screen_data <- screen_data[, !(colnames(screen_data)=="Genome")]
+    #we get the number of unique/multiple hits per one genome and calculate sum (of the percentages)
+    one_genome <- data.frame(perc=rowSums(screen_data[, 
+                                                      grepl("one_genome.1",
+                                                            colnames(screen_data))]))
+    one_genome$genome <- rownames(one_genome)
+    one_genome$category <- "one genome"
+    multi_genome <- data.frame(perc=rowSums(screen_data[, colnames(screen_data) %in% 
+                                                          c("X.One_hit_multiple_genomes.1",
+                                                            "X.Multiple_hits_multiple_genomes")]))
+    multi_genome$genome <- rownames(multi_genome)
+    multi_genome$category <- "multiple genomes"
+    
+    mapping_info <- rbind(one_genome, multi_genome)
+    mapping_info <- rbind(mapping_info, c(perc=no_hit, genome="no hit", category="no hit"))
+    mapping_info$perc <- as.numeric(mapping_info$perc)
+    mapping_info$category <- factor(mapping_info$category, levels=c("one genome","multiple genomes","no hit"))
+    return(mapping_info)
+  })
+  
+  # sample names
+  samples <- gsub("_screen.txt", "", basename(samples))
+  
+  if(file.exists(SHINYREPS_TARGET)){
+    
+    # get target names
+    targets <- read.delim(SHINYREPS_TARGET, sep=",")
+    targets$sample_ext <- gsub("\\..*$", "",targets$pruned_file_name )
+    
+    # replace files names with nicer sample names given in targets file
+    # if sample is missing in targets file, use reduced file name
+    samples <- sapply(samples, function(i) { ifelse(i %in% targets$sample_ext,
+                                                    targets[targets$sample_ext == i,"unique_sample_id"],
+                                                    ifelse(gsub(".R1|.R2","",i) %in% targets$sample_ext,
+                                                           ifelse(gsub(".R1","",i) %in% targets$sample_ext,
+                                                                  paste0(targets[targets$sample_ext == gsub(".R1","",i),"unique_sample_id"],".R1"),
+                                                                  paste0(targets[targets$sample_ext == gsub(".R2","",i),"unique_sample_id"],".R2")),
+                                                           gsub(paste0("^",SHINYREPS_PREFIX),"",i)))})
+  } else {
+    if(!is.na(SHINYREPS_PREFIX)) {
+      samples <- gsub(paste0("^",SHINYREPS_PREFIX), "", samples)
+    }
+  }
+  
+  names(df) <- samples
+  #createing a df out of the lists
+  df <- reshape2::melt(df, value.name="perc")
+  colnames(df) <- gsub("L1", "sample", colnames(df))
+  
+  # filter for relevant contaminants (e.g. showing >=1% (perc.to.plot) in any sample)
+  max.per.genome <- aggregate(df$perc,list(df$genome),max)
+  relevant.genomes <- max.per.genome[max.per.genome[,2]>=perc.to.plot,1]
+  df <- df[df$genome %in% relevant.genomes,]
+  
+  # sort alphabetically
+  df$sample <- factor(df$sample, levels=unique(df$sample)[order(unique(df$sample),decreasing=TRUE)])
+  
+  # replace "Mycoplasma" by "Mycoplasma species", FastQScreen itself cannot deal with space characters
+  df$genome <- gsub("Mycoplasma","Mycoplasma species",df$genome)
+  
+  # split/wrap per genome
+  df$genome <- factor(df$genome, levels=unique(df$genome))
+  
+  p.category.wrap <- ggplot(df, aes(x=sample, y=perc, fill=category)) +
+    geom_col(position=position_stack(reverse=T),width=0.8) +
+    scale_fill_manual(values=c(alpha("#4281a4",0.8),alpha("#ffa62b",0.8),"gray60")) +   
+    scale_y_continuous(breaks=seq(0,100,by=10)) +
+    theme_bw(base_size=10) +
+    labs(x = "",
+         y = "% mapped") +
+    theme(axis.text.x = element_text(vjust=0.5, angle=90),
+          legend.position = "top") +
+    guides(fill=guide_legend(title="mapped to", ncol=3)) +
+    facet_wrap(~genome,ncol=ncol) +
+    coord_flip()
+  
+  return(list(p.category.wrap=p.category.wrap,
+              no.of.genomes=length(unique(df$genome)),
+              no.of.samples=length(unique(df$sample)),
+              no.of.rows = ceiling(length(unique(df$genome))/ncol)
+  )
+  )      
+}
+
+
 
 ##
 ## MPShelper.cutadapt: get cutadapt statistics from the log folder and display them
@@ -137,14 +449,14 @@ DEhelper.Fastqc <- function(web=TRUE, ...) {
 #' @param sampleColumnName character with column name(s) of targets table containing file names
 #'
 #' @return plot cutadapt statistics as side effect
-MPShelper.cutadapt <- function(targetsdf=targets, colorByFactor="group", sampleColumnName =c("sample_file_name"), ...){
+MPShelper.cutadapt <- function(targetsdf=targets, colorByFactor="group", sampleColumnName =c("pruned_file_name"), ...){
   
   # logs folder
-  if(!all(sapply(SHINYREPS_CUTADAPT_LOGS, file.exists))) {
-    return(paste("Cutadapt statistics not available for", names(which(!sapply(SHINYREPS_CUTADAPT_LOGS, file.exists)))))
+  if(!all(sapply(SHINYREPS_CUTADAPT_STATS, file.exists))) {
+    return(paste("Cutadapt statistics not available for", names(which(!sapply(SHINYREPS_CUTADAPT_STATS, file.exists)))))
   }
   
-  x <- list.files(SHINYREPS_CUTADAPT_LOGS,pattern='*cutadapt.log$',full.names=TRUE) 
+  x <- list.files(SHINYREPS_CUTADAPT_STATS,pattern='*cutadapt.log$',full.names=TRUE) 
   
   # get Command line parameters of first file
   cutadaptpars <- system(paste("grep \"Command line parameters\"", x[1]), intern=T)
@@ -602,45 +914,45 @@ MPShelper.whitelistextraction <- function(web=F, ...) {
 
 
 ##
-## DEhelper.Bustard: call the perl XML interpreter and get the MD output
+## MPShelper.Bustard: call the perl XML interpreter and get the MD output
 ##
-DEhelper.Bustard <- function() {
-    f  <- SHINYREPS_BUSTARD
-    
-    if(!file.exists(f)) {
-        return("Bustard statistics not available")
-    }
-    
-    # call the perl XSL inetrpreter
-    cmd <- paste(" bustard.pl", f)
-    try(ret <- system2("perl", cmd, stdout=TRUE, stderr=FALSE))
-    
-    # check RC
-    if(!is.null(attributes(ret))) {
-        return(paste("Error parsing bustard statistics. RC:", attributes(ret)$status, "in command: perl", cmd))
-    }
-    
-    ret     # ret contains already MD code
+MPShelper.Bustard <- function() {
+  f  <- SHINYREPS_BUSTARD
+  
+  if(!file.exists(f)) {
+    return("Bustard statistics not available")
+  }
+  
+  # call the perl XSL inetrpreter
+  cmd <- paste(" bustard.pl", f)
+  try(ret <- system2("perl", cmd, stdout=TRUE, stderr=FALSE))
+  
+  # check RC
+  if(!is.null(attributes(ret))) {
+    return(paste("Error parsing bustard statistics. RC:", attributes(ret)$status, "in command: perl", cmd))
+  }
+  
+  ret     # ret contains already MD code
 }
 
 
 ##
-## DEhelper.Trackhub: display the UCSC trackhub URL
+## MPShelper.Trackhub: display the UCSC trackhub URL
 ##
-DEhelper.Trackhub <- function() {
-    
-    # output file with trackhub URL
-    if(!file.exists(SHINYREPS_TRACKHUB_DONE)) {
-        return("UCSC GB Trackhub URL file not available")
-    }
-    
-    # Trackhub URL is second line of file
-    url <- scan(SHINYREPS_TRACKHUB_DONE, skip=0, nlines=1, what='character')
-    if (grepl("hub.txt", url)) {
-        return(url)
-    } else {
-        return("UCSC GB Trackhub URL not available")
-    }
+MPShelper.Trackhub <- function() {
+  
+  # output file with trackhub URL
+  if(!file.exists(SHINYREPS_TRACKHUB_DONE)) {
+    return("UCSC GB Trackhub URL file not available")
+  }
+  
+  # Trackhub URL is second line of file
+  url <- scan(SHINYREPS_TRACKHUB_DONE, skip=0, nlines=1, what='character')
+  if (grepl("hub.txt", url)) {
+    return(url)
+  } else {
+    return("UCSC GB Trackhub URL not available")
+  }
 }
 
 ##		      
@@ -648,11 +960,11 @@ DEhelper.Trackhub <- function() {
 ##
 ## report version of used tools
 Toolhelper.ToolVersions <- function() {
-    tryCatch({
-        ver <- read.delim(file=SHINYREPS_TOOL_VERSIONS)
-        colnames(ver) <- c("Tool name","Environment", "Version")
-        kable(as.data.frame(ver),output=F)
-    }, error=function(e) cat("tool versions not available.\n", fill=TRUE))
+  tryCatch({
+    ver <- read.delim(file=SHINYREPS_TOOL_VERSIONS)
+    colnames(ver) <- c("Tool name","Environment", "Version")
+    kable(as.data.frame(ver),output=F)
+  }, error=function(e) cat("tool versions not available.\n", fill=TRUE))
 }
 
 
@@ -719,26 +1031,34 @@ plotPCAfromQCmetrics <- function(sce, metrics, anno, qc.drop=NULL){
 ##
 #' selectSampleSubset: select subset of samples for including in report (e.g. in case of multiple fastq files in scRNA-seq) 
 #'
-#' @param samples character vector with sample names
-#' @param samplePattern regular expression to apply on \code{samples}
-#' @param exclude logical indicating if selected samples shall be excluded or included
+#' @param samples character vector with sample names. 
+#' @param samplePattern regular expression to filter (include) on \code{samples}. No filtering if NULL or NA.
+#' @param excludePattern regular expression to filter (exclude) on \code{samples}. No filtering if NULL or NA.
 #' @param grepInBasename logical. If \code{TRUE} apply pattern to filename, not to full path.
 #'
 #' @return character vector with selected sample names
-selectSampleSubset <- function(samples, samplePattern=NULL, exclude=F, grepInBasename=T, maxno=NULL) {
-  # use all samples for samplePattern=NULL
+selectSampleSubset <- function(samples, samplePattern=NULL, excludePattern=NULL, grepInBasename=T, maxno=NULL) {
+  
   if(!gtools::invalid(samplePattern)) {
-    
     x <- if(grepInBasename) {basename(samples)} else {samples} # if TRUE apply pattern to filename, not to full path
-    samples <- samples[grep(samplePattern, x, invert=exclude)]
-    
+    if(!any(grepl(samplePattern, x))) {
+      warning(paste("\nYour pattern", samplePattern, "was not found in sample names and is ignored.\n")) 
+    } else {
+      samples <- samples[grep(samplePattern, x, invert=F)]
+    }
     if(length(samples)==0) {stop("\nYou have selected no files!\n")}
   }
-  if(!gtools::invalid(maxno)) {
-    maxno <- as.numeric(maxno)
+  
+  if(!gtools::invalid(excludePattern)) {
+    x <- if(grepInBasename) {basename(samples)} else {samples} # if TRUE apply pattern to filename, not to full path
+    samples <- samples[grep(excludePattern, x, invert=T)]
+    if(length(samples)==0) {stop("\nYou have selected no files!\n")}
+  }
+  
+  maxno <- as.numeric(maxno) # in case number is character
+  if(!gtools::invalid(maxno) && is.numeric(maxno)) {
     samples <- samples[1:min(length(samples), maxno)]
-    if(maxno < length(samples)) {cat("\nSample number restricted to", maxno)}
+    if(maxno > length(samples)) {cat("\nSample number restricted to", maxno)}
   }
   return(samples)
 }
-
