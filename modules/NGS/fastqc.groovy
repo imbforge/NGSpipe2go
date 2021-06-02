@@ -5,7 +5,9 @@ FastQC = {
         bpipe_version: "tested with bpipe 0.9.8.7",
         author: "Sergi Sayols, Frank Rühle"
 
-    output.dir = FastQC_vars.outdir
+    var subdir : ""
+    output.dir = FastQC_vars.outdir + "/$subdir"
+
     def FASTQC_FLAGS =
         (FastQC_vars.extra ? " " + FastQC_vars.extra : "")
 

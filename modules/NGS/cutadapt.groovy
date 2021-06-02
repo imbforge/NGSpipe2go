@@ -14,9 +14,9 @@ Cutadapt = {
     def SAMPLENAME_BASE_R2 = SAMPLENAME_BASE.replace(".R1", ".R2") // needed for paired end only
 
     // create the log folder if it doesn't exists
-    def CUTADAPT_LOGDIR = new File( Cutadapt_vars.logdir)
-    if (!CUTADAPT_LOGDIR.exists()) {
-        CUTADAPT_LOGDIR.mkdirs()
+    def CUTADAPT_STATSDIR = new File( Cutadapt_vars.statsdir)
+    if (!CUTADAPT_STATSDIR.exists()) {
+        CUTADAPT_STATSDIR.mkdirs()
     }
     // create the discarded folder if it doesn't exists
     def CUTADAPT_DISCARDED_DIR = new File( Cutadapt_vars.outdir + "/discarded")
@@ -46,7 +46,7 @@ Cutadapt = {
             ${TOOL_ENV} &&
             ${PREAMBLE} &&
 
-            cutadapt $CUTADAPT_FLAGS $CUTADAPT_FLAGS_PAIRED --too-short-output=\${TMP}/${SAMPLENAME_BASE}.cutadapt_discarded.fastq.gz --output=\${TMP}/${SAMPLENAME_BASE}.cutadapt.fastq.gz $input1 $CUTADAPT_INPUT_SECOND 1> ${CUTADAPT_LOGDIR}/${SAMPLENAME_BASE_PRUNED}.cutadapt.log &&
+            cutadapt $CUTADAPT_FLAGS $CUTADAPT_FLAGS_PAIRED --too-short-output=\${TMP}/${SAMPLENAME_BASE}.cutadapt_discarded.fastq.gz --output=\${TMP}/${SAMPLENAME_BASE}.cutadapt.fastq.gz $input1 $CUTADAPT_INPUT_SECOND 1> ${CUTADAPT_STATSDIR}/${SAMPLENAME_BASE_PRUNED}.cutadapt.log &&
 		
             mv -t ${CUTADAPT_DISCARDED_DIR}/ \${TMP}/${SAMPLENAME_BASE_PRUNED}*cutadapt_discarded.fastq.gz &&
             mv -t $output.dir \${TMP}/${SAMPLENAME_BASE_PRUNED}*cutadapt.fastq.gz

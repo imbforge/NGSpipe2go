@@ -5,7 +5,8 @@ FastqScreen = {
         bpipe_version: "tested with bpipe 0.9.8.7",
         author: "Nastasja Kreim, modified by Frank Ruehle"
 
-    output.dir = FastqScreen_vars.outdir
+    var subdir : ""
+    output.dir = FastqScreen_vars.outdir + "/$subdir"
     def FASTQSCREEN_FLAGS = 
         (FastqScreen_vars.threads ? " --threads " + FastqScreen_vars.threads : "") +
         (FastqScreen_vars.extra   ? " "           + FastqScreen_vars.extra   : "")
@@ -21,7 +22,7 @@ FastqScreen = {
             if [ ! -e "$output.prefix" ]; then
                 mkdir $output.prefix;
             fi &&
-            fastqreference=${FastqScreen_vars.conf};
+            fastqreference=${FastqScreen_vars.genome}${FastqScreen_vars.conf};
             references=(\${fastqreference//,/ });
             for i in "\${!references[@]}"; do
                 reference=(\${references[i]//::/ });

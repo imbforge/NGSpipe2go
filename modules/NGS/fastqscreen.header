@@ -3,10 +3,12 @@ FastqScreen_vars=[
     threads: Integer.toString(ESSENTIAL_THREADS),
     //the fastqscreen_conf defines your references, with these we will create a fastqscreen conf script and then run the fastqscreen
     //this could be e.g.
-    conf   : "Human::BowtieIndex/genome,rRNA::mouse_all_rRNA.fasta",
+    genome : "yeast::/fsimb/common/genomes/saccharomyces_cerevisiae/ensembl/R64/canonical/index/bowtie2/2.3.4.3/Saccharomyces_cerevisiae.R64-1-1.dna.toplevel",
+    conf   : ",PHIX::/fsimb/common/genomes/phix/19930428/NCBI/index/bowtie2/2.3.4.3/ncbi_phix,ERCC::/fsimb/common/genomes/ERCC/index/bowtie2/2.3.4.3/ERCC92,rRNA::/fsimb/common/genomes/contaminants/fastqscreen_references/rrna/v1/index/bowtie2/2.3.4.3/hs_mm_ce_dm_rn_dr_xt_rRNA,Mycoplasma::/fsimb/common/genomes/contaminants/fastqscreen_references/mycoplasma/v1/index/bowtie2/2.3.4.3/mycoplasma_all_ref,E.coli::/fsimb/common/genomes/Escherichia_coli/ensembl/full/index/bowtie2/Escherichia_coli_str_k_12_substr_dh10b.ASM1942v1.31.dna.genome,B.taurus::/fsimb/common/genomes/bos_taurus/ensembl/3.1/full/index/bowtie2/2.2.9/UMD3.1",
     //fastqscreen additional param e.g. subset or bowtie /bowtie 2 parameters
     extra  : "--nohits --subset 100000"
 ]
 
 load PIPELINE_ROOT + "/modules/NGS/fastqscreen.groovy"
+
 
