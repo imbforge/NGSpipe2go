@@ -1,7 +1,8 @@
 ESSENTIAL_PROJECT="/your/project/folder/"
 ESSENTIAL_THREADS=4
+ESSENTIAL_SAMPLE_PREFIX=""
 
-ESSENTIAL_EXPDESIGN="amplicon1"  // design of DNA Amplicon-Seq experiment.
+ESSENTIAL_EXPDESIGN="amplicon2"  // design of DNA Amplicon-Seq experiment.
 // the following experimental designs are implemented:
 // "amplicon1": Paired end sequencing with overlapping reads to be merged.
 //              Amplicon sequence contains cell barcodes to count and UMIs for deduplication.
@@ -23,7 +24,7 @@ switch(ESSENTIAL_EXPDESIGN) {
        PREDEF_BCPATTERN_2="";
        break;
     case "amplicon2":
-       PREDEF_BCPATTERN="\"(?P<discard_1>.{0,10})(?P<umi_1>.{0})(AGGAGTCCACCTTACATCTTGTGCTAAGGCTAAGAGGTGGT){s<=2}(?P<cell_1>.{6})(GGATCCGGAGCTTGGCTGTTGCCCGTCTCACTGGTGAAAAGAAAAACCACCCTGGCGCCCAATA){s<=2}(?P<discard_2>.*)\"";
+       PREDEF_BCPATTERN="\"(?P<discard_1>.{0,6})(?P<umi_1>.{0})(AGGAGTCCACCTTACATCTTGTGCTAAGGCTAAGAGGTGGT){s<=2}(?P<cell_1>.{6})(GGATCCGGAGCTTGGCTGTTGCCCGTCTCACTGGTGAAAAGAAAAACCACCCTGGCGCCCAATA){s<=2}(?P<discard_2>.*)\"";
        PREDEF_BCPATTERN_2="";
        break;
     case "amplicon3":
@@ -55,7 +56,7 @@ ESSENTIAL_CORRECT_CB2=false // correct cell barcodes to whitelist2
 
 
 //Adapter trimming with Cutadapt (optional).
-RUN_CUTADAPT=false
+RUN_CUTADAPT=true
 ESSENTIAL_ADAPTER_SEQUENCE="IlluminaR1=AGATCGGAAGAGCACACGTCTGAAC" // standard sequence to trim illumina reads (IlluminaR2=AGATCGGAAGAGCGTCGTGTAGGGA, set in cutadapt header if needed)
 ESSENTIAL_MINADAPTEROVERLAP=3  // minimal overlap of the read and the adapter for an adapter to be found (cutadapt default 3)
 ESSENTIAL_MINREADLENGTH=15     // minimal length of reads to be kept (cutadapt default 0)

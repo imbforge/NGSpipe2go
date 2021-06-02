@@ -1,5 +1,5 @@
 PIPELINE="DNAampliconseq_MPS"
-PIPELINE_VERSION="1.1"
+PIPELINE_VERSION="1.2"
 PIPELINE_ROOT="./NGSpipe2go/"  // adjust to your projects needs
 
 load PIPELINE_ROOT + "/pipelines/DNAampliconseq/essential.vars.groovy"
@@ -9,6 +9,7 @@ load PIPELINE_ROOT + "/config/preambles.groovy"
 load PIPELINE_ROOT + "/config/bpipe.config.groovy"
 
 load PIPELINE_ROOT + "/modules/NGS/fastqc.header"
+load PIPELINE_ROOT + "/modules/NGS/fastqscreen.header"
 load PIPELINE_ROOT + "/modules/NGS/cutadapt.header"
 
 load PIPELINE_ROOT + "/modules/DNAampliconseq/pear.header"
@@ -26,8 +27,8 @@ dontrun = { println "didn't run $module" }
 
 Bpipe.run {
    (RUN_IN_PAIRED_END_MODE ? "%.R*.fastq.gz" : "%.fastq.gz") * [
-        FastQC +
-        (RUN_CUTADAPT ? Cutadapt + FastQC : dontrun.using(module:"Cutadapt")) +
+        FastQC + FastqScreen +
+        (RUN_CUTADAPT ? Cutadapt + FastQC.using(subdir:"trimmed") : dontrun.using(module:"Cutadapt")) +
         (RUN_PEAR ? pear : dontrun.using(module:"pear")) +
                AddUMIBarcodeToFastq + barcode_count
     ] +
