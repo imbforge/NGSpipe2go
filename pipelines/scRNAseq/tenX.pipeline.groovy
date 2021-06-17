@@ -34,7 +34,7 @@ dontrun = { println "didn't run $module" }
 
 Bpipe.run { 
     "%.fastq.gz" * [ FastQC + FastqScreen +
-      (RUN_CUTADAPT ? Cutadapt + FastQC : dontrun.using(module:"Cutadapt")) ] + 
+      (RUN_CUTADAPT ? Cutadapt + FastQC.using(subdir:"trimmed") : dontrun.using(module:"Cutadapt")) ] + 
       "%_L*_R*_001.fastq.gz" * [
          cellranger_count + [
             bamCoverage,
@@ -43,8 +43,8 @@ Bpipe.run {
             subread2rnatypes,
             dupRadar,
             geneBodyCov2
-        ]
-    ] +
+         ]
+    ] + 
     cellranger_aggr +
     (RUN_TRACKHUB ? trackhub_config + trackhub : dontrun.using(module:"trackhub")) +
     collectToolVersions + collectBpipeLogs + shinyReports

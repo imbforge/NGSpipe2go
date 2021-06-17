@@ -7,9 +7,12 @@ load PIPELINE_ROOT + "/pipelines/scRNAseq/tools.groovy"
 load PIPELINE_ROOT + "/config/preambles.groovy"
 load PIPELINE_ROOT + "/config/bpipe.config.groovy"
 
+load PIPELINE_ROOT + "/modules/scRNAseq/cellranger_count.header"
+load PIPELINE_ROOT + "/modules/scRNAseq/cellranger_aggr.header"
 load PIPELINE_ROOT + "/modules/NGS/bamcoverage.header"
 load PIPELINE_ROOT + "/modules/NGS/bamindexer.header"
 load PIPELINE_ROOT + "/modules/NGS/fastqc.header"
+load PIPELINE_ROOT + "/modules/NGS/fastqscreen.header"
 load PIPELINE_ROOT + "/modules/NGS/markdups2.header"
 load PIPELINE_ROOT + "/modules/NGS/insertsize.header"
 load PIPELINE_ROOT + "/modules/NGS/cutadapt.header"
@@ -33,8 +36,8 @@ dontrun = { println "didn't run $module" }
 
 Bpipe.run { 
     (RUN_IN_PAIRED_END_MODE ? "%.R*.fastq.gz" : "%.fastq.gz") * [
-        FastQC + 
-        (RUN_CUTADAPT ? Cutadapt + FastQC : dontrun.using(module:"Cutadapt")) + 
+        FastQC + FastqScreen + 
+        (RUN_CUTADAPT ? Cutadapt + FastQC.using(subdir:"trimmed") : dontrun.using(module:"Cutadapt")) + 
         STAR + BAMindexer + [
             subread_count + filter2htseq, 
             subread2rnatypes,
