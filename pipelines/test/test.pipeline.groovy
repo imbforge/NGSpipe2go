@@ -15,8 +15,9 @@ load PIPELINE_ROOT + "/config/bpipe.config.groovy"
 //MAIN PIPELINE TASK
 test = { 
   output.dir = OUT
+  def branch_outdir = new File(output.dir).getName()
 
-  def PREAMBLE = get_preamble(module:"test", input:branch)
+  def PREAMBLE = get_preamble(module:"test", branch:branch, branch_outdir:branch_outdir)
 
   transform("*.in") to (".out") {
       exec """

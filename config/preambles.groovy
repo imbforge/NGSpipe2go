@@ -16,7 +16,7 @@ default_preamble="""
     [[ -n \$TMP && ! -d \$TMP ]] && mkdir -p "\$TMP";
     [[ -n \$SLURM_JOB_ID ]] && export TMP="/jobdir/\$SLURM_JOB_ID";
 
-    export LOGS="${LOGS}/__module__";
+    export LOGS="${LOGS}/__module__/__branch_outdir__";
     [[ -n \$LOGS && ! -d \$LOGS ]] && mkdir -p "\$LOGS";
     readonly LOG_FILE=\${LOGS}/__input__
     touch \$LOG_FILE;
