@@ -32,7 +32,6 @@ load PIPELINE_ROOT + "/modules/NGS/trackhub.header"
 load PIPELINE_ROOT + "/modules/NGS/trackhub_config.header"
 load PIPELINE_ROOT + "/modules/NGS/multiqc.header"
 load PIPELINE_ROOT + "/modules/miscellaneous/collect_tool_versions.header"
-load PIPELINE_ROOT + "/modules/miscellaneous/collectbpipes.module.2.header"
 load PIPELINE_ROOT + "/modules/ChIPseq/shinyreports.header"
 
 
@@ -79,7 +78,7 @@ Bpipe.run {
      (RUN_ENRICHMENT ? GREAT.using(subdir:"filtered") : dontrun.using(module:"GREAT"))
     ] +
     (RUN_TRACKHUB ? trackhub_config + trackhub : dontrun.using(module:"trackhub")) +
-    collectToolVersions + collectBpipeLogs + MultiQC + 
+    collectToolVersions + MultiQC + 
     shinyReports
 }
 

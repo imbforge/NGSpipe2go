@@ -31,7 +31,6 @@ load PIPELINE_ROOT + "/modules/RNAseq/GO_Enrichment.header"
 load PIPELINE_ROOT + "/modules/RNAseq/qualimap.header"
 load PIPELINE_ROOT + "/modules/NGS/multiqc.header"
 load PIPELINE_ROOT + "/modules/miscellaneous/collect_tool_versions.header"
-load PIPELINE_ROOT + "/modules/miscellaneous/collectbpipes.module.2.header"
 load PIPELINE_ROOT + "/modules/RNAseq/shinyreports.header"
 
 //MAIN PIPELINE TASK
@@ -52,6 +51,6 @@ Bpipe.run {
     ] +
     [ DE_DESeq2_MM , DE_DESeq2 + GO_Enrichment ] +
     (RUN_TRACKHUB ? trackhub_config + trackhub : dontrun.using(module: "trackhub")) +
-    collectToolVersions + collectBpipeLogs + MultiQC + shinyReports
+    collectToolVersions + MultiQC + shinyReports
 }
 

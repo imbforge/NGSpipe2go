@@ -21,7 +21,6 @@ load PIPELINE_ROOT + "/modules/RNAseq/star.header"
 load PIPELINE_ROOT + "/modules/RNAseq/subread.header"
 load PIPELINE_ROOT + "/modules/RNAseq/filter2htseq.header"
 load PIPELINE_ROOT + "/modules/RNAseq/subread2rnatypes.header"
-load PIPELINE_ROOT + "/modules/miscellaneous/collectbpipes.module.2.header"
 load PIPELINE_ROOT + "/modules/miscellaneous/collect_tool_versions.header"
 load PIPELINE_ROOT + "/modules/scRNAseq/shinyreports.header"
 load PIPELINE_ROOT + "/modules/NGS/multiqc.header"
@@ -48,6 +47,6 @@ Bpipe.run {
         ]
     ] +
     (RUN_TRACKHUB ? trackhub_config + trackhub : dontrun.using(module:"trackhub")) +
-    MultiQC + collectToolVersions + collectBpipeLogs + shinyReports
+    MultiQC + collectToolVersions + shinyReports
 }
 

@@ -17,7 +17,6 @@ load PIPELINE_ROOT + "/modules/RNAseq/genebodycov2.header"
 load PIPELINE_ROOT + "/modules/RNAseq/inferexperiment.header"
 load PIPELINE_ROOT + "/modules/RNAseq/qualimap.header"
 load PIPELINE_ROOT + "/modules/RNAseq/star.header"
-load PIPELINE_ROOT + "/modules/miscellaneous/collectbpipes.module.2.header"
 load PIPELINE_ROOT + "/modules/scRNAseq/addumibarcodetofastq.header"
 load PIPELINE_ROOT + "/modules/scRNAseq/subread.header"
 load PIPELINE_ROOT + "/modules/RNAseq/subread2rnatypes.header"
@@ -47,6 +46,6 @@ Bpipe.run {
         ]
     ] +
     (RUN_TRACKHUB ? trackhub_config + trackhub : dontrun.using(module:"trackhub")) +
-    MultiQC + collectToolVersions + collectBpipeLogs + shinyReports
+    MultiQC + collectToolVersions + shinyReports
 }
 

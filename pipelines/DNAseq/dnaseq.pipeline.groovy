@@ -19,7 +19,6 @@ load PIPELINE_ROOT + "/modules/NGS/bamindexer.header"
 load PIPELINE_ROOT + "/modules/NGS/fastqc.header"
 load PIPELINE_ROOT + "/modules/NGS/rmdups.header"
 load PIPELINE_ROOT + "/modules/miscellaneous/collect_tool_versions.header"
-load PIPELINE_ROOT + "/modules/miscellaneous/collectbpipes.module.2.header"
 load PIPELINE_ROOT + "/modules/DNAseq/shinyreports.header"
 
 // Main pipeline task
@@ -40,5 +39,5 @@ Bpipe.run {
             ]
         ]
     ] +
-    collectToolVersions + collectBpipeLogs + shinyReports
+    collectToolVersions + shinyReports
 }
