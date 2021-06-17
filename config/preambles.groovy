@@ -18,7 +18,7 @@ default_preamble="""
 
     export LOGS="${LOGS}/__module__/__branch_outdir__";
     [[ -n \$LOGS && ! -d \$LOGS ]] && mkdir -p "\$LOGS";
-    readonly LOG_FILE=\${LOGS}/__branch__
+    readonly LOG_FILE=\${LOGS}/__branch__.oe.log
     touch \$LOG_FILE;
     exec 1>\$LOG_FILE;
     exec 2>&1
