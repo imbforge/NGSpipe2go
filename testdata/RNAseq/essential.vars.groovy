@@ -1,8 +1,8 @@
 ESSENTIAL_PROJECT="/project/"
-ESSENTIAL_STAR_REF="/fsimb/common/genomes/saccharomyces_cerevisiae/ensembl/R64/canonical/index/star/2.5.1b/"
+ESSENTIAL_STAR_REF="/fsimb/common/genomes/saccharomyces_cerevisiae/ensembl/R64/canonical/index/star/2.7.3a/"
 ESSENTIAL_GENESGTF="/fsimb/common/genomes/saccharomyces_cerevisiae/ensembl/R64/canonical/annotation/Saccharomyces_cerevisiae.R64-1-1.86.gtf"
 ESSENTIAL_GENESBED="/fsimb/common/genomes/saccharomyces_cerevisiae/ensembl/R64/canonical/annotation/Saccharomyces_cerevisiae.R64-1-1.86.bed"
-ESSENTIAL_CHROMSIZES="/fsimb/common/genomes/saccharomyces_cerevisiae/ensembl/R64/canonical/index/star/2.5.1b/chrNameLength.txt"  // chromosome sizes file
+ESSENTIAL_CHROMSIZES="/fsimb/common/genomes/saccharomyces_cerevisiae/ensembl/R64/canonical/index/star/2.7.3a/chrNameLength.txt"  // chromosome sizes file
 ESSENTIAL_FEATURETYPE="gene_biotype" //gencode uses gene_type; ensemble uses gene_biotype
 ESSENTIAL_SAMPLE_PREFIX=""
 ESSENTIAL_PAIRED="no"           // paired end design
