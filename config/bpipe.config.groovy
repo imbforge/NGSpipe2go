@@ -270,7 +270,7 @@ config {
       queue=long_queue
       walltime="12:00:00"
       procs="4"
-      memory="50"
+      memory="128"
     }
     NucleotideSignature { 
       walltime="1:00:00" 
@@ -415,9 +415,9 @@ config {
       memory="1"
     }
     collectBpipeLogs { 
-      walltime="00:05:00" 
+      walltime="00:45:00" 
       procs="1" 
-      memory="1"
+      memory="64"
     }
     diffbind2 { 
       walltime="01:00:00" 
