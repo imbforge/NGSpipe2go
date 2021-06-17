@@ -10,7 +10,7 @@ bam2bw = {
     def TOOL_ENV = prepare_tool_env("bedtools", tools["bedtools"]["version"], tools["bedtools"]["runenv"]) + " && " +
                    prepare_tool_env("kentutils", tools["kentutils"]["version"], tools["kentutils"]["runenv"]) + " && " +
                    prepare_tool_env("samtools", tools["samtools"]["version"], tools["samtools"]["runenv"])
-    def PREAMBLE = get_preamble("bam2bw")
+    def PREAMBLE = get_preamble(module:"bam2bw", branch:branch, branch_outdir:"")
 
     transform(".bam") to ("_scaled.bw") {
         exec """

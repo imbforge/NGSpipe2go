@@ -11,7 +11,7 @@ extend = {
 
     def TOOL_ENV = prepare_tool_env("bedtools", tools["bedtools"]["version"], tools["bedtools"]["runenv"]) + " && " +
                    prepare_tool_env("samtools", tools["samtools"]["version"], tools["samtools"]["runenv"])
-    def PREAMBLE = get_preamble("extend")
+    def PREAMBLE = get_preamble(module:"extend", branch:branch, branch_outdir:"")
 
     transform(".bam") to ("_ext.bam") {
         exec """

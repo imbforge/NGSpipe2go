@@ -11,7 +11,7 @@ trackhub = {
 
     def TOOL_ENV = prepare_tool_env("R", tools["R"]["version"], tools["R"]["runenv"]) + " && " +
                    prepare_tool_env("kentutils", tools["kentutils"]["version"], tools["kentutils"]["runenv"])
-    def PREAMBLE = get_preamble("trackhub")
+    def PREAMBLE = get_preamble(module:"trackhub", branch:branch, branch_outdir:"")
 
     transform(".yaml") to (".done") {
         exec """

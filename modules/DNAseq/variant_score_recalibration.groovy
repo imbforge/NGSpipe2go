@@ -35,7 +35,7 @@ VariantScoreRecalibration = {
 
     def TOOL_ENV = prepare_tool_env("java", tools["java"]["version"], tools["java"]["runenv"]) + " && " +
                    prepare_tool_env("gatk", tools["gatk"]["version"], tools["gatk"]["runenv"])
-    def PREAMBLE = get_preamble("VariantScoreRecalibration")
+    def PREAMBLE = get_preamble(module:"VariantScoreRecalibration", branch:branch, branch_outdir:"")
 
     transform (".vcf.gz") to (".indels.recal", ".indels.tranches", ".snps.recal", ".snps.tranches", ".vqsr.vcf.gz") {
         exec """

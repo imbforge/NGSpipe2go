@@ -18,7 +18,7 @@ IndelRealignment = {
 
     def TOOL_ENV = prepare_tool_env("java", tools["java"]["version"], tools["java"]["runenv"]) + " && " +
                    prepare_tool_env("gatk", tools["gatk"]["version"], tools["gatk"]["runenv"])
-    def PREAMBLE = get_preamble("IndelRealignment")
+    def PREAMBLE = get_preamble(module:"IndelRealignment", branch:branch, branch_outdir:"")
 
     transform (".bam") to (".realignment.targets.bed", ".realigned.bam") {
         exec """

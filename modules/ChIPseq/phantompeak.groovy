@@ -17,7 +17,7 @@ phantompeak = {
         (phantompeak_vars.extra    ? " " + phantompeak_vars.extra    : "")
 
     def TOOL_ENV = prepare_tool_env("R", tools["R"]["version"], tools["R"]["runenv"])
-    def PREAMBLE = get_preamble("phantompeak")
+    def PREAMBLE = get_preamble(module:"phantompeak", branch:branch, branch_outdir:subdir)
 
     transform(".bam") to("_phantompeak.png") {
         exec """

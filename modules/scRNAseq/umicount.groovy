@@ -20,7 +20,7 @@ umicount = {
         (umicount_vars.extra   ? " " + umicount_vars.extra : "")
 
     def TOOL_ENV = prepare_tool_env("umitools", tools["umitools"]["version"], tools["umitools"]["runenv"])
-    def PREAMBLE = get_preamble("umicount")
+    def PREAMBLE = get_preamble(module:"umicount", branch:branch, branch_outdir:"")
 
     // run the chunk
     transform(".bam") to (".umicount.tsv.gz") {

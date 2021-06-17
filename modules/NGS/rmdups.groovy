@@ -13,7 +13,7 @@ RmDups = {
 
     def TOOL_ENV = prepare_tool_env("java", tools["java"]["version"], tools["java"]["runenv"]) + " && " +
                    prepare_tool_env("picard", tools["picard"]["version"], tools["picard"]["runenv"])
-    def PREAMBLE = get_preamble("RmDups")
+    def PREAMBLE = get_preamble(module:"RmDups", branch:branch, branch_outdir:"")
 
     transform(".bam") to (".duprm.bam") {
         exec """

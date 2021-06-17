@@ -30,7 +30,7 @@ STAR_pe = {
         (STAR_pe_vars.extra    ? " "                          + STAR_pe_vars.extra    : "")
 
     def TOOL_ENV = prepare_tool_env("star", tools["star"]["version"], tools["star"]["runenv"])
-    def PREAMBLE = get_preamble("STAR_pe")
+    def PREAMBLE = get_preamble(module:"STAR_pe", branch:branch, branch_outdir:"")
 
     produce(EXP + ".SJ.out.tab") {
         exec """

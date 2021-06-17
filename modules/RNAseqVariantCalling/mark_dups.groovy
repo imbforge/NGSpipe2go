@@ -13,7 +13,7 @@ MarkDups = {
         (MarkDups_vars.extra      ? " "                       + MarkDups_vars.extra      : "")
 
     def TOOL_ENV = prepare_tool_env("picard", tools["picard"]["version"], tools["picard"]["runenv"])
-    def PREAMBLE = get_preamble("MarkDups")
+    def PREAMBLE = get_preamble(module:"MarkDups", branch:branch, branch_outdir:"")
 
     transform(".rg.bam") to (".rg.duprm.bam"){
         exec """

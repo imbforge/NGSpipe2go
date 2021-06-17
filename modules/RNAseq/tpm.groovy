@@ -12,7 +12,7 @@ tpm = {
         (tpm_vars.extra    ? " "    + tpm_vars.extra    : "")
 
     def TOOL_ENV = prepare_tool_env("R", tools["R"]["version"], tools["R"]["runenv"])
-    def PREAMBLE = get_preamble("tpm")
+    def PREAMBLE = get_preamble(module:"tpm", branch:branch, branch_outdir:"")
 
     // run the chunk
     transform(".readcounts.tsv") to (".tpm.tsv") {

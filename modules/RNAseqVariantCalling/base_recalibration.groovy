@@ -17,7 +17,7 @@ BaseRecalibration = {
 
     def TOOL_ENV = prepare_tool_env("java", tools["java"]["version"], tools["java"]["runenv"]) + " && " +
                    prepare_tool_env("gatk", tools["gatk"]["version"], tools["gatk"]["runenv"])
-    def PREAMBLE = get_preamble("BaseRecalibration")
+    def PREAMBLE = get_preamble(module:"BaseRecalibration", branch:branch, branch_outdir:"")
 
     transform (".bam") to (".recalibration.table", ".recalibrated.bam"){
         exec """

@@ -29,7 +29,7 @@ StringTie = {
     // NOTE: else? what if stranded == "no"?
 
     def TOOL_ENV = prepare_tool_env("stringtie", tools["stringtie"]["version"], tools["stringtie"]["runenv"])
-    def PREAMBLE = get_preamble("StringTie")
+    def PREAMBLE = get_preamble(module:"StringTie", branch:branch, branch_outdir:"")
 
     // code chunk
     transform(".bam") to("_stringtie.done") {

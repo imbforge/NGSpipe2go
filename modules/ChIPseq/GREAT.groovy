@@ -20,7 +20,7 @@ GREAT = {
         (GREAT_vars.extra      ? " "                + GREAT_vars.extra               : "")
 
     def TOOL_ENV = prepare_tool_env("R", tools["R"]["version"], tools["R"]["runenv"])
-    def PREAMBLE = get_preamble("GREAT")
+    def PREAMBLE = get_preamble(module:"GREAT", branch:branch, branch_outdir:subdir)
 
     produce("GREAT.RData") {
         exec """

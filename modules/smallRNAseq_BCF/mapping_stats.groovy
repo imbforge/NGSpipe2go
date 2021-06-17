@@ -8,7 +8,7 @@ MappingStats = {
 
     def TOOL_ENV = prepare_tool_env("R", tools["R"]["version"], tools["R"]["runenv"]) + " && " +
                    prepare_tool_env("samtools", tools["samtools"]["version"], tools["samtools"]["runenv"])
-    def PREAMBLE = get_preamble("MappingStats")
+    def PREAMBLE = get_preamble(module:"MappingStats", branch:branch, branch_outdir:"")
 
     produce("totalReads.pdf", "totalReads.png") {
         exec """

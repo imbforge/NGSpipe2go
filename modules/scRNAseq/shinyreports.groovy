@@ -7,7 +7,7 @@ shinyReports = {
 
     output.dir = REPORTS
 
-    def PREAMBLE = get_preamble("shinyReports")
+    def PREAMBLE = get_preamble(module:"shinyReports", branch:branch, branch_outdir:"")
 
     produce("shinyReports.txt") {
         exec """

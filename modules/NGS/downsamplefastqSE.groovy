@@ -14,7 +14,7 @@ DownsamplefastqSE = {
         println OUTPUTFILES[index]
     }
 
-    def PREAMBLE = get_preamble("DownsamplefastqSE")
+    def PREAMBLE = get_preamble(module:"DownsamplefastqSE", branch:branch, branch_outdir:"")
 
     produce(OUTPUTFILES) {
         exec """

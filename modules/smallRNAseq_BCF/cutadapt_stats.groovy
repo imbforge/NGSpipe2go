@@ -6,7 +6,7 @@ CutadaptStats = {
     output.dir = CutadaptStats_vars.plotdir
 
     def TOOL_ENV = prepare_tool_env("R", tools["R"]["version"], tools["R"]["runenv"])
-    def PREAMBLE = get_preamble("CutadaptStats")
+    def PREAMBLE = get_preamble(module:"CutadaptStats", branch:branch, branch_outdir:"")
 
     produce("trimmedReads.pdf", "trimmedReads.png") {
         exec """

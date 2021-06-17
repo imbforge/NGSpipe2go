@@ -31,7 +31,7 @@ bowtie1 = {
 
     def TOOL_ENV = prepare_tool_env("bowtie", tools["bowtie"]["version"], tools["bowtie"]["runenv"]) + " && " +
                    prepare_tool_env("samtools", tools["samtools"]["version"], tools["samtools"]["runenv"])
-    def PREAMBLE = get_preamble("bowtie1")
+    def PREAMBLE = get_preamble(module:"bowtie1", branch:branch, branch_outdir:"")
 
     produce(OUTPUTFILE + ".bam") {
         exec """

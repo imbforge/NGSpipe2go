@@ -12,7 +12,7 @@ FastqScreen = {
         (FastqScreen_vars.extra   ? " "           + FastqScreen_vars.extra   : "")
 
     def TOOL_ENV = prepare_tool_env("fastqscreen", tools["fastqscreen"]["version"], tools["fastqscreen"]["runenv"])
-    def PREAMBLE = get_preamble("FastqScreen")
+    def PREAMBLE = get_preamble(module:"FastqScreen", branch:branch, branch_outdir:subdir)
 
     transform("*.fastq.gz") to("_fastqscreen.done") {
         exec """

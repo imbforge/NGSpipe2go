@@ -15,7 +15,7 @@ geneBodyCov2 = {
         (geneBodyCov2_vars.threads  ? " threads="  + geneBodyCov2_vars.threads  : "" ) 
 
     def TOOL_ENV = prepare_tool_env("R", tools["R"]["version"], tools["R"]["runenv"])
-    def PREAMBLE = get_preamble("geneBodyCoverage2")
+    def PREAMBLE = get_preamble(module:"geneBodyCoverage2", branch:branch, branch_outdir:"")
 
     // run the chunk
     transform(".bam") to ("_geneBodyCov.png") {

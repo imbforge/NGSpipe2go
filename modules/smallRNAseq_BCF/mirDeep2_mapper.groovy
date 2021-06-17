@@ -11,7 +11,7 @@ miRDeep2Mapper = {
         (miRDeep2Mapper_vars.extra      ? " "    + miRDeep2Mapper_vars.extra      : "")
 
     def TOOL_ENV = prepare_tool_env("mirdeep2", tools["mirdeep2"]["version"], tools["mirdeep2"]["runenv"])
-    def PREAMBLE = get_preamble("miRDeep2Mapper")
+    def PREAMBLE = get_preamble(module:"miRDeep2Mapper", branch:branch, branch_outdir:"")
 
     transform(".fastq.gz") to (".arf", ".fa") {
         exec """

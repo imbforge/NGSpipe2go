@@ -18,7 +18,7 @@ dupRadar = {
                    prepare_tool_env("samtools", tools["samtools"]["version"], tools["samtools"]["runenv"]) + " && " +
                    prepare_tool_env("R", tools["R"]["version"], tools["R"]["runenv"]) + " && " +
                    prepare_tool_env("subread", tools["subread"]["version"], tools["subread"]["runenv"])
-    def PREAMBLE = get_preamble("dupRadar")
+    def PREAMBLE = get_preamble(module:"dupRadar", branch:branch, branch_outdir:"")
 
     // run the chunk
     transform(".bam") to("_dupRadar.png") {

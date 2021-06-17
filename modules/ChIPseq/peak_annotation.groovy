@@ -18,7 +18,7 @@ peak_annotation = {
         (peak_annotation_vars.extra           ? " "                + peak_annotation_vars.extra               : "")
 
     def TOOL_ENV = prepare_tool_env("R", tools["R"]["version"], tools["R"]["runenv"])
-    def PREAMBLE = get_preamble("peak_annotation")
+    def PREAMBLE = get_preamble(module:"peak_annotation", branch:branch, branch_outdir:subdir)
 
     produce("Peak_Annotation.RData") {
         exec """

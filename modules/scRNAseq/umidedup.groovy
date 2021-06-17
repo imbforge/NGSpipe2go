@@ -13,7 +13,7 @@ umidedup = {
         (umidedup_vars.extra   ? " " + umidedup_vars.extra : "")
 
     def TOOL_ENV = prepare_tool_env("umitools", tools["umitools"]["version"], tools["umitools"]["runenv"])
-    def PREAMBLE = get_preamble("umidedup")
+    def PREAMBLE = get_preamble(module:"umidedup", branch:branch, branch_outdir:"")
 
     // run the chunk
     transform(".bam") to (".umidedup.bam") {

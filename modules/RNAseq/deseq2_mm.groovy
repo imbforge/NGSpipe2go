@@ -23,7 +23,7 @@ DE_DESeq2_MM = {
         (DE_DESeq2_MM_vars.extra     ? " "           + DE_DESeq2_MM_vars.extra     : "") 
 
     def TOOL_ENV = prepare_tool_env("R", tools["R"]["version"], tools["R"]["runenv"])
-    def PREAMBLE = get_preamble("DE_DESeq2_MM")
+    def PREAMBLE = get_preamble(module:"DE_DESeq2_MM", branch:branch, branch_outdir:"")
 
     // run the chunk
     // should match deseq2.module.groovy, adding a step in between to convert all dupRadar input counts to HTSeq

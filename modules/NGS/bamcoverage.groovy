@@ -14,7 +14,7 @@ bamCoverage = {
         (bamCoverage_vars.extra     ? " "                      + bamCoverage_vars.extra : "")
 
     def TOOL_ENV = prepare_tool_env("deeptools", tools["deeptools"]["version"], tools["deeptools"]["runenv"])
-    def PREAMBLE = get_preamble("bamCoverage")
+    def PREAMBLE = get_preamble(module:"bamCoverage", branch:branch, branch_outdir:subdir)
 
     transform(".bam") to(".bw") {
         exec """

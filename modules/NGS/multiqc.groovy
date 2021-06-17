@@ -10,7 +10,7 @@ MultiQC = {
         (MultiQC_vars.extra ? " " + MultiQC_vars.extra : "")
 
     def TOOL_ENV = prepare_tool_env("multiqc", tools["multiqc"]["version"], tools["multiqc"]["runenv"])
-    def PREAMBLE = get_preamble("MULTIQC")
+    def PREAMBLE = get_preamble(module:"MultiQC", branch:branch, branch_outdir:"")
 
     produce("multiqc_report.html") {
         exec """

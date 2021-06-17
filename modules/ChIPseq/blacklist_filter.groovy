@@ -15,7 +15,7 @@ blacklist_filter = {
         (blacklist_filter_vars.extra     ?                        blacklist_filter_vars.extra                : "")
 
     def TOOL_ENV = prepare_tool_env("R", tools["R"]["version"], tools["R"]["runenv"])
-    def PREAMBLE = get_preamble("blacklist_filter")
+    def PREAMBLE = get_preamble(module:"blacklist_filter", branch:branch, branch_outdir:subdir)
 
     produce("BlackList_Filter.RData") {
         exec """

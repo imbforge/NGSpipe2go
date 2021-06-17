@@ -10,7 +10,7 @@ BamQC = {
         (BamQC_vars.extra ? " " + BamQC_vars.extra : "")
 
     def TOOL_ENV = prepare_tool_env("bamqc", tools["bamqc"]["version"], tools["bamqc"]["runenv"])
-    def PREAMBLE = get_preamble("BamQC")
+    def PREAMBLE = get_preamble(module:"BamQC", branch:branch, branch_outdir:"")
 
     transform(".bam") to ("_bamqc.zip") {
         exec """

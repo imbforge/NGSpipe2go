@@ -6,7 +6,7 @@ DedupStats = {
     output.dir = DedupStats_vars.plotdir
 
     def TOOL_ENV = prepare_tool_env("R", tools["R"]["version"], tools["R"]["runenv"])
-    def PREAMBLE = get_preamble("DedupStats")
+    def PREAMBLE = get_preamble(module:"DedupStats", branch:branch, branch_outdir:"")
 
     produce("dedupReads.pdf", "dedupReads.png") {
         exec """

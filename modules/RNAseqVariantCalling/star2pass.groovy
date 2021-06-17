@@ -37,7 +37,7 @@ STAR_pe_2nd = {
 
     def TOOL_ENV = prepare_tool_env("star", tools["star"]["version"], tools["star"]["runenv"]) + " && " +
                    prepare_tool_env("samtools", tools["samtools"]["version"], tools["samtools"]["runenv"])
-    def PREAMBLE = get_preamble("STAR_pe_2nd")
+    def PREAMBLE = get_preamble(module:"STAR_pe_2nd", branch:branch, branch_outdir:"")
 
     produce(EXP + ".bam") {
         exec """

@@ -20,7 +20,7 @@ DE_edgeR = {
         (DE_edgeR_vars.extra     ? " "           + DE_edgeR_vars.extra     : "" )
 
     def TOOL_ENV = prepare_tool_env("R", tools["R"]["version"], tools["R"]["runenv"])
-    def PREAMBLE = get_preamble("DE_edgeR")
+    def PREAMBLE = get_preamble(module:"DE_edgeR", branch:branch, branch_outdir:"")
 
     // run the chunk
     produce("DE_edgeR.RData") {

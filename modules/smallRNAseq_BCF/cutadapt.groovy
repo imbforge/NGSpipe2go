@@ -24,7 +24,7 @@ Cutadapt = {
         (Cutadapt_vars.minimum_length_keep ? " -m " + Cutadapt_vars.maximum_length_keep_plus1 : "")
 
     def TOOL_ENV = prepare_tool_env("cutadapt", tools["cutadapt"]["version"], tools["cutadapt"]["runenv"])
-    def PREAMBLE = get_preamble("Cutadapt")
+    def PREAMBLE = get_preamble(module:"Cutadapt", branch:branch, branch_outdir:"")
 
     transform(".fastq.gz") to (".cutadapt.fastq.gz",".cutadapt_discarded.fastq.gz") {
          def SAMPLENAME = input.prefix.prefix

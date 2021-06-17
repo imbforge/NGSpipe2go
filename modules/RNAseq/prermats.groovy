@@ -18,7 +18,7 @@ PREMATS = {
             println contrasts[index]
     }
 
-    def PREAMBLE = get_preamble("PREMATS")
+    def PREAMBLE = get_preamble(module:"PREMATS", branch:branch, branch_outdir:"")
 
     produce(contrasts) {
         exec """

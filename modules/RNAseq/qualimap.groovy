@@ -19,7 +19,7 @@ qualimap = {
     }
 
     def TOOL_ENV = prepare_tool_env("qualimap", tools["qualimap"]["version"], tools["qualimap"]["runenv"])
-    def PREAMBLE = get_preamble("qualimap")
+    def PREAMBLE = get_preamble(module:"qualimap", branch:branch, branch_outdir:"")
 
     transform(".bam") to("_counts.txt") {
         exec """

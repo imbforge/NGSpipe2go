@@ -16,7 +16,7 @@ STAR_Fusion = {
         (STAR_Fusion_vars.extra      ? " "                  + STAR_Fusion_vars.extra      : "")
 
     def TOOL_ENV = prepare_tool_env("starfusion", tools["starfusion"]["version"], tools["starfusion"]["runenv"])
-    def PREAMBLE = get_preamble("STAR_Fusion")
+    def PREAMBLE = get_preamble(module:"STAR_Fusion", branch:branch, branch_outdir:"")
 
     produce(OUTPUTFILE + "_starfusion.done") {   // change it to whatever STAR-Fusion produces, and remove the touch $output, it's useless!
         exec """

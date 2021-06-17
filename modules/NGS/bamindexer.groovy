@@ -9,7 +9,7 @@ BAMindexer = {
     output.dir = f.getParent()
 
     def TOOL_ENV = prepare_tool_env("samtools", tools["samtools"]["version"], tools["samtools"]["runenv"])
-    def PREAMBLE = get_preamble("BAMindexer")
+    def PREAMBLE = get_preamble(module:"BAMindexer", branch:branch, branch_outdir:"")
 
     transform(".bam\$") to(".bam.bai") {
         exec """

@@ -6,7 +6,7 @@ CombinedStats = {
     output.dir = CombinedStats_vars.plotdir
 
     def TOOL_ENV = prepare_tool_env("R", tools["R"]["version"], tools["R"]["runenv"])
-    def PREAMBLE = get_preamble("CombinedStats")
+    def PREAMBLE = get_preamble(module:"CombinedStats", branch:branch, branch_outdir:"")
 
     produce("allTrimmingStats.pdf", "allTrimmingStats.png") {
         exec """

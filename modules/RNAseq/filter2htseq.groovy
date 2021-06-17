@@ -7,7 +7,7 @@ filter2htseq = {
 
     output.dir = filter2htseq_vars.outdir
 
-    def PREAMBLE = get_preamble("filter2htseq")
+    def PREAMBLE = get_preamble(module:"filter2htseq", branch:branch, branch_outdir:"")
 
     transform(".raw_readcounts.tsv") to (".readcounts.tsv") {
         exec """

@@ -15,7 +15,7 @@ SplitNCigarReads = {
 
     def TOOL_ENV = prepare_tool_env("java", tools["java"]["version"], tools["java"]["runenv"]) + " && " +
                    prepare_tool_env("gatk", tools["gatk"]["version"], tools["gatk"]["runenv"])
-    def PREAMBLE = get_preamble("SplitNCigarReads")
+    def PREAMBLE = get_preamble(module:"SplitNCigarReads", branch:branch, branch_outdir:"")
 
     transform (".duprm.bam") to (".duprm.split.bam"){
        exec """

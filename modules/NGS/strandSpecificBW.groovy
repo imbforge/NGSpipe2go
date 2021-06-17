@@ -29,7 +29,7 @@ strandBigWig = {
     def TOOL_ENV = prepare_tool_env("deeptools", tools["deeptools"]["version"], tools["deeptools"]["runenv"]) + " && " +
                    prepare_tool_env("kentutils", tools["kentutils"]["version"], tools["kentutils"]["runenv"]) + " && " +
                    prepare_tool_env("samtools", tools["samtools"]["version"], tools["samtools"]["runenv"])
-    def PREAMBLE = get_preamble("strandBigWig")
+    def PREAMBLE = get_preamble(module:"strandBigWig", branch:branch, branch_outdir:"")
 
     transform(".bam") to(".fwd.bw", ".rev.bw") {
         exec """
