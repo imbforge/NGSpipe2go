@@ -16,7 +16,7 @@ VariantCallUG = {
 
     def TOOL_ENV = prepare_tool_env("java", tools["java"]["version"], tools["java"]["runenv"]) + " && " +
                    prepare_tool_env("gatk", tools["gatk"]["version"], tools["gatk"]["runenv"])
-    def PREAMBLE = get_preamble(module:"VariantCallUG", branch:branch, branch_outdir:"")
+    def PREAMBLE = get_preamble(stage:stageName, subdir:"", input:new File(input1.prefix).getName())
 
     transform (".dupmarked.realigned.recalibrated.bam") to (".UG.vcf.gz") {
     // usage parameters https://www.broadinstitute.org/gatk/gatkdocs/org_broadinstitute_gatk_tools_walkers_genotyper_UnifiedGenotyper.php

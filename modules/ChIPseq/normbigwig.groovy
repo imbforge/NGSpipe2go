@@ -11,7 +11,7 @@ normbigwig = {
                    prepare_tool_env("deeptools", tools["deeptools"]["version"], tools["deeptools"]["runenv"])  + " && " +
                    prepare_tool_env("kentutils", tools["kentutils"]["version"], tools["kentutils"]["runenv"])  + " && " +
                    prepare_tool_env("samtools", tools["samtools"]["version"], tools["samtools"]["runenv"])
-    def PREAMBLE = get_preamble(module:"normbigwig", branch:branch, branch_outdir:"")
+    def PREAMBLE = get_preamble(stage:stageName, subdir:"", input:new File(input1.prefix).getName())
 
     transform(".bam") to("_normbigwig.done") {
         exec """

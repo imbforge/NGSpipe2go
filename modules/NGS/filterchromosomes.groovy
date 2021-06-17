@@ -7,7 +7,7 @@ FilterChr = {
 
     output.dir=FilterChr_vars.outdir
 
-    def PREAMBLE = get_preamble(module:"FilterChr", branch:branch, branch_outdir:"")
+    def PREAMBLE = get_preamble(stage:stageName, subdir:"", input:new File(input1.prefix).getName())
 
     transform(".bam") to (".chrOnly.bam") {
         exec """

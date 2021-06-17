@@ -22,7 +22,7 @@ DE_DESeq2 = {
         (DE_DESeq2_vars.extra     ? " "           + DE_DESeq2_vars.extra     : "") 
 
     def TOOL_ENV = prepare_tool_env("R", tools["R"]["version"], tools["R"]["runenv"])
-    def PREAMBLE = get_preamble(module:"DE_DESeq2", branch:branch, branch_outdir:"")
+    def PREAMBLE = get_preamble(stage:stageName, subdir:"", input:new File(input1.prefix).getName())
 
     // run the chunk
     produce("DE_DESeq2.RData") {

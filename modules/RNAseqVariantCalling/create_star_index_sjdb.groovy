@@ -19,7 +19,7 @@ GenerateStarIndexFromSJ = {
         (GenerateStarIndexFromSJ_vars.extra            ? " "                          + GenerateStarIndexFromSJ_vars.extra      : "")
 
     def TOOL_ENV = prepare_tool_env("star", tools["star"]["version"], tools["star"]["runenv"])
-    def PREAMBLE = get_preamble(module:"GenerateStarIndexFromSJ", branch:branch, branch_outdir:"")
+    def PREAMBLE = get_preamble(stage:stageName, subdir:"", input:new File(input1.prefix).getName())
 
     produce("sjdbInfo.txt"){
         exec """

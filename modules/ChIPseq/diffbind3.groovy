@@ -38,7 +38,7 @@ diffbind3 = {
         (diffbind3_vars.extra             ? " "                   + diffbind3_vars.extra               : "")
 
     def TOOL_ENV = prepare_tool_env("R", "4.0.3", "lmod")
-    def PREAMBLE = get_preamble(module:"diffbind", branch:branch, branch_outdir:subdir)
+    def PREAMBLE = get_preamble(stage:stageName, subdir:subdir, input:new File(input1.prefix).getName())
 
     // run the chunk
     produce("diffbind.RData", "diffbind.xlsx", "diffbind.rds") {

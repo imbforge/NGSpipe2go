@@ -18,7 +18,7 @@ subread2rnatypes = {
         (subread2rnatypes_vars.stranded == "no" ? " -s0 " : (subread2rnatypes_vars.stranded == "yes" ? " -s1 " : " -s2 "))
 
     def TOOL_ENV = prepare_tool_env("subread", tools["subread"]["version"], tools["subread"]["runenv"])
-    def PREAMBLE = get_preamble(module:"subread2rnatypes", branch:branch, branch_outdir:"")
+    def PREAMBLE = get_preamble(stage:stageName, subdir:"", input:new File(input1.prefix).getName())
 
     // run the chunk
     transform(".bam") to ("_readcounts.tsv") {

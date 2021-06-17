@@ -8,7 +8,7 @@ MarkDups2 = {
     output.dir=MarkDups2_vars.outdir
 
     def TOOL_ENV = prepare_tool_env("bamutil", tools["bamutil"]["version"], tools["bamutil"]["runenv"])
-    def PREAMBLE = get_preamble(module:"MarkDups2", branch:branch, branch_outdir:"")
+    def PREAMBLE = get_preamble(stage:stageName, subdir:"", input:new File(input1.prefix).getName())
 
     transform(".bam") to (".dupmarked.bam") {
         exec """

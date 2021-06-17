@@ -9,7 +9,7 @@ MergeBam = {
     def EXP = input1.split("/")[-1].replaceAll(".bam", "").replaceAll("_rep\\d+", "")
 
     def TOOL_ENV = prepare_tool_env("samtools", tools["samtools"]["version"], tools["samtools"]["runenv"])
-    def PREAMBLE = get_preamble(module:"MergeBam", branch:branch, branch_outdir:"")
+    def PREAMBLE = get_preamble(stage:stageName, subdir:"", input:new File(input1.prefix).getName())
 
     // run the chunk
     produce(EXP + ".merged.bam") {

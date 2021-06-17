@@ -20,7 +20,7 @@ trackhub_config = {
         (trackhub_config_vars.config     ? "TRACKHUB_CONFIG="      + trackhub_config_vars.config     : "")
 
     def TOOL_ENV = prepare_tool_env("R", tools["R"]["version"], tools["R"]["runenv"])
-    def PREAMBLE = get_preamble(module:"trackhub_config", branch:branch, branch_outdir:"")
+    def PREAMBLE = get_preamble(stage:stageName, subdir:"", input:new File(input1.prefix).getName())
 
     produce(trackhub_config_vars.config) {
         exec """

@@ -18,7 +18,7 @@ GO_Enrichment = {
         (GO_Enrichment_vars.extra    ? " "              + GO_Enrichment_vars.extra    : "" ) 
 
     def TOOL_ENV = prepare_tool_env("R", tools["R"]["version"], tools["R"]["runenv"])
-    def PREAMBLE = get_preamble(module:"GO_Enrichment", branch:branch, branch_outdir:"")
+    def PREAMBLE = get_preamble(stage:stageName, subdir:"", input:new File(input1.prefix).getName())
 
     transform(".RData") to("_GO.done") {
         exec """

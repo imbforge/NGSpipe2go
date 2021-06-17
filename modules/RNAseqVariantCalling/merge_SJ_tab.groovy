@@ -6,7 +6,7 @@ FilterAndMergeSJtab = {
 
     output.dir = FilterAndMergeSJtab_vars.outdir
 
-    def PREAMBLE = get_preamble(module:"FilterAndMergeSJtab", branch:branch, branch_outdir:"")
+    def PREAMBLE = get_preamble(stage:stageName, subdir:"", input:new File(input1.prefix).getName())
 
     produce("SJ.out.tab.Pass1.sjdb"){
         exec """

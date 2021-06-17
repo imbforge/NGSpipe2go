@@ -16,7 +16,7 @@ VariantCallHC = {
 
     def TOOL_ENV = prepare_tool_env("java", tools["java"]["version"], tools["java"]["runenv"]) + " && " +
                    prepare_tool_env("gatk", tools["gatk"]["version"], tools["gatk"]["runenv"])
-    def PREAMBLE = get_preamble(module:"VariantCallHC", branch:branch, branch_outdir:"")
+    def PREAMBLE = get_preamble(stage:stageName, subdir:"", input:new File(input1.prefix).getName())
 
     transform (".rg.duprm.split.recalibrated.bam") to (".HC.vcf.gz") {
         exec """

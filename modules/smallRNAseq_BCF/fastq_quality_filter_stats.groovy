@@ -6,7 +6,7 @@ FastQQualityFilterStats = {
     output.dir = FastQQualityFilterStats_vars.plotdir
 
     def TOOL_ENV = prepare_tool_env("R", tools["R"]["version"], tools["R"]["runenv"])
-    def PREAMBLE = get_preamble(module:"FastQQualityFilterStats", branch:branch, branch_outdir:"")
+    def PREAMBLE = get_preamble(stage:stageName, subdir:"", input:new File(input1.prefix).getName())
 
     produce("qualityFilteredReads.pdf", "qualityFilteredReads.png") {
         exec """

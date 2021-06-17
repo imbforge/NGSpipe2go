@@ -10,7 +10,7 @@ filbowtie2unique = {
     def FILBOWTIE2_FLAGS = (filbowtie2unique_vars.paired ? " -f 2 -q $filbowtie2unique_vars.samtools_mapq_pe" : " -F 4 -q $filbowtie2unique_vars.samtools_mapq_se")
 
     def TOOL_ENV = prepare_tool_env("samtools", tools["samtools"]["version"], tools["samtools"]["runenv"])
-    def PREAMBLE = get_preamble(module:"filbowtie2unique", branch:branch, branch_outdir:"")
+    def PREAMBLE = get_preamble(stage:stageName, subdir:"", input:new File(input1.prefix).getName())
 
     transform(".bam") to (".unique.bam") {
         exec """

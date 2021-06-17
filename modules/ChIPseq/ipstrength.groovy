@@ -9,7 +9,7 @@ ipstrength = {
     output.dir = ipstrength_vars.outdir + "/$subdir" 
 
     def TOOL_ENV = prepare_tool_env("R", tools["R"]["version"], tools["R"]["runenv"])
-    def PREAMBLE = get_preamble(module:"ipstrength", branch:branch, branch_outdir:subdir)
+    def PREAMBLE = get_preamble(stage:stageName, subdir:subdir, input:new File(input1.prefix).getName())
 
     transform(".bam") to("_ipstrength.done") {
         exec """
