@@ -64,6 +64,7 @@ shinyReports = {
             echo "SHINYREPS_BAM2BW_LOG=${shinyReports_vars.bam2bw_log}"         >> $output &&
             echo "SHINYREPS_MARKDUPS_LOG=${shinyReports_vars.markdups_log}"     >> $output &&
             echo "SHINYREPS_PLOTS_COLUMN=${shinyReports_vars.plots_column}"     >> $output &&
+            echo "SHINYREPS_SORT_ALPHA=${shinyReports_vars.sort_alpha}"         >> $output &&
             echo "SHINYREPS_INFEREXPERIMENT_LOGS=${shinyReports_vars.inferexperiment_logs}" >> $output &&
             echo "SHINYREPS_QUALIMAP_LOGS=${shinyReports_vars.qualimap_logs}" >> $output &&
             echo "SHINYREPS_INSERTSIZE=${shinyReports_vars.insertsize}" >> $output &&
