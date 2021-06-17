@@ -1,6 +1,5 @@
 cellranger_count_vars=[
-//    outdir          : MAPPED,
-//    logdir          : LOGS + "/cellranger",
+    outdir          : MAPPED,
     transcriptome   : ESSENTIAL_TENX_TRANSCRIPTOME, 
     expect_cells    : ESSENTIAL_TENX_EXPECTED_CELLS,
     cores           : 8,

@@ -10,11 +10,11 @@ cellranger_count = {
     def SAMPLENAME_BASE = SAMPLENAME.getName()
     def SAMPLENAME_PRUNED = SAMPLENAME_BASE.replaceAll(~/_S[\d]+_L[\d]+_.*/, "") 
 
-    output.dir = MAPPED + "/" 
+    output.dir = cellranger_count_vars.outdir + "/" 
 
     // cellranger flags
     def CELLRANGER_FLAGS =
-        " --id="     + SAMPLENAME_PRUNED +
+        " --id="     + SAMPLENAME_BASE +
         " --fastqs=" + SAMPLEDIR + 
         " --sample=" + SAMPLENAME_PRUNED + 
         " --transcriptome=" + cellranger_count_vars.transcriptome + 
@@ -32,11 +32,12 @@ cellranger_count = {
             ${PREAMBLE} &&
 
             cellranger count $CELLRANGER_FLAGS &&
-            mv ${SAMPLENAME_PRUNED}/outs/possorted_genome_bam.bam $output && 
-            mv ${SAMPLENAME_PRUNED}/outs/possorted_genome_bam.bam.bai ${output.dir}/${SAMPLENAME_BASE}.bam.bai &&
-            mv $SAMPLENAME_PRUNED $output.dir 
+            mv ${SAMPLENAME_BASE}/outs/possorted_genome_bam.bam $output && 
+            mv ${SAMPLENAME_BASE}/outs/possorted_genome_bam.bam.bai ${output.dir}/${SAMPLENAME_BASE}.bam.bai &&
+            mv ${SAMPLENAME_BASE} $output.dir 
 
         ""","cellranger_count"
     }
 }
+
 

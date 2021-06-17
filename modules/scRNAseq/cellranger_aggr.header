@@ -1,6 +1,5 @@
 cellranger_aggr_vars=[
-    outdir       : RESULTS + "/",
-    targetscsv   : "targets.txt", 
+    outdir       : RESULTS,
     id           : "aggr",
     normalize    : "mapped", // "none" or "mapped" (default). Equalize the average mapped read depth per cell between GEM wells by sub-sampling before merging.
     cores        : 8,
