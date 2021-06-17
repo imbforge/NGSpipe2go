@@ -1,3 +1,3 @@
-library_id,molecule_h5,sample
-imb_gcf_2020_03_hco_20_m01,/fsimb/groups/imb-bioinfocf/projects/cfg_tests/imb_gcf_2020_03_10xgenomics_organoids_test/mapped/imb_gcf_2020_03_hco_20_m01/outs/molecule_info.h5,S1
-imb_gcf_2020_03_hco_20_m03,/fsimb/groups/imb-bioinfocf/projects/cfg_tests/imb_gcf_2020_03_10xgenomics_organoids_test/mapped/imb_gcf_2020_03_hco_20_m03/outs/molecule_info.h5,S3
+sample	file	group	replicate
+S1	org1_1	organoid1	1
+S3	org3_1	organoid3	1
