@@ -2,13 +2,15 @@
 
 // General
 ESSENTIAL_PROJECT="/your/project/folder/"
-ESSENTIAL_SAMPLE_PREFIX="imb_gcf_2020_03_hco_20_"
+ESSENTIAL_SAMPLE_PREFIX=""
 ESSENTIAL_PAIRED="no"           // paired end design ("no" for MARS-Seq and 10X, because R2 in MARS_Seq and R1 in 10X contain UMI and barcodes only)
 ESSENTIAL_STRANDED="yes"         // strandness: no|yes|reverse // defaults per pipeline: "yes" for tenX
 ESSENTIAL_READLENGTH=130        // added for STAR version > 2.4.1a
 ESSENTIAL_THREADS=4             // number of threads for parallel tasks
 ESSENTIAL_FRAGMENT_USAGE="no"   //should fragments be reconstituted? should always be no for rnaseq
 ESSENTIAL_FILTER_CHR=""         //chromosomes to include in post-mapping analysis.
+ESSENTIAL_FRAGLEN=200          // mean length of library inserts (default 200)
+ESSENTIAL_FRAGMENT_USAGE="no"  // "no" for SR data; "yes" for PE data to make bigWig tracks with reconstituted fragments
 ESSENTIAL_BAMCOVERAGE="--binSize 1 --skipNonCoveredRegions --normalizeUsing CPM" // NO smoothing should be done for RNAseq
 
 // Alignment with STAR (used for Smart-Seq2 and MARS-Seq pipeline)
