@@ -26,7 +26,7 @@ ESSENTIAL_FRAGLEN=200          // mean length of library inserts (typically arou
 ESSENTIAL_FRAGMENT_USAGE="yes" // should fragments be reconstituted for generating bigWig coverage tracks? single reads are extended to ESSENTIAL_FRAGLEN, paired reads are extended to match the fragment size defined by the read mates.
 ESSENTIAL_DEDUPLICATION=(ESSENTIAL_PAIRED == "yes") // remove duplicated reads in the filtered branch of the pipeline for paired-end but not for single-end data (may need to be changed in case of ultra-deep PE sequencing of small genomes).  
 ESSENTIAL_BAMCOVERAGE="--binSize 10 --normalizeUsing CPM"  // deepTools options for making normalised bigWig tracks
-ESSENTIAL_USE_BOWTIE1=false    // bowtie1 may be used for se design with very short readlength (<50nt). By default (false) bowtie2 is used.
+
 
 // Annotation parameters
 ESSENTIAL_BSGENOME="BSgenome.Scerevisiae.UCSC.sacCer3"  // Bioconductor genome reference used by some modules
@@ -44,7 +44,6 @@ ESSENTIAL_MINREADLENGTH=20     // minimal length of reads to be kept
 
 // Peak calling with MACS2
 ESSENTIAL_MACS2_BROAD=false    // use "true" for broad peak calling in MACS2 (default: "false")
-ESSENTIAL_PEAK_MINLENGTH=200   // MACS2 minimum peak length. MACS2 default is fragment size. Should be increased if broad option is used.
 ESSENTIAL_DUP="auto"           // how MACS2 deals with duplicated reads or fragments: "auto" (default), "all" or 1
 ESSENTIAL_MACS2_GSIZE="10000000"  // mapable genome size for MACS2 (approx. size in bp or use "hs" for human, "mm" for mouse, "ce" for worm, "dm" for fly)
 
