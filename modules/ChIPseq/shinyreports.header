@@ -11,7 +11,7 @@ shinyReports_vars=[
     run_diffbind    : RUN_DIFFBIND,    
     run_enrich      : RUN_ENRICHMENT,
     cutadapt_stats  : Cutadapt_vars.statsdir,              // cutadapt stat files
-    bowtie_log      : LOGS + (ESSENTIAL_USE_BOWTIE1 ? "/bowtie1" : "/bowtie2"),  //where the Bowtie logs lie
+    bowtie_log      : LOGS + "/bowtie2",  //where the Bowtie logs lie
     bamindex_log    : LOGS + "/BAMindexer", //where the Samtools/BamIndexer logs lie
     markdups_log    : LOGS + "/MarkDups",   //where the MarkDups logs lie
     extend_log      : LOGS + "/extend",     //where the extend/BedTools logs lie
