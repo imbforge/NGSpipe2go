@@ -1328,13 +1328,11 @@ DEhelper.Fastqc.custom <- function(web=FALSE, summarizedPlots=TRUE, subdir="", .
 
     # replace files names with nicer sample names given in targets file 
     # if sample is missing in targets file, use reduced file name
-    lbls <- sapply(lbls, function(i) { ifelse(i %in% targets$sample_ext,
-                                              targets[targets$sample_ext == gsub(".R1$|.R2$","",i),"sample"],
+    lbls <- sapply(lbls, function(i) { ifelse(sum(sapply(targets$sample_ext, grepl, i))==1,
+                                              targets[sapply(targets$sample_ext, grepl, i),"sample"],
                                               gsub(paste0("^",SHINYREPS_PREFIX),"",i))})
     
-    targets <- targets[targets$sample %in% lbls,] # if sample subset selected, remove spare entries from targets
-    
-    if(SHINYREPS_PAIRED == "yes") {
+    if(any(grepl("[\\._]R1[\\._]|[\\._]R2[\\._]", names(lbls)))) {  # SHINYREPS_PAIRED == "yes" # for scRNA-Seq we may have se mapping but still an R2 with barcode
       x <- names(lbls)
       lbls <- paste0(lbls, ifelse(grepl("R1", names(lbls)), "_R1", "_R2"))
       names(lbls) <- x
@@ -1524,13 +1522,13 @@ DEhelper.fastqscreen <- function(subdir="", perc.to.plot = 1, ncol=2, ...) {
 
     # replace files names with nicer sample names given in targets file
     # if sample is missing in targets file, use reduced file name
-    samples <- sapply(samples, function(i) { ifelse(i %in% targets$sample_ext,
-                                                    targets[targets$sample_ext == i,"sample"],
-                                                    ifelse(gsub(".R1|.R2","",i) %in% targets$sample_ext,
-                                                           ifelse(gsub(".R1","",i) %in% targets$sample_ext,
-                                                                  paste0(targets[targets$sample_ext == gsub(".R1","",i),"sample"],".R1"),
-                                                                  paste0(targets[targets$sample_ext == gsub(".R2","",i),"sample"],".R2")),
-                                                           gsub(paste0("^",SHINYREPS_PREFIX),"",i)))})
+    samples <- sapply(samples, function(i) { ifelse(sum(sapply(targets$sample_ext, grepl, i))==1,
+                                                    ifelse(sapply("R1", grepl, i), 
+                                                           paste0(targets[sapply(targets$sample_ext, grepl, i),"sample"], ".R1"),
+                                                           ifelse(sapply("R2", grepl, i), 
+                                                                  paste0(targets[sapply(targets$sample_ext, grepl, i),"sample"], ".R2"),
+                                                                  targets[sapply(targets$sample_ext, grepl, i),"sample"])),
+                                                    gsub(paste0("^",SHINYREPS_PREFIX),"",i))})                                                    
   } else {
     if(!is.na(SHINYREPS_PREFIX)) {
       samples <- gsub(paste0("^",SHINYREPS_PREFIX), "", samples)
@@ -1624,8 +1622,8 @@ DEhelper.dupRadar <- function(web=F, ...) {
     
     # replace files names with nicer sample names given in targets file
     # if sample is missing in targets file, use reduced file name
-    samples <- sapply(samples, function(i) { ifelse(i %in% targets$sample_ext,
-                                                    targets[targets$sample_ext == i,"sample"],
+    samples <- sapply(samples, function(i) { ifelse(sum(sapply(targets$sample_ext, grepl, i))==1,   
+                                                    targets[sapply(targets$sample_ext, grepl, i),"sample"], 
                                                     gsub(paste0("^",SHINYREPS_PREFIX),"",i))})
   } else {
     if(!is.na(SHINYREPS_PREFIX)) {

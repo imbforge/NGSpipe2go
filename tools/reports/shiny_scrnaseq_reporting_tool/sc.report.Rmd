@@ -17,23 +17,7 @@ Enter project description here
 
 # Processing
 
-Bpipe.run { 
-    "%.fastq.gz" * [ FastQC + FastqScreen +
-      (RUN_CUTADAPT ? Cutadapt + FastQC : dontrun.using(module:"Cutadapt")) ] + 
-      "%_L*_R*_001.fastq.gz" * [
-         cellranger_count + [
-            bamCoverage,
-            inferexperiment,
-            qualimap,
-            subread2rnatypes,
-            dupRadar,
-            geneBodyCov2
-        ]
-    ] +
-    cellranger_aggr +
-    (RUN_TRACKHUB ? trackhub_config + trackhub : dontrun.using(module:"trackhub")) +
-    collectToolVersions + collectBpipeLogs + shinyReports
-}
+Enter pipeline description here.
 
 
 ```{r setup, echo=F, result='hide', error=F, warning=F, message=F}
@@ -95,6 +79,7 @@ switch(SHINYREPS_SEQTYPE,
       # pool-wise targets to annotate plots made before demultiplexing by cell barcode
       targets_pools <- targets[!duplicated(targets$pool),!colnames(targets) %in% c("sample", "file", "barcode", "row", "col", "cells")] 
       targets4plots <- targets_pools 
+      group.vars <- group.vars[sapply(group.vars, function(x) {length(unique(targets[,x]))>1})] # remove group vars with single value
       colorByFactor <- "pool" # default for pipeline overview plots
       colorByFactor2 <- if(!is.na(SHINYREPS_COLORBYFACTOR)) {SHINYREPS_COLORBYFACTOR} else {"group"} # default for downstream plots (up to 2 categories)
    }, 
@@ -104,6 +89,7 @@ switch(SHINYREPS_SEQTYPE,
       group.vars <- colnames(targets)[!colnames(targets) %in% c("sample", "file", "barcode", "row", "col")] 
       targets[,group.vars] <- lapply(targets[,group.vars], factor)
       targets4plots <- targets
+      group.vars <- group.vars[sapply(group.vars, function(x) {length(unique(targets[,x]))>1})] # remove group vars with single value
       colorByFactor <- "cells" # default for pipeline overview plots
       colorByFactor2 <- if(!is.na(SHINYREPS_COLORBYFACTOR)) {SHINYREPS_COLORBYFACTOR} else {"group"} # default for downstream plots (up to 2 categories)
     },
@@ -115,7 +101,9 @@ switch(SHINYREPS_SEQTYPE,
       names(targets) = "cell_id"
       targets <- cbind(targets, targets_pools[as.numeric(gsub("^.*-", "", targets$cell_id)),])
       rownames(targets) <- targets$cell_id
-      group.vars <- colnames(targets)[!colnames(targets) %in% c("cell_id", "sample")] 
+      group.vars <- colnames(targets)[!colnames(targets) %in% c("cell_id", "sample", "file")] 
+      targets[,group.vars] <- lapply(targets[,group.vars], factor)
+      group.vars <- group.vars[sapply(group.vars, function(x) {length(unique(targets[,x]))>1})] # remove group vars with single value
       targets4plots <- targets_pools
       colorByFactor <- "sample" # default for pipeline overview plots
       colorByFactor2 <- if(!is.na(SHINYREPS_COLORBYFACTOR)) {SHINYREPS_COLORBYFACTOR} else {"sample"} # default for downstream plots (up to 2 categories)
