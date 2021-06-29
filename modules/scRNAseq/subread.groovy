@@ -17,7 +17,7 @@ subread_count = {
 
     def TOOL_ENV = prepare_tool_env("subread", tools["subread"]["version"], tools["subread"]["runenv"]) + " && " +
                    prepare_tool_env("samtools", tools["samtools"]["version"], tools["samtools"]["runenv"])
-    def PREAMBLE = get_preamble(stage:stageName, subdir:"", input:new File(input1.prefix).getName())
+    def PREAMBLE = get_preamble(stage:stageName, outdir:output.dir, input:new File(input1.prefix).getName())
 
     // run the chunk
     transform(".bam") to (".featureCounts.bam", ".raw_readcounts.tsv") {

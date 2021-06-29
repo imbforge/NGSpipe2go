@@ -18,7 +18,7 @@ peak_annotation = {
         (peak_annotation_vars.extra           ? " "                + peak_annotation_vars.extra               : "")
 
     def TOOL_ENV = prepare_tool_env("R", tools["R"]["version"], tools["R"]["runenv"])
-    def PREAMBLE = get_preamble(stage:stageName, subdir:subdir, input:new File(input1.prefix).getName())
+    def PREAMBLE = get_preamble(stage:stageName, outdir:output.dir, input:new File(input1.prefix).getName())
 
     produce("Peak_Annotation.RData") {
         exec """

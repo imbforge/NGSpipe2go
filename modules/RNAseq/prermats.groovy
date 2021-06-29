@@ -18,7 +18,7 @@ PREMATS = {
             println contrasts[index]
     }
 
-    def PREAMBLE = get_preamble(stage:stageName, subdir:"", input:new File(input1.prefix).getName())
+    def PREAMBLE = get_preamble(stage:stageName, outdir:output.dir, input:new File(input1.prefix).getName())
 
     produce(contrasts) {
         exec """

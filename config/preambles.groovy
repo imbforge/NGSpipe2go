@@ -16,9 +16,10 @@ default_preamble="""
     [[ -n \$TMP && ! -d \$TMP ]] && mkdir -p "\$TMP";
     [[ -n \$SLURM_JOB_ID ]] && export TMP="/jobdir/\$SLURM_JOB_ID";
 
-    export LOGS="${LOGS}/__stage__/__subdir__";
+    export LOGS="${LOGS}/__stage__/";
     [[ -n \$LOGS && ! -d \$LOGS ]] && mkdir -p "\$LOGS";
-    readonly LOG_FILE=\${LOGS}/__input__.log
+    pref=\$([[ -z "__outdir__" ]] || realpath --relative-to=. "__outdir__" | sed 's/\\//_/g');
+    readonly LOG_FILE=\${LOGS}/__input___\${pref}.log;
     touch \$LOG_FILE;
     exec 1>\$LOG_FILE;
     exec 2>&1
@@ -39,7 +40,7 @@ module_preambles=[
 // get_preamble
 // Args: the function receives a Map, with at least 2 elements:
 //   stage: the module that is calling the function
-//   subdir: the branch file for which the module is running. This is picked from the runtime
+//   outdir: the output directory
 //   input: the basename of the input file name
 // Other args are optional, and will be used to replace the placeholder variables
 // used within the preamble.

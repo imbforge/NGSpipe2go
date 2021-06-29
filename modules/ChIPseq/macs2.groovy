@@ -16,7 +16,7 @@ macs2 = {
         (macs2_vars.extra  ? " " + macs2_vars.extra               : "")
 
     def TOOL_ENV = prepare_tool_env("macs2", tools["macs2"]["version"], tools["macs2"]["runenv"])
-    def PREAMBLE = get_preamble(stage:stageName, subdir:subdir, input:new File(input1.prefix).getName())
+    def PREAMBLE = get_preamble(stage:stageName, outdir:output.dir, input:new File(input1.prefix).getName())
 
     transform(".bam") to("_macs2.done") {
         exec """

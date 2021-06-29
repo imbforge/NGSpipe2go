@@ -27,7 +27,7 @@ rMATS = {
     }
 
     def TOOL_ENV = prepare_tool_env("rmats", tools["rmats"]["version"], tools["rmats"]["runenv"])
-    def PREAMBLE = get_preamble(stage:stageName, subdir:"", input:new File(input1.prefix).getName())
+    def PREAMBLE = get_preamble(stage:stageName, outdir:output.dir, input:new File(input1.prefix).getName())
 
     // run the chunk
     transform (".txt") to (".done") {

@@ -8,7 +8,7 @@ DownsampleBAM = {
     output.dir = DownsampleBAM_vars.outdir
 
     def TOOL_ENV = prepare_tool_env("samtools", tools["samtools"]["version"], tools["samtools"]["runenv"])
-    def PREAMBLE = get_preamble(stage:stageName, subdir:"", input:new File(input1.prefix).getName())
+    def PREAMBLE = get_preamble(stage:stageName, outdir:output.dir, input:new File(input1.prefix).getName())
 
     transform(".bam") to (".down.bam") {
         exec """

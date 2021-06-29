@@ -8,7 +8,7 @@ miRDeep2 = {
     output.dir = miRDeep2_vars.outdir + "/" + EXP
 
     def TOOL_ENV = prepare_tool_env("mirdeep2", tools["mirdeep2"]["version"], tools["mirdeep2"]["runenv"])
-    def PREAMBLE = get_preamble(stage:stageName, subdir:"", input:new File(input1.prefix).getName())
+    def PREAMBLE = get_preamble(stage:stageName, outdir:output.dir, input:new File(input1.prefix).getName())
 
     transform(".arf", ".fa") to (".tmp") {
         exec """

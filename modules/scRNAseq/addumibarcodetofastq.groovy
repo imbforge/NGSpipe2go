@@ -16,7 +16,7 @@ AddUMIBarcodeToFastq = {
         (AddUMIBarcodeToFastq_vars.extra       ? " "              + AddUMIBarcodeToFastq_vars.extra       : "")
 
     def TOOL_ENV = prepare_tool_env("umitools", tools["umitools"]["version"], tools["umitools"]["runenv"])
-    def PREAMBLE = get_preamble(stage:stageName, subdir:"", input:new File(input1.prefix).getName())
+    def PREAMBLE = get_preamble(stage:stageName, outdir:output.dir, input:new File(input1.prefix).getName())
 
     produce(OUTPUTFILE + ".umibarcode.fastq.gz"){
         exec """
