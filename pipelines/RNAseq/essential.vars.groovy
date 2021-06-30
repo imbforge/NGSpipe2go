@@ -28,9 +28,9 @@ ESSENTIAL_DESEQ2_FC=1           // optional Fold-Change cutoff to incorporate in
 // Using FC threshold in the DESeq2 model is usually more conservative than post-hoc gene filtering by FC (which should anyway be avoided, see https://doi.org/10.1093/bib/bbab053) 
 
 // Optional pipeline stages to include
-RUN_TRACKHUB=false
-RUN_FASTQSCREEN=true
-RUN_IN_PAIRED_END_MODE=(ESSENTIAL_PAIRED == "yes")
+RUN_TRACKHUB=false              // prepare a Track Hub for the UCSC genome browser
+RUN_FASTQSCREEN=true            // check for contaminations using FastQ Screen
+RUN_IN_PAIRED_END_MODE=(ESSENTIAL_PAIRED == "yes") // no need to change this line
 
 // FASTQ-Screen parameters
 ESSENTIAL_FASTQSCREEN_PERC=1    // contaminant filter, if a contaminant is consuming at least this percentage of reads in at least one sample, contaminant will be shown in report
