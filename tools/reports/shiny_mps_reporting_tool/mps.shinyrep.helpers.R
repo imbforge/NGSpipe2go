@@ -26,7 +26,7 @@ attach_packages <- function(pkg) {
 #'
 #' @param f - character containing a file name defining multiple variables for reporting to run. 
 #' When f is a character vector with multiple filenames, multiple (non-unique) entries like path variables
-#' are assigned as vector.This is useful when do a meta analysis using target files from different project
+#' are assigned as vector. This is useful when do a meta analysis using target files from different project
 #' folders. Most helper functions can use these vector variables to read the respective target files
 #' from multiple designations.  
 #'
@@ -54,8 +54,8 @@ loadGlobalVars <- function(f="shinyReports.txt") {
   })
   
   # combine conf files if more than one
-  conf <- plyr::rbind.fill.matrix(conf_list)
-  
+  #conf <- plyr::rbind.fill.matrix(conf_list)
+  conf <- dplyr::bind_rows(lapply(conf_list, as.data.frame, drop=F, stringsAsFactors =F))
   for(i in colnames(conf)) {
     assign(i, unique(conf[,i]), envir=.GlobalEnv)
   }
@@ -108,10 +108,7 @@ MPShelper.Fastqc <- function(web=FALSE, subdir="", ...) {
   
   # select subset of samples for fastqc figures (e.g. merged single cell pools) or use all samples for samplePattern=NULL
   samples <- selectSampleSubset(samples, ...)
-  if(length(samples) == 0) {
-    return("No samples matched with this pattern...")
-  }
-  
+
   df <- sapply(samples, function(f) {
     c(paste0("![fastqc img](", f, "/Images/per_base_quality.png)"), 
       paste0("![fastqc img](", f, "/Images/per_base_sequence_content.png)"),
@@ -120,12 +117,38 @@ MPShelper.Fastqc <- function(web=FALSE, subdir="", ...) {
   
   # set row and column names, and output the md table
   df <- as.data.frame(t(df))
-  #rownames(df) <- gsub(paste0("^", SHINYREPS_PREFIX), "", basename(samples))
-  rownames(df) <- basename(samples)
-  rownames(df) <- gsub(lcPrefix(rownames(df)), "", rownames(df)) # remove longest common prefix
-  rownames(df) <- gsub(lcSuffix(rownames(df)), "", rownames(df)) # remove longest common suffix
+  rownames(df) <-  basename(samples)
   colnames(df) <- c("Read qualities", "Sequence bias", "GC content")
-  kable(df, output=F, align="c")
+  
+  if(file.exists(SHINYREPS_TARGET)){
+    
+    # get target names
+    targets <- read.delim(SHINYREPS_TARGET)
+    targets$sample_ext <- gsub("\\..*$", "",targets$file )
+    
+    # replace files names with nicer sample names given in targets file
+    # if sample is missing in targets file, use reduced file name
+    rownames(df) <- sapply(rownames(df), function(i) { ifelse(sum(sapply(targets$sample_ext, grepl, i))==1,
+                                                          ifelse(sapply("R1", grepl, i), 
+                                                                 paste0(targets[sapply(targets$sample_ext, grepl, i),"sample"], ".R1"),
+                                                                 ifelse(sapply("R2", grepl, i), 
+                                                                        paste0(targets[sapply(targets$sample_ext, grepl, i),"sample"], ".R2"),
+                                                                        targets[sapply(targets$sample_ext, grepl, i),"sample"])),
+                                                          gsub(paste0("^",SHINYREPS_PREFIX),"",i))})                                                    
+    
+    } else {
+    if(!is.na(SHINYREPS_PREFIX)) {
+      rownames(df) <- gsub(paste0("^",SHINYREPS_PREFIX), "", rownames(df))
+    }
+      rownames(df) <- gsub("_fastqc$", "", rownames(df))
+      rownames(df) <- sapply(rownames(df), shorten)
+    }
+  
+  # add a row with the sample name (as given in the rownames) before every row
+  df.new <- do.call(rbind,lapply(1:nrow(df),function(i) {rbind(c("",rownames(df)[i],""),df[i,])}))
+  rownames(df.new) <- NULL
+# kable(df.new, output=F, align="c", format="markdown") # print sample names in additional rows
+  kable(df, output=F, align="c") # print sample names as rownames
 }
 
 
@@ -194,11 +217,9 @@ MPShelper.Fastqc.custom <- function(web=FALSE, summarizedPlots=TRUE, subdir="", 
     
     # replace files names with nicer sample names given in targets file 
     # if sample is missing in targets file, use reduced file name
-    lbls <- sapply(lbls, function(i) { ifelse(i %in% targets$sample_ext,
-                                              targets[targets$sample_ext == gsub(".R1$|.R2$","",i),"sample"],
+    lbls <- sapply(lbls, function(i) { ifelse(sum(sapply(targets$sample_ext, grepl, i))==1,
+                                              targets[sapply(targets$sample_ext, grepl, i),"sample"],
                                               gsub(paste0("^",SHINYREPS_PREFIX),"",i))})
-    
-    targets <- targets[targets$sample %in% lbls,] # if sample subset selected, remove spare entries from targets
     
     if(SHINYREPS_PAIRED == "yes") {
       x <- names(lbls)
@@ -218,7 +239,7 @@ MPShelper.Fastqc.custom <- function(web=FALSE, summarizedPlots=TRUE, subdir="", 
   if (summarizedPlots == TRUE) {
     
     # prepare for plotting  
-    df <- reshape::melt(lapply(fastqc.stats , function(x) x@Per_base_sequence_quality[, c("Base","Mean")]))
+    df <- reshape2::melt(lapply(fastqc.stats , function(x) x@Per_base_sequence_quality[, c("Base","Mean")]))
     names(df)[names(df)=="L1"] <- "samplename"
     
     # color code the samples as done by fastqc:
@@ -333,14 +354,16 @@ MPShelper.fastqscreen <- function(subdir="", perc.to.plot = 1, ncol=2, ...) {
   
   # logs folder
   if(!file.exists(SHINYREPS_FASTQSCREEN_OUT)) {
-    return("FastQScreen statistics not available")
+    return(list(errortext="FastQScreen statistics not available",
+                no.of.genomes=1,
+                no.of.samples=1,
+                no.of.rows=1))
   }
   
   # construct the folder name, which is different for web and noweb
   QC <- file.path(SHINYREPS_FASTQSCREEN_OUT, subdir)
   
   # construct the image url from the folder contents (skip current dir .)
-  #samples <- list.files(SHINYREPS_FASTQSCREEN_OUT, pattern="_screen.txt$", recursive=T, full.names=T) # does not exclude subdir
   samples <- list.dirs(QC, recursive=F, full.names = T)
   samples <- samples[sapply(samples, function(x) {file.exists(file.path(x, "fastqscreen.conf"))})] # exclude potential subdir which is also listed by list.dirs or recursive list.files
   samples <- list.files(samples, pattern="_screen.txt$", recursive=F, full.names=T)
@@ -381,17 +404,17 @@ MPShelper.fastqscreen <- function(subdir="", perc.to.plot = 1, ncol=2, ...) {
   if(file.exists(SHINYREPS_TARGET)){
     
     # get target names
-    targets <- read.delim(SHINYREPS_TARGET, sep=",")
-    targets$sample_ext <- gsub("\\..*$", "",targets$pruned_file_name )
+    targets <- read.delim(SHINYREPS_TARGET, sep="\t")
+    targets$sample_ext <- gsub("\\..*$", "",targets$file )
     
     # replace files names with nicer sample names given in targets file
     # if sample is missing in targets file, use reduced file name
     samples <- sapply(samples, function(i) { ifelse(i %in% targets$sample_ext,
-                                                    targets[targets$sample_ext == i,"unique_sample_id"],
+                                                    targets[targets$sample_ext == i,"sample"],
                                                     ifelse(gsub(".R1|.R2","",i) %in% targets$sample_ext,
                                                            ifelse(gsub(".R1","",i) %in% targets$sample_ext,
-                                                                  paste0(targets[targets$sample_ext == gsub(".R1","",i),"unique_sample_id"],".R1"),
-                                                                  paste0(targets[targets$sample_ext == gsub(".R2","",i),"unique_sample_id"],".R2")),
+                                                                  paste0(targets[targets$sample_ext == gsub(".R1","",i),"sample"],".R1"),
+                                                                  paste0(targets[targets$sample_ext == gsub(".R2","",i),"sample"],".R2")),
                                                            gsub(paste0("^",SHINYREPS_PREFIX),"",i)))})
   } else {
     if(!is.na(SHINYREPS_PREFIX)) {
@@ -434,9 +457,8 @@ MPShelper.fastqscreen <- function(subdir="", perc.to.plot = 1, ncol=2, ...) {
   return(list(p.category.wrap=p.category.wrap,
               no.of.genomes=length(unique(df$genome)),
               no.of.samples=length(unique(df$sample)),
-              no.of.rows = ceiling(length(unique(df$genome))/ncol)
+              no.of.rows = ceiling(length(unique(df$genome))/ncol))
   )
-  )      
 }
 
 
@@ -449,7 +471,9 @@ MPShelper.fastqscreen <- function(subdir="", perc.to.plot = 1, ncol=2, ...) {
 #' @param sampleColumnName character with column name(s) of targets table containing file names
 #'
 #' @return plot cutadapt statistics as side effect
-MPShelper.cutadapt <- function(targetsdf=targets, colorByFactor="group", sampleColumnName =c("pruned_file_name"), ...){
+MPShelper.cutadapt <- function(targetsdf=targets, colorByFactor="group", sampleColumnName =c("file"), 
+                               plotfun=MPShelper.cutadapt.plot, labelOutliers=T, outlierIQRfactor=1.5,
+                               ...){
   
   # logs folder
   if(!all(sapply(SHINYREPS_CUTADAPT_STATS, file.exists))) {
@@ -487,7 +511,7 @@ MPShelper.cutadapt <- function(targetsdf=targets, colorByFactor="group", sampleC
     
     # trimming of each adapter
     adapters <- system(paste("grep Sequence:", f, "| awk '{print $9}'"), intern=T)
-    adapters.perc <- round(100*(as.numeric(adapters) / as.numeric(total.reads)),2)
+    adapters.perc <- round(100*(as.numeric(adapters) / as.numeric(total.reads)),1)
     adapterprime <- gsub(";", "", system(paste("grep Sequence:", f, "| awk '{print $5}'"), intern=T))
     
     names(adapters.perc) <- gsub(" *=== *", "", system(paste("grep \"=== .*Adapter\"", f), intern=T))
@@ -512,7 +536,7 @@ MPShelper.cutadapt <- function(targetsdf=targets, colorByFactor="group", sampleC
   indexAdapterSelected <- indexAdapter[grep("[ACGT].[[:digit:]]*}", cutadaptpars[indexAdapter+1])] # select e.g. polyA, polyT
   
   # rename those adapters columns trimmed by -a commands 
-  if (length(indexAdapterSelected>0)) {
+  if (length(indexAdapterSelected)>0) {
     colnames(x.df)[grepl("Adapter", colnames(x.df))][match(indexAdapterSelected, indexAdapter)] <- 
       paste0(gsub("Adapter.*$", "", colnames(x.df)[grepl("Adapter", colnames(x.df))][match(indexAdapterSelected, indexAdapter)]), cutadaptpars[indexAdapterSelected+1])
   }
@@ -520,9 +544,13 @@ MPShelper.cutadapt <- function(targetsdf=targets, colorByFactor="group", sampleC
   #reduce length of file names 
   row.names(x.df) <- basename(colnames(x))
   x.df$filename_unmod <- factor(row.names(x.df))
+  if(!is.na(SHINYREPS_PREFIX)) {
+    row.names(x.df) <- gsub(SHINYREPS_PREFIX, "", row.names(x.df))
+  }
+  row.names(x.df) <- gsub("\\.cutadapt\\.log$", "", row.names(x.df))
   if(nrow(x.df)>1){
+    if(is.na(SHINYREPS_PREFIX)) {row.names(x.df)  <- gsub(lcPrefix(row.names(x.df) ), "", row.names(x.df) )}
     row.names(x.df)  <- gsub(lcSuffix(row.names(x.df) ), "", row.names(x.df) )
-    row.names(x.df)  <- gsub(lcPrefix(row.names(x.df) ), "", row.names(x.df) )
   }
   
   # passing the different factors given in targetsdf to x.df which was created from cutadapt logfile names 
@@ -530,19 +558,17 @@ MPShelper.cutadapt <- function(targetsdf=targets, colorByFactor="group", sampleC
     
     if(is.null(targetsdf)) {stop("If 'colorByFactor' is given you must also provide 'targetsdf'!")}
     
-    if(length(sampleColumnName>1)) { # melt in case of multiple file name columns (as for ChIP-Seq)
+    if(length(sampleColumnName)>1) { # melt in case of multiple file name columns (as for ChIP-Seq)
       targetsdf <- targetsdf[,c(colorByFactor, sampleColumnName)]
-      targetsdf <- melt(targetsdf, id.vars= colorByFactor, measure.vars=sampleColumnName, value.name = "filename")
-      for (i in colorByFactor) {targetsdf[, i] <- paste(targetsdf[, i], targetsdf$variable, sep="_")}
+      targetsdf <- reshape2::melt(targetsdf, id.vars= colorByFactor, measure.vars=sampleColumnName, value.name = "filename")
+      for (i in colorByFactor) {targetsdf[, i] <- paste0(targetsdf[, i], " (", targetsdf$variable, ")")}
       targetsdf[,c(colorByFactor, "filename")] <- lapply(targetsdf[,c(colorByFactor, "filename")], factor)
       
     } else {
       targetsdf$filename <- targetsdf[,sampleColumnName]
     }
     
-    targetsdf$filename <- gsub(lcSuffix(targetsdf$filename ), "", targetsdf$filename ) # shorten filename suffix
-    targetsdf$filename <- gsub(lcPrefix(targetsdf$filename ), "", targetsdf$filename ) # shorten filename prefix
-    
+    targetsdf$filename <- gsub("\\..*$", "", targetsdf$filename)
     index <- sapply(targetsdf$filename, grep, x.df$filename_unmod, ignore.case = T) # grep sample name in file names
     targetsdf <- targetsdf[sapply(index, length) ==1, ] # remove targetsdf entries not (uniquely) found in x.df
     
@@ -552,7 +578,8 @@ MPShelper.cutadapt <- function(targetsdf=targets, colorByFactor="group", sampleC
     
     x.df <- data.frame(x.df[unlist(index),], targetsdf, check.names =F)
     x.df <- x.df[order(rownames(x.df)),, drop=F]
-    rownames(x.df) <- x.df$filename
+    x.df$filename <- x.df$sample
+    rownames(x.df) <- x.df$sample
     
     if(any(!colorByFactor %in% colnames(x.df))) {
       if(all(!colorByFactor %in% colnames(x.df))) {
@@ -563,53 +590,71 @@ MPShelper.cutadapt <- function(targetsdf=targets, colorByFactor="group", sampleC
         colorByFactor <- colorByFactor[colorByFactor %in% colnames(x.df)]
       }
     }
+    
   } else {
     x.df$filename <- row.names(x.df)
     colorByFactor <- "filename"
   }
   
   # melt data frame for plotting
-  x.melt <- melt(x.df, measure.vars=c(grep("trimmed", colnames(x.df), value=T), 
+  x.melt <- reshape2::melt(x.df, measure.vars=c(grep("trimmed", colnames(x.df), value=T), 
                                       "tooshort", 
                                       grep("(Adapter)|(})", colnames(x.df), value=T)), variable="reads")
   # everything which is not a value should be a factor
   
-  # now we do a violin plot of the trimmed/too_short/etc. ones and color it
-  # according to the different factors given in colorByFactor 
-  
-  # prepare palette of appropriate length
-  colourCount = length(unique(x.melt[,colorByFactor]))
-  getPalette = colorRampPalette(brewer.pal(9, "Set1"))
-  
-  create.violin <- function(x.melt, color.value){
-    ylab <- "% reads"
-    p <- ggplot(x.melt, aes_string(x="reads",
-                                   y="value",
-                                   color=color.value ))+
-      geom_quasirandom(groupOnX=TRUE) +
-      scale_color_manual(values=getPalette(colourCount)) + # creates as many colors as needed
-      ylab(ylab) +
-      xlab("") +
-      #      scale_y_continuous( breaks=seq(0, ceiling(max(x.melt$value)), 10),
-      #                          limits = c(0, ceiling(max(x.melt$value)))) + 
-      theme(axis.text.x=element_text(angle=30, vjust=1, hjust=1)) 
-    
-    return(p)
-  }
-  
   # one plot for each element of colorByFactor
-  violin.list <- lapply(colorByFactor, create.violin, x.melt=x.melt) # "colorByFactor" is submitted as color.value
+  violin.list <- lapply(colorByFactor, plotfun, data=x.melt, labelOutliers=labelOutliers, outlierIQRfactor=outlierIQRfactor) # "colorByFactor" is submitted as color.value
   
   for(i in 1:length(violin.list)){
     plot(violin.list[[i]])
   }
   
-  DT::datatable(x.df[,c("total_reads", 
+  DT::datatable(x.df[,c(colorByFactor, "total_reads", 
                         grep("trimmed", colnames(x.df), value=T),
                         "tooshort", 
                         grep("(Adapter)|(})", colnames(x.df), value=T))], 
                 options = list(pageLength= 20))
 }
+
+
+# plotting function for DEhelper.cutadapt 
+MPShelper.cutadapt.plot <- function(data, color.value, labelOutliers=T, outlierIQRfactor=1.5){
+  
+  is_outlier <- function(x) { # function for identification of outlier
+    if(IQR(x)!=0) {
+      return(x < quantile(x, 0.25) - outlierIQRfactor * IQR(x) | x > quantile(x, 0.75) + outlierIQRfactor * IQR(x))
+    } else {
+      return(x < mean(x) - outlierIQRfactor * mean(x) | x > mean(x) + outlierIQRfactor * mean(x))
+    }
+  }
+  
+  data <- data %>%
+    dplyr::group_by(reads) %>%
+    dplyr::mutate(outlier=is_outlier(value)) %>%
+    dplyr::ungroup() %>%
+    dplyr::mutate(outlier=ifelse(outlier,filename,as.numeric(NA))) %>%
+    as.data.frame()
+  
+  ylab <- "% reads"
+  
+  # prepare palette of appropriate length according to the different factors given in colorByFactor
+  colourCount = length(unique(data[,color.value]))
+  getPalette = colorRampPalette(brewer.pal(9, "Set1"))
+  
+  p <- ggplot(data, aes_string(x="reads",
+                               y="value",
+                               color=color.value ))+
+    geom_quasirandom(groupOnX=TRUE) +
+    geom_boxplot(color = "darkgrey", alpha = 0.2, outlier.shape = NA)  
+  if(labelOutliers) {p <- p + ggrepel::geom_text_repel(data=. %>% filter(!is.na(outlier)), aes(label=filename), show.legend=F)}
+  p <- p + scale_color_manual(values=getPalette(colourCount)) + # creates as many colors as needed
+    ylab(ylab) +
+    xlab("") +
+    theme(axis.text.x=element_text(angle=30, vjust=1, hjust=1)) 
+  
+  return(p)
+}
+
 
 
 
@@ -648,20 +693,23 @@ MPShelper.pear <- function(colorByFactor=NULL, targetsdf=targets, ...){
   vars4table <- colnames(x.df)
   vars2plot <- vars4table
   
-  # reduce size of file names 
+  #reduce length of file names 
   row.names(x.df) <- basename(colnames(x))
   x.df$filename_unmod <- factor(row.names(x.df))
-  row.names(x.df)  <- gsub(lcSuffix(row.names(x.df) ), "", row.names(x.df) )
-  row.names(x.df)  <- gsub(lcPrefix(row.names(x.df) ), "", row.names(x.df) )
+  if(!is.na(SHINYREPS_PREFIX)) {
+    row.names(x.df) <- gsub(SHINYREPS_PREFIX, "", row.names(x.df))
+  }
+  row.names(x.df) <- gsub("(?:\\.R1)?\\.cutadapt\\.log$", "", row.names(x.df))
+  if(nrow(x.df)>1){
+    if(is.na(SHINYREPS_PREFIX)) {row.names(x.df)  <- gsub(lcPrefix(row.names(x.df) ), "", row.names(x.df) )}
+    row.names(x.df)  <- gsub(lcSuffix(row.names(x.df) ), "", row.names(x.df) )
+  }
   
   
   # passing the different factors given in targetsdf to x.df which was created from cutadapt logfile names (if 1 cell per file)
   if(!is.null(colorByFactor) && nrow(x.df) == nrow(targetsdf)) { # if targets object fits in length, add information to x.df
     
-    targetsdf$filename <- gsub(lcSuffix(targetsdf$pruned_file_name ), "", targetsdf$pruned_file_name ) # shorten filename suffix
-    targetsdf$filename <- gsub(lcPrefix(targetsdf$filename ), "", targetsdf$filename ) # shorten filename prefix
-    
-    index <- sapply(targetsdf$filename, grep, x.df$filename_unmod, ignore.case = T) # grep sample name in file names
+    index <- sapply(targetsdf$file, grep, x.df$filename_unmod, ignore.case = T) # grep sample name in file names
     targetsdf <- targetsdf[sapply(index, length) ==1, ] # remove targetsdf entries not (uniquely) found in x.df
     
     if(!identical(sort(unname(unlist(index))), 1:nrow(x.df))) {
@@ -670,7 +718,8 @@ MPShelper.pear <- function(colorByFactor=NULL, targetsdf=targets, ...){
     
     x.df <- data.frame(x.df[unlist(index),], targetsdf, check.names =F)
     x.df <- x.df[order(rownames(x.df)),, drop=F]
-    rownames(x.df) <- x.df$filename
+    x.df$filename <- x.df$sample
+    rownames(x.df) <- x.df$sample
     
     if(any(!colorByFactor %in% colnames(x.df))) {
       if(all(!colorByFactor %in% colnames(x.df))) {
@@ -727,7 +776,9 @@ MPShelper.pear <- function(colorByFactor=NULL, targetsdf=targets, ...){
 ## 
 MPShelper.umiextract <- function(colorByFactor=NULL, targetsdf=targets, ...){
   
-  if(any(grepl("whitelist", samplePattern, ignore.case = T))) {
+  args <- match.call()
+
+  if("samplePattern" %in% names(args) && any(grepl("whitelist", samplePattern, ignore.case = T))) {
     foldername <- SHINYREPS_UMIEXTRACT_LOGWL
   } else {
     foldername <- SHINYREPS_UMIEXTRACT_LOG
@@ -778,7 +829,8 @@ MPShelper.umiextract <- function(colorByFactor=NULL, targetsdf=targets, ...){
   # In that case x is returned as list of character vectors of different length.
   if(class(x)=="list") {
     x.df <- lapply(x, function(y) {t(as.data.frame(y))})
-    x.df <- plyr::rbind.fill.matrix(x.df)
+    #x.df <- plyr::rbind.fill.matrix(x.df)
+    x.df <- dplyr::bind_rows(lapply(x.df, as.data.frame, drop=F))
     x.df <- as.data.frame(x.df)
     x.df <- as.data.frame(lapply(x.df, as.numeric))
     row.names(x.df) <- basename(names(x))
@@ -793,19 +845,23 @@ MPShelper.umiextract <- function(colorByFactor=NULL, targetsdf=targets, ...){
   vars4table <- colnames(x.df)
   vars2plot <- vars4table[!vars4table %in% "BCs_passed_threshold"]
   
-  # reduce size of file names 
+
+  #reduce length of file names 
   x.df$filename_unmod <- factor(row.names(x.df))
-  row.names(x.df)  <- gsub(lcSuffix(row.names(x.df) ), "", row.names(x.df) )
-  row.names(x.df)  <- gsub(lcPrefix(row.names(x.df) ), "", row.names(x.df) )
+  if(!is.na(SHINYREPS_PREFIX)) {
+    row.names(x.df) <- gsub(SHINYREPS_PREFIX, "", row.names(x.df))
+  }
+  row.names(x.df) <- gsub("(?:\\.R1)?\\.cutadapt.assembled.umibarcode.log$", "", row.names(x.df))
+  if(nrow(x.df)>1){
+    if(is.na(SHINYREPS_PREFIX)) {row.names(x.df)  <- gsub(lcPrefix(row.names(x.df) ), "", row.names(x.df) )}
+    row.names(x.df)  <- gsub(lcSuffix(row.names(x.df) ), "", row.names(x.df) )
+  }
   
-  
+
   # passing the different factors given in targetsdf to x.df which was created from cutadapt logfile names (if 1 cell per file)
   if(!is.null(targetsdf) && !is.null(colorByFactor) && nrow(x.df) == nrow(targetsdf)) { # if targets object fits in length, add information to x.df
     
-    targetsdf$filename <- gsub(lcSuffix(targetsdf$pruned_file_name ), "", targetsdf$pruned_file_name ) # shorten filename suffix
-    targetsdf$filename <- gsub(lcPrefix(targetsdf$filename ), "", targetsdf$filename ) # shorten filename prefix
-    
-    index <- sapply(targetsdf$filename, grep, x.df$filename_unmod, ignore.case = T) # grep sample name in file names
+    index <- sapply(targetsdf$file, grep, x.df$filename_unmod, ignore.case = T) # grep sample name in file names
     targetsdf <- targetsdf[sapply(index, length) ==1, ] # remove targetsdf entries not (uniquely) found in x.df
     
     if(!identical(sort(unname(unlist(index))), 1:nrow(x.df))) {
@@ -814,7 +870,8 @@ MPShelper.umiextract <- function(colorByFactor=NULL, targetsdf=targets, ...){
     
     x.df <- data.frame(x.df[unlist(index),], targetsdf, check.names =F)
     x.df <- x.df[order(rownames(x.df)),, drop=F]
-    rownames(x.df) <- x.df$filename
+    x.df$filename <- x.df$sample
+    rownames(x.df) <- x.df$sample
     
     if(any(!colorByFactor %in% colnames(x.df))) {
       if(all(!colorByFactor %in% colnames(x.df))) {
@@ -873,7 +930,7 @@ MPShelper.whitelistextraction <- function(web=F, ...) {
   
   # logs folder
   if(!all(sapply(SHINYREPS_UMIEXTRACT_LOGWL, file.exists))) {
-    return(paste("geneBodyCov statistics not available for", names(which(!sapply(SHINYREPS_UMIEXTRACT_LOGWL, file.exists)))))
+    return(paste("Whitelist extraction statistics not available for", names(which(!sapply(SHINYREPS_UMIEXTRACT_LOGWL, file.exists)))))
   }
   
   SHINYREPS_PLOTS_COLUMN <- tryCatch(as.integer(SHINYREPS_PLOTS_COLUMN[1]),error=function(e){3})
@@ -891,8 +948,14 @@ MPShelper.whitelistextraction <- function(web=F, ...) {
     paste0("![whitelistextract img](", f, ")")
   })
   names(df) <- basename(names(df))
-  names(df) <- gsub(lcSuffix(names(df)), "", names(df))
-  names(df) <- gsub(lcPrefix(names(df)), "", names(df))
+  #reduce length of file names 
+  if(!is.na(SHINYREPS_PREFIX)) {
+    names(df) <- gsub(SHINYREPS_PREFIX, "", names(df))
+  }
+  if(nrow(df)>1){
+    if(is.na(SHINYREPS_PREFIX)) {names(df)  <- gsub(lcPrefix(names(df) ), "", names(df) )}
+    names(df)  <- gsub(lcSuffix(names(df) ), "", names(df) )
+  }
   
   # put sample names and output in md table of SHINYREPS_PLOTS_COLUMN columns
   while(length(df) %% SHINYREPS_PLOTS_COLUMN != 0) df <- c(df, "")
