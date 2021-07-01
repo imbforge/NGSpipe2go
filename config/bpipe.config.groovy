@@ -114,9 +114,9 @@ config {
       memory="50"
     }
     Cutadapt { 
-      walltime="02:00:00" 
+      walltime="04:00:00" 
       procs="1" 
-      memory="4"
+      memory="32"
     }
     CutadaptStats { 
       walltime="01:00:00" 
