@@ -55,7 +55,7 @@ run_nested_extraction <-any(grepl("nested", list.files(SHINYREPS_UMIEXTRACT_LOG)
 PSIavailable <- file.exists(file.path(SHINYREPS_MPSPROFILING_OUT, "MPSprofiling.RData")) # PSI calculation applied?
   
 ## load targets file  
-targets <- read.delim(SHINYREPS_TARGET, sep=",")
+targets <- read.delim(SHINYREPS_TARGET, sep="\t")
   
 # print targets file
 DT::datatable(targets, caption="targets file (sample sheet) used for analysis")
@@ -63,6 +63,16 @@ DT::datatable(targets, caption="targets file (sample sheet) used for analysis")
 if(PSIavailable) {
   # load PSI tables if available
   load(file.path(SHINYREPS_MPSPROFILING_OUT, "MPSprofiling.RData"))
+
+  # format numbers in data tables and insert new lines in header
+  for(i in names(bynuc_all)) {
+  numcols <- sapply(bynuc_all[[i]], is.numeric)
+  bynuc_all[[i]][,numcols] <- lapply(bynuc_all[[i]][,numcols], signif, 5)
+  colnames(bynuc_all[[i]]) <- gsub("_", "\n", colnames(bynuc_all[[i]]))
+  numcols <- sapply(byaa_all[[i]], is.numeric)
+  byaa_all[[i]][,numcols] <- lapply(byaa_all[[i]][,numcols], signif, 5)
+  colnames(byaa_all[[i]]) <- gsub("_", "\n", colnames(byaa_all[[i]]))
+  }
 }
 
 ```
@@ -109,8 +119,12 @@ In the following plot only relevant contaminants are shown. A contaminant is con
 fastqscreen_plots <- MPShelper.fastqscreen(perc.to.plot=SHINYREPS_FASTQSCREEN_PERC, ncol=2)
 ```
 
-```{r fastqscreen_paragraph_plot, echo=F,results='asis',error=F,warning=F,message=F,fig.align='center', fig.height=min(170, (round((1.5*fastqscreen_plots$no.of.rows))+1)*fastqscreen_plots$no.of.samples/8+1)}
-plot(fastqscreen_plots$p.category.wrap)
+```{r fastqscreen_paragraph_plot, echo=F,results='asis',error=F,warning=F,message=F,fig.align='center', fig.height=min(170, (round((1.8*fastqscreen_plots$no.of.rows))+1)*fastqscreen_plots$no.of.samples/8+1)}
+  if(is.null(fastqscreen_plots$errortext)) {
+    plot(fastqscreen_plots$p.category.wrap)
+    } else {
+      cat(fastqscreen_plots$errortext)
+      }
 ```
 
 
@@ -264,7 +278,7 @@ Median protein stability indices per amino acid sequence have been calculated as
    lapply(unique(targets$experiment), function(x) {
       dplyr::filter(byaa_all[["raw"]], experiment==x) %>%
                       head(n=as.numeric(SHINYREPS_MAX_TABLE_ROWS)) %>%
-                      DT::datatable(caption=paste("PSI per nucleotide for experiment", x, 
+                      DT::datatable(caption=paste("PSI per amino acid for experiment", x, 
                                                   if(as.numeric(SHINYREPS_MAX_TABLE_ROWS)<nrow(filter(byaa_all[["raw"]], experiment==x)))
                                                   {paste("(max", as.numeric(SHINYREPS_MAX_TABLE_ROWS), "entries)")} else{""})
                                                     )
@@ -319,7 +333,7 @@ Median protein stability indices per amino acid sequence have been calculated fr
    lapply(unique(targets$experiment), function(x) {
       dplyr::filter(byaa_all[["bgsubt"]], experiment==x) %>%
                       head(n=as.numeric(SHINYREPS_MAX_TABLE_ROWS)) %>%
-                      DT::datatable(caption=paste("PSI per nucleotide for experiment", x, 
+                      DT::datatable(caption=paste("PSI per amino acid for experiment", x, 
                                                   if(as.numeric(SHINYREPS_MAX_TABLE_ROWS)<nrow(filter(byaa_all[["bgsubt"]], experiment==x)))
                                                   {paste("(max", as.numeric(SHINYREPS_MAX_TABLE_ROWS), "entries)")} else{""})
                                                     )
