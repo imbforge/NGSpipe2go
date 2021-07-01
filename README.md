@@ -63,14 +63,22 @@ Go to your <project_dir> and make symlinks for the pipeline in the main project 
   - regular expressions for barcode and UMI extraction
   - whitelist options: you may provide user-prepared barcode whitelists to filter the extracted barcodes using the ESSENTIAL_WHITELIST option. If ESSENTIAL_CORRECT_CB is set true, non matching barcodes will be corrected to barcode alternatives given in the whitelist. It also possible to generate a whitelist with likely true barcodes from the data set (as described [here](https://umi-tools.readthedocs.io/en/latest/reference/whitelist.html)) by using the ESSENTIAL_EXTRACT_WHITELIST flag. This whitelist would also contain possible barcode alternatives for correcting if possible. For each barcode extraction the user may use either the ESSENTIAL_WHITELIST or the ESSENTIAL_EXTRACT_WHITELIST option (but not both).
 - additional (more specialized) parameter can be given in the header-files of the individual pipeline modules (e.g. Hamming distance for correction of barcodes to whitelist barcode in *addumibarcodetofastq.header*). The flowchart given above links to the header files of each module to inspect the default parameter set.
-- *targets.txt*: comma-separated txt-file giving information about the analysed samples. The following columns are required (additional columns ignored): 
+- *targets.txt*: tab-separated txt-file giving information about the analysed samples. The following columns are required (additional columns ignored): 
+  - sample: sample identifier. If no sample demultiplexing by a 2nd barcode is necessary, may be same as file.
+  - file: Unique short form of the input fastq file name (common prefixes and suffixes can be removed; no dots allowed in file name other than for file suffices). These names are grepped against the count file names to merge the *targets.txt* information to the count data.
   - experiment: experiment name
   - sub_experiment: summarizes those samples, which have been distributed to stability bins and belong together for PSI calculation
-  - unique_sample_id: sample identifier. If no sample demultiplexing by a 2nd barcode is necessary, may be same as pruned_file_name
-  - pruned_file_name: Unique short form of the input fastq file name (common prefixes and suffixes can be removed). These names are grepped against the count file names to merge the *targets.txt* information to the count data.
   - fraction: fraction of cells assigned to each bin
   - bin: index number of signal intensity bin
   - barcode_demultiplex: (only required if design is "amplicon3") 2nd barcode for demultiplexing samples from count file
+
+
+Optionally adjust some general pipeline settings defined in the NGSpipe2go ***config*** folder:
+
+- *bpipe.config.groovy*: define workload manager resources (default workload manager is "slurm", if not needed set executor="local")
+- *preambles.groovy*: define module preambles if needed (or stay with default preambles)
+- *tools.groovy*: define default versions and running environments for all installed pipeline tools, modify accordingly if new tools or tool versions are installed on your system. If you want to use a different tool version for a certain project you can overwrite the default value in the pipeline-specific file *NGSpipe2go/pipelines/DNAampliconseq/tools.groovy*. Currently, we are using lmod, conda and/or singularity containers as running environments. Conda itself is loaded as lmod module if conda tools are specified. If you want to use conda but haven't installed it as lmod module make otherwise sure that it is available in the path.
+
 
 ## Run the pipeline ##
 
