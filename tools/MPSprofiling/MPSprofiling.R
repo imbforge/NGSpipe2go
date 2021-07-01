@@ -20,9 +20,9 @@
 
 options(stringsAsFactors=FALSE)
 
-library(reshape)
+library(reshape2)
 library(kableExtra)
-library(plyr)
+#library(plyr)
 library(dplyr)
 library(tidyr)
 library(Biobase)
@@ -65,17 +65,17 @@ if(!file.exists(inputdir))   stop(paste("Dir",inputdir,"does NOT exist. Run with
 
 
 ### columns in target file
-# experiment: overall experiment name
-# sub_experiment: summarizes those samples which have been distributed to stability bins and belong together for PSI calculation
-# unique_sample_id: sample identifier. If no demultiplexing necessary, may be same as pruned_file_name
-# pruned_file_name: input file names after removing common prefixes and suffixes. Is grebbed against count file name to merge targets.txt to the count data.
-# fraction: fraction of cells assiged to each bin
-# bin: number of signal intesity bin
-# barcode_demultiplex (if design is "amplicon3") for demultiplexing samples from count file 
+# experiment: overall experiment name.
+# sub_experiment: summarizes those samples which have been distributed to stability bins and belong together for PSI calculation.
+# sample: sample identifier. If no demultiplexing necessary, may be same as file.
+# file: input file names after removing common prefixes and suffixes. It is grepped against count file name to merge targets.txt to the count data.
+# fraction: fraction of cells assiged to each bin.
+# bin: number of signal intesity bin.
+# barcode_demultiplex (if design is "amplicon3") for demultiplexing samples from count file.
 
 
 # parameters
-required_target_columns <- c("pruned_file_name", "unique_sample_id", "experiment", "sub_experiment", "bin", "fraction")
+required_target_columns <- c("file", "sample", "experiment", "sub_experiment", "bin", "fraction")
 need2demultiplex <- expdesign %in% c("amplicon3")
 if(need2demultiplex) {required_target_columns <- c(required_target_columns, "barcode_demultiplex")}
 annoFactors <- c("experiment", "sub_experiment")
@@ -90,7 +90,7 @@ if(!dir.exists(name_plotfolder)) {dir.create(name_plotfolder, recursive = T)}
 
 
 # read targets file
-targets <- read.delim(ftargets, header=T, comment.char="#", sep=",")
+targets <- read.delim(ftargets, header=T, comment.char="#", sep="\t")
 if (!all(required_target_columns %in% colnames(targets))) {
   missing_cols <- paste(required_target_columns[! required_target_columns %in% colnames(targets)], collapse=", ")
   stop("\n\nMissung required target column(s):", missing_cols)
@@ -111,20 +111,20 @@ targets <- targets[,required_target_columns]
     if(need2demultiplex) { 
         # if true, counts[[x] contains multiple samples in one file instead of just 1 sample. 
         # id is 2nd extracted barcode and must correspond to "barcode_demultiplex" in targets.txt.
-        logindex_targetsfile <- sapply(targets$pruned_file_name, grepl, x)
+        logindex_targetsfile <- sapply(targets$file, grepl, x)
         if(sum(logindex_targetsfile) != length(unique(counts[[x]]$id))) {
-          stop("\npruned_file_name in targets.txt does not correspond to the correct number of ids in count file ", x)}
+          stop("\nfile in targets.txt does not correspond to the correct number of ids in count file ", x)}
         merge(counts[[x]], targets[logindex_targetsfile,], all.x=T, by.x="id", by.y="barcode_demultiplex")
     } else { 
         # if false, counts[[x]] contains a single sample. 
         # id is sample file name including bpipe suffixes (not needed since count file name is used)
-        logindex_targetsfile <- sapply(targets$pruned_file_name, grepl, x)
-        if(sum(logindex_targetsfile) !=1) {stop("\npruned_file_name in targets.txt not unique for count file name ", x)}
+        logindex_targetsfile <- sapply(targets$file, grepl, x)
+        if(sum(logindex_targetsfile) !=1) {stop("\nfile in targets.txt not unique for count file name ", x)}
         counts[[x]] <- data.frame(counts[[x]][, c("sequence", "count")], targets[logindex_targetsfile,])
     }
   })
 
-  counts <- rbind.fill(counts) # rbind list elements to data.frame
+  counts <- bind_rows(counts) # rbind list elements to data.frame
   
   # remove barcodes containg Ns
   counts <- counts[!grepl("N", counts$sequence), ]
@@ -132,13 +132,13 @@ targets <- targets[,required_target_columns]
   
   # sum all counts per sample for initial QC filtering
   counts_summary <- counts %>%
-    dplyr::group_by(unique_sample_id) %>%
+    dplyr::group_by(sample) %>%
     dplyr::summarize(sum = sum(count)) %>%
     dplyr::ungroup() 
-    counts <- merge(counts, counts_summary, by="unique_sample_id", all.x=T)
+    counts <- merge(counts, counts_summary, by="sample", all.x=T)
       
       # 1st filter step for extreme outlier (need counts_summary for correct mean(counts_summary$sum))
-      removedSamples <- as.data.frame(counts_summary[counts_summary$sum < threshold_rel_countssum * mean(counts_summary$sum), c("unique_sample_id", "sum")])
+      removedSamples <- as.data.frame(counts_summary[counts_summary$sum < threshold_rel_countssum * mean(counts_summary$sum), c("sample", "sum")])
       cat("\nremove", nrow(removedSamples), "samples from dataset with <", 100*threshold_rel_countssum, "% of mean total counts:\n")
       print(removedSamples)
       counts <- filter(counts, !(sum < threshold_rel_countssum * mean(counts_summary$sum)))
@@ -148,20 +148,20 @@ targets <- targets[,required_target_columns]
     #### start analsis 
         
       # factorize categorical variables after subsetting and initial outlier removal
-      category_vars <- colnames(counts)[colnames(counts) %in% c("unique_sample_id", "experiment", "sub_experiment", "bin", "sequence")]
+      category_vars <- colnames(counts)[colnames(counts) %in% c("sample", "experiment", "sub_experiment", "bin", "sequence")]
       counts[,category_vars] <- lapply(counts[,category_vars], factor)
       
       # define helper catergory
       counts$helper_cat <- factor(paste(counts$experiment, counts$sub_experiment, sep="_"))
       
       # add columns bin_rank per sub_experiment and column totalfractions. Collapse dataset with unique()
-      counts_summary2 <- unique(counts[,colnames(counts) %in% c("unique_sample_id", "experiment", "sub_experiment", "bin", "helper_cat")]) %>%
+      counts_summary2 <- unique(counts[,colnames(counts) %in% c("sample", "experiment", "sub_experiment", "bin", "helper_cat")]) %>%
       dplyr::group_by(helper_cat)  %>%
       dplyr::mutate(bin_rank=rank(bin)) %>% 
       dplyr::mutate(totalfractions = dplyr::n_distinct(bin)) %>% # number of fractions per sample
       dplyr::ungroup() 
 
-    counts <- merge(counts, counts_summary2[,c("unique_sample_id", "bin_rank", "totalfractions")], by="unique_sample_id", all.x=T)
+    counts <- merge(counts, counts_summary2[,c("sample", "bin_rank", "totalfractions")], by="sample", all.x=T)
     
     # add column f as transformed bin index [0,1]
     counts$f <- (counts$bin_rank -1) / (counts$totalfractions -1) 
@@ -231,14 +231,14 @@ targets <- targets[,required_target_columns]
          logindex_nocounts_bgsubt <- bgsubt$count==0
          if(sum(logindex_nocounts_bgsubt)>0) {
            cat("\n", sum(logindex_nocounts_bgsubt), "entries removed from count matrix due to zero counts after background subtraction:\n")
-           print(bgsubt[logindex_nocounts_bgsubt, c("unique_sample_id", "bin", "sequence")][1:min(20,sum(logindex_nocounts_bgsubt)),]) # print max 20 entries
+           print(bgsubt[logindex_nocounts_bgsubt, c("sample", "bin", "sequence")][1:min(20,sum(logindex_nocounts_bgsubt)),]) # print max 20 entries
            cat("\n")
            bgsubt <- bgsubt[!logindex_nocounts_bgsubt,]
          }}
      
      # recalulate sample sum for bgsubt 
      bgsubt <- bgsubt %>%
-       dplyr::group_by(unique_sample_id) %>%
+       dplyr::group_by(sample) %>%
        dplyr::mutate(sum = sum(count)) %>%
        dplyr::ungroup() 
     }
@@ -351,7 +351,7 @@ targets <- targets[,required_target_columns]
             dplyr::group_by(translation, experiment, sub_experiment, .drop=T) %>%
             dplyr::summarize(median_PSI = median(PSI, na.rm=T),
                              nsequences=sum(!is.na(PSI))) %>% # number of seqs which contribute a PSI to aa
-            dplyr::ungroup() 
+          dplyr::ungroup() 
 
           ## calculate pooled PSI per di-residue from counts
           byaaC <- counts %>%
