@@ -9,13 +9,8 @@
 // See example in the next paragraph for more details
 default_preamble="""
     export TMP="$TMP";
-    if [ ! -d "\$TMP" ]; then
-        mkdir -p "\$TMP";
-    fi;
-
-    if [ -n "\$SLURM_JOBID" ]; then
-        export TMP="/jobdir/\$SLURM_JOBID";
-    fi
+    [[ -n \$TMP && ! -d \$TMP ]] && mkdir -p "\$TMP";
+    [[ -n \$SLURM_JOB_ID ]] && export TMP="/jobdir/\$SLURM_JOB_ID"
 """
 
 // This map defines the default and module-specific preambles.
