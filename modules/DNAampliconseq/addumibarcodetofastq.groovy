@@ -20,6 +20,7 @@ AddUMIBarcodeToFastq = {
     def DESIGN = ESSENTIAL_EXPDESIGN
     def EXTRACTWHITELIST  = AddUMIBarcodeToFastq_vars.extractWhitelist
     def EXTRACTWHITELIST2 = AddUMIBarcodeToFastq_vars.extractWhitelist2
+    def WRITEFILTEREDOUT  = AddUMIBarcodeToFastq_vars.write_filtered_out
 
     // create the log folder if it doesn't exists (and whitelist log folder if needed)
     def umitools_logdir = new File(AddUMIBarcodeToFastq_vars.logdir)
@@ -34,7 +35,8 @@ AddUMIBarcodeToFastq = {
 
     def pattern1_FLAGS =
         (AddUMIBarcodeToFastq_vars.extractmethod ? " --extract-method=" + AddUMIBarcodeToFastq_vars.extractmethod : "") +
-        (AddUMIBarcodeToFastq_vars.bcpattern     ? " --bc-pattern=" + AddUMIBarcodeToFastq_vars.bcpattern   : "")
+        (AddUMIBarcodeToFastq_vars.bcpattern     ? " --bc-pattern=" + AddUMIBarcodeToFastq_vars.bcpattern   : "") + 
+        (AddUMIBarcodeToFastq_vars.write_filtered_out   ? " --filtered-out=" + "\${TMP}/${OUTPUTFILE}.filteredOut.fastq.gz"   : "")  
 
     def pattern2_FLAGS =
         (AddUMIBarcodeToFastq_vars.extractmethod ? " --extract-method=" + AddUMIBarcodeToFastq_vars.extractmethod : "") +
@@ -107,12 +109,17 @@ AddUMIBarcodeToFastq = {
          esac &&
               
           if [ $EXTRACTWHITELIST = true ] || [ $EXTRACTWHITELIST2 = true ]; then
-             mkdir -p $umitools_logdirWL &&
-             mv -t $umitools_logdirWL/ \${TMP}/${OUTPUTFILE}.extracted_whitelist*.tsv &&
-             mv -t $umitools_logdirWL/ \${TMP}/${OUTPUTFILE}*extracted_whitelist*.umibarcode.log &&
-             mv -t $umitools_logdirWL/ \${TMP}/${OUTPUTFILE}.plot_extracted_whitelist* ;
+              mkdir -p $umitools_logdirWL &&
+              mv -t $umitools_logdirWL/ \${TMP}/${OUTPUTFILE}.extracted_whitelist*.tsv &&
+              mv -t $umitools_logdirWL/ \${TMP}/${OUTPUTFILE}*extracted_whitelist*.umibarcode.log &&
+              mv -t $umitools_logdirWL/ \${TMP}/${OUTPUTFILE}.plot_extracted_whitelist* ;
           fi &&
          
+          if [ $WRITEFILTEREDOUT = true ]; then
+              mkdir -p ${output.dir}/filteredOut &&
+              mv -t ${output.dir}/filteredOut/ \${TMP}/${OUTPUTFILE}*.filteredOut.fastq.gz ; 
+          fi &&
+
           mv \${TMP}/${OUTPUTFILE}*.umibarcode.fastq.gz $output &&
           mv -t $umitools_logdir/ \${TMP}/${OUTPUTFILE}*umibarcode.log
                                    
