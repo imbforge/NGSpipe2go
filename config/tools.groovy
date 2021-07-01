@@ -19,6 +19,7 @@
 //     but to keep this Map simple we have both under java->"1.8".
 //
 def conda_tools       = "/fsimb/common/conda_tools"
+def conda_call        = "module try-load conda &&"  
 def singularity_tools = "/fsimb/common/singularity_tools"
 
 // default runenvs and versions for each tools.
@@ -31,6 +32,7 @@ tools_defaults = [
     bowtie     : [ runenv: "lmod", version: "1.2.2"        ],
     bowtie2    : [ runenv: "lmod", version: "2.3.4"        ],
     bwa        : [ runenv: "lmod", version: "0.7.15"       ],
+    conda      : [ runenv: "lmod", version: "4.8.3"        ],
     cutadapt   : [ runenv: "lmod", version: "1.18"         ],
     deeptools  : [ runenv: "lmod", version: "3.1"          ],
     fastqc     : [ runenv: "lmod", version: "0.11.8"       ],
@@ -88,26 +90,26 @@ tools_envs = [
             lmod: "module load bamUtil/1.0.13"
         ],
         "1.0.14": [
-            conda: "source activate ${conda_tools}/bamutil/1.0.14"
+            conda: "${conda_call} source activate ${conda_tools}/bamutil/1.0.14"
         ]
     ],
     bedtools: [
         "2.27": [
             lmod: "module load bedtools/2.27.1_debian9",
-            conda: "source activate ${conda_tools}/bedtools/2.27.1",
+            conda: "${conda_call} source activate ${conda_tools}/bedtools/2.27.1",
             singularity: "alias bedtools=\"singularity run --app bedtools ${singularity_tools}/bedtools/2.27.1r0/bedtools.simg\""
         ]
     ],
     bowtie: [
         "1.2.2": [
             lmod: "module load bowtie/1.2.2",
-            conda: "source activate ${conda_tools}/bowtie/1.2.2"
+            conda: "${conda_call} source activate ${conda_tools}/bowtie/1.2.2"
         ]
     ],
     bowtie2: [
         "2.3.4": [
             lmod: "module load bowtie2/2.3.4.3",
-            conda: "source activate ${conda_tools}/bowtie2/2.3.4",
+            conda: "${conda_call} source activate ${conda_tools}/bowtie2/2.3.4",
             singularity: "alias bowtie2=\"singularity run --app bowtie2 ${singularity_tools}/bowtie2/2.3.4.3r0/bowtie2.simg\""
         ]
     ],
@@ -116,10 +118,15 @@ tools_envs = [
             lmod: "module load bwa/0.7.15"
         ]
     ],
+    conda: [
+        "4.8.3": [
+            lmod: "module load conda/4.8.3"
+        ]
+    ],
     cutadapt: [
         "1.18": [
             lmod: "module load cutadapt/1.18",
-            conda: "source activate ${conda_tools}/cutadapt/1.18",
+            conda: "${conda_call} source activate ${conda_tools}/cutadapt/1.18",
             singularity :"alias cutadapt=\"singularity run --app cutadapt ${singularity_tools}/cutadapt/1.18r0/cutadapt.simg\""
         ]
     ],
@@ -132,26 +139,26 @@ tools_envs = [
             """
         ],
         "3.2": [
-            conda: "source activate ${conda_tools}/deeptools/3.2.0"
+            conda: "${conda_call} source activate ${conda_tools}/deeptools/3.2.0"
         ]
     ],
     fastqc: [
         "0.11.8": [
             lmod: "module load fastqc/0.11.8",
-            conda: "source activate ${conda_tools}/fastqc/0.11.8",
+            conda: "${conda_call} source activate ${conda_tools}/fastqc/0.11.8",
             singularity: "alias fastqc=\"singularity run --app fastqc ${singularity_tools}/fastqc/0.11.8r0/fastqc.simg\""
         ]
     ],
     fastqscreen: [
         "0.13": [
             lmod: "module load fastq_screen/0.13",
-            conda: "source activate ${conda_tools}/fastq_screen/0.13"
+            conda: "${conda_call} source activate ${conda_tools}/fastq_screen/0.13"
         ]
     ],
     fastx: [
         "0.0.14": [
             lmod: "module load fastx_toolkit/0.0.14",
-            conda: "source activate ${conda_tools}/fastx_toolkit/0.0.14"
+            conda: "${conda_call} source activate ${conda_tools}/fastx_toolkit/0.0.14"
         ]
     ],
     gatk: [
@@ -181,20 +188,20 @@ tools_envs = [
     macs2: [
         "2.1.2": [
             lmod: "module load macs2/2.1.2_debian9",
-            conda: "source activate ${conda_tools}/macs2/2.1.2",
+            conda: "${conda_call} source activate ${conda_tools}/macs2/2.1.2",
             singularity: "alias macs2=\"singularity run --app macs2 ${singularity_tools}/macs2/2.1.2.1r0/macs.simg\""
         ]
     ],
     mirdeep2: [
         "2.0.0.8": [
             lmod: "module load mirdeep2/2.0.0.8",
-            conda: "source activate ${conda_tools}/mirdeep2/2.0.0.8"
+            conda: "${conda_call} source activate ${conda_tools}/mirdeep2/2.0.0.8"
         ]
     ],
     multiqc: [
         "1.7": [
             lmod: "module load MultiQC/1.7",
-            conda: "source activate ${conda_tools}/MultiQC/1.7",
+            conda: "${conda_call} source activate ${conda_tools}/MultiQC/1.7",
             singularity: "alias multiqc=\"singularity run --app multiqc ${singularity_tools}/MultiQC/1.7/multiqc.simg\""
         ],
         "1.9": [
@@ -211,7 +218,7 @@ tools_envs = [
             lmod: "module load picard/2.7.0"
         ],
         "2.18": [
-            conda: "source activate ${conda_tools}/picard/2.18.26",
+            conda: "${conda_call} source activate ${conda_tools}/picard/2.18.26",
             singularity: "alias picard=\"singularity run --app picard ${singularity_tools}/picard/2.18.17r0/picard.simg\""
         ],
         "2.20": [
@@ -230,20 +237,20 @@ tools_envs = [
     ],
     repenrich: [
         "1.2": [
-            conda: "source activate ${conda_tools}/repenrich/1.2"
+            conda: "${conda_call} source activate ${conda_tools}/repenrich/1.2"
         ]
     ],
     rmats: [
         "4.0.2": [
             lmod: "module load rmats/4.0.2_recompile_debian9",
-            conda: "source activate ${conda_tools}/rmats/4.0.2",
+            conda: "${conda_call} source activate ${conda_tools}/rmats/4.0.2",
             singularity: "alias rmats.py=\"singularity run --app rmats.py ${singularity_tools}/rmats/4.0.2r0/rmats.simg\""
         ]
     ],
     rseqc: [
         "3.0.0": [
             lmod: "module load RSeQC/3.0.0_debian9",
-            conda: "source activate ${conda_tools}/rseqc/3.0.0",
+            conda: "${conda_call} source activate ${conda_tools}/rseqc/3.0.0",
             singularity: """
                 alias bam2fq.py=\"singularity run --app bam2fq.py ${singularity_tools}/rseqc/3.0.0r0/rseqc.simg\";
                 alias bam2wig.py=\"singularity run --app bam2wig.py ${singularity_tools}/rseqc/3.0.0r0/rseqc.simg\";
@@ -279,14 +286,14 @@ tools_envs = [
     samtools: [
         "1.9": [
             lmod: "module load samtools/1.9",
-            conda: "source activate ${conda_tools}/samtools/1.9",
+            conda: "${conda_call} source activate ${conda_tools}/samtools/1.9",
             singularity: "alias samtools=\"singularity run --app samtools ${singularity_tools}/samtools/1.9r1/samtools.simg\""
         ]
     ],
     seqtk: [
         "1.3": [
             lmod: "module load seqtk/1.3",
-            conda: "source activate ${conda_tools}/seqtk/1.3"
+            conda: "${conda_call} source activate ${conda_tools}/seqtk/1.3"
         ]
     ],
     starfusion: [
@@ -301,7 +308,7 @@ tools_envs = [
         ],
         "2.7": [
             lmod: "module load star/2.7.3a",
-            conda: "source activate ${conda_tools}/star/2.7.0d",
+            conda: "${conda_call} source activate ${conda_tools}/star/2.7.0d",
             singularity: "alias STAR=\"singularity run --app STAR ${singularity_tools}/star/2.7.0fr0/STAR.simg\""
         ]
     ],
@@ -313,7 +320,7 @@ tools_envs = [
     subread: [
         "1.6": [
             lmod: "module load subread/1.6.5_debian9",
-            conda: "source activate ${conda_tools}/subread/1.6.3",
+            conda: "${conda_call} source activate ${conda_tools}/subread/1.6.3",
             singularity: """
                 alias exactSNP=\"singularity run --app exactSNP ${singularity_tools}/subread/1.6.3r0/subread.simg\";
                 alias featureCounts=\"singularity run --app featureCounts ${singularity_tools}/subread/1.6.3r0/subread.simg\";
@@ -336,11 +343,11 @@ tools_envs = [
     umitools: [
         "0.5.5": [
             lmod: "module load umitools/0.5.5",
-            conda: "source activate ${conda_tools}/umitools/0.5.5"
+            conda: "${conda_call} source activate ${conda_tools}/umitools/0.5.5"
         ],
         "1.0.0": [
             lmod: "module load umitools/1.0.0",
-            conda: "source activate ${conda_tools}/umitools/1.0.0"
+            conda: "${conda_call} source activate ${conda_tools}/umitools/1.0.0"
         ]
     ]
 ]
