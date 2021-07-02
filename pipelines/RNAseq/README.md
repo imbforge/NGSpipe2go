@@ -32,7 +32,7 @@ All analysis steps are illustrated in the pipeline [flowchart](https://www.draw.
 - essential.vars.groovy: essential parameter describing the experiment including: 
   - ESSENTIAL_PROJECT: your project folder name
   - ESSENTIAL_STAR_REF: path to STAR indexed reference genome
-  - ESSENTIAL_GENESGTF: genome annotation file in gtf-format
+  - ESSENTIAL_GENESGTF: properly formatted GTF annotation file having *different* gene and trancript IDs (e.g. from Ensembl or Gencode)
   - ESSENTIAL_PAIRED: either paired end ("yes") or single read ("no") design
   - ESSENTIAL_STRANDED: strandness of library (no|yes|reverse)
   - ESSENTIAL_ORG: UCSC organism name

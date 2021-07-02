@@ -22,6 +22,7 @@ library("dplyr")
 library("tidyr")
 library("forcats")
 library("ngsReports")
+library("ggbeeswarm")
 
 #' loadGlobalVars: read configuration from bpipe vars
 #'
@@ -623,7 +624,7 @@ DEhelper.STAR <- function() {
         df_values$sample <- fct_reorder(df_values$sample, df_values$`% unique`)
     }
 
-    df_melt <- melt(df_values, value.name = "reads", variable.name = "mapping_stat")
+    df_melt <- reshape2::melt(df_values, value.name = "reads", variable.name = "mapping_stat")
     df_melt$value_info <- ifelse(grepl("%", df_melt$mapping_stat), "perc", "reads")
 
     ## melt does not work properly in case of only one sample (sample name gets lost)
@@ -736,19 +737,21 @@ DEhelper.STAR <- function() {
 ##
 ## DEhelper.Fastqc: go through Fastqc output dir and create a md table with the duplication & read quals & sequence bias plots
 ##
-DEhelper.Fastqc <- function(web=TRUE) {
+DEhelper.Fastqc <- function(web=FALSE, subdir="") {
     
-    # logs folder
-    if(!file.exists(SHINYREPS_FASTQC_OUT)) {
-        return("Fastqc statistics not available")
-    }
-    
-    # construct the folder name, which is different for web and noweb
-    QC <- if(web) "/fastqc" else SHINYREPS_FASTQC_OUT
-    
-    # construct the image url from the folder contents (skip current dir .)
-    samples <- list.dirs(SHINYREPS_FASTQC_OUT, recursive=F)
-    df <- sapply(samples, function(f) {
+  # logs folder
+  if(!all(sapply(file.path(SHINYREPS_FASTQC_OUT, subdir), file.exists))) {
+    return(paste("Fastqc statistics not available for", names(which(!sapply(file.path(SHINYREPS_FASTQC_OUT, subdir), file.exists)))))
+  }
+  
+  # construct the folder name, which is different for web and noweb
+  QC <- if(web) paste0("/fastqc/", subdir) else file.path(SHINYREPS_FASTQC_OUT, subdir)
+  
+  # construct the image url from the folder contents (skip current dir .)
+  samples <- list.dirs(QC, recursive=F, full.names = T)
+  samples <- samples[sapply(samples, function(x) {file.exists(file.path(x, "fastqc_data.txt"))})] # exclude potential subdir which is also listed by list.dirs
+  
+  df <- sapply(samples, function(f) {
         c(paste0("![fastqc img](", QC, "/", basename(f), "/Images/per_base_quality.png)"), 
           paste0("![fastqc img](", QC, "/", basename(f), "/Images/per_base_sequence_content.png)"),
           paste0("![fastqc img](", QC, "/", basename(f), "/Images/per_sequence_gc_content.png)"))
@@ -756,39 +759,45 @@ DEhelper.Fastqc <- function(web=TRUE) {
 
     # set row and column names, and output the md table
     df <- as.data.frame(t(df))
-    rownames(df) <- gsub(paste0(".R1_fastqc$|.R2_fastqc$"), "", basename(samples))
+    rownames(df) <-  basename(samples)
     colnames(df) <- c("Read qualities", "Sequence bias", "GC content")
-
+    
     if(file.exists(SHINYREPS_TARGET)){
-
-        # get target names
-        targets <- read.delim(SHINYREPS_TARGET)
-        targets$sample_ext <- gsub(paste0(SHINYREPS_RNATYPES_SUFFIX,"$"), "",targets$file )
-
-        # replace files names with nicer sample names given in targets file 
-	# if sample is missing in targets file, use reduced file name
-        rownames(df) <- sapply(rownames(df), function(i) { ifelse(i %in% targets$sample_ext,
-                                                                  targets[targets$sample_ext == i,"sample"],
-                                                                  gsub(paste0("^",SHINYREPS_PREFIX),"",i))})
+      
+      # get target names
+      targets <- read.delim(SHINYREPS_TARGET)
+      targets$sample_ext <- gsub("\\..*$", "",targets$file )
+      
+      # replace files names with nicer sample names given in targets file
+      # if sample is missing in targets file, use reduced file name
+      rownames(df) <- sapply(rownames(df), function(i) { ifelse(sum(sapply(targets$sample_ext, grepl, i))==1,
+                                                                ifelse(sapply("R1", grepl, i), 
+                                                                       paste0(targets[sapply(targets$sample_ext, grepl, i),"sample"], ".R1"),
+                                                                       ifelse(sapply("R2", grepl, i), 
+                                                                              paste0(targets[sapply(targets$sample_ext, grepl, i),"sample"], ".R2"),
+                                                                              targets[sapply(targets$sample_ext, grepl, i),"sample"])),
+                                                                gsub(paste0("^",SHINYREPS_PREFIX),"",i))})                                                    
+      
     } else {
-
-        if(!is.na(SHINYREPS_PREFIX)) {
-            rownames(df) <- gsub(paste0("^",SHINYREPS_PREFIX), "", rownames(df))
-        }
+      if(!is.na(SHINYREPS_PREFIX)) {
+        rownames(df) <- gsub(paste0("^",SHINYREPS_PREFIX), "", rownames(df))
+      }
+      rownames(df) <- gsub("_fastqc$", "", rownames(df))
+      rownames(df) <- sapply(rownames(df), shorten)
     }
-
+    
     # add a row with the sample name (as given in the rownames) before every row
     df.new <- do.call(rbind,lapply(1:nrow(df),function(i) {rbind(c("",rownames(df)[i],""),df[i,])}))
     rownames(df.new) <- NULL
-    kable(df.new, output=F, align="c", format="markdown")
-
+    # kable(df.new, output=F, align="c", format="markdown") # print sample names in additional rows
+    kable(df, output=F, align="c") # print sample names as rownames
 }
 
 
 ##
 ## DEhelper.ngsReports.Fastqc: joint FastQC report of all samples in the experiment
 ##
-DEhelper.ngsReports.Fastqc <- function() {
+DEhelper.ngsReports.Fastqc <- function(subdir="") {
 	
 	# output folder
 	if(!file.exists(SHINYREPS_FASTQC_OUT)) {
@@ -796,8 +805,8 @@ DEhelper.ngsReports.Fastqc <- function() {
 	}
 
     # Loading FastQC Data 
-    f <- list.files(SHINYREPS_FASTQC_OUT, pattern="fastqc.zip$", full.names=TRUE)
-    x <- ngsReports::FastqcDataList(f)
+  f <- list.files(file.path(SHINYREPS_FASTQC_OUT, subdir), pattern="fastqc.zip$", full.names=TRUE)
+  x <- ngsReports::FastqcDataList(f)
 	lbls <- gsub(paste0("(^", SHINYREPS_PREFIX, "|.fastqc.zip$)"), "", names(x))
     names(lbls) <- gsub(".fastqc.zip", ".fastq.gz", names(x))
 
@@ -816,7 +825,7 @@ DEhelper.ngsReports.Fastqc <- function() {
 ##
 ## DEhelper.Fastqc.custom: prepare Fastqc summary plots
 ##
-DEhelper.Fastqc.custom <- function(web=TRUE, summarizedPlots=TRUE) {
+DEhelper.Fastqc.custom <- function(web=FALSE, summarizedPlots=TRUE, subdir="") {
   
     # logs folder
     if(!file.exists(SHINYREPS_FASTQC_OUT)) {
@@ -824,10 +833,10 @@ DEhelper.Fastqc.custom <- function(web=TRUE, summarizedPlots=TRUE) {
     }
   
     # construct the folder name, which is different for web and noweb
-    QC <- if(web) "/fastqc" else SHINYREPS_FASTQC_OUT
+    QC <- if(web) paste0("/fastqc/", subdir) else file.path(SHINYREPS_FASTQC_OUT, subdir)
   
     # read fastqc results in the appropriate format
-    f <- list.files(SHINYREPS_FASTQC_OUT, pattern="\\.zip$",full.names=T)
+    f <- list.files(QC, pattern="\\.zip$",full.names=T)
     fastqc.stats <- ngsReports::FastqcDataList(f)
 
     # create proper name vectoir as labels
@@ -838,14 +847,14 @@ DEhelper.Fastqc.custom <- function(web=TRUE, summarizedPlots=TRUE) {
 
         # get target names
         targets <- read.delim(SHINYREPS_TARGET)
-        targets$sample_ext <- gsub(paste0(SHINYREPS_RNATYPES_SUFFIX,"$"), "",targets$file)
-  
+        targets$sample_ext <- gsub("\\..*$", "",targets$file )
+        
         # replace files names with nicer sample names given in targets file 
         # if sample is missing in targets file, use reduced file name
-        lbls <- sapply(lbls, function(i) { ifelse(gsub(".R1$|.R2$","",i) %in% targets$sample_ext,
-                                                  targets[targets$sample_ext == gsub(".R1$|.R2$","",i),"sample"],
+        lbls <- sapply(lbls, function(i) { ifelse(sum(sapply(targets$sample_ext, grepl, i))==1,
+                                                  targets[sapply(targets$sample_ext, grepl, i),"sample"],
                                                   gsub(paste0("^",SHINYREPS_PREFIX),"",i))})
-
+        
         if(SHINYREPS_PAIRED == "yes") {
             x <- names(lbls)
             lbls <- paste0(lbls, ifelse(grepl("R1", names(lbls)), ".R1", ".R2"))
@@ -864,7 +873,7 @@ DEhelper.Fastqc.custom <- function(web=TRUE, summarizedPlots=TRUE) {
     if (summarizedPlots == TRUE) {
 
         # prepare for plotting  
-        df <- reshape::melt(lapply(fastqc.stats , function(x) x@Per_base_sequence_quality[, c("Base","Mean")]))
+        df <- reshape2::melt(lapply(fastqc.stats , function(x) x@Per_base_sequence_quality[, c("Base","Mean")]))
         names(df)[names(df)=="L1"] <- "samplename"
   
         # color code the samples as done by fastqc:
@@ -949,8 +958,7 @@ DEhelper.Fastqc.custom <- function(web=TRUE, summarizedPlots=TRUE) {
         p.qual <- ngsReports::plotBaseQuals(fastqc.stats, labels=lbls, plotType="boxplot") +
           theme(axis.text.x = element_text(size=5))
         p.content <- ngsReports::plotSeqContent(fastqc.stats, labels=lbls, plotType="line") +
-          theme(axis.text.x = element_text(size=5),
-		legend.position = "top")
+          theme(axis.text.x = element_text(size=5), legend.position = "top")
     }
 
     # GC content line plot 
@@ -958,11 +966,12 @@ DEhelper.Fastqc.custom <- function(web=TRUE, summarizedPlots=TRUE) {
     # the following settings:
     # ngsReports::plotGcContent(fastqc.stats, plotType="line", gcType="Genome", labels=lbls, theoreticalGC=TRUE, species=SPECIES)
     # the default value for SPECIES is "Hsapiens", thus, if you don't specify it, human will be used as a default
-    p.gc <- ngsReports::plotGcContent(fastqc.stats, plotType="line", gcType="Genome", labels=lbls, theoreticalGC=FALSE) +
-      guides(color=guide_legend(title="",ncol=4)) +
-      theme(legend.position = "top",
-            legend.text = element_text(size=8)) 
-
+    p.gc <- ngsReports::plotGcContent(fastqc.stats, usePlotly=summarizedPlots, plotType="line", gcType="Genome", labels=lbls, theoreticalGC=FALSE) 
+    if(!summarizedPlots) {
+      p.gc <- p.gc + guides(color=guide_legend(title="",ncol=4)) + 
+        theme(legend.position = "top", legend.text = element_text(size=8)) 
+    }
+    
     return(list(no.of.samples=length(f), p.qual=p.qual, p.content=p.content, p.gc=p.gc))
 }
 
@@ -981,7 +990,9 @@ DEhelper.fastqscreen <- function(perc.to.plot = 1) {
   
   # logs folder
   if(!file.exists(SHINYREPS_FASTQSCREEN_OUT)) {
-    return("FastQScreen statistics not available")
+    return(list(errortext="FastQScreen statistics not available",
+                no.of.genomes=1,
+                no.of.samples=1))
   }
   
   # construct the folder name, which is different for web and noweb
@@ -1023,17 +1034,17 @@ DEhelper.fastqscreen <- function(perc.to.plot = 1) {
     
     # get target names
     targets <- read.delim(SHINYREPS_TARGET)
-    targets$sample_ext <- gsub(paste0(SHINYREPS_RNATYPES_SUFFIX,"$"), "",targets$file)
+    targets$sample_ext <- gsub("\\..*$", "",targets$file )
     
     # replace files names with nicer sample names given in targets file
     # if sample is missing in targets file, use reduced file name
-    samples <- sapply(samples, function(i) { ifelse(i %in% targets$sample_ext,
-                                                    targets[targets$sample_ext == i,"sample"],
-                                                    ifelse(gsub(".R1|.R2","",i) %in% targets$sample_ext,
-                                                           ifelse(gsub(".R1","",i) %in% targets$sample_ext,
-                                                                  paste0(targets[targets$sample_ext == gsub(".R1","",i),"sample"],".R1"),
-                                                                  paste0(targets[targets$sample_ext == gsub(".R2","",i),"sample"],".R2")),
-                                                           gsub(paste0("^",SHINYREPS_PREFIX),"",i)))})
+    samples <- sapply(samples, function(i) { ifelse(sum(sapply(targets$sample_ext, grepl, i))==1,
+                                                    ifelse(sapply("R1", grepl, i), 
+                                                           paste0(targets[sapply(targets$sample_ext, grepl, i),"sample"], ".R1"),
+                                                           ifelse(sapply("R2", grepl, i), 
+                                                                  paste0(targets[sapply(targets$sample_ext, grepl, i),"sample"], ".R2"),
+                                                                  targets[sapply(targets$sample_ext, grepl, i),"sample"])),
+                                                    gsub(paste0("^",SHINYREPS_PREFIX),"",i))})                                                    
   } else {
     if(!is.na(SHINYREPS_PREFIX)) {
       samples <- gsub(paste0("^",SHINYREPS_PREFIX), "", samples)
@@ -1042,7 +1053,7 @@ DEhelper.fastqscreen <- function(perc.to.plot = 1) {
   
   names(df) <- samples
   #createing a df out of the lists
-  df <- melt(df, value.name="perc")
+  df <- reshape2::melt(df, value.name="perc")
   colnames(df) <- gsub("L1", "sample", colnames(df))
 
   # filter for relevant contaminants (e.g. showing >=1% (perc.to.plot) in any sample)
@@ -1083,7 +1094,7 @@ DEhelper.fastqscreen <- function(perc.to.plot = 1) {
 ## DEhelper.dupRadar: go through dupRadar output dir and create a md table with
 ##     the duplication plots
 ##
-DEhelper.dupRadar <- function(web=TRUE) {
+DEhelper.dupRadar <- function(web=FALSE) {
     
     # logs folder
     if(!file.exists(SHINYREPS_DUPRADAR_LOG)) {
@@ -1113,12 +1124,12 @@ DEhelper.dupRadar <- function(web=TRUE) {
 
         # get target names
         targets <- read.delim(SHINYREPS_TARGET)
-        targets$sample_ext <- gsub(paste0(SHINYREPS_RNATYPES_SUFFIX,"$"), "",targets$file )
-
+        targets$sample_ext <- gsub("\\..*$", "",targets$file )
+        
         # replace files names with nicer sample names given in targets file
         # if sample is missing in targets file, use reduced file name
-        samples <- sapply(samples, function(i) { ifelse(i %in% targets$sample_ext,
-                                                        targets[targets$sample_ext == i,"sample"],
+        samples <- sapply(samples, function(i) { ifelse(sum(sapply(targets$sample_ext, grepl, i))==1,   
+                                                        targets[sapply(targets$sample_ext, grepl, i),"sample"], 
                                                         gsub(paste0("^",SHINYREPS_PREFIX),"",i))})
     } else {
         if(!is.na(SHINYREPS_PREFIX)) {
@@ -1161,7 +1172,7 @@ DEhelper.RNAtypes <- function() {
     if(file.exists(SHINYREPS_TARGET)){
         # get target names
         targets <- read.delim(SHINYREPS_TARGET)
-        targets$sample_ext <- gsub(paste0(SHINYREPS_RNATYPES_SUFFIX,"$"), "",targets$file)
+        targets$sample_ext <- gsub("\\..*$", "", targets$file)
         add_factors <- colnames(targets)[!colnames(targets) %in% c("group", "sample", "file")]
     }
 
@@ -1169,21 +1180,21 @@ DEhelper.RNAtypes <- function() {
     l.infiles <- list.files(FOLDER, pattern=SUFFIX, full.names = T)
     l.counts <- lapply(l.infiles, function(f) {
        
-	# extract sample name and replace it with nicer sample name given in targets file (if available)
-        samplename <- gsub(paste0(SUFFIX,"$"), "", basename(f))
-
-	if(file.exists(SHINYREPS_TARGET)){
-            # replace files names with nicer sample names given in targets file 
-            # if sample is missing in targets file, use reduced file name
-            samplename <- ifelse(samplename %in% targets$sample_ext,
-                                 targets[targets$sample_ext == samplename,"sample"],
-                                 gsub(paste0("^",SHINYREPS_PREFIX),"",samplename))
-        } else {
-            if(!is.na(SHINYREPS_PREFIX)) { samplename <- gsub(paste0("^",SHINYREPS_PREFIX), "", samplename) }
-        }
-        df.readcount <- read.table(f, header=T, sep='\t', comment.char = '#', col.names=c("Geneid","Length",samplename))
-        df.readcount$Length <- NULL
-        return(df.readcount)
+      	# extract sample name and replace it with nicer sample name given in targets file (if available)
+              samplename <- gsub(paste0(SUFFIX,"$"), "", basename(f))
+      
+      	if(file.exists(SHINYREPS_TARGET)){
+                  # replace files names with nicer sample names given in targets file 
+                  # if sample is missing in targets file, use reduced file name
+                  samplename <- ifelse(sum(sapply(targets$sample_ext, grepl, samplename))==1,
+                                       targets[sapply(targets$sample_ext, grepl, samplename),"sample"],
+                                       gsub(paste0("^",SHINYREPS_PREFIX),"",samplename))
+              } else {
+                  if(!is.na(SHINYREPS_PREFIX)) { samplename <- gsub(paste0("^",SHINYREPS_PREFIX), "", samplename) }
+              }
+              df.readcount <- read.table(f, header=T, sep='\t', comment.char = '#', col.names=c("Geneid","Length",samplename))
+              df.readcount$Length <- NULL
+              return(df.readcount)
     })
     
     # merge counts to data frame in wide format & remove "length..." columns
@@ -1226,7 +1237,7 @@ DEhelper.RNAtypes <- function() {
 ## DEhelper.geneBodyCov: go through geneBodyCov output dir and create a md table with
 ##     the gene coverage plots
 ##
-DEhelper.geneBodyCov <- function(web=TRUE) {
+DEhelper.geneBodyCov <- function(web=FALSE) {
     
     # logs folder
     if(!file.exists(SHINYREPS_GENEBODYCOV_LOG)) {
@@ -1256,12 +1267,12 @@ DEhelper.geneBodyCov <- function(web=TRUE) {
         
         # get target names
         targets <- read.delim(SHINYREPS_TARGET)
-        targets$sample_ext <- gsub(paste0(SHINYREPS_RNATYPES_SUFFIX,"$"), "",targets$file )
+        targets$sample_ext <- gsub("\\.*$", "",targets$file )
 
         # replace files names with nicer sample names given in targets file
-	# if sample is missing in targets file, use reduced file name
-        samples <- sapply(samples, function(i) { ifelse(i %in% targets$sample_ext,
-                                                        targets[targets$sample_ext == i,"sample"],
+	      # if sample is missing in targets file, use reduced file name
+        samples <- sapply(samples, function(i) { ifelse(sum(sapply(targets$sample_ext, grepl, i))==1,
+                                                        targets[sapply(targets$sample_ext, grepl, i),"sample"],
                                                         gsub(paste0("^",SHINYREPS_PREFIX),"",i))})
     } else {
         if(!is.na(SHINYREPS_PREFIX)) {
@@ -1291,7 +1302,7 @@ DEhelper.geneBodyCov <- function(web=TRUE) {
 ##
 ## DEhelper.geneBodyCov2: go through geneBodyCov output dir and plot into one plot
 ##
-DEhelper.geneBodyCov2 <- function(web=TRUE) {
+DEhelper.geneBodyCov2 <- function(web=F) {
     
     # logs folder
     if(!file.exists(SHINYREPS_GENEBODYCOV_LOG)) {
@@ -1302,20 +1313,20 @@ DEhelper.geneBodyCov2 <- function(web=TRUE) {
     QC <- if(web) "/geneBodyCov" else SHINYREPS_GENEBODYCOV_LOG
     
     # construct the image url from the folder contents (skip current dir .)
-    samples <- list.files(SHINYREPS_GENEBODYCOV_LOG, pattern=".csv$", full.names=T)
+    samples <- list.files(QC, pattern=".csv$", full.names=T)
     names(samples) <- gsub("_geneBodyCov.csv", "", basename(samples))
     
     if(file.exists(SHINYREPS_TARGET)){
         
         # get target names
         targets <- read.delim(SHINYREPS_TARGET)
-        targets$sample_ext <- gsub(paste0(SHINYREPS_RNATYPES_SUFFIX,"$"), "",targets$file )
+        targets$sample_ext <- gsub("\\..*$", "", targets$file )
 
         # replace files names with nicer sample names given in targets file
-	# if sample is missing in targets file, use reduced file name
-        names(samples) <- sapply(names(samples), function(i) { ifelse(i %in% targets$sample_ext,
-                                                        targets[targets$sample_ext == i,"sample"],
-                                                        gsub(paste0("^",SHINYREPS_PREFIX),"",i))})
+	      # if sample is missing in targets file, use reduced file name
+        names(samples) <- sapply(names(samples), function(i) { ifelse(sum(sapply(targets$sample_ext, grepl, i))==1,  
+                                                                      targets[sapply(targets$sample_ext, grepl, i),"sample"], 
+                                                                      gsub(paste0("^",SHINYREPS_PREFIX),"",i))})
     } else {
         if(!is.na(SHINYREPS_PREFIX)) {
             names(samples) <- gsub(paste0("^",SHINYREPS_PREFIX), "", names(samples))
@@ -1329,7 +1340,7 @@ DEhelper.geneBodyCov2 <- function(web=TRUE) {
       })
     df <- do.call(cbind, l)
     df$perc <- 1:nrow(df) #these are the 100 bins used in the original plot
-    df <- melt(df, id.vars="perc", variable.name="sample", value.name="cov")
+    df <- reshape2::melt(df, id.vars="perc", variable.name="sample", value.name="cov")
     #sort the samples either by the group order of the targets file or alphabetically
     #if we do not have a targets file
     if(file.exists(SHINYREPS_TARGET)){
@@ -1354,7 +1365,7 @@ DEhelper.geneBodyCov2 <- function(web=TRUE) {
            geom_line(color="darkgrey") +
            labs(title="",
                 x = "Gene body percentile 5' -> 3'",
-                y = "Averaged normalised covrage") +
+                y = "Averaged normalised coverage") +
            scale_color_hue( c=50, l=70) +
            ylim(0,1) +
            theme_bw()
@@ -1379,7 +1390,7 @@ DEhelper.geneBodyCov2 <- function(web=TRUE) {
            geom_line() +
            labs(title="",
                 x = "Gene body percentile 5' -> 3'",
-                y = "Averaged normalised covrage") +
+                y = "Averaged normalised coverage") +
            scale_color_manual(values=sample.cols) +
            ylim(0,1) +
            theme_bw() +
@@ -1388,12 +1399,25 @@ DEhelper.geneBodyCov2 <- function(web=TRUE) {
     }
 
     if(("group" %in% colnames(df)) && !("replicate" %in% colnames(df))){
-       p_per_sample_splitByGroup <- p_per_sample + 
-                                      facet_wrap(~group,ncol=3) +
-                                      theme(legend.position="top",
- 					   plot.title=element_blank()) +
-                                      guides(color=guide_legend(ncol=3))
-       plot_list[["p_per_sample_splitByGroup"]] <- p_per_sample_splitByGroup
+      num_groups <- length(unique(df$group))
+      plot_list[["num_groups"]] <- num_groups
+      p_per_sample_splitByGroup <- ggplot(df, aes(x=perc,
+                                                  y=cov,
+                                                  group=sample,
+                                                  color=sample)) +
+        geom_line() +
+        labs(title="",
+             x = "Gene body percentile 5' -> 3'",
+             y = "Averaged normalised coverage") +
+        scale_color_manual(values=sample.cols) +
+        ylim(0,1) +
+        theme_bw() +
+        theme(legend.title=element_blank())  + 
+        facet_wrap(~group,ncol=2) +
+        theme(legend.position="top",
+              plot.title=element_blank()) +
+        guides(color=guide_legend(ncol=3))
+      plot_list[["p_per_sample_splitByGroup"]] <- p_per_sample_splitByGroup
     }
 
     if(all(c("group","replicate") %in% colnames(df))){
@@ -1408,7 +1432,7 @@ DEhelper.geneBodyCov2 <- function(web=TRUE) {
                                                       color=replicate)) +
            geom_line() +
            labs(x = "Gene body percentile 5' -> 3'",
-                y = "Averaged normalised covrage") +
+                y = "Averaged normalised coverage") +
            scale_color_manual(values=define.replicate.palette(num_replicates)) +
            ylim(0,1) +
            theme_bw() + 
@@ -1418,13 +1442,13 @@ DEhelper.geneBodyCov2 <- function(web=TRUE) {
 
        plot_list[["p_per_replicate_splitByGroup"]] <- p_per_replicate_splitByGroup
 
-       p_per_replicate_splitByReplicate <- ggplot(df, aes(x=perc,
+       p_per_group_splitByReplicate <- ggplot(df, aes(x=perc,
                                                           y=cov,
                                                           group=sample,
                                                           color=group)) +
            geom_line() +
            labs(x = "Gene body percentile 5' -> 3'",
-                y = "Averaged normalised covrage") +
+                y = "Averaged normalised coverage") +
            scale_color_manual(values=define.group.palette(num_groups)) +
            ylim(0,1) +
            theme_bw() +
@@ -1432,13 +1456,13 @@ DEhelper.geneBodyCov2 <- function(web=TRUE) {
 	   guides(color=guide_legend(ncol=3)) +
            facet_wrap(~replicate,ncol=3)
 
-       plot_list[["p_per_replicate_splitByReplicate"]] <- p_per_replicate_splitByReplicate
+       plot_list[["p_per_group_splitByReplicate"]] <- p_per_group_splitByReplicate
 
     }
   return(plot_list)
 }
 ##
-##DEhelper.strandspecifity: get the strandspecifity from the qc and display them
+##DEhelper.strandspecificity: get the strand specificity from the qc and display them
 ##
 DEhelper.strandspecificity <- function(){
 
@@ -1457,13 +1481,13 @@ DEhelper.strandspecificity <- function(){
 
         # get target names
         targets <- read.delim(SHINYREPS_TARGET)
-        targets$sample_ext <- gsub(paste0(SHINYREPS_RNATYPES_SUFFIX,"$"), "",targets$file )
+        targets$sample_ext <- gsub("\\..*$", "", targets$file )
 
         # replace files names with nicer sample names given in targets file
-	# if sample is missing in targets file, use reduced file name
-        samplenames <- sapply(samplenames, function(i) { ifelse(i %in% targets$sample_ext,
-                                                         targets[targets$sample_ext == i,"sample"],
-                                                         gsub(paste0("^",SHINYREPS_PREFIX),"",i))})
+	      # if sample is missing in targets file, use reduced file name
+        samplenames <- sapply(samplenames, function(i) { ifelse(sum(sapply(targets$sample_ext, grepl, i))==1,   
+                                                                targets[sapply(targets$sample_ext, grepl, i),"sample"], 
+                                                                gsub(paste0("^",SHINYREPS_PREFIX),"",i))})
     } else {
 
         if(!is.na(SHINYREPS_PREFIX)) {
@@ -1535,13 +1559,13 @@ DEhelper.Subread <- function() {
 
         # get target names
         targets <- read.delim(SHINYREPS_TARGET)
-        targets$sample_ext <- gsub(paste0(SHINYREPS_RNATYPES_SUFFIX,"$"), "",targets$file )
+        targets$sample_ext <- gsub("\\..*$", "", targets$file )
     
         # replace files names with nicer sample names given in targets file
 	# if sample is missing in targets file, use reduced file name
-        colnames(x) <- sapply(colnames(x), function(i) { ifelse(i %in% targets$sample_ext,
-                                                         targets[targets$sample_ext == i,"sample"],
-                                                         gsub(paste0("^",SHINYREPS_PREFIX),"",i))})
+        colnames(x) <- sapply(colnames(x), function(i) { ifelse(sum(sapply(targets$sample_ext, grepl, i))==1,
+                                                                targets[sapply(targets$sample_ext, grepl, i),"sample"],
+                                                                gsub(paste0("^",SHINYREPS_PREFIX),"",i))})
     } else {
 
         if(!is.na(SHINYREPS_PREFIX)) {
@@ -1604,13 +1628,13 @@ DEhelper.Qualimap <- function() {
 
         # get target names
         targets <- read.delim(SHINYREPS_TARGET)
-        targets$sample_ext <- gsub(paste0(SHINYREPS_RNATYPES_SUFFIX,"$"), "",targets$file)
+        targets$sample_ext <- gsub("\\..*$", "",targets$file)
 
         # replace files names with nicer sample names given in targets file
         # if sample is missing in targets file, use reduced file name
-        colnames(samples) <- sapply(colnames(samples), function(i) { ifelse(i %in% targets$sample_ext,
-                                                        targets[targets$sample_ext == i,"sample"],
-                                                        gsub(paste0("^",SHINYREPS_PREFIX),"",i))})
+        colnames(samples) <- sapply(colnames(samples), function(i) { ifelse(sum(sapply(targets$sample_ext, grepl, i))==1,  
+                                                                            targets[sapply(targets$sample_ext, grepl, i),"sample"], 
+                                                                            gsub(paste0("^",SHINYREPS_PREFIX),"",i))})
     } else {
         if(!is.na(SHINYREPS_PREFIX)) {
             colnames(samples) <- gsub(paste0("^",SHINYREPS_PREFIX), "", colnames(samples))
@@ -1655,10 +1679,25 @@ DEhelper.insertsize <- function(){
 		insertsizes <- lapply(filelist, read.table, sep="\t", header=TRUE, nrow=1)
 		insertsizes <- do.call(rbind, insertsizes)
 		samplenames <- basename(filelist)
-    if(!is.na(SHINYREPS_PREFIX)){
-		samplenames <- gsub(SHINYREPS_PREFIX, "", samplenames)
-    }
-		samplenames <- gsub("_insertsizemetrics.tsv","", samplenames)
+		
+		if(file.exists(SHINYREPS_TARGET)){
+		  
+		  # get target names
+		  targets <- read.delim(SHINYREPS_TARGET)
+		  targets$sample_ext <- gsub("\\..*$", "",targets$file)
+		  
+		  # replace files names with nicer sample names given in targets file
+		  # if sample is missing in targets file, use reduced file name
+		  samplenames <- sapply(samplenames, function(i) { ifelse(sum(sapply(targets$sample_ext, grepl, i))==1,  
+		                                                                      targets[sapply(targets$sample_ext, grepl, i),"sample"], 
+		                                                                      gsub(paste0("^",SHINYREPS_PREFIX),"",i))})
+		} else {
+		  if(!is.na(SHINYREPS_PREFIX)) {
+		    samplenames <- gsub(paste0("^",SHINYREPS_PREFIX), "", samplenames)
+		    samplenames <- gsub("_insertsizemetrics.tsv","", samplenames)
+		  }
+		}
+
 		rownames(insertsizes) <- samplenames 
 		insertsizes <- insertsizes[,c("MEDIAN_INSERT_SIZE","MEAN_INSERT_SIZE", "STANDARD_DEVIATION")]
 		colnames(insertsizes) <- c("Median", "Mean", "SD")
@@ -1707,17 +1746,35 @@ DEhelper.insertsize.helper <- function(metricsFile){
     }
   }
   
-  title_info <- gsub("_insertsizemetrics.tsv$", "", gsub(SHINYREPS_PREFIX, "", basename(metricsFile)))
+  title_info <- basename(metricsFile)  
   
-  #we get the histogram which ahs the names of the leves e.g. all_reads and readgroups/sample groups depending on
+  if(file.exists(SHINYREPS_TARGET)){
+    
+    # get target names
+    targets <- read.delim(SHINYREPS_TARGET)
+    targets$sample_ext <- gsub("\\..*$", "",targets$file )
+    
+    # replace files names with nicer sample names given in targets file
+    # if sample is missing in targets file, use reduced file name
+    title_info <- sapply(title_info, function(i) { ifelse(sum(sapply(targets$sample_ext, grepl, i))==1,   
+                                                    targets[sapply(targets$sample_ext, grepl, i),"sample"], 
+                                                    gsub(paste0("^",SHINYREPS_PREFIX),"",i))})
+  } else {
+    if(!is.na(SHINYREPS_PREFIX)) {
+      title_info <- gsub(paste0("^",SHINYREPS_PREFIX), "", title_info)
+    }
+    title_info <- gsub("_insertsizemetrics.tsv$","", title_info)
+  }
+
+  #we get the histogram which has the names of the levels e.g. all_reads and readgroups/sample groups depending on
   #accumulation level which was used.
   #the colnames of histogram are something like all.read.fr_count, all.read.rf_count etc.
   #to get the whole shebang into a wider format we have to add the information
-  hist_long <- melt(histogram, id.var = "insert_size") %>% 
-    separate( variable, 
-              sep = "\\.",
-              into = c("group", "counttype" )) %>%
-    rename( amount = value)
+  hist_long <- reshape2::melt(histogram, id.var = "insert_size") %>% 
+    extract(col=variable,
+            into=c("group", "counttype" ),
+            regex='([^\\.]+)\\.([^\\.]+)') %>% 
+    dplyr::rename( amount = value)
   #we also have to add the comulative sum per group to the whole shebang
   hist_long <- hist_long %>% group_by(group) %>% 
     arrange( desc(insert_size)) %>% 
@@ -1743,6 +1800,8 @@ DEhelper.insertsize.helper <- function(metricsFile){
                                                     name = "Cumulative fraction of reads > insert size")) +
                            xlab("insert size in bp") +
                            theme_bw() +
+      theme(legend.justification=c(1,1), legend.position=c(1,1), 
+            legend.background = element_rect(colour = "transparent", fill = "transparent")) + 
       facet_grid(~group)
       return(p)
 })
@@ -1800,6 +1859,7 @@ DEhelper.insertsize.plot <- function(){
   }
 }
 
+
 ##
 ## DEhelper.Trackhub: display the UCSC trackhub URL
 ##
@@ -1829,8 +1889,9 @@ DEhelper.Trackhub <- function() {
 #' @param plotfun define function to be used for plotting
 #'
 #' @return plot cutadapt statistics as side effect
-DEhelper.cutadapt <- function(targetsdf=targets, colorByFactor="group", sampleColumnName =c("sample"), 
-                              plotfun=DEhelper.cutadapt.plot, ...){
+DEhelper.cutadapt <- function(targetsdf=targets, colorByFactor="group", sampleColumnName =c("file"), 
+                              plotfun=DEhelper.cutadapt.plot, labelOutliers=T, outlierIQRfactor=1.5
+                              ){
   
   # logs folder
   if(!all(sapply(SHINYREPS_CUTADAPT_STATS, file.exists))) {
@@ -1838,9 +1899,6 @@ DEhelper.cutadapt <- function(targetsdf=targets, colorByFactor="group", sampleCo
   }
   
   x <- list.files(SHINYREPS_CUTADAPT_STATS,pattern='*cutadapt.log$',full.names=TRUE) 
-  
-  # select subset of samples if desired
-  x <- selectSampleSubset(x, ...)
   
   # get Command line parameters of first file
   cutadaptpars <- system(paste("grep \"Command line parameters\"", x[1]), intern=T)
@@ -1904,9 +1962,13 @@ DEhelper.cutadapt <- function(targetsdf=targets, colorByFactor="group", sampleCo
   #reduce length of file names 
   row.names(x.df) <- basename(colnames(x))
   x.df$filename_unmod <- factor(row.names(x.df))
+  if(!is.na(SHINYREPS_PREFIX)) {
+    row.names(x.df) <- gsub(SHINYREPS_PREFIX, "", row.names(x.df))
+  }
+  row.names(x.df) <- gsub("\\.cutadapt\\.log$", "", row.names(x.df))
   if(nrow(x.df)>1){
+    if(is.na(SHINYREPS_PREFIX)) {row.names(x.df)  <- gsub(lcPrefix(row.names(x.df) ), "", row.names(x.df) )}
     row.names(x.df)  <- gsub(lcSuffix(row.names(x.df) ), "", row.names(x.df) )
-    row.names(x.df)  <- gsub(lcPrefix(row.names(x.df) ), "", row.names(x.df) )
   }
   
   # passing the different factors given in targetsdf to x.df which was created from cutadapt file names 
@@ -1915,8 +1977,8 @@ DEhelper.cutadapt <- function(targetsdf=targets, colorByFactor="group", sampleCo
     if(is.null(targetsdf)) {stop("If 'colorByFactor' is given you must also provide 'targetsdf'!")}
     
     if(length(sampleColumnName)>1) { # melt in case of multiple file name columns (as for ChIP-Seq)
-      targetsdf <- targetsdf[,c(colorByFactor, sampleColumnName)]
-      targetsdf <- reshape2::melt(targetsdf, id.vars= colorByFactor, measure.vars=sampleColumnName, value.name = "filename")
+      targetsdf <- targetsdf[,unique(c(colorByFactor, sampleColumnName, "sample"))]
+      targetsdf <- reshape2::melt(targetsdf, measure.vars=sampleColumnName, value.name = "filename") 
       for (i in colorByFactor) {targetsdf[, i] <- paste0(targetsdf[, i], " (", targetsdf$variable, ")")}
       targetsdf[,c(colorByFactor, "filename")] <- lapply(targetsdf[,c(colorByFactor, "filename")], factor)
       
@@ -1924,19 +1986,24 @@ DEhelper.cutadapt <- function(targetsdf=targets, colorByFactor="group", sampleCo
       targetsdf$filename <- targetsdf[,sampleColumnName]
     }
     
-    targetsdf$filename <- gsub(lcSuffix(targetsdf$filename ), "", targetsdf$filename ) # shorten filename suffix
-    targetsdf$filename <- gsub(lcPrefix(targetsdf$filename ), "", targetsdf$filename ) # shorten filename prefix
-    
+    targetsdf$filename <- gsub("\\..*$", "", targetsdf$filename ) # shorten filename suffix
     index <- sapply(targetsdf$filename, grep, x.df$filename_unmod, ignore.case = T) # grep sample name in file names
-    targetsdf <- targetsdf[sapply(index, length) ==1, ] # remove targetsdf entries not (uniquely) found in x.df
+    if(is.list(index)) {
+      #targetsdf <- targetsdf[sapply(index, length) ==1, ] # remove targetsdf entries not (uniquely) found in x.df
+      targetsdf <- targetsdf[sapply(index, length)!=0,] # remove targetsdf entries not found in x.df
+      index <- sapply(targetsdf$filename, grep, x.df$filename_unmod, ignore.case = T) # redo grep sample name in file names
+    }
     
     if(!identical(sort(unname(unlist(index))), 1:nrow(x.df))) {
       stop("There seem to be ambiguous sample names in targets. Can't assign them uniquely to cutadapt logfile names")
     }
     
-    x.df <- data.frame(x.df[unlist(index),], targetsdf, check.names =F)
+    # x.df <- data.frame(x.df[unlist(index),], targetsdf, check.names =F) ##temp
+    x.df <- data.frame(x.df[unlist(t(index)),], targetsdf, check.names =F)
     x.df <- x.df[order(rownames(x.df)),, drop=F]
-    rownames(x.df) <- x.df$filename
+    if("sample" %in% colnames(x.df) && !any(duplicated(x.df$sample))) { # use sample column as identifier if present and unique
+      x.df$filename <- x.df$sample
+      row.names(x.df) <- x.df$sample } 
     
     if(any(!colorByFactor %in% colnames(x.df))) {
       if(all(!colorByFactor %in% colnames(x.df))) {
@@ -1953,14 +2020,13 @@ DEhelper.cutadapt <- function(targetsdf=targets, colorByFactor="group", sampleCo
   }
   
   # melt data frame for plotting
-  x.melt <- melt(x.df, measure.vars=c(grep("trimmed", colnames(x.df), value=T), 
-                                      "too short", 
-                                      grep("(Adapter)|(})", colnames(x.df), value=T)), variable="reads")
-  
+  x.melt <- reshape2::melt(x.df, measure.vars=c(grep("trimmed", colnames(x.df), value=T), 
+                                                "too short", 
+                                                grep("(Adapter)|(})", colnames(x.df), value=T)), variable.name="reads")
   # everything which is not a value should be a factor
   
   # one plot for each element of colorByFactor
-  violin.list <- lapply(colorByFactor, plotfun, data=x.melt) # "colorByFactor" is submitted as color.value
+  violin.list <- lapply(colorByFactor, plotfun, data=x.melt, labelOutliers=labelOutliers, outlierIQRfactor=outlierIQRfactor) # "colorByFactor" is submitted as color.value
   
   for(i in 1:length(violin.list)){
     plot(violin.list[[i]])
@@ -1975,10 +2041,14 @@ DEhelper.cutadapt <- function(targetsdf=targets, colorByFactor="group", sampleCo
 
 
 # plotting function for DEhelper.cutadapt 
-DEhelper.cutadapt.plot <- function(data, color.value){
+DEhelper.cutadapt.plot <- function(data, color.value, labelOutliers=T, outlierIQRfactor=1.5){
   
   is_outlier <- function(x) { # function for identification of outlier
-    return(x < quantile(x, 0.25) - 1.5 * IQR(x) | x > quantile(x, 0.75) + 1.5 * IQR(x))
+    if(IQR(x)!=0) {
+      return(x < quantile(x, 0.25) - outlierIQRfactor * IQR(x) | x > quantile(x, 0.75) + outlierIQRfactor * IQR(x))
+    } else {
+      return(x < mean(x) - outlierIQRfactor * mean(x) | x > mean(x) + outlierIQRfactor * mean(x))
+    }
   }
   
   data <- data %>%
@@ -1998,9 +2068,9 @@ DEhelper.cutadapt.plot <- function(data, color.value){
                                y="value",
                                color=color.value ))+
     geom_quasirandom(groupOnX=TRUE) +
-    geom_boxplot(color = "darkgrey", alpha = 0.2, outlier.shape = NA) + 
-    ggrepel::geom_text_repel(data=. %>% filter(!is.na(outlier)), aes(label=filename), show.legend=F) +
-    scale_color_manual(values=getPalette(colourCount)) + # creates as many colors as needed
+    geom_boxplot(color = "darkgrey", alpha = 0.2, outlier.shape = NA)  
+  if(labelOutliers) {p <- p + ggrepel::geom_text_repel(data=. %>% filter(!is.na(outlier)), aes(label=filename), show.legend=F)}
+  p <- p + scale_color_manual(values=getPalette(colourCount)) + # creates as many colors as needed
     ylab(ylab) +
     xlab("") +
     theme(axis.text.x=element_text(angle=30, vjust=1, hjust=1)) 

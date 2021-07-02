@@ -126,7 +126,11 @@ fastqscreen_plots <- DEhelper.fastqscreen(perc.to.plot=SHINYREPS_FASTQSCREEN_PER
 ```
 
 ```{r fastqscreen_paragraph2, echo=F,results='asis',error=F,warning=F,message=F,fig.align='center',fig.height=(round((3*fastqscreen_plots$no.of.genomes)/4)+1)*fastqscreen_plots$no.of.samples/8+1}
-plot(fastqscreen_plots$p.category.wrap)
+  if(is.null(fastqscreen_plots$errortext)) {
+    plot(fastqscreen_plots$p.category.wrap)
+    } else {
+      cat(fastqscreen_plots$errortext)
+      }
 ```
 
 ## UCSC Genome Browser tracks ##
@@ -152,13 +156,10 @@ if (!file.exists(SHINYREPS_INSERTSIZE)) {
     } else {
     cat(DEhelper.insertsize(), sep="\n")
     p <- DEhelper.insertsize.plot()
-    sample_length <- length(list.files(SHINYREPS_INSERTSIZE, 
-                                       pattern = "insertsizemetrics.tsv$"))
-  DEhelper.subchunkify(p, 
-                       fig_height = dim(p)[1] * 15/dim(p)[2],
-                       fig_width = 15)
+    DEhelper.subchunkify(p, 
+                         fig_height = dim(p)[1] * 15/dim(p)[2],
+                         fig_width = 15)
     }
-
 
 ```
 
@@ -232,9 +233,9 @@ if("p_per_replicate_splitByGroup" %in% names(plot_list)){
 ```
 
 ```{r GeneBodyCoverage_splitByReplicate, echo=F, error=F, warning=F, message=F, results='asis', fig.align="center", out.width="100%", fig.height=round((no.of.replicates+1)/3)*2.5+0.5+ifelse(no.of.replicates<3,1,0)}
-if("p_per_replicate_splitByReplicate" %in% names(plot_list)){
+if("p_per_group_splitByReplicate" %in% names(plot_list)){
   cat("#### Gene body coverage per sample split by replicate, colored by group: \n", fill=T)
-  plot(plot_list$p_per_replicate_splitByReplicate)
+  plot(plot_list$p_per_group_splitByReplicate)
   cat("\n", fill=T)
 }
 ```
