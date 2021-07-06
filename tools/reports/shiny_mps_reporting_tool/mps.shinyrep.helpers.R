@@ -466,9 +466,12 @@ MPShelper.fastqscreen <- function(subdir="", perc.to.plot = 1, ncol=2, ...) {
 ##
 ## MPShelper.cutadapt: get cutadapt statistics from the log folder and display them
 ## 
-#' @param targetsdf targets object
+#' @param targetsdf targets data.frame or character with file path to targets object
 #' @param colorByFactor character with column name of sample table to be used for coloring the plot. Coloring by filename if NULL. 
 #' @param sampleColumnName character with column name(s) of targets table containing file names
+#' @param plotfun define function to be used for plotting
+#' @param labelOutliers logical, shall outlier samples be labeled
+#' @param outlierIQRfactor numeric, factor is multiplied by IQR to determine outlier
 #'
 #' @return plot cutadapt statistics as side effect
 MPShelper.cutadapt <- function(targetsdf=targets, colorByFactor="group", sampleColumnName =c("file"), 
@@ -558,6 +561,10 @@ MPShelper.cutadapt <- function(targetsdf=targets, colorByFactor="group", sampleC
     
     if(is.null(targetsdf)) {stop("If 'colorByFactor' is given you must also provide 'targetsdf'!")}
     
+    if(!is.data.frame(targetsdf) && is.character(targetsdf) && file.exists(targetsdf)){
+      targetsdf <- read.delim(targetsdf)
+    } 
+
     if(length(sampleColumnName)>1) { # melt in case of multiple file name columns (as for ChIP-Seq)
       targetsdf <- targetsdf[,c(colorByFactor, sampleColumnName)]
       targetsdf <- reshape2::melt(targetsdf, id.vars= colorByFactor, measure.vars=sampleColumnName, value.name = "filename")
