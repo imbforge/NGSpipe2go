@@ -603,14 +603,14 @@ DEhelper.STAR <- function() {
     if(file.exists(SHINYREPS_TARGET)){
 
         targets <- read.delim(SHINYREPS_TARGET)
-        targets$sample_ext <- gsub(paste0(SHINYREPS_RNATYPES_SUFFIX,"$"), "",targets$file )
+        targets$sample_ext <- gsub("\\..*$", "",targets$file )
         add_factors <- colnames(targets)[!colnames(targets) %in% c("group", "sample", "file")]
 
         # replace files names with nicer sample names given in targets file 
         # if sample is missing in targets file, use reduced file name
-        df_values$sample <- sapply(df_values$sample, function(i) { ifelse(i %in% targets$sample_ext,
-                                                                   targets[targets$sample_ext == i,"sample"],
-                                                                   gsub(paste0("^",SHINYREPS_PREFIX),"",i))})
+        df_values$sample <- sapply(df_values$sample, function(i) { ifelse(sum(sapply(targets$sample_ext, grepl, i))==1,   
+                                                                          targets[sapply(targets$sample_ext, grepl, i),"sample"], 
+                                                                          gsub(paste0("^",SHINYREPS_PREFIX),"",i))})
     } else{
 
       # remove sample prefix from sample names (suffix was already removed before)
@@ -1883,13 +1883,15 @@ DEhelper.Trackhub <- function() {
 ##
 ## DEhelper.cutadapt: get trimming statistics from the Cutadapt folder and display them
 ## 
-#' @param targetsdf targets object
+#' @param targetsdf targets data.frame or character with file path to targets object
 #' @param colorByFactor character with column name of sample table to be used for coloring the plot. Coloring by filename if NULL. 
 #' @param sampleColumnName character with column name(s) of targets table containing file names
 #' @param plotfun define function to be used for plotting
+#' @param labelOutliers logical, shall outlier samples be labeled
+#' @param outlierIQRfactor numeric, factor is multiplied by IQR to determine outlier
 #'
 #' @return plot cutadapt statistics as side effect
-DEhelper.cutadapt <- function(targetsdf=targets, colorByFactor="group", sampleColumnName =c("file"), 
+DEhelper.cutadapt <- function(targetsdf=SHINYREPS_TARGET, colorByFactor="group", sampleColumnName =c("file"), 
                               plotfun=DEhelper.cutadapt.plot, labelOutliers=T, outlierIQRfactor=1.5
                               ){
   
@@ -1976,6 +1978,10 @@ DEhelper.cutadapt <- function(targetsdf=targets, colorByFactor="group", sampleCo
     
     if(is.null(targetsdf)) {stop("If 'colorByFactor' is given you must also provide 'targetsdf'!")}
     
+    if(!is.data.frame(targetsdf) && is.character(targetsdf) && file.exists(targetsdf)){
+      targetsdf <- read.delim(targetsdf)
+    } 
+      
     if(length(sampleColumnName)>1) { # melt in case of multiple file name columns (as for ChIP-Seq)
       targetsdf <- targetsdf[,unique(c(colorByFactor, sampleColumnName, "sample"))]
       targetsdf <- reshape2::melt(targetsdf, measure.vars=sampleColumnName, value.name = "filename") 
