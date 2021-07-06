@@ -93,6 +93,61 @@ cat("\n", fill = T)
 ```
 
 
+
+```{r cutadapt, echo=F, results='asis', error=F, warning=F, message=F, eval=SHINYREPS_RUN_CUTADAPT=="true"}
+cat("## Adapter trimming with Cutadapt\n")
+cat("\nThe following plot shows the amount of reads trimmed (in percent) for the selected adapter sequences. The column 'tooshort' gives the percentage of reads removed due to the minimum length threshold after trimming. Additionally to the column 'trimmed' which is for all adapters combined, there are columns for every single adapter giving the percentage of reads trimmed for this adapter.\n\n")
+
+DEhelper.cutadapt()
+```
+
+
+```{r FastQC_qual_summarized_trimmed, echo=F,results='asis',error=F,warning=F,message=F,fig.align='center', eval=SHINYREPS_RUN_CUTADAPT=="true"}
+cat("### FastQC of trimmed reads QC\n\n")
+cat("#### Read quality\n\n")
+if (SHINYREPS_FASTQC_SUMMARIZED) {
+    fastqc_summary_plot <- DEhelper.Fastqc.custom(web=F,summarizedPlots=T, subdir="trimmed")
+    plot(fastqc_summary_plot$p.qual)
+    cat("\n", fill = T)
+} else {
+    fastqc_summary_plot <- DEhelper.Fastqc.custom(web=F,summarizedPlots=F, subdir="trimmed")
+}
+```
+
+```{r FastQC_qual_trimmed, echo=F,results='asis',error=F,warning=F,message=F,fig.align='center',fig.height=min(170, round((3*fastqc_summary_plot$no.of.samples)/4)+1), eval=SHINYREPS_RUN_CUTADAPT=="true"}
+
+if (SHINYREPS_FASTQC_SUMMARIZED == FALSE) {
+    plot(fastqc_summary_plot$p.qual)
+    cat("\n", fill = T)
+}
+```
+
+```{r FastQC_nuc_content_summarized_trimmed, echo=F,results='asis',error=F,warning=F,message=F,fig.align='center', fig.height=min(170, ceiling(0.12*fastqc_summary_plot$no.of.samples)+1), eval=SHINYREPS_RUN_CUTADAPT=="true"}
+cat("#### Sequence bias of trimmed reads\n")
+
+if (SHINYREPS_FASTQC_SUMMARIZED) {
+    plot(fastqc_summary_plot$p.content)
+    cat("\n", fill = T)
+} 
+```
+
+```{r FastQC_nuc_content_trimmed, echo=F,results='asis',error=F,warning=F,message=F,fig.align='center',fig.height=min(170, round((3*fastqc_summary_plot$no.of.samples)/4)+1), eval=SHINYREPS_RUN_CUTADAPT=="true"}
+
+if (SHINYREPS_FASTQC_SUMMARIZED == F) {
+    plot(fastqc_summary_plot$p.content)
+    cat("\n", fill = T)
+}
+```
+
+```{r FastQC_GC_trimmed, echo=F,results='asis',error=F,warning=F,message=F,fig.align='center', eval=SHINYREPS_RUN_CUTADAPT=="true"}
+cat("#### GC content of trimmed reads\n")
+fastqc_summary_plot$p.gc
+cat("\n", fill = T)
+```
+
+
+
+
 ## Read mapping ##
 
 Mapping to the reference genome & transcriptome is performed with STAR (https://github.com/alexdobin/STAR). The program version, genome assembly and software parameters are described in the table at the end of the report.
