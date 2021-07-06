@@ -214,7 +214,7 @@ cat("## Adapter trimming with Cutadapt\n")
 
 cat("\nThe following plot shows the amount of reads trimmed for the selected adapter sequences including polyA/polyT sequences if specified. The column 'tooshort' gives the percentage of reads removed due to a length of less than 30 bases after trimming. Additionally to the column 'trimmed' which is for all adapters combined, there are columns for every single adapter giving the percentage of reads trimmed for this adapter.\n\n")
 
-DEhelper.cutadapt(colorByFactor=colorByFactor, targetsdf=targets4plots, outlierIQRfactor=10)
+DEhelper.cutadapt(colorByFactor=colorByFactor, targetsdf=targets4plots)
 ```
 
 ```{r FastQC_qual_summarized_trimmed, echo=F,results='asis',error=F,warning=F,message=F,fig.align='center', eval=runCutadapt}
@@ -453,7 +453,11 @@ fastqscreen_plots <- DEhelper.fastqscreen(perc.to.plot=SHINYREPS_FASTQSCREEN_PER
 ```
 
 ```{r fastqscreen_paragraph2, echo=F,results='asis',error=F,warning=F,message=F,fig.align='center', fig.height=min(170, (round((1.5*fastqscreen_plots$no.of.rows))+1)*fastqscreen_plots$no.of.samples/8+1)}
-plot(fastqscreen_plots$p.category.wrap)
+  if(is.null(fastqscreen_plots$errortext)) {
+    plot(fastqscreen_plots$p.category.wrap)
+    } else {
+      cat(fastqscreen_plots$errortext)
+      }
 ```
 
 
@@ -1570,7 +1574,7 @@ if(length(annoFactors)>2) {stop("\nno more than 2 categories allowed in 'annoFac
 
   # t-SNE without using pre-existing PCA results as input
     for (p in perplexity) {
-    set.seed(100) # HWE
+    set.seed(100) # hvg
     sce <- scater::runTSNE(sce, name = paste0("TSNE_p", p), ncomponents=ncomponents, 
                            perplexity=p, dimred = NULL, subset_row=hvg, exprs_values=exprs_values)
     set.seed(100) # all genes
@@ -1855,11 +1859,9 @@ for (d in c("PCA", "TSNE", "UMAP")) {
 ```{r clustering_graphbased_assignment_heatmap, results='asis', fig.height=3+0.5*length(sce_igraphclust), fig.width=12}
 
 # prepare single table with cell numbers per cluster for each clustering setting to display as heatmap
-list_igraph_clusterassign <- lapply(sce_igraphclust, table)
-igraph_clusterassign <- plyr::ldply(list_igraph_clusterassign, rbind) %>%
-  #replace(is.na(.), 0) %>%
-  column_to_rownames('.id') %>%
-  t()  
+igraph_clusterassign <- map_dfr(sce_igraphclust, table) %>%
+  t()
+colnames(igraph_clusterassign) <- names(sce_igraphclust)
 
 
 # plot table as heatmap
@@ -1879,12 +1881,6 @@ Heatmap(igraph_clusterassign, cluster_rows = F, cluster_columns = F, name="#cell
 # store cluster assignments
   write.table(data.frame(barcode=colnames(sce), colData(sce)[,c(group.vars, grep("igraph", names(colData(sce)), value=T))]), 
   file = file.path(dir_igraph, paste0("igraph_cluster_assignments.csv")), sep=",", quote=F, row.names=F)
-
-
-# cat("\nOverview cluster assignments:\n", fill=T) # outdated separate tables per clustering algorithm
-# for (x in names(sce_igraphclust)) {
-#   print(kbl(t(table(sce_igraphclust[[x]])), align = "l", format="markdown", caption=x) %>% kable_styling(full_width = F)) # format="simple"
-# }
 
 ```
 
@@ -1996,11 +1992,9 @@ for(d in reducedDimNames(sce)) {
 ```{r clustering_hierarchical_assignment_heatmap, results='asis', fig.height=3+0.5*length(clust_sce), fig.width=12}
 
 # prepare single table with cell numbers per cluster for each clustering setting to display as heatmap
-list_hclust_clusterassign <- lapply(clust_sce, table)
-hclust_clusterassign <- plyr::ldply(list_hclust_clusterassign, rbind) %>%
-  #replace(is.na(.), 0) %>%
-  column_to_rownames('.id') %>%
+hclust_clusterassign <- map_dfr(clust_sce, table) %>%
   t()  
+colnames(hclust_clusterassign) <- names(clust_sce)
 
 
 # plot table as heatmap
