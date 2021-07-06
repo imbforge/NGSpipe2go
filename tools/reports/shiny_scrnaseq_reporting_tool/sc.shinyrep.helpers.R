@@ -26,7 +26,7 @@ return(unique(not.yet.attached.pkg))
 #'
 #' @param f - character containing a file name defining multiple variables for reporting to run. 
 #' When f is a character vector with multiple filenames, multiple (non-unique) entries like path variables
-#' are assigned as vector.This is useful when do a meta analysis using target files from different project
+#' are assigned as vector. This is useful when do a meta analysis using target files from different project
 #' folders. Most helper functions can use these vector variables to read the respective target files
 #' from multiple designations.  
 #'
@@ -58,12 +58,12 @@ loadGlobalVars <- function(f="shinyReports.txt") {
   })
   
   # combine conf files if more than one
-  conf <- plyr::rbind.fill.matrix(conf_list)
-  
+  #conf <- plyr::rbind.fill.matrix(conf_list)
+  conf <- dplyr::bind_rows(lapply(conf_list, as.data.frame, drop=F, stringsAsFactors =F))
   for(i in colnames(conf)) {
     assign(i, unique(conf[,i]), envir=.GlobalEnv)
   }
-
+  
   invisible(0)
 }
 
@@ -1243,10 +1243,7 @@ DEhelper.Fastqc <- function(web=FALSE, subdir="", ...) {
     
     # select subset of samples for fastqc figures (e.g. merged single cell pools) or use all samples for samplePattern=NULL
     samples <- selectSampleSubset(samples, ...)
-    if(length(samples) == 0) {
-        return("No samples matched with this pattern...")
-    }
-    
+
     df <- sapply(samples, function(f) {
         c(paste0("![fastqc img](", f, "/Images/per_base_quality.png)"), 
           paste0("![fastqc img](", f, "/Images/per_base_sequence_content.png)"),
@@ -1255,12 +1252,37 @@ DEhelper.Fastqc <- function(web=FALSE, subdir="", ...) {
 
     # set row and column names, and output the md table
     df <- as.data.frame(t(df))
-    #rownames(df) <- gsub(paste0("^", SHINYREPS_PREFIX), "", basename(samples))
-    rownames(df) <- basename(samples)
-    rownames(df) <- gsub(lcPrefix(rownames(df)), "", rownames(df)) # remove longest common prefix
-    rownames(df) <- gsub(lcSuffix(rownames(df)), "", rownames(df)) # remove longest common suffix
+    rownames(df) <-  basename(samples)
     colnames(df) <- c("Read qualities", "Sequence bias", "GC content")
-    kable(df, output=F, align="c")
+
+    if(file.exists(SHINYREPS_TARGET)){
+      
+      # get target names
+      targets <- read.delim(SHINYREPS_TARGET)
+      targets$sample_ext <- gsub("\\..*$", "",targets$file )
+      
+      # replace files names with nicer sample names given in targets file 
+      # if sample is missing in targets file, use reduced file name
+      rownames(df) <- sapply(rownames(df), function(i) { ifelse(sum(sapply(targets$sample_ext, grepl, i))==1,
+                                                                ifelse(sapply("R1", grepl, i), 
+                                                                       paste0(targets[sapply(targets$sample_ext, grepl, i),"sample"], ".R1"),
+                                                                       ifelse(sapply("R2", grepl, i), 
+                                                                              paste0(targets[sapply(targets$sample_ext, grepl, i),"sample"], ".R2"),
+                                                                              targets[sapply(targets$sample_ext, grepl, i),"sample"])),
+                                                                gsub(paste0("^",SHINYREPS_PREFIX),"",i))})                                                    
+    } else {
+      if(!is.na(SHINYREPS_PREFIX)) {
+        rownames(df) <- gsub(paste0("^",SHINYREPS_PREFIX), "", rownames(df))
+      }
+      rownames(df) <- gsub("_fastqc$", "", rownames(df))
+      rownames(df) <- sapply(rownames(df), shorten)
+    }
+    
+    # add a row with the sample name (as given in the rownames) before every row
+    df.new <- do.call(rbind,lapply(1:nrow(df),function(i) {rbind(c("",rownames(df)[i],""),df[i,])}))
+    rownames(df.new) <- NULL
+    # kable(df.new, output=F, align="c", format="markdown") # print sample names in additional rows
+    kable(df, output=F, align="c") # print sample names as rownames
 }
 
 ##
@@ -1350,7 +1372,7 @@ DEhelper.Fastqc.custom <- function(web=FALSE, summarizedPlots=TRUE, subdir="", .
   if (summarizedPlots == TRUE) {
     
     # prepare for plotting  
-    df <- reshape::melt(lapply(fastqc.stats , function(x) x@Per_base_sequence_quality[, c("Base","Mean")]))
+    df <- reshape2::melt(lapply(fastqc.stats , function(x) x@Per_base_sequence_quality[, c("Base","Mean")]))
     names(df)[names(df)=="L1"] <- "samplename"
     
     # color code the samples as done by fastqc:
@@ -1435,8 +1457,7 @@ DEhelper.Fastqc.custom <- function(web=FALSE, summarizedPlots=TRUE, subdir="", .
     p.qual <- ngsReports::plotBaseQuals(fastqc.stats, labels=lbls, plotType="boxplot") +
       theme(axis.text.x = element_text(size=5))
     p.content <- ngsReports::plotSeqContent(fastqc.stats, labels=lbls, plotType="line") +
-      theme(axis.text.x = element_text(size=5),
-            legend.position = "top")
+      theme(axis.text.x = element_text(size=5), legend.position = "top")
   }
   
   # GC content line plot 
@@ -1455,9 +1476,6 @@ DEhelper.Fastqc.custom <- function(web=FALSE, summarizedPlots=TRUE, subdir="", .
 
 
 
-##
-## DEhelper.fastqscreen: add FastqScreen data to and plot it as a barplot
-##
 #' DEhelper.fastqscreen: summarizes FastQScreen results, creates summarized barplots, only relevant contanimants shown
 #'
 #' @param perc.to.plot - a numeric vector of length 1 setting the percent cutoff of relevant contaminants, if any sample
@@ -1469,11 +1487,14 @@ DEhelper.fastqscreen <- function(subdir="", perc.to.plot = 1, ncol=2, ...) {
   
   # logs folder
   if(!file.exists(SHINYREPS_FASTQSCREEN_OUT)) {
-    return("FastQScreen statistics not available")
+    return(list(errortext="FastQScreen statistics not available",
+                no.of.genomes=1,
+                no.of.samples=1,
+                no.of.rows=1))
   }
   
   # construct the folder name, which is different for web and noweb
-  QC <- SHINYREPS_FASTQSCREEN_OUT
+  QC <- file.path(SHINYREPS_FASTQSCREEN_OUT, subdir)
   
   # construct the image url from the folder contents (skip current dir .)
   #samples <- list.files(SHINYREPS_FASTQSCREEN_OUT, pattern="_screen.txt$", recursive=T, full.names=T) # does not exclude subdir
@@ -1610,8 +1631,7 @@ DEhelper.dupRadar <- function(web=F, ...) {
   
   # sample names 
   samples <- sapply(df, function(x) {
-    #gsub("_dupRadar.png)$", "", basename(x))
-    gsub("\\..*$", "", basename(x))
+    gsub("_dupRadar.png)$", "", basename(x))
   })
   
   if(file.exists(SHINYREPS_TARGET)){
@@ -1669,7 +1689,7 @@ DEhelper.RNAtypes <- function(...) {
   if(file.exists(SHINYREPS_TARGET)){
     # get target names
     targets <- read.delim(SHINYREPS_TARGET)
-    targets$sample_ext <- gsub(paste0(SHINYREPS_RNATYPES_SUFFIX,"$"), "",targets$file)
+    targets$sample_ext <- gsub("\\..*$", "", targets$file)
     add_factors <- colnames(targets)[!colnames(targets) %in% c("group", "sample", "file")]
   }
   
@@ -1713,7 +1733,7 @@ DEhelper.RNAtypes <- function(...) {
                          FUN=sum)
   
   # plot
-  df.counts.melt <- reshape::melt(df.counts, id.var="Geneid")
+  df.counts.melt <- reshape2::melt(df.counts, id.var="Geneid")
   colnames(df.counts.melt) <- c("type","sample","count")
   
   # remove possible starting "X" (in case sample name starts with a number)
@@ -1758,20 +1778,44 @@ DEhelper.geneBodyCov <- function(web=FALSE, ...) {
     # construct the image url from the folder contents (skip current dir .)
     samples <- list.files(QC, pattern=".png$", full.names = T)
     
-    # select subset of samples for fastqc figures (e.g. merged singlecell pools) or use all samples for samplePattern=NULL
+    # select subset of samples or use all samples for samplePattern=NULL
     samples <- selectSampleSubset(samples, ...)
 
     df <- sapply(samples, function(f) {
         paste0("![geneBodyCov img](", f, ")")
     })
-    names(df) <- basename(names(df))
-    names(df) <- gsub(lcSuffix(names(df)), "", names(df))
-    names(df) <- gsub(lcPrefix(names(df)), "", names(df))
     
-    # put sample names and output in md table of SHINYREPS_PLOTS_COLUMN columns
+    
+    # sample names
+    samples <- sapply(df, function(x) {
+      gsub("_geneBodyCov.png)$", "", basename(x))
+    })
+    
+    if(file.exists(SHINYREPS_TARGET)){
+      
+      # get target names
+      targets <- read.delim(SHINYREPS_TARGET)
+      targets$sample_ext <- gsub("\\..*$", "",targets$file )
+      
+      # replace files names with nicer sample names given in targets file
+      # if sample is missing in targets file, use reduced file name
+      samples <- sapply(samples, function(i) { ifelse(sum(sapply(targets$sample_ext, grepl, i))==1,
+                                                      targets[sapply(targets$sample_ext, grepl, i),"sample"],
+                                                      gsub(paste0("^",SHINYREPS_PREFIX),"",i))})
+    } else {
+      if(!is.na(SHINYREPS_PREFIX)) {
+        samples <- gsub(paste0("^",SHINYREPS_PREFIX), "", samples)
+      }
+    }
+    
+    # sort alphabetically
+    samples <- samples[order(samples)]
+    df <- df[names(samples)]
+    
+    # fill up additional columns if number of samples is not a multiple of SHINYREPS_PLOTS_COLUMN
     while(length(df) %% SHINYREPS_PLOTS_COLUMN != 0) df <- c(df, "")
-    samples <- names(df)
-  
+    while(length(samples) %% SHINYREPS_PLOTS_COLUMN != 0) samples <- c(samples, "")
+    
     df      <- matrix(df     , ncol=SHINYREPS_PLOTS_COLUMN, byrow=T)
     samples <- matrix(samples, ncol=SHINYREPS_PLOTS_COLUMN, byrow=T)
     
@@ -2033,7 +2077,7 @@ DEhelper.geneBodyCov2 <- function(web=F, ...) {
 
 
 ##
-##DEhelper.strandspecifity: get the strandspecifity from the qc and display them
+##DEhelper.strandspecificity: get the strand specificity from the qc and display them
 ##
 DEhelper.strandspecificity <- function(...){
   
@@ -2090,10 +2134,12 @@ DEhelper.strandspecificity <- function(...){
 ##
 ## DEhelper.cutadapt: get trimming statistics from the Cutadapt folder and display them
 ## 
-#' @param targetsdf targets object
+#' @param targetsdf targets data.frame or character with file path to targets object
 #' @param colorByFactor character with column name of sample table to be used for coloring the plot. Coloring by filename if NULL. 
 #' @param sampleColumnName character with column name(s) of targets table containing file names
 #' @param plotfun define function to be used for plotting
+#' @param labelOutliers logical, shall outlier samples be labeled
+#' @param outlierIQRfactor numeric, factor is multiplied by IQR to determine outlier
 #'
 #' @return plot cutadapt statistics as side effect
 DEhelper.cutadapt <- function(targetsdf=targets, colorByFactor="group", sampleColumnName =c("file"), 
@@ -2172,15 +2218,23 @@ DEhelper.cutadapt <- function(targetsdf=targets, colorByFactor="group", sampleCo
   #reduce length of file names 
   row.names(x.df) <- basename(colnames(x))
   x.df$filename_unmod <- factor(row.names(x.df))
+  if(!is.na(SHINYREPS_PREFIX)) {
+    row.names(x.df) <- gsub(SHINYREPS_PREFIX, "", row.names(x.df))
+  }
+  row.names(x.df) <- gsub("\\.cutadapt\\.log$", "", row.names(x.df))
   if(nrow(x.df)>1){
+    if(is.na(SHINYREPS_PREFIX)) {row.names(x.df)  <- gsub(lcPrefix(row.names(x.df) ), "", row.names(x.df) )}
     row.names(x.df)  <- gsub(lcSuffix(row.names(x.df) ), "", row.names(x.df) )
-    row.names(x.df)  <- gsub(lcPrefix(row.names(x.df) ), "", row.names(x.df) )
   }
   
   # passing the different factors given in targetsdf to x.df which was created from cutadapt file names 
   if(!is.null(colorByFactor)) { # add information to x.df
     
     if(is.null(targetsdf)) {stop("If 'colorByFactor' is given you must also provide 'targetsdf'!")}
+    
+    if(!is.data.frame(targetsdf) && is.character(targetsdf) && file.exists(targetsdf)){
+      targetsdf <- read.delim(targetsdf)
+    } 
     
     if(length(sampleColumnName)>1) { # melt in case of multiple file name columns (as for ChIP-Seq)
       targetsdf <- targetsdf[,unique(c(colorByFactor, sampleColumnName, "sample"))]
@@ -2192,23 +2246,20 @@ DEhelper.cutadapt <- function(targetsdf=targets, colorByFactor="group", sampleCo
       targetsdf$filename <- targetsdf[,sampleColumnName]
     }
     
-    if(!is.na(SHINYREPS_PREFIX)) { # shorten filename prefix
-      targetsdf$filename <- gsub(paste0("^",SHINYREPS_PREFIX), "", targetsdf$filename) 
-    } else {
-      targetsdf$filename <- gsub(lcPrefix(targetsdf$filename ), "", targetsdf$filename ) 
-    }
     targetsdf$filename <- gsub("\\..*$", "", targetsdf$filename ) # shorten filename suffix
-    
     index <- sapply(targetsdf$filename, grep, x.df$filename_unmod, ignore.case = T) # grep sample name in file names
-    targetsdf <- targetsdf[sapply(index, length) ==1, ] # remove targetsdf entries not (uniquely) found in x.df
-    
+    if(is.list(index)) {
+      #targetsdf <- targetsdf[sapply(index, length) ==1, ] # remove targetsdf entries not (uniquely) found in x.df
+      targetsdf <- targetsdf[sapply(index, length)!=0,] # remove targetsdf entries not found in x.df
+      index <- sapply(targetsdf$filename, grep, x.df$filename_unmod, ignore.case = T) # redo grep sample name in file names
+    }
     if(!identical(sort(unname(unlist(index))), 1:nrow(x.df))) {
       stop("There seem to be ambiguous sample names in targets. Can't assign them uniquely to cutadapt logfile names")
     }
     
-    x.df <- data.frame(x.df[unlist(index),], targetsdf, check.names =F)
+    x.df <- data.frame(x.df[unlist(t(index)),], targetsdf, check.names =F)
     x.df <- x.df[order(rownames(x.df)),, drop=F]
-    if("sample" %in% colnames(x.df)) { # use sample column as identifier if present
+    if("sample" %in% colnames(x.df) && !any(duplicated(x.df$sample))) { # use sample column as identifier if present and unique
       x.df$filename <- x.df$sample
       row.names(x.df) <- x.df$sample} 
     
@@ -2442,57 +2493,66 @@ DEhelper.Bustard <- function() {
 ## DEhelper.Subread: parse Subread summary stats and create a md table
 ##
 DEhelper.Subread <- function() {
+  
+  FOLDER <- SHINYREPS_SUBREAD
+  SUFFIX <- paste0(SHINYREPS_SUBREAD_SUFFIX, '$')
+  
+  # check if folder exists
+  if(!file.exists(FOLDER)) {
+    return("Subread statistics not available")
+  }
+  
+  # create a matrix using feature names as rownames, sample names as colnames
+  x <- sapply(list.files(FOLDER, pattern=SUFFIX), function(f) {
     
-    FOLDER <- SHINYREPS_SUBREAD
-    SUFFIX <- paste0(SHINYREPS_SUBREAD_SUFFIX, '$')
+    f <- file(paste0(FOLDER, '/', f))
+    l <- readLines(f)
+    close(f)
     
-    # check if folder exists
-    if(!file.exists(FOLDER)) {
-        return("Subread statistics not available")
+    ## get all interesting rows, extract count and category names
+    assigned.and.unassigned <- l[grep("Assigned|Unassigned",l)]
+    category.counts <- as.numeric(sapply(assigned.and.unassigned, function(i) {strsplit(i,"\t")[[1]][2]}))
+    names(category.counts) <- sapply(assigned.and.unassigned, function(i) {strsplit(i,"\t")[[1]][1]})
+    return(category.counts)
+  })
+  
+  # correct column names
+  colnames(x) <- gsub(paste0(SUFFIX, "$"), "", colnames(x))
+  
+  if(file.exists(SHINYREPS_TARGET)){
+    
+    # get target names
+    targets <- read.delim(SHINYREPS_TARGET)
+    targets$sample_ext <- gsub("\\..*$", "", targets$file )
+    
+    # replace files names with nicer sample names given in targets file
+    # if sample is missing in targets file, use reduced file name
+    colnames(x) <- sapply(colnames(x), function(i) { ifelse(sum(sapply(targets$sample_ext, grepl, i))==1,
+                                                            targets[sapply(targets$sample_ext, grepl, i),"sample"],
+                                                            gsub(paste0("^",SHINYREPS_PREFIX),"",i))})
+  } else {
+    
+    if(!is.na(SHINYREPS_PREFIX)) {
+      colnames(x) <- gsub(paste0("^",SHINYREPS_PREFIX), "", colnames(x))
     }
-    
-    # create a matrix using feature names as rownames, sample names as colnames
-    x <- sapply(list.files(FOLDER, pattern=SUFFIX), function(f) {
-        
-        f <- file(paste0(FOLDER, '/', f))
-        l <- readLines(f)
-        close(f)
-        
-        
-        sapply(c("Assigned",
-                 "Unassigned_Ambiguity",
-                 "Unassigned_MultiMapping",
-                 "Unassigned_NoFeatures",
-                 "Unassigned_Unmapped",
-                 "Unassigned_MappingQuality",
-                 "Unassigned_FragmentLength",
-                 "Unassigned_Chimera",
-                 "Unassigned_Secondary",
-                 "Unassigned_Nonjunction",
-                 "Unassigned_Duplicate"), function(y) {
-                    as.numeric(  gsub( ".+\t(.+)", "\\1", l[grep(y, l)] )  )
-                 })    
-        
-    })
-    
-    # correct column names
-    colnames(x) <- gsub(paste0("^", SHINYREPS_PREFIX), "", colnames(x))
-    colnames(x) <- gsub(paste0(SUFFIX, "$"), "", colnames(x))
-    
-    # create md table (omitting various values that are 0 for now)
-    #from x we romeove the ones which are unmapped to calculate percentages
-    #only for the mapped ones
-    x <- x[rownames(x) != "Unassigned_Unmapped", ]
-    x <- rbind(total=x, colSums(x))
-    rownames(x)[nrow(x)] <- "total"
-    df <- data.frame(assigned=paste0(format(x[1, ], big.mark=","), " (", format((x[1, ]/x["total", ])*100, digits=2, nsmall=2), "%)"), 
-                     unassigned_ambiguous=paste0(format(x[2, ], big.mark=","), " (", format((x[2, ]/x["total", ])*100, digits=2, nsmall=2), "%)"), 
-                     unassigned_multimap=paste0(format(x[3, ], big.mark=","), " (", format((x[3, ]/x["total", ])*100, digits=2, nsmall=2), "%)"), 
-                     unassigned_nofeature=paste0(format(x[4, ], big.mark=","), " (", format((x[4, ]/x["total", ])*100, digits=2, nsmall=2), "%)"))
-    rownames(df) <- colnames(x)
-    # kable(df, align=c("r", "r", "r", "r"), output=F)
-    kable(df) %>% kable_styling()
-    
+  }
+  
+  # create md table (omitting various values that are 0 for now)
+  # from x we remove the ones which are unmapped to calculate percentages
+  # only for the mapped ones
+  x <- x[rownames(x) != "Unassigned_Unmapped", ]
+  x <- rbind(total=x, colSums(x))
+  rownames(x)[nrow(x)] <- "total"
+  df <- data.frame(assigned=paste0(format(x["Assigned", ], big.mark=","), " (", format((x["Assigned", ]/x["total", ])*100, digits=2, nsmall=2, trim=T), "%)"), 
+                   unassigned_ambig=paste0(format(x["Unassigned_Ambiguity", ], big.mark=","), " (", format((x["Unassigned_Ambiguity", ]/x["total", ])*100, digits=2, nsmall=2, trim=T), "%)"), 
+                   unassigned_multimap=paste0(format(x["Unassigned_MultiMapping", ], big.mark=","), " (", format((x["Unassigned_MultiMapping", ]/x["total", ])*100, digits=2, nsmall=2, trim=T), "%)"), 
+                   unassigned_nofeat=paste0(format(x["Unassigned_NoFeatures", ], big.mark=","), " (", format((x["Unassigned_NoFeatures", ]/x["total", ])*100, digits=2, nsmall=2, trim=T), "%)"))
+  rownames(df) <- colnames(x)
+  
+  # sort alphabetically for plotting
+  df <- df[order(rownames(df)),]
+  kable(df, align=c("r", "r", "r", "r"), output=F, format="markdown")
+  
 }
 
 
@@ -2581,20 +2641,195 @@ DEhelper.Qualimap <- function(...) {
 ##DEhelper.insertsize: get the insertsize from the qc and display mean and sd 
 ##
 DEhelper.insertsize <- function(){
-
-	if (SHINYREPS_PAIRED == "yes") {
-		filelist <- list.files(path=SHINYREPS_INSERTSIZE,full.names=TRUE, pattern="insertsizemetrics.tsv$")
-		insertsizes <- lapply(filelist, read.table, sep="\t", header=TRUE, nrow=1)
-		insertsizes <- do.call(rbind, insertsizes)
-		samplenames <- basename(filelist)
-		samplenames <- gsub(SHINYREPS_PREFIX, "", samplenames)
-		samplenames <- gsub("_insertsizemetrics.tsv","", samplenames)
-		rownames(insertsizes) <- samplenames 
-		insertsizes <- insertsizes[,c("MEDIAN_INSERT_SIZE","MEAN_INSERT_SIZE", "STANDARD_DEVIATION")]
-		colnames(insertsizes) <- c("Median", "Mean", "SD")
-		kable(insertsizes, output=F, align=c("l"), format="markdown")
-	}
+  
+  if (SHINYREPS_PAIRED == "yes") {
+    filelist <- list.files(path=SHINYREPS_INSERTSIZE,full.names=TRUE, pattern="insertsizemetrics.tsv$")
+    insertsizes <- lapply(filelist, read.table, sep="\t", header=TRUE, nrow=1)
+    insertsizes <- do.call(rbind, insertsizes)
+    samplenames <- basename(filelist)
+    
+    
+    
+    if(file.exists(SHINYREPS_TARGET)){
+      
+      # get target names
+      targets <- read.delim(SHINYREPS_TARGET)
+      targets$sample_ext <- gsub("\\..*$", "",targets$file)
+      
+      # replace files names with nicer sample names given in targets file
+      # if sample is missing in targets file, use reduced file name
+      samplenames <- sapply(samplenames, function(i) { ifelse(sum(sapply(targets$sample_ext, grepl, i))==1,  
+                                                              targets[sapply(targets$sample_ext, grepl, i),"sample"], 
+                                                              gsub(paste0("^",SHINYREPS_PREFIX),"",i))})
+    } else {
+      if(!is.na(SHINYREPS_PREFIX)) {
+        samplenames <- gsub(paste0("^",SHINYREPS_PREFIX), "", samplenames)
+        samplenames <- gsub("_insertsizemetrics.tsv","", samplenames)
+      }
+    }
+    
+    rownames(insertsizes) <- samplenames 
+    insertsizes <- insertsizes[,c("MEDIAN_INSERT_SIZE","MEAN_INSERT_SIZE", "STANDARD_DEVIATION")]
+    colnames(insertsizes) <- c("Median", "Mean", "SD")
+    kable(insertsizes, output=F, align=c("l"), format="markdown")
+  }
 }
+
+
+# Helper to plot the insertsize histogram equivalent to the one from picard
+# Input is the Picard generated metrics file
+DEhelper.insertsize.helper <- function(metricsFile){
+  #find the start of our metrics informatioun 
+  startFinder <- scan(metricsFile, what="character", sep="\n", quiet=TRUE, blank.lines.skip=FALSE)
+  
+  firstBlankLine=0
+  
+  for (i in 1:length(startFinder)) {
+    if (startFinder[i] == "") {
+      if (firstBlankLine == 0) {
+        firstBlankLine = i+1
+      } else {
+        secondBlankLine = i+1
+        break
+      }
+    }
+  }
+  
+  histogram <- read.table(metricsFile, header=TRUE, sep="\t", skip=secondBlankLine, comment.char="", quote='', check.names=FALSE)
+  
+  ## The histogram has a fr_count/rf_count/tandem_count for each metric "level"
+  ## This code parses out the distinct levels so we can output one graph per level
+  headers <- sapply(sub(".fr_count","",names(histogram),fixed=TRUE), "[[" ,1)
+  headers <- sapply(sub(".rf_count","",headers,fixed=TRUE), "[[" ,1)
+  headers <- sapply(sub(".tandem_count","",headers,fixed=TRUE), "[[" ,1)
+  
+  ## Duplicate header names could cause this to barf.  But it really shouldn't when we have "All_reads.fr_count" and 
+  ## "All_reads.rf_count" for example.  Not sure why this would fail, but I care.
+  if (any(duplicated(headers))) {
+    levels = unique(headers[2:length(headers)]);
+  } else {
+    levels <- c()
+    for (i in 2:length(headers)) {
+      if (!(headers[i] %in% levels)) {
+        levels[length(levels)+1] <- headers[i]
+      }
+    }
+  }
+  
+  title_info <- basename(metricsFile)  
+  
+  if(file.exists(SHINYREPS_TARGET)){
+    
+    # get target names
+    targets <- read.delim(SHINYREPS_TARGET)
+    targets$sample_ext <- gsub("\\..*$", "",targets$file )
+    
+    # replace files names with nicer sample names given in targets file
+    # if sample is missing in targets file, use reduced file name
+    title_info <- sapply(title_info, function(i) { ifelse(sum(sapply(targets$sample_ext, grepl, i))==1,   
+                                                          targets[sapply(targets$sample_ext, grepl, i),"sample"], 
+                                                          gsub(paste0("^",SHINYREPS_PREFIX),"",i))})
+  } else {
+    if(!is.na(SHINYREPS_PREFIX)) {
+      title_info <- gsub(paste0("^",SHINYREPS_PREFIX), "", title_info)
+    }
+    title_info <- gsub("_insertsizemetrics.tsv$","", title_info)
+  }
+  
+  #we get the histogram which has the names of the levels e.g. all_reads and readgroups/sample groups depending on
+  #accumulation level which was used.
+  #the colnames of histogram are something like all.read.fr_count, all.read.rf_count etc.
+  #to get the whole shebang into a wider format we have to add the information
+  hist_long <- reshape2::melt(histogram, id.var = "insert_size") %>% 
+    extract(col=variable,
+            into=c("group", "counttype" ),
+            regex='([^\\.]+)\\.([^\\.]+)') %>% 
+    dplyr::rename( amount = value)
+  #we also have to add the comulative sum per group to the whole shebang
+  hist_long <- hist_long %>% group_by(group) %>% 
+    arrange( desc(insert_size)) %>% 
+    mutate( cumulative = (cumsum(amount)/sum(amount))*max(amount))
+  #1. Create one plot per group (all_reads etc)
+  #2. save the plots in a list
+  #3. use arrangeGrob to arrange
+  hist_long <- split(hist_long, hist_long$group)
+  hist_plots <- lapply(hist_long, function(hist_data){
+    p <- ggplot(hist_data, aes(x    = insert_size,
+                               y    = amount,
+                               fill = counttype)) +
+      geom_bar( stat = "identity", 
+                position = "identity",
+                alpha=0.7) +
+      scale_fill_hue( c=50, l=40) +
+      geom_line(aes(x = insert_size,
+                    y = cumulative),
+                linetype = "dashed",
+                color    = "grey") +
+      scale_y_continuous( name="# reads",
+                          sec.axis = sec_axis(~./max(hist_data$amount),
+                                              name = "Cumulative fraction of reads > insert size")) +
+      xlab("insert size in bp") +
+      theme_bw() +
+      theme(legend.justification=c(1,1), legend.position=c(1,1), 
+            legend.background = element_rect(colour = "transparent", fill = "transparent")) + 
+      facet_grid(~group)
+    return(p)
+  })
+  
+  hist_plot <- arrangeGrob(grobs = hist_plots,
+                           top = textGrob(title_info)) 
+  return(hist_plot)
+  
+}
+
+
+## 
+## DEhelper.subchunkify: small function stolen from here 
+##http://michaeljw.com/blog/post/subchunkify/
+## to dynamically create chunks and adjust their size accordingly.
+##
+DEhelper.subchunkify <- function(g, fig_height=7, fig_width=5) {
+  g_deparsed <- paste0(deparse(
+    function() {grid.draw(g)}
+  ), collapse = '')
+  
+  sub_chunk <- paste0("`","``{r sub_chunk_", floor(runif(1) * 10000),
+                      ", fig.height=", fig_height,
+                      ", fig.width=", fig_width,
+                      ", echo=FALSE}","\n(", 
+                      g_deparsed, ")()",
+                      "\n`","``")
+  
+  cat(knitr::knit(text = knitr::knit_expand(text = sub_chunk), quiet = TRUE))
+}
+
+
+##
+##DEhelper.insertsize.plot: get the insertsize histograms and display them 
+##
+DEhelper.insertsize.plot <- function(){
+  # logs folder
+  SHINYREPS_PLOTS_COLUMN <- tryCatch(as.integer(SHINYREPS_PLOTS_COLUMN),
+                                     error=function(e){3})
+  if(SHINYREPS_PLOTS_COLUMN < 2) {
+    SHINYREPS_PLOTS_COLUMN <- 3L    # default to 3 columns
+  }
+  if (SHINYREPS_PAIRED == "yes" &
+      length(list.files(path = SHINYREPS_INSERTSIZE,
+                        pattern = "insertsizemetrics.tsv$")) > 0) {
+    samples <- list.files(path = SHINYREPS_INSERTSIZE,
+                          full.names = TRUE,
+                          pattern = "insertsizemetrics.tsv$")
+    #we generate the plots
+    insert_plots <- lapply(samples, 
+                           DEhelper.insertsize.helper)
+    return(arrangeGrob(grobs = insert_plots,
+                       ncol = SHINYREPS_PLOTS_COLUMN))
+  }else{
+    return("No insertsize histograms available.")
+  }
+}
+
 
 ##
 ## DEhelper.Trackhub: display the UCSC trackhub URL
