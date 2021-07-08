@@ -91,8 +91,11 @@ targets <- targets[, c("sample", "file", "group", add_factors)]
 # grep sample identifier in count file names
   countfiles <- list.files(cwd)
   countfiles <- countfiles[grep(pattern, countfiles)] # filter for valid count files
-  
-  index_targetsfile <- sapply(targets$file, grep,  countfiles) # grep targets in countfiles
+ 
+  # remove file ending of target file names
+  targets$sample_ext <- gsub("\\..*$", "",targets$file) 
+
+  index_targetsfile <- sapply(targets$sample_ext, grep,  countfiles) # grep targets in countfiles
 
   ## check matching ambiguity
       if(class(index_targetsfile)=="list") { # list means either zero or multiple matches
@@ -104,7 +107,7 @@ targets <- targets[, c("sample", "file", "group", add_factors)]
         warning(paste("Entries in targets.txt which are not found in list of count files are removed from targets table:", 
                       paste(targets$file[sapply(index_targetsfile, length)==0], collapse=", ")))
         targets <- targets[!(sapply(index_targetsfile, length)==0),] # remove target entries
-        index_targetsfile <- sapply(targets$file, grep, countfiles) # recreate index vector after removal of targets.txt entries
+        index_targetsfile <- sapply(targets$sample_ext, grep, countfiles) # recreate index vector after removal of targets.txt entries
       }
       
       if(any(x <- duplicated(index_targetsfile))) { # check for multiple target entries matching the same file name
