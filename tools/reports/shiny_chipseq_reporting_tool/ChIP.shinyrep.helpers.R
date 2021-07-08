@@ -1109,7 +1109,8 @@ ChIPhelper.diffbind <- function(subdir="") {
 #'
 #' @return plot cutadapt statistics as side effect
 ChIPhelper.cutadapt <- function(targetsdf=targets, colorByFactor="group", sampleColumnName =c("IP", "INPUT"), 
-                                plotfun=ChIPhelper.cutadapt.plot, ...){
+                                plotfun=ChIPhelper.cutadapt.plot, labelOutliers=T, outlierIQRfactor=1.5,
+                                ...){
   
   # logs folder
   if(!all(sapply(SHINYREPS_CUTADAPT_STATS, file.exists))) {
@@ -1183,11 +1184,15 @@ ChIPhelper.cutadapt <- function(targetsdf=targets, colorByFactor="group", sample
   #reduce length of file names 
   row.names(x.df) <- basename(colnames(x))
   x.df$filename_unmod <- factor(row.names(x.df))
-  if(nrow(x.df)>1){
-    row.names(x.df)  <- gsub(lcSuffix(row.names(x.df) ), "", row.names(x.df) )
-    row.names(x.df)  <- gsub(lcPrefix(row.names(x.df) ), "", row.names(x.df) )
+  if(!is.na(SHINYREPS_PREFIX)) {
+    row.names(x.df) <- gsub(SHINYREPS_PREFIX, "", row.names(x.df))
   }
-  
+  row.names(x.df) <- gsub("\\.cutadapt\\.log$", "", row.names(x.df))
+  if(nrow(x.df)>1){
+    if(is.na(SHINYREPS_PREFIX)) {row.names(x.df)  <- gsub(lcPrefix(row.names(x.df) ), "", row.names(x.df) )}
+    row.names(x.df)  <- gsub(lcSuffix(row.names(x.df) ), "", row.names(x.df) )
+  }
+
   # passing the different factors given in targetsdf to x.df which was created from cutadapt logfile names 
   if(!is.null(colorByFactor)) { # add information to x.df
     
@@ -1203,9 +1208,7 @@ ChIPhelper.cutadapt <- function(targetsdf=targets, colorByFactor="group", sample
       targetsdf$filename <- targetsdf[,sampleColumnName]
     }
     
-    targetsdf$filename <- gsub(lcSuffix(targetsdf$filename ), "", targetsdf$filename ) # shorten filename suffix
-    targetsdf$filename <- gsub(lcPrefix(targetsdf$filename ), "", targetsdf$filename ) # shorten filename prefix
-    
+    targetsdf$filename <- gsub("\\..*$", "", targetsdf$filename)
     index <- sapply(targetsdf$filename, grep, x.df$filename_unmod, ignore.case = T) # grep sample name in file names
     targetsdf <- targetsdf[sapply(index, length) ==1, ] # remove targetsdf entries not (uniquely) found in x.df
     
@@ -1215,8 +1218,9 @@ ChIPhelper.cutadapt <- function(targetsdf=targets, colorByFactor="group", sample
     
     x.df <- data.frame(x.df[unlist(index),], targetsdf, check.names =F)
     x.df <- x.df[order(rownames(x.df)),, drop=F]
-    rownames(x.df) <- x.df$filename
-    
+    x.df$filename <- x.df$sample
+    rownames(x.df) <- x.df$sample
+
     if(any(!colorByFactor %in% colnames(x.df))) {
       if(all(!colorByFactor %in% colnames(x.df))) {
         cat("\nNone of the column names given in colorByFactor is available. Perhaps sample names are not part of fastq file names? Using filename instead.")
@@ -1232,14 +1236,14 @@ ChIPhelper.cutadapt <- function(targetsdf=targets, colorByFactor="group", sample
   }
   
   # melt data frame for plotting
-  x.melt <- melt(x.df, measure.vars=c(grep("trimmed", colnames(x.df), value=T), 
+  x.melt <- reshape2::melt(x.df, measure.vars=c(grep("trimmed", colnames(x.df), value=T), 
                                       "too short", 
                                       grep("(Adapter)|(})", colnames(x.df), value=T)), variable="reads")
   
   # everything which is not a value should be a factor
   
   # one plot for each element of colorByFactor
-  violin.list <- lapply(colorByFactor, plotfun, data=x.melt) # "colorByFactor" is submitted as color.value
+  violin.list <- lapply(colorByFactor, plotfun, data=x.melt, labelOutliers=labelOutliers, outlierIQRfactor=outlierIQRfactor) # "colorByFactor" is submitted as color.value
   
   for(i in 1:length(violin.list)){
     plot(violin.list[[i]])
@@ -1254,10 +1258,14 @@ ChIPhelper.cutadapt <- function(targetsdf=targets, colorByFactor="group", sample
 
 
 # plotting function for ChIPhelper.cutadapt 
-ChIPhelper.cutadapt.plot <- function(data, color.value){
+ChIPhelper.cutadapt.plot <- function(data, color.value, labelOutliers=T, outlierIQRfactor=1.5){
   
   is_outlier <- function(x) { # function for identification of outlier
-    return(x < quantile(x, 0.25) - 1.5 * IQR(x) | x > quantile(x, 0.75) + 1.5 * IQR(x))
+    if(IQR(x)!=0) {
+      return(x < quantile(x, 0.25) - outlierIQRfactor * IQR(x) | x > quantile(x, 0.75) + outlierIQRfactor * IQR(x))
+    } else {
+      return(x < mean(x) - outlierIQRfactor * mean(x) | x > mean(x) + outlierIQRfactor * mean(x))
+    }
   }
   
   data <- data %>%
@@ -1276,10 +1284,10 @@ ChIPhelper.cutadapt.plot <- function(data, color.value){
   p <- ggplot(data, aes_string(x="reads",
                                y="value",
                                color=color.value ))+
-    geom_boxplot(color = "darkgrey", alpha = 0.2, outlier.shape = NA) + 
     geom_quasirandom(groupOnX=TRUE) +
-    ggrepel::geom_text_repel(data=. %>% filter(!is.na(outlier)), aes(label=filename), show.legend=F) +
-    scale_color_manual(values=getPalette(colourCount)) + # creates as many colors as needed
+    geom_boxplot(color = "darkgrey", alpha = 0.2, outlier.shape = NA)  
+  if(labelOutliers) {p <- p + ggrepel::geom_text_repel(data=. %>% filter(!is.na(outlier)), aes(label=filename), show.legend=F)}
+  p <- p + scale_color_manual(values=getPalette(colourCount)) + # creates as many colors as needed
     ylab(ylab) +
     xlab("") +
     theme(axis.text.x=element_text(angle=30, vjust=1, hjust=1)) 
