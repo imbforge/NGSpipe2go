@@ -235,7 +235,7 @@ pdf(paste0(out,"/DE_DESeq2.pdf"))
 # make a DESeq2 object with all the samples
 dds <- DESeqDataSetFromHTSeqCount(sampleTable = targets,
                                   directory   = cwd, 
-                                  design      = ~ 1 )    # assume no design
+                                  design      = ~ group )    # expect a group column in the targets file. It's also expected everywhere from here on
 dds <- DESeq(dds)
 rld <- rlog(dds)
 
