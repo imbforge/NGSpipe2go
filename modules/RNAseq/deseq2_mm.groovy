@@ -10,7 +10,6 @@ DE_DESeq2_MM = {
     def DE_DESeq2_MM_FLAGS =
         (DE_DESeq2_MM_vars.targets   ? " targets="   + DE_DESeq2_MM_vars.targets   : "") +
         (DE_DESeq2_MM_vars.contrasts ? " contrasts=" + DE_DESeq2_MM_vars.contrasts : "") +
-        (DE_DESeq2_MM_vars.mmatrix   ? " mmatrix="   + DE_DESeq2_MM_vars.mmatrix   : "") +
         (DE_DESeq2_MM_vars.filter    ? " filter="    + DE_DESeq2_MM_vars.filter    : "") +
         (DE_DESeq2_MM_vars.prefix    ? " prefix="    + DE_DESeq2_MM_vars.prefix    : "") +
         (DE_DESeq2_MM_vars.suffix    ? " suffix="    + DE_DESeq2_MM_vars.suffix    : "") +

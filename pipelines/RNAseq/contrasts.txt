@@ -1,1 +1,2 @@
-KOvsWT=(KO-WT)
+contrast.name	contrast	mmatrix
+KO.vs.WT	(KO-WT)	~group
