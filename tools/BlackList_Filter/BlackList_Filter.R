@@ -62,9 +62,33 @@ sapply(names(outputData),
 
 write.csv(summary.table, file=paste0(out, "/peaks_detected_table.csv"), row.names=F)
 
+
+## filter bed files
+bedfile_suffixes <- c(".narrowPeak", ".gappedPeak", ".broadPeak")
+bedOutputData <- list()
+
+for (i in bedfile_suffixes) {
+  
+  bedFiles <-list.files(peakData,pattern=paste0(i, "$"), full.names = TRUE) # list of the full path of the bed file
+  if(length(bedFiles)==0) {next}
+  beds <- lapply(bedFiles, import) # read all the bed files using 'import' function
+  
+  # remove peaks overlapping blacklist regions
+  bed.wo.blacklst <- lapply(beds, function(x) {
+    m <- x[!x %over% blacklist]
+  })
+  names(bed.wo.blacklst) <- gsub(i, paste0("_blacklist_filtered",i), basename(bedFiles))
+  
+  bed.df <- lapply(bed.wo.blacklst, as.data.frame, stringsAsFactors=F)
+  sapply(names(bed.wo.blacklst), function (x) export.bed(bed.wo.blacklst[[x]], con=paste0(out, "/", x)))
+  
+  bedOutputData[[paste0("blacklist_filtered",i)]] <- bed.df
+}
+
+
 # save the sessionInformation
 writeLines(capture.output(sessionInfo()), paste(out, "/ChIPseq_BlackList_Filter_session_info.txt", sep=""))
-save(peakFiles,peaks,blacklist,filename,outputData, file=paste0(out,"/BlackList_Filter.RData"))
+save(peakFiles,peaks,blacklist,filename,outputData, bedOutputData, file=paste0(out,"/BlackList_Filter.RData"))
 
 } else {
   cat("\nBlacklist filtering skipped because no valid blacklist provided\n")
