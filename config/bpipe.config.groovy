@@ -449,7 +449,7 @@ config {
     ipstrength { 
       walltime="02:00:00" 
       procs="2" 
-      memory="8"
+      memory="16"
     }
     macs2 { 
       walltime="04:00:00" 
