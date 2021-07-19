@@ -11,7 +11,6 @@ default_preamble="""
     export TMP="$TMP";
     [[ -n \$TMP && ! -d \$TMP ]] && mkdir -p "\$TMP";
     [[ -n \$SLURM_JOB_ID ]] && export TMP="/jobdir/\$SLURM_JOB_ID"
-    :
 """
 
 // This map defines the default and module-specific preambles.
