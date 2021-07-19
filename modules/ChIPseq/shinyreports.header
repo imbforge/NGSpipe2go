@@ -4,7 +4,7 @@ shinyReports_vars=[
     qc              : QC,                   //where the QC lie
     res             : RESULTS,              //where the results lie
     prefix          : ESSENTIAL_SAMPLE_PREFIX,
-    targets         : "targets.txt",
+    target          : new File(PIPELINE_ROOT + "/pipelines/ChIPseq/targets.txt").getCanonicalPath(),
     paired          : ESSENTIAL_PAIRED,
     run_cutadapt    : RUN_CUTADAPT,    
     run_peakanno    : RUN_PEAK_ANNOTATION,    
