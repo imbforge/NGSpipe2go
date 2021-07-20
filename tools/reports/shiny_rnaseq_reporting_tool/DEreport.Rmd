@@ -32,8 +32,7 @@ The raw sequence reads of all samples are analysed with the popular FastQC tool 
 
 #### Read quality
 
-The "read qualities" plot summarizes the mean quality score at each position.
-The color on the graph shows the Phred quality scores, which are logarithmically related to the base-calling error probabilities. The higher the score the better the base call. The background of the graph divides the y axis into very good quality calls (green), calls of reasonable quality (yellow), and calls of poor quality (red). Typically, the majority of calls on all base positions fall into the green area. Due to binning of quality score in recent sequencing technologies (e.g. Illumina NextSeq), sequencing qualities are the same on many position and, thus, also samples appear to have very similar or almost identical sequencing qualities.
+The “read quality” plot summarizes at each read position the Phred quality scores, which are logarithmically related to the base-calling error probabilities. The higher the Phred scores, the better the base calls. The elements of the plot are as follows: the central red line is the median value, the yellow box represents the inter-quartile range (25-75%), the upper and lower whiskers represent the 10% and 90% points, and the blue line represents the mean quality. The background of the graph divides the y-axis into very good quality calls (green), calls of intermediate quality (yellow), and calls of poor quality (red). Typically, the majority of calls on all base positions fall into the green area. Due to binning of quality score in recent sequencing technologies (e.g. Illumina NextSeq), sequencing qualities may be the same on many position and sample profiles may appear very similar.
 
 ```{r FastQC_qual_summarized, echo=F,results='asis',error=F,warning=F,message=F,fig.align='center'}
 
@@ -58,7 +57,7 @@ if (SHINYREPS_FASTQC_SUMMARIZED == FALSE) {
 
 #### Sequence bias
 
-The "sequence bias" plot shows the proportion of each base (% G, A, T and C) at each position. In a random library there would be little difference between the positions of a sequence run, so the lines in this plot should run parallel with each other. But most RNA-seq libraries show sequence imbalance in the first 10-12 read positions due to RT priming biases, which should however look fairly similar in all samples. In case the nucleotide content is summarized in a heatmap for all samples, gray colored fields represent a balanced nucleotide content.
+The "sequence bias" plot shows the proportion of each base (% T, C, A and G) at each position. In a random library there would be little difference between the positions of a sequence run, so the lines in this plot should run parallel with each other. But most RNA-seq libraries show sequence imbalance in the first 10-12 read positions due to RT priming biases, which should however look fairly similar in all samples. In case the nucleotide content is summarized in a heatmap for all samples, gray colored fields represent a balanced nucleotide content.
 
 
 ```{r FastQC_nuc_content_summarized, echo=F,results='asis',error=F,warning=F,message=F,fig.align='center'}
@@ -170,11 +169,11 @@ cat("\n", fill = T)
 
 ```
 
-## Competetive mapping to rRNAs and other contaminats:
+## Mapping to rRNAs and other potential contaminants:
 
 A competitive mapping to the reference genome and known rRNAs (H. sapiens, M. musculus, C. elegans, D. melanogaster, D. rerio, X. tropicalis) as well as frequently occurring Mycoplasma species (M. arginini, M. fermentans, M. hominis, M. hyorhinis, M. orale, and Acholeplasma laidlawii), PhiX and ERCC spike-in sequences, E. coli and B. taurus (bovine) was performed with FastQScreen (http://www.bioinformatics.babraham.ac.uk/projects/fastq_screen/).
 
-In the following plot only relevant contaminants are shown. A contaminant is considered relevant if it consumes `r SHINYREPS_FASTQSCREEN_PERC`% of reads or more in at least one sample. The "one genome" label refers to the amount of reads mapping to that genome only, no matter if they are mapping uniquely or multiple times. The "multiple genome" label refers to the amount of read mapping to this genome but also to other genomes in the screening regardless of whether they are uniquely or multi mapping. 
+In the following plot only relevant contaminants are shown. A contaminant is considered relevant if it consumes `r SHINYREPS_FASTQSCREEN_PERC`% of reads or more in at least one sample. The "one genome" label refers to the amount of reads mapping to that genome only, no matter if they are mapping uniquely or multiple times. The "multiple genomes" label refers to the amount of read mapping to this genome but also to other genomes in the screening regardless of whether they are uniquely or multi-mapping. 
 
 ```{r fastqscreen_paragraph, echo=F, results='asis', fig.width=10, error=F, warning=F, message=F}
 fastqscreen_plots <- DEhelper.fastqscreen(perc.to.plot=SHINYREPS_FASTQSCREEN_PERC)
@@ -221,7 +220,7 @@ if (!file.exists(SHINYREPS_INSERTSIZE)) {
 
 ## Library complexity assessment ##
 
-Measuring the fraction of duplicated reads is commonly used to control for excessive PCR over-amplification during library preparation and/or for suboptimal amount of input material. However, in RNA-seq duplicated reads may also arise naturally due to the highly expressed (e.g. housekeeping) genes, which makes the overall read duplication rate useless. The IMB-developed tool dupRadar (http://bioconductor.org/packages/release/bioc/html/dupRadar.html) gives an informative insight into the duplication problem by graphically relating the gene expression levels and the observed duplication rates. Thus, problematic samples can be easily identified by visual inspection.
+Measuring the fraction of duplicated reads is commonly used to control for excessive PCR over-amplification during library preparation and/or for suboptimal amount of input material. However, in RNA-seq duplicated reads may also arise naturally due to the highly expressed (e.g. housekeeping) genes, which makes the overall read duplication rate useless. The IMB-developed tool dupRadar (http://bioconductor.org/packages/release/bioc/html/dupRadar.html) gives an informative insight into the duplication problem by graphically relating the gene expression levels and the observed duplication rates. Thus, problematic samples can be easily identified by visual inspection. Good quality samples with high library complexity show a sigmoidal curve with low duplication rates of weakly expressed genes (below 100 reads/kbp).
 
 ```{r Dupradar_paragraph, echo=F, results='asis', error=F, warning=F, message=F}
 cat(DEhelper.dupRadar(web=F), sep="\n")
@@ -229,7 +228,7 @@ cat(DEhelper.dupRadar(web=F), sep="\n")
 
 ## Mapped reads annotation ##
 
-The mapped reads were assigned to annotated features (gene exons) using the Subread tool featureCounts (http://bioinf.wehi.edu.au/featureCounts). The unassigned reads are due to ambiguity (overlap with multiple features), non-unique mapping (multimap) or because no overlap is found with known exonic features (e.g. intronic reads derived from unprocessed transcripts). Typically, mRNA-seq with polyA-selection results in more exon-assigned reads compared to total RNA-seq with ribodepletion. 
+The mapped reads were assigned to annotated features (gene exons) using the Subread tool featureCounts (http://bioinf.wehi.edu.au/featureCounts). The unassigned reads are due to ambiguity (overlap with multiple features), non-unique mapping (multimap) or because no overlap is found with known exonic features (e.g. intronic reads derived from unprocessed transcripts). Typically, mRNA-seq with polyA-selection results in more exon-assigned reads compared to total RNA-seq with rRNA-depletion. 
 
 ```{r Subread_paragraph, echo=F, results='asis', error=F, warning=F, message=F}
 cat(DEhelper.Subread(), sep="\n")
@@ -237,7 +236,7 @@ cat(DEhelper.Subread(), sep="\n")
 
 ## RNA class representation ##
 
-The following plot shows the fraction of reads assigned to various RNA classes. These plots help in determining if the sample prep protocol worked well and may reveal issues with rRNA contamination. 
+The following plot shows the fraction of reads assigned to various RNA classes. The plot can help in determining if the sample prep protocol worked consistently well for all samples and may reveal issues with e.g. rRNA contamination.
 
 ```{r RNAtypes_paragraph, echo=F, results='asis', error=F, warning=F, message=F, fig.align="center", out.width="100%"}
 DEhelper.RNAtypes()
@@ -245,7 +244,7 @@ DEhelper.RNAtypes()
 
 ## Gene body coverage ##
 
-The plots below show meta-gene profiles of 5' to 3' read coverage and can reveal biases due to RNA degradation or specific library prep protocol; polyA-selection protocols are particularly prone of producing 3' coverage bias upon RNA degradation.
+The plots below show meta-gene profiles of 5' to 3' read coverage and can reveal biases due to RNA degradation or specific library prep protocol. PolyA-selection protocols are particularly prone of producing 3'-coverage bias due to even mild RNA degradation. Ideally, all samples which are being compared have similar profiles.
 
 ```{r GeneBodyCoverage_paragraph, echo=F, error=F, warning=F, message=F, results='asis', fig.align="center"}
 plot_list <- DEhelper.geneBodyCov2(web=F)
@@ -297,22 +296,22 @@ if("p_per_group_splitByReplicate" %in% names(plot_list)){
 
 ## Strand specificity ##
 
-The table below shows the fraction of reads mapped in sense or antisense to gene exons - around 0.5 for non-stranded library prep protocols and close to 0 or 1 for strand-specific RNA-seq protocols. The strandedness is calculated as the percentage of unambiguous reads that are on the strand, which is expected by the library preparation protocol. 
+The table below shows the fraction of reads mapped in sense or antisense to gene exons - should be around 0.5 for non-stranded library prep protocols and close to 0 or 1 for strand-specific RNA-seq protocols. The strandedness is calculated as the percentage of unambiguous reads that are on the strand expected by the library preparation protocol.
 
 ```{r echo=F, results='asis', error=F, warning=F, message=F}
 cat(DEhelper.strandspecificity(), sep="\n")
 ```
 
-## Distribution of reads on introns/exons and intergenic regions ##
+## Distribution of reads on exons, introns and intergenic regions ##
 
 The following plot depicts the fraction of reads mapped to exons, introns and intergenic regions. For mRNA-seq in well-annotated genomes the fraction of exonic reads is typically quite high, whereas for total RNA-seq intronic and intergenic reads may dominate.
-
-Please note that reads overlapping an exon as well as an intron/intergenic region are counted differently by the tools used in this section (QualiMap) and the tool used for assignment of reads in section “Mapped reads annotation” (featureCounts). In the latter, all reads overlapping an exon by at least one base pair are considered exonic, while in the current section only reads fully located in exons are considered exonic and all reads overlapping an intron or intergenic region by at least on bp are considered intronic/intergenic. Thus, numbers do not fully agree between those two sections.
-
 
 ```{r echo=F, results='asis', error=F, warning=F, message=F, fig.align="center", out.width="100%", fig.height=(fastqc_summary_plot$no.of.samples/5)+1.5}
 DEhelper.Qualimap()        # sample Qualimap 
 ```
+
+Please note that reads overlapping an exon as well as an intron/intergenic region are counted differently by the tools used in this section (QualiMap) and the tool used for assignment of reads in section “Mapped reads annotation” (featureCounts). In the latter, all reads overlapping an exon by at least one base pair are considered exonic, while in the current section only reads fully located in exons are considered exonic and all reads overlapping an intron or intergenic region by at least one bp are considered intronic/intergenic. Thus, numbers do not fully agree between those two sections.
+
 
 ## Sample relatedness ##
 
@@ -322,19 +321,19 @@ The plot below depicts sample similarity based on priniciple component analysis 
 DEhelper.DESeq2.MDS()        # sample MDS 
 ```
 
-A heatmap clustogram of the Euclidean distances between the samples gives an intuitive measure of sample similarity (similarities of samples to themselves (diagonal) are set to NA):
+A heatmap clustogram of the Euclidean distances between the samples gives an intuitive measure of sample similarity:
 
 ```{r Heatmap2_paragraph, echo=F, error=F, warning=F, message=F, fig.align="center"}
 DEhelper.DESeq2.heatmap(type="distance")         # heatmap of sample to sample distances
 ```
 
-Additionally, hierarchical clustering of the samples based on the most variable genes reveals replicate consistency and can spot batches of samples related by other characteristics rather than condition.
+Additionally, hierarchical clustering of the samples based on the most variable genes reveals replicate consistency and can spot batches of samples related by other characteristics rather than condition:
 
 ```{r Heatmap1_paragraph_sd, echo=F, error=F, warning=F, message=F, fig.align="center"}
 DEhelper.DESeq2.heatmap(type="cluster_sd")   # heatmap of top variant 'n' genes of the rlog transformed counts (normalized and stabilized)
 ```
 
-Finally, a hierarchical clustering of the samples based on the genes with the highest average expression is shown below.
+Finally, a hierarchical clustering of the samples based on the genes with the highest average expression level:
 
 ```{r Heatmap1_paragraph_mean, echo=F, error=F, warning=F, message=F, fig.align="center"}
 DEhelper.DESeq2.heatmap(type="cluster_mean")    # heatmap of top variant 'n' genes of the rlog transformed counts (normalized and stabilized)
@@ -346,7 +345,7 @@ Pairwise differential expression analysis between the experimental groups is per
 
 Note that the default DESeq2 analysis uses only a statistical (FDR) filter and is thus testing for evidence that the expression changes between two sample groups is different from zero. Performing post hoc filtering on fold changes is therefore not recommended by the software developers and should be avoided. If desirable, the differential expression analysis can be repeated including an additional fold change (FC) threshold directly in the DESeq2 statistical testing model, which will result in more conservative DEG estimates compared to post hoc filtering.
 
-In this anlysis the FC filter was set to `r SHINYREPS_DE_DESEQ_FC`, the FDR filter was set to `r SHINYREPS_DE_DESEQ_FDR`.  
+For the anlyses below, the FC filter was set to `r SHINYREPS_DE_DESEQ_FC` (note: FC=1 means no FC filter) and the FDR filter was set to `r SHINYREPS_DE_DESEQ_FDR`.
 
 ```{r DifferentialExpression_paragraph, echo=F, results='asis', error=F, warning=F, message=F, fig.align="center"}
 for(i in 1:nrow(conts)) {
@@ -358,7 +357,7 @@ for(i in 1:nrow(conts)) {
 
     # pairwise PCA plot 
     cat("##### PCA plot", fill=T)
-    cat("Priniciple component analysis (PCA) plot with the samples of the two analysed groups.", "\n", "\n")
+    cat("Priniciple component analysis (PCA) plot using only the samples of the two analysed groups:", "\n", "\n")
     DEhelper.DESeq2.pairwisePCA(i)
     cat("\n", fill=T)
 
@@ -379,7 +378,7 @@ for(i in 1:nrow(conts)) {
     genes <- DEhelper.DESeq2.DEgenes(i)
     #filtering for tested genes
     genes <- genes[!is.na(genes$padj), ]
-    cat("MA plot showing expression fold change vs. mean expression level of all annotated genes. There are", 
+    cat("MA plot showing expression fold change on log2 scale vs. mean expression level of all annotated genes. There are", 
         sum((genes$padj < fdr) & (abs(genes$log2FoldChange) > log2(FC)), na.rm=T), "genes with a minimal FC of", FC, "highlighted in the MA plot with corrected pvalue (Benjamini and Hochberg, FDR) <", fdr, ".", "\n")
     #we do not need an additional filter for the FC here
     #since only genes with a minimal fold change of FC are
