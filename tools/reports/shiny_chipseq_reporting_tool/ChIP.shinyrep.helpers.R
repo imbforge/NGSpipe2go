@@ -202,20 +202,30 @@ ChIPhelper.VennDiagram <- function(subdir=""){
 #' @param peakOverlapMode select the value function to calculate size of combination sets ("peaknumber" for number of beaks and/or "bp" for basepairs)
 #' @param setsize numeric, maximal number of sets shown
 #' @param targetsdf data.frame with targets data. If not NULL, combination sets are highlighted by exclusive sample groups.
-#' @param addBarAnnotation logical, whether the intersection sizes are printed on top pf the column annotation 
+#' @param addBarAnnotation logical, whether the intersection sizes are printed on top pf the column annotation
+#' @param matrixlist list with upset matrices if calculated externally (allowed elements names: "matrix_peaknumber", "matrix_bp")
 
-ChIPhelper.UpSetPlot <- function(subdir="", Mode = "distinct", peakOverlapMode=c("peaknumber", "bp"), setsize=25, targetsdf=NULL, addBarAnnotation=T){
+ChIPhelper.UpSetPlot <- function(subdir="", Mode = "distinct", peakOverlapMode=c("peaknumber", "bp"), setsize=25, targetsdf=NULL, addBarAnnotation=T, matrixlist=NULL){
   
   #create granges from the peaks
-  peak.ranges <- ChIPhelper.init("readPeaks", subdir, peaks_as="GRanges")
+  if(is.null(matrixlist[["peak.ranges"]])) {
+    peak.ranges <- ChIPhelper.init("readPeaks", subdir, peaks_as="GRanges")
+  } else {
+    peak.ranges <- matrixlist[["peak.ranges"]]
+  }
   
   if("peaknumber" %in% peakOverlapMode) {
     cat(paste0("#### Overlap of peaks per peak number"), fill=T)
     cat("\n", fill=T)
     #this upset plot is based on the number of peaks which are overlapping (value_fun is length)
+    # create upset matrix if not given:
+    if(is.null(matrixlist[["matrix_peaknumber"]])) {
     upset_matrix <- make_comb_mat(peak.ranges, mode = Mode, value_fun = length)
     #we subset the matrix to only display the top sets
     upset_matrix <- upset_matrix[order(comb_size(upset_matrix), decreasing = T)[1:setsize]]
+    } else {
+      upset_matrix <- matrixlist[["matrix_peaknumber"]]
+    }
     
     combColors <- fillColors <- "steelblue" # default color
     
@@ -270,9 +280,14 @@ ChIPhelper.UpSetPlot <- function(subdir="", Mode = "distinct", peakOverlapMode=c
     cat("\n", fill=T)
     cat("\n", fill=T)
     #this upset plot is based on the number of bp which are overlapping 
-    upset_matrix <- make_comb_mat(peak.ranges, mode = Mode)
-    #we subset the matrix to only display the top sets
-    upset_matrix <- upset_matrix[order(comb_size(upset_matrix), decreasing = T)[1:setsize]]
+    # create upset matrix if not given:
+    if(is.null(matrixlist[["matrix_bp"]])) {
+      upset_matrix <- make_comb_mat(peak.ranges, mode = Mode)
+      #we subset the matrix to only display the top sets
+      upset_matrix <- upset_matrix[order(comb_size(upset_matrix), decreasing = T)[1:setsize]]
+    } else {
+      upset_matrix <- matrixlist[["matrix_bp"]]
+    }
     
     if(!is.null(targetsdf)) { # coloring setnames and respective combinations by group from targets file
       targetsdf <- targetsdf[order(targetsdf$group, targetsdf$IPname), ]
@@ -545,6 +560,8 @@ ChIPhelper.ngsReports.Fastqc <- function(subdir="", ...) {
                      inherit.aes=FALSE, show.legend=TRUE) +
           scale_color_manual("", values=c("red", "green", "blue", "black"))
   )
+  print(ngsReports::plotGcContent(x, labels=lbls, theoreticalGC=FALSE))
+  
 }
 
 
