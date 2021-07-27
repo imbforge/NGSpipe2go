@@ -64,7 +64,7 @@ write.csv(summary.table, file=paste0(out, "/peaks_detected_table.csv"), row.name
 
 
 ## filter bed files
-bedfile_suffixes <- c(".narrowPeak", ".gappedPeak", ".broadPeak")
+bedfile_suffixes <- c(".narrowPeak", ".broadPeak")
 bedOutputData <- list()
 
 for (i in bedfile_suffixes) {
