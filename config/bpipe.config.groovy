@@ -399,7 +399,7 @@ config {
     blacklist_filter { 
       walltime="01:00:00" 
       procs="1" 
-      memory="1"
+      memory="32"
     }
     collectBpipeLogs { 
       walltime="00:05:00" 
