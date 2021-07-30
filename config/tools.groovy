@@ -116,6 +116,9 @@ tools_envs = [
     bwa: [
         "0.7.15": [
             lmod: "module load bwa/0.7.15"
+        ],
+        "0.7.17": [
+            lmod: "module load bwa/0.7.17"
         ]
     ],
     conda: [

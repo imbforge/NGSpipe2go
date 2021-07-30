@@ -10,7 +10,6 @@ library("GenomicFeatures")
 library("RColorBrewer")
 library("gridExtra")
 library("gtools")
-library("plyr")
 library("dplyr")
 library("tidyr")
 library("reshape2")
@@ -53,7 +52,7 @@ ChIPhelper.init <- function(task, subdir="", peaks_as="data.frame") {
   
   # read targets.txt
   readTargets <- function() {
-    TARGETS <- paste0(SHINYREPS_PROJECT, "/", SHINYREPS_TARGETS)
+    TARGETS <- paste0(SHINYREPS_TARGET)
     if(!file.exists(TARGETS)) {
       return("Targets file not available")
     }
@@ -68,7 +67,7 @@ ChIPhelper.init <- function(task, subdir="", peaks_as="data.frame") {
     if(!file.exists(file.path(SHINYREPS_MACS2,peaksSubdir))) {
       return("MACS2 results not available")
     }
-    if(file.exists(paste0(targets$IPname, ".vs.", targets$INPUTname,"_macs2_blacklist_filtered_peaks.xls"))[1]) {
+    if(file.exists(file.path(SHINYREPS_MACS2,peaksSubdir, paste0(targets$IPname, ".vs.", targets$INPUTname,"_macs2_blacklist_filtered_peaks.xls")))[1]) {
       comparisons <- paste0(targets$IPname, ".vs.", targets$INPUTname, "_macs2_blacklist_filtered_peaks.xls")  
     } else {
       comparisons <- paste0(targets$IPname, ".vs.", targets$INPUTname, "_macs2_peaks.xls")
@@ -76,14 +75,15 @@ ChIPhelper.init <- function(task, subdir="", peaks_as="data.frame") {
     exist <- sapply(paste0(file.path(SHINYREPS_MACS2,peaksSubdir), "/", comparisons), file.exists)
     targets <- targets[exist, ]
     
-    columnNames2replace <- c(abs_summit="summit", pileup="tags", X.log10.pvalue.="-log10 pval", fold_enrichment="fold enrichment", X.log10.qvalue.="-log10 FDR")
+    columnNames2replace <- c(seqnames="chr", abs_summit="summit", pileup="tags", X.log10.pvalue.="-log10 pval", fold_enrichment="fold enrichment", X.log10.qvalue.="-log10 FDR")
     
     # and return the tables
     if(file.exists(paste0(file.path(SHINYREPS_MACS2,peaksSubdir), "/", targets$IPname, ".vs.", targets$INPUTname,"_macs2_blacklist_filtered_peaks.xls"))[1]) {
       peaks <- lapply(paste0(file.path(SHINYREPS_MACS2,peaksSubdir), "/", targets$IPname, ".vs.", targets$INPUTname, "_macs2_blacklist_filtered_peaks.xls"), function(x) {
         if(as=="data.frame") {
           x <- tryCatch(read.delim(x, comment.char="#", stringsAsFactors=F), error=function(e) as.data.frame(matrix(ncol=10)))
-          colnames(x) <- plyr::revalue(colnames(x), replace=columnNames2replace , warn_missing = F)
+          #colnames(x) <- plyr::revalue(colnames(x), replace=columnNames2replace , warn_missing = F)
+          colnames(x) <- dplyr::recode(colnames(x), !!!columnNames2replace)
           x[order(x$chr, x$start, x$end),  !colnames(x) %in% c("-log10 pval", "name")]
         } else {
           x <- tryCatch(ChIPseeker::readPeakFile(x))
@@ -93,7 +93,8 @@ ChIPhelper.init <- function(task, subdir="", peaks_as="data.frame") {
       peaks <- lapply(paste0(file.path(SHINYREPS_MACS2,peaksSubdir), "/", targets$IPname, ".vs.", targets$INPUTname, "_macs2_peaks.xls"), function(x) {
         if(as=="data.frame") {
           x <- tryCatch(read.delim(x, comment.char="#", stringsAsFactors=F), error=function(e) as.data.frame(matrix(ncol=10)))
-          colnames(x) <- plyr::revalue(colnames(x), replace=columnNames2replace , warn_missing = F)
+          #colnames(x) <- plyr::revalue(colnames(x), replace=columnNames2replace , warn_missing = F)
+          colnames(x) <- dplyr::recode(colnames(x), !!!columnNames2replace)
           x[order(x$chr, x$start, x$end),  !colnames(x) %in% c("-log10 pval", "name")]
         } else {
           x <- tryCatch(ChIPseeker::readPeakFile(x))
@@ -114,12 +115,12 @@ ChIPhelper.init <- function(task, subdir="", peaks_as="data.frame") {
 
 
 ##
-## ChIPhelper.ComparisonsFromTargets: get te comparisons performed by MACS2 from the targets file
+## ChIPhelper.ComparisonsFromTargets: get the comparisons performed by MACS2 from the targets file
 ##
 ChIPhelper.ComparisonsFromTargets <- function() {
   
   # check for targets.txt and macs2 results
-  TARGETS <- paste0(SHINYREPS_PROJECT, "/", SHINYREPS_TARGETS)
+  TARGETS <- paste0(SHINYREPS_TARGET)
   if(!file.exists(TARGETS)) {
     return("Targets file not available")
   }
@@ -201,20 +202,30 @@ ChIPhelper.VennDiagram <- function(subdir=""){
 #' @param peakOverlapMode select the value function to calculate size of combination sets ("peaknumber" for number of beaks and/or "bp" for basepairs)
 #' @param setsize numeric, maximal number of sets shown
 #' @param targetsdf data.frame with targets data. If not NULL, combination sets are highlighted by exclusive sample groups.
-#' @param addBarAnnotation logical, whether the intersection sizes are printed on top pf the column annotation 
+#' @param addBarAnnotation logical, whether the intersection sizes are printed on top pf the column annotation
+#' @param matrixlist list with upset matrices if calculated externally (allowed elements names: "matrix_peaknumber", "matrix_bp")
 
-ChIPhelper.UpSetPlot <- function(subdir="", Mode = "distinct", peakOverlapMode=c("peaknumber", "bp"), setsize=25, targetsdf=NULL, addBarAnnotation=T){
+ChIPhelper.UpSetPlot <- function(subdir="", Mode = "distinct", peakOverlapMode=c("peaknumber", "bp"), setsize=25, targetsdf=NULL, addBarAnnotation=T, matrixlist=NULL){
   
   #create granges from the peaks
-  peak.ranges <- ChIPhelper.init("readPeaks", subdir, peaks_as="GRanges")
+  if(is.null(matrixlist[["peak.ranges"]])) {
+    peak.ranges <- ChIPhelper.init("readPeaks", subdir, peaks_as="GRanges")
+  } else {
+    peak.ranges <- matrixlist[["peak.ranges"]]
+  }
   
   if("peaknumber" %in% peakOverlapMode) {
     cat(paste0("#### Overlap of peaks per peak number"), fill=T)
     cat("\n", fill=T)
     #this upset plot is based on the number of peaks which are overlapping (value_fun is length)
+    # create upset matrix if not given:
+    if(is.null(matrixlist[["matrix_peaknumber"]])) {
     upset_matrix <- make_comb_mat(peak.ranges, mode = Mode, value_fun = length)
     #we subset the matrix to only display the top sets
     upset_matrix <- upset_matrix[order(comb_size(upset_matrix), decreasing = T)[1:setsize]]
+    } else {
+      upset_matrix <- matrixlist[["matrix_peaknumber"]]
+    }
     
     combColors <- fillColors <- "steelblue" # default color
     
@@ -269,9 +280,14 @@ ChIPhelper.UpSetPlot <- function(subdir="", Mode = "distinct", peakOverlapMode=c
     cat("\n", fill=T)
     cat("\n", fill=T)
     #this upset plot is based on the number of bp which are overlapping 
-    upset_matrix <- make_comb_mat(peak.ranges, mode = Mode)
-    #we subset the matrix to only display the top sets
-    upset_matrix <- upset_matrix[order(comb_size(upset_matrix), decreasing = T)[1:setsize]]
+    # create upset matrix if not given:
+    if(is.null(matrixlist[["matrix_bp"]])) {
+      upset_matrix <- make_comb_mat(peak.ranges, mode = Mode)
+      #we subset the matrix to only display the top sets
+      upset_matrix <- upset_matrix[order(comb_size(upset_matrix), decreasing = T)[1:setsize]]
+    } else {
+      upset_matrix <- matrixlist[["matrix_bp"]]
+    }
     
     if(!is.null(targetsdf)) { # coloring setnames and respective combinations by group from targets file
       targetsdf <- targetsdf[order(targetsdf$group, targetsdf$IPname), ]
@@ -481,11 +497,37 @@ ChIPhelper.Fastqc <- function(web=FALSE, subdir="") {
   
   # set row and column names, and output the md table
   df <- as.data.frame(t(df))
-  x <- gsub(paste0("^", SHINYREPS_PREFIX), "", basename(samples))
-  x <- gsub("_fastqc$", "", x)
-  rownames(df) <- sapply(x, shorten)
+  rownames(df) <-  basename(samples)
   colnames(df) <- c("Duplication levels", "Read qualities", "Sequence bias")
-  kable(df, output=F, align="c", format="markdown")
+  
+  if(file.exists(SHINYREPS_TARGET)){
+    
+    # get target names
+    targets <- read.delim(SHINYREPS_TARGET)
+    targets$sample_ext <- gsub("\\..*$", "",targets$file )
+    
+    # replace files names with nicer sample names given in targets file 
+    # if sample is missing in targets file, use reduced file name
+    rownames(df) <- sapply(rownames(df), function(i) { ifelse(sum(sapply(targets$sample_ext, grepl, i))==1,
+                                                              ifelse(sapply("R1", grepl, i), 
+                                                                     paste0(targets[sapply(targets$sample_ext, grepl, i),"sample"], ".R1"),
+                                                                     ifelse(sapply("R2", grepl, i), 
+                                                                            paste0(targets[sapply(targets$sample_ext, grepl, i),"sample"], ".R2"),
+                                                                            targets[sapply(targets$sample_ext, grepl, i),"sample"])),
+                                                              gsub(paste0("^",SHINYREPS_PREFIX),"",i))})                                                    
+  } else {
+    if(!is.na(SHINYREPS_PREFIX)) {
+      rownames(df) <- gsub(paste0("^",SHINYREPS_PREFIX), "", rownames(df))
+    }
+    rownames(df) <- gsub("_fastqc$", "", rownames(df))
+    rownames(df) <- sapply(rownames(df), shorten)
+  }
+
+  # add a row with the sample name (as given in the rownames) before every row
+  df.new <- do.call(rbind,lapply(1:nrow(df),function(i) {rbind(c("",rownames(df)[i],""),df[i,])}))
+  rownames(df.new) <- NULL
+  # kable(df.new, output=F, align="c", format="markdown") # print sample names in additional rows
+  kable(df, output=F, align="c") # print sample names as rownames
 }
 
 ##
@@ -518,6 +560,8 @@ ChIPhelper.ngsReports.Fastqc <- function(subdir="", ...) {
                      inherit.aes=FALSE, show.legend=TRUE) +
           scale_color_manual("", values=c("red", "green", "blue", "black"))
   )
+  print(ngsReports::plotGcContent(x, labels=lbls, theoreticalGC=FALSE))
+  
 }
 
 
@@ -727,13 +771,24 @@ ChIPhelper.insertsize <- function(subdir="", ...){
     insertsizes <- do.call(rbind, insertsizes)
     samplenames <- basename(filelist)
     
-    if(length(samplenames)>1) {
-      samplenames <- gsub(Biobase::lcPrefix(samplenames), "", samplenames) # remove longest common prefix
-      samplenames <- gsub(Biobase::lcSuffix(samplenames), "", samplenames) # remove longest common suffix
+    if(file.exists(SHINYREPS_TARGET)){
+      
+      # get target names
+      targets <- read.delim(SHINYREPS_TARGET)
+      targets$sample_ext <- gsub("\\..*$", "",targets$file)
+      
+      # replace files names with nicer sample names given in targets file
+      # if sample is missing in targets file, use reduced file name
+      samplenames <- sapply(samplenames, function(i) { ifelse(sum(sapply(targets$sample_ext, grepl, i))==1,  
+                                                              targets[sapply(targets$sample_ext, grepl, i),"sample"], 
+                                                              gsub(paste0("^",SHINYREPS_PREFIX),"",i))})
     } else {
-      if(!is.na(SHINYREPS_PREFIX)) {samplenames <- gsub(SHINYREPS_PREFIX, "", samplenames)}
-      samplenames <- gsub("_insertsizemetrics.tsv","", samplenames)
+      if(!is.na(SHINYREPS_PREFIX)) {
+        samplenames <- gsub(paste0("^",SHINYREPS_PREFIX), "", samplenames)
+        samplenames <- gsub("_insertsizemetrics.tsv","", samplenames)
+      }
     }
+    
     rownames(insertsizes) <- samplenames 
     insertsizes <- insertsizes[,c("MEDIAN_INSERT_SIZE","MEAN_INSERT_SIZE", "STANDARD_DEVIATION")]
     colnames(insertsizes) <- c("Median", "Mean", "SD")
@@ -782,24 +837,34 @@ ChIPhelper.insertsize.helper <- function(metricsFile){
     }
   }
   
-  # title_info
-  if(length(metricsFile)>1) {
-    title_info <- gsub(Biobase::lcPrefix(basename(metricsFile)), "", basename(metricsFile)) # remove longest common prefix
-    title_info <- gsub(Biobase::lcSuffix(title_info), "", title_info) # remove longest common suffix
-  } else {
-    title_info <- gsub("_insertsizemetrics.tsv$","", basename(metricsFile))
-    if(!is.na(SHINYREPS_PREFIX)) {title_info <- gsub(SHINYREPS_PREFIX, "", title_info)}
-  }
+  title_info <- basename(metricsFile)  
   
+  if(file.exists(SHINYREPS_TARGET)){
+    
+    # get target names
+    targets <- read.delim(SHINYREPS_TARGET)
+    targets$sample_ext <- gsub("\\..*$", "",targets$file )
+    
+    # replace files names with nicer sample names given in targets file
+    # if sample is missing in targets file, use reduced file name
+    title_info <- sapply(title_info, function(i) { ifelse(sum(sapply(targets$sample_ext, grepl, i))==1,   
+                                                          targets[sapply(targets$sample_ext, grepl, i),"sample"], 
+                                                          gsub(paste0("^",SHINYREPS_PREFIX),"",i))})
+  } else {
+    if(!is.na(SHINYREPS_PREFIX)) {
+      title_info <- gsub(paste0("^",SHINYREPS_PREFIX), "", title_info)
+    }
+    title_info <- gsub("_insertsizemetrics.tsv$","", title_info)
+  }
   
   #we get the histogram which ahs the names of the leves e.g. all_reads and readgroups/sample groups depending on
   #accumulation level which was used.
   #the colnames of histogram are something like all.read.fr_count, all.read.rf_count etc.
   #to get the whole shebang into a wider format we have to add the information
-  hist_long <- melt(histogram, id.var = "insert_size") %>% 
-    separate( variable, 
-              sep = "\\.",
-              into = c("group", "counttype" )) %>%
+  hist_long <- reshape2::melt(histogram, id.var = "insert_size") %>% 
+    extract(col=variable,
+            into=c("group", "counttype" ),
+            regex='([^\\.]+)\\.([^\\.]+)') %>% 
     dplyr::rename( amount = value)
   #we also have to add the comulative sum per group to the whole shebang
   hist_long <- hist_long %>% group_by(group) %>% 
@@ -826,6 +891,8 @@ ChIPhelper.insertsize.helper <- function(metricsFile){
                                               name = "Cumulative fraction of reads > insert size")) +
       xlab("insert size in bp") +
       theme_bw() +
+      theme(legend.justification=c(1,1), legend.position=c(1,1), 
+            legend.background = element_rect(colour = "transparent", fill = "transparent")) + 
       facet_grid(~group)
     return(p)
   })
@@ -1099,17 +1166,21 @@ ChIPhelper.diffbind <- function(subdir="") {
 }
 
 
+
 ##
 ## ChIPhelper.cutadapt: get trimming statistics from the Cutadapt folder and display them
 ## 
-#' @param targetsdf targets object
+#' @param targetsdf targets data.frame or character with file path to targets object
 #' @param colorByFactor character with column name of sample table to be used for coloring the plot. Coloring by filename if NULL. 
 #' @param sampleColumnName character with column name(s) of targets table containing file names
 #' @param plotfun define function to be used for plotting
+#' @param labelOutliers logical, shall outlier samples be labeled
+#' @param outlierIQRfactor numeric, factor is multiplied by IQR to determine outlier
 #'
 #' @return plot cutadapt statistics as side effect
-ChIPhelper.cutadapt <- function(targetsdf=targets, colorByFactor="group", sampleColumnName =c("IP", "INPUT"), 
-                                plotfun=ChIPhelper.cutadapt.plot, ...){
+ChIPhelper.cutadapt <- function(targetsdf=SHINYREPS_TARGET, colorByFactor="group", sampleColumnName =c("IP", "INPUT"), 
+                              plotfun=ChIPhelper.cutadapt.plot, labelOutliers=T, outlierIQRfactor=1.5, ...)
+  {
   
   # logs folder
   if(!all(sapply(SHINYREPS_CUTADAPT_STATS, file.exists))) {
@@ -1120,7 +1191,7 @@ ChIPhelper.cutadapt <- function(targetsdf=targets, colorByFactor="group", sample
   
   # select subset of samples if desired
   x <- selectSampleSubset(x, ...)
-  
+
   # get Command line parameters of first file
   cutadaptpars <- system(paste("grep \"Command line parameters\"", x[1]), intern=T)
   
@@ -1182,20 +1253,28 @@ ChIPhelper.cutadapt <- function(targetsdf=targets, colorByFactor="group", sample
   
   #reduce length of file names 
   row.names(x.df) <- basename(colnames(x))
-  x.df$filename_unmod <- factor(row.names(x.df))
+  x.df$filename <- factor(row.names(x.df))
+  if(!is.na(SHINYREPS_PREFIX)) {
+    row.names(x.df) <- gsub(SHINYREPS_PREFIX, "", row.names(x.df))
+  }
+  row.names(x.df) <- gsub("\\.cutadapt\\.log$", "", row.names(x.df))
   if(nrow(x.df)>1){
+    if(is.na(SHINYREPS_PREFIX)) {row.names(x.df)  <- gsub(lcPrefix(row.names(x.df) ), "", row.names(x.df) )}
     row.names(x.df)  <- gsub(lcSuffix(row.names(x.df) ), "", row.names(x.df) )
-    row.names(x.df)  <- gsub(lcPrefix(row.names(x.df) ), "", row.names(x.df) )
   }
   
-  # passing the different factors given in targetsdf to x.df which was created from cutadapt logfile names 
+  # passing the different factors given in targetsdf to x.df which was created from cutadapt file names 
   if(!is.null(colorByFactor)) { # add information to x.df
     
     if(is.null(targetsdf)) {stop("If 'colorByFactor' is given you must also provide 'targetsdf'!")}
     
+    if(!is.data.frame(targetsdf) && is.character(targetsdf) && file.exists(targetsdf)){
+      targetsdf <- read.delim(targetsdf)
+    } 
+    
     if(length(sampleColumnName)>1) { # melt in case of multiple file name columns (as for ChIP-Seq)
-      targetsdf <- targetsdf[,c(colorByFactor, sampleColumnName)]
-      targetsdf <- reshape2::melt(targetsdf, id.vars= colorByFactor, measure.vars=sampleColumnName, value.name = "filename")
+      targetsdf <- targetsdf[, colnames(targetsdf)[colnames(targetsdf) %in% unique(c(colorByFactor, sampleColumnName, "sample"))]]
+      targetsdf <- reshape2::melt(targetsdf, measure.vars=sampleColumnName, value.name = "filename") 
       for (i in colorByFactor) {targetsdf[, i] <- paste0(targetsdf[, i], " (", targetsdf$variable, ")")}
       targetsdf[,c(colorByFactor, "filename")] <- lapply(targetsdf[,c(colorByFactor, "filename")], factor)
       
@@ -1203,19 +1282,24 @@ ChIPhelper.cutadapt <- function(targetsdf=targets, colorByFactor="group", sample
       targetsdf$filename <- targetsdf[,sampleColumnName]
     }
     
-    targetsdf$filename <- gsub(lcSuffix(targetsdf$filename ), "", targetsdf$filename ) # shorten filename suffix
-    targetsdf$filename <- gsub(lcPrefix(targetsdf$filename ), "", targetsdf$filename ) # shorten filename prefix
-    
-    index <- sapply(targetsdf$filename, grep, x.df$filename_unmod, ignore.case = T) # grep sample name in file names
-    targetsdf <- targetsdf[sapply(index, length) ==1, ] # remove targetsdf entries not (uniquely) found in x.df
+    targetsdf$filename <- gsub("\\..*$", "", targetsdf$filename ) # shorten filename suffix
+    index <- sapply(targetsdf$filename, grep, x.df$filename, ignore.case = T) # grep sample name in file names
+    if(is.list(index)) {
+      #targetsdf <- targetsdf[sapply(index, length) ==1, ] # remove targetsdf entries not (uniquely) found in x.df
+      targetsdf <- targetsdf[sapply(index, length)!=0,] # remove targetsdf entries not found in x.df
+      index <- sapply(targetsdf$filename, grep, x.df$filename, ignore.case = T) # redo grep sample name in file names
+    }
     
     if(!identical(sort(unname(unlist(index))), 1:nrow(x.df))) {
       stop("There seem to be ambiguous sample names in targets. Can't assign them uniquely to cutadapt logfile names")
     }
     
-    x.df <- data.frame(x.df[unlist(index),], targetsdf, check.names =F)
+    # x.df <- data.frame(x.df[unlist(index),], targetsdf, check.names =F) ##temp
+    x.df <- data.frame(x.df[unlist(t(index)),], targetsdf, check.names =F)
     x.df <- x.df[order(rownames(x.df)),, drop=F]
-    rownames(x.df) <- x.df$filename
+    if("sample" %in% colnames(x.df) && !any(duplicated(x.df$sample))) { # use sample column as identifier if present and unique
+      x.df$filename <- x.df$sample
+      row.names(x.df) <- x.df$sample } 
     
     if(any(!colorByFactor %in% colnames(x.df))) {
       if(all(!colorByFactor %in% colnames(x.df))) {
@@ -1232,14 +1316,13 @@ ChIPhelper.cutadapt <- function(targetsdf=targets, colorByFactor="group", sample
   }
   
   # melt data frame for plotting
-  x.melt <- melt(x.df, measure.vars=c(grep("trimmed", colnames(x.df), value=T), 
-                                      "too short", 
-                                      grep("(Adapter)|(})", colnames(x.df), value=T)), variable="reads")
-  
+  x.melt <- reshape2::melt(x.df, measure.vars=c(grep("trimmed", colnames(x.df), value=T), 
+                                                "too short", 
+                                                grep("(Adapter)|(})", colnames(x.df), value=T)), variable.name="reads")
   # everything which is not a value should be a factor
   
   # one plot for each element of colorByFactor
-  violin.list <- lapply(colorByFactor, plotfun, data=x.melt) # "colorByFactor" is submitted as color.value
+  violin.list <- lapply(colorByFactor, plotfun, data=x.melt, labelOutliers=labelOutliers, outlierIQRfactor=outlierIQRfactor) # "colorByFactor" is submitted as color.value
   
   for(i in 1:length(violin.list)){
     plot(violin.list[[i]])
@@ -1254,10 +1337,14 @@ ChIPhelper.cutadapt <- function(targetsdf=targets, colorByFactor="group", sample
 
 
 # plotting function for ChIPhelper.cutadapt 
-ChIPhelper.cutadapt.plot <- function(data, color.value){
+ChIPhelper.cutadapt.plot <- function(data, color.value, labelOutliers=T, outlierIQRfactor=1.5){
   
   is_outlier <- function(x) { # function for identification of outlier
-    return(x < quantile(x, 0.25) - 1.5 * IQR(x) | x > quantile(x, 0.75) + 1.5 * IQR(x))
+    if(IQR(x)!=0) {
+      return(x < quantile(x, 0.25) - outlierIQRfactor * IQR(x) | x > quantile(x, 0.75) + outlierIQRfactor * IQR(x))
+    } else {
+      return(x < mean(x) - outlierIQRfactor * mean(x) | x > mean(x) + outlierIQRfactor * mean(x))
+    }
   }
   
   data <- data %>%
@@ -1276,16 +1363,18 @@ ChIPhelper.cutadapt.plot <- function(data, color.value){
   p <- ggplot(data, aes_string(x="reads",
                                y="value",
                                color=color.value ))+
-    geom_boxplot(color = "darkgrey", alpha = 0.2, outlier.shape = NA) + 
     geom_quasirandom(groupOnX=TRUE) +
-    ggrepel::geom_text_repel(data=. %>% filter(!is.na(outlier)), aes(label=filename), show.legend=F) +
-    scale_color_manual(values=getPalette(colourCount)) + # creates as many colors as needed
+    geom_boxplot(color = "darkgrey", alpha = 0.2, outlier.shape = NA)  
+  if(labelOutliers) {p <- p + ggrepel::geom_text_repel(data=. %>% filter(!is.na(outlier)), aes(label=filename), show.legend=F)}
+  p <- p + scale_color_manual(values=getPalette(colourCount)) + # creates as many colors as needed
     ylab(ylab) +
     xlab("") +
     theme(axis.text.x=element_text(angle=30, vjust=1, hjust=1)) 
   
   return(p)
 }
+
+
 
 
 

@@ -1,7 +1,6 @@
 DE_DESeq2_vars=[
     targets  : "targets.txt",              //targets file. Check the bin directory for the format
     contrasts: "contrasts.txt",            //contrasts file. Check the bin directory for the format
-    mmatrix  : "~group",                   //formula for the linear model
     filter   : "TRUE",                     //whether to perform automatic independent filtering of lowly expressed genes
     prefix   : "",                         //prefix to be removed from file names
     suffix   : "",                         //suffix to be removed from file names

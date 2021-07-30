@@ -54,6 +54,8 @@ The color on the graph shows the Phred quality scores, which are logarithmically
 
 3. The "Sequence bias" plots show the proportion of each base (% G, A, T and C) at each position. In a typical ChIP-seq library there would be little difference between the positions of a sequence run, so the lines in this plot should run parallel with each other, G being similar to C and A to T. 
 
+4. The "GC content" heatmap shows the GC% distribution of all reads and all samples.
+
 ```{r FastQC_paragraph, echo=F,results='asis',error=F,warning=F,message=F,fig.align='center'}
 ChIPhelper.ngsReports.Fastqc()
 ```
@@ -96,11 +98,7 @@ A read pair that aligns with the expected relative mate orientation (typically '
     
     cat(" The mapping statistics show the total number of reads delivered to the aligner ('all reads'), the number of reads mapping uniquely to one location ('unique'), the number of reads mapping to multiple locations ('multi') and the overall alignment rate. Percentages are based on the amount of reads sequenced ('all reads').\n\n")
 }
-if(basename(SHINYREPS_BOWTIE_LOG) =="bowtie2") {
   cat(ChIPhelper.Bowtie2(),sep="\n")
-} else {
-  cat(ChIPhelper.Bowtie(),sep="\n")
-}
 ```
 
 

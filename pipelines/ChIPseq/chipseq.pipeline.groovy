@@ -1,5 +1,5 @@
 PIPELINE="ChIPseq"
-PIPELINE_VERSION="1.2.4"
+PIPELINE_VERSION="1.2.5"
 PIPELINE_ROOT="./NGSpipe2go"
 
 load PIPELINE_ROOT + "/pipelines/ChIPseq/essential.vars.groovy"
@@ -32,7 +32,6 @@ load PIPELINE_ROOT + "/modules/NGS/trackhub.header"
 load PIPELINE_ROOT + "/modules/NGS/trackhub_config.header"
 load PIPELINE_ROOT + "/modules/NGS/multiqc.header"
 load PIPELINE_ROOT + "/modules/miscellaneous/collect_tool_versions.header"
-load PIPELINE_ROOT + "/modules/miscellaneous/collectbpipes.module.2.header"
 load PIPELINE_ROOT + "/modules/ChIPseq/shinyreports.header"
 
 
@@ -55,7 +54,7 @@ Bpipe.run {
                                                   [bamCoverage.using(subdir:"unfiltered"), 
                                                    phantompeak.using(subdir:"unfiltered")]), 
                 	ipstrength.using(subdir:"unfiltered"), 
-		        macs2.using(subdir:"unfiltered") + blacklist_filter.using(subdir:"unfiltered")                  
+		        macs2.using(subdir:"unfiltered")                   
             ], 
             "%.bam" * [ filbowtie2unique + BAMindexer +  // branch filtered
                (ESSENTIAL_DEDUPLICATION ? [RmDups + BAMindexer] : [MarkDups + BAMindexer])] + collect_bams + "%.bam" * 
@@ -65,21 +64,23 @@ Bpipe.run {
                                                   [bamCoverage.using(subdir:"filtered"), 
                                                    phantompeak.using(subdir:"filtered")]), 
                 	ipstrength.using(subdir:"filtered"), 
-		        macs2.using(subdir:"filtered") + blacklist_filter.using(subdir:"filtered")
+		        macs2.using(subdir:"filtered")  
 		]
   
         ] + // end parallel branches
 
-    [(RUN_PEAK_ANNOTATION ? peak_annotation.using(subdir:"unfiltered") : dontrun.using(module:"peak_annotation")) +
+    [ blacklist_filter.using(subdir:"unfiltered") +
+     (RUN_PEAK_ANNOTATION ? peak_annotation.using(subdir:"unfiltered") : dontrun.using(module:"peak_annotation")) +
      (RUN_DIFFBIND ? (ESSENTIAL_DIFFBIND_VERSION >= 3 ? diffbind3.using(subdir:"unfiltered") : diffbind2.using(subdir:"unfiltered")) : dontrun.using(module:"diffbind")) +
      (RUN_ENRICHMENT ? GREAT.using(subdir:"unfiltered") : dontrun.using(module:"GREAT")),
 
+      blacklist_filter.using(subdir:"filtered") +
      (RUN_PEAK_ANNOTATION ? peak_annotation.using(subdir:"filtered") : dontrun.using(module:"peak_annotation")) +
      (RUN_DIFFBIND ? (ESSENTIAL_DIFFBIND_VERSION >= 3 ? diffbind3.using(subdir:"filtered") : diffbind2.using(subdir:"filtered")) : dontrun.using(module:"diffbind")) +
      (RUN_ENRICHMENT ? GREAT.using(subdir:"filtered") : dontrun.using(module:"GREAT"))
     ] +
     (RUN_TRACKHUB ? trackhub_config + trackhub : dontrun.using(module:"trackhub")) +
-    collectToolVersions + collectBpipeLogs + MultiQC + 
+    collectToolVersions + MultiQC + 
     shinyReports
 }
 

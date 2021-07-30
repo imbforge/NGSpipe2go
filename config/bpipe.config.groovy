@@ -399,7 +399,7 @@ config {
     blacklist_filter { 
       walltime="01:00:00" 
       procs="1" 
-      memory="1"
+      memory="32"
     }
     collectBpipeLogs { 
       walltime="00:05:00" 
@@ -449,7 +449,7 @@ config {
     ipstrength { 
       walltime="02:00:00" 
       procs="2" 
-      memory="8"
+      memory="16"
     }
     macs2 { 
       walltime="04:00:00" 

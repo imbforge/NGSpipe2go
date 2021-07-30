@@ -10,7 +10,7 @@ AddRG = {
     def EXP = (f.getName() =~ /.bam/).replaceFirst("")
 
     def TOOL_ENV = prepare_tool_env("picard", tools["picard"]["version"], tools["picard"]["runenv"])
-    def PREAMBLE = get_preamble("AddRG")
+    def PREAMBLE = get_preamble(stage:stageName, outdir:output.dir, input:new File(input1.prefix).getName())
 
     transform(".bam") to (".rg.bam"){
         exec """

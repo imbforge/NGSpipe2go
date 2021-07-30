@@ -15,7 +15,7 @@ SubreadCount = {
         (SubreadCount_vars.stranded == "no" ? " -s0 " : (subread2rnatypes_vars.stranded == "yes" ? " -s1 " : " -s2 "))
     
     def TOOL_ENV = prepare_tool_env("subread", tools["subread"]["version"], tools["subread"]["runenv"])
-    def PREAMBLE = get_preamble("SubreadCount")
+    def PREAMBLE = get_preamble(stage:stageName, outdir:output.dir, input:new File(input1.prefix).getName())
 
     // run the chunk
     transform(".bam") to (".raw_readcounts.tsv") {

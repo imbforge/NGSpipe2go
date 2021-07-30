@@ -10,7 +10,6 @@ load PIPELINE_ROOT + "/config/bpipe.config.groovy"
 load PIPELINE_ROOT + "/modules/NGS/bam2bw.header"
 load PIPELINE_ROOT + "/modules/NGS/bamindexer.header"
 load PIPELINE_ROOT + "/modules/NGS/fastqc.header"
-load PIPELINE_ROOT + "/modules/miscellaneous/collectbpipes.module.2.header"
 load PIPELINE_ROOT + "/modules/smallRNAseq_BCF/trim_umis.header"
 load PIPELINE_ROOT + "/modules/smallRNAseq_BCF/fastq_quality_filter.header"
 load PIPELINE_ROOT + "/modules/smallRNAseq_BCF/fastq_quality_filter_stats.header"
@@ -45,5 +44,5 @@ run {
     [
         CutadaptStats, FastQQualityFilterStats, DedupStats, MappingStats, CombinedStats
     ] +
-    collectToolVersions + collectBpipeLogs + shinyReports
+    collectToolVersions + shinyReports
 }

@@ -28,6 +28,7 @@ Cutadapt = {
         (Cutadapt_vars.adapter_sequence    ? " --adapter "        + Cutadapt_vars.adapter_sequence    : "") +
         (Cutadapt_vars.minimum_overlap     ? " --overlap="        + Cutadapt_vars.minimum_overlap     : "") +
         (Cutadapt_vars.minimum_length_keep ? " --minimum-length " + Cutadapt_vars.minimum_length_keep : "") +
+        (Cutadapt_vars.maximum_length_keep ? " --maximum-length " + Cutadapt_vars.maximum_length_keep : "") +
         (Cutadapt_vars.errorrate           ? " --error-rate "     + Cutadapt_vars.errorrate           : "") +
         (Cutadapt_vars.extra               ? " "                  + Cutadapt_vars.extra               : "")
 
@@ -35,10 +36,13 @@ Cutadapt = {
         (Cutadapt_vars.paired ?  " --too-short-paired-output \${TMP}/${SAMPLENAME_BASE_R2}.cutadapt_discarded.fastq.gz" +
                                  " -p \${TMP}/${SAMPLENAME_BASE_R2}.cutadapt.fastq.gz" : "")
 
+    def CUTADAPT_FLAGS_TOOLONG =
+        (Cutadapt_vars.maximum_length_keep ? " --too-long-output \${TMP}/${SAMPLENAME_BASE}.cutadapt_discardedTooLong.fastq.gz" : "")
+
     def CUTADAPT_INPUT_SECOND = (Cutadapt_vars.paired ?  " " + input2.optional : "")
 
     def TOOL_ENV = prepare_tool_env("cutadapt", tools["cutadapt"]["version"], tools["cutadapt"]["runenv"])
-    def PREAMBLE = get_preamble("Cutadapt")
+    def PREAMBLE = get_preamble(stage:stageName, outdir:output.dir, input:new File(input1.prefix).getName())
 
     transform("*.fastq.gz") to (".cutadapt.fastq.gz") {
 
@@ -46,9 +50,9 @@ Cutadapt = {
             ${TOOL_ENV} &&
             ${PREAMBLE} &&
 
-            cutadapt $CUTADAPT_FLAGS $CUTADAPT_FLAGS_PAIRED --too-short-output=\${TMP}/${SAMPLENAME_BASE}.cutadapt_discarded.fastq.gz --output=\${TMP}/${SAMPLENAME_BASE}.cutadapt.fastq.gz $input1 $CUTADAPT_INPUT_SECOND 1> ${CUTADAPT_STATSDIR}/${SAMPLENAME_BASE_PRUNED}.cutadapt.log &&
+            cutadapt $CUTADAPT_FLAGS $CUTADAPT_FLAGS_PAIRED $CUTADAPT_FLAGS_TOOLONG --too-short-output=\${TMP}/${SAMPLENAME_BASE}.cutadapt_discarded.fastq.gz --output=\${TMP}/${SAMPLENAME_BASE}.cutadapt.fastq.gz $input1 $CUTADAPT_INPUT_SECOND 1> ${CUTADAPT_STATSDIR}/${SAMPLENAME_BASE_PRUNED}.cutadapt.log &&
 		
-            mv -t ${CUTADAPT_DISCARDED_DIR}/ \${TMP}/${SAMPLENAME_BASE_PRUNED}*cutadapt_discarded.fastq.gz &&
+            mv -t ${CUTADAPT_DISCARDED_DIR}/ \${TMP}/${SAMPLENAME_BASE_PRUNED}*cutadapt_discarded*.fastq.gz &&
             mv -t $output.dir \${TMP}/${SAMPLENAME_BASE_PRUNED}*cutadapt.fastq.gz
         ""","Cutadapt"
     }
