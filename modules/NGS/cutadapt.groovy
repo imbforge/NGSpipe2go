@@ -42,7 +42,7 @@ Cutadapt = {
     def CUTADAPT_INPUT_SECOND = (Cutadapt_vars.paired ?  " " + input2.optional : "")
 
     def TOOL_ENV = prepare_tool_env("cutadapt", tools["cutadapt"]["version"], tools["cutadapt"]["runenv"])
-    def PREAMBLE = get_preamble("Cutadapt")
+    def PREAMBLE = get_preamble(stage:stageName, outdir:output.dir, input:new File(input1.prefix).getName())
 
     transform("*.fastq.gz") to (".cutadapt.fastq.gz") {
 

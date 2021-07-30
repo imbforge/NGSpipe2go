@@ -14,7 +14,7 @@ DownsamplefastqSE = {
         println OUTPUTFILES[index]
     }
 
-    def PREAMBLE = get_preamble("DownsamplefastqSE")
+    def PREAMBLE = get_preamble(stage:stageName, outdir:output.dir, input:new File(input1.prefix).getName())
 
     produce(OUTPUTFILES) {
         exec """

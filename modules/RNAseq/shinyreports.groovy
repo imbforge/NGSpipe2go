@@ -7,7 +7,7 @@ shinyReports = {
 
     output.dir = REPORTS
 
-    def PREAMBLE = get_preamble("shinyReports")
+    def PREAMBLE = get_preamble(stage:stageName, outdir:output.dir, input:new File(input1.prefix).getName())
 
     produce("shinyReports.txt") {
         exec """

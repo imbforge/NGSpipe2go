@@ -20,7 +20,7 @@ FilterDuplicates = {
         REMOVE_DUP_LOGDIR.mkdirs()
     }
 
-    def PREAMBLE = get_preamble("FilterDuplicates")
+    def PREAMBLE = get_preamble(stage:stageName, outdir:output.dir, input:new File(input1.prefix).getName())
 
     transform(".fastq.gz") to (".deduped.fastq.gz") {
         def SAMPLE_NAME = input.prefix.prefix

@@ -43,7 +43,7 @@ STAR = {
 
     def TOOL_ENV = prepare_tool_env("star", tools["star"]["version"], tools["star"]["runenv"]) + " && " +
                    prepare_tool_env("samtools", tools["samtools"]["version"], tools["samtools"]["runenv"])
-    def PREAMBLE = get_preamble("STAR")
+    def PREAMBLE = get_preamble(stage:stageName, outdir:output.dir, input:new File(input1.prefix).getName())
 
     // code chunk
     // TODO: warn if the genome index was created using another version of STAR?

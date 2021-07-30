@@ -19,7 +19,7 @@ FastQQualityFilter = {
         (FastQQualityFilter_vars.extra       ? " "    + FastQQualityFilter_vars.extra       : "")
 
     def TOOL_ENV = prepare_tool_env("fastx", tools["fastx"]["version"], tools["fastx"]["runenv"])
-    def PREAMBLE = get_preamble("FastQQualityFilter")
+    def PREAMBLE = get_preamble(stage:stageName, outdir:output.dir, input:new File(input1.prefix).getName())
 
     transform(".fastq.gz") to (".highQ.fastq.gz") {
         def SAMPLENAME = input.prefix.prefix    
