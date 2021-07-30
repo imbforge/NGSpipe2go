@@ -13,7 +13,6 @@
 ## targets=targets.txt      # file describing the targets 
 ##                          # must fit the format expected in DESeqDataSetFromHTSeqCount
 ## contrasts=contrasts.txt  # file describing the contrasts
-## mmatrix=~condition       # model matrix - wrapper constrained to always use an intercept in the model
 ## gtf=gene_model.gtf       # gene model in gtf format - for fpkm calculation
 ## filter=TRUE              # perform automatic independent filtering of lowly expressed genes to maximise power
 ## prefix=RE                # prefix to remove from the sample name
@@ -58,7 +57,6 @@ parseArgs <- function(args,string,default=NULL,convert="as.character") {
 args <- commandArgs(T)
 ftargets     <- parseArgs(args,"targets=","targets.txt")     # file describing the targets
 fcontrasts   <- parseArgs(args,"contrasts=","contrasts.txt") # file describing the contrasts
-mmatrix      <- parseArgs(args,"mmatrix=","~condition")      # model matrix
 gene.model   <- parseArgs(args,"gtf=","")       # gtf gene model
 filter.genes <- parseArgs(args,"filter=",TRUE,convert="as.logical") # automatic independent filtering
 pre          <- parseArgs(args,"prefix=","")    # prefix to remove from the sample name
@@ -69,7 +67,7 @@ pattern      <- parseArgs(args,"pattern=","\\.readcounts.tsv") # output filename
 FC           <- parseArgs(args, "FC=", 1 , convert="as.numeric") # FC filter non log2 
 FDR           <- parseArgs(args, "FDR=", 0.01 , convert="as.numeric") # filter FDR 
 
-runstr <- "Rscript DE.DESeq2.R [targets=targets.txt] [contrasts=contrasts.txt] [mmatrix=~condition] [gtf=] [filter=TRUE] [prefix=RE] [suffix=RE] [cwd=.] [base=] [out=DE.DESeq2] [pattern=RE] [FC=1] [FDR=0.01]"
+runstr <- "Rscript DE.DESeq2.R [targets=targets.txt] [contrasts=contrasts.txt] [gtf=] [filter=TRUE] [prefix=RE] [suffix=RE] [cwd=.] [base=] [out=DE.DESeq2] [pattern=RE] [FC=1] [FDR=0.01]"
 if(!file.exists(ftargets))   stop(paste("File",ftargets,"does NOT exist. Run with:\n",runstr))
 if(!file.exists(fcontrasts)) stop(paste("File",fcontrasts,"does NOT exist. Run with:\n",runstr))
 if(!file.exists(cwd))        stop(paste("Dir",cwd,"does NOT exist. Run with:\n",runstr))
@@ -125,7 +123,7 @@ targets <- targets[, c("sample", "file", "group", add_factors)]
 
 
 # load contrasts
-conts <- read.delim(fcontrasts,head=F,comment.char="#")
+conts <- read.delim(fcontrasts,head=TRUE,colClasses="character",comment.char="#")
 
 ##
 ## calculate gene transcript lengths (union of all annotated exons) using rtracklayer & GenomicRanges
@@ -150,11 +148,12 @@ genes <- as.data.frame(genes(txdb))
 ##
 ## DESeq analysis: right now it only allows simple linear models with pairwise comparisons
 ##
-pairwise.dds.and.res <- lapply(conts[,1],function(cont) {
+pairwise.dds.and.res <- apply(conts,1,function(cont) {
 
     # parse the formula in cont, get contrasts from resultNames(dds) and create a vector with coefficients
-    cont.name <- gsub("(.+)=(.+)","\\1",cont)
-    cont.form <- gsub("(.+)=(.+)","\\2",cont)
+    cont.name <- cont[1]
+    cont.form <- cont[2]
+    mmatrix   <- cont[3]
     factors   <- gsub("(^\\s+|\\s+$)", "", unlist(strsplit(cont.form,"\\W")))
     factors   <- factors[factors != ""]
     if(length(factors) != 2) {
@@ -228,7 +227,7 @@ pairwise.dds <- lapply(pairwise.dds.and.res,function(x){return(x[[1]])})
 
 ## separate results to a list
 res <- lapply(pairwise.dds.and.res,function(x){return(x[[2]])})
-names(res) <-  gsub("=.*", "", conts[,1]) 
+names(res) <-  conts[,1] 
 
 
 ##
@@ -237,9 +236,9 @@ names(res) <-  gsub("=.*", "", conts[,1])
 pdf(paste0(out,"/DE_DESeq2.pdf"))
 
 # make a DESeq2 object with all the samples
-dds <- DESeqDataSetFromHTSeqCount(sampleTable=targets,
-                                  directory=cwd, 
-                                  design=as.formula(mmatrix))
+dds <- DESeqDataSetFromHTSeqCount(sampleTable = targets,
+                                  directory   = cwd, 
+                                  design      = ~ group )    # expect a group column in the targets file. It's also expected everywhere from here on
 dds <- DESeq(dds)
 rld <- rlog(dds)
 
