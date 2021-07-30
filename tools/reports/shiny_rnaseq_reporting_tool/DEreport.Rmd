@@ -297,7 +297,7 @@ In this anlysis the FC filter was set to `r SHINYREPS_DE_DESEQ_FC`, the FDR filt
 for(i in 1:nrow(conts)) {
 
     # subsection
-    cont.name <- gsub("(.+)=(.+)","\\1",conts[i,1])
+    cont.name <- conts$contrast.name[i]
     cat("### ", cont.name, fill=T)
     cat("", fill=T)
 
@@ -363,7 +363,7 @@ The R/Bioconductor package clusterProfiler (https://bioconductor.org/packages/re
 for(i in 1:nrow(conts)) {
 
     # subsection
-    cont.name <- gsub("(.+)=(.+)","\\1",conts[i,1])
+    cont.name <- conts$contrast.name[i]
     cat("### ", cont.name, fill=T)
     cat("", fill=T)
 
@@ -373,10 +373,10 @@ for(i in 1:nrow(conts)) {
 
     #cat("##### Biological Process (BP)", fill=T)
 
-    GO_bar_up     <- paste0(SHINYREPS_GO_ENRICHMENT, "/", gsub("=.*", "", conts[i, 1]), "_GO_Barplot_up_genes.png")
-    GO_treemap_up <- paste0(SHINYREPS_GO_ENRICHMENT, "/", gsub("=.*", "", conts[i, 1]), "_GO_treemap_up_genes.png")
-    GO_cnet_up    <- paste0(SHINYREPS_GO_ENRICHMENT, "/", gsub("=.*", "", conts[i, 1]), "_GO_cnetplot_up_genes.png")
-    GO_table_up   <- paste0(SHINYREPS_GO_ENRICHMENT, "/", gsub("=.*", "", conts[i, 1]), "_GO_Enrichment_up_genes.csv")
+    GO_bar_up     <- paste0(SHINYREPS_GO_ENRICHMENT, "/", conts$contrast.name[i], "_GO_Barplot_up_genes.png")
+    GO_treemap_up <- paste0(SHINYREPS_GO_ENRICHMENT, "/", conts$contrast.name[i], "_GO_treemap_up_genes.png")
+    GO_cnet_up    <- paste0(SHINYREPS_GO_ENRICHMENT, "/", conts$contrast.name[i], "_GO_cnetplot_up_genes.png")
+    GO_table_up   <- paste0(SHINYREPS_GO_ENRICHMENT, "/", conts$contrast.name[i], "_GO_Enrichment_up_genes.csv")
 
     # if there are GO enrichment results (the barplot was created)
     if(file.exists(GO_bar_up)) {
@@ -419,10 +419,10 @@ for(i in 1:nrow(conts)) {
 
     #cat("##### Biological Process (BP)", fill=T)
 
-    GO_bar_down     <- paste0(SHINYREPS_GO_ENRICHMENT, "/", gsub("=.*", "", conts[i, 1]), "_GO_Barplot_down_genes.png")
-    GO_treemap_down <- paste0(SHINYREPS_GO_ENRICHMENT, "/", gsub("=.*", "", conts[i, 1]), "_GO_treemap_down_genes.png")
-    GO_cnet_down    <- paste0(SHINYREPS_GO_ENRICHMENT, "/", gsub("=.*", "", conts[i, 1]), "_GO_cnetplot_down_genes.png")
-    GO_table_down   <- paste0(SHINYREPS_GO_ENRICHMENT, "/", gsub("=.*", "", conts[i, 1]), "_GO_Enrichment_down_genes.csv")
+    GO_bar_down     <- paste0(SHINYREPS_GO_ENRICHMENT, "/", conts$contrast.name[i], "_GO_Barplot_down_genes.png")
+    GO_treemap_down <- paste0(SHINYREPS_GO_ENRICHMENT, "/", conts$contrast.name[i], "_GO_treemap_down_genes.png")
+    GO_cnet_down    <- paste0(SHINYREPS_GO_ENRICHMENT, "/", conts$contrast.name[i], "_GO_cnetplot_down_genes.png")
+    GO_table_down   <- paste0(SHINYREPS_GO_ENRICHMENT, "/", conts$contrast.name[i], "_GO_Enrichment_down_genes.csv")
 
     # if there are GO enrichment results (the barplot was created)
     if(file.exists(GO_bar_down)) {
@@ -464,8 +464,8 @@ for(i in 1:nrow(conts)) {
      # up-regulated genes
      cat("#### Pathways enriched in up-regulated genes", fill=T)
 
-     Pathway_bar_up     <- paste0(SHINYREPS_GO_ENRICHMENT, "/", gsub("=.*", "", conts[i,1]),"_Reactome_Barplot_up_genes.png")
-     Pathway_table_up   <- paste0(SHINYREPS_GO_ENRICHMENT, "/", gsub("=.*", "", conts[i, 1]), "_Reactome_Pathway_Enrichment_up_genes.csv")
+     Pathway_bar_up     <- paste0(SHINYREPS_GO_ENRICHMENT, "/", conts$contrast.name[i], "_Reactome_Barplot_up_genes.png")
+     Pathway_table_up   <- paste0(SHINYREPS_GO_ENRICHMENT, "/", conts$contrast.name[i], "_Reactome_Pathway_Enrichment_up_genes.csv")
 
      # if there are Pathway enrichment results (the barplot was created)
      if(file.exists(Pathway_bar_up)) {
@@ -493,8 +493,8 @@ for(i in 1:nrow(conts)) {
     # down-regulated genes
     cat("#### Pathways enriched in down-regulated genes", fill=T)
 
-    Pathway_bar_down     <- paste0(SHINYREPS_GO_ENRICHMENT, "/", gsub("=.*", "", conts[i,1]),"_Reactome_Barplot_down_genes.png")
-    Pathway_table_down   <- paste0(SHINYREPS_GO_ENRICHMENT, "/", gsub("=.*", "", conts[i, 1]), "_Reactome_Pathway_Enrichment_down_genes.csv")
+    Pathway_bar_down     <- paste0(SHINYREPS_GO_ENRICHMENT, "/", conts$contrast.name[i], "_Reactome_Barplot_down_genes.png")
+    Pathway_table_down   <- paste0(SHINYREPS_GO_ENRICHMENT, "/", conts$contrast.name[i], "_Reactome_Pathway_Enrichment_down_genes.csv")
 
     # if there are Pathway enrichment results (the barplot was created)
     if(file.exists(Pathway_bar_down)) {
@@ -529,7 +529,7 @@ The tables contain a summary of the likelihood that there are more DE genes in a
 for(i in 1:nrow(conts)) {
 
     # subsection
-    cont.name <- gsub("(.+)=(.+)","\\1",conts[i,1])
+    cont.name <- conts$contrast.name[i]
     cat("### ", cont.name, fill=T)    
     cat("", fill=T)
     
@@ -560,7 +560,7 @@ for(i in 1:nrow(conts)) {
     fdr <- .01
     
     # subsection
-    cont.name <- gsub("(.+)=(.+)","\\1",conts[i,1])
+    cont.name <- conts$contrast.name[i]
     cat("### ", cont.name, fill=T)
     cat("", fill=T)
     
