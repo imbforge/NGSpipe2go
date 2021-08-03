@@ -1,6 +1,6 @@
 MPSprofiling_vars=[
     targets  : "targets.txt",              // comma-sep targets file. Needs columns "pruned_file_name", "unique_sample_id", "experiment", "sub_experiment", "bin", "fraction" and optionally "barcode_demultiplex"
-    prefix   : "",                         // prefix to be removed from file names
+    prefix   : ESSENTIAL_SAMPLE_PREFIX,    // prefix to be removed from file names
     suffix   : "",                         // suffix to be removed from file names
     inputdir : RESULTS + "/barcode_count", // directory where the .tsv files with the barcode counts are located
     outdir   : RESULTS + "/MPSprofiling",  // output directory
