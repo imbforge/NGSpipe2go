@@ -93,7 +93,7 @@ if(!dir.exists(name_plotfolder)) {dir.create(name_plotfolder, recursive = T)}
 targets <- read.delim(ftargets, header=T, comment.char="#", sep="\t")
 if (!all(required_target_columns %in% colnames(targets))) {
   missing_cols <- paste(required_target_columns[! required_target_columns %in% colnames(targets)], collapse=", ")
-  stop("\n\nMissung required target column(s):", missing_cols)
+  stop("\n\nMissing required target column(s):", missing_cols)
 }
 targets <- targets[,required_target_columns]
 
@@ -106,9 +106,11 @@ targets <- targets[,required_target_columns]
   
   # merge counts with targets file (includes optional demultiplexing)
   counts <- lapply(names(counts), function(x) {
+    counts[[x]] <- counts[[x]][,1:3]
     colnames(counts[[x]]) <- c("sequence", "id", "count")
     
     if(need2demultiplex) { 
+        counts[[x]] <- counts[[x]][counts[[x]]$sequence != "", ] # remove entries when variable region is empty string
         # if true, counts[[x] contains multiple samples in one file instead of just 1 sample. 
         # id is 2nd extracted barcode and must correspond to "barcode_demultiplex" in targets.txt.
         logindex_targetsfile <- sapply(targets$file, grepl, x)
