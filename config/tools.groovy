@@ -34,7 +34,7 @@ tools_defaults = [
     bowtie2    : [ runenv: "lmod", version: "2.3.4"        ],
     bwa        : [ runenv: "lmod", version: "0.7.15"       ],
     conda      : [ runenv: "lmod", version: "4.8.3"        ],
-    cutadapt   : [ runenv: "lmod", version: "1.18"         ],
+    cutadapt   : [ runenv: "conda", version: "3.4"         ],
     deeptools  : [ runenv: "lmod", version: "3.1"          ],
     fastqc     : [ runenv: "lmod", version: "0.11.8"       ],
     fastqscreen: [ runenv: "lmod", version: "0.13"         ],
@@ -126,6 +126,12 @@ tools_envs = [
             lmod: "module load cutadapt/1.18",
             conda: "${conda_call} source activate ${conda_tools}/cutadapt/1.18",
             singularity :"alias cutadapt=\"singularity run --app cutadapt ${singularity_tools}/cutadapt/1.18r0/cutadapt.simg\""
+        ],
+        "2.4": [
+            lmod: "module load cutadapt/2.4"
+        ],
+        "3.4": [
+            conda: "${conda_call} source activate ${conda_tools}/cutadapt/3.4"
         ]
     ],
     deeptools: [
