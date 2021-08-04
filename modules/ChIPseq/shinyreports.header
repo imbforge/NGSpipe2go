@@ -22,7 +22,6 @@ shinyReports_vars=[
     pbc             : pbc_vars.outdir,          //where the PBC files lie
     phantompeak     : phantompeak_vars.outdir,  //where the PhantomPeak files lie
     phantom_log     : LOGS + "/phantompeak",    //where the PhantomPeak/R logs lie
-    bustard         : QC + "/DemultiplexedBustardSummary.xml",    //where the bustard xml file lies
     macs2           : macs2_vars.outdir,    //where the MACS2 results lie
     macs2_log       : LOGS + "/macs2",      //where the macs2 logs lie
     blacklist_filter: blacklist_filter_vars.outdir + "/peaks_detected_table.csv",
