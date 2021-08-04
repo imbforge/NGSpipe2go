@@ -43,7 +43,6 @@ shinyServer(function(input,output,session) {
 	#generate the QC HTML pages
 	output$qc <- renderUI({
 		switch(input$radio_qc,
-			   SAV=HTML(renderMarkdown(text=DEhelper.Bustard())),
 			   FastQC=HTML(renderMarkdown(text=DEhelper.Fastqc())),
 			   dupRadar=HTML(renderMarkdown(text=DEhelper.dupRadar())),
 			   RNAtypes=HTML(renderMarkdown(text=DEhelper.RNAtypes())),

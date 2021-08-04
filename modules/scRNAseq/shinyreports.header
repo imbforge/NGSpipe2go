@@ -18,7 +18,6 @@ shinyReports_vars=[
     rnatypes        : subread2rnatypes_vars.outdir, //where the RNAtypes count results lie
     rnatypes_suffix : "counts.tsv",            //the extension of the subread results files
     genebodycov_log : geneBodyCov2_vars.outdir,
-    bustard         : QC + "/DemultiplexedBustardSummary.xml",  //where the bustard xml file lies
     subread         : subread_count_vars.outdir,     // location of the subread counts
     subread_suffix  : ".raw_readcounts.tsv.summary", // the extension of the subread stats file
     subread_log     : LOGS + "/subread_count",       //where the Subread/FeatureCounts logs lie

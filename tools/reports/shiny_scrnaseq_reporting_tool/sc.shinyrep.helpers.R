@@ -1538,28 +1538,6 @@ DEhelper.GO_Enrichment <- function(){
 }
 
 ##
-## DEhelper.Bustard: call the perl XML interpreter and get the MD output
-##
-DEhelper.Bustard <- function() {
-    f  <- SHINYREPS_BUSTARD
-    
-    if(!file.exists(f)) {
-        return("Bustard statistics not available")
-    }
-    
-    # call the perl XSL inetrpreter
-    cmd <- paste(" bustard.pl", f)
-    try(ret <- system2("perl", cmd, stdout=TRUE, stderr=FALSE))
-    
-    # check RC
-    if(!is.null(attributes(ret))) {
-        return(paste("Error parsing bustard statistics. RC:", attributes(ret)$status, "in command: perl", cmd))
-    }
-    
-    ret     # ret contains already MD code
-}
-
-##
 ## DEhelper.Subread: parse Subread summary stats and create a md table
 ##
 DEhelper.Subread <- function() {

@@ -13,11 +13,7 @@ shinyReports = {
         exec """
             ${PREAMBLE} &&
 
-            cp ${PIPELINE_ROOT}/tools/reports/shiny_chipseq_reporting_tool/server.R ${REPORTS}                &&
-            cp ${PIPELINE_ROOT}/tools/reports/shiny_chipseq_reporting_tool/ui.R ${REPORTS}                    &&
             cp ${PIPELINE_ROOT}/tools/reports/shiny_chipseq_reporting_tool/ChIP.shinyrep.helpers.R ${REPORTS} &&
-            cp ${PIPELINE_ROOT}/tools/reports/shiny_chipseq_reporting_tool/bustard.pl ${REPORTS}              &&
-            cp ${PIPELINE_ROOT}/tools/reports/shiny_chipseq_reporting_tool/BustardSummary.toMD.xsl ${REPORTS} &&
             cp ${PIPELINE_ROOT}/tools/reports/shiny_chipseq_reporting_tool/styles.css ${REPORTS}              &&
 
             if [ -e "${REPORTS}/ChIPreport.Rmd" ]; then
@@ -52,7 +48,6 @@ shinyReports = {
             echo "SHINYREPS_PBC=${shinyReports_vars.pbc}"         >> $output &&
             echo "SHINYREPS_PHANTOMPEAK=${shinyReports_vars.phantompeak}"    >> $output &&
             echo "SHINYREPS_PHANTOM_LOG=${shinyReports_vars.phantom_log}"    >> $output &&
-            echo "SHINYREPS_BUSTARD=${shinyReports_vars.bustard}" >> $output &&
             echo "SHINYREPS_MACS2=${shinyReports_vars.macs2}"     >> $output &&
             echo "SHINYREPS_MACS2_LOG=${shinyReports_vars.macs2_log}"         >> $output &&
             echo "SHINYREPS_BLACKLIST_FILTER=${shinyReports_vars.blacklist_filter}" >> $output &&
