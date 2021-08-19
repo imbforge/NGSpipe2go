@@ -16,3 +16,15 @@ dir.create("./rawdata", showWarnings=FALSE)
 sapply(files.fastq.gz, file.copy, to="./rawdata/")
 ```
 
+In order to execute the pipeline on test data, you may follow the steps described [here](https://gitlab.rlp.net/imbforge/NGSpipe2go). However, you would have to create a symlink for the files located in the testdata folder like
+
+  ln -s NGSpipe2go/testdata/RNAseq/* .
+  ln -s NGSpipe2go/pipelines/RNAseq/rnaseq.pipeline.groovy .
+
+Please ensure to make the following modifications, in order for the test run to work:
+
+ - Change the _ESSENTIAL_PROJECT_ variable in the _essential.vars.groovy_ file
+ - Adjust the _rnaseq.pipeline.groovy_ file to reflect the location of the correct _essential.vars.groovy_ file
+ - Adjust the _target_ variable in the _shinyreports.header_ file located at NGSpipe2go/modules/RNAseq/ folder
+
+Now you should be able to run the pipeline successfully.
