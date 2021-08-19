@@ -1,1 +1,2 @@
-mut.vs.wt=(mut-wt)
+contrast.name	contrast	mmatrix
+mut.vs.wt	(mut-wt)	~group
