@@ -40,7 +40,9 @@ AddUMIBarcodeToFastq = {
 
     def pattern2_FLAGS =
         (AddUMIBarcodeToFastq_vars.extractmethod ? " --extract-method=" + AddUMIBarcodeToFastq_vars.extractmethod : "") +
-        (AddUMIBarcodeToFastq_vars.bcpattern2    ? (RUN_PEAR ? " --bc-pattern=" : " --bc-pattern2=") + AddUMIBarcodeToFastq_vars.bcpattern2   : "")  // if PEAR, we have a single assembled read and no R2 to extract
+        // if PEAR, we have a single assembled read and no R2 to extract
+        (AddUMIBarcodeToFastq_vars.bcpattern2    ? (RUN_PEAR ? " --bc-pattern=" : " --bc-pattern2=") + AddUMIBarcodeToFastq_vars.bcpattern2   : "") + 
+        (AddUMIBarcodeToFastq_vars.write_filtered_out   ? (RUN_PEAR ? " --filtered-out=" + "\${TMP}/${OUTPUTFILE}.nested.filteredOut.fastq.gz" : "")  : "")  
 
     def whitelist_FLAGS =
         (AddUMIBarcodeToFastq_vars.method   ? " --method="  + AddUMIBarcodeToFastq_vars.method : "") +
