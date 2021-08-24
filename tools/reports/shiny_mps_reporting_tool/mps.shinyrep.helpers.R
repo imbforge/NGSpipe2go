@@ -468,15 +468,14 @@ MPShelper.fastqscreen <- function(subdir="", perc.to.plot = 1, ncol=2, ...) {
 ## 
 #' @param targetsdf targets data.frame or character with file path to targets object
 #' @param colorByFactor character with column name of sample table to be used for coloring the plot. Coloring by filename if NULL. 
-#' @param sampleColumnName character with column name(s) of targets table containing file names
 #' @param plotfun define function to be used for plotting
 #' @param labelOutliers logical, shall outlier samples be labeled
 #' @param outlierIQRfactor numeric, factor is multiplied by IQR to determine outlier
 #'
 #' @return plot cutadapt statistics as side effect
-MPShelper.cutadapt <- function(targetsdf=targets, colorByFactor="group", sampleColumnName =c("file"), 
-                               plotfun=MPShelper.cutadapt.plot, labelOutliers=T, outlierIQRfactor=1.5,
-                               ...){
+MPShelper.cutadapt <- function(targetsdf=SHINYREPS_TARGET, colorByFactor="group", 
+                               plotfun=MPShelper.cutadapt.plot, labelOutliers=T, outlierIQRfactor=1.5, ...)
+{
   
   # logs folder
   if(!all(sapply(SHINYREPS_CUTADAPT_STATS, file.exists))) {
@@ -485,6 +484,9 @@ MPShelper.cutadapt <- function(targetsdf=targets, colorByFactor="group", sampleC
   
   x <- list.files(SHINYREPS_CUTADAPT_STATS,pattern='*cutadapt.log$',full.names=TRUE) 
   
+  # select subset of samples if desired
+  x <- selectSampleSubset(x, ...)
+  
   # get Command line parameters of first file
   cutadaptpars <- system(paste("grep \"Command line parameters\"", x[1]), intern=T)
   
@@ -492,7 +494,7 @@ MPShelper.cutadapt <- function(targetsdf=targets, colorByFactor="group", sampleC
   
   x <- sapply(x, function(f) { 
     
-    trimmed.R1.perc <- trimmed.R2.perc <- trimmed.reads.perc <- tooshort.reads.perc <- NULL # initialise with NULL in case not needed
+    trimmed.R1.perc <- trimmed.R2.perc <- trimmed.reads.perc <- tooshort.reads.perc <- NULL # initialize with NULL in case not needed
     
     if(paired) { # log lines slightly differ dependent on se or pe
       total.reads <- system(paste("grep \"Total read pairs processed\"", f, "| awk '{print $5}'"), intern=TRUE)
@@ -524,8 +526,8 @@ MPShelper.cutadapt <- function(targetsdf=targets, colorByFactor="group", sampleC
     names(adapters.perc) <- paste0(if(paired) {namespart1} else {""}, adapterprime, namespart2)
     
     ## add trimmed reads for each adapter here
-    return(c(total_reads=total.reads, trimmed_R1=trimmed.R1.perc, trimmed_R2=trimmed.R2.perc, 
-             trimmed=trimmed.reads.perc, tooshort=tooshort.reads.perc, adapters.perc))
+    return(c("total reads"=total.reads, trimmed_R1=trimmed.R1.perc, trimmed_R2=trimmed.R2.perc, 
+             trimmed=trimmed.reads.perc, "too short"=tooshort.reads.perc, adapters.perc))
   })
   
   # transpose dataframe
@@ -546,7 +548,7 @@ MPShelper.cutadapt <- function(targetsdf=targets, colorByFactor="group", sampleC
   
   #reduce length of file names 
   row.names(x.df) <- basename(colnames(x))
-  x.df$filename_unmod <- factor(row.names(x.df))
+  x.df$filename <- factor(row.names(x.df))
   if(!is.na(SHINYREPS_PREFIX)) {
     row.names(x.df) <- gsub(SHINYREPS_PREFIX, "", row.names(x.df))
   }
@@ -556,7 +558,7 @@ MPShelper.cutadapt <- function(targetsdf=targets, colorByFactor="group", sampleC
     row.names(x.df)  <- gsub(lcSuffix(row.names(x.df) ), "", row.names(x.df) )
   }
   
-  # passing the different factors given in targetsdf to x.df which was created from cutadapt logfile names 
+  # passing the different factors given in targetsdf to x.df which was created from cutadapt file names 
   if(!is.null(colorByFactor)) { # add information to x.df
     
     if(is.null(targetsdf)) {stop("If 'colorByFactor' is given you must also provide 'targetsdf'!")}
@@ -565,31 +567,25 @@ MPShelper.cutadapt <- function(targetsdf=targets, colorByFactor="group", sampleC
       targetsdf <- read.delim(targetsdf)
     } 
 
-    if(length(sampleColumnName)>1) { # melt in case of multiple file name columns (as for ChIP-Seq)
-      targetsdf <- targetsdf[,c(colorByFactor, sampleColumnName)]
-      targetsdf <- reshape2::melt(targetsdf, id.vars= colorByFactor, measure.vars=sampleColumnName, value.name = "filename")
-      for (i in colorByFactor) {targetsdf[, i] <- paste0(targetsdf[, i], " (", targetsdf$variable, ")")}
-      targetsdf[,c(colorByFactor, "filename")] <- lapply(targetsdf[,c(colorByFactor, "filename")], factor)
-      
-    } else {
-      targetsdf$filename <- targetsdf[,sampleColumnName]
+    targetsdf$file <- gsub("\\..*$", "", targetsdf$file ) # shorten file suffix
+    index <- sapply(targetsdf$file, grep, x.df$filename, ignore.case = T) # grep sample name in file names
+    if(is.list(index)) {
+      targetsdf <- targetsdf[sapply(index, length)!=0,] # remove targetsdf entries not found in x.df
+      index <- sapply(targetsdf$file, grep, x.df$filename, ignore.case = T) # redo grep sample name in file names
     }
-    
-    targetsdf$filename <- gsub("\\..*$", "", targetsdf$filename)
-    index <- sapply(targetsdf$filename, grep, x.df$filename_unmod, ignore.case = T) # grep sample name in file names
-    targetsdf <- targetsdf[sapply(index, length) ==1, ] # remove targetsdf entries not (uniquely) found in x.df
     
     if(!identical(sort(unname(unlist(index))), 1:nrow(x.df))) {
       stop("There seem to be ambiguous sample names in targets. Can't assign them uniquely to cutadapt logfile names")
     }
     
-    x.df <- data.frame(x.df[unlist(index),], targetsdf, check.names =F)
+    x.df <- data.frame(x.df[unlist(t(index)),], targetsdf, check.names =F)
     x.df <- x.df[order(rownames(x.df)),, drop=F]
-    x.df$filename <- x.df$sample
-    rownames(x.df) <- x.df$sample
+    if("sample" %in% colnames(x.df) && !any(duplicated(x.df$sample))) { # use sample column as identifier if present and unique
+      x.df$filename <- x.df$sample
+      row.names(x.df) <- x.df$sample } 
     
-    if(any(!colorByFactor %in% colnames(x.df))) {
-      if(all(!colorByFactor %in% colnames(x.df))) {
+    if(any(!colorByFactor %in% colnames(x.df))) { # any colorByFactor not available?
+      if(all(!colorByFactor %in% colnames(x.df))) { # none colorByFactor available?
         cat("\nNone of the column names given in colorByFactor is available. Perhaps sample names are not part of fastq file names? Using filename instead.")
         colorByFactor <- "filename"
       } else { # one plot each element of colorByFactor
@@ -597,16 +593,15 @@ MPShelper.cutadapt <- function(targetsdf=targets, colorByFactor="group", sampleC
         colorByFactor <- colorByFactor[colorByFactor %in% colnames(x.df)]
       }
     }
-    
-  } else {
+  } else { # if no colorByFactor defined
     x.df$filename <- row.names(x.df)
     colorByFactor <- "filename"
   }
   
   # melt data frame for plotting
   x.melt <- reshape2::melt(x.df, measure.vars=c(grep("trimmed", colnames(x.df), value=T), 
-                                      "tooshort", 
-                                      grep("(Adapter)|(})", colnames(x.df), value=T)), variable="reads")
+                                                "too short", 
+                                                grep("(Adapter)|(})", colnames(x.df), value=T)), variable.name="reads")
   # everything which is not a value should be a factor
   
   # one plot for each element of colorByFactor
@@ -616,15 +611,15 @@ MPShelper.cutadapt <- function(targetsdf=targets, colorByFactor="group", sampleC
     plot(violin.list[[i]])
   }
   
-  DT::datatable(x.df[,c(colorByFactor, "total_reads", 
+  DT::datatable(x.df[,c(colorByFactor, "total reads", 
                         grep("trimmed", colnames(x.df), value=T),
-                        "tooshort", 
+                        "too short", 
                         grep("(Adapter)|(})", colnames(x.df), value=T))], 
                 options = list(pageLength= 20))
 }
 
 
-# plotting function for DEhelper.cutadapt 
+# plotting function for MPShelper.cutadapt 
 MPShelper.cutadapt.plot <- function(data, color.value, labelOutliers=T, outlierIQRfactor=1.5){
   
   is_outlier <- function(x) { # function for identification of outlier
