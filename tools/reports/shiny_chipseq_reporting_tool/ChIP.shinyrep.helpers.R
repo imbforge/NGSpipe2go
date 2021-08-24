@@ -530,6 +530,7 @@ ChIPhelper.Fastqc <- function(web=FALSE, subdir="") {
   kable(df, output=F, align="c") # print sample names as rownames
 }
 
+
 ##
 ## ChIPhelper.ngsReports.Fastqc: joint FastQC report of all samples in the experiment
 ##
@@ -1148,15 +1149,17 @@ ChIPhelper.diffbind <- function(subdir="") {
 ## ChIPhelper.cutadapt: get trimming statistics from the Cutadapt folder and display them
 ## 
 #' @param targetsdf targets data.frame or character with file path to targets object
-#' @param colorByFactor character with column name of sample table to be used for coloring the plot. Coloring by filename if NULL. 
-#' @param sampleColumnName character with column name(s) of targets table containing file names
+#' @param colorByFactor character with column name of sample table to be used for coloring the plot (e.g. 'group' or 'sample'). Coloring by filename if NULL. 
+#' @param fileColumnName character with column name(s) of targets table containing file names
+#' @param sampleColumnName character with column name(s) of targets table containing sample names (order must correspond to fileColumnName).
 #' @param plotfun define function to be used for plotting
 #' @param labelOutliers logical, shall outlier samples be labeled
 #' @param outlierIQRfactor numeric, factor is multiplied by IQR to determine outlier
 #'
 #' @return plot cutadapt statistics as side effect
-ChIPhelper.cutadapt <- function(targetsdf=SHINYREPS_TARGET, colorByFactor="group", sampleColumnName =c("IP", "INPUT"), 
-                              plotfun=ChIPhelper.cutadapt.plot, labelOutliers=T, outlierIQRfactor=1.5, ...)
+ChIPhelper.cutadapt <- function(targetsdf=SHINYREPS_TARGET, colorByFactor="group", 
+                                sampleColumnName =c("IPname", "INPUTname"), fileColumnName =c("IP", "INPUT"),
+                                plotfun=ChIPhelper.cutadapt.plot, labelOutliers=T, outlierIQRfactor=1.5, ...)
   {
   
   # logs folder
@@ -1249,37 +1252,37 @@ ChIPhelper.cutadapt <- function(targetsdf=SHINYREPS_TARGET, colorByFactor="group
       targetsdf <- read.delim(targetsdf)
     } 
     
-    if(length(sampleColumnName)>1) { # melt in case of multiple file name columns (as for ChIP-Seq)
-      targetsdf <- targetsdf[, colnames(targetsdf)[colnames(targetsdf) %in% unique(c(colorByFactor, sampleColumnName, "sample"))]]
-      targetsdf <- reshape2::melt(targetsdf, measure.vars=sampleColumnName, value.name = "filename") 
-      for (i in colorByFactor) {targetsdf[, i] <- paste0(targetsdf[, i], " (", targetsdf$variable, ")")}
-      targetsdf[,c(colorByFactor, "filename")] <- lapply(targetsdf[,c(colorByFactor, "filename")], factor)
-      
+    if(length(fileColumnName)>1) { # melt targets in case of multiple file name columns (as for ChIP-Seq) and create general targets format 
+      targetsdf <- targetsdf[, colnames(targetsdf)[colnames(targetsdf) %in% unique(c(colorByFactor, fileColumnName, sampleColumnName))]]
+      targetsdf <- reshape2::melt(targetsdf, measure.vars=fileColumnName, value.name = "file") # 'file' column created
+      for(i in 1:length(sampleColumnName)) {targetsdf$sample[targetsdf$variable == fileColumnName[i]] <- targetsdf[targetsdf$variable == fileColumnName[i], sampleColumnName[i]]} # 'sample' column created
+      targetsdf <- targetsdf[, !colnames(targetsdf) %in% sampleColumnName] # sampleColumnName not needed any more
+      for (i in colorByFactor[!colorByFactor %in% c("file", "sample")]) {targetsdf[, i] <- paste0(targetsdf[, i], " (", targetsdf$variable, ")")} # add fileColumnName to colorByFactor
+      targetsdf[,unique(c(colorByFactor, "file", "sample"))] <- lapply(targetsdf[,unique(c(colorByFactor, "file", "sample"))], factor)
     } else {
-      targetsdf$filename <- targetsdf[,sampleColumnName]
+      targetsdf$file <- targetsdf[,fileColumnName]
+      targetsdf$sample <- targetsdf[,sampleColumnName]
     }
     
-    targetsdf$filename <- gsub("\\..*$", "", targetsdf$filename ) # shorten filename suffix
-    index <- sapply(targetsdf$filename, grep, x.df$filename, ignore.case = T) # grep sample name in file names
+    targetsdf$file <- gsub("\\..*$", "", targetsdf$file ) # shorten file suffix
+    index <- sapply(targetsdf$file, grep, x.df$filename, ignore.case = T) # grep sample name in file names
     if(is.list(index)) {
-      #targetsdf <- targetsdf[sapply(index, length) ==1, ] # remove targetsdf entries not (uniquely) found in x.df
       targetsdf <- targetsdf[sapply(index, length)!=0,] # remove targetsdf entries not found in x.df
-      index <- sapply(targetsdf$filename, grep, x.df$filename, ignore.case = T) # redo grep sample name in file names
+      index <- sapply(targetsdf$file, grep, x.df$filename, ignore.case = T) # redo grep sample name in file names
     }
     
     if(!identical(sort(unname(unlist(index))), 1:nrow(x.df))) {
       stop("There seem to be ambiguous sample names in targets. Can't assign them uniquely to cutadapt logfile names")
     }
     
-    # x.df <- data.frame(x.df[unlist(index),], targetsdf, check.names =F) ##temp
     x.df <- data.frame(x.df[unlist(t(index)),], targetsdf, check.names =F)
     x.df <- x.df[order(rownames(x.df)),, drop=F]
     if("sample" %in% colnames(x.df) && !any(duplicated(x.df$sample))) { # use sample column as identifier if present and unique
       x.df$filename <- x.df$sample
       row.names(x.df) <- x.df$sample } 
-    
-    if(any(!colorByFactor %in% colnames(x.df))) {
-      if(all(!colorByFactor %in% colnames(x.df))) {
+
+    if(any(!colorByFactor %in% colnames(x.df))) { # any colorByFactor not available?
+      if(all(!colorByFactor %in% colnames(x.df))) { # none colorByFactor available?
         cat("\nNone of the column names given in colorByFactor is available. Perhaps sample names are not part of fastq file names? Using filename instead.")
         colorByFactor <- "filename"
       } else { # one plot each element of colorByFactor
@@ -1287,7 +1290,7 @@ ChIPhelper.cutadapt <- function(targetsdf=SHINYREPS_TARGET, colorByFactor="group
         colorByFactor <- colorByFactor[colorByFactor %in% colnames(x.df)]
       }
     }
-  } else {
+  } else { # if no colorByFactor defined
     x.df$filename <- row.names(x.df)
     colorByFactor <- "filename"
   }

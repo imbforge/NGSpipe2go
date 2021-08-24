@@ -74,7 +74,7 @@ cat("## Adapter trimming with Cutadapt
 
 The following plot shows the amount of reads trimmed for the selected adapter sequences. The column 'tooshort' gives the percentage of reads removed due to a length cutoff after trimming. Additional to the column 'trimmed', which is for all adapters combined, there are columns for every adapter giving the percentage of reads trimmed for this adapter.\n")
 
-ChIPhelper.cutadapt(targetsdf=targets, colorByFactor="group", sampleColumnName =c("IP", "INPUT"))
+ChIPhelper.cutadapt(targetsdf=targets, colorByFactor="group")
 ```
 
 ```{r FastQC_paragraph2, echo=F,results='asis',error=F,warning=F,message=F,fig.align='center', eval=runCutadapt}
