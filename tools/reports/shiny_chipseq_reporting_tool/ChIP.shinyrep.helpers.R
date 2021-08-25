@@ -475,7 +475,9 @@ ChIPhelper.Bowtie2 <- function() {
 ##
 ## ChIPhelper.Fastqc: go through Fastqc output dir and create a md table with the duplication & read quals & sequence bias plots
 ##
-ChIPhelper.Fastqc <- function(web=FALSE, subdir="") {
+ChIPhelper.Fastqc <- function(web=FALSE, subdir="",
+                              sampleColumnName =c("IPname", "INPUTname"), 
+                              fileColumnName =c("IP", "INPUT")) {
   
   # logs folder
   if(!file.exists(file.path(SHINYREPS_FASTQC, subdir))) {
@@ -488,7 +490,7 @@ ChIPhelper.Fastqc <- function(web=FALSE, subdir="") {
   # construct the image url from the folder ents (skip current dir .)
   samples <- list.dirs(QC, recursive=F)
   samples <- samples[sapply(samples, function(x) {file.exists(file.path(x, "fastqc_data.txt"))})] # exclude potential subdir which is also listed by list.dirs
-
+  
   df <- sapply(samples, function(f) {
     c(paste0("![fastq dup img](", QC, "/", basename(f), "/Images/duplication_levels.png)"), 
       paste0("![fastq qual img](", QC, "/", basename(f), "/Images/per_base_quality.png)"), 
@@ -503,7 +505,18 @@ ChIPhelper.Fastqc <- function(web=FALSE, subdir="") {
   if(file.exists(SHINYREPS_TARGET)){
     
     # get target names
-    targets <- read.delim(SHINYREPS_TARGET)
+    targets <- read.delim(SHINYREPS_TARGET, stringsAsFactors=F)
+    
+    if(length(fileColumnName)>1) { # melt targets in case of multiple file name columns (as for ChIP-Seq) and create general targets format 
+      targets <- targets[, colnames(targets)[colnames(targets) %in% unique(c(fileColumnName, sampleColumnName))]]
+      targets <- reshape2::melt(targets, measure.vars=fileColumnName, value.name = "file") # 'file' column created
+      for(i in 1:length(sampleColumnName)) {targets$sample[targets$variable == fileColumnName[i]] <- targets[targets$variable == fileColumnName[i], sampleColumnName[i]]} # 'sample' column created
+      targets <- targets[, !colnames(targets) %in% sampleColumnName] # sampleColumnName not needed any more
+    } else {
+      targets$file <- targets[,fileColumnName]
+      targets$sample <- targets[,sampleColumnName]
+    }
+    
     targets$sample_ext <- gsub("\\..*$", "",targets$file )
     
     # replace files names with nicer sample names given in targets file 
@@ -522,7 +535,7 @@ ChIPhelper.Fastqc <- function(web=FALSE, subdir="") {
     rownames(df) <- gsub("_fastqc$", "", rownames(df))
     rownames(df) <- sapply(rownames(df), shorten)
   }
-
+  
   # add a row with the sample name (as given in the rownames) before every row
   df.new <- do.call(rbind,lapply(1:nrow(df),function(i) {rbind(c("",rownames(df)[i],""),df[i,])}))
   rownames(df.new) <- NULL
@@ -763,7 +776,9 @@ ChIPhelper.PBC <- function(subdir="", ...) {
 ##
 ##ChIPhelper.insertsize: get the insertsize from the qc and display mean and sd 
 ##
-ChIPhelper.insertsize <- function(subdir="", ...){
+ChIPhelper.insertsize <- function(subdir="", 
+                                  sampleColumnName =c("IPname", "INPUTname"), 
+                                  fileColumnName =c("IP", "INPUT"), ...){
   
   if (SHINYREPS_PAIRED == "yes") {
     filelist <- list.files(path=file.path(SHINYREPS_INSERTSIZE, subdir), full.names=TRUE, pattern="insertsizemetrics.tsv$")
@@ -775,7 +790,18 @@ ChIPhelper.insertsize <- function(subdir="", ...){
     if(file.exists(SHINYREPS_TARGET)){
       
       # get target names
-      targets <- read.delim(SHINYREPS_TARGET)
+      targets <- read.delim(SHINYREPS_TARGET, stringsAsFactors = F)
+      
+      if(length(fileColumnName)>1) { # melt targets in case of multiple file name columns (as for ChIP-Seq) and create general targets format 
+        targets <- targets[, colnames(targets)[colnames(targets) %in% unique(c(fileColumnName, sampleColumnName))]]
+        targets <- reshape2::melt(targets, measure.vars=fileColumnName, value.name = "file") # 'file' column created
+        for(i in 1:length(sampleColumnName)) {targets$sample[targets$variable == fileColumnName[i]] <- targets[targets$variable == fileColumnName[i], sampleColumnName[i]]} # 'sample' column created
+        targets <- targets[, !colnames(targets) %in% sampleColumnName] # sampleColumnName not needed any more
+      } else {
+        targets$file <- targets[,fileColumnName]
+        targets$sample <- targets[,sampleColumnName]
+      }
+      
       targets$sample_ext <- gsub("\\..*$", "",targets$file)
       
       # replace files names with nicer sample names given in targets file
@@ -800,8 +826,10 @@ ChIPhelper.insertsize <- function(subdir="", ...){
 
 # Helper to plot the insertsize histogram equivalent to the one from picard
 # Input is the Picard generated metrics file
-ChIPhelper.insertsize.helper <- function(metricsFile){
-  #find the start of our metrics informatioun 
+ChIPhelper.insertsize.helper <- function(metricsFile, 
+                                         sampleColumnName =c("IPname", "INPUTname"), 
+                                         fileColumnName =c("IP", "INPUT")){
+  #find the start of our metrics information 
   startFinder <- scan(metricsFile, what="character", sep="\n", quiet=TRUE, blank.lines.skip=FALSE)
   
   firstBlankLine=0
@@ -843,7 +871,18 @@ ChIPhelper.insertsize.helper <- function(metricsFile){
   if(file.exists(SHINYREPS_TARGET)){
     
     # get target names
-    targets <- read.delim(SHINYREPS_TARGET)
+    targets <- read.delim(SHINYREPS_TARGET, stringsAsFactors = F)
+    
+    if(length(fileColumnName)>1) { # melt targets in case of multiple file name columns (as for ChIP-Seq) and create general targets format 
+      targets <- targets[, colnames(targets)[colnames(targets) %in% unique(c(fileColumnName, sampleColumnName))]]
+      targets <- reshape2::melt(targets, measure.vars=fileColumnName, value.name = "file") # 'file' column created
+      for(i in 1:length(sampleColumnName)) {targets$sample[targets$variable == fileColumnName[i]] <- targets[targets$variable == fileColumnName[i], sampleColumnName[i]]} # 'sample' column created
+      targets <- targets[, !colnames(targets) %in% sampleColumnName] # sampleColumnName not needed any more
+    } else {
+      targets$file <- targets[,fileColumnName]
+      targets$sample <- targets[,sampleColumnName]
+    }
+    
     targets$sample_ext <- gsub("\\..*$", "",targets$file )
     
     # replace files names with nicer sample names given in targets file
@@ -1249,7 +1288,7 @@ ChIPhelper.cutadapt <- function(targetsdf=SHINYREPS_TARGET, colorByFactor="group
     if(is.null(targetsdf)) {stop("If 'colorByFactor' is given you must also provide 'targetsdf'!")}
     
     if(!is.data.frame(targetsdf) && is.character(targetsdf) && file.exists(targetsdf)){
-      targetsdf <- read.delim(targetsdf)
+      targetsdf <- read.delim(targetsdf, stringsAsFactors = F)
     } 
     
     if(length(fileColumnName)>1) { # melt targets in case of multiple file name columns (as for ChIP-Seq) and create general targets format 
