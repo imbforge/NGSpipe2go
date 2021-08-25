@@ -1,5 +1,5 @@
 PIPELINE="ChIPseq"
-PIPELINE_VERSION="1.2.5"
+PIPELINE_VERSION="1.2.6"
 PIPELINE_ROOT="./NGSpipe2go"
 
 load PIPELINE_ROOT + "/pipelines/ChIPseq/essential.vars.groovy"
@@ -19,6 +19,7 @@ load PIPELINE_ROOT + "/modules/ChIPseq/macs2.header"
 load PIPELINE_ROOT + "/modules/ChIPseq/pbc.header"
 load PIPELINE_ROOT + "/modules/ChIPseq/peak_annotation.header"
 load PIPELINE_ROOT + "/modules/ChIPseq/phantompeak.header"
+load PIPELINE_ROOT + "/modules/ChIPseq/upsetPlot.header"
 load PIPELINE_ROOT + "/modules/NGS/cutadapt.header"
 load PIPELINE_ROOT + "/modules/NGS/bamcoverage.header"
 load PIPELINE_ROOT + "/modules/NGS/bamindexer.header"
@@ -71,11 +72,13 @@ Bpipe.run {
 
     [ blacklist_filter.using(subdir:"unfiltered") +
      (RUN_PEAK_ANNOTATION ? peak_annotation.using(subdir:"unfiltered") : dontrun.using(module:"peak_annotation")) +
+     (RUN_UPSETPLOT ? upsetPlot.using(subdir:"unfiltered") : dontrun.using(module:"upsetPlot")) + 
      (RUN_DIFFBIND ? (ESSENTIAL_DIFFBIND_VERSION >= 3 ? diffbind3.using(subdir:"unfiltered") : diffbind2.using(subdir:"unfiltered")) : dontrun.using(module:"diffbind")) +
      (RUN_ENRICHMENT ? GREAT.using(subdir:"unfiltered") : dontrun.using(module:"GREAT")),
 
       blacklist_filter.using(subdir:"filtered") +
      (RUN_PEAK_ANNOTATION ? peak_annotation.using(subdir:"filtered") : dontrun.using(module:"peak_annotation")) +
+     (RUN_UPSETPLOT ? upsetPlot.using(subdir:"filtered") : dontrun.using(module:"upsetPlot")) +
      (RUN_DIFFBIND ? (ESSENTIAL_DIFFBIND_VERSION >= 3 ? diffbind3.using(subdir:"filtered") : diffbind2.using(subdir:"filtered")) : dontrun.using(module:"diffbind")) +
      (RUN_ENRICHMENT ? GREAT.using(subdir:"filtered") : dontrun.using(module:"GREAT"))
     ] +

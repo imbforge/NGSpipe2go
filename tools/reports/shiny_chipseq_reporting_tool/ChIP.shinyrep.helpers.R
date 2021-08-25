@@ -199,7 +199,7 @@ ChIPhelper.VennDiagram <- function(subdir=""){
 #'
 #' @param subdir character with sub-directory containing the peak files
 #' @param Mode character defining the mode for forming the combination set (one of "distinct", "intersect", "union")
-#' @param peakOverlapMode select the value function to calculate size of combination sets ("peaknumber" for number of beaks and/or "bp" for basepairs)
+#' @param peakOverlapMode select the value function to calculate size of combination sets ("peaknumber" for number of peaks and/or "bp" for basepairs)
 #' @param setsize numeric, maximal number of sets shown
 #' @param targetsdf data.frame with targets data. If not NULL, combination sets are highlighted by exclusive sample groups.
 #' @param addBarAnnotation logical, whether the intersection sizes are printed on top pf the column annotation
@@ -220,9 +220,9 @@ ChIPhelper.UpSetPlot <- function(subdir="", Mode = "distinct", peakOverlapMode=c
     #this upset plot is based on the number of peaks which are overlapping (value_fun is length)
     # create upset matrix if not given:
     if(is.null(matrixlist[["matrix_peaknumber"]])) {
-    upset_matrix <- make_comb_mat(peak.ranges, mode = Mode, value_fun = length)
-    #we subset the matrix to only display the top sets
-    upset_matrix <- upset_matrix[order(comb_size(upset_matrix), decreasing = T)[1:setsize]]
+      upset_matrix <- make_comb_mat(peak.ranges, mode = Mode, value_fun = length)
+      #we subset the matrix to only display the top sets
+      upset_matrix <- upset_matrix[order(comb_size(upset_matrix), decreasing = T)[1:setsize]]
     } else {
       upset_matrix <- matrixlist[["matrix_peaknumber"]]
     }
@@ -248,10 +248,12 @@ ChIPhelper.UpSetPlot <- function(subdir="", Mode = "distinct", peakOverlapMode=c
                      comb_col = combColors,
                      bg_col = "#F0F0FF",
                      set_order = if(is.null(targetsdf)) {order(set_size(upset_matrix), decreasing = TRUE)} else {setnamesOrderByTargetsdf},
-                     column_title=paste("# of regions for branch", subdir, "\nmax.", setsize, "sets are shown"),
+                     column_title=paste("# of", Mode, "peaks for each set (max", setsize, "sets shown)"),
                      left_annotation = if(is.null(targetsdf)) {NULL} else {rowAnnotation(group = targetsdf$group, col=list(group=legend_colors))}, 
-                     right_annotation = upset_right_annotation(upset_matrix, gp = gpar(fill = fillColors) 
-                     )
+                     right_annotation = upset_right_annotation(upset_matrix, gp = gpar(fill = fillColors)),
+                     column_title_gp = gpar(fontsize = 11),
+                     row_names_max_width = unit(5, "cm"),
+                     row_names_gp = gpar(fontsize = 10)
     ) )
     if(addBarAnnotation){
       od = column_order(ht)
@@ -308,10 +310,12 @@ ChIPhelper.UpSetPlot <- function(subdir="", Mode = "distinct", peakOverlapMode=c
                      comb_col = combColors,
                      bg_col = "#F0F0FF",
                      set_order = if(is.null(targetsdf)) {order(set_size(upset_matrix), decreasing = TRUE)} else {setnamesOrderByTargetsdf},
-                     column_title=paste("# overlap in bp for branch", subdir,"\nmax.", setsize, "sets are shown"),
+                     column_title=paste("# of", Mode, "bp for each set (max", setsize, "sets shown)"),
                      left_annotation = if(is.null(targetsdf)) {NULL} else {rowAnnotation(group = targetsdf$group, col=list(group=legend_colors))}, 
-                     right_annotation = upset_right_annotation(upset_matrix, gp = gpar(fill = fillColors)
-                     )
+                     right_annotation = upset_right_annotation(upset_matrix, gp = gpar(fill = fillColors)),
+                     column_title_gp = gpar(fontsize = 11),
+                     row_names_max_width = unit(5, "cm"),
+                     row_names_gp = gpar(fontsize = 10)
     ))
     if(addBarAnnotation){
       od = column_order(ht)
@@ -335,6 +339,54 @@ ChIPhelper.UpSetPlot <- function(subdir="", Mode = "distinct", peakOverlapMode=c
   }
 }
 
+
+#'
+#' ChIPhelper.display.plots: go through folder containing plots and create a md table with the plots
+#'
+#' @param plotdir character with result directory containing plots
+#' @param subdir character with sub-directory for pipeline branch
+#' @param plots_column numeric, number of columns to display the plots
+#' @param addPlotLabel logical, add plot label from file name
+ChIPhelper.display.plots<- function(web=FALSE, plotdir="", subdir="", plots_column=SHINYREPS_PLOTS_COLUMN,
+                                    addPlotLabel=T) {
+  
+  # logs folder
+  if(!file.exists(file.path(plotdir, subdir))) {
+    return("No plots available")
+  }
+  
+  plots_column <- tryCatch(as.integer(plots_column),error=function(e){4})
+  
+  # construct the folder name, which is different for web and noweb
+  QC <- if(web) file.path(paste0("/", basename(plotdir)), subdir) else file.path(plotdir, subdir)
+  
+  # construct the image url from the folder contents (skip current dir .)
+  samples <- list.files(QC, pattern=".png$")
+  COLUMNS <- min(length(samples), plots_column)
+  df <- sapply(samples, function(f) {
+    paste0("![plot img](", QC, "/", basename(f), ")")
+  })
+  
+  # put sample names and output an md table of COLUMNS columns
+  while(length(df) %% COLUMNS != 0) df <- c(df, "")
+  samples <- sapply(df, function(x) {
+    if(addPlotLabel) {
+      x <- sapply(x, function(x) gsub(paste0("^", SHINYREPS_PREFIX), "", basename(x)))
+      sapply(gsub(".png)$", "", gsub("_", " ", x)), shorten)
+    } else {
+      x <- sapply(x, function(x) " ")
+    }
+  })
+  df      <- matrix(df     , ncol=COLUMNS, byrow=T)
+  samples <- matrix(samples, ncol=COLUMNS, byrow=T)
+  
+  # add a row with the sample names
+  df.names <- matrix(sapply(1:nrow(df), function(i) { c(df[i, ], samples[i, ]) }), 
+                     ncol=COLUMNS, byrow=T)
+  colnames(df.names) <- rep(" ", COLUMNS)
+  
+  kable(as.data.frame(df.names), output=F, align="c", format="markdown")
+}
 
 
 ##

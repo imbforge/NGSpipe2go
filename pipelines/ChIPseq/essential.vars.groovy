@@ -60,7 +60,7 @@ RUN_IN_PAIRED_END_MODE=(ESSENTIAL_PAIRED == "yes")
 RUN_PEAK_ANNOTATION=true
 RUN_ENRICHMENT=true
 RUN_TRACKHUB=false
-
+RUN_UPSETPLOT=true // For larger projects, the calculation of the respective combination matrix may take several hours.
 
 // project folders
 PROJECT=ESSENTIAL_PROJECT
