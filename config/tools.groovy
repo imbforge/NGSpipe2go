@@ -131,6 +131,12 @@ tools_envs = [
             lmod: "module load cutadapt/1.18",
             conda: "${conda_call} source activate ${conda_tools}/cutadapt/1.18",
             singularity :"alias cutadapt=\"singularity run --app cutadapt ${singularity_tools}/cutadapt/1.18r0/cutadapt.simg\""
+        ],
+        "2.4": [
+            lmod: "module load cutadapt/2.4"
+        ],
+        "3.4": [
+            conda: "${conda_call} source activate ${conda_tools}/cutadapt/3.4"
         ]
     ],
     deeptools: [
