@@ -25,6 +25,8 @@ load PIPELINE_ROOT + "/modules/RNAseq/subread2rnatypes.header"
 load PIPELINE_ROOT + "/modules/RNAseq/filter2htseq.header"
 load PIPELINE_ROOT + "/modules/RNAseq/tpm.header"
 load PIPELINE_ROOT + "/modules/RNAseq/dupradar.header"
+load PIPELINE_ROOT + "/modules/RNAseq/prermats.header"
+load PIPELINE_ROOT + "/modules/RNAseq/rmats.header"
 load PIPELINE_ROOT + "/modules/RNAseq/deseq2_mm.header"
 load PIPELINE_ROOT + "/modules/RNAseq/genebodycov2.header"
 load PIPELINE_ROOT + "/modules/RNAseq/inferexperiment.header"
@@ -51,9 +53,11 @@ Bpipe.run {
             geneBodyCov2,
             (RUN_IN_PAIRED_END_MODE ? InsertSize : dontrun.using(module: "InsertSize"))
         ]
-    ] +
+    ] + 
+    (RUN_RMATS ? PRERMATS + rMATS : dontrun.using(module: "rMATS"))+
     [ DE_DESeq2_MM , DE_DESeq2 + GO_Enrichment ] +
     (RUN_TRACKHUB ? trackhub_config + trackhub : dontrun.using(module: "trackhub")) +
     collectToolVersions + MultiQC + shinyReports
 }
+
 

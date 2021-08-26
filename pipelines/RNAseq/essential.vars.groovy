@@ -32,6 +32,7 @@ RUN_TRACKHUB=false              // prepare a Track Hub for the UCSC genome brows
 RUN_FASTQSCREEN=true            // check for contaminations using FastQ Screen
 RUN_CUTADAPT=false              // optional read trimming with Cutadapt e.g. if using high read length
 RUN_IN_PAIRED_END_MODE=(ESSENTIAL_PAIRED == "yes") // no need to change this line
+RUN_RMATS=true // check for differential splicing events
 
 // FASTQ-Screen parameters
 ESSENTIAL_FASTQSCREEN_PERC=1    // contaminant filter, if a contaminant is consuming at least this percentage of reads in at least one sample, contaminant will be shown in report
