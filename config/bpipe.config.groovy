@@ -357,6 +357,12 @@ config {
       procs="1" 
       memory="2"
     }
+    upsetPlot { 
+      queue=long_queue 
+      walltime="16:00:00" 
+      procs="1" 
+      memory="32"
+    }
     VariantCallHC { 
       walltime="48:00:00" 
       queue=long_queue 

@@ -199,7 +199,7 @@ ChIPhelper.VennDiagram <- function(subdir=""){
 #'
 #' @param subdir character with sub-directory containing the peak files
 #' @param Mode character defining the mode for forming the combination set (one of "distinct", "intersect", "union")
-#' @param peakOverlapMode select the value function to calculate size of combination sets ("peaknumber" for number of beaks and/or "bp" for basepairs)
+#' @param peakOverlapMode select the value function to calculate size of combination sets ("peaknumber" for number of peaks and/or "bp" for basepairs)
 #' @param setsize numeric, maximal number of sets shown
 #' @param targetsdf data.frame with targets data. If not NULL, combination sets are highlighted by exclusive sample groups.
 #' @param addBarAnnotation logical, whether the intersection sizes are printed on top pf the column annotation
@@ -220,9 +220,9 @@ ChIPhelper.UpSetPlot <- function(subdir="", Mode = "distinct", peakOverlapMode=c
     #this upset plot is based on the number of peaks which are overlapping (value_fun is length)
     # create upset matrix if not given:
     if(is.null(matrixlist[["matrix_peaknumber"]])) {
-    upset_matrix <- make_comb_mat(peak.ranges, mode = Mode, value_fun = length)
-    #we subset the matrix to only display the top sets
-    upset_matrix <- upset_matrix[order(comb_size(upset_matrix), decreasing = T)[1:setsize]]
+      upset_matrix <- make_comb_mat(peak.ranges, mode = Mode, value_fun = length)
+      #we subset the matrix to only display the top sets
+      upset_matrix <- upset_matrix[order(comb_size(upset_matrix), decreasing = T)[1:setsize]]
     } else {
       upset_matrix <- matrixlist[["matrix_peaknumber"]]
     }
@@ -248,10 +248,12 @@ ChIPhelper.UpSetPlot <- function(subdir="", Mode = "distinct", peakOverlapMode=c
                      comb_col = combColors,
                      bg_col = "#F0F0FF",
                      set_order = if(is.null(targetsdf)) {order(set_size(upset_matrix), decreasing = TRUE)} else {setnamesOrderByTargetsdf},
-                     column_title=paste("# of regions for branch", subdir, "\nmax.", setsize, "sets are shown"),
+                     column_title=paste("# of", Mode, "peaks for each set (max", setsize, "sets shown)"),
                      left_annotation = if(is.null(targetsdf)) {NULL} else {rowAnnotation(group = targetsdf$group, col=list(group=legend_colors))}, 
-                     right_annotation = upset_right_annotation(upset_matrix, gp = gpar(fill = fillColors) 
-                     )
+                     right_annotation = upset_right_annotation(upset_matrix, gp = gpar(fill = fillColors)),
+                     column_title_gp = gpar(fontsize = 11),
+                     row_names_max_width = unit(5, "cm"),
+                     row_names_gp = gpar(fontsize = 10)
     ) )
     if(addBarAnnotation){
       od = column_order(ht)
@@ -308,10 +310,12 @@ ChIPhelper.UpSetPlot <- function(subdir="", Mode = "distinct", peakOverlapMode=c
                      comb_col = combColors,
                      bg_col = "#F0F0FF",
                      set_order = if(is.null(targetsdf)) {order(set_size(upset_matrix), decreasing = TRUE)} else {setnamesOrderByTargetsdf},
-                     column_title=paste("# overlap in bp for branch", subdir,"\nmax.", setsize, "sets are shown"),
+                     column_title=paste("# of", Mode, "bp for each set (max", setsize, "sets shown)"),
                      left_annotation = if(is.null(targetsdf)) {NULL} else {rowAnnotation(group = targetsdf$group, col=list(group=legend_colors))}, 
-                     right_annotation = upset_right_annotation(upset_matrix, gp = gpar(fill = fillColors)
-                     )
+                     right_annotation = upset_right_annotation(upset_matrix, gp = gpar(fill = fillColors)),
+                     column_title_gp = gpar(fontsize = 11),
+                     row_names_max_width = unit(5, "cm"),
+                     row_names_gp = gpar(fontsize = 10)
     ))
     if(addBarAnnotation){
       od = column_order(ht)
@@ -335,6 +339,54 @@ ChIPhelper.UpSetPlot <- function(subdir="", Mode = "distinct", peakOverlapMode=c
   }
 }
 
+
+#'
+#' ChIPhelper.display.plots: go through folder containing plots and create a md table with the plots
+#'
+#' @param plotdir character with result directory containing plots
+#' @param subdir character with sub-directory for pipeline branch
+#' @param plots_column numeric, number of columns to display the plots
+#' @param addPlotLabel logical, add plot label from file name
+ChIPhelper.display.plots<- function(web=FALSE, plotdir="", subdir="", plots_column=SHINYREPS_PLOTS_COLUMN,
+                                    addPlotLabel=T) {
+  
+  # logs folder
+  if(!file.exists(file.path(plotdir, subdir))) {
+    return("No plots available")
+  }
+  
+  plots_column <- tryCatch(as.integer(plots_column),error=function(e){4})
+  
+  # construct the folder name, which is different for web and noweb
+  QC <- if(web) file.path(paste0("/", basename(plotdir)), subdir) else file.path(plotdir, subdir)
+  
+  # construct the image url from the folder contents (skip current dir .)
+  samples <- list.files(QC, pattern=".png$")
+  COLUMNS <- min(length(samples), plots_column)
+  df <- sapply(samples, function(f) {
+    paste0("![plot img](", QC, "/", basename(f), ")")
+  })
+  
+  # put sample names and output an md table of COLUMNS columns
+  while(length(df) %% COLUMNS != 0) df <- c(df, "")
+  samples <- sapply(df, function(x) {
+    if(addPlotLabel) {
+      x <- sapply(x, function(x) gsub(paste0("^", SHINYREPS_PREFIX), "", basename(x)))
+      sapply(gsub(".png)$", "", gsub("_", " ", x)), shorten)
+    } else {
+      x <- sapply(x, function(x) " ")
+    }
+  })
+  df      <- matrix(df     , ncol=COLUMNS, byrow=T)
+  samples <- matrix(samples, ncol=COLUMNS, byrow=T)
+  
+  # add a row with the sample names
+  df.names <- matrix(sapply(1:nrow(df), function(i) { c(df[i, ], samples[i, ]) }), 
+                     ncol=COLUMNS, byrow=T)
+  colnames(df.names) <- rep(" ", COLUMNS)
+  
+  kable(as.data.frame(df.names), output=F, align="c", format="markdown")
+}
 
 
 ##
@@ -475,7 +527,9 @@ ChIPhelper.Bowtie2 <- function() {
 ##
 ## ChIPhelper.Fastqc: go through Fastqc output dir and create a md table with the duplication & read quals & sequence bias plots
 ##
-ChIPhelper.Fastqc <- function(web=FALSE, subdir="") {
+ChIPhelper.Fastqc <- function(web=FALSE, subdir="",
+                              sampleColumnName =c("IPname", "INPUTname"), 
+                              fileColumnName =c("IP", "INPUT")) {
   
   # logs folder
   if(!file.exists(file.path(SHINYREPS_FASTQC, subdir))) {
@@ -488,7 +542,7 @@ ChIPhelper.Fastqc <- function(web=FALSE, subdir="") {
   # construct the image url from the folder ents (skip current dir .)
   samples <- list.dirs(QC, recursive=F)
   samples <- samples[sapply(samples, function(x) {file.exists(file.path(x, "fastqc_data.txt"))})] # exclude potential subdir which is also listed by list.dirs
-
+  
   df <- sapply(samples, function(f) {
     c(paste0("![fastq dup img](", QC, "/", basename(f), "/Images/duplication_levels.png)"), 
       paste0("![fastq qual img](", QC, "/", basename(f), "/Images/per_base_quality.png)"), 
@@ -503,7 +557,18 @@ ChIPhelper.Fastqc <- function(web=FALSE, subdir="") {
   if(file.exists(SHINYREPS_TARGET)){
     
     # get target names
-    targets <- read.delim(SHINYREPS_TARGET)
+    targets <- read.delim(SHINYREPS_TARGET, stringsAsFactors=F)
+    
+    if(length(fileColumnName)>1) { # melt targets in case of multiple file name columns (as for ChIP-Seq) and create general targets format 
+      targets <- targets[, colnames(targets)[colnames(targets) %in% unique(c(fileColumnName, sampleColumnName))]]
+      targets <- reshape2::melt(targets, measure.vars=fileColumnName, value.name = "file") # 'file' column created
+      for(i in 1:length(sampleColumnName)) {targets$sample[targets$variable == fileColumnName[i]] <- targets[targets$variable == fileColumnName[i], sampleColumnName[i]]} # 'sample' column created
+      targets <- targets[, !colnames(targets) %in% sampleColumnName] # sampleColumnName not needed any more
+    } else {
+      targets$file <- targets[,fileColumnName]
+      targets$sample <- targets[,sampleColumnName]
+    }
+    
     targets$sample_ext <- gsub("\\..*$", "",targets$file )
     
     # replace files names with nicer sample names given in targets file 
@@ -522,13 +587,14 @@ ChIPhelper.Fastqc <- function(web=FALSE, subdir="") {
     rownames(df) <- gsub("_fastqc$", "", rownames(df))
     rownames(df) <- sapply(rownames(df), shorten)
   }
-
+  
   # add a row with the sample name (as given in the rownames) before every row
   df.new <- do.call(rbind,lapply(1:nrow(df),function(i) {rbind(c("",rownames(df)[i],""),df[i,])}))
   rownames(df.new) <- NULL
   # kable(df.new, output=F, align="c", format="markdown") # print sample names in additional rows
   kable(df, output=F, align="c") # print sample names as rownames
 }
+
 
 ##
 ## ChIPhelper.ngsReports.Fastqc: joint FastQC report of all samples in the experiment
@@ -762,7 +828,9 @@ ChIPhelper.PBC <- function(subdir="", ...) {
 ##
 ##ChIPhelper.insertsize: get the insertsize from the qc and display mean and sd 
 ##
-ChIPhelper.insertsize <- function(subdir="", ...){
+ChIPhelper.insertsize <- function(subdir="", 
+                                  sampleColumnName =c("IPname", "INPUTname"), 
+                                  fileColumnName =c("IP", "INPUT"), ...){
   
   if (SHINYREPS_PAIRED == "yes") {
     filelist <- list.files(path=file.path(SHINYREPS_INSERTSIZE, subdir), full.names=TRUE, pattern="insertsizemetrics.tsv$")
@@ -774,7 +842,18 @@ ChIPhelper.insertsize <- function(subdir="", ...){
     if(file.exists(SHINYREPS_TARGET)){
       
       # get target names
-      targets <- read.delim(SHINYREPS_TARGET)
+      targets <- read.delim(SHINYREPS_TARGET, stringsAsFactors = F)
+      
+      if(length(fileColumnName)>1) { # melt targets in case of multiple file name columns (as for ChIP-Seq) and create general targets format 
+        targets <- targets[, colnames(targets)[colnames(targets) %in% unique(c(fileColumnName, sampleColumnName))]]
+        targets <- reshape2::melt(targets, measure.vars=fileColumnName, value.name = "file") # 'file' column created
+        for(i in 1:length(sampleColumnName)) {targets$sample[targets$variable == fileColumnName[i]] <- targets[targets$variable == fileColumnName[i], sampleColumnName[i]]} # 'sample' column created
+        targets <- targets[, !colnames(targets) %in% sampleColumnName] # sampleColumnName not needed any more
+      } else {
+        targets$file <- targets[,fileColumnName]
+        targets$sample <- targets[,sampleColumnName]
+      }
+      
       targets$sample_ext <- gsub("\\..*$", "",targets$file)
       
       # replace files names with nicer sample names given in targets file
@@ -799,8 +878,10 @@ ChIPhelper.insertsize <- function(subdir="", ...){
 
 # Helper to plot the insertsize histogram equivalent to the one from picard
 # Input is the Picard generated metrics file
-ChIPhelper.insertsize.helper <- function(metricsFile){
-  #find the start of our metrics informatioun 
+ChIPhelper.insertsize.helper <- function(metricsFile, 
+                                         sampleColumnName =c("IPname", "INPUTname"), 
+                                         fileColumnName =c("IP", "INPUT")){
+  #find the start of our metrics information 
   startFinder <- scan(metricsFile, what="character", sep="\n", quiet=TRUE, blank.lines.skip=FALSE)
   
   firstBlankLine=0
@@ -842,7 +923,18 @@ ChIPhelper.insertsize.helper <- function(metricsFile){
   if(file.exists(SHINYREPS_TARGET)){
     
     # get target names
-    targets <- read.delim(SHINYREPS_TARGET)
+    targets <- read.delim(SHINYREPS_TARGET, stringsAsFactors = F)
+    
+    if(length(fileColumnName)>1) { # melt targets in case of multiple file name columns (as for ChIP-Seq) and create general targets format 
+      targets <- targets[, colnames(targets)[colnames(targets) %in% unique(c(fileColumnName, sampleColumnName))]]
+      targets <- reshape2::melt(targets, measure.vars=fileColumnName, value.name = "file") # 'file' column created
+      for(i in 1:length(sampleColumnName)) {targets$sample[targets$variable == fileColumnName[i]] <- targets[targets$variable == fileColumnName[i], sampleColumnName[i]]} # 'sample' column created
+      targets <- targets[, !colnames(targets) %in% sampleColumnName] # sampleColumnName not needed any more
+    } else {
+      targets$file <- targets[,fileColumnName]
+      targets$sample <- targets[,sampleColumnName]
+    }
+    
     targets$sample_ext <- gsub("\\..*$", "",targets$file )
     
     # replace files names with nicer sample names given in targets file
@@ -1148,15 +1240,17 @@ ChIPhelper.diffbind <- function(subdir="") {
 ## ChIPhelper.cutadapt: get trimming statistics from the Cutadapt folder and display them
 ## 
 #' @param targetsdf targets data.frame or character with file path to targets object
-#' @param colorByFactor character with column name of sample table to be used for coloring the plot. Coloring by filename if NULL. 
-#' @param sampleColumnName character with column name(s) of targets table containing file names
+#' @param colorByFactor character with column name of sample table to be used for coloring the plot (e.g. 'group' or 'sample'). Coloring by filename if NULL. 
+#' @param fileColumnName character with column name(s) of targets table containing file names
+#' @param sampleColumnName character with column name(s) of targets table containing sample names (order must correspond to fileColumnName).
 #' @param plotfun define function to be used for plotting
 #' @param labelOutliers logical, shall outlier samples be labeled
 #' @param outlierIQRfactor numeric, factor is multiplied by IQR to determine outlier
 #'
 #' @return plot cutadapt statistics as side effect
-ChIPhelper.cutadapt <- function(targetsdf=SHINYREPS_TARGET, colorByFactor="group", sampleColumnName =c("IP", "INPUT"), 
-                              plotfun=ChIPhelper.cutadapt.plot, labelOutliers=T, outlierIQRfactor=1.5, ...)
+ChIPhelper.cutadapt <- function(targetsdf=SHINYREPS_TARGET, colorByFactor="group", 
+                                sampleColumnName =c("IPname", "INPUTname"), fileColumnName =c("IP", "INPUT"),
+                                plotfun=ChIPhelper.cutadapt.plot, labelOutliers=T, outlierIQRfactor=1.5, ...)
   {
   
   # logs folder
@@ -1246,40 +1340,40 @@ ChIPhelper.cutadapt <- function(targetsdf=SHINYREPS_TARGET, colorByFactor="group
     if(is.null(targetsdf)) {stop("If 'colorByFactor' is given you must also provide 'targetsdf'!")}
     
     if(!is.data.frame(targetsdf) && is.character(targetsdf) && file.exists(targetsdf)){
-      targetsdf <- read.delim(targetsdf)
+      targetsdf <- read.delim(targetsdf, stringsAsFactors = F)
     } 
     
-    if(length(sampleColumnName)>1) { # melt in case of multiple file name columns (as for ChIP-Seq)
-      targetsdf <- targetsdf[, colnames(targetsdf)[colnames(targetsdf) %in% unique(c(colorByFactor, sampleColumnName, "sample"))]]
-      targetsdf <- reshape2::melt(targetsdf, measure.vars=sampleColumnName, value.name = "filename") 
-      for (i in colorByFactor) {targetsdf[, i] <- paste0(targetsdf[, i], " (", targetsdf$variable, ")")}
-      targetsdf[,c(colorByFactor, "filename")] <- lapply(targetsdf[,c(colorByFactor, "filename")], factor)
-      
+    if(length(fileColumnName)>1) { # melt targets in case of multiple file name columns (as for ChIP-Seq) and create general targets format 
+      targetsdf <- targetsdf[, colnames(targetsdf)[colnames(targetsdf) %in% unique(c(colorByFactor, fileColumnName, sampleColumnName))]]
+      targetsdf <- reshape2::melt(targetsdf, measure.vars=fileColumnName, value.name = "file") # 'file' column created
+      for(i in 1:length(sampleColumnName)) {targetsdf$sample[targetsdf$variable == fileColumnName[i]] <- targetsdf[targetsdf$variable == fileColumnName[i], sampleColumnName[i]]} # 'sample' column created
+      targetsdf <- targetsdf[, !colnames(targetsdf) %in% sampleColumnName] # sampleColumnName not needed any more
+      for (i in colorByFactor[!colorByFactor %in% c("file", "sample")]) {targetsdf[, i] <- paste0(targetsdf[, i], " (", targetsdf$variable, ")")} # add fileColumnName to colorByFactor
+      targetsdf[,unique(c(colorByFactor, "file", "sample"))] <- lapply(targetsdf[,unique(c(colorByFactor, "file", "sample"))], factor)
     } else {
-      targetsdf$filename <- targetsdf[,sampleColumnName]
+      targetsdf$file <- targetsdf[,fileColumnName]
+      targetsdf$sample <- targetsdf[,sampleColumnName]
     }
     
-    targetsdf$filename <- gsub("\\..*$", "", targetsdf$filename ) # shorten filename suffix
-    index <- sapply(targetsdf$filename, grep, x.df$filename, ignore.case = T) # grep sample name in file names
+    targetsdf$file <- gsub("\\..*$", "", targetsdf$file ) # shorten file suffix
+    index <- sapply(targetsdf$file, grep, x.df$filename, ignore.case = T) # grep sample name in file names
     if(is.list(index)) {
-      #targetsdf <- targetsdf[sapply(index, length) ==1, ] # remove targetsdf entries not (uniquely) found in x.df
       targetsdf <- targetsdf[sapply(index, length)!=0,] # remove targetsdf entries not found in x.df
-      index <- sapply(targetsdf$filename, grep, x.df$filename, ignore.case = T) # redo grep sample name in file names
+      index <- sapply(targetsdf$file, grep, x.df$filename, ignore.case = T) # redo grep sample name in file names
     }
     
     if(!identical(sort(unname(unlist(index))), 1:nrow(x.df))) {
       stop("There seem to be ambiguous sample names in targets. Can't assign them uniquely to cutadapt logfile names")
     }
     
-    # x.df <- data.frame(x.df[unlist(index),], targetsdf, check.names =F) ##temp
     x.df <- data.frame(x.df[unlist(t(index)),], targetsdf, check.names =F)
     x.df <- x.df[order(rownames(x.df)),, drop=F]
     if("sample" %in% colnames(x.df) && !any(duplicated(x.df$sample))) { # use sample column as identifier if present and unique
       x.df$filename <- x.df$sample
       row.names(x.df) <- x.df$sample } 
-    
-    if(any(!colorByFactor %in% colnames(x.df))) {
-      if(all(!colorByFactor %in% colnames(x.df))) {
+
+    if(any(!colorByFactor %in% colnames(x.df))) { # any colorByFactor not available?
+      if(all(!colorByFactor %in% colnames(x.df))) { # none colorByFactor available?
         cat("\nNone of the column names given in colorByFactor is available. Perhaps sample names are not part of fastq file names? Using filename instead.")
         colorByFactor <- "filename"
       } else { # one plot each element of colorByFactor
@@ -1287,7 +1381,7 @@ ChIPhelper.cutadapt <- function(targetsdf=SHINYREPS_TARGET, colorByFactor="group
         colorByFactor <- colorByFactor[colorByFactor %in% colnames(x.df)]
       }
     }
-  } else {
+  } else { # if no colorByFactor defined
     x.df$filename <- row.names(x.df)
     colorByFactor <- "filename"
   }
