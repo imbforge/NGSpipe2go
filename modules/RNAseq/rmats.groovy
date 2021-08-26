@@ -2,7 +2,7 @@ rMATS = {
     doc title: "rMats Wrapper for alternative splicing events",
         desc:  "Differential expression analysis for alternative splicing events",
         constraints: "",
-        author: "Nastasja Kreim"
+        author: "Nastasja Kreim, Modified by Sivarajan Karunanithi"
 
     output.dir = rMATS_vars.outdir
     def RMATS_FLAGS =
@@ -42,14 +42,12 @@ rMATS = {
             sep=${rMATS_vars.sep};
             groups=(\${groups//\$sep/ });
             echo "groups 0 " \${groups[0]};
-            gcol=\$(head -n 1 $input | awk 'BEGIN{FS="\t"}{ for(fn=1; fn<=NF;fn++){ if(\$fn == "group") print fn;}}' ) &&
-            fcol=\$(head -n 1 $input | awk 'BEGIN{FS="\t"}{ for(fn=1; fn<=NF;fn++){ if(\$fn == "file") print fn;}}' ) &&
-            mkdir $output.dir/\${input_var%${rMATS_vars.suffix}}_rMATS &&
-            bamgroup0=`awk -v g="\${groups[0]}" -v M="$MAPPED" -v fcol=\$fcol -v gcol=\$gcol 'BEGIN{OFS=""} {if (\$gcol == g) print M "/" \$fcol}' $input | paste -sd, -` &&
+            mkdir -p $output.dir/\${input_var%${rMATS_vars.suffix}}_rMATS &&
+            bamgroup0=`awk -v g="\${groups[0]}" -v M="$MAPPED" 'BEGIN{OFS=""} {if (\$3 == g) print M "/" \$1 ".bam"}' $input | paste -sd, -` &&
             echo \$bamgroup0 > $output.dir/\${input_var%${rMATS_vars.suffix}}_rMATS/\${groups[0]}_samples.txt &&
-            bamgroup1=`awk -v g="\${groups[1]}" -v M="$MAPPED" -v fcol=\$fcol -v gcol=\$gcol 'BEGIN{ OFS=""} {if (\$gcol == g) print M "/" \$fcol}' $input | paste -sd, -` &&
+            bamgroup1=`awk -v g="\${groups[1]}" -v M="$MAPPED" 'BEGIN{ OFS=""} {if (\$3 == g) print M "/" \$1 ".bam"}' $input | paste -sd, -` &&
             echo \$bamgroup1 > $output.dir/\${input_var%${rMATS_vars.suffix}}_rMATS/\${groups[1]}_samples.txt &&
-            rmats.py --b1 $output.dir/\${input_var%${rMATS_vars.suffix}}_rMATS/\${groups[0]}_samples.txt --b2 $output.dir/\${input_var%${rMATS_vars.suffix}}_rMATS/\${groups[1]}_samples.txt $RMATS_FLAGS --od $output.dir/\${input_var%${rMATS_vars.suffix}}_rMATS &&
+            run_rmats --b1 $output.dir/\${input_var%${rMATS_vars.suffix}}_rMATS/\${groups[0]}_samples.txt --b2 $output.dir/\${input_var%${rMATS_vars.suffix}}_rMATS/\${groups[1]}_samples.txt $RMATS_FLAGS --od $output.dir/\${input_var%${rMATS_vars.suffix}}_rMATS --tmp $output.dir/\${input_var%${rMATS_vars.suffix}}_rMATS_tmp &&
             touch $output;
         ""","rMATS"
     }
