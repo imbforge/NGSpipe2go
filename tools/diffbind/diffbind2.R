@@ -276,8 +276,8 @@ dev.off()
        dev.off()
     }
 
-    tryCatch(dba.report(db, contrast=cont, bCalled=T, th=db$config$th, fold=FOLD), 
-                    error=function(e) NULL) # dba.report crashes if there is exactly 1 significant hit to report
+    tryCatch(dba.report(db, contrast=cont, bCalled=T, bUsePval=F, th=1, fold=0), # th=db$config$th, fold=FOLD # filtering is done later
+             error=function(e) NULL) # dba.report crashes if there is exactly 1 significant hit to report
     
   })
 
@@ -319,6 +319,8 @@ write.table(diffbindSettings, file=file.path(OUT, "diffbind_settings.txt"), row.
 write.table(infodb, file=file.path(OUT, "info_dba_object.txt"), row.names = F, quote = F, sep="\t")
 result <- lapply(result, as.data.frame)
 names(result) <- substr(gsub("(.+)=\\((.+)\\)", "\\2", conts[,1]), 1, 31)
+write.xlsx(result, file=paste0(OUT, "/diffbind_all_sites.xlsx"))
+result <- lapply(result, function(x) {x[x$FDR<=db$config$th & abs(x$Fold)>=FOLD, ]}) # filter result tables for significance
 write.xlsx(result, file=paste0(OUT, "/diffbind.xlsx"))
 saveRDS(result,  file=paste0(OUT, "/diffbind.rds"))
 dba.save(db, dir=OUT, file='diffbind', pre="")
