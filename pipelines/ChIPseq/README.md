@@ -29,7 +29,7 @@ All analysis steps are illustrated in the pipeline [flowchart](https://viewer.di
   - IPname: (shortened) IP sample name to be used in plots and tables.
   - INPUT: full input control sample name without any filetype suffixes like ".R1.fastq.gz" or ".bam" (sample name itself must not contain dots).
   - INPUTname: (shortened) input sample name to be used in plots and tables. 
-  - group: variable for sample grouping (e.g. by condition).
+  - group: variable for sample grouping (Condition).
   - Replicate: number of replicate (needed if differential binding analysis is selected).
   - PeakCaller: name of peak caller (in this pipeline it is macs; needed if differential binding analysis is selected).
   - optional further columns which may be used in multifactor model design: 'Tissue', 'Factor', 'Treatment'. 
@@ -61,8 +61,10 @@ All analysis steps are illustrated in the pipeline [flowchart](https://viewer.di
 
 If differential binding analysis is selected it is required additionally:
 
-- contrasts_diffbind.txt: indicate intended group comparisions for differential binding analysis, e.g. *KOvsWT=(KO-WT)* if targets.txt contains the groups *KO* and *WT*. Give 1 contrast per line.
-
+- contrasts_diffbind.txt: tab-separated txt-file giving intended group comparisons for differential binding analysis (1 contrast per line). 
+  - contrast.name: name of contrast to be used in report.
+  - contrast: definition of contrast using the format '(group1-group2)' with 'group1' and 'group2' being groups defined in the 'group' column of the targets.txt file (pairwise comparisons only).
+  - mmatrix: design formula to be applied for this contrast. If no further factors to be included use '~group'. A multifactor formula must be composed from the following allowable factors: Tissue, Factor, Treatment, Replicate, Caller and group (aka Condition). For diffbind2 multifactor design is not supported and this column is ignored (group column is used automatically).
 
 This pipeline supports 2 different DiffBind versions (v2 and v3) for differential binding analysis. Beginning with version 3, DiffBind has included new functionalities and modified default settings. The major change in version 3.0 is in how the data are modeled. In previous versions, a separate model was derived for each contrast, including data only for those samples present in the contrast. Model design options were implicit and limited to either a single factor, or a subset of two-factor "blocked" designs. Starting in version 3.0, the default mode is to include all the data in a single model, allowing for any allowable design formula and any set of allowable contrasts. There are also more normalization options and a new option to generate greylists as described in the [GreyListChIP](https://bioconductor.org/packages/release/bioc/vignettes/GreyListChIP/inst/doc/GreyList-demo.pdf) vignette (see diffbind3.header for default settings). The purpose of greylists is to identify regions with anomalous signal in the input or control sample, so that reads in those regions may be removed prior to analysis. 
 

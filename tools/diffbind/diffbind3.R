@@ -2,7 +2,7 @@
 ##
 ## What: diffbind3.R
 ## Who : Sergi Sayols, Frank Rühle
-## When: 10-05-2016, updated 03-03-2021
+## When: 10-05-2016, updated 08-27-2021
 ##
 ## Script to perform differential binding analysis between 2 conditions (pairwise) using DiffBind v3
 ##
@@ -50,7 +50,7 @@ FCONTRASTS <- parseArgs(args,"contrasts=","contrasts_diffbind.txt") # file descr
 CWD        <- parseArgs(args,"cwd=","./")     # current working directory
 BAMS       <- parseArgs(args,"bams=",paste0(CWD, "/mapped"))  # directory with the bam files
 PEAKS      <- parseArgs(args,"peaks=",paste0(CWD, "/results/macs2"))  # directory with the peak files
-OUT        <- parseArgs(args,"out=", paste0(CWD, "/results")) # directory where the output files will go
+OUT        <- parseArgs(args,"out=", paste0(CWD, "/results/diffbind")) # directory where the output files will go
 FRAGSIZE   <- parseArgs(args,"fragsize=", 200, "as.numeric")# fragment size
 BLACKLIST  <- parseArgs(args,"blacklist=", FALSE, "as.logical") # if true, blacklist will be applied
 GREYLIST   <- parseArgs(args,"greylist=", TRUE, "as.logical") # if true greylist will be generated for each Control
@@ -61,8 +61,6 @@ LIBRARYSIZE     <- parseArgs(args,"librarySize=", "default", "as.character")   #
 NORMALIZATION   <- parseArgs(args,"normalization=", "default", "as.character")   # use total number of reads in bam for normalization (FALSE=only peaks)
 SUBSTRACTCONTROL<- parseArgs(args,"substractControl=", "default", "as.character")  # substract input
 CONDITIONCOLUMN <- parseArgs(args,"conditionColumn=", "group", "as.character") # this targets column is interpreted as 'Condition' and is used as for defining the default design
-DESIGN     <- parseArgs(args,"design=", "true", "as.character") # (logical or character) design formula for multifactor modeling
-if(tolower(DESIGN) %in% c("true", "false")) {DESIGN <- as.logical(DESIGN)}
 FDR_TRESHOLD    <- parseArgs(args,"fdr_threshold=", 0.05, "as.numeric") # summits for re-centering consensus peaks
 FOLD       <- parseArgs(args,"fold=", 0, "as.numeric") # summits for re-centering consensus peaks
 ANNOTATE   <- parseArgs(args,"annotate=", TRUE, "as.logical") # annotate after DB analysis?
@@ -106,7 +104,8 @@ if(currentDiffbindVersion < 3) {
 ##
 
 # load targets and make analysis
-conts   <- read.delim(FCONTRASTS, head=F, comment.char="#")
+conts   <- read.delim(FCONTRASTS, head=T, stringsAsFactors = F, comment.char="#")
+if(length(unique(conts$mmatrix))!=1) {stop("\nCan't use multiple design matrices in a single db object! Either unify the mmatrix entries in the contrast file or run diffbind in split mode.\n")}
 targets_raw <- read.delim(FTARGETS, head=T, colClasses="character", comment.char="#")
 
 # determine file suffixes for targets 
@@ -212,18 +211,23 @@ dev.off()
   
 
   # apply the contrasts
-   for (cont in conts[, 1]) {
-    # parse formula in cont
-    cont.form <- gsub("(.+)=(.+)", "\\2", cont)
-    factors   <- unlist(strsplit(cont.form, "\\W"))
+   for (i in 1:nrow(conts)) {
+   # parse formula in cont
+    cont.name <- conts[i,1]
+    cont.form <- conts[i,2]
+    mmatrix   <- conts[i,3]
+    mmatrix <- gsub(CONDITIONCOLUMN, "Condition", mmatrix)
+    factors   <- gsub("(^\\s+|\\s+$)", "", unlist(strsplit(cont.form,"\\W")))
     factors   <- factors[factors != ""]
     contrast <- c("Condition", factors)
-    db <- dba.contrast(db, design=DESIGN, contrast=contrast)
+    if(length(factors) != 2) {
+      warning(paste(conts[i,],"cannot deal with designs other than pairwise comparisons!"))
+      return(NA)
+    }
+    db <- dba.contrast(db, design=mmatrix, contrast=contrast)
    }
 
 
-  
-  
 # run the diffbind analysis (DESeq2) for all contrasts
   db <- dba.analyze(db) 
 
@@ -274,10 +278,8 @@ dev.off()
 
 # prepare results and plots for each contrast
   result <- lapply(1:nrow(conts), function(cont) {
-    cont.name <- substr(gsub("(.+)=\\((.+)\\)", "\\2", conts[cont,1]), 1, 31)
-    #cont.name <- gsub("(.+)=(.+)", "\\1", conts[cont,1])
-    #cat(cont.name, fill=T)
-    
+    cont.name <- conts[cont,1]
+
     png(paste0(OUT, "/", cont.name, "_ma_plot.png"), width = 150, height = 150, units = "mm", res=300)
       try(dba.plotMA(db, contrast=cont, fold=FOLD))
     dev.off()
@@ -311,7 +313,7 @@ dev.off()
     }
 
     tryCatch(dba.report(db, contrast=cont, bCalled=T, bUsePval=F, th=1, fold=0), # th=db$config$th, fold=FOLD # filtering is done later
-             error=function(e) NULL) # dba.report crashes if there is exactly 1 significant hit to report
+                    error=function(e) NULL) # dba.report crashes if there is exactly 1 significant hit to report
     
   })
 
@@ -364,18 +366,17 @@ if(ANNOTATE) {
                             c("Library size", LIBRARYSIZE, explLibrarySize),
                             c("Normalization method", NORMALIZATION, explNormalization),
                             c("Subtract control read counts", SUBSTRACTCONTROL, if(SUBSTRACTCONTROL=="default") {paste("set to", SUBSTRACTCONTROL_FINAL, "because greylist is", if(SUBSTRACTCONTROL_FINAL){"not"} else {""}, "available.")}),
-                            c("Design", DESIGN, if(isTRUE(DESIGN)){paste0("design ", db$design, " is generated for targets factor '", CONDITIONCOLUMN, "'.")} else {""}),
+                            c("Design", "contrast_diffbind.txt", paste(db$design, "(with", CONDITIONCOLUMN, "as Condition column)")),
                             c("FDR threshold", FDR_TRESHOLD, "significance threshold for differential binding analysis."),
                             c("Fold threshold", FOLD, "log Fold threshold for differential binding analysis.")
   )
   
 
-    
 writeLines(capture.output(sessionInfo()),paste(OUT, "/diffbind_session_info.txt", sep=""))
 write.table(diffbindSettings, file=file.path(OUT, "diffbind_settings.txt"), row.names = F, quote = F, sep="\t")
 write.table(infodb, file=file.path(OUT, "info_dba_object.txt"), row.names = F, quote = F, sep="\t")
 result <- lapply(result, as.data.frame)
-names(result) <- substr(gsub("(.+)=\\((.+)\\)", "\\2", conts[,1]), 1, 31)
+names(result) <- conts$contrast.name
 write.xlsx(result, file=paste0(OUT, "/diffbind_all_sites.xlsx"))
 result <- lapply(result, function(x) {x[x$FDR<=db$config$th & abs(x$Fold)>=FOLD, ]}) # filter result tables for significance
 write.xlsx(result, file=paste0(OUT, "/diffbind.xlsx"))

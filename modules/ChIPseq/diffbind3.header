@@ -16,7 +16,6 @@ diffbind3_vars=[
     normalization    : ESSENTIAL_DIFFBIND_NORM,   // method to use to calculate normalization factors
     substractControl : "default",                        // logical indicating whether Control read counts are subtracted for each site in each sample before performing analysis. If "default", it will be set to TRUE unless a greylist is applied successfully.
     conditionColumn  : "group",   // this targets column is interpreted as 'Condition' and is used as for defining the default design.
-    design           : true,        // design formula for multifactor modeling, e.g. "~Tissue + Condition". If "true", the default design is generated based on the factor given in 'conditionColumn'. If a design formula is specified, it must be composed from the following factors (which must be defined in targets; note that by default the targets column 'groups' is assigned as 'Condition'): 'Condition', 'Tissue', 'Factor', 'Treatment', 'Replicate'. 
     fdr_threshold    : 0.05,                         // FDR significance threshold for sites to be included in the DiffBind result
     fold             : 0,                           // only sites with an absolute log Fold value greater than equal to this will be included in the DiffBind report.
     annotate         : true,                        // annotate peaks after differential bindign analysis?
