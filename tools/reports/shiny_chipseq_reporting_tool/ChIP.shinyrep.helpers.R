@@ -524,6 +524,68 @@ ChIPhelper.Bowtie2 <- function() {
 }
 
 
+#' ChIPhelper.ngsReports.Fastqc: joint FastQC report of all samples in the experiment and plot as heatmaps
+#' 
+#' @param metrics character vector with FastQC plot types to be included. Any combination of "Summary", "BaseQuals", "SeqQuals", "SeqContent", "GcContent", "DupLevels", "Overrep", "AdapterContent".
+#'
+#' @return list of ggplots made from FastQC data
+#' 
+ChIPhelper.ngsReports.Fastqc <- function(subdir="", 
+                                         metrics=c("BaseQuals", "SeqContent", "GcContent", "DupLevels"), 
+                                         ...) {
+  
+  # output folder
+  if(!file.exists(file.path(SHINYREPS_FASTQC, subdir))) {
+    return("Fastqc statistics not available")
+  }
+  
+  qclist <- list() # initialize return object
+  
+  # Loading FastQC Data 
+  f <- list.files(file.path(SHINYREPS_FASTQC, subdir), pattern="fastqc.zip$", full.names=TRUE)
+  
+  # select subset of samples for fastqc figures if desired
+  f <- selectSampleSubset(f, ...)
+  
+  x <- ngsReports::FastqcDataList(f)
+  lbls <- gsub(paste0("(^", SHINYREPS_PREFIX, "|.fastqc.zip$)"), "", names(x))
+  names(lbls) <- gsub(".fastqc.zip", ".fastq.gz", names(x))
+  
+  if("Summary" %in% metrics) {
+    qclist[["Summary"]] <- ngsReports::plotSummary(x, labels=lbls)
+  }
+  if("BaseQuals" %in% metrics) {
+    qclist[["BaseQuals"]] <- ngsReports::plotBaseQuals(x, labels=lbls)
+  }
+  if("SeqQuals" %in% metrics) {
+    qclist[["SeqQuals"]] <- ngsReports::plotSeqQuals(x, labels=lbls)
+  }
+  if("SeqContent" %in% metrics) {
+    qclist[["SeqContent"]] <- ngsReports::plotSeqContent(x, labels=lbls) +
+      theme(legend.position="right") +
+      guides(fill=FALSE, color="legend") +
+      geom_point(mapping=aes(x=Inf, y=Inf, color=base),
+                 data=data.frame(base=c("T", "A", "C", "G")),
+                 inherit.aes=FALSE, show.legend=TRUE) +
+      scale_color_manual("", values=c("red", "green", "blue", "black"))
+  }
+  if("GcContent" %in% metrics) {
+    qclist[["GcContent"]] <- ngsReports::plotGcContent(x, labels=lbls, theoreticalGC=FALSE)
+  }
+  if("DupLevels" %in% metrics) {
+    qclist[["DupLevels"]] <- ngsReports::plotDupLevels(x, labels=lbls)
+  }
+  if("Overrep" %in% metrics) {
+    qclist[["Overrep"]] <- ngsReports::plotOverrep(x, labels=lbls)
+  }
+  if("AdapterContent" %in% metrics) {
+    qclist[["AdapterContent"]] <- ngsReports::plotAdapterContent(x, labels=lbls)
+  }
+  
+  return(qclist)
+}
+
+
 ##
 ## ChIPhelper.Fastqc: go through Fastqc output dir and create a md table with the duplication & read quals & sequence bias plots
 ##
@@ -596,38 +658,210 @@ ChIPhelper.Fastqc <- function(web=FALSE, subdir="",
 }
 
 
-##
-## ChIPhelper.ngsReports.Fastqc: joint FastQC report of all samples in the experiment
-##
-ChIPhelper.ngsReports.Fastqc <- function(subdir="", ...) {
+#' ChIPhelper.Fastqc.custom: prepare customized Fastqc summary plots
+#' 
+#' @param summarizedPlots logical, if TRUE, data from all samples is summarized in a single plot.
+#' @param subdir character with sub-directory to append to the target directory.
+#' @param metrics character vector with FastQC plot types to be included. Any combination of "Summary", "BaseQuals", "SeqQuals", "SeqContent", "GcContent", "DupLevels", "Overrep", "AdapterContent".
+#' @param sampleColumnName character vector with column names of targets file indicating sample names.
+#' @param fileColumnName character vector with column names of targets file indicating sample file names (must have order corresponding to sampleColumnName).
+#'
+#' @return list of ggplots made from FastQC data
+#' 
+ChIPhelper.Fastqc.custom <- function(web=FALSE, summarizedPlots=TRUE, subdir="", 
+                                     metrics=c("BaseQuals", "SeqContent", "GcContent", "DupLevels"),
+                                     sampleColumnName =c("IPname", "INPUTname"), 
+                                     fileColumnName =c("IP", "INPUT")) {
   
-  # output folder
-  if(!file.exists(file.path(SHINYREPS_FASTQC, subdir))) {
+  # logs folder
+  if(!file.exists(SHINYREPS_FASTQC)) {
     return("Fastqc statistics not available")
   }
   
-  # Loading FastQC Data 
-  f <- list.files(file.path(SHINYREPS_FASTQC, subdir), pattern="fastqc.zip$", full.names=TRUE)
-
-  # select subset of samples for fastqc figures if desired
-  f <- selectSampleSubset(f, ...)
+  # construct the folder name, which is different for web and noweb
+  QC <- if(web) paste0("/fastqc/", subdir) else file.path(SHINYREPS_FASTQC, subdir)
   
-  x <- ngsReports::FastqcDataList(f)
-  lbls <- gsub(paste0("(^", SHINYREPS_PREFIX, "|.fastqc.zip$)"), "", names(x))
-  names(lbls) <- gsub(".fastqc.zip", ".fastq.gz", names(x))
+  # read fastqc results in the appropriate format
+  f <- list.files(QC, pattern="\\.zip$",full.names=T)
+  fastqc.stats <- ngsReports::FastqcDataList(f)
   
-  print(ngsReports::plotDupLevels(x, labels=lbls))
-  print(ngsReports::plotBaseQuals(x, labels=lbls))
-  print(ngsReports::plotSeqContent(x, labels=lbls) +
-          theme(legend.position="right") +
-          guides(fill=FALSE, color="legend") +
-          geom_point(mapping=aes(x=Inf, y=Inf, color=base),
-                     data=data.frame(base=c("T", "A", "C", "G")),
-                     inherit.aes=FALSE, show.legend=TRUE) +
-          scale_color_manual("", values=c("red", "green", "blue", "black"))
-  )
-  print(ngsReports::plotGcContent(x, labels=lbls, theoreticalGC=FALSE))
+  qclist <- list() # initialize return object
+  qclist[["no.of.samples"]] <- length(f)
   
+  # create proper name vectoir as labels
+  lbls <- gsub("_fastqc.zip$", "", names(fastqc.stats))
+  names(lbls) <- gsub("_fastqc.zip", ".fastq.gz", names(fastqc.stats))
+  
+  if(file.exists(SHINYREPS_TARGET)){
+    
+    # get target names
+    targets <- read.delim(SHINYREPS_TARGET, stringsAsFactors = F)
+    
+    if(length(fileColumnName)>1) { # melt targets in case of multiple file name columns (as for ChIP-Seq) and create general targets format 
+      targets <- targets[, colnames(targets)[colnames(targets) %in% unique(c(fileColumnName, sampleColumnName))]]
+      targets <- reshape2::melt(targets, measure.vars=fileColumnName, value.name = "file") # 'file' column created
+      for(i in 1:length(sampleColumnName)) {targets$sample[targets$variable == fileColumnName[i]] <- targets[targets$variable == fileColumnName[i], sampleColumnName[i]]} # 'sample' column created
+      targets <- targets[, !colnames(targets) %in% sampleColumnName] # sampleColumnName not needed any more
+    } else {
+      targets$file <- targets[,fileColumnName]
+      targets$sample <- targets[,sampleColumnName]
+    }
+    
+    targets$sample_ext <- gsub("\\..*$", "",targets$file )
+    
+    # replace files names with nicer sample names given in targets file 
+    # if sample is missing in targets file, use reduced file name
+    lbls <- sapply(lbls, function(i) { ifelse(sum(sapply(targets$sample_ext, grepl, i))==1,
+                                              targets[sapply(targets$sample_ext, grepl, i),"sample"],
+                                              gsub(paste0("^",SHINYREPS_PREFIX),"",i))})
+    
+    if(SHINYREPS_PAIRED == "yes") {
+      x <- names(lbls)
+      lbls <- paste0(lbls, ifelse(grepl("R1", names(lbls)), ".R1", ".R2"))
+      names(lbls) <- x
+    }
+  } else {
+    
+    if(!is.na(SHINYREPS_PREFIX)) {
+      lbls <- gsub(paste0("^",SHINYREPS_PREFIX), "", lbls)
+    }
+  }
+  
+  # change names also in fastqc.stats (needed for seq. quality plot)
+  names(fastqc.stats) <- lbls
+  
+  # summary plot (independent from summarizedPlots)
+  if("Summary" %in% metrics) {
+    qclist[["Summary"]] <- ngsReports::plotSummary(fastqc.stats, labels=lbls)
+  }
+  
+  
+  if (summarizedPlots == TRUE) {
+    
+    # prepare for plotting  
+    df <- reshape2::melt(lapply(fastqc.stats , function(x) x@Per_base_sequence_quality[, c("Base","Mean")]))
+    names(df)[names(df)=="L1"] <- "samplename"
+    
+    # color code the samples as done by fastqc:
+    # A warning will be issued if the lower quartile for any base is less than 10, or if the median for any base is less than 25.
+    # A failure will be raised if the lower quartile for any base is less than 5 or if the median for any base is less than 20. 
+    # (https://www.bioinformatics.babraham.ac.uk/projects/fastqc/Help/3%20Analysis%20Modules/2%20Per%20Base%20Sequence%20Quality.html)
+    cols <- c(pass    = "#5cb85c",
+              warning = "#f0ad4e",
+              fail    = "#d9534f")
+    colorcode <- do.call(rbind,lapply(names(fastqc.stats),
+                                      function(i) {
+                                        min.l.quart <- min(fastqc.stats[[i]]@Per_base_sequence_quality$Lower_Quartile)
+                                        min.med <- min(fastqc.stats[[i]]@Per_base_sequence_quality$Median)
+                                        col.sample <- ifelse(min.l.quart>=10 & min.med>=25, 
+                                                             cols["pass"],
+                                                             ifelse(min.l.quart>=5 & min.med>=20,
+                                                                    cols["warning"],
+                                                                    cols["fail"]))
+                                        return(data.frame(sample=i,
+                                                          min.lower.quart=min.l.quart,
+                                                          min.median=min.med,
+                                                          col=col.sample))
+                                      }
+    ))
+    
+    ## only label "warning"s and "fail"ures 
+    to.be.labelled <- colorcode[colorcode$col == cols["warning"] | colorcode$col == cols["fail"],]
+    
+    ## in case all samples "pass"ed, label "all" in legend
+    if (nrow(to.be.labelled) == 0) {
+      to.be.labelled <- data.frame(sample="overlay of all samples", col=cols["pass"], row.names=NULL)
+    } else {
+      to.be.labelled <- rbind(to.be.labelled,c("all other samples","","",col=cols["pass"]))
+    }
+    
+    # fix position on x-axis since there can be intervals of positions summarized in fastqc
+    df$position <- factor(df$Base, levels=unique(df$Base))
+    xlen <- length(unique(df$Base))
+    
+    if("BaseQuals" %in% metrics) {
+      qclist[["BaseQuals"]] <- ggplot(df, aes(x=as.numeric(position), y=value)) +
+        labs(x = "position in read (bp)",
+             y = "mean quality score (Phred)") +
+        geom_rect(aes(xmin = -Inf, xmax = Inf, ymin = -Inf, ymax = 20), fill = "#edc0c4", alpha = 0.3, color=NA) +
+        geom_rect(aes(xmin = -Inf, xmax = Inf, ymin = 20, ymax = 28), fill = "#f0e2cc", alpha = 0.3, color=NA) +
+        geom_rect(aes(xmin = -Inf, xmax = Inf, ymin = 28, ymax = Inf), fill = "#ceebd1", alpha = 0.3, color=NA) +
+        geom_line(aes(color=samplename)) +
+        scale_color_manual(values = as.character(colorcode$col),
+                           breaks = colorcode$sample,
+                           labels = colorcode$sample) +
+        geom_point(data=to.be.labelled,
+                   mapping=aes(x=NaN, y=NaN, fill=sample),
+                   inherit.aes=FALSE, show.legend=TRUE, size = 1.5, shape = 21, color = "white") +
+        scale_fill_manual(values = as.character(to.be.labelled$col),
+                          breaks = to.be.labelled$sample,
+                          labels = to.be.labelled$sample) +
+        geom_hline(yintercept = c(0,10,20,30,40),color="white",alpha=0.3) +
+        geom_vline(xintercept = seq(0,xlen,10),color="white",alpha=0.3) +
+        coord_cartesian(xlim = c(1,xlen), ylim = c(0,42)) +
+        guides(color=FALSE,
+               fill=guide_legend(title="",ncol=3)) +
+        theme(axis.text.x = element_text(size=6,angle=90,hjust=0.5,vjust=0.5),
+              axis.text.y = element_text(size=8),
+              axis.title  = element_text(size=10),
+              plot.title  = element_text(size=12),
+              legend.text = element_text(size=7),
+              legend.position = "top") +
+        scale_x_continuous(breaks=unique(as.numeric(df$position)),
+                           labels=unique(df$Base))
+    }
+    ## use rev(lbls) to plot in reverse order
+    if("SeqContent" %in% metrics) {
+      qclist[["SeqContent"]] <- ngsReports::plotSeqContent(fastqc.stats, labels=rev(lbls)) +
+        labs(y = "") +
+        theme(legend.position="right") +
+        guides(fill=FALSE, color="legend") +
+        geom_point(mapping=aes(x=Inf, y=Inf, color=base),
+                   data=data.frame(base=c("T", "A", "C", "G")),
+                   inherit.aes=FALSE, show.legend=TRUE) +
+        scale_color_manual("", values=c("red", "green", "blue", "black")) 
+    }
+    
+  } else {
+    
+    if("BaseQuals" %in% metrics) {
+      qclist[["BaseQuals"]] <- ngsReports::plotBaseQuals(fastqc.stats, labels=lbls, plotType="boxplot") +
+        theme(axis.text.x = element_text(size=5))
+    }
+    if("SeqContent" %in% metrics) {
+      qclist[["SeqContent"]] <- ngsReports::plotSeqContent(fastqc.stats, labels=lbls, plotType="line") +
+        theme(axis.text.x = element_text(size=5), legend.position = "top")
+    }
+  }
+  
+  # GC content line plot 
+  # in case you want to add a theoretical distribution to the plot, use function plotGcContent with 
+  # the following settings:
+  # ngsReports::plotGcContent(fastqc.stats, plotType="line", gcType="Genome", labels=lbls, theoreticalGC=TRUE, species=SPECIES)
+  # the default value for SPECIES is "Hsapiens", thus, if you don't specify it, human will be used as a default
+  if("GcContent" %in% metrics) {
+    p.gc <- ngsReports::plotGcContent(fastqc.stats, usePlotly=summarizedPlots, plotType="line", gcType="Genome", labels=lbls, theoreticalGC=FALSE) 
+    if(!summarizedPlots) {
+      p.gc <- p.gc + guides(color=guide_legend(title="",ncol=4)) + 
+        theme(legend.position = "top", legend.text = element_text(size=8)) 
+    }
+    qclist[["GcContent"]] <- p.gc
+  }
+  
+  if("SeqQuals" %in% metrics) {
+    qclist[["SeqQuals"]] <- ngsReports::plotSeqQuals(fastqc.stats, usePlotly=summarizedPlots, plotType="line", labels=lbls)
+  }
+  if("DupLevels" %in% metrics) {
+    qclist[["DupLevels"]] <- ngsReports::plotDupLevels(fastqc.stats, usePlotly=summarizedPlots, plotType="line", labels=lbls)
+  }
+  if("Overrep" %in% metrics) {
+    qclist[["Overrep"]] <- ngsReports::plotOverrep(fastqc.stats, usePlotly=summarizedPlots, plotType="line", labels=lbls)
+  }
+  if("AdapterContent" %in% metrics) {
+    qclist[["AdapterContent"]] <- ngsReports::plotAdapterContent(fastqc.stats, usePlotly=summarizedPlots, plotType="line", labels=lbls)
+  }
+  
+  return(qclist)
 }
 
 

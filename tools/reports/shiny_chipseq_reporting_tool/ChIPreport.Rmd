@@ -27,6 +27,7 @@ runCutadapt <- SHINYREPS_RUN_CUTADAPT=="true"
 runPeakAnno <- SHINYREPS_RUN_PEAK_ANNOTATION=="true"
 runDiffbind <- SHINYREPS_RUN_DIFFBIND=="true"
 runEnrich <- SHINYREPS_RUN_ENRICHMENT=="true"
+SHINYREPS_FASTQC_SUMMARIZED <- as.logical(SHINYREPS_FASTQC_SUMMARIZED)
 
 targets <<- ChIPhelper.init("readTargets")
 
@@ -45,19 +46,95 @@ DT::datatable(targets, caption="targets file (sample sheet) used for analysis")
 
 ## Raw reads QC ##
 
-The raw sequence reads of all samples are analysed with the popular FastQC tool (http://www.bioinformatics.babraham.ac.uk/projects/fastqc/).
+The raw sequence reads of all samples are analyzed with the popular FastQC tool (http://www.bioinformatics.babraham.ac.uk/projects/fastqc/).
 
-1. The "Duplication levels" heatmap plot shows the proportion of the library which is made up of sequences in each of the different duplication level bins. It is useful for the assessment of the NGS library complexity and the presence or absence of PCR over-amplification during library prep. There are two lines on the plot. The blue line takes the full sequence set and shows how its duplication levels are distributed. In the red plot the sequences are de-duplicated and the proportions shown are the proportions of the deduplicated set which come from different duplication levels in the original data. In a properly diverse library most sequences should fall into the far left of the plot in both the red and blue lines. A general level of enrichment, indicating broad oversequencing in the library will tend to flatten the lines, lowering the low end and generally raising other categories. The presence of dominant sequences (e.g. adapter dimers) will tend to produce spikes towards the right of the plot. These high duplication peaks will most often appear in the red trace as they make up a high proportion of the original library, but usually disappear in the blue trace as they make up an insignificant proportion of the deduplicated set. If peaks persist in the blue trace then this suggests that there are a large number of different highly duplicated sequences which might indicate either a contaminant set or a severe PCR duplication. See the related PBC metrics below.
-
-2. The "Read qualities" heatmap plot summarizes the mean quality score at each position.
-The color on the graph shows the Phred quality scores, which are logarithmically related to the base-calling error probabilities. The higher the score the better the base call. The background of the graph divides the y axis into very good quality calls (green), calls of reasonable quality (yellow), and calls of poor quality (red). Typically, the majority of calls on all base positions fall into the green area.
-
-3. The "Sequence bias" plots show the proportion of each base (% G, A, T and C) at each position. In a typical ChIP-seq library there would be little difference between the positions of a sequence run, so the lines in this plot should run parallel with each other, G being similar to C and A to T. 
-
-4. The "GC content" heatmap shows the GC% distribution of all reads and all samples.
 
 ```{r FastQC_paragraph, echo=F,results='asis',error=F,warning=F,message=F,fig.align='center'}
-ChIPhelper.ngsReports.Fastqc()
+# Explanatory text to be displayed alongside the selected FastQC plots.
+qctext <- c(
+  Summary="\n\n####Summary\n\n Inspecting the PASS/WARN/FAIL Status of each FastQC module.\n\n",
+  BaseQuals="\n\n####Per base sequence quality\n\n The 'Read qualities' plot summarizes the mean quality score at each position. The color on the graph shows the Phred quality scores, which are logarithmically related to the base-calling error probabilities. The higher the score the better the base call. The background of the graph divides the y axis into very good quality calls (green), calls of reasonable quality (yellow), and calls of poor quality (red). Typically, the majority of calls on all base positions fall into the green area. Due to binning of quality score in recent sequencing technologies (e.g. Illumina NextSeq), sequencing qualities are the same on many position and, thus, also samples appear to have very similar or almost identical sequencing qualities.\n\n",
+  SeqQuals="\n\n####Per sequence quality scores\n\n Mean Sequence Quality Per Read report allows you to see if a subset of your sequences have universally low quality values. It is often the case that a subset of sequences will have universally poor quality, often because they are poorly imaged (on the edge of the field of view etc), however these should represent only a small percentage of the total sequences.\n\n",
+  SeqContent="\n\n####Per base sequence content\n\n The 'Sequence bias' plots show the proportion of each base (% G, A, T and C) at each position. In a typical ChIP-seq library there would be little difference between the positions of a sequence run, so the lines in this plot should run parallel with each other, G being similar to C and A to T.\n\n",
+  GcContent="\n\n####Per sequence GC content\n\n The 'GC content' plot shows the GC% distribution of all reads and all samples. Typically, the lines should tightly overlap and look essentially the same in all samples. An unusually shaped distribution could indicate a contaminated library.\n\n",
+  DupLevels="\n\n####Sequence Duplication Levels\n\n The 'Duplication levels' plot shows the proportion of the library which is made up of sequences in each of the different duplication level bins. It is useful for the assessment of the NGS library complexity and the presence or absence of PCR over-amplification during library prep. There are two lines on the plot. The blue line takes the full sequence set and shows how its duplication levels are distributed. In the red plot the sequences are de-duplicated and the proportions shown are the proportions of the deduplicated set which come from different duplication levels in the original data. In a properly diverse library most sequences should fall into the far left of the plot in both the red and blue lines. A general level of enrichment, indicating broad oversequencing in the library will tend to flatten the lines, lowering the low end and generally raising other categories. The presence of dominant sequences (e.g. adapter dimers) will tend to produce spikes towards the right of the plot. These high duplication peaks will most often appear in the red trace as they make up a high proportion of the original library, but usually disappear in the blue trace as they make up an insignificant proportion of the deduplicated set. If peaks persist in the blue trace then this suggests that there are a large number of different highly duplicated sequences which might indicate either a contaminant set or a severe PCR duplication. See the related PBC metrics below.\n\n", 
+  Overrep="\n\n####Overrepresented sequences\n\n Overrepresented Sequences lists all of the sequence which make up more than 0.1% of the total. A normal high-throughput library will contain a diverse set of sequences, with no individual sequence making up a tiny fraction of the whole. Finding that a single sequence is very overrepresented in the set either means that it is highly biologically significant, or indicates that the library is contaminated, or not as diverse as you expected.\n\n",
+  AdapterContent="\n\n####Adapter Content\n\n Adapter Content does a generic analysis of all of the Kmers in your library to find those which do not have even coverage through the length of your reads. This can find a number of different sources of bias in the library which can include the presence of read-through adapter sequences building up on the end of your sequences.\n\n"
+)
+
+## If you prefer heatmaps instead of the line plots given in the chunks below, un-comment the following helper function
+# qclist <- ChIPhelper.ngsReports.Fastqc(metrics=c("BaseQuals", "SeqContent", "GcContent", "DupLevels"))
+# for (qc in names(qclist)) {
+#   cat(qctext[qc])
+#   print(qclist[[qc]])
+# }
+
+```
+
+
+
+```{r FastQC_qual_summarized, echo=F,results='asis',error=F,warning=F,message=F,fig.align='center'}
+## To display individual FastQC plots define the 'metrics' parameter with any combination of the following plot names:
+## "Summary", "BaseQuals", "SeqQuals", "SeqContent", "GcContent", "DupLevels", "Overrep", "AdapterContent"
+## Remark: Due to different figure size requirements, some of the FastQC plots are entered in separate code chunks.
+fastqc_summary_plot <- ChIPhelper.Fastqc.custom(web=F,summarizedPlots=SHINYREPS_FASTQC_SUMMARIZED,
+                                                metrics=c("BaseQuals", "SeqContent", "GcContent", "DupLevels"))
+
+if("Summary" %in% names(fastqc_summary_plot)) {
+  cat(qctext["Summary"])
+  print(fastqc_summary_plot[["Summary"]])
+}
+
+if (SHINYREPS_FASTQC_SUMMARIZED && "BaseQuals" %in% names(fastqc_summary_plot)) {
+    cat(qctext["BaseQuals"])
+    plot(fastqc_summary_plot[["BaseQuals"]])
+}
+```
+
+```{r FastQC_qual, echo=F,results='asis',error=F,warning=F,message=F,fig.align='center',fig.height=round((3*fastqc_summary_plot$no.of.samples)/4)+1}
+if (SHINYREPS_FASTQC_SUMMARIZED == FALSE && "BaseQuals" %in% names(fastqc_summary_plot)) {
+    cat(qctext["BaseQuals"])
+    plot(fastqc_summary_plot[["BaseQuals"]])
+}
+```
+
+```{r FastQC_nuc_content_summarized, echo=F,results='asis',error=F,warning=F,message=F,fig.align='center'}
+if (SHINYREPS_FASTQC_SUMMARIZED && "SeqContent" %in% names(fastqc_summary_plot)) {
+    cat(qctext["SeqContent"])
+    plot(fastqc_summary_plot[["SeqContent"]])
+} 
+```
+
+```{r FastQC_nuc_content, echo=F,results='asis',error=F,warning=F,message=F,fig.align='center',fig.height=round((3*fastqc_summary_plot$no.of.samples)/4)+1}
+if (SHINYREPS_FASTQC_SUMMARIZED == FALSE && "SeqContent" %in% names(fastqc_summary_plot)) {
+    cat(qctext["SeqContent"])
+    plot(fastqc_summary_plot[["SeqContent"]])
+} 
+```
+
+```{r FastQC_further_plots, echo=F,results='asis',error=F,warning=F,message=F,fig.align='center'}
+## Remark: knitr doesn't like plotly plots in loop structures
+
+if("SeqQuals" %in% names(fastqc_summary_plot)) {
+  cat(qctext["SeqQuals"])
+  fastqc_summary_plot[["SeqQuals"]]
+}
+if("GcContent" %in% names(fastqc_summary_plot)) {
+  cat(qctext["GcContent"])
+  fastqc_summary_plot[["GcContent"]]
+}
+if("DupLevels" %in% names(fastqc_summary_plot)) {
+  cat(qctext["DupLevels"])
+  fastqc_summary_plot[["DupLevels"]]
+}
+if("Overrep" %in% names(fastqc_summary_plot)) {
+  cat(qctext["Overrep"])
+  fastqc_summary_plot[["Overrep"]]
+}
+if("AdapterContent" %in% names(fastqc_summary_plot)) {
+  cat(qctext["AdapterContent"])
+  fastqc_summary_plot[["AdapterContent"]]
+}
 ```
 
 
@@ -77,10 +154,74 @@ The following plot shows the amount of reads trimmed for the selected adapter se
 ChIPhelper.cutadapt(targetsdf=targets, colorByFactor="group")
 ```
 
-```{r FastQC_paragraph2, echo=F,results='asis',error=F,warning=F,message=F,fig.align='center', eval=runCutadapt}
+
+
+```{r FastQC_qual_summarized_cutadapt, echo=F,results='asis',error=F,warning=F,message=F,fig.align='center', eval=runCutadapt}
+## To display individual FastQC plots define the 'metrics' parameter with any combination of the following plot names:
+## "Summary", "BaseQuals", "SeqQuals", "SeqContent", "GcContent", "DupLevels", "Overrep", "AdapterContent"
+
 cat("### FastQC after adapter trimming\n")
-ChIPhelper.ngsReports.Fastqc(subdir="trimmed")
+
+fastqc_summary_plot_cutadapt <- ChIPhelper.Fastqc.custom(web=F,subdir="trimmed", summarizedPlots=SHINYREPS_FASTQC_SUMMARIZED,
+                                                metrics=c("BaseQuals", "SeqContent", "GcContent"))
+
+if("Summary" %in% names(fastqc_summary_plot_cutadapt)) {
+  cat(qctext["Summary"])
+  print(fastqc_summary_plot_cutadapt[["Summary"]])
+}
+
+if (SHINYREPS_FASTQC_SUMMARIZED && "BaseQuals" %in% names(fastqc_summary_plot_cutadapt)) {
+    cat(qctext["BaseQuals"])
+    plot(fastqc_summary_plot_cutadapt[["BaseQuals"]])
+}
 ```
+
+```{r FastQC_qual_cutadapt, echo=F,results='asis',error=F,warning=F,message=F,fig.align='center',fig.height=round((3*fastqc_summary_plot$no.of.samples)/4)+1, eval=runCutadapt}
+if (SHINYREPS_FASTQC_SUMMARIZED == FALSE && "BaseQuals" %in% names(fastqc_summary_plot_cutadapt)) {
+    cat(qctext["BaseQuals"])
+    plot(fastqc_summary_plot_cutadapt[["BaseQuals"]])
+}
+```
+
+```{r FastQC_nuc_content_summarized_cutadapt, echo=F,results='asis',error=F,warning=F,message=F,fig.align='center', eval=runCutadapt}
+if (SHINYREPS_FASTQC_SUMMARIZED && "SeqContent" %in% names(fastqc_summary_plot_cutadapt)) {
+    cat(qctext["SeqContent"])
+    plot(fastqc_summary_plot_cutadapt[["SeqContent"]])
+} 
+```
+
+```{r FastQC_nuc_content_cutadapt, echo=F,results='asis',error=F,warning=F,message=F,fig.align='center',fig.height=round((3*fastqc_summary_plot$no.of.samples)/4)+1, eval=runCutadapt}
+if (SHINYREPS_FASTQC_SUMMARIZED == FALSE && "SeqContent" %in% names(fastqc_summary_plot_cutadapt)) {
+    cat(qctext["SeqContent"])
+    plot(fastqc_summary_plot_cutadapt[["SeqContent"]])
+} 
+```
+
+```{r FastQC_further_plots_cutadapt, echo=F,results='asis',error=F,warning=F,message=F,fig.align='center', eval=runCutadapt}
+## Remark: knitr doesn't like plotly plots in loop structures
+
+if("SeqQuals" %in% names(fastqc_summary_plot_cutadapt)) {
+  cat(qctext["SeqQuals"])
+  fastqc_summary_plot_cutadapt[["SeqQuals"]]
+}
+if("GcContent" %in% names(fastqc_summary_plot_cutadapt)) {
+  cat(qctext["GcContent"])
+  fastqc_summary_plot_cutadapt[["GcContent"]]
+}
+if("DupLevels" %in% names(fastqc_summary_plot_cutadapt)) {
+  cat(qctext["DupLevels"])
+  fastqc_summary_plot_cutadapt[["DupLevels"]]
+}
+if("Overrep" %in% names(fastqc_summary_plot_cutadapt)) {
+  cat(qctext["Overrep"])
+  fastqc_summary_plot_cutadapt[["Overrep"]]
+}
+if("AdapterContent" %in% names(fastqc_summary_plot_cutadapt)) {
+  cat(qctext["AdapterContent"])
+  fastqc_summary_plot_cutadapt[["AdapterContent"]]
+}
+```
+
 
 
 ## Read mapping ##
