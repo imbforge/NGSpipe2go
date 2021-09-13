@@ -196,7 +196,7 @@ config {
     GO_Enrichment { 
       walltime="01:00:00" 
       procs="4" 
-      memory="8"
+      memory="16"
     }
     GREAT { 
       walltime="01:00:00" 
