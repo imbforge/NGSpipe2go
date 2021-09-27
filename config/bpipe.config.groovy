@@ -462,6 +462,11 @@ config {
       procs="1" 
       memory="8"
     }
+    maser {
+      walltime="01:00:00"
+      procs="1"
+      memory="8"
+    }
     miRDeep2 { 
       walltime="02:00:00" 
       procs="2" 
