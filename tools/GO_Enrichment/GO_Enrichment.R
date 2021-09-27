@@ -48,14 +48,14 @@ args     <- commandArgs(T)
 rData    <- parseArgs(args, "rData=") # result DESeq2.RData
 log2Fold <- parseArgs(args, "log2Fold=", 0, "as.numeric") # log2 foldchange parameter for filtering out gene list
 padj     <- parseArgs(args, "padj=", 0.01, "as.numeric") # padj parameter for filtering gene list
-org      <- parseArgs(args, "organism=", "human") # organism  	 	
+org      <- parseArgs(args, "organism=", "human") # organism
 univ     <- parseArgs(args, "univ=", "all") # universe to compare with DE genes
 type     <- parseArgs(args, "type=", "gene_name") # type of key to be converted into entrez id
 plotCategory <- parseArgs(args, "plotCategory=", 10, "as.numeric") # number of category to be shown in the barplot
 out      <- parseArgs(args,"out=", "GO_Analysis") # output directory
 cores    <- parseArgs(args, "cores=", 1, "as.numeric") # number of category to be shown in the barplot
 
-runstr <- paste("Call with: Rscript goEnrichment.R rData=<DESeq2.RData> [log2Fold=2]",
+runstr <- paste("Call with: Rscript goEnrichment.R rData=<DESeq2.RData> [log2Fold=0]",
                 "[padj=0.01] [org=human] [univ=all|expressed] [type=gene_name|ensembl_id]",
                 "[plotCategory=10] [out=GO_Analysis] [cores=1]")
 if (!is.numeric(log2Fold)) stop("log2 foldchange not numeric. Run with:\n",runstr)
@@ -132,11 +132,11 @@ processContrast <-  function(x) {
                 reducedTerms <- reduceSimMatrix(simMatrix, scores, threshold=0.7, orgdb=orgDb[org])
                 # this scatter plot can only be created when nrow(enriched)>2, otherwise the scatterPlot function crashes
                 if (nrow(enriched) > 2) {
-                    CairoPNG(file=paste0(out, "/", contrast, "_GO_scatterplot_", suffix, "_genes.png"), width=1200, height=800)
+                    CairoPNG(file=paste0(out, "/", contrast, "_GO_scatterplot_", suffix, "_genes.png"), width=1200, height=1200)
                     print(scatterPlot(simMatrix, reducedTerms))
                     dev.off()
                 }
-                CairoPNG(file=paste0(out, "/", contrast, "_GO_treemap_", suffix, "_genes.png"), width=1200, height=800)
+                CairoPNG(file=paste0(out, "/", contrast, "_GO_treemap_", suffix, "_genes.png"), width=1200, height=1200)
                 treemapPlot(reducedTerms)
                 dev.off()
 
@@ -144,7 +144,7 @@ processContrast <-  function(x) {
                 x <- merge(go_analysis, reducedTerms, by=1, all.x=TRUE)  # first column is term ID
                 write.csv(x, row.names=FALSE, file=paste0(out, "/", contrast, "_GO_Enrichment_", suffix, "_genes.csv"))
 
-                # remove redundant terms form enrichGO enrichment results, and do barplot and cnetplot of top terms
+                # remove redundant terms from enrichGO enrichment results, and do barplot and cnetplot of top terms
                 enriched_reduced <- enriched
                 enriched_reduced@result <- subset(enriched_reduced@result, ID %in% unique(reducedTerms$parent))
             } else {
@@ -152,40 +152,40 @@ processContrast <-  function(x) {
             }
 
             # create barplot showing GO category
-            CairoPNG(file=paste0(out, "/", contrast, "_GO_Barplot_", suffix, "_genes.png"), width=700, height=500)
+            CairoPNG(file=paste0(out, "/", contrast, "_GO_Barplot_", suffix, "_genes.png"), width=1000)
             print(barplot(enriched_reduced, showCategory=plotCategory) + ylab("Number of genes"))
             dev.off()
       
             # create network plot for the results
-            CairoPNG(file=paste0(out, "/", contrast, "_GO_network_", suffix, "_genes.png"), width=700, height=500)
+            CairoPNG(file=paste0(out, "/", contrast, "_GO_network_", suffix, "_genes.png"), width=1000, height=1000)
             print(emapplot(enriched))
             dev.off()
 
             # create cnetplot for the results
-            CairoPNG(file=paste0(out, "/", contrast, "_GO_cnetplot_", suffix, "_genes.png"), width=1200, height=800)
-            print(cnetplot(enriched_reduced, categorySize="pvalue", foldChange=entrezDeIdLfc))
+            CairoPNG(file=paste0(out, "/", contrast, "_GO_cnetplot_", suffix, "_genes.png"), width=1200, height=1200)
+            print(cnetplot(enriched_reduced, showCategory=plotCategory, categorySize="pvalue", foldChange=entrezDeIdLfc))
             dev.off()
         }
 
         if(!is.null(enrichedKEGG) && nrow(enrichedKEGG)> 0) {
             # create barplot showing Pathway terms
-            CairoPNG(file=paste0(out, "/", contrast, "_KEGG_Barplot_", suffix, "_genes.png"), width=700, height=500)
+            CairoPNG(file=paste0(out, "/", contrast, "_KEGG_Barplot_", suffix, "_genes.png"), width=1000)
             print(barplot(enrichedKEGG, showCategory=plotCategory) + ylab("Number of genes"))
             dev.off()
       
             # create network plot for the results
-            CairoPNG(file=paste0(out, "/", contrast, "_KEGG_network_", suffix, "_genes.png"), width=700, height=500)
+            CairoPNG(file=paste0(out, "/", contrast, "_KEGG_network_", suffix, "_genes.png"), width=1000, height=1000)
             print(emapplot(enrichedKEGG))
             dev.off()
         }
         
         if(!is.null(enrichedReactome) && nrow(enrichedReactome) > 0) {
             # create barplot showing Pathway terms
-            CairoPNG(file=paste0(out, "/", contrast, "_Reactome_Barplot_", suffix, "_genes.png"), width=700, height=500)
+            CairoPNG(file=paste0(out, "/", contrast, "_Reactome_Barplot_", suffix, "_genes.png"), width=1000)
             print(barplot(enrichedReactome, showCategory=plotCategory) + ylab("Number of genes"))
             dev.off()
             # create network plot for the results
-            CairoPNG(file=paste0(out, "/", contrast, "_Reactome_network_", suffix, "_genes.png"), width=700, height=500)
+            CairoPNG(file=paste0(out, "/", contrast, "_Reactome_network_", suffix, "_genes.png"), width=1000, height=1000)
             print(emapplot(enrichedReactome))
             dev.off()
         }
