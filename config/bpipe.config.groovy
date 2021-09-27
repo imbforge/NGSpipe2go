@@ -492,6 +492,11 @@ config {
       procs="1" 
       memory="10"
     }
+    rMATS {
+      walltime="03:00:00" 
+      procs="4" 
+      memory="8" 
+    }
     rnatypes { 
       walltime="0:10:00" 
       procs="4" 
