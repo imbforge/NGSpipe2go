@@ -132,8 +132,8 @@ processContrast <-  function(x) {
                 reducedTerms <- reduceSimMatrix(simMatrix, scores, threshold=0.7, orgdb=orgDb[org])
                 # this scatter plot can only be created when nrow(enriched)>2, otherwise the scatterPlot function crashes
                 if (nrow(enriched) > 2) {
-                    CairoPNG(file=paste0(out, "/", contrast, "_GO_scatterplot_", suffix, "_genes.png"), width=1200, height=1200)
-                    print(scatterPlot(simMatrix, reducedTerms))
+                    CairoPNG(file=paste0(out, "/", contrast, "_GO_scatterplot_", suffix, "_genes.png"), width=900, height=900)
+                    print(scatterPlot(simMatrix, reducedTerms, size="score", labelSize=4))
                     dev.off()
                 }
                 CairoPNG(file=paste0(out, "/", contrast, "_GO_treemap_", suffix, "_genes.png"), width=1200, height=1200)
@@ -151,42 +151,48 @@ processContrast <-  function(x) {
                 enriched_reduced <- enriched
             }
 
-            # create barplot showing GO category
-            CairoPNG(file=paste0(out, "/", contrast, "_GO_Barplot_", suffix, "_genes.png"), width=1000)
-            print(barplot(enriched_reduced, showCategory=plotCategory) + ylab("Number of genes"))
+            # create barplot showing top enriched GO terms
+            CairoPNG(file=paste0(out, "/", contrast, "_GO_barplot_", suffix, "_genes.png"), width=900)
+            print(barplot(enriched, showCategory=plotCategory) + ylab("Number of genes"))
             dev.off()
       
             # create network plot for the results
-            CairoPNG(file=paste0(out, "/", contrast, "_GO_network_", suffix, "_genes.png"), width=1000, height=1000)
-            print(emapplot(enriched))
+            CairoPNG(file=paste0(out, "/", contrast, "_GO_network_", suffix, "_genes.png"), width=900, height=900)
+            print(emapplot(enriched, showCategory=plotCategory))
+            dev.off()
+
+            # create dotplot showing top reduced (clustered) GO terms
+            CairoPNG(file=paste0(out, "/", contrast, "_reduced_GO_dotplot_", suffix, "_genes.png"), width=900)
+            print(dotplot(enriched_reduced, showCategory=plotCategory))
             dev.off()
 
             # create cnetplot for the results
-            CairoPNG(file=paste0(out, "/", contrast, "_GO_cnetplot_", suffix, "_genes.png"), width=1200, height=1200)
+            CairoPNG(file=paste0(out, "/", contrast, "_reduced_GO_cnetplot_", suffix, "_genes.png"), width=1200, height=1200)
             print(cnetplot(enriched_reduced, showCategory=plotCategory, categorySize="pvalue", foldChange=entrezDeIdLfc))
             dev.off()
         }
 
         if(!is.null(enrichedKEGG) && nrow(enrichedKEGG)> 0) {
-            # create barplot showing Pathway terms
-            CairoPNG(file=paste0(out, "/", contrast, "_KEGG_Barplot_", suffix, "_genes.png"), width=1000)
+            # create barplot showing top enriched KEGG Pathway terms
+            CairoPNG(file=paste0(out, "/", contrast, "_KEGG_barplot_", suffix, "_genes.png"), width=900)
             print(barplot(enrichedKEGG, showCategory=plotCategory) + ylab("Number of genes"))
             dev.off()
       
             # create network plot for the results
-            CairoPNG(file=paste0(out, "/", contrast, "_KEGG_network_", suffix, "_genes.png"), width=1000, height=1000)
-            print(emapplot(enrichedKEGG))
+            CairoPNG(file=paste0(out, "/", contrast, "_KEGG_network_", suffix, "_genes.png"), width=900, height=900)
+            print(emapplot(enrichedKEGG, showCategory=plotCategory))
             dev.off()
         }
         
         if(!is.null(enrichedReactome) && nrow(enrichedReactome) > 0) {
-            # create barplot showing Pathway terms
-            CairoPNG(file=paste0(out, "/", contrast, "_Reactome_Barplot_", suffix, "_genes.png"), width=1000)
+            # create barplot showing top enriched Reactome Pathway terms
+            CairoPNG(file=paste0(out, "/", contrast, "_Reactome_barplot_", suffix, "_genes.png"), width=900)
             print(barplot(enrichedReactome, showCategory=plotCategory) + ylab("Number of genes"))
             dev.off()
+
             # create network plot for the results
-            CairoPNG(file=paste0(out, "/", contrast, "_Reactome_network_", suffix, "_genes.png"), width=1000, height=1000)
-            print(emapplot(enrichedReactome))
+            CairoPNG(file=paste0(out, "/", contrast, "_Reactome_network_", suffix, "_genes.png"), width=900, height=900)
+            print(emapplot(enrichedReactome, showCategory=plotCategory))
             dev.off()
         }
     }
