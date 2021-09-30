@@ -157,7 +157,7 @@ processContrast <-  function(x) {
             dev.off()
       
             # create network plot for the results
-            CairoPNG(file=paste0(out, "/", contrast, "_GO_network_", suffix, "_genes.png"), width=1100, height=1100)
+            CairoPNG(file=paste0(out, "/", contrast, "_GO_network_", suffix, "_genes.png"), width=900, height=900)
             print(emapplot(enriched, showCategory=plotCategory))
             dev.off()
 
@@ -167,7 +167,7 @@ processContrast <-  function(x) {
             dev.off()
 
             # create cnetplot for the results
-            CairoPNG(file=paste0(out, "/", contrast, "_reduced_GO_cnetplot_", suffix, "_genes.png"), width=1100, height=1100)
+            CairoPNG(file=paste0(out, "/", contrast, "_reduced_GO_cnetplot_", suffix, "_genes.png"), width=1200, height=1200)
             print(cnetplot(enriched_reduced, showCategory=plotCategory, categorySize="pvalue", foldChange=entrezDeIdLfc))
             dev.off()
         }
@@ -179,7 +179,7 @@ processContrast <-  function(x) {
             dev.off()
       
             # create network plot for the results
-            CairoPNG(file=paste0(out, "/", contrast, "_KEGG_network_", suffix, "_genes.png"), width=1100, height=1100)
+            CairoPNG(file=paste0(out, "/", contrast, "_KEGG_network_", suffix, "_genes.png"), width=900, height=900)
             print(emapplot(enrichedKEGG, showCategory=plotCategory))
             dev.off()
         }
@@ -191,7 +191,7 @@ processContrast <-  function(x) {
             dev.off()
 
             # create network plot for the results
-            CairoPNG(file=paste0(out, "/", contrast, "_Reactome_network_", suffix, "_genes.png"), width=1100, height=1100)
+            CairoPNG(file=paste0(out, "/", contrast, "_Reactome_network_", suffix, "_genes.png"), width=900, height=900)
             print(emapplot(enrichedReactome, showCategory=plotCategory))
             dev.off()
         }
