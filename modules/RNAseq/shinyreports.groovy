@@ -30,7 +30,6 @@ shinyReports = {
             echo "SHINYREPS_DB=${shinyReports_vars.db}"           >> $output &&
             echo "SHINYREPS_LOG=${shinyReports_vars.log}"         >> $output &&
             echo "SHINYREPS_PAIRED=${shinyReports_vars.paired}"   >> $output &&
-            echo "SHINYREPS_GTF=${shinyReports_vars.gtf}"         >> $output &&
             echo "SHINYREPS_QC=${shinyReports_vars.qc}"           >> $output &&
             echo "SHINYREPS_RES=${shinyReports_vars.res}"         >> $output &&
             echo "SHINYREPS_PREFIX=${shinyReports_vars.prefix}"   >> $output &&
