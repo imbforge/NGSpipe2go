@@ -26,6 +26,14 @@ rMATS = {
         RMATS_FLAGS = "--libType fr-secondstrand " + RMATS_FLAGS
     }
 
+    def MASER_FLAGS = 
+        (maser_vars.gtf      ? " gtf="      +   maser_vars.gtf      : "" ) +
+        (maser_vars.db       ? " db="       +   maser_vars.db       : "" ) +
+        (maser_vars.ftype    ? " ftype="    +   maser_vars.ftype    : "" ) +
+        (maser_vars.mincov   ? " mincov="   +   maser_vars.mincov   : "" ) +
+        (maser_vars.fdr      ? " fdr="      +   maser_vars.fdr      : "" ) + 
+        (maser_vars.dpsi     ? " dpsi="     +   maser_vars.dpsi     : "" )
+
     def TOOL_ENV = prepare_tool_env("rmats", tools["rmats"]["version"], tools["rmats"]["runenv"])
     def PREAMBLE = get_preamble(stage:stageName, outdir:output.dir, input:new File(input1.prefix).getName())
 
@@ -47,7 +55,8 @@ rMATS = {
             echo \$bamgroup0 > $output.dir/\${input_var%${rMATS_vars.suffix}}_rMATS/\${groups[0]}_samples.txt &&
             bamgroup1=`awk -v g="\${groups[1]}" -v M="$MAPPED" 'BEGIN{ OFS=""} {if (\$3 == g) print M "/" \$1 ".bam"}' $input | paste -sd, -` &&
             echo \$bamgroup1 > $output.dir/\${input_var%${rMATS_vars.suffix}}_rMATS/\${groups[1]}_samples.txt &&
-            run_rmats --b1 $output.dir/\${input_var%${rMATS_vars.suffix}}_rMATS/\${groups[0]}_samples.txt --b2 $output.dir/\${input_var%${rMATS_vars.suffix}}_rMATS/\${groups[1]}_samples.txt $RMATS_FLAGS --od $output.dir/\${input_var%${rMATS_vars.suffix}}_rMATS --tmp $output.dir/\${input_var%${rMATS_vars.suffix}}_rMATS_tmp &&
+            run_rmats --b1 $output.dir/\${input_var%${rMATS_vars.suffix}}_rMATS/\${groups[0]}_samples.txt --b2 $output.dir/\${input_var%${rMATS_vars.suffix}}_rMATS/\${groups[1]}_samples.txt $RMATS_FLAGS --od $output.dir/\${input_var%${rMATS_vars.suffix}}_rMATS --tmp $output.dir/\${input_var%${rMATS_vars.suffix}}_rMATS_tmp && 
+            Rscript ${PIPELINE_ROOT}/tools/maser/createMaserPlots.R $MASER_FLAGS rmats_dir=$output.dir/\${input_var%${rMATS_vars.suffix}}_rMATS scripts_dir=${PIPELINE_ROOT}/tools/maser group1=\${groups[0]} group2=\${groups[1]} &&
             touch $output;
         ""","rMATS"
     }

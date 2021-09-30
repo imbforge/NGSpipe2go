@@ -11,5 +11,14 @@ rMATS_vars=[
     extra   : " --cstat 0.0001"
 ]
 
+maser_vars=[
+    gtf     : ESSENTIAL_GENESGTF,
+    db      : ESSENTIAL_DB,
+    ftype   : "JCEC",                  // tells which type of splicing events to consider: juncton counts (JC) or junction-exon counts (JCEC)
+    mincov  : "5",                     // ignore splicing events with read coverage below this count
+    fdr     : "0.01",                  // FDR cut-off to select statistically significant splicing events identified by rMATS
+    dpsi    : "0.1"                    // minimum percentage spliced in (PSI) to include in plots
+]
+
 load PIPELINE_ROOT + "/modules/RNAseq/rmats.groovy"
 

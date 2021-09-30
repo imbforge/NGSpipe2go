@@ -14,6 +14,7 @@ options(stringsAsFactors=FALSE)
 require(rmarkdown)
 require(knitr)
 require(Cairo)                                                    
+require(kableExtra)
 knitr::opts_chunk[['set']](dev='CairoPNG')
 source('DE.shinyrep.helpers.R')
 loadGlobalVars()
@@ -407,6 +408,48 @@ for(i in 1:nrow(conts)) {
 }
 ```
 
+## Differential Splicing Analysis ##
+
+Differential Splicing analysis is performed with the rMATS software suite, which uses the RNA-Seq data to automatically detect and analyze all major types of alternative splicing patterns. The statistical model of rMATS calculates the false discovery rate that the difference in the isoform ratio of a gene between two conditions exceeds an user-defined threshold (Default: 0.01%).
+
+The maser (Mapping Alternative Splicing Events to pRoteins) package is used to enable the functional characterization of splicing in transcriptomic contexts. In a nutshell, maser allows a detailed analysis of splicing events identified by rMATS by filtering the rMATS splicing events based on RNA-seq coverage, p-values and differential percent spliced-in (PSI), analysis of global splicing effects using principal component analysis and volcano plots, mapping of splicing events to Ensembl transcripts and visualization of transcripts affected by splicing using custom Gviz plots.
+
+The following abbreviations describe the different types of alternative splicing events:
+
+ * SE, refers to exon skipping
+ * RI, intron retention
+ * MXE, mutually exclusive exons
+ * A3SS, alternative 3' splice site
+ * A5SS, alternative 5' splice site
+
+
+Low coverage splicing junctions are commonly found in RNA-seq data and lead to low confidence PSI levels. We remove low coverage events with coverage < `r SHINYREPS_MASER_MINCOV` reads, which may significantly reduced the number of splicing events. Statistically significant events are selected using a FDR cutoff of `r SHINYREPS_MASER_FDR` and minimum PSI change of `r as.numeric(SHINYREPS_MASER_DPSI)*100`% (deltaPSI = `r SHINYREPS_MASER_DPSI`).
+
+```{r Diff_Splicing, echo=F, results='asis', error=F, warning=F, message=F}
+# load contrasts
+conts <- read.delim(file.path(SHINYREPS_PROJECT, "contrasts.txt"), header=T,comment.char="#")
+
+# extract only unique contrasts
+# duplicates may occur, if user tries different formula for same contrasts
+uconts <- unique(conts[,c("contrast.name","contrast")])
+for(i in 1:nrow(uconts)) {
+	# subsection
+	cont.name <- uconts$contrast.name[i]
+	if(!dir.exists(file.path(SHINYREPS_RES, "rMATS", paste0(cont.name,"_rMATS")))) {next()}
+
+	cat("\n\n", fill=T)
+	cat("### ", cont.name, fill=T)
+	cat("\n\n", fill=T)
+	if(file.exists(file.path(SHINYREPS_RES, "rMATS", paste0(cont.name,"_rMATS"),"maser_processed.RData"))) {
+		load(file.path(SHINYREPS_RES, "rMATS", paste0(cont.name,"_rMATS"),"maser_processed.RData"))
+		DEhelper.rmats()
+	} else {
+		cat("No splicing events were found")
+		next()
+	}
+}
+
+```
 
 ## Enrichment Analysis ##
 
