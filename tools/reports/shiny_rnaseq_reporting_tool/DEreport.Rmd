@@ -55,6 +55,7 @@ if (SHINYREPS_FASTQC_SUMMARIZED == FALSE) {
 
 ```
 
+
 #### Sequence bias
 
 The "sequence bias" plot shows the proportion of each base (% T, C, A and G) at each position. In a random library there would be little difference between the positions of a sequence run, so the lines in this plot should run parallel with each other. But most RNA-seq libraries show sequence imbalance in the first 10-12 read positions due to RT priming biases, which should however look fairly similar in all samples. In case the nucleotide content is summarized in a heatmap for all samples, gray colored fields represent a balanced nucleotide content.
@@ -80,6 +81,7 @@ if (SHINYREPS_FASTQC_SUMMARIZED == FALSE) {
 
 ```
 
+
 #### GC content
 
 The "GC content" plot shows the GC% distribution of all reads and all samples. Typically, the lines should tightly overlap and look essentially the same in all samples. An unusually shaped distribution could indicate a contaminated library.
@@ -90,7 +92,6 @@ plot(fastqc_summary_plot$p.gc)
 cat("\n", fill = T)
 
 ```
-
 
 
 ```{r cutadapt, echo=F, results='asis', error=F, warning=F, message=F, eval=SHINYREPS_RUN_CUTADAPT=="true"}
@@ -145,8 +146,6 @@ cat("\n", fill = T)
 ```
 
 
-
-
 ## Read mapping ##
 
 Mapping to the reference genome & transcriptome is performed with STAR (https://github.com/alexdobin/STAR). The program version, genome assembly and software parameters are described in the table at the end of the report.
@@ -169,6 +168,7 @@ cat("\n", fill = T)
 
 ```
 
+
 ## Mapping to rRNAs and other potential contaminants:
 
 A competitive mapping to the reference genome and known rRNAs (H. sapiens, M. musculus, C. elegans, D. melanogaster, D. rerio, X. tropicalis) as well as frequently occurring Mycoplasma species (M. arginini, M. fermentans, M. hominis, M. hyorhinis, M. orale, and Acholeplasma laidlawii), PhiX and ERCC spike-in sequences, E. coli and B. taurus (bovine) was performed with FastQScreen (http://www.bioinformatics.babraham.ac.uk/projects/fastq_screen/).
@@ -186,6 +186,7 @@ fastqscreen_plots <- DEhelper.fastqscreen(perc.to.plot=SHINYREPS_FASTQSCREEN_PER
       cat(fastqscreen_plots$errortext)
       }
 ```
+
 
 ## UCSC Genome Browser tracks ##
 
@@ -226,6 +227,7 @@ Measuring the fraction of duplicated reads is commonly used to control for exces
 cat(DEhelper.dupRadar(web=F), sep="\n")
 ```
 
+
 ## Mapped reads annotation ##
 
 The mapped reads were assigned to annotated features (gene exons) using the Subread tool featureCounts (http://bioinf.wehi.edu.au/featureCounts). The unassigned reads are due to ambiguity (overlap with multiple features), non-unique mapping (multimap) or because no overlap is found with known exonic features (e.g. intronic reads derived from unprocessed transcripts). Typically, mRNA-seq with polyA-selection results in more exon-assigned reads compared to total RNA-seq with rRNA-depletion. 
@@ -234,6 +236,7 @@ The mapped reads were assigned to annotated features (gene exons) using the Subr
 cat(DEhelper.Subread(), sep="\n")
 ```
 
+
 ## RNA class representation ##
 
 The following plot shows the fraction of reads assigned to various RNA classes. The plot can help in determining if the sample prep protocol worked consistently well for all samples and may reveal issues with e.g. rRNA contamination.
@@ -241,6 +244,7 @@ The following plot shows the fraction of reads assigned to various RNA classes. 
 ```{r RNAtypes_paragraph, echo=F, results='asis', error=F, warning=F, message=F, fig.align="center", out.width="100%"}
 DEhelper.RNAtypes()
 ```
+
 
 ## Gene body coverage ##
 
@@ -294,6 +298,7 @@ if("p_per_group_splitByReplicate" %in% names(plot_list)){
 }
 ```
 
+
 ## Strand specificity ##
 
 The table below shows the fraction of reads mapped in sense or antisense to gene exons - should be around 0.5 for non-stranded library prep protocols and close to 0 or 1 for strand-specific RNA-seq protocols. The strandedness is calculated as the percentage of unambiguous reads that are on the strand expected by the library preparation protocol.
@@ -302,7 +307,8 @@ The table below shows the fraction of reads mapped in sense or antisense to gene
 cat(DEhelper.strandspecificity(), sep="\n")
 ```
 
-## Distribution of reads on exons, introns and intergenic regions ##
+
+## Distribution of reads ##
 
 The following plot depicts the fraction of reads mapped to exons, introns and intergenic regions. For mRNA-seq in well-annotated genomes the fraction of exonic reads is typically quite high, whereas for total RNA-seq intronic and intergenic reads may dominate.
 
@@ -338,6 +344,7 @@ Finally, a hierarchical clustering of the samples based on the genes with the hi
 ```{r Heatmap1_paragraph_mean, echo=F, error=F, warning=F, message=F, fig.align="center"}
 DEhelper.DESeq2.heatmap(type="cluster_mean")    # heatmap of top variant 'n' genes of the rlog transformed counts (normalized and stabilized)
 ```
+
 
 ## Differential Expression Analysis ##
 
@@ -407,47 +414,8 @@ for(i in 1:nrow(conts)) {
 }
 ```
 
-## Differential Splicing Analysis ##
 
-Differential Splicing analysis is performed with the rMATS software suite, which uses the RNA-Seq data to automatically detect and analyze all major types of alternative splicing patterns. The statistical model of rMATS calculates the false discovery rate that the difference in the isoform ratio of a gene between two conditions exceeds an user-defined threshold (Default: 0.01%).
-
-The maser (Mapping Alternative Splicing Events to pRoteins) package is used to enable the functional characterization of splicing in transcriptomic contexts. In a nutshell, maser allows a detailed analysis of splicing events identified by rMATS by filtering the rMATS splicing events based on RNA-seq coverage, p-values and differential percent spliced-in (PSI), analysis of global splicing effects using principal component analysis and volcano plots, mapping of splicing events to Ensembl transcripts and visualization of transcripts affected by splicing using custom Gviz plots.
-
-The following abbreviations describe the different types of alternative splicing events:
-
- * SE, refers to exon skipping
- * RI, intron retention
- * MXE, mutually exclusive exons
- * A3SS, alternative 3' splice site
- * A5SS, alternative 5' splice site
-
-
-Low coverage splicing junctions are commonly found in RNA-seq data and lead to low confidence PSI levels. We remove low coverage events with coverage < `r SHINYREPS_MASER_MINCOV` reads, which may significantly reduced the number of splicing events. Statistically significant events are selected using a FDR cutoff of `r SHINYREPS_MASER_FDR` and minimum PSI change of `r as.numeric(SHINYREPS_MASER_DPSI)*100`% (deltaPSI = `r SHINYREPS_MASER_DPSI`).
-
-```{r Diff_Splicing, echo=F, results='asis', error=F, warning=F, message=F}
-# load contrasts
-conts <- read.delim(file.path(SHINYREPS_PROJECT, "contrasts.txt"), header=T,comment.char="#")
-
-# extract only unique contrasts
-# duplicates may occur, if user tries different formula for same contrasts
-uconts <- unique(conts[,c("contrast.name","contrast")])
-for(i in 1:nrow(uconts)) {
-	# subsection
-	cont.name <- uconts$contrast.name[i]
-	if(!dir.exists(file.path(SHINYREPS_RES, "rMATS", paste0(cont.name,"_rMATS")))) {next()}
-
-	cat("\n\n", fill=T)
-	cat("### ", cont.name, fill=T)
-	cat("\n\n", fill=T)
-	if(file.exists(file.path(SHINYREPS_RES, "rMATS", paste0(cont.name,"_rMATS"),"maser_processed.RData"))) {
-		load(file.path(SHINYREPS_RES, "rMATS", paste0(cont.name,"_rMATS"),"maser_processed.RData"))
-		DEhelper.rmats()
-	} else {
-		cat("No splicing events were found")
-		next()
-	}
-}
-## Enrichment Analysis ##
+## GO and Pathway Enrichment Analysis ##
 
 The R/Bioconductor package clusterProfiler (https://bioconductor.org/packages/release/bioc/html/clusterProfiler.html) was used to find enriched GO terms and pathways in the lists of significantly up- and down-regulated genes from the pairwise differential expression analyses. The resulting enrichment tables and plots can be found in the 'GO_Analysis' results folder. Shown below are several complementary visualisations aimed to help understand the underlying biological changes and the mutual relationships between the enriched GO terms and pathways.
 
@@ -538,18 +506,6 @@ for(i in 1:nrow(conts)) {
          cat("no KEGG Pathway enrichment results for the up-regulated genes available\n", fill=T)
     }
 
-
-    # GO Enrichment Plots
-    # down-regulated genes
-    cat("##### GO terms enriched in the list of down-regulated genes (Biological Process, BP)", fill=T)
-
-    GO_bar_down     <- paste0(SHINYREPS_GO_ENRICHMENT, "/", gsub("=.*", "", conts[i, 1]), "_GO_barplot_down_genes.png")
-
-     } else {
-         cat("no KEGG Pathway enrichment results for the up-regulated genes available\n", fill=T)
-    }
-
-
     # GO Enrichment Plots
     # down-regulated genes
     cat("##### GO terms enriched in the list of down-regulated genes (Biological Process, BP)", fill=T)
@@ -632,6 +588,49 @@ for(i in 1:nrow(conts)) {
 }
 ```
 
+
+## Differential Splicing Analysis ##
+
+Differential splicing analysis is performed with the rMATS software suite (http://rnaseq-mats.sourceforge.net/), which uses the RNA-Seq data to detect differential alternative splicing events. The statistical model of rMATS calculates the probability that the difference in the isoform ratio of a gene between two conditions exceeds an user-defined threshold (Default: 0.01%).
+
+The maser (Mapping Alternative Splicing Events to pRoteins) package is used to enable the functional characterization of splicing in transcriptomic contexts. In a nutshell, maser allows a detailed analysis of splicing events identified by rMATS by filtering the rMATS splicing events based on RNA-seq coverage, p-values and differential percent spliced-in (PSI), analysis of global splicing effects using principal component analysis and volcano plots, mapping of splicing events to Ensembl transcripts and visualization of transcripts affected by splicing using custom Gviz plots.
+
+The following abbreviations describe the different types of alternative splicing events:
+
+ * SE, refers to exon skipping
+ * RI, intron retention
+ * MXE, mutually exclusive exons
+ * A3SS, alternative 3' splice site
+ * A5SS, alternative 5' splice site
+
+
+Low coverage splicing junctions are commonly found in RNA-seq data and lead to low confidence PSI levels. We remove low coverage events with coverage < `r SHINYREPS_MASER_MINCOV` reads, which may significantly reduced the number of splicing events. Statistically significant events are selected using a FDR cutoff of `r SHINYREPS_MASER_FDR` and minimum PSI change of `r as.numeric(SHINYREPS_MASER_DPSI)*100`% (deltaPSI = `r SHINYREPS_MASER_DPSI`).
+
+```{r Diff_Splicing, echo=F, results='asis', error=F, warning=F, message=F}
+# load contrasts
+conts <- read.delim(file.path(SHINYREPS_PROJECT, "contrasts.txt"), header=T,comment.char="#")
+
+# extract only unique contrasts
+# duplicates may occur, if user tries different formula for same contrasts
+uconts <- unique(conts[,c("contrast.name","contrast")])
+for(i in 1:nrow(uconts)) {
+	# subsection
+	cont.name <- uconts$contrast.name[i]
+	if(!dir.exists(file.path(SHINYREPS_RES, "rMATS", paste0(cont.name,"_rMATS")))) {next()}
+
+	cat("\n\n", fill=T)
+	cat("### ", cont.name, fill=T)
+	cat("\n\n", fill=T)
+	if(file.exists(file.path(SHINYREPS_RES, "rMATS", paste0(cont.name,"_rMATS"),"maser_processed.RData"))) {
+		load(file.path(SHINYREPS_RES, "rMATS", paste0(cont.name,"_rMATS"),"maser_processed.RData"))
+		DEhelper.rmats()
+	} else {
+		cat("No splicing events were found")
+		next()
+	}
+}
+
+
 ## Chromosome over-representation ##
 In some experiments it is possible that there is local effect in gene expression due to for instance genetic linkage. One hint that this might be happening is if there are more affected genes in a chromosome than expected by chance. If this happens, further data exploration might be warranted. 
 
@@ -658,6 +657,7 @@ for(i in 1:nrow(conts)) {
     }
 }
 ```
+
 
 ## Additional analysis including multimapped reads ##
 
