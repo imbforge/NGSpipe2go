@@ -169,7 +169,7 @@ cat("\n", fill = T)
 ```
 
 
-## Mapping to rRNAs and other potential contaminants:
+## Potential contaminants and rRNA content
 
 A competitive mapping to the reference genome and known rRNAs (H. sapiens, M. musculus, C. elegans, D. melanogaster, D. rerio, X. tropicalis) as well as frequently occurring Mycoplasma species (M. arginini, M. fermentans, M. hominis, M. hyorhinis, M. orale, and Acholeplasma laidlawii), PhiX and ERCC spike-in sequences, E. coli and B. taurus (bovine) was performed with FastQScreen (http://www.bioinformatics.babraham.ac.uk/projects/fastq_screen/).
 
@@ -188,7 +188,7 @@ fastqscreen_plots <- DEhelper.fastqscreen(perc.to.plot=SHINYREPS_FASTQSCREEN_PER
 ```
 
 
-## UCSC Genome Browser tracks ##
+## UCSC genome browser tracks ##
 
 The browser tracks are generated using bamCoverage tool in [deepTools](https://deeptools.readthedocs.io/en/develop/) and they are normalized using the Counts Per Million mapped reads (CPM) method.
 
@@ -200,7 +200,7 @@ cat(DEhelper.Trackhub(), sep="\n")
 ```
 
 
-## Insert Size (for paired-end sequencing) ##
+## Insert size (for paired-end sequencing) ##
 
 The insert size is defined as the distance between the left-most mapping position of a read and the right-most mapping position of its mate. For DNA, this exactly represents the fragment length. However, in case of RNA, the estimated insert size can be a lot larger than the true insert size / fragment length, when e.g. the read pair overlaps introns or skipped exons. Thus, the insert size calculation can only be seen as a rough estimate of the true insert size / fragment length when looking at RNAseq data.
 
@@ -346,13 +346,13 @@ DEhelper.DESeq2.heatmap(type="cluster_mean")    # heatmap of top variant 'n' gen
 ```
 
 
-## Differential Expression Analysis ##
+## Differential gene expression analysis ##
 
-Pairwise differential expression analysis between the experimental groups is performed with the popular R/Bioconductor package DESeq2 (https://bioconductor.org/packages/release/bioc/html/DESeq2.html). Default DESeq2 analysis includes an independent filtering procedure for lowly expressed genes which is meant to ameliorate the multiple testing problem thereby maximising the statistical power to detect differentially expressed genes (DEGs). In this standard analysis only uniquely mapped reads are taken into account to avoid "cross-talk" between different genes. 
+Pairwise differential expression analysis on the gene level between the experimental groups is performed with the popular R/Bioconductor package DESeq2 (https://bioconductor.org/packages/release/bioc/html/DESeq2.html). Default DESeq2 analysis includes an independent filtering procedure for lowly expressed genes which is meant to ameliorate the multiple testing problem thereby maximising the statistical power to detect differentially expressed genes (DEGs). In this standard analysis only uniquely mapped reads are taken into account to avoid "cross-talk" between different genes. 
 
-Note that by default a standard DESeq2 analysis uses only a statistical (FDR) filter and is thus testing for evidence that the expression changes between two sample groups is different from zero. Performing post-hoc filtering on fold changes is not recommended by the software developers and should be avoided. Such a "Volcano plot" filtering approach may result in inflated false discovery rates as reported in https://doi.org/10.1093/bib/bbab053. If desirable, the differential expression analysis can incorporate an additional fold change (FC) threshold directly in the DESeq2 statistical testing model, which results in more conservative but accurate DEG estimates compared to post-hoc filtering.
+Note that by default a standard DESeq2 analysis uses only a statistical (FDR) filter and is thus testing for evidence that the expression changes between two sample groups is different from zero. Performing post-hoc filtering of the results by effect size (fold-change) is not recommended by the software developers and should be avoided. Such a "Volcano plot" gene filtering approach may result in inflated false discovery rates as reported in https://doi.org/10.1093/bib/bbab053. If desirable, the differential expression analysis can incorporate an additional fold-change (FC) threshold directly in the DESeq2 statistical testing model, which results in more conservative but accurate DEG estimates.
 
-For the analyses below, the FDR filter was set to `r SHINYREPS_DE_DESEQ_FDR` and the FC filter was set to `r SHINYREPS_DE_DESEQ_FC` (note: FC=1 means no FC filter was used).
+For the analyses below, the FDR filter was set to `r SHINYREPS_DE_DESEQ_FDR` and the effect size (FC) filter was set to `r SHINYREPS_DE_DESEQ_FC` (note: FC=1 means no fold-change filter was used).
 
 ```{r DifferentialExpression_paragraph, echo=F, results='asis', error=F, warning=F, message=F, fig.align="center"}
 for(i in 1:nrow(conts)) {
@@ -368,7 +368,7 @@ for(i in 1:nrow(conts)) {
     DEhelper.DESeq2.pairwisePCA(i)
     cat("\n", fill=T)
 
-    # Sample to sample distance
+    # sample to sample distance
     cat("##### Sample to sample distance (diagonal set to NA)", fill=T)
     DEhelper.DESeq2.heatmap(i, dds=pairwise.dds,  logTransform=T, type="distance")
     cat("\n", fill=T)
@@ -393,7 +393,7 @@ for(i in 1:nrow(conts)) {
     DEhelper.DESeq2.MAplot(i, fdr)    # should be fine at taking the value from the UI slider
     cat("\n", fill=T)
 
-    # Volcano Plot
+    # Volcano plot
     cat("##### Volcano plot", fill=T)    
     cat("Volcano plot of all DESeq2-tested genes depicting their expression fold change vs. statistical significance. Differentially expressed genes are highlighted in red and the top 25 are labelled.", "\n", "\n")
     DEhelper.DESeq2.VolcanoPlot(i, fdr, web=F)
@@ -415,7 +415,7 @@ for(i in 1:nrow(conts)) {
 ```
 
 
-## GO and Pathway Enrichment Analysis ##
+## GO and Pathway enrichment analysis ##
 
 The R/Bioconductor package clusterProfiler (https://bioconductor.org/packages/release/bioc/html/clusterProfiler.html) was used to find enriched GO terms and pathways in the lists of significantly up- and down-regulated genes from the pairwise differential expression analyses. The resulting enrichment tables and plots can be found in the 'GO_Analysis' results folder. Shown below are several complementary visualisations aimed to help understand the underlying biological changes and the mutual relationships between the enriched GO terms and pathways.
 
@@ -589,11 +589,11 @@ for(i in 1:nrow(conts)) {
 ```
 
 
-## Differential Splicing Analysis ##
+## Differential splicing analysis ##
 
 Differential splicing analysis is performed with the rMATS software suite (http://rnaseq-mats.sourceforge.net/), which uses the RNA-Seq data to detect differential alternative splicing events. The statistical model of rMATS calculates the probability that the difference in the isoform ratio of a gene between two conditions exceeds an user-defined threshold (Default: 0.01%).
 
-The maser (Mapping Alternative Splicing Events to pRoteins) package is used to enable the functional characterization of splicing in transcriptomic contexts. In a nutshell, maser allows a detailed analysis of splicing events identified by rMATS by filtering the rMATS splicing events based on RNA-seq coverage, p-values and differential percent spliced-in (PSI), analysis of global splicing effects using principal component analysis and volcano plots, mapping of splicing events to Ensembl transcripts and visualization of transcripts affected by splicing using custom Gviz plots.
+The maser package is used to enable the functional characterization of splicing in transcriptomic contexts. In a nutshell, maser allows a detailed analysis of splicing events by filtering the rMATS results based on RNA-seq coverage, p-values and differential percent spliced-in (PSI), analysis of global splicing effects using PCA and Volcano plots, mapping of splicing events to Ensembl transcripts and visualization of transcripts affected by splicing using custom Gviz plots.
 
 The following abbreviations describe the different types of alternative splicing events:
 
@@ -631,10 +631,11 @@ for(i in 1:nrow(uconts)) {
 }
 
 
-## Chromosome over-representation ##
+## Chromosome over-representation analysis ##
+
 In some experiments it is possible that there is local effect in gene expression due to for instance genetic linkage. One hint that this might be happening is if there are more affected genes in a chromosome than expected by chance. If this happens, further data exploration might be warranted. 
 
-The tables contain a summary of the likelihood that there are more DE genes in a particular chromosome than expected by chance. The p-value is calculated with Fisher's exact test and corrected for multiple testing (FDR). Only chromosomes which show a significant overrepresentation (FDR < 0.1) are presented in this table. This test also gives an odds ratio which represents the strength of association. The odds ratio compares the number of DE genes found on chromosome A with its expected number. If an odds ratio is equal to or less than 1, there is no association between the two lists. If the odds ratio is much larger than 1, then the association is strong. The class also calculates the Jaccard index which measures the similarity between two lists of genes. Here, it is comparing the list of DE genes on a chromosome A with the list of genes, which are either DE and/or on chromosome A. The Jaccard index varies between 0 and 1, with 0 meaning there is no similarity between the two and 1 meaning the two are identical.
+The tables contain a summary of the likelihood that there are more DE genes in a particular chromosome than expected by chance. The p-value is calculated with Fisher's exact test and corrected for multiple testing (FDR). Only chromosomes which show a significant over-representation (FDR < 0.1) are presented in this table. This test also gives an odds ratio which represents the strength of association. The odds ratio compares the number of DE genes found on chromosome A with its expected number. If an odds ratio is equal to or less than 1, there is no association between the two lists. If the odds ratio is much larger than 1, then the association is strong. The class also calculates the Jaccard index which measures the similarity between two lists of genes. Here, it is comparing the list of DE genes on a chromosome A with the list of genes, which are either DE and/or on chromosome A. The Jaccard index varies between 0 and 1, with 0 meaning there is no similarity between the two and 1 meaning the two are identical.
 
 
 ```{r ChromosomeEnrichment_paragraph, echo=F, results='asis', error=F, warning=F, message=F, fig.align="center"}
@@ -659,11 +660,11 @@ for(i in 1:nrow(conts)) {
 ```
 
 
-## Additional analysis including multimapped reads ##
+## Additional differential expression analysis including multimapped reads ##
 
 For many genes in the human, mouse and other genomes, RNA-seq with short reads cannot accurately measure expression because recently duplicated gene families and gene-pseudogene pairs have very similar transcript sequences, which results in mostly ambiguous or multimapped reads. 
 
-There are several approaches how to deal with multimapped reads, here they are randomly assigned to one of the possible source genes followed by DESeq2 statistical assessment. While this alternative analysis may reveal additional interesting hits, it may also produce false-positive findings due to potential cross-talk between highly similar genes, i.e. if a gene X changes expression, its pseudogene Y or closely-related paralog Z could be non-specifically affected as well. Therefore, the standard DESeq2 analysis using only uniquely mapped reads is considered more reliable for the majority of genes and should have priority.
+There are several approaches how to deal with multimapped reads, here they are randomly assigned to one of the possible source genes followed by DESeq2 statistical assessment. While this alternative differential expression analysis may reveal additional interesting hits, it may also produce false-positive findings due to potential cross-talk between highly similar genes, i.e. if a gene X changes expression, its pseudogene Y or closely-related paralog Z could be non-specifically affected as well. Therefore, the standard DESeq2 analysis using only uniquely mapped reads is considered more reliable for the majority of genes and should have priority.
 
 The Venn diagrams below compare the number of differentially expressed genes detected with and without inclusion of the ambiguous multimapped (MM) reads.
 
