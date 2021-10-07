@@ -2111,27 +2111,36 @@ DEhelper.rmats <- function() {
 
     for(e in c("A3SS", "A5SS", "SE", "RI", "MXE")) {
         if(nrow(slot(rmats_top, paste0(e,"_events"))) > 0) {
-            cat("\n\n", fill=T)
-            cat("#### results for", e, fill=T)  
-            cat("\n\n", fill=T)
-           
-            top <- summary(rmats_top, type=e)
-	    top <- top[order(top$FDR), !colnames(top) %in% c("GeneID")]
-	    colnames(top) <- plyr::mapvalues(colnames(top), from=c("ID", "PValue", "IncLevelDifference"), to=c("rMATS_ID", "pval", "IncLevelDiff"))
-	    top$pval <- signif(top$pval, 3)
-	    top$FDR <- signif(top$FDR, 3)
-	    cat("\n\nSplicing events have genomic locations, raw counts, PSI levels and statistics (p-values) regarding their differential splicing between conditions.")
-	    cat("\nTop significant", e, ":\n\n")
-            DT::datatable(top, options = list(pageLength = 10), rownames = F)
-	    plotPCA <- maser::pca(rmats_filt, type = e)
-            plotVolcano <- volcanoMod(rmats_filt, fdr = SHINYREPS_MASER_FDR, deltaPSI = SHINYREPS_MASER_DPSI, type = e)
-            gridExtra::grid.arrange(grobs=list(plotPCA, plotVolcano), ncol=1)
-    
-            top1 <- maser::geneEvents(rmats_filt, geneS = top$geneSymbol[1], fdr = SHINYREPS_MASER_FDR, deltaPSI = SHINYREPS_MASER_DPSI)
-    
-            ## Display affected transcripts and PSI levels
-            plotTranscriptsMod(events=top1, type = e, event_id = top$rMATS_ID[1], gtf = ens_gtf, zoom = F, show_PSI = TRUE, title =top$geneSymbol[1]) 
-    
+                cat("\n\n", fill=T)
+                cat("#### results for", e, fill=T)
+                cat("\n\n", fill=T)
+                top <- summary(rmats_top, type=e)
+                top <- top[order(top$FDR), !colnames(top) %in% c("GeneID")]
+                colnames(top) <- plyr::mapvalues(colnames(top), from=c("ID", "PValue", "IncLevelDifference"), to=c("rMATS_ID", "pval", "IncLevelDiff"))
+                top$pval <- signif(top$pval, 3)
+                top$FDR <- signif(top$FDR, 3)
+                cat("\n\nSplicing events have genomic locations, raw counts, PSI levels and statistics (p-values) regarding their differential splicing between conditions.\n")
+                cat("\n##### Significant", e, "events : ", nrow(top) ,"\n\n")
+                rownames(top)=NULL
+                print(kable(head(top, nrow(top)), format="html", align=c("c"), caption=paste("top", e, "events")) %>%
+		      kable_styling() %>%
+		      kableExtra::scroll_box(width = "100%", height = "200px")
+		      )
+		#cat("\n\n")
+		#cat("\n##### PCA plot \n\n")
+		#plotPCA<-maser::pca(rmats_filt, type = e)
+                #print(plotPCA)
+                cat("\n\n")
+                cat("##### Volcano plot \n\n")
+                plotVolcano<-volcanoMod(rmats_filt, fdr = SHINYREPS_MASER_FDR, deltaPSI = SHINYREPS_MASER_DPSI, type = e)
+                print(plotVolcano)
+                cat("\n\n")
+                cat("##### Top Significant", e, "event \n\n")
+                top1 <- maser::geneEvents(rmats_filt, geneS = top$geneSymbol[1], fdr = SHINYREPS_MASER_FDR, deltaPSI = SHINYREPS_MASER_DPSI)
+
+                ## Display affected transcripts and PSI levels
+                plotTranscriptsMod(events=top1, type = e, event_id = top$rMATS_ID[1], gtf = ens_gtf, zoom = F, show_PSI = TRUE, title =top$geneSymbol[1])
+
         }
     }  
 }

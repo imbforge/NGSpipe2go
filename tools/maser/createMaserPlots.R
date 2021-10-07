@@ -89,8 +89,8 @@ if(!error_status) {
 
   for(e in c("A3SS", "A5SS", "SE", "RI", "MXE")) {
 	if(nrow(slot(rmats_top, paste0(e,"_events"))) > 0) {
-		plotPCA <- maser::pca(rmats_filt, type = e)
-		print(plotPCA)
+		#plotPCA <- maser::pca(rmats_filt, type = e)
+		#print(plotPCA)
 		plotVolcano <- volcanoMod(rmats_filt, fdr = fdr, deltaPSI = dpsi, type = e, title = e)
 		print(plotVolcano)
 	}
