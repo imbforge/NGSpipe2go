@@ -10,7 +10,7 @@ ESSENTIAL_SAMPLE_PREFIX=""      // sample name prefix to be trimmed in the resul
 
 // Mapping and annotation parameters
 ESSENTIAL_STAR_REF="..../star/2.7.3a"     // directory containing all STAR index files
-ESSENTIAL_GENESGTF="..../annotation.gtf"  // properly formatted gene annotation GTF file having *different* gene and trancript IDs (e.g. from Ensembl or Gencode)
+ESSENTIAL_GENESGTF="..../annotation.gtf"  // properly formatted gene annotation GTF file having *different* gene and trancript IDs (e.g. from Ensembl or Gencode); If you use Gencode here, please remember to edit the gtf module variables in the rmats.header file
 ESSENTIAL_GENESBED="..../annotation.bed"  // gene annotation BED file 
 ESSENTIAL_CHROMSIZES="..../genome.fa.fai" // chromosome sizes file
 ESSENTIAL_FEATURETYPE="gene_type"         // Gencode uses "gene_type", Ensembl uses "gene_biotype"
