@@ -34,7 +34,8 @@ rMATS = {
         (maser_vars.fdr      ? " fdr="      +   maser_vars.fdr      : "" ) + 
         (maser_vars.dpsi     ? " dpsi="     +   maser_vars.dpsi     : "" )
 
-    def TOOL_ENV = prepare_tool_env("rmats", tools["rmats"]["version"], tools["rmats"]["runenv"])
+    def TOOL_ENV = prepare_tool_env("rmats", tools["rmats"]["version"], tools["rmats"]["runenv"]) + " && " +
+                   prepare_tool_env("R", tools["R"]["version"], tools["R"]["runenv"])
     def PREAMBLE = get_preamble(stage:stageName, outdir:output.dir, input:new File(input1.prefix).getName())
 
     // run the chunk
@@ -50,10 +51,16 @@ rMATS = {
             sep=${rMATS_vars.sep};
             groups=(\${groups//\$sep/ });
             echo "groups 0 " \${groups[0]};
+            add_extensions="";
+            if [[ "$RUN_CUTADAPT" == "true" ]]; then
+                echo "Will add cutadapt extension";
+                add_extensions=".cutadapt";
+            fi;
+            echo \${add_extensions};
             mkdir -p $output.dir/\${input_var%${rMATS_vars.suffix}}_rMATS &&
-            bamgroup0=`awk -v g="\${groups[0]}" -v M="$MAPPED" 'BEGIN{OFS=""} {if (\$3 == g) print M "/" \$1 ".bam"}' $input | paste -sd, -` &&
+            bamgroup0=`awk -v g="\${groups[0]}" -v M="$MAPPED" -v C="\${add_extensions}" 'BEGIN{OFS=""} {if (\$3 == g) print M "/" \$1 C ".bam"}' $input | paste -sd, -` &&
             echo \$bamgroup0 > $output.dir/\${input_var%${rMATS_vars.suffix}}_rMATS/\${groups[0]}_samples.txt &&
-            bamgroup1=`awk -v g="\${groups[1]}" -v M="$MAPPED" 'BEGIN{ OFS=""} {if (\$3 == g) print M "/" \$1 ".bam"}' $input | paste -sd, -` &&
+            bamgroup1=`awk -v g="\${groups[1]}" -v M="$MAPPED" -v C="\${add_extensions}" 'BEGIN{ OFS=""} {if (\$3 == g) print M "/" \$1 C ".bam"}' $input | paste -sd, -` &&
             echo \$bamgroup1 > $output.dir/\${input_var%${rMATS_vars.suffix}}_rMATS/\${groups[1]}_samples.txt &&
             run_rmats --b1 $output.dir/\${input_var%${rMATS_vars.suffix}}_rMATS/\${groups[0]}_samples.txt --b2 $output.dir/\${input_var%${rMATS_vars.suffix}}_rMATS/\${groups[1]}_samples.txt $RMATS_FLAGS --od $output.dir/\${input_var%${rMATS_vars.suffix}}_rMATS --tmp $output.dir/\${input_var%${rMATS_vars.suffix}}_rMATS_tmp && 
             Rscript ${PIPELINE_ROOT}/tools/maser/createMaserPlots.R $MASER_FLAGS rmats_dir=$output.dir/\${input_var%${rMATS_vars.suffix}}_rMATS scripts_dir=${PIPELINE_ROOT}/tools/maser group1=\${groups[0]} group2=\${groups[1]} &&
