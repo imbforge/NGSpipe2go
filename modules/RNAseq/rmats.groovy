@@ -34,7 +34,8 @@ rMATS = {
         (maser_vars.fdr      ? " fdr="      +   maser_vars.fdr      : "" ) + 
         (maser_vars.dpsi     ? " dpsi="     +   maser_vars.dpsi     : "" )
 
-    def TOOL_ENV = prepare_tool_env("rmats", tools["rmats"]["version"], tools["rmats"]["runenv"])
+    def TOOL_ENV = prepare_tool_env("rmats", tools["rmats"]["version"], tools["rmats"]["runenv"]) + " && " +
+                   prepare_tool_env("R", tools["R"]["version"], tools["R"]["runenv"])
     def PREAMBLE = get_preamble(stage:stageName, outdir:output.dir, input:new File(input1.prefix).getName())
 
     // run the chunk
