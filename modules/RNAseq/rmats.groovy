@@ -58,9 +58,9 @@ rMATS = {
             fi;
             echo \${add_extensions};
             mkdir -p $output.dir/\${input_var%${rMATS_vars.suffix}}_rMATS &&
-            bamgroup0=`awk -v g="\${groups[0]}" -v M="$MAPPED" -v C="\${add_extensions}" 'BEGIN{OFS=""} {if (\$3 == g) print M "/" \$1 C ".bam"}' $input | paste -sd, -` &&
+            bamgroup0=`awk -v g="\${groups[0]}" -v M="$MAPPED" -v P="${rMATS_vars.prefix}" -v C="\${add_extensions}" 'BEGIN{OFS=""} {if (\$3 == g) print M "/" P \$1 C ".bam"}' $input | paste -sd, -` &&
             echo \$bamgroup0 > $output.dir/\${input_var%${rMATS_vars.suffix}}_rMATS/\${groups[0]}_samples.txt &&
-            bamgroup1=`awk -v g="\${groups[1]}" -v M="$MAPPED" -v C="\${add_extensions}" 'BEGIN{ OFS=""} {if (\$3 == g) print M "/" \$1 C ".bam"}' $input | paste -sd, -` &&
+            bamgroup1=`awk -v g="\${groups[1]}" -v M="$MAPPED" -v P="${rMATS_vars.prefix}" -v C="\${add_extensions}" 'BEGIN{OFS=""} {if (\$3 == g) print M "/" P \$1 C ".bam"}' $input | paste -sd, -` &&
             echo \$bamgroup1 > $output.dir/\${input_var%${rMATS_vars.suffix}}_rMATS/\${groups[1]}_samples.txt &&
             run_rmats --b1 $output.dir/\${input_var%${rMATS_vars.suffix}}_rMATS/\${groups[0]}_samples.txt --b2 $output.dir/\${input_var%${rMATS_vars.suffix}}_rMATS/\${groups[1]}_samples.txt $RMATS_FLAGS --od $output.dir/\${input_var%${rMATS_vars.suffix}}_rMATS --tmp $output.dir/\${input_var%${rMATS_vars.suffix}}_rMATS_tmp && 
             Rscript ${PIPELINE_ROOT}/tools/maser/createMaserPlots.R $MASER_FLAGS rmats_dir=$output.dir/\${input_var%${rMATS_vars.suffix}}_rMATS scripts_dir=${PIPELINE_ROOT}/tools/maser group1=\${groups[0]} group2=\${groups[1]} &&

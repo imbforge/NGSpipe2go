@@ -1,6 +1,6 @@
 rMATS_vars=[
     outdir  : RESULTS + "/rMATS",
-    //suffix  : PRERMATS_SUFFIX,
+    prefix  : ESSENTIAL_SAMPLE_PREFIX,
     suffix  : PRERMATS_vars.suffix,
     sep     : ".vs.",
     paired  : (ESSENTIAL_PAIRED == "yes"),
