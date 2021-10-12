@@ -416,9 +416,9 @@ DEhelper.DESeq2.VolcanoPlot <- function(i=1, fdr=.01, top=25, web=TRUE) {
             xlim(-x.limit, x.limit) +
             ylab("-log10 adj. p-value") +
             xlab("log2 fold change") + 
-            scale_color_manual(values=c("black", "red"), guide=FALSE) +
+            scale_color_manual(values=c("black", "red")) +
             scale_size_continuous("mean norm. counts (log10)") +
-	    guides(size = guide_legend(nrow=1)) +
+	          guides(color="none", size=guide_legend(nrow=1)) +
        	    theme(legend.position = "top")
 
     # add name of top genes
@@ -816,7 +816,7 @@ DEhelper.ngsReports.Fastqc <- function(subdir="") {
     print(ngsReports::plotBaseQuals(x, labels=lbls))
     print(ngsReports::plotSeqContent(x, labels=lbls) +
             theme(legend.position="right") +
-            guides(fill=FALSE, color="legend") +
+            guides(fill="none", color="legend") +
             geom_point(mapping=aes(x=Inf, y=Inf, color=base),
                        data=data.frame(base=c("T", "A", "C", "G")),
                        inherit.aes=FALSE, show.legend=TRUE) +
@@ -935,7 +935,7 @@ DEhelper.Fastqc.custom <- function(web=FALSE, summarizedPlots=TRUE, subdir="") {
            geom_hline(yintercept = c(0,10,20,30,40),color="white",alpha=0.3) +
            geom_vline(xintercept = seq(0,xlen,10),color="white",alpha=0.3) +
            coord_cartesian(xlim = c(1,xlen), ylim = c(0,42)) +
-           guides(color=FALSE,
+           guides(color="none",
                   fill=guide_legend(title="",ncol=3)) +
            theme(axis.text.x = element_text(size=6,angle=90,hjust=0.5,vjust=0.5),
                  axis.text.y = element_text(size=8),
@@ -946,11 +946,10 @@ DEhelper.Fastqc.custom <- function(web=FALSE, summarizedPlots=TRUE, subdir="") {
            scale_x_continuous(breaks=unique(as.numeric(df$position)),
                               labels=unique(df$Base))
 
-        ## use rev(lbls) to plot in reverse order
-        p.content <- ngsReports::plotSeqContent(fastqc.stats, labels=rev(lbls)) +
+        p.content <- ngsReports::plotSeqContent(fastqc.stats) +
           labs(y = "") +
           theme(legend.position="right") +
-          guides(fill=FALSE, color="legend") +
+          guides(fill="none", color="legend") +
           geom_point(mapping=aes(x=Inf, y=Inf, color=base),
                      data=data.frame(base=c("T", "A", "C", "G")),
                      inherit.aes=FALSE, show.legend=TRUE) +
@@ -958,18 +957,18 @@ DEhelper.Fastqc.custom <- function(web=FALSE, summarizedPlots=TRUE, subdir="") {
 
     } else {
 
-        p.qual <- ngsReports::plotBaseQuals(fastqc.stats, labels=lbls, plotType="boxplot") +
+        p.qual <- ngsReports::plotBaseQuals(fastqc.stats, plotType="boxplot") +
           theme(axis.text.x = element_text(size=5))
-        p.content <- ngsReports::plotSeqContent(fastqc.stats, labels=lbls, plotType="line") +
+        p.content <- ngsReports::plotSeqContent(fastqc.stats, plotType="line") +
           theme(axis.text.x = element_text(size=5), legend.position = "top")
     }
 
     # GC content line plot 
     # in case you want to add a theoretical distribution to the plot, use function plotGcContent with 
     # the following settings:
-    # ngsReports::plotGcContent(fastqc.stats, plotType="line", gcType="Genome", labels=lbls, theoreticalGC=TRUE, species=SPECIES)
+    # ngsReports::plotGcContent(fastqc.stats, plotType="line", gcType="Genome", theoreticalGC=TRUE, species=SPECIES)
     # the default value for SPECIES is "Hsapiens", thus, if you don't specify it, human will be used as a default
-    p.gc <- ngsReports::plotGcContent(fastqc.stats, usePlotly=summarizedPlots, plotType="line", gcType="Genome", labels=lbls, theoreticalGC=FALSE) 
+    p.gc <- ngsReports::plotGcContent(fastqc.stats, usePlotly=summarizedPlots, plotType="line", gcType="Genome", theoreticalGC=FALSE) 
     if(!summarizedPlots) {
       p.gc <- p.gc + guides(color=guide_legend(title="",ncol=4)) + 
         theme(legend.position = "top", legend.text = element_text(size=8)) 
@@ -1464,6 +1463,7 @@ DEhelper.geneBodyCov2 <- function(web=F) {
     }
   return(plot_list)
 }
+
 ##
 ##DEhelper.strandspecificity: get the strand specificity from the qc and display them
 ##

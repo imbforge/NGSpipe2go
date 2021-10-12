@@ -1,5 +1,5 @@
 ---
-title: "SHINYREPS_PROJECT"
+title: "ngspipe2go"
 output:
   html_document:
     toc: true
@@ -25,12 +25,12 @@ resMM <- local({    # load in a local environment to avoid colliding with the an
 ``` 
 
 
-## Raw reads QC ##
+## Raw reads QC {.tabset .tabset-pills}
 
 The raw sequence reads of all samples are analysed with the popular FastQC tool (http://www.bioinformatics.babraham.ac.uk/projects/fastqc/).
 
 
-#### Read quality
+### Read quality
 
 The “read quality” plot summarizes at each read position the Phred quality scores, which are logarithmically related to the base-calling error probabilities. The higher the Phred scores, the better the base calls. The elements of the plot are as follows: the central red line is the median value, the yellow box represents the inter-quartile range (25-75%), the upper and lower whiskers represent the 10% and 90% points, and the blue line represents the mean quality. The background of the graph divides the y-axis into very good quality calls (green), calls of intermediate quality (yellow), and calls of poor quality (red). Typically, the majority of calls on all base positions fall into the green area. Due to binning of quality score in recent sequencing technologies (e.g. Illumina NextSeq), sequencing qualities may be the same on many position and sample profiles may appear very similar.
 
@@ -56,7 +56,7 @@ if (SHINYREPS_FASTQC_SUMMARIZED == FALSE) {
 ```
 
 
-#### Sequence bias
+### Sequence bias
 
 The "sequence bias" plot shows the proportion of each base (% T, C, A and G) at each position. In a random library there would be little difference between the positions of a sequence run, so the lines in this plot should run parallel with each other. But most RNA-seq libraries show sequence imbalance in the first 10-12 read positions due to RT priming biases, which should however look fairly similar in all samples. In case the nucleotide content is summarized in a heatmap for all samples, gray colored fields represent a balanced nucleotide content.
 
@@ -82,7 +82,7 @@ if (SHINYREPS_FASTQC_SUMMARIZED == FALSE) {
 ```
 
 
-#### GC content
+### GC content
 
 The "GC content" plot shows the GC% distribution of all reads and all samples. Typically, the lines should tightly overlap and look essentially the same in all samples. An unusually shaped distribution could indicate a contaminated library.
 
@@ -101,9 +101,8 @@ cat("\nThe following plot shows the amount of reads trimmed (in percent) for the
 DEhelper.cutadapt()
 ```
 
-
 ```{r FastQC_qual_summarized_trimmed, echo=F,results='asis',error=F,warning=F,message=F,fig.align='center', eval=SHINYREPS_RUN_CUTADAPT=="true"}
-cat("### FastQC of trimmed reads QC\n\n")
+cat("### FastQC of trimmed reads QC {.tabset}\n\n")
 cat("#### Read quality\n\n")
 if (SHINYREPS_FASTQC_SUMMARIZED) {
     fastqc_summary_plot <- DEhelper.Fastqc.custom(web=F,summarizedPlots=T, subdir="trimmed")
@@ -142,11 +141,12 @@ if (SHINYREPS_FASTQC_SUMMARIZED == F) {
 ```{r FastQC_GC_trimmed, echo=F,results='asis',error=F,warning=F,message=F,fig.align='center', eval=SHINYREPS_RUN_CUTADAPT=="true"}
 cat("#### GC content of trimmed reads\n")
 fastqc_summary_plot$p.gc
-cat("\n", fill = T)
+cat("### {-}\n", fill = T)
 ```
 
+## {-}
 
-## Read mapping ##
+## Read mapping {.tabset .tabset-pills}
 
 Mapping to the reference genome & transcriptome is performed with STAR (https://github.com/alexdobin/STAR). The program version, genome assembly and software parameters are described in the table at the end of the report.
 
@@ -158,16 +158,17 @@ While both unique and multi-mapped reads are included in the generation of brows
 
 star_stats <- DEhelper.STAR()
 
-cat("#### Mapping summary:\n", fill=T)
+cat("### Mapping summary:\n", fill=T)
 plot(star_stats$p_perc_count)
 cat("\n", fill = T)
 
-cat("#### Mapping statistics:\n", fill=T)
+cat("### Mapping statistics:\n", fill=T)
 cat(star_stats$stat, sep="\n")
 cat("\n", fill = T)
 
 ```
 
+## {-}
 
 ## Potential contaminants and rRNA content ##
 
@@ -246,20 +247,20 @@ DEhelper.RNAtypes()
 ```
 
 
-## Gene body coverage ##
+## Gene body coverage  {.tabset .tabset-pills}
 
 The plots below show meta-gene profiles of 5' to 3' read coverage and can reveal biases due to RNA degradation or specific library prep protocol. PolyA-selection protocols are particularly prone of producing 3'-coverage bias due to even mild RNA degradation. Ideally, all samples which are being compared have similar profiles.
 
 ```{r GeneBodyCoverage_paragraph, echo=F, error=F, warning=F, message=F, results='asis', fig.align="center"}
 plot_list <- DEhelper.geneBodyCov2(web=F)
-cat("#### Gene body coverage per sample: plotly")
+cat("### Interactive")
 cat("\n\n", fill=T)
 plot_list$plotly %>%
     highlight(dynamic=T, selectize=T, persistent=T) 
 cat("\n\n")
 
 if("p_per_sample" %in% names(plot_list)){
-   cat("#### Gene body coverage per sample: \n", fill=T)
+   cat("### Static \n", fill=T)
    plot(plot_list$p_per_sample)
    cat("\n", fill=T)
 }
@@ -279,12 +280,12 @@ if("num_replicates" %in% names(plot_list)) {
 
 ```{r GeneBodyCoverage_splitByGroup, echo=F, error=F, warning=F, message=F, results='asis', fig.align="center", out.width="100%", fig.height=round((no.of.groups+1)/3)*2.5+0.5+ifelse(no.of.groups<3,1,0)}
 if("p_per_sample_splitByGroup" %in% names(plot_list)){
-   cat("#### Gene body coverage per sample split by group: \n", fill=T)
+   cat("### Split by group\n", fill=T)
    plot(plot_list$p_per_sample_splitByGroup)
    cat("\n", fill=T)
 }
 if("p_per_replicate_splitByGroup" %in% names(plot_list)){
-  cat("#### Gene body coverage per sample split by group, colored by replicate: \n", fill=T)
+  cat("### Split by group (color by rep)\n", fill=T)
   plot(plot_list$p_per_replicate_splitByGroup)
   cat("\n", fill=T)
 }
@@ -292,12 +293,13 @@ if("p_per_replicate_splitByGroup" %in% names(plot_list)){
 
 ```{r GeneBodyCoverage_splitByReplicate, echo=F, error=F, warning=F, message=F, results='asis', fig.align="center", out.width="100%", fig.height=round((no.of.replicates+1)/3)*2.5+0.5+ifelse(no.of.replicates<3,1,0)}
 if("p_per_group_splitByReplicate" %in% names(plot_list)){
-  cat("#### Gene body coverage per sample split by replicate, colored by group: \n", fill=T)
+  cat("### Split by rep (color by group)\n", fill=T)
   plot(plot_list$p_per_group_splitByReplicate)
   cat("\n", fill=T)
 }
 ```
 
+## {-}
 
 ## Strand specificity ##
 
@@ -319,7 +321,9 @@ DEhelper.Qualimap()        # sample Qualimap
 Please note that reads overlapping an exon as well as an intron/intergenic region are counted differently by the tools used in this section (QualiMap) and the tool used for assignment of reads in section “Mapped reads annotation” (featureCounts). In the latter, all reads overlapping an exon by at least one base pair are considered exonic, while in the current section only reads fully located in exons are considered exonic and all reads overlapping an intron or intergenic region by at least one bp are considered intronic/intergenic. Thus, numbers do not fully agree between those two sections.
 
 
-## Sample relatedness ##
+## Sample relatedness {.tabset .tabset-pills}
+
+### Sample similarity (PCA)
 
 The plot below depicts sample similarity based on priniciple component analysis (PCA) with the 500 genes showing the highest variance. Overall, replicates are expected to show relatively small distances between them, while sample groups often show higher distances between them, depending on the magnitude of expression changes. If the samples cluster other than by group, there might be sample prep batch effects or some other unaccounted biological/technical factors in the experiment. 
 
@@ -327,11 +331,15 @@ The plot below depicts sample similarity based on priniciple component analysis 
 DEhelper.DESeq2.MDS()        # sample MDS 
 ```
 
+### Sample similarity (clustogram)
+
 A heatmap clustogram of the Euclidean distances between the samples gives an intuitive measure of sample similarity:
 
 ```{r Heatmap2_paragraph, echo=F, error=F, warning=F, message=F, fig.align="center"}
 DEhelper.DESeq2.heatmap(type="distance")         # heatmap of sample to sample distances
 ```
+
+### Most variable genes
 
 Additionally, hierarchical clustering of the samples based on the most variable genes reveals replicate consistency and can spot batches of samples related by other characteristics rather than condition:
 
@@ -339,14 +347,17 @@ Additionally, hierarchical clustering of the samples based on the most variable 
 DEhelper.DESeq2.heatmap(type="cluster_sd")   # heatmap of top variant 'n' genes of the rlog transformed counts (normalized and stabilized)
 ```
 
+### Genes highest avg expression
+
 Finally, a hierarchical clustering of the samples based on the genes with the highest average expression level:
 
 ```{r Heatmap1_paragraph_mean, echo=F, error=F, warning=F, message=F, fig.align="center"}
 DEhelper.DESeq2.heatmap(type="cluster_mean")    # heatmap of top variant 'n' genes of the rlog transformed counts (normalized and stabilized)
 ```
 
+## {-}
 
-## Differential gene expression analysis ##
+## Differential gene expression analysis
 
 Pairwise differential expression analysis on the gene level between the experimental groups is performed with the popular R/Bioconductor package DESeq2 (https://bioconductor.org/packages/release/bioc/html/DESeq2.html). Default DESeq2 analysis includes an independent filtering procedure for lowly expressed genes which is meant to ameliorate the multiple testing problem thereby maximising the statistical power to detect differentially expressed genes (DEGs). In this standard analysis only uniquely mapped reads are taken into account to avoid "cross-talk" between different genes. 
 
@@ -359,27 +370,27 @@ for(i in 1:nrow(conts)) {
 
     # subsection
     cont.name <- conts$contrast.name[i]
-    cat("### ", cont.name, fill=T)
-    cat("", fill=T)
+    cat("### ", cont.name, " {.tabset .tabset-pills}", fill=T)
+    cat("\n", fill=T)
 
     # pairwise PCA plot 
-    cat("##### PCA plot", fill=T)
-    cat("Priniciple component analysis (PCA) plot using only the samples of the two analysed groups:", "\n", "\n")
+    cat("#### PCA plot", fill=T)
+    cat("Prinicipal component analysis (PCA) plot using only the samples of the two analysed groups:\n", fill=T)
     DEhelper.DESeq2.pairwisePCA(i)
     cat("\n", fill=T)
 
     # sample to sample distance
-    cat("##### Sample to sample distance (diagonal set to NA)", fill=T)
+    cat("#### Sample-sample dist", fill=T)
     DEhelper.DESeq2.heatmap(i, dds=pairwise.dds,  logTransform=T, type="distance")
     cat("\n", fill=T)
 
     # most variable genes
-    cat("##### Most variable genes", fill=T)
+    cat("#### Most variable genes", fill=T)
     DEhelper.DESeq2.heatmap(i, dds=pairwise.dds,  logTransform=T, type="cluster_sd")
     cat("\n", fill=T)
 
     # MA plot
-    cat("##### MA plot", fill=T)
+    cat("#### MA plot", fill=T)
     fdr <- as.numeric(SHINYREPS_DE_DESEQ_FDR)
     FC  <- as.numeric(SHINYREPS_DE_DESEQ_FC)
     genes <- DEhelper.DESeq2.DEgenes(i)
@@ -394,13 +405,13 @@ for(i in 1:nrow(conts)) {
     cat("\n", fill=T)
 
     # Volcano plot
-    cat("##### Volcano plot", fill=T)    
+    cat("#### Volcano plot", fill=T)    
     cat("Volcano plot of all DESeq2-tested genes depicting their expression fold change vs. statistical significance. Differentially expressed genes are highlighted in red and the top 25 are labelled.", "\n", "\n")
     DEhelper.DESeq2.VolcanoPlot(i, fdr, web=F)
     cat("\n", fill=T)
 
     # and DE table
-    cat("##### Top hits", fill=T)
+    cat("#### Top hits", fill=T)
     cat("", fill=T)
     cat("The table below shows the top 25 DEGs with their mean normalised counts (baseMean), expression change (log2FoldChange) and statistical significance (padj = FDR-adjusted p-value). The complete DESeq2 results table including FPKM-normalised expression data for all genes in each sample is available in CSV and Excel format in the 'DE_DESeq2' results folder.", fill=T)
     cat("", fill=T)
@@ -411,180 +422,116 @@ for(i in 1:nrow(conts)) {
     cat(kable(genes[1:25, cols], row.names=T, align="r", format="markdown"), sep="\n")    # show only the top 25 genes
     cat("", fill=T)
 
+    cat("### {-}\n", fill=T)
 }
 ```
 
-
-## GO and Pathway enrichment analysis ##
+## GO and Pathway enrichment analysis
 
 The R/Bioconductor package clusterProfiler (https://bioconductor.org/packages/release/bioc/html/clusterProfiler.html) was used to find enriched GO terms and pathways in the lists of significantly up- and down-regulated genes from the pairwise differential expression analyses. The resulting enrichment tables and plots can be found in the 'GO_Analysis' results folder. Shown below are several complementary visualisations aimed to help understand the underlying biological changes and the mutual relationships between the enriched GO terms and pathways.
 
 ```{r Enrichment_paragraph, echo=F, results='asis', error=F, warning=F, message=F, fig.align="center"}
-
 for(i in 1:nrow(conts)) {
 
     # subsection
     cont.name <- gsub("(.+)=(.+)","\\1",conts[i,1])
-    cat("### ", cont.name, fill=T)
+    cat("### ", cont.name, " {.tabset}\n", fill=T)
     cat("", fill=T)
 
-    # GO Enrichment Plots
-    # up-regulated genes
-    cat("##### GO terms enriched in the list of up-regulated genes (Biological Process, BP)", fill=T)
+    sections <- list(up  =list(text="Up-regulated"  , suffix="_up_genes"),
+                     down=list(text="Down-regulated", suffix="_down_genes"))
 
-    GO_bar_up     <- paste0(SHINYREPS_GO_ENRICHMENT, "/", gsub("=.*", "", conts[i, 1]), "_GO_barplot_up_genes.png")
-    GO_network_up <- paste0(SHINYREPS_GO_ENRICHMENT, "/", gsub("=.*", "", conts[i, 1]), "_GO_network_up_genes.png")
-    GO_treemap_up <- paste0(SHINYREPS_GO_ENRICHMENT, "/", conts$contrast.name[i], "_GO_treemap_up_genes.png")
-    GO_scatter_up <- paste0(SHINYREPS_GO_ENRICHMENT, "/", gsub("=.*", "", conts[i, 1]), "_GO_scatterplot_up_genes.png")
-    GO_dot_up     <- paste0(SHINYREPS_GO_ENRICHMENT, "/", gsub("=.*", "", conts[i, 1]), "_reduced_GO_dotplot_up_genes.png")
-    GO_cnet_up    <- paste0(SHINYREPS_GO_ENRICHMENT, "/", conts$contrast.name[i], "_reduced_GO_cnetplot_up_genes.png")
+    for(s in sections) {
+      cat("#### ", s$text, " {.tabset .tabset-pills}\n", fill=T)
 
-    # if there are GO enrichment results (the barplot was created)
-    if(file.exists(GO_bar_up)) {
+      # GO Enrichment Plots
+      cat("##### GO terms (BP) {.tabset .tabset-pills}\n", fill=T)
+      cat("GO terms enriched in the list of ", s$text, " genes (Biological Process, BP).\n", fill=T)
 
-        # GO enriched terms in a barplot
-        cat("Top enriched Gene Ontology BP terms for the up-regulated genes:", "\n", fill=T)
-        cat("![***](", GO_bar_up, ")\n", fill=T)
+      GO_bar     <- paste0(SHINYREPS_GO_ENRICHMENT, "/", conts$contrast.name[i], paste0("_GO_barplot", s$suffix, ".png"))
+      GO_network <- paste0(SHINYREPS_GO_ENRICHMENT, "/", conts$contrast.name[i], paste0("_GO_network", s$suffix, ".png"))
+      GO_treemap <- paste0(SHINYREPS_GO_ENRICHMENT, "/", conts$contrast.name[i], paste0("_GO_treemap", s$suffix, ".png"))
+      GO_scatter <- paste0(SHINYREPS_GO_ENRICHMENT, "/", conts$contrast.name[i], paste0("_GO_scatterplot"     , s$suffix, ".png"))
+      GO_dot     <- paste0(SHINYREPS_GO_ENRICHMENT, "/", conts$contrast.name[i], paste0("_reduced_GO_dotplot" , s$suffix, ".png"))
+      GO_cnet    <- paste0(SHINYREPS_GO_ENRICHMENT, "/", conts$contrast.name[i], paste0("_reduced_GO_cnetplot", s$suffix, ".png"))
 
-        # GO enriched terms in a network
-        cat("Network plot of the top enriched Gene Ontology BP terms for the up-regulated genes (connecting lines represent shared genes):", "\n", fill=T)
-        cat("![***](", GO_network_up, ")\n", fill=T)
+      # if there are GO enrichment results (the barplot was created)
+      if(file.exists(GO_bar)) {
+          cat("###### Barplot (all terms)\n", fill=T)
+          cat("Top enriched Gene Ontology BP terms for the ", s$text, " genes:\n", fill=T)
+          cat("![](", GO_bar, ")\n", fill=T)
 
-        # GO enriched terms in a treemap
-        cat("Clustering and reduction of the enriched Gene Ontology BP terms for the up-regulated genes (area size correlates with significance):", "\n", fill=T)
-        cat("![***](", GO_treemap_up, ")\n", fill=T)
+          cat("###### Network (all terms)\n", fill=T)
+          cat("Network plot of the top enriched Gene Ontology BP terms for the ", s$text, " genes (connecting lines represent shared genes):\n", fill=T)
+          cat("![](", GO_network, ")\n", fill=T)
 
-        # reduced GO enriched terms in a dotplot
-        cat("Top enriched Gene Ontology BP term clusters (reduced GO terms) for the up-regulated genes:", "\n", fill=T)
-        cat("![***](", GO_dot_up, ")\n", fill=T)
+          cat("###### Treemap clusters\n", fill=T)
+          cat("Clustering and reduction of the enriched Gene Ontology BP terms for the ", s$text, " genes (area size correlates with significance):\n", fill=T)
+          cat("![](", GO_treemap, ")\n", fill=T)
 
-        # GO enriched terms in a cnetplot
-        cat("Top enriched Gene Ontology BP term clusters with associated genes for the up-regulated genes:", "\n", fill=T)
-        cat("![***](", GO_cnet_up, ")\n", fill=T)
+          cat("###### Top terms clusters (reduced terms)\n", fill=T)
+          cat("Top enriched Gene Ontology BP term clusters (reduced GO terms) for the ", s$text, " genes:\n", fill=T)
+          cat("![](", GO_dot, ")\n", fill=T)
 
-    } else {
-        cat("no GO enrichment results for the up-regulated genes available\n", fill=T)
-    }
+          cat("###### Term-gene network (reduced terms)\n", fill=T)
+          cat("Top enriched Gene Ontology BP term clusters (reduced GO terms) with associated genes for the ", s$text, " genes:\n", fill=T)
+          cat("![](", GO_cnet, ")\n", fill=T)
+      } else {
+          cat("no GO enrichment results for the ", s$text, " genes available.\n", fill=T)
+      }
 
-     # Pathway Enrichment Plots
-     # up-regulated genes
-     cat("##### Reactome and KEGG pathways enriched in the list of up-regulated genes", fill=T)
+      # Pathway Enrichment Plots
+      cat("##### Reactome pathways {.tabset .tabset-pills}\n", fill=T)
+      cat("Reactome pathways enriched in the list of ", s$text, " genes.\n", fill=T)
 
-     Reactome_Pathway_bar_up     <- paste0(SHINYREPS_GO_ENRICHMENT, "/", gsub("=.*", "", conts[i,1]),"_Reactome_barplot_up_genes.png")
-     Reactome_network_up         <- paste0(SHINYREPS_GO_ENRICHMENT, "/", gsub("=.*", "", conts[i, 1]), "_Reactome_network_up_genes.png")
+      Reactome_Pathway_bar <- paste0(SHINYREPS_GO_ENRICHMENT, "/", conts$contrast.name[i], paste0("_Reactome_barplot" , s$suffix, ".png"))
+      Reactome_network     <- paste0(SHINYREPS_GO_ENRICHMENT, "/", conts$contrast.name[i], paste0("_Reactome_network" , s$suffix, ".png"))
+      Reactome_cnet        <- paste0(SHINYREPS_GO_ENRICHMENT, "/", conts$contrast.name[i], paste0("_Reactome_cnetplot", s$suffix, ".png"))
 
-     # if there are Reactome Pathway enrichment results (the barplot was created)
-     if(file.exists(Reactome_Pathway_bar_up)) {
+      # if there are Reactome Pathway enrichment results (the barplot was created)
+      if(file.exists(Reactome_Pathway_bar)) {
+          cat("###### Barplot\n", fill=T)
+          cat("Top enriched Reactome pathways for the ", s$text, " genes:\n", fill=T)
+          cat("![](", Reactome_Pathway_bar, ")\n", fill=T)
 
-        # Reactome Pathways enriched in a barplot
-        cat("Top enriched Reactome pathways for the up-regulated genes:", "\n", fill=T)
-        cat("![***](", Reactome_Pathway_bar_up, ")\n", fill=T)
+          cat("###### Network\n", fill=T)
+          cat("Network plot of the top enriched Reactome pathways for the ", s$text, " genes (connecting lines represent shared genes):\n", fill=T)
+          cat("![](", Reactome_network, ")\n", fill=T)
 
-        # Reactome enriched terms in a network
-        cat("Network plot of the top enriched Reactome pathways for the up-regulated genes (connecting lines represent shared genes):", "\n", fill=T)
-        cat("![***](", Reactome_network_up, ")\n", fill=T)
+          cat("###### Term-gene network\n", fill=T)
+          cat("Top enriched Reactome pathways with associated genes for the ", s$text, " genes:\n", fill=T)
+          cat("![](", Reactome_cnet, ")\n", fill=T)
+      } else {
+          cat("no Reactome Pathway enrichment results for the ", s$text, " genes available\n", fill=T)
+      }
 
-     } else {
-         cat("no Reactome Pathway enrichment results for the up-regulated genes available\n", fill=T)
-    }
+      cat("##### KEGG pathways {.tabset .tabset-pills}\n", fill=T)
+      cat("KEGG pathways enriched in the list of ", s$text, " genes.\n", fill=T)
+      KEGG_Pathway_bar <- paste0(SHINYREPS_GO_ENRICHMENT, "/", conts$contrast.name[i], paste0("_KEGG_barplot" , s$suffix, ".png"))
+      KEGG_network     <- paste0(SHINYREPS_GO_ENRICHMENT, "/", conts$contrast.name[i], paste0("_KEGG_network" , s$suffix, ".png"))
+      KEGG_cnet        <- paste0(SHINYREPS_GO_ENRICHMENT, "/", conts$contrast.name[i], paste0("_KEGG_cnetplot", s$suffix, ".png"))
 
-    KEGG_Pathway_bar_up     <- paste0(SHINYREPS_GO_ENRICHMENT, "/", gsub("=.*", "", conts[i,1]),"_KEGG_barplot_up_genes.png")
-    KEGG_network_up         <- paste0(SHINYREPS_GO_ENRICHMENT, "/", gsub("=.*", "", conts[i, 1]), "_KEGG_network_up_genes.png")
+      # if there are KEGG Pathway enrichment results (the barplot was created)
+      if(file.exists(KEGG_Pathway_bar)) {
+          cat("###### Barplot\n", fill=T)
+          cat("Top enriched KEGG pathways for the ", s$text, " genes:\n", fill=T)
+          cat("![](", KEGG_Pathway_bar, ")\n", fill=T)
 
-    # if there are KEGG Pathway enrichment results (the barplot was created)
-    if(file.exists(KEGG_Pathway_bar_up)) {
+          cat("###### Network\n", fill=T)
+          cat("Network plot of the top enriched KEGG pathways for the ", s$text, " genes (connecting lines represent shared genes):\n", fill=T)
+          cat("![](", KEGG_network, ")\n", fill=T)
 
-        # KEGG Pathways enriched in a barplot
-        cat("Top enriched KEGG pathways for the up-regulated genes:", "\n", fill=T)
-        cat("![***](", KEGG_Pathway_bar_up, ")\n", fill=T)
+          cat("###### Term-gene network\n", fill=T)
+          cat("Top enriched KEGG pathways with associated genes for the ", s$text, " genes:\n", fill=T)
+          cat("![](", KEGG_cnet, ")\n", fill=T)
+      } else {
+          cat("no KEGG Pathway enrichment results for the ", s$text, " genes available.\n", fill=T)
+      }
 
-        # KEGG enriched terms in a network
-        cat("Network plot of the top enriched KEGG pathways for the up-regulated genes (connecting lines represent shared genes):", "\n", fill=T)
-        cat("![***](", KEGG_network_up, ")\n", fill=T)
+    cat("#### {-}\n", fill=T)
+  }
 
-     } else {
-         cat("no KEGG Pathway enrichment results for the up-regulated genes available\n", fill=T)
-    }
-
-    # GO Enrichment Plots
-    # down-regulated genes
-    cat("##### GO terms enriched in the list of down-regulated genes (Biological Process, BP)", fill=T)
-
-    GO_bar_down     <- paste0(SHINYREPS_GO_ENRICHMENT, "/", gsub("=.*", "", conts[i, 1]), "_GO_barplot_down_genes.png")
-    GO_network_down <- paste0(SHINYREPS_GO_ENRICHMENT, "/", gsub("=.*", "", conts[i, 1]), "_GO_network_down_genes.png")
-    GO_treemap_down <- paste0(SHINYREPS_GO_ENRICHMENT, "/", conts$contrast.name[i], "_GO_treemap_down_genes.png")
-    GO_scatter_down <- paste0(SHINYREPS_GO_ENRICHMENT, "/", gsub("=.*", "", conts[i, 1]), "_GO_scatterplot_down_genes.png")
-    GO_dot_down     <- paste0(SHINYREPS_GO_ENRICHMENT, "/", gsub("=.*", "", conts[i, 1]), "_reduced_GO_dotplot_down_genes.png")
-    GO_cnet_down    <- paste0(SHINYREPS_GO_ENRICHMENT, "/", conts$contrast.name[i], "_reduced_GO_cnetplot_down_genes.png")
-
-    # if there are GO enrichment results (the barplot was created)
-    if(file.exists(GO_bar_down)) {
-
-        # GO enriched terms in a barplot
-        cat("Top enriched Gene Ontology BP terms for the down-regulated genes:", "\n", fill=T)
-        cat("![***](", GO_bar_down, ")\n", fill=T)
-
-        # GO enriched terms in a network
-        cat("Network plot of the top enriched Gene Ontology BP terms for the down-regulated genes (connecting lines represent shared genes):", "\n", fill=T)
-        cat("![***](", GO_network_down, ")\n", fill=T)
-
-        # GO enriched terms in a treemap
-        cat("Clustering and reduction of the enriched Gene Ontology BP terms for the down-regulated genes (area size correlates with significance):", "\n", fill=T)
-        cat("![***](", GO_treemap_down, ")\n", fill=T)
-
-        # reduced GO enriched terms in a dotplot
-        cat("Top enriched Gene Ontology BP term clusters (reduced GO terms) for the down-regulated genes:", "\n", fill=T)
-        cat("![***](", GO_dot_down, ")\n", fill=T)
-
-        # GO enriched terms in a cnetplot
-        cat("Top enriched Gene Ontology BP term clusters with associated genes for the down-regulated genes:", "\n", fill=T)
-        cat("![***](", GO_cnet_down, ")\n", fill=T)
-
-    } else {
-        cat("no GO enrichment results for the down-regulated genes available\n", fill=T)
-    }
-
-     # Pathway Enrichment Plots
-     # down-regulated genes
-     cat("##### Reactome and KEGG pathways enriched in the list of down-regulated genes", fill=T)
-
-     Reactome_Pathway_bar_down     <- paste0(SHINYREPS_GO_ENRICHMENT, "/", gsub("=.*", "", conts[i,1]),"_Reactome_barplot_down_genes.png")
-     Reactome_network_down         <- paste0(SHINYREPS_GO_ENRICHMENT, "/", gsub("=.*", "", conts[i, 1]), "_Reactome_network_down_genes.png")
-
-     # if there are Reactome Pathway enrichment results (the barplot was created)
-     if(file.exists(Reactome_Pathway_bar_down)) {
-
-        # Reactome Pathways enriched in a barplot
-        cat("Top enriched Reactome pathways for the down-regulated genes:", "\n", fill=T)
-        cat("![***](", Reactome_Pathway_bar_down, ")\n", fill=T)
-
-        # Reactome enriched terms in a network
-        cat("Network plot of the top enriched Reactome pathways for the down-regulated genes (connecting lines represent shared genes):", "\n", fill=T)
-        cat("![***](", Reactome_network_down, ")\n", fill=T)
-
-     } else {
-         cat("no Reactome Pathway enrichment results for the down-regulated genes available\n", fill=T)
-    }
-
-    KEGG_Pathway_bar_down     <- paste0(SHINYREPS_GO_ENRICHMENT, "/", gsub("=.*", "", conts[i,1]),"_KEGG_barplot_down_genes.png")
-    KEGG_network_down         <- paste0(SHINYREPS_GO_ENRICHMENT, "/", gsub("=.*", "", conts[i, 1]), "_KEGG_network_down_genes.png")
-
-    # if there are KEGG Pathway enrichment results (the barplot was created)
-    if(file.exists(KEGG_Pathway_bar_down)) {
-
-        # KEGG Pathways enriched in a barplot
-        cat("Top enriched KEGG pathways for the down-regulated genes:", "\n", fill=T)
-        cat("![***](", KEGG_Pathway_bar_down, ")\n", fill=T)
-
-        # KEGG enriched terms in a network
-        cat("Network plot of the top enriched KEGG pathways for the down-regulated genes (connecting lines represent shared genes):", "\n", fill=T)
-        cat("![***](", KEGG_network_down, ")\n", fill=T)
-
-
-    } else {
-        cat("no KEGG Pathway enrichment results for the down-regulated genes available\n", fill=T)
-    }
-
+  cat("### {-}\n", fill=T)
 }
 ```
 
@@ -643,20 +590,19 @@ conts <- read.delim(file.path(SHINYREPS_PROJECT, "contrasts.txt"), header=T,comm
 # duplicates may occur, if user tries different formula for same contrasts
 uconts <- unique(conts[,c("contrast.name","contrast")])
 for(i in 1:nrow(uconts)) {
-	# subsection
-	cont.name <- uconts$contrast.name[i]
-	if(!dir.exists(file.path(SHINYREPS_RES, "rMATS", paste0(cont.name,"_rMATS")))) {next()}
+    # subsection
+    cont.name <- uconts$contrast.name[i]
+    if(!dir.exists(file.path(SHINYREPS_RES, "rMATS", paste0(cont.name,"_rMATS")))) {next()}
 
-	cat("\n\n", fill=T)
-	cat("### ", cont.name, fill=T)
-	cat("\n\n", fill=T)
-	if(file.exists(file.path(SHINYREPS_RES, "rMATS", paste0(cont.name,"_rMATS"),"maser_processed.RData"))) {
-		load(file.path(SHINYREPS_RES, "rMATS", paste0(cont.name,"_rMATS"),"maser_processed.RData"))
-		DEhelper.rmats()
-	} else {
-		cat("No splicing events were found")
-		next()
-	}
+    cat("\n\n", fill=T)
+    cat("### ", cont.name, fill=T)
+    cat("\n\n", fill=T)
+    if(file.exists(file.path(SHINYREPS_RES, "rMATS", paste0(cont.name,"_rMATS"),"maser_processed.RData"))) {
+        load(file.path(SHINYREPS_RES, "rMATS", paste0(cont.name,"_rMATS"),"maser_processed.RData"))
+        DEhelper.rmats()
+    } else {
+        cat("No splicing events were found.\n")
+    }
 }
 ```
 
@@ -676,7 +622,7 @@ for(i in 1:nrow(conts)) {
     
     # subsection
     cont.name <- conts$contrast.name[i]
-    cat("### ", cont.name, fill=T)
+    cat("### ", cont.name, " {.tabset .tabset-pills}\n", fill=T)
     cat("", fill=T)
     
     # Venn comparing DE genes w/ w/o MM
@@ -693,7 +639,7 @@ for(i in 1:nrow(conts)) {
     }
     
     # the top genes in disagreement
-    cat("The table below shows the top genes which are differentially expressed (FDR <", fdr, ") in only one analysis.", fill=T)
+    cat("The table below shows the top 25 genes which are differentially expressed (FDR <", fdr, ") in only one analysis.", fill=T)
     cat("", fill=T)
     disagree   <- setdiff(rownames(res  [[i]])[padj   < fdr], rownames(resMM[[i]])[padjMM < fdr])
     disagreeMM <- setdiff(rownames(resMM[[i]])[padjMM < fdr], rownames(res  [[i]])[padj   < fdr])
@@ -711,12 +657,10 @@ for(i in 1:nrow(conts)) {
     })
 
     # output result
-    cat("With multimappers only:", fill=T)
-    cat("", fill=T)
+    cat("#### With multimappers only\n", fill=T)
     cat(kable(tables[[2]], row.names=T, align="r",format="markdown"), sep="\n")    # show max 25 genes
     cat("", fill=T)
-    cat("Without multimappers only:", fill=T)
-    cat("", fill=T)
+    cat("#### Without multimappers only\n", fill=T)
     cat(kable(tables[[1]], row.names=T, align="r",format="markdown"), sep="\n")    # show max 25 genes
     cat("", fill=T)
 }
