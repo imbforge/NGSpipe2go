@@ -2112,14 +2112,11 @@ DEhelper.rmats <- function() {
     for(e in c("A3SS", "A5SS", "SE", "RI", "MXE")) {
         if(nrow(slot(rmats_top, paste0(e,"_events"))) > 0) {
                 cat("\n\n", fill=T)
-                cat("#### results for", e, fill=T)
-                cat("\n\n", fill=T)
                 top <- summary(rmats_top, type=e)
                 top <- top[order(top$FDR), !colnames(top) %in% c("GeneID")]
-                colnames(top) <- plyr::mapvalues(colnames(top), from=c("ID", "PValue", "IncLevelDifference"), to=c("rMATS_ID", "pval", "IncLevelDiff"))
+                colnames(top) <- plyr::mapvalues(colnames(top), from=c("ID", "PValue", "IncLevelDifference"), to=c("rMATS_ID", "pval", "deltaPSI"))
                 top$pval <- signif(top$pval, 3)
                 top$FDR <- signif(top$FDR, 3)
-                cat("\n\nSplicing events have genomic locations, raw counts, PSI levels and statistics (p-values) regarding their differential splicing between conditions.\n")
                 cat("\n##### Significant", e, "events : ", nrow(top) ,"\n\n")
                 rownames(top)=NULL
                 print(kable(head(top, nrow(top)), format="html", align=c("c"), caption=paste("top", e, "events")) %>%
@@ -2131,11 +2128,26 @@ DEhelper.rmats <- function() {
 		#plotPCA<-maser::pca(rmats_filt, type = e)
                 #print(plotPCA)
                 cat("\n\n")
-                cat("##### Volcano plot \n\n")
+                cat("\n##### Volcano plot of ", e,"events \n\n")
                 plotVolcano<-volcanoMod(rmats_filt, fdr = SHINYREPS_MASER_FDR, deltaPSI = SHINYREPS_MASER_DPSI, type = e)
                 print(plotVolcano)
                 cat("\n\n")
                 cat("##### Top Significant", e, "event \n\n")
+		if(e == "SE") {
+			cat("\n\n The Event track depicts location of exons involved in skipping event. The *Inclusion* track shows transcripts overlapping the cassette exon as well as both flanking exons (i.e upstream and downstream exons). On the other hand, the skipping track displays transcripts overlapping both flanking exons but missing the cassette exon. The PSI track displays the **inclusion level for the cassette exon** (a.k.a. alternative exon) from the different replicates as a box plot for each condition. A higher PSI value indicate that there is a significant increase of the cassette exon in the respective condition. \n\n")
+		}
+		if(e=="RI"){
+			cat("\n\n The Event track depicts location of introns involved in the retention event. In this case, the Retention track shows transcripts with an exact overlap of the retained intron, and the Non-retention tracks will display transcripts in which the intron is spliced out and overlap flanking exons. The PSI track displays the **inclusion level of the retained intron** from the different replicates as a box plot for each condition. A higher PSI value indicate that there is a significant increase of the retained intron in the respective condition. \n\n")
+		}
+		if(e=="A3SS"){
+			cat("\n\n Alternative 3' splicing occur due to alternative acceptor sites. The Short track shows transcripts overlapping both short and flanking exons. The PSI track displays the **inclusion level of the longest exon** from the different replicates as a box plot for each condition. A higher PSI value indicate that there is a significant increase of the longest exon in the respective condition. \n\n")
+		}
+		if(e=="A5SS"){
+			cat("\n\n Alternative 5' splicing occur due to alternative donor sites. The Long track shows transcripts overlapping both long and flanking exons. The PSI track displays the **inclusion level of the longest exon** from the different replicates as a box plot for each condition. A higher PSI value indicate that there is a significant increase of the longest exon in the respective condition. \n\n")
+		}
+		if(e=="MXE"){
+			cat("\n\n This event refers to adjacent exons that are mutually exclusive, i.e. are not expressed together. The Event tracks will display transcripts harboring the first or second mutually exclusive exons, as well as both flanking exons. The PSI track in the mutually exclusive exons event will show two sets of box plots. The first set refers to MXE Exon 1 PSI levels while the second set refers to MXE Exon 2 PSI levels in the two conditions. A higher PSI value indicate that there is a significant increase of the respective MXE Exon in the respective condition. \n\n")
+		}
                 top1 <- maser::geneEvents(rmats_filt, geneS = top$geneSymbol[1], fdr = SHINYREPS_MASER_FDR, deltaPSI = SHINYREPS_MASER_DPSI)
 
                 ## Display affected transcripts and PSI levels

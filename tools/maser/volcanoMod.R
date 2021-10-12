@@ -13,17 +13,24 @@ volcanoMod <- function (events, type = c("A3SS", "A5SS", "SE", "RI", "MXE"),
   cond1 <- dplyr::filter(stats, FDR < fdr, IncLevelDifference > deltaPSI)
   cond2 <- dplyr::filter(stats, FDR < fdr, IncLevelDifference < (-1 * deltaPSI))
   status <- rep("Not significant", times = nrow(stats))
-  status[stats$ID %in% cond1$ID] <- "up"    # events$conditions[1] # mod
-  status[stats$ID %in% cond2$ID] <- "down"  # events$conditions[2] # mod
+  #Ignored the up/down change made by FR, as we want to show the sample names directly
+  #status[stats$ID %in% cond1$ID] <- "up"    # events$conditions[1] # mod
+  #status[stats$ID %in% cond2$ID] <- "down"  # events$conditions[2] # mod
+  status[stats$ID %in% cond1$ID] <- events$conditions[1]
+  status[stats$ID %in% cond2$ID] <- events$conditions[2]
   FDR <- stats$FDR
   idx_zero <- which(stats$FDR == 0)
   idx_min_nonzero <- max(which(stats$FDR == 0)) + 1
   FDR[idx_zero] <- FDR[idx_min_nonzero]
   log10pval <- -1 * log10(FDR)
+  #Ignored the up/down change made by FR, as we want to show the sample names directly
+  #plot.df <- data.frame(ID = stats$ID, deltaPSI = stats$IncLevelDifference, 
+  #                      log10pval = log10pval, Status = factor(status, levels = c("Not significant", "up", "down" # mod: up and down instead groups
+  #                                                                                #events$conditions[1], events$conditions[2]
+  #                                                                               )))
   plot.df <- data.frame(ID = stats$ID, deltaPSI = stats$IncLevelDifference, 
-                        log10pval = log10pval, Status = factor(status, levels = c("Not significant", "up", "down" # mod: up and down instead groups
-                                                                                  #events$conditions[1], events$conditions[2]
-                                                                                  )))
+                        log10pval = log10pval, Status = factor(status, 
+							       levels = c("Not significant", events$conditions[1], events$conditions[2])))
   if (length(unique(status)) < 3) {
     colors <- c("blue", "red")
   }  else {
