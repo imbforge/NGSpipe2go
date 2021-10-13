@@ -20,6 +20,7 @@ library(maser)
 library(rtracklayer)
 library(knitr)
 library(kableExtra)
+library(openxlsx)
 
 ##
 ## get arguments from the command line
@@ -93,6 +94,10 @@ if(!error_status) {
 		#print(plotPCA)
 		plotVolcano <- volcanoMod(rmats_filt, fdr = fdr, deltaPSI = dpsi, type = e, title = e)
 		print(plotVolcano)
+		top <- summary(rmats_top, type=e)
+		#write the results for each event and contrast
+		write.csv(top, file=paste0(rmats_dir,"/","Significant_",e,"_events.csv"), row.names = F)
+		write.xlsx(top, file=paste0(rmats_dir,"/","Significant_",e,"_events.xlsx"), row.names = F)	
 	}
   }
   dev.off()
