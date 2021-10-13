@@ -54,7 +54,7 @@ Bpipe.run {
             (RUN_IN_PAIRED_END_MODE ? InsertSize : dontrun.using(module: "InsertSize"))
         ]
     ] + 
-    (RUN_RMATS ? PRERMATS + rMATS : dontrun.using(module: "rMATS"))+
+    (RUN_RMATS ? PRERMATS + "%.txt" * [ rMATS ] : dontrun.using(module: "rMATS"))+
     [ DE_DESeq2_MM , DE_DESeq2 + GO_Enrichment ] +
     (RUN_TRACKHUB ? trackhub_config + trackhub : dontrun.using(module: "trackhub")) +
     collectToolVersions + MultiQC + shinyReports
