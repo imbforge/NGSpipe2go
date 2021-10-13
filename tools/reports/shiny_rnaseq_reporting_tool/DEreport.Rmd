@@ -573,7 +573,7 @@ Further, the maser package is used to analyze the splicing events. Low coverage 
 
 For each pairwise analysis, a distribution of the proportion of splicing events are shown as a summary. Further, for each of the aforementioned alternative splicing events (A3SS, A5SS, SE, RI, MXE) the following global analysis plots are shown, which can also be found in the 'rMATS' results folder: 
   
-  * a table of genes with significant splicing events, their exon inclusion levels (PSI_1, PSI_2, deltaPSI) and exon localization,
+  * a table of genes with significant splicing events, their exon inclusion levels in each replicate (PSI_1, PSI_2), the difference in PSI between conditions (deltaPSI = average(PSI_1)-average(PSI_2)), and exon localization,
   * a volcano plot of the splicing events with only the significant events colored (blue, red).
 
 In addition, only for the gene with the *top* significant splicing event, we show a customized genomic track visualization of the transcripts affected by the respective splicing event. More information on interpreting that plot is provided below. 
