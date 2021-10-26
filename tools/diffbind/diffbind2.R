@@ -56,14 +56,14 @@ OUT        <- parseArgs(args,"out=", paste0(CWD, "/results")) # directory where 
 FRAGSIZE   <- parseArgs(args,"fragsize=", 200, "as.numeric")# fragment size
 SUMMITS    <- parseArgs(args,"summits=", 0, "as.numeric") # summits for re-centering consensus peaks
 FILTER     <- parseArgs(args,"filter=", 0, "as.numeric") # value to use for filtering intervals with low read counts
-SUBSTRACTCONTROL  <- parseArgs(args,"substractControl=", TRUE, "as.logical")  # substract input
+SUBSTRACTCONTROL  <- parseArgs(args,"substractControl=", FALSE, "as.logical")  # substract input
 ANALYSISMETHOD    <- parseArgs(args,"analysisMethod=", "DESeq2", "as.character") # method for which to normalize (either "DESeq2" or "edgeRGLM")
 LIBRARYSIZE       <- parseArgs(args,"librarySize=", "full", "as.character")   # use total number of reads in bam for normalization (FALSE=only peaks)
 FULLLIBRARYSIZE   <- if(tolower(LIBRARYSIZE) %in% tolower(c("full", "background", "default", "true", "t"))) {TRUE} else {FALSE}
-TAGWISEDISPERSION <- parseArgs(args,"tagwiseDispersion=", TRUE, "as.logical") # calculate dispersion tagwise (use FALSE if no replicates)
+TAGWISEDISPERSION <- parseArgs(args,"tagwiseDispersion=", FALSE, "as.logical") # calculate dispersion tagwise (use FALSE if no replicates)
 FDR_TRESHOLD      <- parseArgs(args,"fdr_threshold=", 0.05, "as.numeric") # summits for re-centering consensus peaks
 FOLD       <- parseArgs(args,"fold=", 0, "as.numeric") # summits for re-centering consensus peaks
-ANNOTATE   <- parseArgs(args,"annotate=", TRUE, "as.logical") # annotate after DB analysis?
+ANNOTATE   <- parseArgs(args,"annotate=", FALSE, "as.logical") # annotate after DB analysis?
 PE         <- parseArgs(args,"pe=", FALSE, "as.logical")      # paired end experiment?
 TSS        <- parseArgs(args,"tss=", "c(-3000,3000)", "run_custom_code") # region around the tss
 TXDB       <- parseArgs(args,"txdb=", "TxDb.Mmusculus.UCSC.mm9.knownGene") # Bioconductor transcript database, for annotation 

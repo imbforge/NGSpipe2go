@@ -53,17 +53,17 @@ PEAKS      <- parseArgs(args,"peaks=",paste0(CWD, "/results/macs2"))  # director
 OUT        <- parseArgs(args,"out=", paste0(CWD, "/results/diffbind")) # directory where the output files will go
 FRAGSIZE   <- parseArgs(args,"fragsize=", 200, "as.numeric")# fragment size
 BLACKLIST  <- parseArgs(args,"blacklist=", FALSE, "as.logical") # if true, blacklist will be applied
-GREYLIST   <- parseArgs(args,"greylist=", TRUE, "as.logical") # if true greylist will be generated for each Control
+GREYLIST   <- parseArgs(args,"greylist=", FALSE, "as.logical") # if true greylist will be generated for each Control
 SUMMITS    <- parseArgs(args,"summits=", 200, "as.numeric") # summits for re-centering consensus peaks
 FILTER     <- parseArgs(args,"filter=", 5, "as.numeric") # value to use for filtering intervals with low read counts
 ANALYSISMETHOD  <- parseArgs(args,"analysisMethod=", "DESeq2", "as.character") # method for which to normalize (either "DESeq2" or "edgeRGLM")
 LIBRARYSIZE     <- parseArgs(args,"librarySize=", "default", "as.character")   # use total number of reads in bam for normalization (FALSE=only peaks)
 NORMALIZATION   <- parseArgs(args,"normalization=", "default", "as.character")   # use total number of reads in bam for normalization (FALSE=only peaks)
-SUBSTRACTCONTROL<- parseArgs(args,"substractControl=", "default", "as.character")  # substract input
+SUBSTRACTCONTROL<- parseArgs(args,"substractControl=", "default", "as.character")  # subtract input
 CONDITIONCOLUMN <- parseArgs(args,"conditionColumn=", "group", "as.character") # this targets column is interpreted as 'Condition' and is used as for defining the default design
 FDR_TRESHOLD    <- parseArgs(args,"fdr_threshold=", 0.05, "as.numeric") # summits for re-centering consensus peaks
 FOLD       <- parseArgs(args,"fold=", 0, "as.numeric") # summits for re-centering consensus peaks
-ANNOTATE   <- parseArgs(args,"annotate=", TRUE, "as.logical") # annotate after DB analysis?
+ANNOTATE   <- parseArgs(args,"annotate=", FALSE, "as.logical") # annotate after DB analysis?
 PE         <- parseArgs(args,"pe=", FALSE, "as.logical")      # paired end experiment?
 TSS        <- parseArgs(args,"tss=", "c(-3000,3000)", "run_custom_code") # region around the tss
 TXDB       <- parseArgs(args,"txdb=", "TxDb.Mmusculus.UCSC.mm9.knownGene") # Bioconductor transcript database, for annotation 
@@ -78,7 +78,7 @@ if(!file.exists(FCONTRASTS)) stop("File",FCONTRASTS,"does NOT exist. Run with:\n
 if(!file.exists(BAMS))       stop("Dir",BAMS,"does NOT exist. Run with:\n",runstr)
 if(!file.exists(PEAKS))      stop("Dir",PEAKS,"does NOT exist. Run with:\n",runstr)
 if(!is.numeric(FRAGSIZE))    stop("Fragment size not numeric. Run with:\n",runstr)
-if(!is.logical(BLACKLIST))   stop("blacklist not logical. Run with:\n",runstr)
+if(!isTRUE(BLACKLIST))       {BLACKLIST <- FALSE} # if a specific blacklist is defined in essential.vars it is applied by the blacklist_filter module and not here. If set to TRUE in diffbind3.header diffbind applies a public blacklist if available. 
 if(!is.logical(GREYLIST))    stop("greylist not logical. Run with:\n",runstr)
 if(!is.numeric(SUMMITS))     stop("Summits is not numeric. Run with:\n",runstr)
 if(!is.numeric(FILTER))      stop("Filter threshold is not numeric. Run with:\n",runstr)
@@ -149,7 +149,8 @@ db <- dba(sampleSheet=targets, config=data.frame(AnalysisMethod=ANALYSISMETHOD, 
                                                  doBlacklist=BLACKLIST, doGreylist=GREYLIST)) 
 
 # create DBA object containing consensus peaks per group (needed later)
-db2 <- dba.peakset(db, consensus=DBA_CONDITION)
+db2 <- dba(db, mask=sapply(db$peaks, nrow)>0) # diffbind crashes if peaksets with no peaks are included for generating consensus peakset
+db2 <- dba.peakset(db2, consensus=DBA_CONDITION)
 
 # Heatmap using occupancy (peak caller score) data
 png(paste0(OUT, "/heatmap_occupancy.png"), width = 150, height = 150, units = "mm", res=300)
