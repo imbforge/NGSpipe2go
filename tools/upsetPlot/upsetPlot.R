@@ -157,7 +157,7 @@ ChIPhelper.UpSetPlot <- function(subdir="", Mode = "intersect", peakOverlapMode=
   
   #create granges from the peaks
   peak.ranges <- ChIPhelper.init("readPeaks", subdir, peaks_as="GRanges")
-  
+  if(length(peak.ranges)>15) {return("UpSet plots are available only for max 15 peaksets")}
   upsetReturn <- list()
   upsetReturn[["peak.ranges"]] <- peak.ranges
   
