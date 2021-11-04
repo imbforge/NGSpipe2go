@@ -195,7 +195,7 @@ ChIPhelper.VennDiagram <- function(subdir=""){
 
 
 #'
-#' ChIPhelper.UpsetPlot: shows a upset plot for the peaks called in one branch of the pipeline
+#' ChIPhelper.UpsetPlot: shows a upset plot for the peaks called in one branch of the pipeline (max 15 peaksets allowed)
 #'
 #' @param subdir character with sub-directory containing the peak files
 #' @param Mode character defining the mode for forming the combination set (one of "distinct", "intersect", "union")
@@ -362,6 +362,7 @@ ChIPhelper.display.plots<- function(web=FALSE, plotdir="", subdir="", plots_colu
   
   # construct the image url from the folder contents (skip current dir .)
   samples <- list.files(QC, pattern=".png$")
+  if(length(samples)==0) {return("No plots available")}
   COLUMNS <- min(length(samples), plots_column)
   df <- sapply(samples, function(f) {
     paste0("![plot img](", QC, "/", basename(f), ")")
@@ -519,6 +520,7 @@ ChIPhelper.Bowtie2 <- function() {
   # set row and column names, and output the md table
   colnames(x) <- gsub(paste0("^", SHINYREPS_PREFIX), "", colnames(x))
   colnames(x) <- gsub(".bam.log$", "", colnames(x))
+  colnames(x) <- gsub("\\..*$", "", colnames(x))
   rownames(x)[1] <- if(!isPaired) {"all reads"} else {"all pairs"}
   kable(t(x), align=c(rep("r",10)), output=F, format="markdown", row.names=T)
 }
@@ -624,6 +626,7 @@ ChIPhelper.Fastqc <- function(web=FALSE, subdir="",
     if(length(fileColumnName)>1) { # melt targets in case of multiple file name columns (as for ChIP-Seq) and create general targets format 
       targets <- targets[, colnames(targets)[colnames(targets) %in% unique(c(fileColumnName, sampleColumnName))]]
       targets <- reshape2::melt(targets, measure.vars=fileColumnName, value.name = "file") # 'file' column created
+      targets <- targets[!duplicated(targets$file), ] # in case the same inputs are used for several samples
       for(i in 1:length(sampleColumnName)) {targets$sample[targets$variable == fileColumnName[i]] <- targets[targets$variable == fileColumnName[i], sampleColumnName[i]]} # 'sample' column created
       targets <- targets[, !colnames(targets) %in% sampleColumnName] # sampleColumnName not needed any more
     } else {
@@ -700,6 +703,7 @@ ChIPhelper.Fastqc.custom <- function(web=FALSE, summarizedPlots=TRUE, subdir="",
     if(length(fileColumnName)>1) { # melt targets in case of multiple file name columns (as for ChIP-Seq) and create general targets format 
       targets <- targets[, colnames(targets)[colnames(targets) %in% unique(c(fileColumnName, sampleColumnName))]]
       targets <- reshape2::melt(targets, measure.vars=fileColumnName, value.name = "file") # 'file' column created
+      targets <- targets[!duplicated(targets$file), ] # in case the same inputs are used for several samples
       for(i in 1:length(sampleColumnName)) {targets$sample[targets$variable == fileColumnName[i]] <- targets[targets$variable == fileColumnName[i], sampleColumnName[i]]} # 'sample' column created
       targets <- targets[, !colnames(targets) %in% sampleColumnName] # sampleColumnName not needed any more
     } else {
@@ -1081,6 +1085,7 @@ ChIPhelper.insertsize <- function(subdir="",
       if(length(fileColumnName)>1) { # melt targets in case of multiple file name columns (as for ChIP-Seq) and create general targets format 
         targets <- targets[, colnames(targets)[colnames(targets) %in% unique(c(fileColumnName, sampleColumnName))]]
         targets <- reshape2::melt(targets, measure.vars=fileColumnName, value.name = "file") # 'file' column created
+        targets <- targets[!duplicated(targets$file), ] # in case the same inputs are used for several samples
         for(i in 1:length(sampleColumnName)) {targets$sample[targets$variable == fileColumnName[i]] <- targets[targets$variable == fileColumnName[i], sampleColumnName[i]]} # 'sample' column created
         targets <- targets[, !colnames(targets) %in% sampleColumnName] # sampleColumnName not needed any more
       } else {
@@ -1162,6 +1167,7 @@ ChIPhelper.insertsize.helper <- function(metricsFile,
     if(length(fileColumnName)>1) { # melt targets in case of multiple file name columns (as for ChIP-Seq) and create general targets format 
       targets <- targets[, colnames(targets)[colnames(targets) %in% unique(c(fileColumnName, sampleColumnName))]]
       targets <- reshape2::melt(targets, measure.vars=fileColumnName, value.name = "file") # 'file' column created
+      targets <- targets[!duplicated(targets$file), ] # in case the same inputs are used for several samples
       for(i in 1:length(sampleColumnName)) {targets$sample[targets$variable == fileColumnName[i]] <- targets[targets$variable == fileColumnName[i], sampleColumnName[i]]} # 'sample' column created
       targets <- targets[, !colnames(targets) %in% sampleColumnName] # sampleColumnName not needed any more
     } else {
@@ -1436,19 +1442,23 @@ ChIPhelper.diffbind <- function(subdir="") {
         # plots for 3rd panel (always 3 elements plotted newly)
         cat("\n\n")   
         COLUMNS <- min(3, SHINYREPS_PLOTS_COLUMN)
-        opar <- par(mfrow=c(ceiling(3/COLUMNS), COLUMNS))
+        numberOfPlots <- 3
+        if(!tolower(SHINYREPS_DB) %in% registered_UCSC_genomes()$genome) {numberOfPlots <- numberOfPlots-1} # reduce number of plots if barplot not available
+        opar <- par(mfrow=c(ceiling(numberOfPlots/COLUMNS), COLUMNS))
           try(dba.plotMA(db, contrast=cont, cex.main=0.8))  # col.main="white"  
           
           hist(res[[cont]]$Fold, main="", xlab="log fold change", ylab="number of significant peaks", col="grey")
           abline(v=0, lty=2, col="blue")
         
-          chromInfo <- getChromInfoFromUCSC(SHINYREPS_DB)
-          colnames(chromInfo)[colnames(chromInfo)=="length"] <- "size" # in case of older GenomicFeatures versions which give colname "length"
-          rownames(chromInfo) <- chromInfo$chrom
-          freq <- table(res[[cont]]$seqnames)
-          freq <- freq[rev(order(gsub("chr", "", names(freq))))]
-          barplot(1e6 * freq/chromInfo[names(freq), "size"], horiz=TRUE, las=1, xlab="number of significant peaks per MB") # count normalized by chrom length
-          # barplot(freq, horiz=TRUE, las=1, xlab="number of significant peaks") # absolute sign peaks count instead of normalized count
+          if(tolower(SHINYREPS_DB) %in% registered_UCSC_genomes()$genome) {
+            chromInfo <- getChromInfoFromUCSC(SHINYREPS_DB) # see registered_UCSC_genomes()
+            colnames(chromInfo)[colnames(chromInfo)=="length"] <- "size" # in case of older GenomicFeatures versions which give colname "length"
+            rownames(chromInfo) <- chromInfo$chrom
+            freq <- table(res[[cont]]$seqnames)
+            freq <- freq[rev(order(gsub("chr", "", names(freq))))]
+            barplot(1e6 * freq/chromInfo[names(freq), "size"], horiz=TRUE, las=1, xlab="number of significant peaks per MB") # count normalized by chrom length
+            # barplot(freq, horiz=TRUE, las=1, xlab="number of significant peaks") # absolute sign peaks count instead of normalized count
+          }
           
           # plot(res[[cont]]$Conc, res[[cont]]$Fold, main="", xlab="log read concentration", ylab="log fold change") 
           # abline(h=0, lty=2, col="blue") # is basically a MA plot showing significant peaks only. Replaced by regular MA plot.
@@ -1580,6 +1590,7 @@ ChIPhelper.cutadapt <- function(targetsdf=SHINYREPS_TARGET, colorByFactor="group
     if(length(fileColumnName)>1) { # melt targets in case of multiple file name columns (as for ChIP-Seq) and create general targets format 
       targetsdf <- targetsdf[, colnames(targetsdf)[colnames(targetsdf) %in% unique(c(colorByFactor, fileColumnName, sampleColumnName))]]
       targetsdf <- reshape2::melt(targetsdf, measure.vars=fileColumnName, value.name = "file") # 'file' column created
+      targetsdf <- targetsdf[!duplicated(targetsdf$file), ] # in case the same inputs are used for several samples
       for(i in 1:length(sampleColumnName)) {targetsdf$sample[targetsdf$variable == fileColumnName[i]] <- targetsdf[targetsdf$variable == fileColumnName[i], sampleColumnName[i]]} # 'sample' column created
       targetsdf <- targetsdf[, !colnames(targetsdf) %in% sampleColumnName] # sampleColumnName not needed any more
       for (i in colorByFactor[!colorByFactor %in% c("file", "sample")]) {targetsdf[, i] <- paste0(targetsdf[, i], " (", targetsdf$variable, ")")} # add fileColumnName to colorByFactor
