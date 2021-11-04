@@ -98,7 +98,7 @@ if (SHINYREPS_FASTQC_SUMMARIZED == FALSE && "BaseQuals" %in% names(fastqc_summar
 }
 ```
 
-```{r FastQC_nuc_content_summarized, echo=F,results='asis',error=F,warning=F,message=F,fig.align='center'}
+```{r FastQC_nuc_content_summarized, echo=F,results='asis',error=F,warning=F,message=F,fig.align='center', fig.height=min(170, ceiling(0.12*fastqc_summary_plot$no.of.samples)+1)}
 if (SHINYREPS_FASTQC_SUMMARIZED && "SeqContent" %in% names(fastqc_summary_plot)) {
     cat(qctext["SeqContent"])
     plot(fastqc_summary_plot[["SeqContent"]])
@@ -183,7 +183,7 @@ if (SHINYREPS_FASTQC_SUMMARIZED == FALSE && "BaseQuals" %in% names(fastqc_summar
 }
 ```
 
-```{r FastQC_nuc_content_summarized_cutadapt, echo=F,results='asis',error=F,warning=F,message=F,fig.align='center', eval=runCutadapt}
+```{r FastQC_nuc_content_summarized_cutadapt, echo=F,results='asis',error=F,warning=F,message=F,fig.align='center', fig.height=min(170, ceiling(0.12*fastqc_summary_plot$no.of.samples)+1), eval=runCutadapt}
 if (SHINYREPS_FASTQC_SUMMARIZED && "SeqContent" %in% names(fastqc_summary_plot_cutadapt)) {
     cat(qctext["SeqContent"])
     plot(fastqc_summary_plot_cutadapt[["SeqContent"]])
