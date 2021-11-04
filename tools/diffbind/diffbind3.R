@@ -87,8 +87,16 @@ if(!is.numeric(FOLD))        stop("Fold threshold is not numeric. Run with:\n",r
 if(!is.logical(ANNOTATE))    stop("Annotate not logical. Run with:\n",runstr)
 if(!is.logical(PE))          stop("Paired end (pe) not logical. Run with:\n",runstr)
 if(ANNOTATE & !is.numeric(TSS)) stop("Region around TSS not numeric. Run with:\n",runstr)
-if(ANNOTATE & !require(TXDB, character.only=TRUE))   stop("Transcript DB", TXDB, "not installed\n")
 if(ANNOTATE & !require(ANNODB, character.only=TRUE)) stop("Annotation DB", ANNODB, "not installed\n")
+
+if(grepl("\\.gtf$", TXDB)){ # check the input format for the transcript annotation
+  library(GenomicFeatures)
+  txdb <- makeTxDbFromGFF(TXDB, format="gtf") # if the input format is gtf file, then this file will be used to create a TxDb object
+} else {
+  library(transcriptDb, character.only = TRUE) # if the input format is bioconductor, then the transcript annoation library will be used 
+  txdb <- eval(TXDB)
+  if(ANNOTATE & !require(TXDB, character.only=TRUE))   stop("Transcript DB", TXDB, "not installed\n")
+}
 
 # check for DiffBind version
 currentDiffbindVersion <- packageVersion('DiffBind')
@@ -194,8 +202,8 @@ dev.off()
   infodb$Intervals <- NULL
   infodb$Caller <- NULL
   names(infodb)[names(infodb) == "Reads"] <- "fullLibSize"
-  infodb$ReadPeaks <- round(infodb$fullLibSize*infodb$FRiP)
-
+  if(all(c("fullLibSize", "FRiP") %in% names(infodb))) {infodb$ReadPeaks <- round(infodb$fullLibSize*infodb$FRiP)}
+  
   
   # Normalizing the data
   db <- dba.normalize(db, method = db$config$AnalysisMethod, normalize = NORMALIZATION, library = LIBRARYSIZE, 
@@ -324,7 +332,7 @@ dev.off()
 ##
 if(ANNOTATE) {
   library(ChIPseeker)
-  txdb <- eval(parse(text=TXDB))
+  #txdb <- eval(parse(text=TXDB)) # is done above
   result <- lapply(result, function(x) {
     tryCatch({
       x.ann <- annotatePeak(x, TxDb=txdb, annoDb=ANNODB, tssRegion=TSS, verbose=T)
