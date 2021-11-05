@@ -517,7 +517,6 @@ DEhelper.STARparms <- function() {
         redefined <- sapply(redefined, function(x) {
             x <- unlist(strsplit(gsub("\\s+\\~RE-DEFINED$", "", x), "\\s+"))
             x[2] <- if(length(x) < 2) "" else paste(x[-1],collapse=" ")
-            x[2] <- shorten(x[2])
             x[c(1, 2)]
         })
 
