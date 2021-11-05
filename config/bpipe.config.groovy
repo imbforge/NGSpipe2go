@@ -310,7 +310,7 @@ config {
     STAR { 
       walltime="04:00:00" 
       procs="4" 
-      memory="48"
+      memory="40"
     }
     STAR_pe { 
       walltime="04:00:00" 
