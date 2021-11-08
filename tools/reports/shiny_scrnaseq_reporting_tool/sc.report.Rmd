@@ -1129,7 +1129,7 @@ names(hvg.cor.list) <- names(hvg.list)
 ```
 
 
-# Using correlated HVGs for further data exploration
+# Using correlated HVGs for further data exploration {.tabset .tabset-pills}
 
 ## PCA based on significantly correlated HVGs
 
@@ -1156,14 +1156,14 @@ if(length(annoFactors)>2) {stop("\nno more than 2 categories allowed in 'annoFac
       dotshape <- NULL}
 
 # plot PCA
-  multiplot(plotlist=mclapply(grep("PCA", reducedDimNames(sce), value=T), function(d) {
+  multiplot(plotlist=lapply(grep("PCA", reducedDimNames(sce), value=T), function(d) {
  
       scater::plotReducedDim(sce, dimred = d, 
         by_exprs_values = exprs_values,
         colour_by=dotcol, shape_by = dotshape, point_size=2) +  
         ggtitle(paste("PCA plot of", if(grepl("allgenes", d)) {"all genes"} else {"cor HVGs"}))
 
-  }, mc.cores=1), cols=2)
+  }), cols=2)
   
 ```
 
@@ -1204,14 +1204,14 @@ if(length(annoFactors)>2) {stop("\nno more than 2 categories allowed in 'annoFac
     }
  
   # plot TSNE
-  multiplot(plotlist=mclapply(grep("TSNE", reducedDimNames(sce), value=T), function(d) {
+  multiplot(plotlist=lapply(grep("TSNE", reducedDimNames(sce), value=T), function(d) {
  
       scater::plotReducedDim(sce, dimred = d, 
         by_exprs_values = exprs_values,
         colour_by=dotcol, shape_by = dotshape, point_size=2) +  
         ggtitle(paste("TSNE plot of", if(grepl("allgenes", d)) {"all genes"} else {"cor HVGs"}, "with perplexity", gsub("^.*p", "", d)))
 
-  }, mc.cores=1), cols=2)
+  }), cols=2)
   
 ```
 
@@ -1246,19 +1246,20 @@ if(length(annoFactors)>2) {stop("\nno more than 2 categories allowed in 'annoFac
                          dimred = NULL, ntop = nrow(sce), exprs_values=exprs_values)
 
  # plot UMAP 
-   multiplot(plotlist=mclapply(grep("UMAP", reducedDimNames(sce), value=T), function(d) {
+   multiplot(plotlist=lapply(grep("UMAP", reducedDimNames(sce), value=T), function(d) {
  
       scater::plotReducedDim(sce, dimred = d, 
         by_exprs_values = exprs_values,
         colour_by=dotcol, shape_by = dotshape, point_size=2) +  
         ggtitle(paste("UMAP plot of", if(grepl("allgenes", d)) {"all genes"} else {"cor HVGs"}))
 
-  }, mc.cores=1), cols=2)
+  }), cols=2)
  
 ```
 
+# {-}
 
-# Clustering
+# Clustering {.tabset .tabset-pills}
 
 ## Defining clusters with SC3
 
@@ -1274,74 +1275,79 @@ if(!exists("sce.no.sc3")) {sce.no.sc3 <- sce}
 
 rowData(sce)$feature_symbol <- rowData(sce)$SYMBOL # columns needed for SC3
 
-  set.seed(100)
-    sce <- sc3_prepare(sce, gene_filter=T, n_cores=8, rand_seed = 100) # 
-  set.seed(100)
-    sce <- sc3_estimate_k(sce) # metadata(sce)$sc3$k_estimation 12
-    nr_clusters <- metadata(sce)$sc3$k_estimation
-    cat("Number of selected clusters:", nr_clusters, "\n")
-  set.seed(100)
-    sce <- sc3_calc_dists(sce) # repeated runs not identical despite of setting rand_seed in sc3_prepare
-  set.seed(100)
-    sce <- sc3_calc_transfs(sce)
-  set.seed(100)
-    sce <- sc3_kmeans(sce, ks=nr_clusters) 
-  set.seed(100)
-    sce <- sc3_calc_consens(sce) # assigns clusters in colData(sce)
+set.seed(100)
+sce <- sc3_prepare(sce, gene_filter=T, n_cores=8, rand_seed = 100) # 
+set.seed(100)
+sce <- sc3_estimate_k(sce) # metadata(sce)$sc3$k_estimation 12
+nr_clusters <- metadata(sce)$sc3$k_estimation
+cat("Number of selected clusters:", nr_clusters, "\n")
+set.seed(100)
+sce <- sc3_calc_dists(sce) # repeated runs not identical despite of setting rand_seed in sc3_prepare
+set.seed(100)
+sce <- sc3_calc_transfs(sce)
+set.seed(100)
+sce <- sc3_kmeans(sce, ks=nr_clusters) 
+set.seed(100)
+sce <- sc3_calc_consens(sce) # assigns clusters in colData(sce)
  
 # metadata(sce)$sc3
 # colData(sce)[ , grep("sc3_", colnames(colData(sce))), drop=F]   
 # rowData(sce)[ , grep("sc3_", colnames(rowData(sce))), drop=F]
 
 # print number of filtered genes
-    cat("\n", sum(rowData(sce)$sc3_gene_filter), "of", nrow(sce), "genes were used for clustering")
+cat("\n", sum(rowData(sce)$sc3_gene_filter), "of", nrow(sce), "genes were used for clustering")
         
 # print cluster assignment
-  knitr::kable(table(colData(sce)[, paste0("sc3_", nr_clusters, "_clusters")]), caption="cells per cluster", col.names=c("Cluster", "Freq")) %>% kable_styling() 
+knitr::kable(table(colData(sce)[, paste0("sc3_", nr_clusters, "_clusters")]), caption="cells per cluster", col.names=c("Cluster", "Freq")) %>% kable_styling() 
 
 # store cluster assignments 
 dir_sc3 <- file.path("report_files", "cluster", "SC3")
-if (!file.exists(dir_sc3)) {dir.create(dir_sc3, recursive=T) }
-write.table(colData(sce)[,c(group.vars, grep("sc3_", colnames(colData(sce)), value=T))], file =file.path(dir_sc3, paste0("SC3_", nr_clusters, "_cluster.txt")), sep="\t", quote = F, row.names = F)
+if (!file.exists(dir_sc3)) {
+  dir.create(dir_sc3, recursive=T)
+}
+write.table(colData(sce)[,c(group.vars, grep("sc3_", colnames(colData(sce)), value=T))],
+            file=file.path(dir_sc3, paste0("SC3_", nr_clusters, "_cluster.txt")), sep="\t", quote=F, row.names=F)
 
 
 ### plot SC3 clustering
 annoFactors <- c(paste0("sc3_", nr_clusters, "_clusters"), "group")  
 
-if(length(annoFactors)>2) {stop("\nno more than 2 categories allowed in 'annoFactors'.")}
-  dotcol <- annoFactors[1]
-  if(length(annoFactors)==2) { 
-    dotshape <- annoFactors[2]} else {
-      dotshape <- NULL}
-
+if(length(annoFactors)>2) {
+  stop("\nno more than 2 categories allowed in 'annoFactors'.")
+}
+dotcol <- annoFactors[1]
+if(length(annoFactors)==2) { 
+  dotshape <- annoFactors[2]
+} else {
+  dotshape <- NULL
+}
 
 ### plot clusterings (separated for PCA, TSNE and UMAP)
-  for (d in c("PCA", "TSNE", "UMAP")) {
-        plot_Items <- grep(d, reducedDimNames(sce), value=T)
-        
-      # dim reduction plots
-        plot_cluster <- mclapply(plot_Items, function(i) {
-                  scater::plotReducedDim(sce, 
-                    dimred = i,
-                    colour_by=dotcol, shape_by = dotshape, point_size=1.5) +
-                    scale_color_discrete(name="cluster") +
-                    guides(color=guide_legend(ncol=2)) +
-                    ggtitle(paste(gsub("_", " ", i), "SC3")) + theme(aspect.ratio = 1)
-              }, mc.cores=1)
+for (d in c("PCA", "TSNE", "UMAP")) {
+    plot_Items <- grep(d, reducedDimNames(sce), value=T)
       
-      filenamePlot <- file.path(dir_sc3, paste0("SC3_", d, "_cluster_plots.png")) 
-      ggsave(filename=filenamePlot,
-                      plot=multiplot(plotlist=plot_cluster, cols=2), 
-                      width = 200, height = 80*ceiling(length(plot_Items)/2), 
-                      units = c("mm"),  dpi = 300, device="png")
+    # dim reduction plots
+    plot_cluster <- lapply(plot_Items, function(i) {
+      scater::plotReducedDim(sce, 
+                dimred = i,
+                colour_by=dotcol, shape_by = dotshape, point_size=1.5) +
+        scale_color_discrete(name="cluster") +
+        guides(color=guide_legend(ncol=2)) +
+        ggtitle(paste(gsub("_", " ", i), "SC3")) +
+        theme(aspect.ratio = 1)
+    })
     
-      # include plots in report    
-      cat(paste0("![plot of ", basename(filenamePlot), "](", filenamePlot, ")"))
-
-  }
+    filenamePlot <- file.path(dir_sc3, paste0("SC3_", d, "_cluster_plots.png")) 
+    ggsave(filename=filenamePlot,
+                    plot=multiplot(plotlist=plot_cluster, cols=2), 
+                    width = 200, height = 80*ceiling(length(plot_Items)/2), 
+                    units = c("mm"),  dpi = 300, device="png")
+  
+    # include plots in report    
+    cat(paste0("![plot of ", basename(filenamePlot), "](", filenamePlot, ")"))
+}
 
 ```
-
 
 
 ## Graph-based clustering with igraph
@@ -1402,69 +1408,70 @@ lapply(names(sce_igraphclust), function(x) {kable(t(table(sce_igraphclust[[x]]))
 
 # store cluster assignments
 dir_igraph <- file.path("report_files", "cluster", "igraph")
-if (!file.exists(dir_igraph)) {dir.create(dir_igraph, recursive=T) }
-      write.table(colData(sce)[,c(group.vars, grep("igraph", names(colData(sce)), value=T))], 
-      file = file.path(dir_igraph, paste0("igraph_cluster_assignments.txt")), sep="\t", quote=F, row.names=F)
-
+if (!file.exists(dir_igraph)) {
+  dir.create(dir_igraph, recursive=T)
+}
+write.table(colData(sce)[,c(group.vars, grep("igraph", names(colData(sce)), value=T))], 
+            file=file.path(dir_igraph, paste0("igraph_cluster_assignments.txt")), sep="\t", quote=F, row.names=F)
 
 
 ### plot clusterings (separated for PCA, TSNE and UMAP)
-  for (d in c("PCA", "TSNE", "UMAP")) {
-        plot_Items <- grep(d, names(sce_igraphclust), value=T)
-        
-      # dim reduction plots
-        plot_cluster <- mclapply(plot_Items, function(i) {
-                  scater::plotReducedDim(sce, 
-                    dimred = sub("^([A-Z]*[_p0-9]*[_allgenes]*)_.*", "\\1", i),
-                    by_exprs_values = exprs_values,
-                    colour_by=paste0("igraph_", i), shape_by = dotshape, point_size=2) +
-                    scale_color_discrete(name="cluster") +
-                    guides(color=guide_legend(ncol=2)) + theme(aspect.ratio = 1) +
-                    ggtitle(gsub("_", " ", i))
-              }, mc.cores=1)
+for (d in c("PCA", "TSNE", "UMAP")) {
+    plot_Items <- grep(d, names(sce_igraphclust), value=T)
       
-      filenamePlot <- file.path(dir_igraph, paste0("igraph_", d, "_cluster_plots.png"))
-      ggsave(filename=filenamePlot,
-                      plot=multiplot(plotlist=plot_cluster, cols=2), 
-                      width = 200, height = 80*ceiling(length(plot_Items)/2), 
-                      units = c("mm"),  dpi = 300, device="png")
-  
-  # include plots in report    
-  cat(paste0("![plot of ", basename(filenamePlot), "](", filenamePlot, ")"))
-  }
+    # dim reduction plots
+    plot_cluster <- lapply(plot_Items, function(i) {
+      scater::plotReducedDim(sce, 
+                dimred = sub("^([A-Z]*[_p0-9]*[_allgenes]*)_.*", "\\1", i),
+                by_exprs_values = exprs_values,
+                colour_by=paste0("igraph_", i), shape_by = dotshape, point_size=2) +
+        scale_color_discrete(name="cluster") +
+        guides(color=guide_legend(ncol=2)) +
+        theme(aspect.ratio = 1) +
+        ggtitle(gsub("_", " ", i))
+    })
+    
+    filenamePlot <- file.path(dir_igraph, paste0("igraph_", d, "_cluster_plots.png"))
+    ggsave(filename=filenamePlot,
+           plot=multiplot(plotlist=plot_cluster, cols=2), 
+           width = 200, height = 80*ceiling(length(plot_Items)/2), 
+           units = c("mm"),  dpi = 300, device="png")
 
+# include plots in report    
+cat(paste0("![plot of ", basename(filenamePlot), "](", filenamePlot, ")"))
+}
 
 # heatmaps
 for (d in c("PCA", "TSNE", "UMAP")) {
- plot_Items <- grep(d, names(clmod), value=T)
+   plot_Items <- grep(d, names(clmod), value=T)
 
-   cl_heatmap <-  mclapply(plot_Items, function(i) {
-                      pheatmap(log2(clmod[[i]]+1), cluster_rows=FALSE, cluster_cols=FALSE,
-                          color=colorRampPalette(c("white", "blue"))(100), silent=T,
-                          main= paste("cl heatmap", gsub("_", " ", i)))[["gtable"]]
-               }, mc.cores=1)
+   cl_heatmap <- lapply(plot_Items, function(i) {
+     pheatmap(log2(clmod[[i]]+1), cluster_rows=FALSE, cluster_cols=FALSE,
+              color=colorRampPalette(c("white", "blue"))(100), silent=T,
+              main= paste("cl heatmap", gsub("_", " ", i)))[["gtable"]]
+   })
 
    ggsave(filename=file.path(dir_igraph, paste0("igraph_", d, "_cluster_heatmaps.png")),
           plot=plot(arrangeGrob(grobs=cl_heatmap, ncol=2)), 
-          width = 200, height = 80*ceiling(length(plot_Items)/2), units = c("mm"),  dpi = 300, device="png")
+          width=200, height=80*ceiling(length(plot_Items)/2), units=c("mm"),  dpi=300, device="png")
 }
 
 
 # cluster graph plots
-  for (d in c("PCA", "TSNE", "UMAP")) {
-    plot_Items <- grep(d, names(cluster.gr), value=T)
-    
-      png(filename= file.path(dir_igraph, paste0("igraph_", d, "_cluster_graph.png")), units = "mm", res= 300,
-          width = 200, height = 80*ceiling(length(plot_Items)/2))
-       par(mfrow = c(ceiling(length(plot_Items)/2), 2))
-      for (i in plot_Items) {
-      set.seed(100)
-      plot(cluster.gr[[i]], edge.width=igraph::E(cluster.gr[[i]])$weight*5, main=paste("cluster graph", gsub("_", " ", i)))
-      }
-       
-  dev.off()
-  par(mfrow = c(1, 1))
- }
+for (d in c("PCA", "TSNE", "UMAP")) {
+  plot_Items <- grep(d, names(cluster.gr), value=T)
+   
+  png(filename=file.path(dir_igraph, paste0("igraph_", d, "_cluster_graph.png")), units="mm", res=300,
+      width=200, height=80*ceiling(length(plot_Items)/2))
+  par(mfrow=c(ceiling(length(plot_Items)/2), 2))
+  for (i in plot_Items) {
+    set.seed(100)
+    plot(cluster.gr[[i]], edge.width=igraph::E(cluster.gr[[i]])$weight*5, main=paste("cluster graph", gsub("_", " ", i)))
+  }
+      
+ dev.off()
+ par(mfrow=c(1, 1))
+}
       
 ```
 
@@ -1491,7 +1498,7 @@ dend <- list()
 clust_sce <- list()
 
 for(d in reducedDimNames(sce)) {    
-    dist_sce[[d]] <- dist(reducedDim(sce, d))
+  dist_sce[[d]] <- dist(reducedDim(sce, d))
 
   for(h in hclust_methods) {
     set.seed(100)
@@ -1525,36 +1532,38 @@ lapply(names(clust_sce), function(x) {kable(t(table(clust_sce[[x]])), align = "l
 
 # store cluster assignments
 dir_hclust <- file.path("report_files", "cluster", "hclust")
-if (!file.exists(dir_hclust)) {dir.create(dir_hclust, recursive=T) }
-      write.table(colData(sce)[,c(group.vars, grep("hclust", names(colData(sce)), value=T))], 
-      file = file.path(dir_hclust, paste0("hclust_cluster_assignments.txt")), sep="\t", quote=F, row.names=F)
+if (!file.exists(dir_hclust)) {
+  dir.create(dir_hclust, recursive=T)
+}
+write.table(colData(sce)[,c(group.vars, grep("hclust", names(colData(sce)), value=T))], 
+            file=file.path(dir_hclust, paste0("hclust_cluster_assignments.txt")), sep="\t", quote=F, row.names=F)
 
 
 ### plot clusterings (separated for PCA, TSNE and UMAP)
-  for (d in c("PCA", "TSNE", "UMAP")) {
+for (d in c("PCA", "TSNE", "UMAP")) {
     plot_Items <- grep(d, names(clust_sce), value=T)
     
-      # dim reduction plots
-        plot_cluster <- mclapply(plot_Items, function(i) {
-                  scater::plotReducedDim(sce, 
-                    dimred = sub("^([A-Z]*[_p0-9]*[_allgenes]*)_.*", "\\1", i),
-                    by_exprs_values = exprs_values,
-                    colour_by=paste0("hclust_", i), shape_by = dotshape, point_size=3) +
-                    scale_color_discrete(name="cluster") +
-                    guides(color=guide_legend(ncol=2)) +
-                    ggtitle(gsub("_", " ", i)) + theme(aspect.ratio = 1)
-              }, mc.cores=1)
+    # dim reduction plots
+    plot_cluster <- lapply(plot_Items, function(i) {
+      scater::plotReducedDim(sce, 
+                  dimred = sub("^([A-Z]*[_p0-9]*[_allgenes]*)_.*", "\\1", i),
+                  by_exprs_values = exprs_values,
+                  colour_by=paste0("hclust_", i), shape_by = dotshape, point_size=3) +
+        scale_color_discrete(name="cluster") +
+        guides(color=guide_legend(ncol=2)) +
+        ggtitle(gsub("_", " ", i)) +
+        theme(aspect.ratio = 1)
+    })
   
-        
-      filenamePlot <- file.path(dir_hclust, paste0("hclust_", d, "_cluster_plots.png"))
-      ggsave(filename=filenamePlot,
-                      plot=multiplot(plotlist=plot_cluster, cols=2), 
-                      width = 200, height = 80*ceiling(length(plot_Items)/2), 
-                      units = c("mm"),  dpi = 300, device="png")
+    filenamePlot <- file.path(dir_hclust, paste0("hclust_", d, "_cluster_plots.png"))
+    ggsave(filename=filenamePlot,
+                    plot=multiplot(plotlist=plot_cluster, cols=2), 
+                    width = 200, height = 80*ceiling(length(plot_Items)/2), 
+                    units = c("mm"),  dpi = 300, device="png")
     
-      # include plots in report    
-      cat(paste0("![plot of ", basename(filenamePlot), "](", filenamePlot, ")"))
-  }
+    # include plots in report    
+    cat(paste0("![plot of ", basename(filenamePlot), "](", filenamePlot, ")"))
+}
   
 ## plot dendrograms
  for (d in c("PCA", "TSNE", "UMAP")) {
@@ -1598,9 +1607,7 @@ if (!file.exists(dir_hclust)) {dir.create(dir_hclust, recursive=T) }
 
 ```
 
-
-
-
+# {-}
 
 # Detect marker genes for each cluster
 
@@ -1635,7 +1642,7 @@ if(nlevels(factor(colData(sce)[,clustervar])) >=2) {
       } else {
         cat("The analysis is adjusted for:", DE_var2adjust, "\n")
       } 
-    }
+  }
     
     
   # find upregulated markers for each cluster and upregulated marker specific for each cluster
@@ -1651,55 +1658,52 @@ if(nlevels(factor(colData(sce)[,clustervar])) >=2) {
                          row.data=rowData(sce)[,"SYMBOL", drop=F], direction="up", pval.type="all")
                          # use pval.type="some" if "all" is too stringent 
   
-     list_heatmaps <- NULL
-     list_heatmaps_spec <- NULL
-   marker_heatmaps <- lapply(names(markers), function(cl) { 
+  list_heatmaps <- NULL
+  list_heatmaps_spec <- NULL
+  marker_heatmaps <- lapply(names(markers), function(cl) { 
     
-         # all upregulated markers per cluster
-        write.table(markers[[cl]], sep="\t", quote=F, row.names=F, 
-                    file=file.path(dir_marker, paste0("gene_marker_upregulated_in_cluster_", cl, ".txt")) )
-        best_set <- markers[[cl]][markers[[cl]]$Top <= 5,]
-        logFCs <- as.matrix(best_set[,grepl("logFC", colnames(best_set))])
-        colnames(logFCs) <- sub("logFC.", "", colnames(logFCs))
-        logFCs <- logFCs[, colSums(is.na(logFCs)) != nrow(logFCs)] # remove columns with only NA (cannot be plotted in heatmap)
-        
-        # markers upregulated in 1 cluster only   
-        write.table(markers_spec[[cl]], sep="\t", quote=F, row.names=F, 
-                    file=file.path(dir_marker, paste0("gene_marker_upregulated_in_cluster_", cl, "_only.txt")))
-        best_set_spec <- markers_spec[[cl]][1:nrow(best_set), ] # select same number of genes displayed as in best_set
-        logFCs_spec <- as.matrix(best_set_spec[,grepl("logFC", colnames(best_set_spec))])
-        colnames(logFCs_spec) <- sub("logFC.", "", colnames(logFCs_spec))
-        logFCs_spec <- logFCs_spec[, colSums(is.na(logFCs_spec)) != nrow(logFCs_spec)] # remove columns with only NA 
-        
-        if(length(names(markers)) >=3) { # create heatmaps if at least 3 groups, i.e. at least 2 hetmap columns.
-            list_heatmaps <- pheatmap(logFCs, labels_row=best_set$SYMBOL, silent=T, breaks=seq(-5, 5, length.out=101), 
-                                  main=paste("Top marker upregulated in cluster", cl))[["gtable"]]
+    # all upregulated markers per cluster
+    write.table(markers[[cl]], sep="\t", quote=F, row.names=F, 
+                file=file.path(dir_marker, paste0("gene_marker_upregulated_in_cluster_", cl, ".txt")) )
+    best_set <- markers[[cl]][markers[[cl]]$Top <= 5,]
+    logFCs <- as.matrix(best_set[,grepl("logFC", colnames(best_set))])
+    colnames(logFCs) <- sub("logFC.", "", colnames(logFCs))
+    logFCs <- logFCs[, colSums(is.na(logFCs)) != nrow(logFCs)] # remove columns with only NA (cannot be plotted in heatmap)
+    
+    # markers upregulated in 1 cluster only   
+    write.table(markers_spec[[cl]], sep="\t", quote=F, row.names=F, 
+                file=file.path(dir_marker, paste0("gene_marker_upregulated_in_cluster_", cl, "_only.txt")))
+    best_set_spec <- markers_spec[[cl]][1:nrow(best_set), ] # select same number of genes displayed as in best_set
+    logFCs_spec <- as.matrix(best_set_spec[,grepl("logFC", colnames(best_set_spec))])
+    colnames(logFCs_spec) <- sub("logFC.", "", colnames(logFCs_spec))
+    logFCs_spec <- logFCs_spec[, colSums(is.na(logFCs_spec)) != nrow(logFCs_spec)] # remove columns with only NA 
+    
+    if(length(names(markers)) >=3) { # create heatmaps if at least 3 groups, i.e. at least 2 hetmap columns.
+        list_heatmaps <- pheatmap(logFCs, labels_row=best_set$SYMBOL, silent=T, breaks=seq(-5, 5, length.out=101), 
+                              main=paste("Top marker upregulated in cluster", cl))[["gtable"]]
   
-            list_heatmaps_spec <- pheatmap(logFCs_spec, labels_row=best_set_spec$SYMBOL, silent=T, breaks=seq(-5, 5, length.out=101), 
-                                       main=paste("Top marker upregulated in cluster", cl, "only"))[["gtable"]]
-        
-            filenamePlot <- file.path(dir_marker, paste0("heatmap_of_upregulated_gene_marker_cluster_", cl, ".png"))
-            ggsave(filename=filenamePlot,
-                   plot=plot(arrangeGrob(grobs=list(list_heatmaps, list_heatmaps_spec), ncol=2)), 
-                   width = 200, height = 150, units = c("mm"),  dpi = 300, device="png")
+        list_heatmaps_spec <- pheatmap(logFCs_spec, labels_row=best_set_spec$SYMBOL, silent=T, breaks=seq(-5, 5, length.out=101), 
+                                   main=paste("Top marker upregulated in cluster", cl, "only"))[["gtable"]]
     
-            # include plots in report    
-            cat(paste0("![plot of ", basename(filenamePlot), "](", filenamePlot, ")"))
-            cat("\n", fill = T)
-        } else {cat("\nHeatmaps skipped because only 1 column to plot.")}
-        
-      return(list(all_up=list_heatmaps, cluster_spec=list_heatmaps_spec))
-    })
+        filenamePlot <- file.path(dir_marker, paste0("heatmap_of_upregulated_gene_marker_cluster_", cl, ".png"))
+        ggsave(filename=filenamePlot,
+               plot=plot(arrangeGrob(grobs=list(list_heatmaps, list_heatmaps_spec), ncol=2)), 
+               width = 200, height = 150, units = c("mm"),  dpi = 300, device="png")
+    
+        # include plots in report    
+        cat(paste0("![plot of ", basename(filenamePlot), "](", filenamePlot, ")"))
+        cat("\n", fill = T)
+    } else {
+      cat("\nHeatmaps skipped because only 1 column to plot.\n")
+    }
+    
+    return(list(all_up=list_heatmaps, cluster_spec=list_heatmaps_spec))
+  })
   
 } else {
   cat("\nNo marker genes to calculate because clustering variable has only 1 cluster\n")
 }
-
 ```
-
-
-
-
 
 
 ```{r cell_type_annotation, results='asis', eval=org %in% c("human", "mouse")}
@@ -1713,7 +1717,10 @@ if (!file.exists(dir_anno_per_cluster)) {dir.create(dir_anno_per_cluster, recurs
 
 # Assigning cell labels from reference data (available for human only)
 if(org=="human") {
-  cat("\nAssigning cell labels from built-in reference data constructed from Blueprint and ENCODE data (Martens and Stunnenberg 2013; The ENCODE Project Consortium 2012). This reference contains normalized expression values of 259 human bulk RNA-seq samples of pure stroma and immune cells\n")
+  cat("\nAssigning cell labels from built-in reference data constructed from ",
+      "Blueprint and ENCODE data (Martens and Stunnenberg 2013; The ENCODE Project ",
+      "Consortium 2012). This reference contains normalized expression values of 259 ",
+      "human bulk RNA-seq samples of pure stroma and immune cells\n")
   countdata <- logcounts(sce)
   rownames(countdata) <- rowData(sce)$SYMBOL
   ref <- BlueprintEncodeData() # human bulk RNA-seq data from Blueprint and ENCODE
@@ -1727,22 +1734,30 @@ if(org=="human") {
   pheatmap(log2(tab+10), color=colorRampPalette(c("white", "blue"))(101))
 }
 
-  switch(org,
-         human={
-            library(org.Hs.eg.db)
-            orgdb <- org.Hs.eg.db
-            species="Hs"
-         },
-         mouse={
-            library(org.Mm.eg.db)
-            orgdb <- org.Mm.eg.db
-            species="Mm"
-         }
-  )
-    
+switch(org,
+       human={
+          library(org.Hs.eg.db)
+          orgdb <- org.Hs.eg.db
+          species <- "Hs"
+       },
+       mouse={
+          library(org.Mm.eg.db)
+          orgdb <- org.Mm.eg.db
+          species <- "Mm"
+       }
+)
+
 ## Assigning cluster labels from markers
-cat("
-    Perform a gene set enrichment analysis on the marker genes defining each cluster. This identifies the pathways and processes that are (relatively) active in each cluster based on upregulation of the associated genes compared to other clusters. We will use gene sets defined by the Gene Ontology (GO) project, which describe a comprehensive range of biological processes and functions. We define our subset of relevant marker genes at a FDR of 5% and apply the goana function from the limma package. This performs a hypergeometric test to identify GO terms that are overrepresented in our marker subset. We keep only biological process terms that are not overly general (<=200 genes) and which are significantly enriched (p<0.05).\n\n")
+cat("Perform a gene set enrichment analysis on the marker genes defining each ",
+    "cluster. This identifies the pathways and processes that are (relatively) ",
+    "active in each cluster based on upregulation of the associated genes compared ",
+    "to other clusters. We will use gene sets defined by the Gene Ontology (GO) ",
+    "project, which describe a comprehensive range of biological processes and ",
+    "functions. We define our subset of relevant marker genes at a FDR of 5% and ",
+    "apply the goana function from the limma package. This performs a hypergeometric ",
+    "test to identify GO terms that are overrepresented in our marker subset. We ",
+    "keep only biological process terms that are not overly general (<=200 genes) ",
+    "and which are significantly enriched (p<0.05).\n\n")
  
 anno.results <- list()
 
@@ -1777,12 +1792,11 @@ for (i in levels(colData(sce)[,selected_clustering_method])) {
     # adhesion <- unique(by.go[["GO:0022408"]])
     # head(cur.markers[rownames(cur.markers) %in% adhesion,1:3], 10)
     
-  }
+}
 
 # Extract symbols for each GO term; done once.
-    tab <- AnnotationDbi::select(orgdb, keytype="ENSEMBL", keys=gsub("\\..*$", "", rownames(sce)), columns="GOALL")
-    by.go <- split(tab[,1], tab[,2])
-
+tab <- AnnotationDbi::select(orgdb, keytype="ENSEMBL", keys=gsub("\\..*$", "", rownames(sce)), columns="GOALL")
+by.go <- split(tab[,1], tab[,2])
 ```
 
 
@@ -1911,8 +1925,6 @@ print(kable(sum.tab) %>% kable_styling())
 
 ```
 
-
-
 ```{r store_data, echo=F, results='hide', error=F, warning=F, message=F, eval=T}
 
 # store count data (all and by pool)
@@ -1948,10 +1960,7 @@ if (!file.exists(dir_shinyapp)) {dir.create(dir_shinyapp) }
   
 ```
 
-
-
-
-# Used tools and versions for this analysis ##
+# Used tools and versions for this analysis
 
 Read mapping was performed with STAR using the following parameters:
 
