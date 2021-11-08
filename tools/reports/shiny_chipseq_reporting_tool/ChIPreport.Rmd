@@ -44,7 +44,7 @@ DT::datatable(targets, caption="targets file (sample sheet) used for analysis")
 ``` 
 
 
-## Raw reads QC ##
+## Raw reads QC {.tabset .tabset-pills}
 
 The raw sequence reads of all samples are analyzed with the popular FastQC tool (http://www.bioinformatics.babraham.ac.uk/projects/fastqc/).
 
@@ -52,14 +52,14 @@ The raw sequence reads of all samples are analyzed with the popular FastQC tool 
 ```{r FastQC_paragraph, echo=F,results='asis',error=F,warning=F,message=F,fig.align='center'}
 # Explanatory text to be displayed alongside the selected FastQC plots.
 qctext <- c(
-  Summary="\n\n####Summary\n\n Inspecting the PASS/WARN/FAIL Status of each FastQC module.\n\n",
-  BaseQuals="\n\n####Per base sequence quality\n\n The 'Read qualities' plot summarizes the mean quality score at each position. The color on the graph shows the Phred quality scores, which are logarithmically related to the base-calling error probabilities. The higher the score the better the base call. The background of the graph divides the y axis into very good quality calls (green), calls of reasonable quality (yellow), and calls of poor quality (red). Typically, the majority of calls on all base positions fall into the green area. Due to binning of quality score in recent sequencing technologies (e.g. Illumina NextSeq), sequencing qualities are the same on many position and, thus, also samples appear to have very similar or almost identical sequencing qualities.\n\n",
-  SeqQuals="\n\n####Per sequence quality scores\n\n Mean Sequence Quality Per Read report allows you to see if a subset of your sequences have universally low quality values. It is often the case that a subset of sequences will have universally poor quality, often because they are poorly imaged (on the edge of the field of view etc), however these should represent only a small percentage of the total sequences.\n\n",
-  SeqContent="\n\n####Per base sequence content\n\n The 'Sequence bias' plots show the proportion of each base (% G, A, T and C) at each position. In a typical ChIP-seq library there would be little difference between the positions of a sequence run, so the lines in this plot should run parallel with each other, G being similar to C and A to T.\n\n",
-  GcContent="\n\n####Per sequence GC content\n\n The 'GC content' plot shows the GC% distribution of all reads and all samples. Typically, the lines should tightly overlap and look essentially the same in all samples. An unusually shaped distribution could indicate a contaminated library.\n\n",
-  DupLevels="\n\n####Sequence Duplication Levels\n\n The 'Duplication levels' plot shows the proportion of the library which is made up of sequences in each of the different duplication level bins. It is useful for the assessment of the NGS library complexity and the presence or absence of PCR over-amplification during library prep. There are two lines on the plot. The blue line takes the full sequence set and shows how its duplication levels are distributed. In the red plot the sequences are de-duplicated and the proportions shown are the proportions of the deduplicated set which come from different duplication levels in the original data. In a properly diverse library most sequences should fall into the far left of the plot in both the red and blue lines. A general level of enrichment, indicating broad oversequencing in the library will tend to flatten the lines, lowering the low end and generally raising other categories. The presence of dominant sequences (e.g. adapter dimers) will tend to produce spikes towards the right of the plot. These high duplication peaks will most often appear in the red trace as they make up a high proportion of the original library, but usually disappear in the blue trace as they make up an insignificant proportion of the deduplicated set. If peaks persist in the blue trace then this suggests that there are a large number of different highly duplicated sequences which might indicate either a contaminant set or a severe PCR duplication. See the related PBC metrics below.\n\n", 
-  Overrep="\n\n####Overrepresented sequences\n\n Overrepresented Sequences lists all of the sequence which make up more than 0.1% of the total. A normal high-throughput library will contain a diverse set of sequences, with no individual sequence making up a tiny fraction of the whole. Finding that a single sequence is very overrepresented in the set either means that it is highly biologically significant, or indicates that the library is contaminated, or not as diverse as you expected.\n\n",
-  AdapterContent="\n\n####Adapter Content\n\n Adapter Content does a generic analysis of all of the Kmers in your library to find those which do not have even coverage through the length of your reads. This can find a number of different sources of bias in the library which can include the presence of read-through adapter sequences building up on the end of your sequences.\n\n"
+  Summary="\n\n### Summary\n\n Inspecting the PASS/WARN/FAIL Status of each FastQC module.\n\n",
+  BaseQuals="\n\n### Per base sequence quality\n\n The 'Read qualities' plot summarizes the mean quality score at each position. The color on the graph shows the Phred quality scores, which are logarithmically related to the base-calling error probabilities. The higher the score the better the base call. The background of the graph divides the y axis into very good quality calls (green), calls of reasonable quality (yellow), and calls of poor quality (red). Typically, the majority of calls on all base positions fall into the green area. Due to binning of quality score in recent sequencing technologies (e.g. Illumina NextSeq), sequencing qualities are the same on many position and, thus, also samples appear to have very similar or almost identical sequencing qualities.\n\n",
+  SeqQuals="\n\n### Per sequence quality scores\n\n Mean Sequence Quality Per Read report allows you to see if a subset of your sequences have universally low quality values. It is often the case that a subset of sequences will have universally poor quality, often because they are poorly imaged (on the edge of the field of view etc), however these should represent only a small percentage of the total sequences.\n\n",
+  SeqContent="\n\n### Per base sequence content\n\n The 'Sequence bias' plots show the proportion of each base (% G, A, T and C) at each position. In a typical ChIP-seq library there would be little difference between the positions of a sequence run, so the lines in this plot should run parallel with each other, G being similar to C and A to T.\n\n",
+  GcContent="\n\n### Per sequence GC content\n\n The 'GC content' plot shows the GC% distribution of all reads and all samples. Typically, the lines should tightly overlap and look essentially the same in all samples. An unusually shaped distribution could indicate a contaminated library.\n\n",
+  DupLevels="\n\n### Sequence Duplication Levels\n\n The 'Duplication levels' plot shows the proportion of the library which is made up of sequences in each of the different duplication level bins. It is useful for the assessment of the NGS library complexity and the presence or absence of PCR over-amplification during library prep. There are two lines on the plot. The blue line takes the full sequence set and shows how its duplication levels are distributed. In the red plot the sequences are de-duplicated and the proportions shown are the proportions of the deduplicated set which come from different duplication levels in the original data. In a properly diverse library most sequences should fall into the far left of the plot in both the red and blue lines. A general level of enrichment, indicating broad oversequencing in the library will tend to flatten the lines, lowering the low end and generally raising other categories. The presence of dominant sequences (e.g. adapter dimers) will tend to produce spikes towards the right of the plot. These high duplication peaks will most often appear in the red trace as they make up a high proportion of the original library, but usually disappear in the blue trace as they make up an insignificant proportion of the deduplicated set. If peaks persist in the blue trace then this suggests that there are a large number of different highly duplicated sequences which might indicate either a contaminant set or a severe PCR duplication. See the related PBC metrics below.\n\n", 
+  Overrep="\n\n### Overrepresented sequences\n\n Overrepresented Sequences lists all of the sequence which make up more than 0.1% of the total. A normal high-throughput library will contain a diverse set of sequences, with no individual sequence making up a tiny fraction of the whole. Finding that a single sequence is very overrepresented in the set either means that it is highly biologically significant, or indicates that the library is contaminated, or not as diverse as you expected.\n\n",
+  AdapterContent="\n\n### Adapter Content\n\n Adapter Content does a generic analysis of all of the Kmers in your library to find those which do not have even coverage through the length of your reads. This can find a number of different sources of bias in the library which can include the presence of read-through adapter sequences building up on the end of your sequences.\n\n"
 )
 
 ## If you prefer heatmaps instead of the line plots given in the chunks below, un-comment the following helper function
@@ -92,7 +92,7 @@ if (SHINYREPS_FASTQC_SUMMARIZED && "BaseQuals" %in% names(fastqc_summary_plot)) 
 ```
 
 ```{r FastQC_qual, echo=F,results='asis',error=F,warning=F,message=F,fig.align='center',fig.height=round((3*fastqc_summary_plot$no.of.samples)/4)+1}
-if (SHINYREPS_FASTQC_SUMMARIZED == FALSE && "BaseQuals" %in% names(fastqc_summary_plot)) {
+if (!SHINYREPS_FASTQC_SUMMARIZED && "BaseQuals" %in% names(fastqc_summary_plot)) {
     cat(qctext["BaseQuals"])
     plot(fastqc_summary_plot[["BaseQuals"]])
 }
@@ -106,7 +106,7 @@ if (SHINYREPS_FASTQC_SUMMARIZED && "SeqContent" %in% names(fastqc_summary_plot))
 ```
 
 ```{r FastQC_nuc_content, echo=F,results='asis',error=F,warning=F,message=F,fig.align='center',fig.height=round((3*fastqc_summary_plot$no.of.samples)/4)+1}
-if (SHINYREPS_FASTQC_SUMMARIZED == FALSE && "SeqContent" %in% names(fastqc_summary_plot)) {
+if (!SHINYREPS_FASTQC_SUMMARIZED && "SeqContent" %in% names(fastqc_summary_plot)) {
     cat(qctext["SeqContent"])
     plot(fastqc_summary_plot[["SeqContent"]])
 } 
@@ -137,6 +137,7 @@ if("AdapterContent" %in% names(fastqc_summary_plot)) {
 }
 ```
 
+## {-}
 
 
 ```{r cutadapt, echo=F, results='asis', error=F, warning=F, message=F, eval=runCutadapt}
@@ -155,12 +156,11 @@ ChIPhelper.cutadapt(targetsdf=targets, colorByFactor="group")
 ```
 
 
-
 ```{r FastQC_qual_summarized_cutadapt, echo=F,results='asis',error=F,warning=F,message=F,fig.align='center', eval=runCutadapt}
 ## To display individual FastQC plots define the 'metrics' parameter with any combination of the following plot names:
 ## "Summary", "BaseQuals", "SeqQuals", "SeqContent", "GcContent", "DupLevels", "Overrep", "AdapterContent"
 
-cat("### FastQC after adapter trimming\n")
+cat("### FastQC after adapter trimming {.tabset .tabset-pills}\n")
 
 fastqc_summary_plot_cutadapt <- ChIPhelper.Fastqc.custom(web=F,subdir="trimmed", summarizedPlots=SHINYREPS_FASTQC_SUMMARIZED,
                                                 metrics=c("BaseQuals", "SeqContent", "GcContent"))
@@ -220,9 +220,9 @@ if("AdapterContent" %in% names(fastqc_summary_plot_cutadapt)) {
   cat(qctext["AdapterContent"])
   fastqc_summary_plot_cutadapt[["AdapterContent"]]
 }
+
+cat("### {-}\n", fill = T)
 ```
-
-
 
 ## Read mapping ##
 
@@ -276,7 +276,6 @@ insert <- lapply(branches[1], function(dir) {
   	}
 })
 ```
-
 
 ## PCR bottleneck coefficient ##
 
@@ -433,22 +432,6 @@ ha = do.call(HeatmapAnnotation, anno_list) # gap = unit(2, "mm"), annotation_nam
 UpSet(us1, top_annotation = ha, right_annotation=NULL, row_names_side = "right", 
       column_title="Overlap of peaks from different pipeline branches",
       comb_col = "steelblue", bg_col = "#F0F0FF", height=unit(4, "cm") ) # height=3 # heatmap_height=unit(24, "cm")
-
-
-# outdated Venn diagrams
-# venncombined <- lapply(names(peakscovcombReorder), function(x) {
-#     cat(paste0("#### ", x), fill=T)
-#     cat("\n", fill=T)
-#     peaks.ov <- findOverlapsOfPeaks(peakscovcombReorder[[x]])
-#     makeVennDiagram(peaks.ov,
-#                     margin=0.25, cat.default.pos="outer", cat.dist=0.15,
-#                     cat.fontface=rep("bold", length(peakscovcombReorder[[x]])),
-#                     fill=brewer.pal(max(3,length(peakscovcombReorder[[x]])), "Accent")[1:length(peakscovcombReorder[[x]])]
-#                     )
-#     cat("\n", fill=T)
-#   }
-#  )
-}
 ```
 
 
@@ -531,20 +514,30 @@ UpSetplots <- lapply(branches, function(peaksdir) {
 
 
 ```{r Enrichment_paragraph, echo=F, results='asis', error=F, warning=F, message=F, fig.align="center", eval=runEnrich}
-cat("\n## Enrichment Analysis ##
-
-Enrichment Analysis is carried out using GREAT (http://great.stanford.edu). It assigns each gene a regulatory domain consisting of basal domain that extends 5 kb upstream and 1 kb downstream from its transcription start site, and and an extension up to the basal regulatory domain of the nearest upstream and downstream genes within 1 Mb. GREAT performs both the binomial test over genomic regions and the hypergeometric test over genes to provide an accurate picture of annotation enrichments for genomic regions. The ontology terms reported below are ranked by the binomial FDR q-value.   
-
-Note that GREAT (> v4.0.0) supports recent assemblies of the well-annotated human (UCSC hg19 and UCSC hg38) and mouse (UCSC mm9 and UCSC mm10) genomes.\n")
+cat("\n## Enrichment Analysis\n",
+    "Enrichment Analysis is carried out using GREAT ",
+    "(http://great.stanford.edu). It assigns each gene a regulatory domain ",
+    "consisting of basal domain that extends 5 kb upstream and 1 kb downstream from ",
+    "its transcription start site, and and an extension up to the basal regulatory ",
+    "domain of the nearest upstream and downstream genes within 1 Mb. GREAT performs ",
+    "both the binomial test over genomic regions and the hypergeometric test over ",
+    "genes to provide an accurate picture of annotation enrichments for genomic ",
+    "regions. The ontology terms reported below are ranked by the binomial FDR ",
+    "q-value.\n\n",
+    "Note that GREAT (> v4.0.0) supports recent assemblies of the ",
+    "well-annotated human (UCSC hg19 and UCSC hg38) and mouse (UCSC mm9 and UCSC ",
+    "mm10) genomes.\n\n")
 
 
 resultsenrich <- lapply(branches, function(peaksdir) {
-    if(length(branches)>1) {cat(paste("\n\n### Enrichment results from", if(peaksdir==""){"default"} else {peaksdir}, "pipeline branch\n"))}
+#    if(length(branches) > 1) {   # NOTE: regardless of the branches, we *cannot* skip level 3 section (###) 
+      cat("### Enrichment results from", if(peaksdir=="") "default" else peaksdir, "pipeline branch {.tabset .tabset-pills}\n")
+#    }
 
     for(i in 1:length(levels(factor(targets$group)))) {
     
         # subsection
-        cat("#### ", levels(factor(targets$group))[i], fill=T)
+        cat("#### ", levels(factor(targets$group))[i], " {.tabset .tabset-pills}\n", fill=T)
         cat("", fill=T)
     
         # GO Enrichment Plot
@@ -609,23 +602,52 @@ resultsenrich <- lapply(branches, function(peaksdir) {
         } else {
             cat("no Pathway enrichment results available\n", fill=T)
         }
+
+        cat("#### {-}\n", fill = T)
     }
+    cat("### {-}\n", fill = T)
 })
 ```
 
-
-
 ```{r diffbind, echo=F, results='asis', error=F, warning=F, message=F, fig.align="center", fig.height=4, fig.width=10, eval=runDiffbind}
 cat("\n## Differential binding analysis\n\n")
-cat("The DiffBind package (https://bioconductor.org/packages/release/bioc/html/DiffBind.html) is used for identifying sites that are statistically significantly differentially bound between sample groups based on evidence of binding affinity (measured by differences in read densities).\n 
-After the occupancy data obtained from the peak caller (peak sets) is read in, a merging function finds all overlapping peaks and derives a single set of unique genomic intervals covering all the supplied peaks (a consensus peakset for the experiment). Then the supplied sequence read files (bam files) are used to count how many reads overlap each interval for each unique sample (refered to as 'fullLibSize', see below). The proportion of reads for each sample that overlap a peak in the consensus peakset is reported as 'FRiP' (Fraction of Reads in Peaks, see below), and can be used to indicate which samples show more enrichment overall. The total number of reads in consensus peaks is given as 'PeakReads' in the table below. Optionally, e.g. for narrow peaks obtained from transcription factor binding, the peaks in the consensus peakset may be re-centered and trimmed based on calculating their summits (point of greatest read overlap) in order to provide more standardized peak intervals.\n 
-The applied normalization procedures, the calculated normalization factors ('normFactors') and the normalized library size ('normLibSize') are given in the tables below. The final result of counting is a binding affinity matrix containing a (normalized) read count for each sample at every potential binding site (affinity scores). This matrix is used for further QC plotting and differential binding analysis for the contrasts defined in 'contrasts_diffbind.txt'. For this, DiffBind uses statistical routines developed in an RNA-Seq context (primarily the Bioconductor packages edgeR and DESeq2). It will assign a p-value and FDR to each candidate binding site indicating confidence that they are differentially bound given the respective contrast.\n")
+cat("The DiffBind package ",
+"(https://bioconductor.org/packages/release/bioc/html/DiffBind.html) is used for ",
+"identifying sites that are statistically significantly differentially bound ",
+"between sample groups based on evidence of binding affinity (measured by ",
+"differences in read densities).\n ",
+"After the occupancy data obtained from the peak caller (peak sets) is read in, ",
+"a merging function finds all overlapping peaks and derives a single set of ",
+"unique genomic intervals covering all the supplied peaks (a consensus peakset ",
+"for the experiment). Then the supplied sequence read files (bam files) are used ",
+"to count how many reads overlap each interval for each unique sample (refered ",
+"to as 'fullLibSize', see below). The proportion of reads for each sample that ",
+"overlap a peak in the consensus peakset is reported as 'FRiP' (Fraction of ",
+"Reads in Peaks, see below), and can be used to indicate which samples show more ",
+"enrichment overall. The total number of reads in consensus peaks is given as ",
+"'PeakReads' in the table below. Optionally, e.g. for narrow peaks obtained from ",
+"transcription factor binding, the peaks in the consensus peakset may be ",
+"re-centered and trimmed based on calculating their summits (point of greatest ",
+"read overlap) in order to provide more standardized peak intervals.\n ",
+"The applied normalization procedures, the calculated normalization factors ",
+"('normFactors') and the normalized library size ('normLibSize') are given in ",
+"the tables below. The final result of counting is a binding affinity matrix ",
+"containing a (normalized) read count for each sample at every potential binding ",
+"site (affinity scores). This matrix is used for further QC plotting and ",
+"differential binding analysis for the contrasts defined in ",
+"'contrasts_diffbind.txt'. For this, DiffBind uses statistical routines ",
+"developed in an RNA-Seq context (primarily the Bioconductor packages edgeR and ",
+"DESeq2). It will assign a p-value and FDR to each candidate binding site ",
+"indicating confidence that they are differentially bound given the respective ",
+"contrast.\n\n")
 
 diffplots <- lapply(branches, function(dir) {
-    if(length(branches)>1) {cat(paste("\n\n### Diffbind results from", if(dir==""){"default"} else {dir}, "pipeline branch\n"))}
+    if(length(branches)>1) {
+      cat("### Diffbind results from", if(dir=="") "default" else dir, "pipeline branch {.tabset .tabset-pills}\n")
+    }
     ChIPhelper.diffbind(subdir=dir)
+    cat("### {-}\n", fill = T)
 })
-
 ```
 
 
@@ -635,14 +657,12 @@ cat(Toolhelper.ToolVersions(), sep="\n")
 cat("\n")
 ```
 
-
 ### R session info for generation of this report
 
 ```{r R_sessionInfo, echo=F, results='asis', error=F, warning=F, message=F}
 cat("\n")
 sessionInfo()
 ```
-
 
 
 </div>
