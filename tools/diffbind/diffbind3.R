@@ -2,7 +2,7 @@
 ##
 ## What: diffbind3.R
 ## Who : Sergi Sayols, Frank Rühle
-## When: 10-05-2016, updated 03-03-2021
+## When: 10-05-2016, updated 08-27-2021
 ##
 ## Script to perform differential binding analysis between 2 conditions (pairwise) using DiffBind v3
 ##
@@ -50,22 +50,20 @@ FCONTRASTS <- parseArgs(args,"contrasts=","contrasts_diffbind.txt") # file descr
 CWD        <- parseArgs(args,"cwd=","./")     # current working directory
 BAMS       <- parseArgs(args,"bams=",paste0(CWD, "/mapped"))  # directory with the bam files
 PEAKS      <- parseArgs(args,"peaks=",paste0(CWD, "/results/macs2"))  # directory with the peak files
-OUT        <- parseArgs(args,"out=", paste0(CWD, "/results")) # directory where the output files will go
+OUT        <- parseArgs(args,"out=", paste0(CWD, "/results/diffbind")) # directory where the output files will go
 FRAGSIZE   <- parseArgs(args,"fragsize=", 200, "as.numeric")# fragment size
 BLACKLIST  <- parseArgs(args,"blacklist=", FALSE, "as.logical") # if true, blacklist will be applied
-GREYLIST   <- parseArgs(args,"greylist=", TRUE, "as.logical") # if true greylist will be generated for each Control
+GREYLIST   <- parseArgs(args,"greylist=", FALSE, "as.logical") # if true greylist will be generated for each Control
 SUMMITS    <- parseArgs(args,"summits=", 200, "as.numeric") # summits for re-centering consensus peaks
 FILTER     <- parseArgs(args,"filter=", 5, "as.numeric") # value to use for filtering intervals with low read counts
 ANALYSISMETHOD  <- parseArgs(args,"analysisMethod=", "DESeq2", "as.character") # method for which to normalize (either "DESeq2" or "edgeRGLM")
 LIBRARYSIZE     <- parseArgs(args,"librarySize=", "default", "as.character")   # use total number of reads in bam for normalization (FALSE=only peaks)
 NORMALIZATION   <- parseArgs(args,"normalization=", "default", "as.character")   # use total number of reads in bam for normalization (FALSE=only peaks)
-SUBSTRACTCONTROL<- parseArgs(args,"substractControl=", "default", "as.character")  # substract input
+SUBSTRACTCONTROL<- parseArgs(args,"substractControl=", "default", "as.character")  # subtract input
 CONDITIONCOLUMN <- parseArgs(args,"conditionColumn=", "group", "as.character") # this targets column is interpreted as 'Condition' and is used as for defining the default design
-DESIGN     <- parseArgs(args,"design=", "true", "as.character") # (logical or character) design formula for multifactor modeling
-if(tolower(DESIGN) %in% c("true", "false")) {DESIGN <- as.logical(DESIGN)}
 FDR_TRESHOLD    <- parseArgs(args,"fdr_threshold=", 0.05, "as.numeric") # summits for re-centering consensus peaks
 FOLD       <- parseArgs(args,"fold=", 0, "as.numeric") # summits for re-centering consensus peaks
-ANNOTATE   <- parseArgs(args,"annotate=", TRUE, "as.logical") # annotate after DB analysis?
+ANNOTATE   <- parseArgs(args,"annotate=", FALSE, "as.logical") # annotate after DB analysis?
 PE         <- parseArgs(args,"pe=", FALSE, "as.logical")      # paired end experiment?
 TSS        <- parseArgs(args,"tss=", "c(-3000,3000)", "run_custom_code") # region around the tss
 TXDB       <- parseArgs(args,"txdb=", "TxDb.Mmusculus.UCSC.mm9.knownGene") # Bioconductor transcript database, for annotation 
@@ -80,7 +78,7 @@ if(!file.exists(FCONTRASTS)) stop("File",FCONTRASTS,"does NOT exist. Run with:\n
 if(!file.exists(BAMS))       stop("Dir",BAMS,"does NOT exist. Run with:\n",runstr)
 if(!file.exists(PEAKS))      stop("Dir",PEAKS,"does NOT exist. Run with:\n",runstr)
 if(!is.numeric(FRAGSIZE))    stop("Fragment size not numeric. Run with:\n",runstr)
-if(!is.logical(BLACKLIST))   stop("blacklist not logical. Run with:\n",runstr)
+if(!isTRUE(BLACKLIST))       {BLACKLIST <- FALSE} # if a specific blacklist is defined in essential.vars it is applied by the blacklist_filter module and not here. If set to TRUE in diffbind3.header diffbind applies a public blacklist if available. 
 if(!is.logical(GREYLIST))    stop("greylist not logical. Run with:\n",runstr)
 if(!is.numeric(SUMMITS))     stop("Summits is not numeric. Run with:\n",runstr)
 if(!is.numeric(FILTER))      stop("Filter threshold is not numeric. Run with:\n",runstr)
@@ -89,8 +87,16 @@ if(!is.numeric(FOLD))        stop("Fold threshold is not numeric. Run with:\n",r
 if(!is.logical(ANNOTATE))    stop("Annotate not logical. Run with:\n",runstr)
 if(!is.logical(PE))          stop("Paired end (pe) not logical. Run with:\n",runstr)
 if(ANNOTATE & !is.numeric(TSS)) stop("Region around TSS not numeric. Run with:\n",runstr)
-if(ANNOTATE & !require(TXDB, character.only=TRUE))   stop("Transcript DB", TXDB, "not installed\n")
 if(ANNOTATE & !require(ANNODB, character.only=TRUE)) stop("Annotation DB", ANNODB, "not installed\n")
+
+if(grepl("\\.gtf$", TXDB)){ # check the input format for the transcript annotation
+  library(GenomicFeatures)
+  txdb <- makeTxDbFromGFF(TXDB, format="gtf") # if the input format is gtf file, then this file will be used to create a TxDb object
+} else {
+  library(transcriptDb, character.only = TRUE) # if the input format is bioconductor, then the transcript annoation library will be used 
+  txdb <- eval(TXDB)
+  if(ANNOTATE & !require(TXDB, character.only=TRUE))   stop("Transcript DB", TXDB, "not installed\n")
+}
 
 # check for DiffBind version
 currentDiffbindVersion <- packageVersion('DiffBind')
@@ -106,7 +112,8 @@ if(currentDiffbindVersion < 3) {
 ##
 
 # load targets and make analysis
-conts   <- read.delim(FCONTRASTS, head=F, comment.char="#")
+conts   <- read.delim(FCONTRASTS, head=T, stringsAsFactors = F, comment.char="#")
+if(length(unique(conts$mmatrix))!=1) {stop("\nCan't use multiple design matrices in a single db object! Either unify the mmatrix entries in the contrast file or run diffbind in split mode.\n")}
 targets_raw <- read.delim(FTARGETS, head=T, colClasses="character", comment.char="#")
 
 # determine file suffixes for targets 
@@ -150,7 +157,8 @@ db <- dba(sampleSheet=targets, config=data.frame(AnalysisMethod=ANALYSISMETHOD, 
                                                  doBlacklist=BLACKLIST, doGreylist=GREYLIST)) 
 
 # create DBA object containing consensus peaks per group (needed later)
-db2 <- dba.peakset(db, consensus=DBA_CONDITION)
+db2 <- dba(db, mask=sapply(db$peaks, nrow)>0) # diffbind crashes if peaksets with no peaks are included for generating consensus peakset
+db2 <- dba.peakset(db2, consensus=DBA_CONDITION)
 
 # Heatmap using occupancy (peak caller score) data
 png(paste0(OUT, "/heatmap_occupancy.png"), width = 150, height = 150, units = "mm", res=300)
@@ -194,8 +202,8 @@ dev.off()
   infodb$Intervals <- NULL
   infodb$Caller <- NULL
   names(infodb)[names(infodb) == "Reads"] <- "fullLibSize"
-  infodb$ReadPeaks <- round(infodb$fullLibSize*infodb$FRiP)
-
+  if(all(c("fullLibSize", "FRiP") %in% names(infodb))) {infodb$ReadPeaks <- round(infodb$fullLibSize*infodb$FRiP)}
+  
   
   # Normalizing the data
   db <- dba.normalize(db, method = db$config$AnalysisMethod, normalize = NORMALIZATION, library = LIBRARYSIZE, 
@@ -212,18 +220,23 @@ dev.off()
   
 
   # apply the contrasts
-   for (cont in conts[, 1]) {
-    # parse formula in cont
-    cont.form <- gsub("(.+)=(.+)", "\\2", cont)
-    factors   <- unlist(strsplit(cont.form, "\\W"))
+   for (i in 1:nrow(conts)) {
+   # parse formula in cont
+    cont.name <- conts[i,1]
+    cont.form <- conts[i,2]
+    mmatrix   <- conts[i,3]
+    mmatrix <- gsub(CONDITIONCOLUMN, "Condition", mmatrix)
+    factors   <- gsub("(^\\s+|\\s+$)", "", unlist(strsplit(cont.form,"\\W")))
     factors   <- factors[factors != ""]
     contrast <- c("Condition", factors)
-    db <- dba.contrast(db, design=DESIGN, contrast=contrast)
+    if(length(factors) != 2) {
+      warning(paste(conts[i,],"cannot deal with designs other than pairwise comparisons!"))
+      return(NA)
+    }
+    db <- dba.contrast(db, design=mmatrix, contrast=contrast)
    }
 
 
-  
-  
 # run the diffbind analysis (DESeq2) for all contrasts
   db <- dba.analyze(db) 
 
@@ -274,10 +287,8 @@ dev.off()
 
 # prepare results and plots for each contrast
   result <- lapply(1:nrow(conts), function(cont) {
-    cont.name <- substr(gsub("(.+)=\\((.+)\\)", "\\2", conts[cont,1]), 1, 31)
-    #cont.name <- gsub("(.+)=(.+)", "\\1", conts[cont,1])
-    #cat(cont.name, fill=T)
-    
+    cont.name <- conts[cont,1]
+
     png(paste0(OUT, "/", cont.name, "_ma_plot.png"), width = 150, height = 150, units = "mm", res=300)
       try(dba.plotMA(db, contrast=cont, fold=FOLD))
     dev.off()
@@ -310,7 +321,7 @@ dev.off()
        dev.off()
     }
 
-    tryCatch(dba.report(db, contrast=cont, bCalled=T, th=db$config$th, fold=FOLD), 
+    tryCatch(dba.report(db, contrast=cont, bCalled=T, bUsePval=F, th=1, fold=0), # th=db$config$th, fold=FOLD # filtering is done later
                     error=function(e) NULL) # dba.report crashes if there is exactly 1 significant hit to report
     
   })
@@ -321,7 +332,7 @@ dev.off()
 ##
 if(ANNOTATE) {
   library(ChIPseeker)
-  txdb <- eval(parse(text=TXDB))
+  #txdb <- eval(parse(text=TXDB)) # is done above
   result <- lapply(result, function(x) {
     tryCatch({
       x.ann <- annotatePeak(x, TxDb=txdb, annoDb=ANNODB, tssRegion=TSS, verbose=T)
@@ -364,18 +375,19 @@ if(ANNOTATE) {
                             c("Library size", LIBRARYSIZE, explLibrarySize),
                             c("Normalization method", NORMALIZATION, explNormalization),
                             c("Subtract control read counts", SUBSTRACTCONTROL, if(SUBSTRACTCONTROL=="default") {paste("set to", SUBSTRACTCONTROL_FINAL, "because greylist is", if(SUBSTRACTCONTROL_FINAL){"not"} else {""}, "available.")}),
-                            c("Design", DESIGN, if(isTRUE(DESIGN)){paste0("design ", db$design, " is generated for targets factor '", CONDITIONCOLUMN, "'.")} else {""}),
+                            c("Design", "contrast_diffbind.txt", paste(db$design, "(with", CONDITIONCOLUMN, "as Condition column)")),
                             c("FDR threshold", FDR_TRESHOLD, "significance threshold for differential binding analysis."),
                             c("Fold threshold", FOLD, "log Fold threshold for differential binding analysis.")
   )
   
 
-    
 writeLines(capture.output(sessionInfo()),paste(OUT, "/diffbind_session_info.txt", sep=""))
 write.table(diffbindSettings, file=file.path(OUT, "diffbind_settings.txt"), row.names = F, quote = F, sep="\t")
 write.table(infodb, file=file.path(OUT, "info_dba_object.txt"), row.names = F, quote = F, sep="\t")
 result <- lapply(result, as.data.frame)
-names(result) <- substr(gsub("(.+)=\\((.+)\\)", "\\2", conts[,1]), 1, 31)
+names(result) <- conts$contrast.name
+write.xlsx(result, file=paste0(OUT, "/diffbind_all_sites.xlsx"))
+result <- lapply(result, function(x) {x[x$FDR<=db$config$th & abs(x$Fold)>=FOLD, ]}) # filter result tables for significance
 write.xlsx(result, file=paste0(OUT, "/diffbind.xlsx"))
 saveRDS(result,  file=paste0(OUT, "/diffbind.rds"))
 dba.save(db, dir=OUT, file='diffbind', pre="")

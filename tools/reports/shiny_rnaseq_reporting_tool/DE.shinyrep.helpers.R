@@ -23,6 +23,9 @@ library("tidyr")
 library("forcats")
 library("ngsReports")
 library("ggbeeswarm")
+library("maser")
+library("GenomeInfoDb")
+library("kableExtra")
 
 #' loadGlobalVars: read configuration from bpipe vars
 #'
@@ -413,9 +416,9 @@ DEhelper.DESeq2.VolcanoPlot <- function(i=1, fdr=.01, top=25, web=TRUE) {
             xlim(-x.limit, x.limit) +
             ylab("-log10 adj. p-value") +
             xlab("log2 fold change") + 
-            scale_color_manual(values=c("black", "red"), guide=FALSE) +
+            scale_color_manual(values=c("black", "red")) +
             scale_size_continuous("mean norm. counts (log10)") +
-	    guides(size = guide_legend(nrow=1)) +
+	          guides(color="none", size=guide_legend(nrow=1)) +
        	    theme(legend.position = "top")
 
     # add name of top genes
@@ -514,7 +517,6 @@ DEhelper.STARparms <- function() {
         redefined <- sapply(redefined, function(x) {
             x <- unlist(strsplit(gsub("\\s+\\~RE-DEFINED$", "", x), "\\s+"))
             x[2] <- if(length(x) < 2) "" else paste(x[-1],collapse=" ")
-            x[2] <- shorten(x[2])
             x[c(1, 2)]
         })
 
@@ -813,7 +815,7 @@ DEhelper.ngsReports.Fastqc <- function(subdir="") {
     print(ngsReports::plotBaseQuals(x, labels=lbls))
     print(ngsReports::plotSeqContent(x, labels=lbls) +
             theme(legend.position="right") +
-            guides(fill=FALSE, color="legend") +
+            guides(fill="none", color="legend") +
             geom_point(mapping=aes(x=Inf, y=Inf, color=base),
                        data=data.frame(base=c("T", "A", "C", "G")),
                        inherit.aes=FALSE, show.legend=TRUE) +
@@ -932,7 +934,7 @@ DEhelper.Fastqc.custom <- function(web=FALSE, summarizedPlots=TRUE, subdir="") {
            geom_hline(yintercept = c(0,10,20,30,40),color="white",alpha=0.3) +
            geom_vline(xintercept = seq(0,xlen,10),color="white",alpha=0.3) +
            coord_cartesian(xlim = c(1,xlen), ylim = c(0,42)) +
-           guides(color=FALSE,
+           guides(color="none",
                   fill=guide_legend(title="",ncol=3)) +
            theme(axis.text.x = element_text(size=6,angle=90,hjust=0.5,vjust=0.5),
                  axis.text.y = element_text(size=8),
@@ -943,11 +945,10 @@ DEhelper.Fastqc.custom <- function(web=FALSE, summarizedPlots=TRUE, subdir="") {
            scale_x_continuous(breaks=unique(as.numeric(df$position)),
                               labels=unique(df$Base))
 
-        ## use rev(lbls) to plot in reverse order
-        p.content <- ngsReports::plotSeqContent(fastqc.stats, labels=rev(lbls)) +
+        p.content <- ngsReports::plotSeqContent(fastqc.stats) +
           labs(y = "") +
           theme(legend.position="right") +
-          guides(fill=FALSE, color="legend") +
+          guides(fill="none", color="legend") +
           geom_point(mapping=aes(x=Inf, y=Inf, color=base),
                      data=data.frame(base=c("T", "A", "C", "G")),
                      inherit.aes=FALSE, show.legend=TRUE) +
@@ -955,18 +956,18 @@ DEhelper.Fastqc.custom <- function(web=FALSE, summarizedPlots=TRUE, subdir="") {
 
     } else {
 
-        p.qual <- ngsReports::plotBaseQuals(fastqc.stats, labels=lbls, plotType="boxplot") +
+        p.qual <- ngsReports::plotBaseQuals(fastqc.stats, plotType="boxplot") +
           theme(axis.text.x = element_text(size=5))
-        p.content <- ngsReports::plotSeqContent(fastqc.stats, labels=lbls, plotType="line") +
+        p.content <- ngsReports::plotSeqContent(fastqc.stats, plotType="line") +
           theme(axis.text.x = element_text(size=5), legend.position = "top")
     }
 
     # GC content line plot 
     # in case you want to add a theoretical distribution to the plot, use function plotGcContent with 
     # the following settings:
-    # ngsReports::plotGcContent(fastqc.stats, plotType="line", gcType="Genome", labels=lbls, theoreticalGC=TRUE, species=SPECIES)
+    # ngsReports::plotGcContent(fastqc.stats, plotType="line", gcType="Genome", theoreticalGC=TRUE, species=SPECIES)
     # the default value for SPECIES is "Hsapiens", thus, if you don't specify it, human will be used as a default
-    p.gc <- ngsReports::plotGcContent(fastqc.stats, usePlotly=summarizedPlots, plotType="line", gcType="Genome", labels=lbls, theoreticalGC=FALSE) 
+    p.gc <- ngsReports::plotGcContent(fastqc.stats, usePlotly=summarizedPlots, plotType="line", gcType="Genome", theoreticalGC=FALSE) 
     if(!summarizedPlots) {
       p.gc <- p.gc + guides(color=guide_legend(title="",ncol=4)) + 
         theme(legend.position = "top", legend.text = element_text(size=8)) 
@@ -1461,6 +1462,7 @@ DEhelper.geneBodyCov2 <- function(web=F) {
     }
   return(plot_list)
 }
+
 ##
 ##DEhelper.strandspecificity: get the strand specificity from the qc and display them
 ##
@@ -2084,7 +2086,75 @@ DEhelper.cutadapt.plot <- function(data, color.value, labelOutliers=T, outlierIQ
   return(p)
 }
 
+## 
+#' rMATS differential splicing analysis
+#'
+#' @param No Params needed
 
+DEhelper.rmats <- function() {
+    
+    # source modified maser functions
+    # by default, plotTranscriptsMod.R allows human chromosome annotation only. 
+    # volcano plot: the axis labels are switched and the legend is messed up.
+    source(file.path(SHINYREPS_MASER_SCRIPTS,"plotTranscriptsMod.R"))
+    source(file.path(SHINYREPS_MASER_SCRIPTS,"volcanoMod.R"))
+    SHINYREPS_MASER_FDR = as.numeric(SHINYREPS_MASER_FDR)
+    SHINYREPS_MASER_DPSI = as.numeric(SHINYREPS_MASER_DPSI)
+
+    # The function topEvents() allows to select statistically significant events given a FDR cutoff and minimum PSI change. 
+    rmats_top <- maser::topEvents(rmats_filt, fdr = SHINYREPS_MASER_FDR, deltaPSI = SHINYREPS_MASER_DPSI)
+
+    # Plot the distribution of splicing events
+    plotspldist <- maser::splicingDistribution(rmats_filt, fdr = SHINYREPS_MASER_FDR, deltaPSI = SHINYREPS_MASER_DPSI)
+    print(plotspldist)
+
+    for(e in c("A3SS", "A5SS", "SE", "RI", "MXE")) {
+        if(nrow(slot(rmats_top, paste0(e,"_events"))) > 0) {
+                cat("\n\n", fill=T)
+                top <- summary(rmats_top, type=e)
+                top <- top[order(top$FDR), !colnames(top) %in% c("GeneID")]
+                colnames(top) <- plyr::mapvalues(colnames(top), from=c("ID", "PValue", "IncLevelDifference"), to=c("rMATS_ID", "pval", "deltaPSI"))
+                top$pval <- signif(top$pval, 3)
+                top$FDR <- signif(top$FDR, 3)
+                cat("\n##### Significant", e, "events : ", nrow(top) ,"\n\n")
+                rownames(top)=NULL
+                print(kable(head(top, nrow(top)), format="html", align=c("c"), caption=paste("top", e, "events")) %>%
+		      kable_styling() %>%
+		      kableExtra::scroll_box(width = "100%", height = "200px")
+		      )
+		#cat("\n\n")
+		#cat("\n##### PCA plot \n\n")
+		#plotPCA<-maser::pca(rmats_filt, type = e)
+                #print(plotPCA)
+                cat("\n\n")
+                cat("\n##### Volcano plot of ", e,"events \n\n")
+                plotVolcano<-volcanoMod(rmats_filt, fdr = SHINYREPS_MASER_FDR, deltaPSI = SHINYREPS_MASER_DPSI, type = e)
+                print(plotVolcano)
+                cat("\n\n")
+                cat("##### Top Significant", e, "event \n\n")
+		if(e == "SE") {
+			cat("\n\n The Event track depicts location of exons involved in skipping event. The *Inclusion* track shows transcripts overlapping the cassette exon as well as both flanking exons (i.e upstream and downstream exons). On the other hand, the skipping track displays transcripts overlapping both flanking exons but missing the cassette exon. The PSI track displays the **inclusion level for the cassette exon** (a.k.a. alternative exon) from the different replicates as a box plot for each condition. A higher PSI value indicate that there is a significant increase of the cassette exon in the respective condition. \n\n")
+		}
+		if(e=="RI"){
+			cat("\n\n The Event track depicts location of introns involved in the retention event. In this case, the Retention track shows transcripts with an exact overlap of the retained intron, and the Non-retention tracks will display transcripts in which the intron is spliced out and overlap flanking exons. The PSI track displays the **inclusion level of the retained intron** from the different replicates as a box plot for each condition. A higher PSI value indicate that there is a significant increase of the retained intron in the respective condition. \n\n")
+		}
+		if(e=="A3SS"){
+			cat("\n\n Alternative 3' splicing occur due to alternative acceptor sites. The Short track shows transcripts overlapping both short and flanking exons. The PSI track displays the **inclusion level of the longest exon** from the different replicates as a box plot for each condition. A higher PSI value indicate that there is a significant increase of the longest exon in the respective condition. \n\n")
+		}
+		if(e=="A5SS"){
+			cat("\n\n Alternative 5' splicing occur due to alternative donor sites. The Long track shows transcripts overlapping both long and flanking exons. The PSI track displays the **inclusion level of the longest exon** from the different replicates as a box plot for each condition. A higher PSI value indicate that there is a significant increase of the longest exon in the respective condition. \n\n")
+		}
+		if(e=="MXE"){
+			cat("\n\n This event refers to adjacent exons that are mutually exclusive, i.e. are not expressed together. The Event tracks will display transcripts harboring the first or second mutually exclusive exons, as well as both flanking exons. The PSI track in the mutually exclusive exons event will show two sets of box plots. The first set refers to MXE Exon 1 PSI levels while the second set refers to MXE Exon 2 PSI levels in the two conditions. A higher PSI value indicate that there is a significant increase of the respective MXE Exon in the respective condition. \n\n")
+		}
+                top1 <- maser::geneEvents(rmats_filt, geneS = top$geneSymbol[1], fdr = SHINYREPS_MASER_FDR, deltaPSI = SHINYREPS_MASER_DPSI)
+
+                ## Display affected transcripts and PSI levels
+                plotTranscriptsMod(events=top1, type = e, event_id = top$rMATS_ID[1], gtf = ens_gtf, zoom = F, show_PSI = TRUE, title =top$geneSymbol[1])
+
+        }
+    }  
+}
 
 ##		      
 ## extract tool versions

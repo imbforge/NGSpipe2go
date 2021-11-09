@@ -196,7 +196,7 @@ config {
     GO_Enrichment { 
       walltime="01:00:00" 
       procs="4" 
-      memory="8"
+      memory="16"
     }
     GREAT { 
       walltime="01:00:00" 
@@ -310,7 +310,7 @@ config {
     STAR { 
       walltime="04:00:00" 
       procs="4" 
-      memory="48"
+      memory="40"
     }
     STAR_pe { 
       walltime="04:00:00" 
@@ -356,6 +356,12 @@ config {
       walltime="01:00:00" 
       procs="1" 
       memory="2"
+    }
+    upsetPlot { 
+      queue=long_queue 
+      walltime="16:00:00" 
+      procs="1" 
+      memory="32"
     }
     VariantCallHC { 
       walltime="48:00:00" 
@@ -485,6 +491,11 @@ config {
       walltime="04:00:00" 
       procs="1" 
       memory="10"
+    }
+    rMATS {
+      walltime="03:00:00" 
+      procs="4" 
+      memory="8" 
     }
     rnatypes { 
       walltime="0:10:00" 

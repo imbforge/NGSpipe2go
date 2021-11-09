@@ -56,14 +56,14 @@ OUT        <- parseArgs(args,"out=", paste0(CWD, "/results")) # directory where 
 FRAGSIZE   <- parseArgs(args,"fragsize=", 200, "as.numeric")# fragment size
 SUMMITS    <- parseArgs(args,"summits=", 0, "as.numeric") # summits for re-centering consensus peaks
 FILTER     <- parseArgs(args,"filter=", 0, "as.numeric") # value to use for filtering intervals with low read counts
-SUBSTRACTCONTROL  <- parseArgs(args,"substractControl=", TRUE, "as.logical")  # substract input
+SUBSTRACTCONTROL  <- parseArgs(args,"substractControl=", FALSE, "as.logical")  # substract input
 ANALYSISMETHOD    <- parseArgs(args,"analysisMethod=", "DESeq2", "as.character") # method for which to normalize (either "DESeq2" or "edgeRGLM")
 LIBRARYSIZE       <- parseArgs(args,"librarySize=", "full", "as.character")   # use total number of reads in bam for normalization (FALSE=only peaks)
 FULLLIBRARYSIZE   <- if(tolower(LIBRARYSIZE) %in% tolower(c("full", "background", "default", "true", "t"))) {TRUE} else {FALSE}
-TAGWISEDISPERSION <- parseArgs(args,"tagwiseDispersion=", TRUE, "as.logical") # calculate dispersion tagwise (use FALSE if no replicates)
+TAGWISEDISPERSION <- parseArgs(args,"tagwiseDispersion=", FALSE, "as.logical") # calculate dispersion tagwise (use FALSE if no replicates)
 FDR_TRESHOLD      <- parseArgs(args,"fdr_threshold=", 0.05, "as.numeric") # summits for re-centering consensus peaks
 FOLD       <- parseArgs(args,"fold=", 0, "as.numeric") # summits for re-centering consensus peaks
-ANNOTATE   <- parseArgs(args,"annotate=", TRUE, "as.logical") # annotate after DB analysis?
+ANNOTATE   <- parseArgs(args,"annotate=", FALSE, "as.logical") # annotate after DB analysis?
 PE         <- parseArgs(args,"pe=", FALSE, "as.logical")      # paired end experiment?
 TSS        <- parseArgs(args,"tss=", "c(-3000,3000)", "run_custom_code") # region around the tss
 TXDB       <- parseArgs(args,"txdb=", "TxDb.Mmusculus.UCSC.mm9.knownGene") # Bioconductor transcript database, for annotation 
@@ -107,7 +107,7 @@ if(currentDiffbindVersion < 3) {
 ##
 
 # load targets and make analysis
-conts   <- read.delim(FCONTRASTS, head=F, comment.char="#")
+conts   <- read.delim(FCONTRASTS, head=T, stringsAsFactors = F, comment.char="#")
 targets <- read.delim(FTARGETS, head=T, colClasses="character", comment.char="#")
 
 # determine file suffixes for targets 
@@ -177,18 +177,19 @@ dev.off()
   infodb$Caller <- NULL
 
 
-# apply the contrasts
- for (cont in conts[, 1]) {
-  # parse formula in cont
-  cont.form <- gsub("(.+)=(.+)", "\\2", cont)
-  factors   <- unlist(strsplit(cont.form, "\\W"))
-  factors   <- factors[factors != ""]
-  c1 <- dba.mask(db, DBA_CONDITION, factors[1])
-  c2 <- dba.mask(db, DBA_CONDITION, factors[2])
-  db <- dba.contrast(db, group1=c1, group2=c2,  name1=factors[1], name2=factors[2], categories=DBA_CONDITION)
+  # apply the contrasts
+  for (i in 1:nrow(conts)) {
+    # parse formula in cont
+    cat("\nIn diffbind2 the mmatrix column is ignored, group column is used as Condition\n")
+    cont.name <- conts[i,1]
+    cont.form <- conts[i,2]
+    factors   <- gsub("(^\\s+|\\s+$)", "", unlist(strsplit(cont.form,"\\W")))
+    factors   <- factors[factors != ""]
+    c1 <- dba.mask(db, DBA_CONDITION, factors[1])
+    c2 <- dba.mask(db, DBA_CONDITION, factors[2])
+    db <- dba.contrast(db, group1=c1, group2=c2,  name1=factors[1], name2=factors[2], categories=DBA_CONDITION)
   }
-
-
+  
 # run the diffbind analysis (DESeq2) for all contrasts
   db <- dba.analyze(db, bSubControl=SUBSTRACTCONTROL, bFullLibrarySize=FULLLIBRARYSIZE, bTagwise=TAGWISEDISPERSION)
 
@@ -240,10 +241,7 @@ dev.off()
 
 # prepare results and plots for each contrast
   result <- lapply(1:nrow(conts), function(cont) {
-    cont.name <- substr(gsub("(.+)=\\((.+)\\)", "\\2", conts[cont,1]), 1, 31)
-    #cont.name <- gsub("(.+)=(.+)", "\\1", conts[cont,1])
-    #cat(cont.name, fill=T)
-    
+    cont.name <- conts[cont,1]
     png(paste0(OUT, "/", cont.name, "_ma_plot.png"), width = 150, height = 150, units = "mm", res=300)
       try(dba.plotMA(db, contrast=cont, fold=FOLD))
     dev.off()
@@ -276,8 +274,8 @@ dev.off()
        dev.off()
     }
 
-    tryCatch(dba.report(db, contrast=cont, bCalled=T, th=db$config$th, fold=FOLD), 
-                    error=function(e) NULL) # dba.report crashes if there is exactly 1 significant hit to report
+    tryCatch(dba.report(db, contrast=cont, bCalled=T, bUsePval=F, th=1, fold=0), # th=db$config$th, fold=FOLD # filtering is done later
+             error=function(e) NULL) # dba.report crashes if there is exactly 1 significant hit to report
     
   })
 
@@ -309,6 +307,7 @@ if(ANNOTATE) {
                             c("Full library size", FULLLIBRARYSIZE, if(FULLLIBRARYSIZE){"total number of reads used for normalization"} else {"reads overlapping consensus peaks used for normalization"}),
                             c("Subtract control", SUBSTRACTCONTROL, "for each site subtract read counts from input controls"),
                             c("Tagwise dispersion", TAGWISEDISPERSION, "calculate dispersion tagwise"),
+                            c("Design", "~group", "DiffBind2 does not allow for complex designs, mmatrix in contrast_diffbind.txt is ignored"),
                             c("FDR threshold", FDR_TRESHOLD, "significance threshold for differential binding analysis"),
                             c("Fold threshold", FOLD, "log Fold threshold for differential binding analysis")
   )
@@ -318,7 +317,9 @@ writeLines(capture.output(sessionInfo()),paste(OUT, "/diffbind_session_info.txt"
 write.table(diffbindSettings, file=file.path(OUT, "diffbind_settings.txt"), row.names = F, quote = F, sep="\t")
 write.table(infodb, file=file.path(OUT, "info_dba_object.txt"), row.names = F, quote = F, sep="\t")
 result <- lapply(result, as.data.frame)
-names(result) <- substr(gsub("(.+)=\\((.+)\\)", "\\2", conts[,1]), 1, 31)
+names(result) <- conts$contrast.name
+write.xlsx(result, file=paste0(OUT, "/diffbind_all_sites.xlsx"))
+result <- lapply(result, function(x) {x[x$FDR<=db$config$th & abs(x$Fold)>=FOLD, ]}) # filter result tables for significance
 write.xlsx(result, file=paste0(OUT, "/diffbind.xlsx"))
 saveRDS(result,  file=paste0(OUT, "/diffbind.rds"))
 dba.save(db, dir=OUT, file='diffbind', pre="")

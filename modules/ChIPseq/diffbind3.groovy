@@ -26,7 +26,6 @@ diffbind3 = {
         (diffbind3_vars.normalization     ? " normalization="     + diffbind3_vars.normalization       : "") +
         (diffbind3_vars.substractControl  ? " substractControl="  + diffbind3_vars.substractControl    : "") +
         (diffbind3_vars.conditionColumn   ? " conditionColumn="   + diffbind3_vars.conditionColumn     : "") +
-        (diffbind3_vars.design            ? " design="            + diffbind3_vars.design              : "") +
         (diffbind3_vars.fdr_threshold     ? " fdr_threshold="     + diffbind3_vars.fdr_threshold       : "") +
         (diffbind3_vars.fold              ? " fold="              + diffbind3_vars.fold                : "") +
         (diffbind3_vars.annotate          ? " annotate="          + diffbind3_vars.annotate            : "") +

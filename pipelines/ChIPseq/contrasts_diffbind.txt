@@ -1,1 +1,2 @@
-mutvswt=(mut_Pol2-wt_Pol2)
+contrast.name	contrast	mmatrix
+mutvswt	(mut_Pol2-wt_Pol2)	~group

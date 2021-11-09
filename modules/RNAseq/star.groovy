@@ -19,13 +19,14 @@ STAR = {
 
     // star flags
     def STAR_FLAGS =
-        " --runMode alignReads "        +
-        " --genomeLoad NoSharedMemory " +
-        " --outStd SAM "                +
+        " --runMode alignReads "         +
+        " --genomeLoad NoSharedMemory "  +
+        " --outStd SAM "                 +
+        " --outMultimapperOrder Random " +
         (STAR_vars.attributes   ? " --outSAMattributes " + STAR_vars.attributes   : " --outSAMattributes Standard ") +
-        " --outSJfilterReads Unique "   +
-        " --readFilesCommand zcat "     +
-        " --outFileNamePrefix "         + STAR_vars.logdir + "/" + OUTPUTFILE +
+        " --outSJfilterReads Unique "    +
+        " --readFilesCommand zcat "      +
+        " --outFileNamePrefix "          + STAR_vars.logdir + "/" + OUTPUTFILE +
         (STAR_vars.unmapped_bam ? " --outSAMunmapped " + STAR_vars.unmapped_bam   : "") +
         (STAR_vars.ref          ? " --genomeDir "      + STAR_vars.ref            : "") +
         (STAR_vars.threads      ? " --runThreadN "     + STAR_vars.threads        : "") +
