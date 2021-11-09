@@ -189,35 +189,37 @@ ChIPhelper.UpSetPlot <- function(subdir="", Mode = "intersect", peakOverlapMode=
     # plot upsetplot_peaknumber
     png(file.path(OUT, paste0("upsetplot_", Mode, "_peaknumber.png")), width = 200, height = 100, units = "mm", res=300)
     
-    ht <- draw(UpSet(upset_matrix,
-                     comb_order = order(comb_size(upset_matrix), decreasing = T),
-                     comb_col = combColors,
-                     bg_col = "#F0F0FF",
-                     set_order = if(is.null(targetsdf)) {order(set_size(upset_matrix), decreasing = TRUE)} else {setnamesOrderByTargetsdf},
-                     column_title=paste("# of", Mode, "peaks for each set (max", setsize, "sets shown)"),
-                     left_annotation = if(is.null(targetsdf)) {NULL} else {rowAnnotation(group = targetsdf$group, col=list(group=legend_colors))}, 
-                     right_annotation = upset_right_annotation(upset_matrix, gp = gpar(fill = fillColors)),
-                     column_title_gp = gpar(fontsize = 11),
-                     row_names_max_width = unit(5, "cm"),
-                     row_names_gp = gpar(fontsize = 10)
-    ) )
-    if(addBarAnnotation){
-      od = column_order(ht)
-      cs = comb_size(upset_matrix)
-      currentvptree <- current.vpTree() # viewport name differs depending on package version
-      #print(paste("\ncurrent vptree:", currentvptree))
-      interactionsize_viewport <- c("intersection_size", "Intersection\nsize")
-      interactionsize_viewport <- interactionsize_viewport[sapply(interactionsize_viewport, grepl, currentvptree)]
-      if(length(interactionsize_viewport)==1) {
-        decorate_annotation(interactionsize_viewport, {
-          grid.text(format(cs[od], scientific=F),
-                    x = seq_along(cs), y = unit(cs[od], "native") + unit(20, "pt"), 
-                    default.units = "native", just = "bottom", gp = gpar(fontsize = 8), rot=90)        
-        })
-      } else {
-        warning("Viewpoint not found or ambiguous. decorate_annotation is omitted.")
+    try({
+      ht <- draw(UpSet(upset_matrix,
+                       comb_order = order(comb_size(upset_matrix), decreasing = T),
+                       comb_col = combColors,
+                       bg_col = "#F0F0FF",
+                       set_order = if(is.null(targetsdf)) {order(set_size(upset_matrix), decreasing = TRUE)} else {setnamesOrderByTargetsdf},
+                       column_title=paste("# of", Mode, "peaks for each set (max", setsize, "sets shown)"),
+                       left_annotation = if(is.null(targetsdf)) {NULL} else {rowAnnotation(group = targetsdf$group, col=list(group=legend_colors))}, 
+                       right_annotation = upset_right_annotation(upset_matrix, gp = gpar(fill = fillColors)),
+                       column_title_gp = gpar(fontsize = 11),
+                       row_names_max_width = unit(5, "cm"),
+                       row_names_gp = gpar(fontsize = 10)
+      ) )
+      if(addBarAnnotation){
+        od = column_order(ht)
+        cs = comb_size(upset_matrix)
+        currentvptree <- current.vpTree() # viewport name differs depending on package version
+        #print(paste("\ncurrent vptree:", currentvptree))
+        interactionsize_viewport <- c("intersection_size", "Intersection\nsize")
+        interactionsize_viewport <- interactionsize_viewport[sapply(interactionsize_viewport, grepl, currentvptree)]
+        if(length(interactionsize_viewport)==1) {
+          decorate_annotation(interactionsize_viewport, {
+            grid.text(format(cs[od], scientific=F),
+                      x = seq_along(cs), y = unit(cs[od], "native") + unit(20, "pt"), 
+                      default.units = "native", just = "bottom", gp = gpar(fontsize = 8), rot=90)        
+          })
+        } else {
+          warning("Viewpoint not found or ambiguous. decorate_annotation is omitted.")
+        }
       }
-    }
+    })
     dev.off()
 
     cat("\n", fill=T)
@@ -252,35 +254,37 @@ ChIPhelper.UpSetPlot <- function(subdir="", Mode = "intersect", peakOverlapMode=
     # plot upsetplot_bp
     png(file.path(OUT, paste0("upsetplot_", Mode, "_bp.png")), width = 200, height = 100, units = "mm", res=300)
     
-    ht <- draw(UpSet(upset_matrix,
-                     comb_order = order(comb_size(upset_matrix), decreasing = T),
-                     comb_col = combColors,
-                     bg_col = "#F0F0FF",
-                     set_order = if(is.null(targetsdf)) {order(set_size(upset_matrix), decreasing = TRUE)} else {setnamesOrderByTargetsdf},
-                     column_title=paste("# of", Mode, "bp for each set (max", setsize, "sets shown)"),
-                     left_annotation = if(is.null(targetsdf)) {NULL} else {rowAnnotation(group = targetsdf$group, col=list(group=legend_colors))}, 
-                     right_annotation = upset_right_annotation(upset_matrix, gp = gpar(fill = fillColors)),
-                     column_title_gp = gpar(fontsize = 11),
-                     row_names_max_width = unit(5, "cm"),
-                     row_names_gp = gpar(fontsize = 10)
-    ))
-    if(addBarAnnotation){
-      od = column_order(ht)
-      cs = comb_size(upset_matrix)
-      currentvptree <- current.vpTree() # viewport name differs depending on package version
-      #print(paste("\ncurrent vptree:", currentvptree))
-      interactionsize_viewport <- c("intersection_size", "Intersection\nsize")
-      interactionsize_viewport <- interactionsize_viewport[sapply(interactionsize_viewport, grepl, currentvptree)]
-      if(length(interactionsize_viewport)==1) {
-        decorate_annotation(interactionsize_viewport, {
-          grid.text(format(cs[od], scientific=T, digits=2),
-                    x = seq_along(cs), y = unit(cs[od], "native") + unit(20, "pt"), 
-                    default.units = "native", just = "bottom", gp = gpar(fontsize = 8), rot=90)
-        })
-      } else {
-        warning("Viewpoint not found or ambiguous. decorate_annotation is omitted.")
-      }
-    }  
+    try({
+      ht <- draw(UpSet(upset_matrix,
+                       comb_order = order(comb_size(upset_matrix), decreasing = T),
+                       comb_col = combColors,
+                       bg_col = "#F0F0FF",
+                       set_order = if(is.null(targetsdf)) {order(set_size(upset_matrix), decreasing = TRUE)} else {setnamesOrderByTargetsdf},
+                       column_title=paste("# of", Mode, "bp for each set (max", setsize, "sets shown)"),
+                       left_annotation = if(is.null(targetsdf)) {NULL} else {rowAnnotation(group = targetsdf$group, col=list(group=legend_colors))}, 
+                       right_annotation = upset_right_annotation(upset_matrix, gp = gpar(fill = fillColors)),
+                       column_title_gp = gpar(fontsize = 11),
+                       row_names_max_width = unit(5, "cm"),
+                       row_names_gp = gpar(fontsize = 10)
+      ))
+      if(addBarAnnotation){
+        od = column_order(ht)
+        cs = comb_size(upset_matrix)
+        currentvptree <- current.vpTree() # viewport name differs depending on package version
+        #print(paste("\ncurrent vptree:", currentvptree))
+        interactionsize_viewport <- c("intersection_size", "Intersection\nsize")
+        interactionsize_viewport <- interactionsize_viewport[sapply(interactionsize_viewport, grepl, currentvptree)]
+        if(length(interactionsize_viewport)==1) {
+          decorate_annotation(interactionsize_viewport, {
+            grid.text(format(cs[od], scientific=T, digits=2),
+                      x = seq_along(cs), y = unit(cs[od], "native") + unit(20, "pt"), 
+                      default.units = "native", just = "bottom", gp = gpar(fontsize = 8), rot=90)
+          })
+        } else {
+          warning("Viewpoint not found or ambiguous. decorate_annotation is omitted.")
+        }
+      }  
+    })
     dev.off()
     cat("\n", fill=T)
     cat("\n", fill=T)
