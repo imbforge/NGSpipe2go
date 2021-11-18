@@ -2,7 +2,8 @@
 title: "SHINYREPS_PROJECT"
 output:
   html_document:
-    toc: yes
+    toc: true
+    toc_float: true
     css: styles.css
 ---
 
@@ -16,128 +17,410 @@ knitr::opts_chunk[['set']](dev='CairoPNG')
 options(stringsAsFactors=FALSE)
 source('smallRNA.shinyrep.helpers.R')
 loadGlobalVars()
+load(paste0(SHINYREPS_DE_DESEQ_DIR,"/all/",SHINYREPS_DE_DESEQ_FILE), envir=.GlobalEnv)        # the outcome from the DE analysis
 ``` 
 
-## Quality Control smallRNAseq ##
 
-### Raw reads QC
+## Raw reads QC {.tabset .tabset-pills} 
+
 The raw sequence reads of all samples are analysed with the popular FastQC tool (http://www.bioinformatics.babraham.ac.uk/projects/fastqc/).
 
-1. The "Read qualities" Box-Whisker plots show the range of quality values across all base positions:
-    (i) The central red line is the median value,
-    (ii) The yellow box represents the inter-quartile range (25-75%),
-    (iii) The upper and lower whiskers represent the 10% and 90% points,
-    (iv) The blue line represents the mean quality.
-The y-axis on the graph shows the Phred quality scores, which are logarithmically related to the base-calling error probabilities. The higher the score the better the base call. The background of the graph divides the y axis into very good quality calls (green), calls of reasonable quality (orange), and calls of poor quality (red). Typically, the majority of calls on all base positions fall into the green area.
 
-2. The "Sequence bias" plots show the proportion of each base (% G, A, T and C) at each position. In a random library there would be little difference between the positions of a sequence run, so the lines in this plot should run parallel with each other.
+### Read quality
 
+The "read qualities" plot summarizes the mean quality score at each position. The color on the graph shows the Phred quality scores, which are logarithmically related to the base-calling error probabilities. The higher the score the better the base call. The background of the graph divides the y axis into very good quality calls (green), calls of reasonable quality (yellow), and calls of poor quality (red). Typically, the majority of calls on all base positions fall into the green area. Due to binning of quality score in recent sequencing technologies (e.g. Illumina NextSeq), sequencing qualities are the same on many position and, thus, also samples appear to have very similar or almost identical sequencing qualities.
 
-```{r FastQC_paragraph, echo=F, results='asis', error=F, warning=F, message=F}
-cat(smallRNAhelper.Fastqc(), sep="\n")
+```{r FastQC_qual_summarized, echo=F,results='asis',error=F,warning=F,message=F,fig.align='center'}
+
+fastqc_summary_plot <- smallRNAhelper.Fastqc.custom(web=F,summarizedPlots=as.logical(SHINYREPS_FASTQC_SUMMARIZED),subdir="raw")
+
+if (SHINYREPS_FASTQC_SUMMARIZED) {
+    plot(fastqc_summary_plot$p.qual)
+    cat("\n", fill = T)
+} else {
+    smallRNAhelper.subchunkify(fastqc_summary_plot$p.qual,
+                               fig_height = round((3*fastqc_summary_plot$no.of.samples)/4)+1,
+                               fig_width = 9)
+    cat("\n", fill = T)
+}
+
 ```
 
-### Adapter trimming
 
-Adapter trimming was done using cutadapt (http://journal.embnet.org/index.php/embnetjournal/article/view/200). The minimal overlap of read and adapter was set to `r SHINYREPS_MINADAPTEROVERLAP`. Reads shorter than `r SHINYREPS_MINREADLENGTH` bp (insert + universal molecular identifiers (UMIs)) after adapter trimming were discarded.
+### Sequence bias
 
-```{r cutadapt_paragraph, echo=F, results='asis', error=F, warning=F, message=F}
-cat(smallRNAhelper.cutadapt(), sep="\n")
+The "sequence bias" plot shows the proportion of each base (% G, A, T and C) at each position. In a random library there would be little difference between the positions of a sequence run, so the lines in this plot should run parallel with each other. But most RNA-seq libraries show sequence imbalance in the first 10-12 read positions due to RT priming biases, which should however look fairly similar in all samples. In case the nucleotide content is summarized in a heatmap for all samples, gray colored fields represent a balanced nucleotide content.
+
+
+```{r FastQC_nuc_content_summarized, echo=F,results='asis',error=F,warning=F,message=F,fig.align='center'}
+
+if (SHINYREPS_FASTQC_SUMMARIZED) {
+    plot(fastqc_summary_plot$p.content)
+    cat("\n", fill = T)
+} else {
+    smallRNAhelper.subchunkify(fastqc_summary_plot$p.content,
+                               fig_height = round((3*fastqc_summary_plot$no.of.samples)/4)+1,
+                               fig_width = 9)
+    cat("\n", fill = T)
+}
+
 ```
 
 
-### Quality filtering
+### GC content
 
-After trimming off adapters at the 3’ end of reads, low quality reads were discarded, i.e. all reads
-with any nucleotide having a quality score below 20 were removed.
+The "GC content" plot shows the GC% distribution of all reads and all samples. Typically, the lines should tightly overlap and look essentially the same in all samples. An unusually shaped distribution could indicate a contaminated library.
+
+```{r FastQC_GC, echo=F,results='asis',error=F,warning=F,message=F,fig.align='center'}
+
+plot(fastqc_summary_plot$p.gc)
+cat("\n", fill = T)
+
+```
+
+
+```{r cutadapt_data, echo=F, results='asis', error=F, warning=F, message=F}
+
+cat("## Adapter trimming with Cutadapt {.tabset .tabset-pills} \n")
+cat(paste0("After initial QC, possibly occurring adapter sequences at the 3'end of reads are trimmed using Cutadapt (https://cutadapt.readthedocs.io/en/stable/). The minimal overlap of read and adapter was set to ",SHINYREPS_MINADAPTEROVERLAP,". Untrimmed reads as well as reads shorter than ",SHINYREPS_MINREADLENGTH,"bp (insert + universal molecular identifiers (UMIs)) after adapter trimming were discarded.\n"),fill=T)
+
+trim <- smallRNAhelper.cutadapt.summary()
+
+cat("### Trimming summary\n", fill=T)
+smallRNAhelper.subchunkify(trim$p.trim,
+                           fig_height = trim$no.of.samples/3 + 1,
+                           fig_width = 9)
+cat("\n", fill = T)
+
+cat("### Trimming statistics\n", fill=T)
+cat(trim$trim.table, sep="\n")
+cat("\n", fill = T)
+
+```
+
+
+
 
 ```{r qualityfilter_paragraph, echo=F, results='asis', error=F, warning=F, message=F}
-cat(smallRNAhelper.qualityfilter(), sep="\n")
+
+cat("## Quality filtering {.tabset .tabset-pills} \n")
+cat(paste0("After trimming off adapters at the 3’ end of reads, low quality reads were discarded, i.e. all reads with any nucleotide having a quality score below ",SHINYREPS_MINIMAL_QUAL," were removed.\n"),fill=T)
+
+qual <- smallRNAhelper.qualityfilter()
+
+cat("### Quality filtering summary\n", fill=T)
+smallRNAhelper.subchunkify(qual$p.qual,
+                           fig_height = qual$no.of.samples/3 + 1,
+                           fig_width = 9)
+cat("\n", fill = T)
+
+cat("### Quality filtering statistics\n", fill=T)
+cat(qual$qual.table, sep="\n")
+cat("\n", fill = T)
+
 ```
 
 
-### Duplicate removal
-
-Duplicates are then removed from the remaining high-quality reads. Here, identical reads including
-identical UMIs (unique molecular identifiers) are considered duplicates. For each group of duplicates, one copy was kept for subsequent analysis.
 
 ```{r dedup_paragraph, echo=F, results='asis', error=F, warning=F, message=F}
-cat(smallRNAhelper.dedup(), sep="\n")
+
+if (SHINYREPS_REMOVE_DUPLICATES) {
+
+    cat("## Duplicate removal {.tabset .tabset-pills} \n")
+    cat("Duplicates are then removed from the remaining high-quality reads. Here, identical reads including identical UMIs (unique molecular identifiers) are considered duplicates. For each group of duplicates, one copy was kept for subsequent analysis.\n",fill=T)
+
+   dedup <- smallRNAhelper.dedup()
+   
+   cat("### Duplicate removal summary\n", fill=T)
+   smallRNAhelper.subchunkify(dedup$p.dedup,
+                              fig_height = dedup$no.of.samples/3 + 1,
+                              fig_width = 9)
+   cat("\n", fill = T)
+
+   cat("### Duplicate removal statistics\n", fill=T)
+   cat(dedup$dedup.table, sep="\n")
+   cat("\n", fill = T)
+
+}
 ```
 
 
-### Summary of raw data filtering
-
-A summary of all trimming and filtering until removal of duplicates is shown below.
 
 ```{r rawfiltersummary_paragraph, echo=F, results='asis', error=F, warning=F, message=F}
-cat(smallRNAhelper.rawfiltersummary(), sep="\n")
+
+cat("## Summary of raw data filtering {.tabset .tabset-pills} \n")
+cat("A summary of all trimming and filtering until the optional removal of duplicates is shown below.\n",fill=T)
+
+allfilter <- smallRNAhelper.rawfiltersummary()
+
+cat("### All filtering summary\n", fill=T)
+smallRNAhelper.subchunkify(allfilter$p.filter,
+                           fig_height = allfilter$no.of.samples/3 + 1,
+                           fig_width = 9)
+cat("\n", fill = T)
+
+cat("### All filtering statistics\n", fill=T)
+cat(allfilter$filter.table, sep="\n")
+cat("\n", fill = T)
+
 ```
 
 
 
-### QC of filtered raw reads
+```{r FastQC_paragraph2, echo=F,results='asis',error=F,warning=F,message=F,fig.align='center'}
 
-The first two columns show "Read qualities" and "Sequence bias" as described before. The third column "Length distribution" shows
-the length distribution of remaining reads after trimming of UMIs on both ends.
+cat("## Read length distribution after trimming and filtering \n")
 
-```{r filteredFastQC_paragraph, echo=F, results='asis', error=F, warning=F, message=F}
-cat(smallRNAhelper.filteredFastqc(), sep="\n")
+cat("Read length distributions were analysed and estimated with FastQC (http://www.bioinformatics.babraham.ac.uk/projects/fastqc/).\n",fill=T)
+
+trimmed_fastqc_summary_plot <- smallRNAhelper.Fastqc.custom(web=F,summarizedPlots=as.logical(SHINYREPS_FASTQC_SUMMARIZED),subdir="trimmed")
+
+plot(trimmed_fastqc_summary_plot$p.len)
+cat("\n", fill = T)
+
+```
+
+
+## Read mapping 
+
+```{r bowtie_paragraph, echo=F,results='asis',error=F,warning=F,message=F}
+
+cat(paste0("### Mapping to the ",SHINYREPS_ORG," genome {.tabset .tabset-pills} "),"\n",fill=T)
+
+cat("Reads were mapped to the reference genome using Bowtie (http://bowtie-bio.sourceforge.net) with the following parameters:\n",fill=T) 
+
+cat(smallRNAhelper.bowtie.params(), fill=T)
+
+cat("The mapping statistics as given by Bowtie show the total number of reads delivered to the aligner ('all reads'), the number of reads mapping uniquely to one location ('unique'), the number of reads mapping to multiple locations ('multi') and the number of reads not mapped to the reference genome ('unmapped'). For multimapped reads, one random alignment among the best mapping positions is chosen and retained. Percentages are based on the amount of reads sequenced ('all reads').\n\n")
+
+bowtie <- smallRNAhelper.bowtie()
+
+cat("#### Bowtie summary\n", fill=T)
+smallRNAhelper.subchunkify(bowtie$p.bowtie,
+                           fig_height = bowtie$no.of.samples/3 + 1.5,
+                           fig_width = 9)
+cat("\n", fill = T)
+
+cat("#### Bowtie statistics\n", fill=T)
+cat(bowtie$bowtie.table, sep="\n")
+cat("\n", fill = T)
+
+
+```
+
+
+### Competitive mapping to rRNAs and other contaminats 
+
+A competitive mapping to the reference genome and known rRNAs (H. sapiens, M. musculus, C. elegans, D. melanogaster, D. rerio, X. tropicalis) as well as frequently occurring Mycoplasma species (M. arginini, M. fermentans, M. hominis, M. hyorhinis, M. orale, and Acholeplasma laidlawii), PhiX and ERCC spike-in sequences and E. coli was performed with FastQScreen (http://www.bioinformatics.babraham.ac.uk/projects/fastq_screen/).
+
+In the following plot only relevant contaminants are shown. A contaminant is considered relevant if it consumes `r SHINYREPS_FASTQSCREEN_PERC`% of reads or more in at least one sample. The "one genome" label refers to the amount of reads mapping to that genome only, no matter if they are mapping uniquely or multiple times. The "multiple genome" label refers to the amount of read mapping to this genome but also to other genomes in the screening regardless of whether they are uniquely or multi mapping. 
+
+
+```{r fastqscreen_paragraph, echo=F, results='asis', fig.width=10, error=F, warning=F, message=F}
+
+
+fastqscreen_plots <- smallRNAhelper.fastqscreen(perc.to.plot=SHINYREPS_FASTQSCREEN_PERC)
+
+smallRNAhelper.subchunkify(fastqscreen_plots$p.category.wrap,
+                           fig_height = (round((3*fastqscreen_plots$no.of.genomes)/4)+1)*fastqscreen_plots$no.of.samples/8+1,
+                           fig_width = 9)
+cat("\n", fill = T)
+
 ```
 
 
 
-## Read mapping
+## Mapped reads annotation {.tabset .tabset-pills} 
 
-### Mapping to the genome
+Mapped reads were assigned to annotated features using the Subread tool featureCounts (http://bioinf.wehi.edu.au/featureCounts). For multimapping reads, one randomly chosen location is used and assigned. Ambiguous reads, which overlap with multiple features, are assigned to all overlapped features. This might overcount, but is necessary since some miRNAs are located in introns or overlap snoRNAs and, thus, would otherwise not be counted. As a consequence, these ambiguous reads are also possibly wrongly assigned to the overlapping genes. The unassigned reads are due to no found overlap with known features (e.g. intronic reads derived from unprocessed transcripts). 
 
-Mapping to the reference genome & transcriptome is performed with Bowtie (http://bowtie-bio.sourceforge.net). The program version, genome assembly and software parameters are described in the table at the end of the report.
-
-The mapping statistics below show the number and percentage of (i) input raw reads, (ii) uniquely mapped reads, (iii) reads mapped to multiple positions in the genome (multimapped), and (iv) reads not mapped to the reference genome. For the multimapped reads, one random alignment among the best mapping positions is chosen.
-
-```{r bowtie_table_paragraph, echo=F, results='asis', error=F, warning=F, message=F}
-cat(smallRNAhelper.bowtie.table(), sep="\n")
-``` 
-
-```{r bowtie_plot_paragraph, echo=F, results='asis', error=F, warning=F, message=F}
-cat(smallRNAhelper.bowtie.plot(), sep="\n")
-```
-
-
-### Mapping to rRNAs and the genome
-
-Using FastQScreen (http://www.bioinformatics.babraham.ac.uk/projects/fastq_screen/), the amount of reads also mapping to rRNAs was determined.
-To that aim, reads were mapped to both; the genome and all known rRNAs. Results are shown below.
-
-```{r fastqscreen_paragraph, echo=F, results='asis', error=F, warning=F, message=F}
-cat(smallRNAhelper.fastqscreen(), sep="\n")
-```
-
-
-
-### Mapped reads annotation
-The mapped reads were assigned to annotated features using the Subread tool featureCounts (http://bioinf.wehi.edu.au/featureCounts). The unassigned reads are due to ambiguity (overlap with multiple features) or because no overlap is found with known features (e.g. intronic reads derived from unprocessed transcripts).  
 
 ```{r subread_paragraph, echo=F, results='asis', error=F, warning=F, message=F}
-cat(smallRNAhelper.subread(), sep="\n")
+subread <- smallRNAhelper.subread(subdir="all",show.ambig=FALSE)
+
+cat("### Annotation summary\n", fill=T)
+smallRNAhelper.subchunkify(subread$p.subread,
+                           fig_height = subread$no.of.samples/3 + 1,
+                           fig_width = 9)
+cat("\n", fill = T)
+
+cat("### Annotation statistics\n", fill=T)
+cat(subread$subread.table, sep="\n")
+cat("\n", fill = T)
+
 ```
 
-### RNA class representation
+## RNA class representation ##
+
 The following plot shows the fraction of reads assigned to various RNA classes. All RNA classes occurring with more than `r as.numeric(SHINYREPS_RNATYPES_CUTOFF)*100`% are plotted individually, all others are combined to "other". These plots help in determining if the sample prep protocol worked well and may reveal issues with rRNA contamination. 
 
-```{r RNAtypes_paragraph, echo=F, results='asis', error=F, warning=F, message=F}
-smallRNAhelper.RNAtypes()
+```{r RNAtypes_paragraph, echo=F, results='asis', error=F, warning=F, message=F, fig.align="center", out.width="100%"}
+
+rnatypes <- smallRNAhelper.RNAtypes()
+
+smallRNAhelper.subchunkify(rnatypes$p.rnatypes,
+                           fig_height = rnatypes$no.of.samples/3 + 0.5,
+                           fig_width = 9)
 ```
 
+
+## Sample relatedness {.tabset .tabset-pills} 
+
+
+```{r MDSplot_paragraph, echo=F, results='asis', error=F, warning=F, message=F, fig.align="center", out.width="100%"}
+
+cat("### PCA plot\n", fill=T)
+
+cat("The plot below depicts sample similarity based on priniciple component analysis (PCA) with the 500 genes showing the highest variance. Overall, replicates are expected to show relatively small distances between them, while sample groups often show higher distances between them, depending on the magnitude of expression changes. If the samples cluster other than by group, there might be sample prep batch effects or some other unaccounted biological/technical factors in the experiment.\n\n",fill=T)
+
+smallRNAhelper.DESeq2.MDS()        # sample MDS 
+
+cat("\n", fill = T)
+
+```
+
+
+```{r Heatmap2_paragraph, echo=F, results='asis', error=F, warning=F, message=F, fig.align="center"}
+
+cat("### Sample-sample distance\n", fill=T)
+
+cat("A heatmap clustogram of the Euclidean distances between the samples gives an intuitive measure of sample similarity (similarities of samples to themselves (diagonal) are set to NA):\n\n", fill = T)
+
+smallRNAhelper.DESeq2.heatmap(type="distance")         # heatmap of sample to sample distances
+
+cat("\n", fill = T)
+
+```
+
+
+```{r Heatmap1_paragraph_sd, echo=F, results='asis', error=F, warning=F, message=F, fig.align="center"}
+
+cat("### Most variable genes\n", fill=T)
+
+cat("Hierarchical clustering of the samples based on the most variable genes reveals replicate consistency and can spot batches of samples related by other characteristics rather than condition.\n\n", fill = T)
+
+smallRNAhelper.DESeq2.heatmap(type="cluster_sd")   # heatmap of top variant 'n' genes of the rlog transformed counts (normalized and stabilized)
+
+cat("\n", fill = T)
+
+```
+
+
+```{r Heatmap1_paragraph_mean, echo=F, results='asis', error=F, warning=F, message=F, fig.align="center"}
+
+cat("### Most expressed genes\n", fill=T)
+
+cat("A hierarchical clustering of the samples based on the genes with the highest average expression is shown below.\n\n", fill = T)
+
+smallRNAhelper.DESeq2.heatmap(type="cluster_mean")    # heatmap of top variant 'n' genes of the rlog transformed counts (normalized and stabilized)
+
+cat("\n", fill = T)
+
+```
+
+
+## Differential Expression Analysis  
+
+Pairwise differential expression analysis between the experimental groups is performed with the popular R/Bioconductor package DESeq2 (https://bioconductor.org/packages/release/bioc/html/DESeq2.html). Default DESeq2 analysis includes an independent filtering procedure for lowly expressed genes which is meant to ameliorate the multiple testing problem thereby maximising the statistical power to detect differentially expressed genes (DEGs).
+
+Note that the default DESeq2 analysis uses only a statistical (FDR) filter and is thus testing for evidence that the expression changes between two sample groups is different from zero. Performing post hoc filtering on fold changes is therefore not recommended by the software developers and should be avoided. If desirable, the differential expression analysis can be repeated including an additional fold change (FC) threshold directly in the DESeq2 statistical testing model, which will result in more conservative DEG estimates compared to post hoc filtering.
+
+In this anlysis the FC filter was set to `r SHINYREPS_DE_DESEQ_FC`, the FDR filter was set to `r SHINYREPS_DE_DESEQ_FDR`.  
+
+```{r DifferentialExpression_paragraph, echo=F, results='asis', error=F, warning=F, message=F, fig.align="center"}
+for(i in 1:nrow(conts)) {
+
+    # subsection
+    cont.name <- gsub("(.+)=(.+)","\\1",conts[i,1])
+    cat("#### ", cont.name, " {.tabset .tabset-pills}", fill=T)
+    cat("", fill=T)
+
+    # pairwise PCA plot 
+    cat("##### PCA plot", fill=T)
+    cat("Priniciple component analysis (PCA) plot with the samples of the two analysed groups.", "\n", "\n")
+    smallRNAhelper.DESeq2.pairwisePCA(i)
+    cat("\n", fill=T)
+
+    # Sample to sample distance
+    cat("##### Sample-sample dist", fill=T)
+    smallRNAhelper.DESeq2.heatmap(i, dds=pairwise.dds,  logTransform=T, type="distance")
+    cat("\n", fill=T)
+
+    # most variable genes
+    cat("##### Most variable genes", fill=T)
+    smallRNAhelper.DESeq2.heatmap(i, dds=pairwise.dds,  logTransform=T, type="cluster_sd")
+    cat("\n", fill=T)
+
+    # MA plot
+    cat("##### MA plot", fill=T)
+    fdr <- as.numeric(SHINYREPS_DE_DESEQ_FDR)
+    FC  <- as.numeric(SHINYREPS_DE_DESEQ_FC)
+    genes <- smallRNAhelper.DESeq2.DEgenes(i)
+
+    # filtering for tested genes
+    genes <- genes[!is.na(genes$padj), ]
+    cat("MA plot showing expression fold change vs. mean expression level of all annotated genes. There are", 
+        sum((genes$padj < fdr) & (abs(genes$log2FoldChange) > log2(FC)), na.rm=T), "genes with a minimal FC of", FC, "highlighted in the MA plot with corrected pvalue (Benjamini and Hochberg, FDR) <", fdr, ".", "\n")
+
+    # we do not need an additional filter for the FC here
+    # since only genes with a minimal fold change of FC are
+    # significant for the significance level chosen in the analysis
+    smallRNAhelper.DESeq2.MAplot(i, fdr)    # should be fine at taking the value from the UI slider
+    cat("\n", fill=T)
+
+    # Volcano Plot
+    cat("##### Volcano plot", fill=T)    
+    cat("Volcano plot of all DESeq2-tested genes depicting their expression fold change vs. statistical significance. The FDR <" , fdr, "hits are highlighted in red and the top 25 DEGs are labelled.", "\n", "\n")
+    smallRNAhelper.DESeq2.VolcanoPlot(i, fdr, web=F)
+    cat("\n", fill=T)
+ 
+    # expressed and sign. rna types summary
+    cat("##### RNA types {.tabset .tabset-pills} ", fill=T)
+    cat("The following plots show which RNA types were considered during the analysis and found as being significantly changed. The first plot shows percentages of the over all spectrum of RNA types considered in this analysis and being significantly changed, the second plot shows absolute counts of every RNA type, and the third plot shows the percentage within each RNA type that was found being significantly changed.\n", fill=T)
+    sign.rna <- smallRNAhelper.fractionSign.pairwise(i, fdr)
+   
+    if (sign.rna$rnatypes.sign > 0) {
+
+        cat("###### Detected vs. sign. changed\n", fill=T)
+        cat("The plot below shows the distribution of RNA types of detected as well as of significantly changed genes.\n\n",fill = T)
+        print(sign.rna$p.perc100)
+        cat("\n", fill=T)
+
+        cat("###### Detected vs. sign. changed (total gene counts)\n", fill=T)
+	cat("The plot below shows absolute counts of each RNA type of detected as well as of significantly changed genes.\n\n",fill = T)
+        print(sign.rna$p.count)
+#        smallRNAhelper.subchunkify(sign.rna$p.count,
+#                                   fig_height = sign.rna$rnatypes.total/3 + 1,
+#                                   fig_width = 9)
+        cat("\n", fill=T)
+
+        cat("###### Sign. changed percentage per RNA type\n", fill=T)
+	cat("The plot below shows the percentage of genes of each RNA type that was found significantly changed.\n\n",fill = T)
+        print(sign.rna$p.perc.own)
+#        smallRNAhelper.subchunkify(sign.rna$p.perc.own,
+#                                   fig_height = sign.rna$rnatypes.total/3 + 0.5,
+#                                   fig_width = 9)
+        cat("\n", fill=T)
+
+    }
+
+    # and DE table
+    cat("##### Top hits", fill=T)
+    cat("", fill=T)
+    cat("The table below shows the top 25 DEGs with their mean normalised counts (baseMean), expression change (log2FoldChange) and statistical significance (padj = FDR-adjusted p-value). The complete DESeq2 results table including FPKM-normalised expression data for all genes in each sample is available in CSV and Excel format.", fill=T)
+    cat("", fill=T)
+    genes$baseMean       <- round(genes$baseMean, 2)
+    genes$log2FoldChange <- round(genes$log2FoldChange, 2)
+    genes$padj           <- format(genes$padj, digits=3, scientific=TRUE)
+    cols <- c("gene_name", "baseMean", "log2FoldChange", "padj")
+    cat(kable(genes[1:25, cols], row.names=T, align="r", format="markdown"), sep="\n")    # show only the top 25 genes
+    cat("", fill=T)
+
+}
+```
 
 
 ## Used tools and versions for this analysis
-
-Mapping was performed with Bowtie using the following parameters:
-
-```{r bowtie_parameters_paragraph, echo=F, results='asis', error=F, warning=F, message=F}
-cat(smallRNAhelper.bowtie.params(), sep="\n")
-``` 
 
 The following tools and versions were used for the analysis:
 

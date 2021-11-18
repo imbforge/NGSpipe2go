@@ -1,5 +1,5 @@
-Filter2HTSeq_vars=[
-    outdir: SubreadCount_vars.outdir
+filter2htseq_vars=[
+    outdir: RESULTS + "/subread-count"
 ]
 
 load PIPELINE_ROOT + "/modules/smallRNAseq_BCF/filter2htseq.groovy"

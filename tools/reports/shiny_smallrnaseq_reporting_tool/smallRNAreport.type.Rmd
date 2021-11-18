@@ -1,0 +1,193 @@
+---
+title: "SHINYREPS_PROJECT"
+output:
+  html_document:
+    toc: true
+    toc_float: true
+    css: styles.css
+---
+
+<div class="contentbox">
+
+```{r Initialise, echo=F, result='hide', error=F, warning=F, message=F}
+require(rmarkdown)
+require(knitr)
+require(Cairo)                                                    
+knitr::opts_chunk[['set']](dev='CairoPNG')
+options(stringsAsFactors=FALSE)
+source('smallRNA.shinyrep.helpers.R')
+loadGlobalVars()
+load(paste0(SHINYREPS_DE_DESEQ_DIR,"/",SHINYREPS_TYPE,"/",SHINYREPS_DE_DESEQ_FILE), envir=.GlobalEnv)  # the outcome from the DE analysis
+``` 
+
+
+<div class="solidbox">
+
+```{r typebox,results='asis',echo=F,error=F,warning=F,message=F}
+
+cat(paste0("\n\n Only ",SHINYREPS_TYPE, " genes are used for the following analysis.\n"),fill=T)
+
+```
+</div>
+
+
+## Mapped reads annotation {.tabset .tabset-pills} 
+
+Mapped reads were assigned to annotated features using the Subread tool featureCounts (http://bioinf.wehi.edu.au/featureCounts). For multimapping reads, one randomly chosen location is used and assigned. Ambiguous reads, which overlap with multiple features, are assigned to all overlapped features. This might overcount, but is necessary since some miRNAs are located in introns or overlap snoRNAs and, thus, would otherwise not be counted. As a consequence, these ambiguous reads are also possibly wrongly assigned to the overlapping genes. The unassigned reads are due to no found overlap with known features (e.g. intronic reads derived from unprocessed transcripts). 
+
+Here, only `r SHINYREPS_TYPE` genes were selected and a summary of what percentage of the overall assigned reads is assigned to them is given below.
+
+```{r subread_paragraph, echo=F, results='asis', error=F, warning=F, message=F}
+subread <- smallRNAhelper.subread.type(subdir=SHINYREPS_TYPE,maindir="all")
+
+cat("### Annotation summary\n", fill=T)
+smallRNAhelper.subchunkify(subread$p.subread.type,
+                           fig_height = subread$no.of.samples/3 + 1,
+                           fig_width = 9)
+cat("\n", fill = T)
+
+# DO NOT SHOW TABLE OF COUNTS/PERCENTAGES SINCE AMBIGUOUS READS ARE 
+# COUNTED DOUBLE AND THUS TOTAL NUMBERS DO NOT MATCH TOTAL SAMPLE ASSIGNED
+#cat("### Annotation statistics\n", fill=T)
+#cat(subread$subread.type.table, sep="\n")
+#cat("\n", fill = T)
+
+```
+
+
+## Sample relatedness {.tabset .tabset-pills}
+
+
+```{r MDSplot_paragraph, echo=F, results='asis', error=F, warning=F, message=F, fig.align="center", out.width="100%"}
+
+cat("### PCA plot\n", fill=T)
+
+cat("The plot below depicts sample similarity based on priniciple component analysis (PCA) with the 500 genes showing the highest variance. Overall, replicates are expected to show relatively small distances between them, while sample groups often show higher distances between them, depending on the magnitude of expression changes. If the samples cluster other than by group, there might be sample prep batch effects or some other unaccounted biological/technical factors in the experiment.\n\n",fill=T)
+
+smallRNAhelper.DESeq2.MDS()        # sample MDS 
+
+cat("\n", fill = T)
+
+```
+
+
+```{r Heatmap2_paragraph, echo=F, results='asis', error=F, warning=F, message=F, fig.align="center"}
+
+cat("### Sample-sample distance\n", fill=T)
+
+cat("A heatmap clustogram of the Euclidean distances between the samples gives an intuitive measure of sample similarity (similarities of samples to themselves (diagonal) are set to NA):\n\n", fill = T)
+
+smallRNAhelper.DESeq2.heatmap(type="distance")         # heatmap of sample to sample distances
+
+cat("\n", fill = T)
+
+```
+
+
+```{r Heatmap1_paragraph_sd, echo=F, results='asis', error=F, warning=F, message=F, fig.align="center"}
+
+cat("### Most variable genes\n", fill=T)
+
+cat("Hierarchical clustering of the samples based on the most variable genes reveals replicate consistency and can spot batches of samples related by other characteristics rather than condition.\n\n", fill = T)
+
+smallRNAhelper.DESeq2.heatmap(type="cluster_sd")   # heatmap of top variant 'n' genes of the rlog transformed counts (normalized and stabilized)
+
+cat("\n", fill = T)
+
+```
+
+
+```{r Heatmap1_paragraph_mean, echo=F, results='asis', error=F, warning=F, message=F, fig.align="center"}
+
+cat("### Most expressed genes\n", fill=T)
+
+cat("A hierarchical clustering of the samples based on the genes with the highest average expression is shown below.\n\n", fill = T)
+
+smallRNAhelper.DESeq2.heatmap(type="cluster_mean")    # heatmap of top variant 'n' genes of the rlog transformed counts (normalized and stabilized)
+
+cat("\n", fill = T)
+
+```
+
+
+## Differential Expression Analysis 
+
+Pairwise differential expression analysis between the experimental groups is performed with the popular R/Bioconductor package DESeq2 (https://bioconductor.org/packages/release/bioc/html/DESeq2.html). Default DESeq2 analysis includes an independent filtering procedure for lowly expressed genes which is meant to ameliorate the multiple testing problem thereby maximising the statistical power to detect differentially expressed genes (DEGs).
+
+Note that the default DESeq2 analysis uses only a statistical (FDR) filter and is thus testing for evidence that the expression changes between two sample groups is different from zero. Performing post hoc filtering on fold changes is therefore not recommended by the software developers and should be avoided. If desirable, the differential expression analysis can be repeated including an additional fold change (FC) threshold directly in the DESeq2 statistical testing model, which will result in more conservative DEG estimates compared to post hoc filtering.
+
+In this anlysis the FC filter was set to `r SHINYREPS_DE_DESEQ_FC`, the FDR filter was set to `r SHINYREPS_DE_DESEQ_FDR`.  
+
+```{r DifferentialExpression_paragraph, echo=F, results='asis', error=F, warning=F, message=F, fig.align="center"}
+for(i in 1:nrow(conts)) {
+
+    # subsection
+    cont.name <- gsub("(.+)=(.+)","\\1",conts[i,1])
+    cat("#### ", cont.name, " {.tabset .tabset-pills}", fill=T)
+    cat("", fill=T)
+
+    # pairwise PCA plot 
+    cat("##### PCA plot", fill=T)
+    cat("Priniciple component analysis (PCA) plot with the samples of the two analysed groups.", "\n", "\n")
+    smallRNAhelper.DESeq2.pairwisePCA(i)
+    cat("\n", fill=T)
+
+    # Sample to sample distance
+    cat("##### Sample-sample dist.", fill=T)
+    smallRNAhelper.DESeq2.heatmap(i, dds=pairwise.dds,  logTransform=T, type="distance")
+    cat("\n", fill=T)
+
+    # most variable genes
+    cat("##### Most variable genes", fill=T)
+    smallRNAhelper.DESeq2.heatmap(i, dds=pairwise.dds,  logTransform=T, type="cluster_sd")
+    cat("\n", fill=T)
+
+    # MA plot
+    cat("##### MA plot", fill=T)
+    fdr <- as.numeric(SHINYREPS_DE_DESEQ_FDR)
+    FC  <- as.numeric(SHINYREPS_DE_DESEQ_FC)
+    genes <- smallRNAhelper.DESeq2.DEgenes(i)
+
+    # filtering for tested genes
+    genes <- genes[!is.na(genes$padj), ]
+    cat("MA plot showing expression fold change vs. mean expression level of all annotated genes. There are", 
+        sum((genes$padj < fdr) & (abs(genes$log2FoldChange) > log2(FC)), na.rm=T), "genes with a minimal FC of", FC, "highlighted in the MA plot with corrected pvalue (Benjamini and Hochberg, FDR) <", fdr, ".", "\n")
+
+    # we do not need an additional filter for the FC here
+    # since only genes with a minimal fold change of FC are
+    # significant for the significance level chosen in the analysis
+    smallRNAhelper.DESeq2.MAplot(i, fdr)    # should be fine at taking the value from the UI slider
+    cat("\n", fill=T)
+
+    # Volcano Plot
+    cat("##### Volcano plot", fill=T)    
+    cat("Volcano plot of all DESeq2-tested genes depicting their expression fold change vs. statistical significance. The FDR <" , fdr, "hits are highlighted in red and the top 25 DEGs are labelled.", "\n", "\n")
+    smallRNAhelper.DESeq2.VolcanoPlot(i, fdr, web=F)
+    cat("\n", fill=T)
+ 
+    # and DE table
+    cat("##### Top hits", fill=T)
+    cat("", fill=T)
+    cat("The table below shows the top 25 DEGs with their mean normalised counts (baseMean), expression change (log2FoldChange) and statistical significance (padj = FDR-adjusted p-value). The complete DESeq2 results table including FPKM-normalised expression data for all genes in each sample is available in CSV and Excel format.", fill=T)
+    cat("", fill=T)
+    genes$baseMean       <- round(genes$baseMean, 2)
+    genes$log2FoldChange <- round(genes$log2FoldChange, 2)
+    genes$padj           <- format(genes$padj, digits=3, scientific=TRUE)
+    cols <- c("gene_name", "baseMean", "log2FoldChange", "padj")
+    cat(kable(genes[1:25, cols], row.names=T, align="r", format="markdown"), sep="\n")    # show only the top 25 genes
+    cat("", fill=T)
+
+}
+```
+
+
+## Used tools and versions for this analysis
+
+The following tools and versions were used for the analysis:
+
+```{r ToolVersions_paragraph, echo=F, results='asis', error=F, warning=F, message=F}
+cat(Toolhelper.ToolVersions(), sep="\n")
+```
+
+</div>
+

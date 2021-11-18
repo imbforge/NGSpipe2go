@@ -1,6 +1,6 @@
 FilterDuplicates_vars=[
     outdir: PROCESSED,
-    logdir: PROCESSED + "/logs"
+    logdir: LOGS_MY + "/removeDup"
 ]
 
 load PIPELINE_ROOT + "/modules/smallRNAseq_BCF/dedup.groovy"
