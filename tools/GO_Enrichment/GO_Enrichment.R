@@ -216,7 +216,7 @@ processContrast <-  function(x) {
         }
 
         # write GO and Pathway enrichment tables
-        write_xlsx(list(GO      =enriched_with_parent_info,
+        write_xlsx(list(GO      =if(exists("enriched_with_parent_info")) {enriched_with_parent_info} else {as.data.frame(enriched)},
                         KEGG    =as.data.frame(enrichedKEGG),
                         Reactome=as.data.frame(enrichedReactome)),
                    path=paste0(out, "/", contrast, "_", suffix, "_genes.xlsx"))
