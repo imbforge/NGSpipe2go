@@ -95,6 +95,18 @@ config {
       procs="8" 
       memory="64"
     }
+    cellrangerarc_count { 
+      queue=long_queue 
+      walltime="20:00:00" 
+      procs="8" 
+      memory="64"
+    }
+    cellrangerarc_aggr { 
+      queue=long_queue 
+      walltime="20:00:00" 
+      procs="8" 
+      memory="64"
+    }
     CollectPlots { 
       walltime="01:00:00" 
       procs="1" 

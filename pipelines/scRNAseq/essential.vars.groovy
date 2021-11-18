@@ -17,7 +17,9 @@ ESSENTIAL_BAMCOVERAGE="--binSize 1 --skipNonCoveredRegions --normalizeUsing CPM"
 ESSENTIAL_STAR_REF="/fsimb/common/genomes/homo_sapiens/gencode/release-25_GRCh38.p7/full/index/star/2.7.3a/"
 // Alignment with Cellranger (used for 10X pipeline)
 ESSENTIAL_TENX_TRANSCRIPTOME="/fsimb/common/genomes/homo_sapiens/10X/grch38_ensembl98/refdata-gex-GRCh38-2020-A"
+ESSENTIAL_TENX_REFERENCE="/fsimb/common/genomes/homo_sapiens/10X/grch38_ensembl98/refdata-cellranger-arc-GRCh38-2020-A-2.0.0"
 ESSENTIAL_TENX_EXPECTED_CELLS=7000 // cellranger default 
+ESSENTIAL_TENX_FASTQDIR=ESSENTIAL_PROJECT + "/rawdata"
 ESSENTIAL_TENX_AGGRCSV="aggregation.csv"
 ESSENTIAL_TENX_NORMALIZED="mapped"
 

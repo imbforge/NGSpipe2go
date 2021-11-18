@@ -24,41 +24,42 @@ def singularity_tools = "/fsimb/common/singularity_tools"
 // default runenvs and versions for each tools.
 // Names should match those of tools_envs
 tools_defaults = [
-    R          : [ runenv: "lmod", version: "3.6.0"        ],
-    bamqc      : [ runenv: "lmod", version: "0.1.25_devel" ],
-    bamutil    : [ runenv: "lmod", version: "1.0.13"       ],
-    bedtools   : [ runenv: "lmod", version: "2.27"         ],
-    bowtie     : [ runenv: "lmod", version: "1.2.2"        ],
-    bowtie2    : [ runenv: "lmod", version: "2.3.4"        ],
-    cellranger : [ runenv: "lmod", version: "6.0.0"        ],
-    bwa        : [ runenv: "lmod", version: "0.7.15"       ],
-    cutadapt   : [ runenv: "lmod", version: "1.18"         ],
-    deeptools  : [ runenv: "lmod", version: "3.1"          ],
-    fastqc     : [ runenv: "lmod", version: "0.11.8"       ],
-    fastqscreen: [ runenv: "lmod", version: "0.13"         ],
-    fastx      : [ runenv: "lmod", version: "0.0.14"       ],
-    gatk       : [ runenv: "lmod", version: "3.4-46"       ],
-    htseq      : [ runenv: "lmod", version: "0.6.1"        ],
-    java       : [ runenv: "lmod", version: "1.8"          ],
-    kentutils  : [ runenv: "lmod", version: "v365"         ],
-    macs2      : [ runenv: "lmod", version: "2.1.2"        ],
-    mirdeep2   : [ runenv: "lmod", version: "2.0.0.8"      ],
-    multiqc    : [ runenv: "lmod", version: "1.7"          ],
-    pear       : [ runenv: "lmod", version: "0.9.11"       ],
-    picard     : [ runenv: "lmod", version: "2.20"         ],
-    pingpongpro: [ runenv: "lmod", version: "1.0"          ],
-    qualimap   : [ runenv: "lmod", version: "2.2.1"        ],
-    repenrich  : [ runenv: "lmod", version: "1.2"          ],
-    rmats      : [ runenv: "lmod", version: "4.0.2"        ],
-    rseqc      : [ runenv: "lmod", version: "3.0.0"        ],
-    samtools   : [ runenv: "lmod", version: "1.9"          ],
-    seqtk      : [ runenv: "lmod", version: "1.3"          ], 
-    starfusion : [ runenv: "lmod", version: "0.8.0"        ],
-    star       : [ runenv: "lmod", version: "2.7"          ],
-    stringtie  : [ runenv: "lmod", version: "1.3.5"        ],
-    subread    : [ runenv: "lmod", version: "1.6"          ],
-    trimgalore : [ runenv: "lmod", version: "0.5.0"        ],
-    umitools   : [ runenv: "lmod", version: "1.0.0"        ]
+    R              : [ runenv: "lmod", version: "3.6.0"        ],
+    bamqc          : [ runenv: "lmod", version: "0.1.25_devel" ],
+    bamutil        : [ runenv: "lmod", version: "1.0.13"       ],
+    bedtools       : [ runenv: "lmod", version: "2.27"         ],
+    bowtie         : [ runenv: "lmod", version: "1.2.2"        ],
+    bowtie2        : [ runenv: "lmod", version: "2.3.4"        ],
+    cellranger     : [ runenv: "lmod", version: "6.0.0"        ],
+    cellrangerarc  : [ runenv: "lmod", version: "2.0.0"        ],
+    bwa            : [ runenv: "lmod", version: "0.7.15"       ],
+    cutadapt       : [ runenv: "lmod", version: "1.18"         ],
+    deeptools      : [ runenv: "lmod", version: "3.1"          ],
+    fastqc         : [ runenv: "lmod", version: "0.11.8"       ],
+    fastqscreen    : [ runenv: "lmod", version: "0.13"         ],
+    fastx          : [ runenv: "lmod", version: "0.0.14"       ],
+    gatk           : [ runenv: "lmod", version: "3.4-46"       ],
+    htseq          : [ runenv: "lmod", version: "0.6.1"        ],
+    java           : [ runenv: "lmod", version: "1.8"          ],
+    kentutils      : [ runenv: "lmod", version: "v365"         ],
+    macs2          : [ runenv: "lmod", version: "2.1.2"        ],
+    mirdeep2       : [ runenv: "lmod", version: "2.0.0.8"      ],
+    multiqc        : [ runenv: "lmod", version: "1.7"          ],
+    pear           : [ runenv: "lmod", version: "0.9.11"       ],
+    picard         : [ runenv: "lmod", version: "2.20"         ],
+    pingpongpro    : [ runenv: "lmod", version: "1.0"          ],
+    qualimap       : [ runenv: "lmod", version: "2.2.1"        ],
+    repenrich      : [ runenv: "lmod", version: "1.2"          ],
+    rmats          : [ runenv: "lmod", version: "4.0.2"        ],
+    rseqc          : [ runenv: "lmod", version: "3.0.0"        ],
+    samtools       : [ runenv: "lmod", version: "1.9"          ],
+    seqtk          : [ runenv: "lmod", version: "1.3"          ], 
+    starfusion     : [ runenv: "lmod", version: "0.8.0"        ],
+    star           : [ runenv: "lmod", version: "2.7"          ],
+    stringtie      : [ runenv: "lmod", version: "1.3.5"        ],
+    subread        : [ runenv: "lmod", version: "1.6"          ],
+    trimgalore     : [ runenv: "lmod", version: "0.5.0"        ],
+    umitools       : [ runenv: "lmod", version: "1.0.0"        ]
 ]
 
 // This map defines how to prepare the environment in order to have in PATH all
@@ -123,6 +124,11 @@ tools_envs = [
         ],
         "6.0.0": [
             lmod: "module load cellranger/6.0.0"
+        ]
+    ],
+    cellrangerarc: [
+        "2.0.0": [
+            lmod: "module load cellrangerARC/2.0.0"
         ]
     ],
     cutadapt: [
