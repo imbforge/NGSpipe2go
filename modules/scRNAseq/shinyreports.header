@@ -6,8 +6,8 @@ shinyReports_vars=[
     log             : LOGS,             //where the logs lie
     qc              : QC,               //where the QC lie
     res             : RESULTS,          //where the results lie
-//    cellranger_aggr_id: cellranger_aggr_vars.id, // folder name for results from cellranger aggr
-    cellranger_aggr_id: cellrangerarc_aggr_vars.id, // folder name for results from cellranger-arc aggr
+    cellranger_aggr_id: cellranger_aggr_vars.id, // folder name for results from cellranger aggr
+//    cellranger_aggr_id: cellrangerarc_aggr_vars.id, // folder name for results from cellranger-arc aggr
     prefix          : ESSENTIAL_SAMPLE_PREFIX, //standard sample prefix
     strandedness    : ESSENTIAL_STRANDED,             //strandedness of the library [no|yes|reverse]
     star_log        : STAR_vars.logdir,        //where the STAR logs lie
