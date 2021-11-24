@@ -139,7 +139,7 @@ targets <- targets[,required_target_columns]
     dplyr::ungroup() 
     counts <- merge(counts, counts_summary, by="sample", all.x=T)
       
-      # 1st filter step for extreme outlier (need counts_summary for correct mean(counts_summary$sum))
+      # 1st filter step for extreme outlier samples (need counts_summary for correct mean(counts_summary$sum))
       removedSamples <- as.data.frame(counts_summary[counts_summary$sum < threshold_rel_countssum * mean(counts_summary$sum), c("sample", "sum")])
       cat("\nremove", nrow(removedSamples), "samples from dataset with <", 100*threshold_rel_countssum, "% of mean total counts:\n")
       print(removedSamples)
@@ -147,7 +147,7 @@ targets <- targets[,required_target_columns]
       
       
   
-    #### start analsis 
+    #### start analysis 
         
       # factorize categorical variables after subsetting and initial outlier removal
       category_vars <- colnames(counts)[colnames(counts) %in% c("sample", "experiment", "sub_experiment", "bin", "sequence")]
@@ -170,12 +170,13 @@ targets <- targets[,required_target_columns]
   
     
   # in case there are sequences with zero counts, these entries can be removed
-  removeZerosRaw = FALSE # there are no zero counts since only observed sequences are counted
-  if(removeZerosRaw) {
-    logindex_nocounts <- counts$count==0
+  removeLowCountsRaw = FALSE # there are no zero counts since only observed sequences are counted
+  minCountThreshold = 30
+  if(removeLowCountsRaw) {
+    logindex_nocounts <- counts$count < minCountThreshold
     if(sum(logindex_nocounts)>0) {
-      cat("\n", sum(logindex_nocounts), "entries removed from raw count matrix due to zero counts:\n")
-      print(counts[logindex_nocounts, c("sample_name", "bin", "sequence")][1:min(20,sum(logindex_nocounts)),])
+      cat("\n", sum(logindex_nocounts), "entries removed from raw count matrix due to counts <", minCountThreshold, "\n")
+      print(counts[logindex_nocounts, c("sample", "bin", "sequence")][1:min(20,sum(logindex_nocounts)),])
       cat("\n")
       counts <- counts[!logindex_nocounts,]
      }
