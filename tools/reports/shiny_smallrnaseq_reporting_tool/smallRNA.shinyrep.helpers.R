@@ -129,7 +129,7 @@ smallRNAhelper.Fastqc.custom <- function(web=FALSE, summarizedPlots=TRUE, subdir
     fastqc.stats <- ngsReports::FastqcDataList(f)
 
     # create proper name vectoir as labels
-    lbls <- gsub("_fastqc.zip$", "", names(fastqc.stats))
+    lbls <- gsub("_fastqc.zip$", "", basename(names(fastqc.stats)))
     names(lbls) <- gsub("_fastqc.zip", ".fastq.gz", basename(names(fastqc.stats)))
 
     if(file.exists(SHINYREPS_TARGET)){
@@ -142,7 +142,7 @@ smallRNAhelper.Fastqc.custom <- function(web=FALSE, summarizedPlots=TRUE, subdir
         # if sample is missing in targets file, use reduced file name
         lbls <- sapply(lbls, function(i) { ifelse(sum(sapply(targets$sample_ext, grepl, i))==1,
                                                   targets[sapply(targets$sample_ext, grepl, i),"sample"],
-                                                  gsub(paste0("^",SHINYREPS_PREFIX),"",i))})
+                                                  gsub(paste0("^",SHINYREPS_PREFIX),"", gsub(paste0("^",SHINYREPS_PREFIX), "", gsub("\\.cutadapt|\\.highQ|\\.trimmed","",lbls))))})
         
         if(SHINYREPS_PAIRED == "yes") {
             x <- names(lbls)
@@ -152,7 +152,7 @@ smallRNAhelper.Fastqc.custom <- function(web=FALSE, summarizedPlots=TRUE, subdir
     } else {
         
         if(!is.na(SHINYREPS_PREFIX)) {
-            lbls <- gsub(paste0("^",SHINYREPS_PREFIX), "", lbls)
+            lbls <- gsub(paste0("^",SHINYREPS_PREFIX), "", gsub("\\.cutadapt|\\.highQ|\\.trimmed","",lbls))
         }
     }
 
@@ -344,10 +344,10 @@ smallRNAhelper.fastqscreen <- function(perc.to.plot = 1) {
                                                            ifelse(sapply("R2", grepl, i), 
                                                                   paste0(targets[sapply(targets$sample_ext, grepl, i),"sample"], ".R2"),
                                                                   targets[sapply(targets$sample_ext, grepl, i),"sample"])),
-                                                    gsub(paste0("^",SHINYREPS_PREFIX),"",i))})                                                    
+                                                    gsub(paste0("^",SHINYREPS_PREFIX),"",gsub("\\.cutadapt|\\.highQ|\\.trimmed","",i)))})                                                    
   } else {
     if(!is.na(SHINYREPS_PREFIX)) {
-      samples <- gsub(paste0("^",SHINYREPS_PREFIX), "", samples)
+      samples <- gsub(paste0("^",SHINYREPS_PREFIX), "", gsub("\\.cutadapt|\\.highQ|\\.trimmed","",samples))
     }
   }
   
@@ -421,9 +421,9 @@ smallRNAhelper.RNAtypes <- function() {
             # if sample is missing in targets file, use reduced file name
             samplename <- ifelse(sum(sapply(targets$sample_ext, grepl, samplename))==1,
                                  targets[sapply(targets$sample_ext, grepl, samplename),"sample"],
-                                 gsub(paste0("^",SHINYREPS_PREFIX),"",samplename))
+                                 gsub(paste0("^",SHINYREPS_PREFIX),"",gsub("\\.R1|\\.cutadapt|\\.highQ|\\.trimmed","",samplename)))
         } else {
-           if(!is.na(SHINYREPS_PREFIX)) { samplename <- gsub(paste0("^",SHINYREPS_PREFIX), "", samplename) }
+           if(!is.na(SHINYREPS_PREFIX)) { samplename <- gsub(paste0("^",SHINYREPS_PREFIX), "", gsub("\\.R1|\\.cutadapt|\\.highQ|\\.trimmed","",samplename)) }
         }
     
         df.readcount <- read.table(f, header=T, sep='\t', comment.char = '#', col.names=c("Geneid","Length",samplename))
@@ -505,11 +505,11 @@ smallRNAhelper.subread <- function(subdir="",show.ambig=FALSE) {
 	    # if sample is missing in targets file, use reduced file name
         colnames(x) <- sapply(colnames(x), function(i) { ifelse(sum(sapply(targets$sample_ext, grepl, i))==1,
                                                                 targets[sapply(targets$sample_ext, grepl, i),"sample"],
-                                                                gsub(paste0("^",SHINYREPS_PREFIX),"",i))})
+                                                                gsub(paste0("^",SHINYREPS_PREFIX),"",gsub(paste0("\\",SHINYREPS_SUBREAD_SUFFIX,"|\\.miRNAmature|\\.R1|\\.cutadapt|\\.highQ|\\.trimmed"),"",i)))})
     } else {
 
         if(!is.na(SHINYREPS_PREFIX)) {
-            colnames(x) <- gsub(paste0("^",SHINYREPS_PREFIX), "", colnames(x))
+            colnames(x) <- gsub(paste0("^",SHINYREPS_PREFIX), "", gsub(paste0("\\",SHINYREPS_SUBREAD_SUFFIX,"|\\.miRNAmature|\\.R1|\\.cutadapt|\\.highQ|\\.trimmed"),"",colnames(x)))
         }
     }
 
@@ -623,17 +623,17 @@ smallRNAhelper.subread.type <- function(subdir="",maindir="all") {
 	    # if sample is missing in targets file, use reduced file name
         names(x.type) <- sapply(names(x.type), function(i) { ifelse(sum(sapply(targets$sample_ext, grepl, i))==1,
                                                                     targets[sapply(targets$sample_ext, grepl, i),"sample"],
-                                                                    gsub(paste0("^",SHINYREPS_PREFIX),"",i))})
+                                                                    gsub(paste0("^",SHINYREPS_PREFIX),"",gsub("\\.R1|\\.cutadapt|\\.highQ|\\.trimmed","",gsub(SUFFIX,"",i))))})
 
         names(x.all) <- sapply(names(x.all), function(i) { ifelse(sum(sapply(targets$sample_ext, grepl, i))==1,
                                                                   targets[sapply(targets$sample_ext, grepl, i),"sample"],
-                                                                  gsub(paste0("^",SHINYREPS_PREFIX),"",i))})
+                                                                  gsub(paste0("^",SHINYREPS_PREFIX),"",gsub("\\.R1|\\.cutadapt|\\.highQ|\\.trimmed","",gsub(ALLSUFFIX,"",i))))})
 
     } else {
 
         if(!is.na(SHINYREPS_PREFIX)) {
-            names(x.type) <- gsub(paste0("^",SHINYREPS_PREFIX), "", gsub(SUFFIX,"",names(x.type)))
-            names(x.all)  <- gsub(paste0("^",SHINYREPS_PREFIX), "", gsub(ALLSUFFIX,"",names(x.all)))
+            names(x.type) <- gsub(paste0("^",SHINYREPS_PREFIX), "", gsub("\\.R1|\\.cutadapt|\\.highQ|\\.trimmed","",gsub(SUFFIX,"",names(x.type))))
+            names(x.all)  <- gsub(paste0("^",SHINYREPS_PREFIX), "", gsub("\\.R1|\\.cutadapt|\\.highQ|\\.trimmed","",gsub(ALLSUFFIX,"",names(x.all))))
         }
     }
 
@@ -720,7 +720,7 @@ smallRNAhelper.cutadapt.summary <- function() {
      	    # if sample is missing in targets file, use reduced file name
             samplename <- ifelse(sum(sapply(targets$sample_ext, grepl, f))==1,
                                  targets[sapply(targets$sample_ext, grepl, f),"sample"],
-                                 gsub(paste0("^",SHINYREPS_PREFIX),"",f))
+                                 gsub(paste0("^",SHINYREPS_PREFIX),"", gsub("\\.cutadapt\\.log$","",f)))
         } else {
 
             if(!is.na(SHINYREPS_PREFIX)) {
@@ -821,11 +821,11 @@ smallRNAhelper.qualityfilter <- function() {
      	    # if sample is missing in targets file, use reduced file name
             samplename <- ifelse(sum(sapply(targets$sample_ext, grepl, f))==1,
                                  targets[sapply(targets$sample_ext, grepl, f),"sample"],
-                                 gsub(paste0("^",SHINYREPS_PREFIX),"",f))
+                                 gsub(paste0("^",SHINYREPS_PREFIX),"",gsub("\\.R1|\\.R2|\\.cutadapt|\\.fastq_quality_filter|\\.log$","",f)))
         } else {
 
             if(!is.na(SHINYREPS_PREFIX)) {
-               samplename <- gsub(paste0("^",SHINYREPS_PREFIX), "", gsub("\\.cutadapt\\.log$","",f))
+               samplename <- gsub(paste0("^",SHINYREPS_PREFIX), "", gsub("\\.R1|\\.R2|\\.cutadapt|\\.fastq_quality_filter|\\.log$","",f))
             }
         }
 
@@ -915,11 +915,11 @@ smallRNAhelper.dedup <- function() {
      	    # if sample is missing in targets file, use reduced file name
             samplename <- ifelse(sum(sapply(targets$sample_ext, grepl, f))==1,
                                  targets[sapply(targets$sample_ext, grepl, f),"sample"],
-                                 gsub(paste0("^",SHINYREPS_PREFIX),"",f))
+                                 gsub(paste0("^",SHINYREPS_PREFIX),"",gsub("\\.R1|\\.R2|\\.cutadapt|\\.highQ|\\.dedup|\\.log$","",f)))
         } else {
 
             if(!is.na(SHINYREPS_PREFIX)) {
-               samplename <- gsub(paste0("^",SHINYREPS_PREFIX), "", gsub("\\.cutadapt\\.log$","",f))
+               samplename <- gsub(paste0("^",SHINYREPS_PREFIX), "", gsub("\\.R1|\\.R2|\\.cutadapt|\\.highQ|\\.dedup|\\.log$","",f))
             }
         }
 
@@ -1091,11 +1091,11 @@ smallRNAhelper.bowtie <- function() {
      	    # if sample is missing in targets file, use reduced file name
             samplename <- ifelse(sum(sapply(targets$sample_ext, grepl, f))==1,
                                  targets[sapply(targets$sample_ext, grepl, f),"sample"],
-                                 gsub(paste0("^",SHINYREPS_PREFIX),"",f))
+                                 gsub(paste0("^",SHINYREPS_PREFIX),"",gsub("\\.R1|\\.cutadapt|\\.highQ|\\.trimmed","",gsub(SUFFIX,"",f))))
         } else {
 
             if(!is.na(SHINYREPS_PREFIX)) {
-               samplename <- gsub(paste0("^",SHINYREPS_PREFIX), "", gsub(SUFFIX,"",f))
+               samplename <- gsub(paste0("^",SHINYREPS_PREFIX), "", gsub("\\.R1|\\.cutadapt|\\.highQ|\\.trimmed","",gsub(SUFFIX,"",f)))
             }
         }
 
