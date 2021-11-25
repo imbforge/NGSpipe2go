@@ -27,6 +27,9 @@ load PIPELINE_ROOT + "/modules/smallRNAseq_BCF/subread2rnatypes.header"
 load PIPELINE_ROOT + "/modules/smallRNAseq_BCF/shinyreports.header"
 load PIPELINE_ROOT + "/modules/smallRNAseq_BCF/trim_umis.header"
 
+//load PIPELINE_ROOT + "/modules/smallRNAseq_BCF/mirDeep2.header"
+//load PIPELINE_ROOT + "/modules/smallRNAseq_BCF/mirDeep2_mapper.header"
+
 
 //MAIN PIPELINE TASK
 dontrun = { println "didn't run $module" }
@@ -55,3 +58,18 @@ run {
     ] +
     collectToolVersions + shinyReports 
 }
+
+
+// not tested pipeline using miRDeep
+//run {
+//    "%.fastq.gz" * [
+//        FastQC.using(subdir:"raw"),
+//        Cutadapt + FastQQualityFilter + (REMOVE_DUPLICATES ? FilterDuplicates : dontrun.using(module: "FilterDuplicates")) + TrimUMIs +
+//        [
+//            FastQC.using(subdir:"trimmed"),
+//            miRDeep2Mapper + miRDeep2
+//        ]
+//    ] +
+//    collectToolVersions
+//}
+

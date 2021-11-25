@@ -18,7 +18,7 @@ ESSENTIAL_FEATURETYPE="gene_type" //gencode uses gene_type; ensemble uses gene_b
 ESSENTIAL_FEATURETYPEMIRNA="type"
 ESSENTIAL_PAIRED="no"          // paired end design
 ESSENTIAL_STRANDED="yes"       // strandness: no|yes|reverse
-ESSENTIAL_ORG="mouse"          // necessary for miRDeep2
+ESSENTIAL_ORG="mouse"          // organism
 ESSENTIAL_BAMCOVERAGE="--binSize 1 --skipNonCoveredRegions --normalizeUsing CPM" // NO smoothing should be done for RNAseq
 // size of bins (in bases)  and method to normalize the number of reads per bin to generate bigwig file.
 
@@ -41,6 +41,10 @@ ESSENTIAL_FASTQSCREEN_PERC=1  // contaminant filter, if a contaminant is consumi
 ESSENTIAL_FASTQSCREEN_GENOME="M.musculus::/fsimb/common/genomes/mus_musculus/gencode/release-M10_GRCm38.p4/full/index/bowtie2/2.3.4.3/GRCm38.p4"  //bowtie2 reference for the genome the samples are from, this is used for the fastqscreen 
 ESSENTIAL_FASTQSCREEN=ESSENTIAL_FASTQSCREEN_GENOME + ",PhiX::/fsimb/common/genomes/phix/19930428/NCBI/index/bowtie2/2.3.4.3/ncbi_phix,ERCC::/fsimb/common/genomes/ERCC/index/bowtie2/2.3.4.3/ERCC92,rRNA::/fsimb/common/genomes/contaminants/fastqscreen_references/rrna/v1/index/bowtie2/2.3.4.3/hs_mm_ce_dm_rn_dr_xt_rRNA,Mycoplasma::/fsimb/common/genomes/contaminants/fastqscreen_references/mycoplasma/v1/index/bowtie2/2.3.4.3/mycoplasma_all_ref,E.coli::/fsimb/common/genomes/Escherichia_coli/ensembl/full/index/bowtie2/Escherichia_coli_str_k_12_substr_dh10b.ASM1942v1.31.dna.genome" //references for fastqscreen to use if run, this are our standard references please include yours 
 
+// vars for mirDeep2 (module NOT well tested!)
+//ESSENTIAL_SPECIES="Mouse"      // necessary for miRDeep2, used to refer to UCSC
+//ESSENTIAL_MATURE_MIRNA="..../annotation/miRBase_release21/mmu_mature_oneID.fa"
+//ESSENTIAL_HAIRPIN_MIRNA="..../annotation/miRBase_release21/mmu_hairpin_oneID.fa"
 
 // project folders
 PROJECT=ESSENTIAL_PROJECT
