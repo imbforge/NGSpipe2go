@@ -99,6 +99,7 @@ for(i in 1:length(peakAnno)){
 
 # create xls output contains the peak annotation
 outputData <- lapply(peakAnno, as.data.frame)
+names(outputData) <- make.names(substr(names(outputData), 1, 31), unique=TRUE)
 write.xlsx(outputData, file=paste0(out, "/Peak_Annotation.xlsx"))
 
 # save the sessionInformation
