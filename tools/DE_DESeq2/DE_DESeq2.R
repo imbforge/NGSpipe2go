@@ -87,41 +87,39 @@ add_factors <- colnames(targets)[!colnames(targets) %in% c("group", "sample", "f
 targets <- targets[, c("sample", "file", "group", add_factors)]
 
 # grep sample identifier in count file names
-  countfiles <- list.files(cwd)
-  countfiles <- countfiles[grep(pattern, countfiles)] # filter for valid count files
- 
-  # remove file ending of target file names
-  targets$sample_ext <- gsub("\\..*$", "",targets$file) 
+countfiles <- list.files(cwd)
+countfiles <- countfiles[grep(pattern, countfiles)] # filter for valid count files
 
-  index_targetsfile <- sapply(targets$sample_ext, grep,  countfiles) # grep targets in countfiles
+# remove file ending of target file names
+targets$sample_ext <- gsub("\\..*$", "",targets$file) 
 
-  ## check matching ambiguity
-      if(class(index_targetsfile)=="list") { # list means either zero or multiple matches
-        if(any(x <- sapply(index_targetsfile, length)>1)) {
-          stop(paste("\nA targets.txt entry matches multiple count file names\ntargets.txt: "),
-               paste(targets$file[x], collapse=", "),
-               "\ncount file names: ", paste(countfiles[unlist(index_targetsfile[x])], collapse=", "))
-        }
-        warning(paste("Entries in targets.txt which are not found in list of count files are removed from targets table:", 
-                      paste(targets$file[sapply(index_targetsfile, length)==0], collapse=", ")))
-        targets <- targets[!(sapply(index_targetsfile, length)==0),] # remove target entries
-        index_targetsfile <- sapply(targets$sample_ext, grep, countfiles) # recreate index vector after removal of targets.txt entries
-      }
-      
-      if(any(x <- duplicated(index_targetsfile))) { # check for multiple target entries matching the same file name
-        stop(paste("\nMultiple targets.txt entries match to the same count file name\ntargets.txt: ", 
-                   paste(targets$file[x | duplicated(index_targetsfile, fromLast=T)], collapse=", "),
-                   "\ncount file names:", paste(countfiles[unlist(index_targetsfile[x])], collapse=", "), "\n"))
-      }
-      
-      if (length(unique(index_targetsfile)) < length(countfiles)) { # check for count file names not included
-        warning(paste("\nCount file names not included in targets.txt are ignored: ",  paste(countfiles[-index_targetsfile], collapse=", ")))
-      }
+index_targetsfile <- sapply(targets$sample_ext, grep,  countfiles) # grep targets in countfiles
+
+## check matching ambiguity
+if(is(index_targetsfile, "list")) { # list means either zero or multiple matches
+  if(any(x <- sapply(index_targetsfile, length)>1)) {
+    stop(paste("\nA targets.txt entry matches multiple count file names\ntargets.txt: "),
+         paste(targets$file[x], collapse=", "),
+         "\ncount file names: ", paste(countfiles[unlist(index_targetsfile[x])], collapse=", "))
+  }
+  warning(paste("Entries in targets.txt which are not found in list of count files are removed from targets table:", 
+                paste(targets$file[sapply(index_targetsfile, length)==0], collapse=", ")))
+  targets <- targets[!(sapply(index_targetsfile, length)==0),] # remove target entries
+  index_targetsfile <- sapply(targets$sample_ext, grep, countfiles) # recreate index vector after removal of targets.txt entries
+}
+
+if(any(x <- duplicated(index_targetsfile))) { # check for multiple target entries matching the same file name
+  stop(paste("\nMultiple targets.txt entries match to the same count file name\ntargets.txt: ", 
+             paste(targets$file[x | duplicated(index_targetsfile, fromLast=T)], collapse=", "),
+             "\ncount file names:", paste(countfiles[unlist(index_targetsfile[x])], collapse=", "), "\n"))
+}
+
+if (length(unique(index_targetsfile)) < length(countfiles)) { # check for count file names not included
+  warning(paste("\nCount file names not included in targets.txt are ignored: ",  paste(countfiles[-index_targetsfile], collapse=", ")))
+}
+
+targets$file <- countfiles[index_targetsfile] # replace entries in targets$file by count file names
   
-  targets$file <- countfiles[index_targetsfile] # replace entries in targets$file by count file names
-  
-
-
 # load contrasts
 conts <- read.delim(fcontrasts,head=TRUE,colClasses="character",comment.char="#")
 
