@@ -36,8 +36,8 @@ parseArgs <- function(args,string,default=NULL,convert="as.character") {
 args <- commandArgs(T)
 peakData <- parseArgs(args,"peakData=") # .xls result from MACS2
 transcriptType <- parseArgs(args, "transcriptType=", "Bioconductor") # transcript annotation type
-transcriptDb <- parseArgs(args, "transcriptDb=", "TxDb.Hsapiens.UCSC.hg19.knownGene") # transcript annotation database
-orgDb <- parseArgs(args, "orgDb=", "org.Hs.eg.db") # genome wide annotation
+transcriptDb <- parseArgs(args, "transcriptDb=", "") # transcript annotation database
+orgDb <- parseArgs(args, "orgDb=", "") # genome wide annotation
 regionTSS <- parseArgs(args, "regionTSS=", 3000, "as.numeric") # TSS region parameter 
 out <- parseArgs(args,"out=", "Peak_Annotation") # output directory
 
@@ -56,11 +56,18 @@ if(length(list.files(peakData,pattern="_macs2_blacklist_filtered_peaks.xls")) > 
 }
 
 peaks <- lapply(peakFiles, readPeakFile) # read all the xls files using 'readPeakFile' function
+# bug in ChIPseeker: MACS xls files (1-based) are read as 0-based. Modify condition if fixed in future version:
+if(packageVersion('ChIPseeker')>0) { # bug in ChIPseeker: MACS xls files (1-based) are read as 0-based. Modify condition if fixed in future version.
+  peaks <- lapply(peaks, function(x) {
+    BiocGenerics::start(x) <- BiocGenerics::start(x)-1
+    return(x)})
+} 
+
 
 if(transcriptType!="Bioconductor"){ # check the input format for the transcript annotation
    txdb <- makeTxDbFromGFF(transcriptDb, format="gtf") # if the input format is gtf file, then this file will be used to create a TxDb object
 } else {
-   library(transcriptDb, character.only = TRUE) # if the input format is bioconductor, then the transcript annoation library will be used 
+   library(transcriptDb, character.only = TRUE) # if the input format is bioconductor, then the transcript annotation library will be used 
    txdb <- eval(parse(text=transcriptDb))
   
 }

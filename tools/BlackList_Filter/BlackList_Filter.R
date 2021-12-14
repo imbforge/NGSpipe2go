@@ -11,6 +11,7 @@
 options(stringsAsFactors=FALSE)
 library(ChIPseeker)
 library(rtracklayer)
+library(tidyr)
 
 
 ##
@@ -38,6 +39,12 @@ if(file.exists(blacklistRegions)) {
 
 peakFiles <-list.files(peakData,pattern=".xls", full.names = TRUE) # list of the full path of the .xls file 
 peaks <- lapply(peakFiles, readPeakFile) # read all the xls files using 'readPeakFile' function
+if(packageVersion('ChIPseeker')>0) { # bug in ChIPseeker: MACS xls files (1-based) are read as 0-based. Modify condition if fixed in future version.
+        peaks <- lapply(peaks, function(x) {
+          BiocGenerics::start(x) <- BiocGenerics::start(x)-1
+          return(x)})
+        } 
+
 blacklist <- import(blacklistRegions)
 
 # remove peaks overlapping blacklist regions
@@ -56,7 +63,14 @@ names(peaks.wo.blacklst) <- paste0(filename, "_macs2_blacklist_filtered_peaks")
 
 
 # create xls output contains the peaks wo blacklist regions
-outputData <- lapply(peaks.wo.blacklst, as.data.frame)
+columnNames2replace <- c(seqnames="chr", X.log10.pvalue.="-log10(pvalue)", X.log10.FDR="-log10(qvalue)", X.log10.qvalue.="-log10(qvalue)")
+outputData <- lapply(peaks.wo.blacklst, function(x) {
+  x <- as.data.frame(x)
+  x$strand <- x$width <- NULL # the 'strand' column may cause error when read in again with ChIPseeker::readPeakFile
+  colnames(x) <- dplyr::recode(colnames(x), !!!columnNames2replace) # rename column names for conformity with unfiltered peak file
+  return(x)
+  })
+
 sapply(names(outputData), 
  function (x) write.table(outputData[[x]], file=paste0(out, "/", x, ".xls"), row.names=F, sep="\t"))
 
