@@ -374,7 +374,7 @@ if(ANNOTATE) {
                             c("Analysis method", ANALYSISMETHOD, ""),
                             c("Library size", LIBRARYSIZE, explLibrarySize),
                             c("Normalization method", NORMALIZATION, explNormalization),
-                            c("Subtract control read counts", SUBSTRACTCONTROL, if(SUBSTRACTCONTROL=="default") {paste("set to", SUBSTRACTCONTROL_FINAL, "because greylist is", if(SUBSTRACTCONTROL_FINAL){"not"} else {""}, "available.")}),
+                            c("Subtract control read counts", SUBSTRACTCONTROL, if(SUBSTRACTCONTROL=="default") {paste("set to", SUBSTRACTCONTROL_FINAL, "because greylist is", if(SUBSTRACTCONTROL_FINAL){"not"} else {""}, "available.")} else {""}),
                             c("Design", "contrast_diffbind.txt", paste(db$design, "(with", CONDITIONCOLUMN, "as Condition column)")),
                             c("FDR threshold", FDR_TRESHOLD, "significance threshold for differential binding analysis."),
                             c("Fold threshold", FOLD, "log Fold threshold for differential binding analysis.")
