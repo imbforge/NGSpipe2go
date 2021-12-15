@@ -93,7 +93,7 @@ countfiles <- countfiles[grep(pattern, countfiles)] # filter for valid count fil
 # remove file ending of target file names
 targets$sample_ext <- gsub("\\..*$", "",targets$file) 
 
-index_targetsfile <- sapply(targets$sample_ext, grep,  countfiles) # grep targets in countfiles
+index_targetsfile <- sapply(paste0(targets$sample_ext, "\\."), grep,  countfiles) # grep targets in countfiles
 
 ## check matching ambiguity
 if(is(index_targetsfile, "list")) { # list means either zero or multiple matches
