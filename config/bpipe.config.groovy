@@ -447,7 +447,7 @@ config {
       procs="8" 
       memory="12"
     }
-    filter_miRNA_counts {
+    filter_smallRNA_counts {
       walltime="00:30:00"
       procs="1"
       memory="1"

@@ -1,8 +1,0 @@
-filter_miRNA_counts_vars=[
-    outdir            : RESULTS + "/subread-count",
-    genesgtf          : ESSENTIAL_GENESGTF,
-]
-
-load PIPELINE_ROOT + "/modules/smallRNAseq_BCF/filter_mirna_counts.groovy"
-
-

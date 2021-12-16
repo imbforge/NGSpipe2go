@@ -7,6 +7,7 @@
 ESSENTIAL_PROJECT="/project/"
 ESSENTIAL_THREADS=4
 ESSENTIAL_SAMPLE_PREFIX=""
+ESSENTIAL_SMALLRNA="miRNA"     // type of smallRNA to be analyzed
 
 // Mapping and annotation parameters
 ESSENTIAL_BOWTIE_REF="..../bowtie/1.1.2/..."
@@ -15,7 +16,7 @@ ESSENTIAL_GENOME_REF="..../genome.fa" // necessary for miRDeep2, not currently u
 ESSENTIAL_GENESGTF="..../annotation.gtf"
 ESSENTIAL_MIRNAGFF="..../annotation/miRBase/....gff3"
 ESSENTIAL_FEATURETYPE="gene_type" //gencode uses gene_type; ensemble uses gene_biotype
-ESSENTIAL_FEATURETYPEMIRNA="type"
+ESSENTIAL_FEATURETYPEMIRNA="type" //do not change as long as a GFF3 annotation file from miRBase is used
 ESSENTIAL_PAIRED="no"          // paired end design
 ESSENTIAL_STRANDED="yes"       // strandness: no|yes|reverse
 ESSENTIAL_ORG="mouse"          // organism
@@ -60,7 +61,8 @@ TMP=PROJECT + "/tmp"
 TRACKS=PROJECT + "/tracks"
 
 // optional pipeline stages to include
-REMOVE_DUPLICATES=false     // remove duplicate reads
+REMOVE_DUPLICATES=false    // remove duplicate reads
 RUN_FASTQSCREEN=true       // check for contaminations using FastQ Screen
+RUN_MATUREMIRNA_ANALYSIS=true // set to false if no mature miRNAs should be analyzed
 RUN_IN_PAIRED_END_MODE=(ESSENTIAL_PAIRED == "yes") // no need to change this line
 

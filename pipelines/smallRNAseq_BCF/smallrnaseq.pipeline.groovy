@@ -20,7 +20,7 @@ load PIPELINE_ROOT + "/modules/smallRNAseq_BCF/deseq2.header"
 load PIPELINE_ROOT + "/modules/smallRNAseq_BCF/deseq2_mirnamature.header"
 load PIPELINE_ROOT + "/modules/smallRNAseq_BCF/fastq_quality_filter.header"
 load PIPELINE_ROOT + "/modules/smallRNAseq_BCF/filter2htseq.header"
-load PIPELINE_ROOT + "/modules/smallRNAseq_BCF/filter_mirna_counts.header"
+load PIPELINE_ROOT + "/modules/smallRNAseq_BCF/filter_smallrna_counts.header"
 load PIPELINE_ROOT + "/modules/smallRNAseq_BCF/subread.header"
 load PIPELINE_ROOT + "/modules/smallRNAseq_BCF/subread_mirnamature.header"
 load PIPELINE_ROOT + "/modules/smallRNAseq_BCF/subread2rnatypes.header"
@@ -44,8 +44,9 @@ run {
             (RUN_FASTQSCREEN ? FastqScreen : dontrun.using(module: "FastqScreen")),
             bowtie1_sRNA + BAMindexer + 
             [
-                subread_count.using(subdir:"all") + filter2htseq.using(subdir:"all") + filter_miRNA_counts.using(subdir:"miRNA"),
-         	subread_miRNAmature_count.using(subdir:"miRNAmature") + filter2htseq.using(subdir:"miRNAmature"),
+                subread_count.using(subdir:"all") + filter2htseq.using(subdir:"all") + filter_smallRNA_counts.using(subdir:ESSENTIAL_SMALLRNA),
+         	(RUN_MATUREMIRNA_ANALYSIS ? subread_miRNAmature_count.using(subdir:"miRNAmature") + filter2htseq.using(subdir:"miRNAmature") 
+                                          : dontrun.using(module: "subread_miRNAmature_count")),
                 bamCoverage,
                 subread2rnatypes
             ]
@@ -53,8 +54,8 @@ run {
     ] + 
     [ 
       DE_DESeq2.using(subdir:"all"),
-      DE_DESeq2.using(subdir:"miRNA"), 
-      DE_DESeq2_miRNAmature.using(subdir:"miRNAmature")
+      DE_DESeq2.using(subdir:ESSENTIAL_SMALLRNA), 
+      (RUN_MATUREMIRNA_ANALYSIS ? DE_DESeq2_miRNAmature.using(subdir:"miRNAmature") : dontrun.using(module: "DE_DESeq2_miRNAmature"))
     ] +
     collectToolVersions + shinyReports 
 }

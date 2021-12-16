@@ -28,16 +28,21 @@ shinyReports = {
                 cp ${PIPELINE_ROOT}/tools/reports/shiny_smallrnaseq_reporting_tool/smallRNAreport.type.Rmd ${output.dir}/smallRNAreport.${shinyReports_vars.type}.Rmd;
             fi &&
 
-            if [ -e "${output.dir}/smallRNAreport.miRNAmature.Rmd" ]; then
-                echo 'smallRNAreport.miRNAmature.Rmd already exists. Older copy will be kept and not overwritten';
-            else
-                cp ${PIPELINE_ROOT}/tools/reports/shiny_smallrnaseq_reporting_tool/smallRNAreport.miRNAmature.Rmd ${output.dir};
+            if [ ${shinyReports_vars.maturemirna} = "TRUE" ]; then
+                if [ -e "${output.dir}/smallRNAreport.miRNAmature.Rmd" ]; then
+                   echo 'smallRNAreport.miRNAmature.Rmd already exists. Older copy will be kept and not overwritten';
+                else
+                   cp ${PIPELINE_ROOT}/tools/reports/shiny_smallrnaseq_reporting_tool/smallRNAreport.miRNAmature.Rmd ${output.dir};
+                fi;
             fi &&
 
             PROJECT=\$(basename ${shinyReports_vars.project})                            &&
             sed -i "2,2s/SHINYREPS_PROJECT/\${PROJECT}/" ${output.dir}/smallRNAreport.Rmd &&
             sed -i "2,2s/SHINYREPS_PROJECT/\${PROJECT}/" ${output.dir}/smallRNAreport.${shinyReports_vars.type}.Rmd &&
-            sed -i "2,2s/SHINYREPS_PROJECT/\${PROJECT}/" ${output.dir}/smallRNAreport.miRNAmature.Rmd &&
+
+            if [ ${shinyReports_vars.maturemirna} = "TRUE" ]; then
+                sed -i "2,2s/SHINYREPS_PROJECT/\${PROJECT}/" ${output.dir}/smallRNAreport.miRNAmature.Rmd;
+            fi &&
             
             echo "SHINYREPS_PROJECT=${shinyReports_vars.project}"                  > $output && 
             echo "SHINYREPS_ORG=${shinyReports_vars.org}"                         >> $output &&

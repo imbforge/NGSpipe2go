@@ -17,6 +17,7 @@ DE_DESeq2 = {
         (DE_DESeq2_vars.cwd       ? " cwd="       + DE_DESeq2_vars.cwd    + "/$subdir" : "") +
         (DE_DESeq2_vars.outdir    ? " out="       + DE_DESeq2_vars.outdir + "/$subdir" : "") +
         (DE_DESeq2_vars.genes     ? " gtf="       + DE_DESeq2_vars.genes     : "") +
+        (DE_DESeq2_vars.type      ? " type="      + DE_DESeq2_vars.type      : "") +
         (DE_DESeq2_vars.pattern   ? " pattern="   + DE_DESeq2_vars.pattern   : "") +
         (DE_DESeq2_vars.FDR       ? " FDR="       + DE_DESeq2_vars.FDR       : "") +
         (DE_DESeq2_vars.FC        ? " FC="        + DE_DESeq2_vars.FC        : "") +
