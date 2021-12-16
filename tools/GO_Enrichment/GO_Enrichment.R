@@ -105,9 +105,9 @@ processContrast <-  function(x) {
                                           universe=entrezUnivId$ENTREZID)
              
         # filter enriched results by gene count
-        enriched         <- gsfilter(enriched        , by="Count", min=2)
-        enrichedKEGG     <- gsfilter(enrichedKEGG    , by="Count", min=2)
-        enrichedReactome <- gsfilter(enrichedReactome, by="Count", min=2)
+        enriched         <- tryCatch({ gsfilter(enriched        , by="Count", min=2) }, error=function(e) enriched)
+        enrichedKEGG     <- tryCatch({ gsfilter(enrichedKEGG    , by="Count", min=2) }, error=function(e) enrichedKEGG)
+        enrichedReactome <- tryCatch({ gsfilter(enrichedReactome, by="Count", min=2) }, error=function(e) enrichedReactome)
 
         # create vector of gene FC, use by some plotting functions (at least, CNet)
         fc <- merge(entrezDeId, de.genes.lfc[ , c(type, "log2FoldChange")], by.x=keytype, by.y= type)
