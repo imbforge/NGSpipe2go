@@ -2,7 +2,7 @@ subread_count_vars=[
     outdir            : RESULTS + "/subread-count",
     stranded          : ESSENTIAL_STRANDED, // whether the data is from a strand-specific assay (illumina SR: always reverse)
     count_multimapping: true,               // also count multi-mapping reads
-    count_ambigiuous  : true,               // also count ambigiuous reads
+    count_ambiguous   : true,               // also count ambiguous reads
     feature           : "exon",             // annotation feature to count mapped reads ("exon" by default)
     attribute         : "gene_id",          // annotation attribute type used to group features ("gene_id" by default) 
     genesgtf          : ESSENTIAL_GENESGTF,

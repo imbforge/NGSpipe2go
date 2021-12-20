@@ -12,7 +12,7 @@ subread_count = {
         (subread_count_vars.threads  ? " -T " + subread_count_vars.threads  : "") +
         (subread_count_vars.genesgtf ? " -a " + subread_count_vars.genesgtf : "") +
         (subread_count_vars.count_multimapping ? " -M "                     : "") +
-        (subread_count_vars.count_ambigiuous   ? " -O "                     : "") +
+        (subread_count_vars.count_ambiguous    ? " -O "                     : "") +
         (subread_count_vars.feature  ? " -t " + subread_count_vars.feature  : "") +
         (subread_count_vars.attribute? " -g " + subread_count_vars.attribute: "") +
         (subread_count_vars.extra    ? " "    + subread_count_vars.extra    : "") +
