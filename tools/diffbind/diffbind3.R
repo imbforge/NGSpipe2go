@@ -93,7 +93,7 @@ if(grepl("\\.gtf$", TXDB)){ # check the input format for the transcript annotati
   library(GenomicFeatures)
   txdb <- makeTxDbFromGFF(TXDB, format="gtf") # if the input format is gtf file, then this file will be used to create a TxDb object
 } else {
-  library(transcriptDb, character.only = TRUE) # if the input format is bioconductor, then the transcript annoation library will be used 
+  library(TXDB, character.only = TRUE) # if the input format is bioconductor, then the transcript annoation library will be used 
   txdb <- eval(TXDB)
   if(ANNOTATE & !require(TXDB, character.only=TRUE))   stop("Transcript DB", TXDB, "not installed\n")
 }
