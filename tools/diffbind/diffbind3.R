@@ -387,7 +387,11 @@ write.table(infodb, file=file.path(OUT, "info_dba_object.txt"), row.names = F, q
 result <- lapply(result, as.data.frame)
 names(result) <- conts$contrast.name
 write.xlsx(result, file=paste0(OUT, "/diffbind_all_sites.xlsx"))
-result <- lapply(result, function(x) {x[x$FDR<=db$config$th & abs(x$Fold)>=FOLD, ]}) # filter result tables for significance
+result <- lapply(result, function(x) {
+  tryCatch({
+    x[x$FDR<=db$config$th & abs(x$Fold)>=FOLD, ]   # filter result tables for significance
+  }, error=function(e) x)
+})
 write.xlsx(result, file=paste0(OUT, "/diffbind.xlsx"))
 saveRDS(result,  file=paste0(OUT, "/diffbind.rds"))
 dba.save(db, dir=OUT, file='diffbind', pre="")
