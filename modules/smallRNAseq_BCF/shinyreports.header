@@ -31,7 +31,8 @@ shinyReports_vars=[
     de_deseq_file     : "DE_DESeq2.RData",             // DESeq2 output file name
     de_deseq_FDR      : DE_DESeq2_vars.FDR,            // which FDR threshold was used for the DESeq2 analysis     
     de_deseq_FC       : DE_DESeq2_vars.FC,             // which FC threshold was used for the DESeq2 analysis
-    type              : ESSENTIAL_SMALLRNA,            // gene type, which is analyzed separately incl. a separate DE report
+    feature_type      : ESSENTIAL_FEATURETYPE,         // gencode uses gene_type; ensemble uses gene_biotype
+    smallrna_type     : ESSENTIAL_SMALLRNA,            // gene type, which is analyzed separately incl. a separate DE report
     maturemirna       : (RUN_MATUREMIRNA_ANALYSIS ? "TRUE" : "FALSE") // was a separate analysis on mature miRNA run?
 ]
 

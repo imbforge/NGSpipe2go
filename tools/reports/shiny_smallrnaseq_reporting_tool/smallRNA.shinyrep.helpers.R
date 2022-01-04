@@ -1550,6 +1550,9 @@ smallRNAhelper.fractionSign.pairwise <- function(i=1,fdr=.01) {
     # extract expressed/tested entries
     res.tested.df <- res.df[!is.na(res.df$padj),]
 
+    # extract type of RNA
+    res.tested.df$gene_type <- data.frame(gtf[match(rownames(res.tested.df), gtf$gene_id),])[,SHINYREPS_GENETYPE]
+
     # get counts per RNA type
     rnatypes.total.df <- as.data.frame(table(res.tested.df$gene_type))
     rnatypes.sign.df  <- as.data.frame(table(res.tested.df[res.tested.df$padj<fdr,"gene_type"]))
@@ -1653,10 +1656,6 @@ smallRNAhelper.fractionSign.pairwise <- function(i=1,fdr=.01) {
             guides(fill=guide_legend(title="")) +
             coord_flip()
 
-        #print(p.perc100)
-        #print(p.count)
-        ##print(p.perc)
-        #print(p.perc.own)
         return(list(p.perc100 = p.perc100,
                     p.count   = p.count,
                     p.perc    = p.perc,

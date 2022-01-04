@@ -16,7 +16,6 @@ ESSENTIAL_GENOME_REF="..../genome.fa" // necessary for miRDeep2, not currently u
 ESSENTIAL_GENESGTF="..../annotation.gtf"
 ESSENTIAL_MIRNAGFF="..../annotation/miRBase/....gff3"
 ESSENTIAL_FEATURETYPE="gene_type" //gencode uses gene_type; ensemble uses gene_biotype
-ESSENTIAL_FEATURETYPEMIRNA="type" //do not change as long as a GFF3 annotation file from miRBase is used
 ESSENTIAL_PAIRED="no"          // paired end design
 ESSENTIAL_STRANDED="yes"       // strandness: no|yes|reverse
 ESSENTIAL_ORG="mouse"          // organism

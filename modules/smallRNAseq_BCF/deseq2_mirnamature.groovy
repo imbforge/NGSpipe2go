@@ -17,7 +17,6 @@ DE_DESeq2_miRNAmature = {
         (DE_DESeq2_miRNAmature_vars.cwd       ? " cwd="       + DE_DESeq2_miRNAmature_vars.cwd    + "/$subdir" : "") +
         (DE_DESeq2_miRNAmature_vars.outdir    ? " out="       + DE_DESeq2_miRNAmature_vars.outdir + "/$subdir" : "") +
         (DE_DESeq2_miRNAmature_vars.genes     ? " gtf="       + DE_DESeq2_miRNAmature_vars.genes     : "") +
-        (DE_DESeq2_miRNAmature_vars.type      ? " type="      + DE_DESeq2_miRNAmature_vars.type      : "") +
         (DE_DESeq2_miRNAmature_vars.pattern   ? " pattern="   + DE_DESeq2_miRNAmature_vars.pattern   : "") +
         (DE_DESeq2_miRNAmature_vars.FDR       ? " FDR="       + DE_DESeq2_miRNAmature_vars.FDR       : "") +
         (DE_DESeq2_miRNAmature_vars.FC        ? " FC="        + DE_DESeq2_miRNAmature_vars.FC        : "") +

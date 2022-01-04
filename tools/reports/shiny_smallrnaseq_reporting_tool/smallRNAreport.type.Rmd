@@ -17,7 +17,7 @@ knitr::opts_chunk[['set']](dev='CairoPNG')
 options(stringsAsFactors=FALSE)
 source('smallRNA.shinyrep.helpers.R')
 loadGlobalVars()
-load(paste0(SHINYREPS_DE_DESEQ_DIR,"/",SHINYREPS_TYPE,"/",SHINYREPS_DE_DESEQ_FILE), envir=.GlobalEnv)  # the outcome from the DE analysis
+load(paste0(SHINYREPS_DE_DESEQ_DIR,"/",SHINYREPS_SMALLRNATYPE,"/",SHINYREPS_DE_DESEQ_FILE), envir=.GlobalEnv)  # the outcome from the DE analysis
 ``` 
 
 
@@ -25,7 +25,7 @@ load(paste0(SHINYREPS_DE_DESEQ_DIR,"/",SHINYREPS_TYPE,"/",SHINYREPS_DE_DESEQ_FIL
 
 ```{r typebox,results='asis',echo=F,error=F,warning=F,message=F}
 
-cat(paste0("\n\n Only ",SHINYREPS_TYPE, " genes are used for the following analysis.\n"),fill=T)
+cat(paste0("\n\n Only ",SHINYREPS_SMALLRNATYPE, " genes are used for the following analysis.\n"),fill=T)
 
 ```
 </div>
@@ -35,10 +35,10 @@ cat(paste0("\n\n Only ",SHINYREPS_TYPE, " genes are used for the following analy
 
 Mapped reads were assigned to annotated features using the Subread tool featureCounts (http://bioinf.wehi.edu.au/featureCounts). For multimapping reads, one randomly chosen location is used and assigned. Ambiguous reads, which overlap with multiple features, are assigned to all overlapped features. This might overcount, but is necessary since some miRNAs are located in introns or overlap snoRNAs and, thus, would otherwise not be counted. As a consequence, these ambiguous reads are also possibly wrongly assigned to the overlapping genes. The unassigned reads are due to no found overlap with known features (e.g. intronic reads derived from unprocessed transcripts). 
 
-Here, only `r SHINYREPS_TYPE` genes were selected and a summary of what percentage of the overall assigned reads is assigned to them is given below.
+Here, only `r SHINYREPS_SMALLRNATYPE` genes were selected and a summary of what percentage of the overall assigned reads is assigned to them is given below.
 
 ```{r subread_paragraph, echo=F, results='asis', error=F, warning=F, message=F}
-subread <- smallRNAhelper.subread.type(subdir=SHINYREPS_TYPE,maindir="all")
+subread <- smallRNAhelper.subread.type(subdir=SHINYREPS_SMALLRNATYPE,maindir="all")
 
 cat("### Annotation summary\n", fill=T)
 smallRNAhelper.subchunkify(subread$p.subread.type,

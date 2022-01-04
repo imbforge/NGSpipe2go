@@ -22,10 +22,10 @@ shinyReports = {
                 cp ${PIPELINE_ROOT}/tools/reports/shiny_smallrnaseq_reporting_tool/smallRNAreport.Rmd ${output.dir};
             fi &&
 
-            if [ -e "${output.dir}/smallRNAreport.${shinyReports_vars.type}.Rmd" ]; then
-                echo 'smallRNAreport.${shinyReports_vars.type}.Rmd already exists. Older copy will be kept and not overwritten';
+            if [ -e "${output.dir}/smallRNAreport.${shinyReports_vars.smallrna_type}.Rmd" ]; then
+                echo 'smallRNAreport.${shinyReports_vars.smallrna_type}.Rmd already exists. Older copy will be kept and not overwritten';
             else
-                cp ${PIPELINE_ROOT}/tools/reports/shiny_smallrnaseq_reporting_tool/smallRNAreport.type.Rmd ${output.dir}/smallRNAreport.${shinyReports_vars.type}.Rmd;
+                cp ${PIPELINE_ROOT}/tools/reports/shiny_smallrnaseq_reporting_tool/smallRNAreport.type.Rmd ${output.dir}/smallRNAreport.${shinyReports_vars.smallrna_type}.Rmd;
             fi &&
 
             if [ ${shinyReports_vars.maturemirna} = "TRUE" ]; then
@@ -38,7 +38,7 @@ shinyReports = {
 
             PROJECT=\$(basename ${shinyReports_vars.project})                            &&
             sed -i "2,2s/SHINYREPS_PROJECT/\${PROJECT}/" ${output.dir}/smallRNAreport.Rmd &&
-            sed -i "2,2s/SHINYREPS_PROJECT/\${PROJECT}/" ${output.dir}/smallRNAreport.${shinyReports_vars.type}.Rmd &&
+            sed -i "2,2s/SHINYREPS_PROJECT/\${PROJECT}/" ${output.dir}/smallRNAreport.${shinyReports_vars.smallrna_type}.Rmd &&
 
             if [ ${shinyReports_vars.maturemirna} = "TRUE" ]; then
                 sed -i "2,2s/SHINYREPS_PROJECT/\${PROJECT}/" ${output.dir}/smallRNAreport.miRNAmature.Rmd;
@@ -76,7 +76,8 @@ shinyReports = {
             echo "SHINYREPS_DE_DESEQ_FILE=${shinyReports_vars.de_deseq_file}"     >> $output &&
             echo "SHINYREPS_DE_DESEQ_FDR=${shinyReports_vars.de_deseq_FDR}"       >> $output &&
             echo "SHINYREPS_DE_DESEQ_FC=${shinyReports_vars.de_deseq_FC}"         >> $output &&
-            echo "SHINYREPS_TYPE=${shinyReports_vars.type}"                       >> $output 
+            echo "SHINYREPS_GENETYPE=${shinyReports_vars.feature_type}"           >> $output &&
+            echo "SHINYREPS_SMALLRNATYPE=${shinyReports_vars.smallrna_type}"      >> $output 
         ""","shinyReports"
     }
 }
