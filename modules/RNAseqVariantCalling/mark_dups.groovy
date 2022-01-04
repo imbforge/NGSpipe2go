@@ -20,7 +20,7 @@ MarkDups = {
             ${TOOL_ENV} &&
             ${PREAMBLE} &&
 
-            java ${MarkDups_vars.java_flags} -jar \${picard} MarkDuplicates $MarkDups_FLAGS INPUT=$input OUTPUT=$output METRICS_FILE=${input.prefix}_dupmetrics.tsv
+            java ${MarkDups_vars.java_flags} -jar \${PICARD} MarkDuplicates $MarkDups_FLAGS INPUT=$input OUTPUT=$output METRICS_FILE=${input.prefix}_dupmetrics.tsv
         ""","MarkDups"
     }
 }

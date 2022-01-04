@@ -1,7 +1,7 @@
 #####################################
 ##
-## What: DE_DESeq2.R
-## Who : Sergi Sayols
+## What: DE_DESeq2_smallRNA.R
+## Who : Sergi Sayols, Anke Busch
 ## When: 29-01-2015
 ##
 ## Script to perform DE different conditions, based on DESeq2 Negative Binomial model
@@ -14,6 +14,7 @@
 ##                          # must fit the format expected in DESeqDataSetFromHTSeqCount
 ## contrasts=contrasts.txt  # file describing the contrasts
 ## gtf=gene_model.gtf       # gene model in gtf format - for fpkm calculation
+## type=type                # tag name describing the biotype or gene_type in the annotation file
 ## filter=TRUE              # perform automatic independent filtering of lowly expressed genes to maximise power
 ## prefix=RE                # prefix to remove from the sample name
 ## suffix=RE                # suffix to remove from the sample name (usually _readcounts.tsv)
@@ -58,6 +59,7 @@ args <- commandArgs(T)
 ftargets     <- parseArgs(args,"targets=","targets.txt")     # file describing the targets
 fcontrasts   <- parseArgs(args,"contrasts=","contrasts.txt") # file describing the contrasts
 gene.model   <- parseArgs(args,"gtf=","")       # gtf gene model
+rna.type     <- parseArgs(args,"type=","gene_type")
 filter.genes <- parseArgs(args,"filter=",TRUE,convert="as.logical") # automatic independent filtering
 pre          <- parseArgs(args,"prefix=","")    # prefix to remove from the sample name
 suf          <- parseArgs(args,"suffix=","_readcounts.tsv")    # suffix to remove from the sample name
@@ -65,9 +67,9 @@ cwd          <- parseArgs(args,"cwd=","./")     # current working directory
 out          <- parseArgs(args,"out=","DE.DESeq2") # output filename
 pattern      <- parseArgs(args,"pattern=","\\.readcounts.tsv") # output filename
 FC           <- parseArgs(args, "FC=", 1 , convert="as.numeric") # FC filter non log2 
-FDR           <- parseArgs(args, "FDR=", 0.01 , convert="as.numeric") # filter FDR 
+FDR          <- parseArgs(args, "FDR=", 0.01 , convert="as.numeric") # filter FDR 
 
-runstr <- "Rscript DE.DESeq2.R [targets=targets.txt] [contrasts=contrasts.txt] [gtf=] [filter=TRUE] [prefix=RE] [suffix=RE] [cwd=.] [base=] [out=DE.DESeq2] [pattern=RE] [FC=1] [FDR=0.01]"
+runstr <- "Rscript DE.DESeq2_smallRNA.R [targets=targets.txt] [contrasts=contrasts.txt] [gtf=] [type=gene_type] [filter=TRUE] [prefix=RE] [suffix=RE] [cwd=.] [base=] [out=DE.DESeq2] [pattern=RE] [FC=1] [FDR=0.01]"
 if(!file.exists(ftargets))   stop(paste("File",ftargets,"does NOT exist. Run with:\n",runstr))
 if(!file.exists(fcontrasts)) stop(paste("File",fcontrasts,"does NOT exist. Run with:\n",runstr))
 if(!file.exists(cwd))        stop(paste("Dir",cwd,"does NOT exist. Run with:\n",runstr))
@@ -87,39 +89,41 @@ add_factors <- colnames(targets)[!colnames(targets) %in% c("group", "sample", "f
 targets <- targets[, c("sample", "file", "group", add_factors)]
 
 # grep sample identifier in count file names
-countfiles <- list.files(cwd)
-countfiles <- countfiles[grep(pattern, countfiles)] # filter for valid count files
+  countfiles <- list.files(cwd)
+  countfiles <- countfiles[grep(pattern, countfiles)] # filter for valid count files
+ 
+  # remove file ending of target file names
+  targets$sample_ext <- gsub("\\..*$", "",targets$file) 
 
-# remove file ending of target file names
-targets$sample_ext <- gsub("\\..*$", "",targets$file) 
+  index_targetsfile <- sapply(targets$sample_ext, grep,  countfiles) # grep targets in countfiles
 
-index_targetsfile <- sapply(paste0(targets$sample_ext, "\\."), grep,  countfiles) # grep targets in countfiles
-
-## check matching ambiguity
-if(is(index_targetsfile, "list")) { # list means either zero or multiple matches
-  if(any(x <- sapply(index_targetsfile, length)>1)) {
-    stop(paste("\nA targets.txt entry matches multiple count file names\ntargets.txt: "),
-         paste(targets$file[x], collapse=", "),
-         "\ncount file names: ", paste(countfiles[unlist(index_targetsfile[x])], collapse=", "))
-  }
-  warning(paste("Entries in targets.txt which are not found in list of count files are removed from targets table:", 
-                paste(targets$file[sapply(index_targetsfile, length)==0], collapse=", ")))
-  targets <- targets[!(sapply(index_targetsfile, length)==0),] # remove target entries
-  index_targetsfile <- sapply(targets$sample_ext, grep, countfiles) # recreate index vector after removal of targets.txt entries
-}
-
-if(any(x <- duplicated(index_targetsfile))) { # check for multiple target entries matching the same file name
-  stop(paste("\nMultiple targets.txt entries match to the same count file name\ntargets.txt: ", 
-             paste(targets$file[x | duplicated(index_targetsfile, fromLast=T)], collapse=", "),
-             "\ncount file names:", paste(countfiles[unlist(index_targetsfile[x])], collapse=", "), "\n"))
-}
-
-if (length(unique(index_targetsfile)) < length(countfiles)) { # check for count file names not included
-  warning(paste("\nCount file names not included in targets.txt are ignored: ",  paste(countfiles[-index_targetsfile], collapse=", ")))
-}
-
-targets$file <- countfiles[index_targetsfile] # replace entries in targets$file by count file names
+  ## check matching ambiguity
+      if(class(index_targetsfile)=="list") { # list means either zero or multiple matches
+        if(any(x <- sapply(index_targetsfile, length)>1)) {
+          stop(paste("\nA targets.txt entry matches multiple count file names\ntargets.txt: "),
+               paste(targets$file[x], collapse=", "),
+               "\ncount file names: ", paste(countfiles[unlist(index_targetsfile[x])], collapse=", "))
+        }
+        warning(paste("Entries in targets.txt which are not found in list of count files are removed from targets table:", 
+                      paste(targets$file[sapply(index_targetsfile, length)==0], collapse=", ")))
+        targets <- targets[!(sapply(index_targetsfile, length)==0),] # remove target entries
+        index_targetsfile <- sapply(targets$sample_ext, grep, countfiles) # recreate index vector after removal of targets.txt entries
+      }
+      
+      if(any(x <- duplicated(index_targetsfile))) { # check for multiple target entries matching the same file name
+        stop(paste("\nMultiple targets.txt entries match to the same count file name\ntargets.txt: ", 
+                   paste(targets$file[x | duplicated(index_targetsfile, fromLast=T)], collapse=", "),
+                   "\ncount file names:", paste(countfiles[unlist(index_targetsfile[x])], collapse=", "), "\n"))
+      }
+      
+      if (length(unique(index_targetsfile)) < length(countfiles)) { # check for count file names not included
+        warning(paste("\nCount file names not included in targets.txt are ignored: ",  paste(countfiles[-index_targetsfile], collapse=", ")))
+      }
   
+  targets$file <- countfiles[index_targetsfile] # replace entries in targets$file by count file names
+  
+
+
 # load contrasts
 conts <- read.delim(fcontrasts,head=TRUE,colClasses="character",comment.char="#")
 
@@ -185,6 +189,7 @@ pairwise.dds.and.res <- apply(conts,1,function(cont) {
 
     # extract the gene_name and genomic coordinates of each gene
     res$gene_name <- gtf$gene_name[match(rownames(res), gtf$gene_id)]
+    res$gene_type <- data.frame(gtf[match(rownames(res), gtf$gene_id),])[,rna.type]
     i <- match(rownames(res), genes$gene_id)
     res$chr    <- genes$seqnames[i]
     res$start  <- genes$start[i]
@@ -192,7 +197,7 @@ pairwise.dds.and.res <- apply(conts,1,function(cont) {
     res$strand <- genes$strand[i]
     
     # write the results
-    x <- merge(res[, c("gene_name", "chr", "start", "end", "strand", "baseMean", "log2FoldChange", "padj")], quantification, by=0)
+    x <- merge(res[, c("gene_name", rna.type, "chr", "start", "end", "strand", "baseMean", "log2FoldChange", "padj")], quantification, by=0)
     x <- x[order(x$padj),]
 
     #separate the data from x into the tested genes, the upregulated genes and the downregulated genes
@@ -220,7 +225,7 @@ pairwise.dds.and.res <- apply(conts,1,function(cont) {
     list(dds,res)
 })
 
-## separate pairwise PCAs to a list
+## separate pairwise dds to a list
 pairwise.dds <- lapply(pairwise.dds.and.res,function(x){return(x[[1]])})
 
 ## separate results to a list
@@ -259,13 +264,17 @@ names(robustRPKM) <- paste0(names(robustRPKM),".robustRPKM")
 names(TPM)        <- paste0(names(TPM),".TPM")
 
 # extract the gene_name and genomic coordinates of each gene
-names.rpkm.df <- data.frame(gene_name=gtf$gene_name[match(rownames(robustRPKM), gtf$gene_id)],row.names=rownames(robustRPKM))
+names.rpkm.df <- data.frame(gene_name=gtf$gene_name[match(rownames(robustRPKM), gtf$gene_id)],
+                            gene_type=data.frame(gtf[match(rownames(robustRPKM), gtf$gene_id),])[,rna.type],
+                            row.names=rownames(robustRPKM))
 i <- match(rownames(names.rpkm.df), genes$gene_id)
 names.rpkm.df$chr    <- genes$seqnames[i]
 names.rpkm.df$start  <- genes$start[i]
 names.rpkm.df$end    <- genes$end[i]
 names.rpkm.df$strand <- genes$strand[i]
-names.tpm.df <- data.frame(gene_name=gtf$gene_name[match(rownames(TPM), gtf$gene_id)],row.names=rownames(TPM))
+names.tpm.df <- data.frame(gene_name=gtf$gene_name[match(rownames(TPM), gtf$gene_id)],
+                           gene_type=data.frame(gtf[match(rownames(TPM), gtf$gene_id),])[,rna.type], 
+                           row.names=rownames(TPM))
 i <- match(rownames(names.tpm.df), genes$gene_id)
 names.tpm.df$chr    <- genes$seqnames[i]
 names.tpm.df$start  <- genes$start[i]

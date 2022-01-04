@@ -14,6 +14,7 @@ library("ComplexHeatmap")
 library("Cairo")
 library("grid")
 library("RColorBrewer")
+library("tidyr")
 
 
 ##
@@ -96,39 +97,32 @@ ChIPhelper.init <- function(task, subdir="", peaks_as="data.frame") {
     if(!file.exists(file.path(PEAKDATA,peaksSubdir))) {
       return("MACS2 results not available")
     }
-    if(file.exists(file.path(PEAKDATA,peaksSubdir, paste0(targets$IPname, ".vs.", targets$INPUTname,"_macs2_blacklist_filtered_peaks.xls")))[1]) {
-      comparisons <- paste0(targets$IPname, ".vs.", targets$INPUTname, "_macs2_blacklist_filtered_peaks.xls")  
-    } else {
-      comparisons <- paste0(targets$IPname, ".vs.", targets$INPUTname, "_macs2_peaks.xls")
+    # check is blacklist filtered peak files are available
+    if(file.exists(file.path(PEAKDATA, peaksSubdir, paste0(targets$IPname, ".vs.", targets$INPUTname,"_macs2_blacklist_filtered_peaks.xls")))[1]) {
+      comparisons <- file.path(PEAKDATA, peaksSubdir, paste0(targets$IPname, ".vs.", targets$INPUTname,"_macs2_blacklist_filtered_peaks.xls"))
+    } else { # no blacklist filtered peak files available, read unfiltered peak files
+      comparisons <- file.path(PEAKDATA, peaksSubdir, paste0(targets$IPname, ".vs.", targets$INPUTname,"_macs2_peaks.xls"))
     }
-    exist <- sapply(paste0(file.path(PEAKDATA,peaksSubdir), "/", comparisons), file.exists)
+    exist <- sapply(comparisons, file.exists) # check if files exist for targets entries
     targets <- targets[exist, ]
+    comparisons <- comparisons[exist]
     
-    columnNames2replace <- c(seqnames="chr", abs_summit="summit", pileup="tags", X.log10.pvalue.="-log10 pval", fold_enrichment="fold enrichment", X.log10.qvalue.="-log10 FDR")
+    columnNames2replace <- c(seqnames="chr", abs_summit="summit", pileup="tags", X.log10.pvalue.="-log10 pvalue", X.log10.FDR="-log10 FDR", X.log10.qvalue.="-log10 FDR")
     
     # and return the tables
-    if(file.exists(paste0(file.path(PEAKDATA,peaksSubdir), "/", targets$IPname, ".vs.", targets$INPUTname,"_macs2_blacklist_filtered_peaks.xls"))[1]) {
-      peaks <- lapply(paste0(file.path(PEAKDATA,peaksSubdir), "/", targets$IPname, ".vs.", targets$INPUTname, "_macs2_blacklist_filtered_peaks.xls"), function(x) {
-        if(as=="data.frame") {
-          x <- tryCatch(read.delim(x, comment.char="#", stringsAsFactors=F), error=function(e) as.data.frame(matrix(ncol=10)))
-          colnames(x) <- dplyr::recode(colnames(x), !!!columnNames2replace)
-          x[order(x$chr, x$start, x$end),  !colnames(x) %in% c("-log10 pval", "name")]
-        } else {
-          x <- tryCatch(ChIPseeker::readPeakFile(x))
-        }
-      })
-    } else {
-      peaks <- lapply(paste0(file.path(PEAKDATA,peaksSubdir), "/", targets$IPname, ".vs.", targets$INPUTname, "_macs2_peaks.xls"), function(x) {
-        if(as=="data.frame") {
-          x <- tryCatch(read.delim(x, comment.char="#", stringsAsFactors=F), error=function(e) as.data.frame(matrix(ncol=10)))
-          #colnames(x) <- plyr::revalue(colnames(x), replace=columnNames2replace , warn_missing = F)
-          colnames(x) <- dplyr::recode(colnames(x), !!!columnNames2replace)
-          x[order(x$chr, x$start, x$end),  !colnames(x) %in% c("-log10 pval", "name")]
-        } else {
-          x <- tryCatch(ChIPseeker::readPeakFile(x))
-        }
-      })
-    }
+    peaks <- lapply(comparisons, function(x) {
+      if(as=="data.frame") { # read in as data.frame
+        x <- tryCatch(read.delim(x, comment.char="#", stringsAsFactors=F), error=function(e) as.data.frame(matrix(ncol=10)))
+        colnames(x) <- dplyr::recode(colnames(x), !!!columnNames2replace)
+        x[order(x$chr, x$start, x$end),  !colnames(x) %in% c("-log10 pval", "name")]
+      } else { # read in as GRanges
+        x <- tryCatch({
+          x <- ChIPseeker::readPeakFile(x, as = "GRanges")
+          if(packageVersion('ChIPseeker')>0) {BiocGenerics::start(x) <- BiocGenerics::start(x)-1} # bug in ChIPseeker: MACS xls files (1-based) are read as 0-based. Modify condition if fixed in future version.
+          x
+        })
+      }
+    })
     
     names(peaks) <- paste0(targets$IPname, " vs. ", targets$INPUTname)
     
@@ -189,35 +183,37 @@ ChIPhelper.UpSetPlot <- function(subdir="", Mode = "intersect", peakOverlapMode=
     # plot upsetplot_peaknumber
     png(file.path(OUT, paste0("upsetplot_", Mode, "_peaknumber.png")), width = 200, height = 100, units = "mm", res=300)
     
-    ht <- draw(UpSet(upset_matrix,
-                     comb_order = order(comb_size(upset_matrix), decreasing = T),
-                     comb_col = combColors,
-                     bg_col = "#F0F0FF",
-                     set_order = if(is.null(targetsdf)) {order(set_size(upset_matrix), decreasing = TRUE)} else {setnamesOrderByTargetsdf},
-                     column_title=paste("# of", Mode, "peaks for each set (max", setsize, "sets shown)"),
-                     left_annotation = if(is.null(targetsdf)) {NULL} else {rowAnnotation(group = targetsdf$group, col=list(group=legend_colors))}, 
-                     right_annotation = upset_right_annotation(upset_matrix, gp = gpar(fill = fillColors)),
-                     column_title_gp = gpar(fontsize = 11),
-                     row_names_max_width = unit(5, "cm"),
-                     row_names_gp = gpar(fontsize = 10)
-    ) )
-    if(addBarAnnotation){
-      od = column_order(ht)
-      cs = comb_size(upset_matrix)
-      currentvptree <- current.vpTree() # viewport name differs depending on package version
-      #print(paste("\ncurrent vptree:", currentvptree))
-      interactionsize_viewport <- c("intersection_size", "Intersection\nsize")
-      interactionsize_viewport <- interactionsize_viewport[sapply(interactionsize_viewport, grepl, currentvptree)]
-      if(length(interactionsize_viewport)==1) {
-        decorate_annotation(interactionsize_viewport, {
-          grid.text(format(cs[od], scientific=F),
-                    x = seq_along(cs), y = unit(cs[od], "native") + unit(20, "pt"), 
-                    default.units = "native", just = "bottom", gp = gpar(fontsize = 8), rot=90)        
-        })
-      } else {
-        warning("Viewpoint not found or ambiguous. decorate_annotation is omitted.")
+    try({
+      ht <- draw(UpSet(upset_matrix,
+                       comb_order = order(comb_size(upset_matrix), decreasing = T),
+                       comb_col = combColors,
+                       bg_col = "#F0F0FF",
+                       set_order = if(is.null(targetsdf)) {order(set_size(upset_matrix), decreasing = TRUE)} else {setnamesOrderByTargetsdf},
+                       column_title=paste("# of", Mode, "peaks for each set (max", setsize, "sets shown)"),
+                       left_annotation = if(is.null(targetsdf)) {NULL} else {rowAnnotation(group = targetsdf$group, col=list(group=legend_colors))}, 
+                       right_annotation = upset_right_annotation(upset_matrix, gp = gpar(fill = fillColors)),
+                       column_title_gp = gpar(fontsize = 11),
+                       row_names_max_width = unit(5, "cm"),
+                       row_names_gp = gpar(fontsize = 10)
+      ) )
+      if(addBarAnnotation){
+        od = column_order(ht)
+        cs = comb_size(upset_matrix)
+        currentvptree <- current.vpTree() # viewport name differs depending on package version
+        #print(paste("\ncurrent vptree:", currentvptree))
+        interactionsize_viewport <- c("intersection_size", "Intersection\nsize")
+        interactionsize_viewport <- interactionsize_viewport[sapply(interactionsize_viewport, grepl, currentvptree)]
+        if(length(interactionsize_viewport)==1) {
+          decorate_annotation(interactionsize_viewport, {
+            grid.text(format(cs[od], scientific=F),
+                      x = seq_along(cs), y = unit(cs[od], "native") + unit(20, "pt"), 
+                      default.units = "native", just = "bottom", gp = gpar(fontsize = 8), rot=90)        
+          })
+        } else {
+          warning("Viewpoint not found or ambiguous. decorate_annotation is omitted.")
+        }
       }
-    }
+    })
     dev.off()
 
     cat("\n", fill=T)
@@ -252,35 +248,37 @@ ChIPhelper.UpSetPlot <- function(subdir="", Mode = "intersect", peakOverlapMode=
     # plot upsetplot_bp
     png(file.path(OUT, paste0("upsetplot_", Mode, "_bp.png")), width = 200, height = 100, units = "mm", res=300)
     
-    ht <- draw(UpSet(upset_matrix,
-                     comb_order = order(comb_size(upset_matrix), decreasing = T),
-                     comb_col = combColors,
-                     bg_col = "#F0F0FF",
-                     set_order = if(is.null(targetsdf)) {order(set_size(upset_matrix), decreasing = TRUE)} else {setnamesOrderByTargetsdf},
-                     column_title=paste("# of", Mode, "bp for each set (max", setsize, "sets shown)"),
-                     left_annotation = if(is.null(targetsdf)) {NULL} else {rowAnnotation(group = targetsdf$group, col=list(group=legend_colors))}, 
-                     right_annotation = upset_right_annotation(upset_matrix, gp = gpar(fill = fillColors)),
-                     column_title_gp = gpar(fontsize = 11),
-                     row_names_max_width = unit(5, "cm"),
-                     row_names_gp = gpar(fontsize = 10)
-    ))
-    if(addBarAnnotation){
-      od = column_order(ht)
-      cs = comb_size(upset_matrix)
-      currentvptree <- current.vpTree() # viewport name differs depending on package version
-      #print(paste("\ncurrent vptree:", currentvptree))
-      interactionsize_viewport <- c("intersection_size", "Intersection\nsize")
-      interactionsize_viewport <- interactionsize_viewport[sapply(interactionsize_viewport, grepl, currentvptree)]
-      if(length(interactionsize_viewport)==1) {
-        decorate_annotation(interactionsize_viewport, {
-          grid.text(format(cs[od], scientific=T, digits=2),
-                    x = seq_along(cs), y = unit(cs[od], "native") + unit(20, "pt"), 
-                    default.units = "native", just = "bottom", gp = gpar(fontsize = 8), rot=90)
-        })
-      } else {
-        warning("Viewpoint not found or ambiguous. decorate_annotation is omitted.")
-      }
-    }  
+    try({
+      ht <- draw(UpSet(upset_matrix,
+                       comb_order = order(comb_size(upset_matrix), decreasing = T),
+                       comb_col = combColors,
+                       bg_col = "#F0F0FF",
+                       set_order = if(is.null(targetsdf)) {order(set_size(upset_matrix), decreasing = TRUE)} else {setnamesOrderByTargetsdf},
+                       column_title=paste("# of", Mode, "bp for each set (max", setsize, "sets shown)"),
+                       left_annotation = if(is.null(targetsdf)) {NULL} else {rowAnnotation(group = targetsdf$group, col=list(group=legend_colors))}, 
+                       right_annotation = upset_right_annotation(upset_matrix, gp = gpar(fill = fillColors)),
+                       column_title_gp = gpar(fontsize = 11),
+                       row_names_max_width = unit(5, "cm"),
+                       row_names_gp = gpar(fontsize = 10)
+      ))
+      if(addBarAnnotation){
+        od = column_order(ht)
+        cs = comb_size(upset_matrix)
+        currentvptree <- current.vpTree() # viewport name differs depending on package version
+        #print(paste("\ncurrent vptree:", currentvptree))
+        interactionsize_viewport <- c("intersection_size", "Intersection\nsize")
+        interactionsize_viewport <- interactionsize_viewport[sapply(interactionsize_viewport, grepl, currentvptree)]
+        if(length(interactionsize_viewport)==1) {
+          decorate_annotation(interactionsize_viewport, {
+            grid.text(format(cs[od], scientific=T, digits=2),
+                      x = seq_along(cs), y = unit(cs[od], "native") + unit(20, "pt"), 
+                      default.units = "native", just = "bottom", gp = gpar(fontsize = 8), rot=90)
+          })
+        } else {
+          warning("Viewpoint not found or ambiguous. decorate_annotation is omitted.")
+        }
+      }  
+    })
     dev.off()
     cat("\n", fill=T)
     cat("\n", fill=T)

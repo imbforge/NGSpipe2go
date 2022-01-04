@@ -78,6 +78,11 @@ config {
       procs="4" 
       memory="24"
     }
+    bowtie1_sRNA {
+      walltime="04:00:00"
+      procs="4"
+      memory="24"
+    }
     CatFastQ { 
       walltime="1:00:00" 
       procs="1" 
@@ -116,7 +121,7 @@ config {
     Cutadapt { 
       walltime="04:00:00" 
       procs="1" 
-      memory="32"
+      memory="4"
     }
     CutadaptStats { 
       walltime="01:00:00" 
@@ -126,6 +131,11 @@ config {
     DE_DESeq2 { 
       walltime="01:00:00" 
       procs="1" 
+      memory="4"
+    }
+    DE_DESeq2_miRNAmature {
+      walltime="01:00:00"
+      procs="1"
       memory="4"
     }
     DE_DESeq2_MM { 
@@ -437,6 +447,11 @@ config {
       procs="8" 
       memory="12"
     }
+    filter_smallRNA_counts {
+      walltime="00:30:00"
+      procs="1"
+      memory="1"
+    }
     filter2htseq { 
       walltime="00:30:00" 
       procs="1" 
@@ -515,6 +530,11 @@ config {
     subread_count { 
       walltime="00:30:00" 
       procs="4" 
+      memory="4"
+    }
+    subread_miRNAmature_count {
+      walltime="00:30:00"
+      procs="4"
       memory="4"
     }
     tpm {

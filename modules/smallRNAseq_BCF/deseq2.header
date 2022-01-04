@@ -1,0 +1,18 @@
+DE_DESeq2_vars=[
+    targets  : "targets.txt",              //targets file. Check the bin directory for the format
+    contrasts: "contrasts.txt",            //contrasts file. Check the bin directory for the format
+    filter   : "TRUE",                     //whether to perform automatic independent filtering of lowly expressed genes
+    prefix   : "",                         //prefix to be removed from file names
+    suffix   : "",                         //suffix to be removed from file names
+    cwd      : RESULTS + "/subread-count", //directory where the .tsv files with the gene counts are located
+    outdir   : RESULTS + "/DE_DESeq2",     //output filename base pattern. If you change it here, change it also in the module file
+    genes    : ESSENTIAL_GENESGTF,         //gtf gene annotation file needed to calculate robust FPKM values per gene
+    type     : ESSENTIAL_FEATURETYPE,      //describes type of RNA in gtf, gencode uses gene_type, ensembl uses gene_biotype
+    pattern  : "\"\\.readcounts.tsv\"",    //pattern for filtering count files in cwd
+    FDR      : ESSENTIAL_DESEQ2_FDR,       //Filter for the adjusted pvalue 
+    FC       : ESSENTIAL_DESEQ2_FC,        //Filter for the FC (non log2!)
+    extra    : ""                          //extra parms to sent to the tool
+]
+
+load PIPELINE_ROOT + "/modules/smallRNAseq_BCF/deseq2.groovy"
+

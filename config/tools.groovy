@@ -104,6 +104,9 @@ tools_envs = [
         ]
     ],
     bowtie: [
+        "1.1.2": [
+            lmod: "module load bowtie/1.1.2"
+        ],
         "1.2.2": [
             lmod: "module load bowtie/1.2.2",
             conda: "${conda_call} source activate ${conda_tools}/bowtie/1.2.2"

@@ -103,6 +103,24 @@ h5:first-child {
         margin-left:20;
 }     
 
+h6 {
+        background-color:#eeeeee;
+        color:#555555;
+        padding: 2pt 5pt 0pt 10pt;
+        margin-top:20pt;
+        font-size:110%;
+        font-style:italic;
+        clear:both;
+        border-bottom-style:solid;
+        border-bottom-color:#aaaaaa;
+        border-bottom-width:1.5pt;
+}
+
+h6:first-child {
+        margin-top:20;
+        margin-left:20;
+}
+
 
 
 /*
@@ -130,10 +148,13 @@ div.dashedbox {
 }
 
 div.solidbox {
-	margin: 30px 0px 0px 0px;
-	padding: 0 15px 0 15px;
-	text-align:left;
-	padding: 16;
+	margin: 10px 10px 10px 10px;
+	padding: 12px 1px 1px 1px;
+	text-align:center;
+	background-color:#ffb703;
+	color:#555555;
+	font-weight: bold;
+	font-size: 150%;
 	border: 1px solid #aaa;
 }
 
@@ -149,7 +170,7 @@ div.solidbox {
 
 
 img[alt="fastqc img"] { 
-  max-width:  260px; 
+  max-width:  250px; 
   display: block;
 }
 
@@ -164,7 +185,7 @@ img[alt="RNAtypes img"] {
 }
 
 img[alt="geneBodyCov img"] { 
-  max-width:  220px; 
+  max-width:  260px; 
   display: block;
 }
 

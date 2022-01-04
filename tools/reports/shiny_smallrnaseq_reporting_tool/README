@@ -1,0 +1,5 @@
+
+The analysis of mature miRNA needs a separate report file, since for mature miRNAs
+a different gtf (gff3) file is used, which requires another treatment than the
+other analyses.
+

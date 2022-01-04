@@ -89,13 +89,14 @@ if(!is.logical(PE))          stop("Paired end (pe) not logical. Run with:\n",run
 if(ANNOTATE & !is.numeric(TSS)) stop("Region around TSS not numeric. Run with:\n",runstr)
 if(ANNOTATE & !require(ANNODB, character.only=TRUE)) stop("Annotation DB", ANNODB, "not installed\n")
 
-if(grepl("\\.gtf$", TXDB)){ # check the input format for the transcript annotation
-  library(GenomicFeatures)
-  txdb <- makeTxDbFromGFF(TXDB, format="gtf") # if the input format is gtf file, then this file will be used to create a TxDb object
-} else {
-  library(transcriptDb, character.only = TRUE) # if the input format is bioconductor, then the transcript annoation library will be used 
-  txdb <- eval(TXDB)
-  if(ANNOTATE & !require(TXDB, character.only=TRUE))   stop("Transcript DB", TXDB, "not installed\n")
+if(ANNOTATE) {
+  if(grepl("\\.gtf$", TXDB)){ # check the input format for the transcript annotation
+    library(GenomicFeatures)
+    txdb <- makeTxDbFromGFF(TXDB, format="gtf") # if the input format is gtf file, then this file will be used to create a TxDb object
+  } else {
+    if(!require(TXDB, character.only=TRUE)) stop("Transcript DB", TXDB, "not installed\n")
+    txdb <- eval(parse(text=TXDB)) # if the input format is bioconductor, then the transcript annoation library will be used 
+  }
 }
 
 # check for DiffBind version
@@ -332,7 +333,6 @@ dev.off()
 ##
 if(ANNOTATE) {
   library(ChIPseeker)
-  #txdb <- eval(parse(text=TXDB)) # is done above
   result <- lapply(result, function(x) {
     tryCatch({
       x.ann <- annotatePeak(x, TxDb=txdb, annoDb=ANNODB, tssRegion=TSS, verbose=T)
@@ -374,7 +374,7 @@ if(ANNOTATE) {
                             c("Analysis method", ANALYSISMETHOD, ""),
                             c("Library size", LIBRARYSIZE, explLibrarySize),
                             c("Normalization method", NORMALIZATION, explNormalization),
-                            c("Subtract control read counts", SUBSTRACTCONTROL, if(SUBSTRACTCONTROL=="default") {paste("set to", SUBSTRACTCONTROL_FINAL, "because greylist is", if(SUBSTRACTCONTROL_FINAL){"not"} else {""}, "available.")}),
+                            c("Subtract control read counts", SUBSTRACTCONTROL, if(SUBSTRACTCONTROL=="default") {paste("set to", SUBSTRACTCONTROL_FINAL, "because greylist is", if(SUBSTRACTCONTROL_FINAL){"not"} else {""}, "available.")} else {""}),
                             c("Design", "contrast_diffbind.txt", paste(db$design, "(with", CONDITIONCOLUMN, "as Condition column)")),
                             c("FDR threshold", FDR_TRESHOLD, "significance threshold for differential binding analysis."),
                             c("Fold threshold", FOLD, "log Fold threshold for differential binding analysis.")
@@ -387,7 +387,11 @@ write.table(infodb, file=file.path(OUT, "info_dba_object.txt"), row.names = F, q
 result <- lapply(result, as.data.frame)
 names(result) <- conts$contrast.name
 write.xlsx(result, file=paste0(OUT, "/diffbind_all_sites.xlsx"))
-result <- lapply(result, function(x) {x[x$FDR<=db$config$th & abs(x$Fold)>=FOLD, ]}) # filter result tables for significance
+result <- lapply(result, function(x) {
+  tryCatch({
+    x[x$FDR<=db$config$th & abs(x$Fold)>=FOLD, ]   # filter result tables for significance
+  }, error=function(e) x)
+})
 write.xlsx(result, file=paste0(OUT, "/diffbind.xlsx"))
 saveRDS(result,  file=paste0(OUT, "/diffbind.rds"))
 dba.save(db, dir=OUT, file='diffbind', pre="")

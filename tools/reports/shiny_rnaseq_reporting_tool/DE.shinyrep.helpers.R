@@ -842,8 +842,8 @@ DEhelper.Fastqc.custom <- function(web=FALSE, summarizedPlots=TRUE, subdir="") {
     fastqc.stats <- ngsReports::FastqcDataList(f)
 
     # create proper name vectoir as labels
-    lbls <- gsub("_fastqc.zip$", "", names(fastqc.stats))
-    names(lbls) <- gsub("_fastqc.zip", ".fastq.gz", names(fastqc.stats))
+    lbls <- gsub("_fastqc.zip$", "", basename(names(fastqc.stats)))
+    names(lbls) <- gsub("_fastqc.zip", ".fastq.gz", basename(names(fastqc.stats)))
 
     if(file.exists(SHINYREPS_TARGET)){
 
@@ -945,7 +945,7 @@ DEhelper.Fastqc.custom <- function(web=FALSE, summarizedPlots=TRUE, subdir="") {
            scale_x_continuous(breaks=unique(as.numeric(df$position)),
                               labels=unique(df$Base))
 
-        p.content <- ngsReports::plotSeqContent(fastqc.stats) +
+        p.content <- ngsReports::plotSeqContent(fastqc.stats, labels=rev(lbls)) +
           labs(y = "") +
           theme(legend.position="right") +
           guides(fill="none", color="legend") +
@@ -956,9 +956,9 @@ DEhelper.Fastqc.custom <- function(web=FALSE, summarizedPlots=TRUE, subdir="") {
 
     } else {
 
-        p.qual <- ngsReports::plotBaseQuals(fastqc.stats, plotType="boxplot") +
+        p.qual <- ngsReports::plotBaseQuals(fastqc.stats, labels=lbls, plotType="boxplot") +
           theme(axis.text.x = element_text(size=5))
-        p.content <- ngsReports::plotSeqContent(fastqc.stats, plotType="line") +
+        p.content <- ngsReports::plotSeqContent(fastqc.stats, labels=lbls, plotType="line") +
           theme(axis.text.x = element_text(size=5), legend.position = "top")
     }
 
@@ -967,7 +967,7 @@ DEhelper.Fastqc.custom <- function(web=FALSE, summarizedPlots=TRUE, subdir="") {
     # the following settings:
     # ngsReports::plotGcContent(fastqc.stats, plotType="line", gcType="Genome", theoreticalGC=TRUE, species=SPECIES)
     # the default value for SPECIES is "Hsapiens", thus, if you don't specify it, human will be used as a default
-    p.gc <- ngsReports::plotGcContent(fastqc.stats, usePlotly=summarizedPlots, plotType="line", gcType="Genome", theoreticalGC=FALSE) 
+    p.gc <- ngsReports::plotGcContent(fastqc.stats, usePlotly=summarizedPlots, plotType="line", gcType="Genome", labels=lbls, theoreticalGC=FALSE) 
     if(!summarizedPlots) {
       p.gc <- p.gc + guides(color=guide_legend(title="",ncol=4)) + 
         theme(legend.position = "top", legend.text = element_text(size=8)) 

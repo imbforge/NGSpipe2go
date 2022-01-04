@@ -20,7 +20,7 @@ RmDups = {
             ${TOOL_ENV} &&
             ${PREAMBLE} &&
 
-            java ${RmDups_vars.java_flags} -jar \${picard} MarkDuplicates $RMDUPS_FLAGS INPUT=$input OUTPUT=$output METRICS_FILE=${input.prefix}_duprm_dupmetrics.tsv TMP_DIR=\${TMP}
+            java ${RmDups_vars.java_flags} -jar \${PICARD} MarkDuplicates $RMDUPS_FLAGS INPUT=$input OUTPUT=$output METRICS_FILE=${input.prefix}_duprm_dupmetrics.tsv TMP_DIR=\${TMP}
         ""","RmDups"
     }
 }

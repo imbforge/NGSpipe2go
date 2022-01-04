@@ -22,18 +22,19 @@ FilterDuplicates = {
 
     def PREAMBLE = get_preamble(stage:stageName, outdir:output.dir, input:new File(input1.prefix).getName())
 
-    transform(".fastq.gz") to (".deduped.fastq.gz") {
-        def SAMPLE_NAME = input.prefix.prefix
+    transform(".fastq.gz") to (".dedup.fastq.gz") {
+        def SAMPLENAME = input.prefix.prefix
          exec """
              ${PREAMBLE} &&
 
-             EXP=\$(basename ${SAMPLE_NAME}) &&
+             EXP=\$(basename ${SAMPLENAME}) &&
              nreads=\$(zcat $input | echo \$((`wc -l`/4))) &&
-             echo \$nreads \${EXP}.highQ >> ${FilterDuplicates_vars.logdir}/\${EXP}.dedup_stats.txt &&
+             echo inclDup \$nreads > ${FilterDuplicates_vars.logdir}/\${EXP}.dedup.log &&
 
              zcat $input | paste -d, - - - - | sort -u -t, -k2,2 | tr ',' '\\n' | gzip > $output &&
              nreads=\$(zcat $output | echo \$((`wc -l`/4))) &&
-             echo \$nreads ${EXP}.unique >> ${FilterDuplicates_vars.logdir}/\${EXP}.dedup_stats.txt
+             echo exclDup \$nreads >> ${FilterDuplicates_vars.logdir}/\${EXP}.dedup.log
+
         ""","FilterDuplicates"
     }
 }

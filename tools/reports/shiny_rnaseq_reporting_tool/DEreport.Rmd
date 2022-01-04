@@ -1,5 +1,5 @@
 ---
-title: "ngspipe2go"
+title: "SHINYREPS_PROJECT"
 output:
   html_document:
     toc: true
@@ -431,103 +431,117 @@ for(i in 1:nrow(conts)) {
 The R/Bioconductor package clusterProfiler (https://bioconductor.org/packages/release/bioc/html/clusterProfiler.html) was used to find enriched GO terms and pathways in the lists of significantly up- and down-regulated genes from the pairwise differential expression analyses. The resulting enrichment tables and plots can be found in the 'GO_Analysis' results folder. Shown below are several complementary visualisations aimed to help understand the underlying biological changes and the mutual relationships between the enriched GO terms and pathways.
 
 ```{r Enrichment_paragraph, echo=F, results='asis', error=F, warning=F, message=F, fig.align="center"}
+place_img <- function(f, text, alt_text) {
+  if(file.exists(f)) {
+    cat(text, "\n\n")
+    cat("![](", f, ")\n\n")
+  } else {
+    cat(alt_text, "\n\n")
+  }
+}
+
 for(i in 1:nrow(conts)) {
 
-    # subsection
-    cont.name <- gsub("(.+)=(.+)","\\1",conts[i,1])
-    cat("### ", cont.name, " {.tabset}\n", fill=T)
-    cat("", fill=T)
+  # subsection
+  cont.name <- gsub("(.+)=(.+)","\\1",conts[i,1])
+  cat("### ", cont.name, " {.tabset}\n", fill=T)
+  cat("", fill=T)
 
-    sections <- list(up  =list(text="Up-regulated"  , suffix="_up_genes"),
-                     down=list(text="Down-regulated", suffix="_down_genes"))
+  sections <- list(up  =list(text="Up-regulated"  , suffix="_up_genes"),
+                   down=list(text="Down-regulated", suffix="_down_genes"))
 
-    for(s in sections) {
-      cat("#### ", s$text, " {.tabset .tabset-pills}\n", fill=T)
+  for(s in sections) {
+    cat("#### ", s$text, " {.tabset .tabset-pills}\n", fill=T)
 
-      # GO Enrichment Plots
-      cat("##### GO terms (BP) {.tabset .tabset-pills}\n", fill=T)
-      cat("GO terms enriched in the list of ", s$text, " genes (Biological Process, BP).\n", fill=T)
+    # GO Enrichment Plots
+    cat("##### GO terms (BP) {.tabset .tabset-pills}\n", fill=T)
+    cat("GO terms enriched in the list of ", s$text, " genes (Biological Process, BP).\n", fill=T)
 
-      GO_bar     <- paste0(SHINYREPS_GO_ENRICHMENT, "/", conts$contrast.name[i], paste0("_GO_barplot", s$suffix, ".png"))
-      GO_network <- paste0(SHINYREPS_GO_ENRICHMENT, "/", conts$contrast.name[i], paste0("_GO_network", s$suffix, ".png"))
-      GO_treemap <- paste0(SHINYREPS_GO_ENRICHMENT, "/", conts$contrast.name[i], paste0("_GO_treemap", s$suffix, ".png"))
-      GO_scatter <- paste0(SHINYREPS_GO_ENRICHMENT, "/", conts$contrast.name[i], paste0("_GO_scatterplot"     , s$suffix, ".png"))
-      GO_dot     <- paste0(SHINYREPS_GO_ENRICHMENT, "/", conts$contrast.name[i], paste0("_reduced_GO_dotplot" , s$suffix, ".png"))
-      GO_cnet    <- paste0(SHINYREPS_GO_ENRICHMENT, "/", conts$contrast.name[i], paste0("_reduced_GO_cnetplot", s$suffix, ".png"))
+    GO_bar     <- file.path(SHINYREPS_GO_ENRICHMENT, paste0(conts$contrast.name[i], "_GO_barplot", s$suffix, ".png"))
+    GO_network <- file.path(SHINYREPS_GO_ENRICHMENT, paste0(conts$contrast.name[i], "_GO_network", s$suffix, ".png"))
+    GO_treemap <- file.path(SHINYREPS_GO_ENRICHMENT, paste0(conts$contrast.name[i], "_GO_treemap", s$suffix, ".png"))
+    GO_scatter <- file.path(SHINYREPS_GO_ENRICHMENT, paste0(conts$contrast.name[i], "_GO_scatterplot"     , s$suffix, ".png"))
+    GO_dot     <- file.path(SHINYREPS_GO_ENRICHMENT, paste0(conts$contrast.name[i], "_reduced_GO_dotplot" , s$suffix, ".png"))
+    GO_cnet    <- file.path(SHINYREPS_GO_ENRICHMENT, paste0(conts$contrast.name[i], "_reduced_GO_cnetplot", s$suffix, ".png"))
 
-      # if there are GO enrichment results (the barplot was created)
-      if(file.exists(GO_bar)) {
-          cat("###### Barplot (all terms)\n", fill=T)
-          cat("Top enriched Gene Ontology BP terms for the ", s$text, " genes:\n", fill=T)
-          cat("![](", GO_bar, ")\n", fill=T)
+    # if there are GO enrichment results (the barplot was created)
+    cat("###### Barplot (all terms)\n", fill=T)
+    place_img(GO_bar,
+              text=paste("Top enriched Gene Ontology BP terms for the", s$text, "genes:"),
+              alt_text=paste("no GO enrichment results for the", s$text, "genes available.\n"))
 
-          cat("###### Network (all terms)\n", fill=T)
-          cat("Network plot of the top enriched Gene Ontology BP terms for the ", s$text, " genes (connecting lines represent shared genes):\n", fill=T)
-          cat("![](", GO_network, ")\n", fill=T)
+    cat("###### Network (all terms)\n", fill=T)
+    place_img(GO_network,
+              text=paste0("Network plot of the top enriched Gene Ontology BP terms for the", s$text, "genes (connecting lines represent shared genes):"), 
+              alt_text=paste("no GO enrichment results for the", s$text, "genes available."))
 
-          cat("###### Treemap clusters\n", fill=T)
-          cat("Clustering and reduction of the enriched Gene Ontology BP terms for the ", s$text, " genes (area size correlates with significance):\n", fill=T)
-          cat("![](", GO_treemap, ")\n", fill=T)
+    cat("###### Treemap clusters\n", fill=T)
+    place_img(GO_treemap,
+              text=paste("Clustering and reduction of the enriched Gene Ontology BP terms for the", s$text, "genes (area size correlates with significance):"),
+              alt_text=paste("no GO enrichment results for the", s$text, " genes available."))
 
-          cat("###### Top terms clusters (reduced terms)\n", fill=T)
-          cat("Top enriched Gene Ontology BP term clusters (reduced GO terms) for the ", s$text, " genes:\n", fill=T)
-          cat("![](", GO_dot, ")\n", fill=T)
+    cat("###### Top terms clusters (reduced terms)\n", fill=T)
+    place_img(GO_dot,
+              text=paste("Top enriched Gene Ontology BP term clusters (reduced GO terms) for the", s$text, "genes:"),
+              alt_text=paste("no GO enrichment results for the", s$text, "genes available."))
 
-          cat("###### Term-gene network (reduced terms)\n", fill=T)
-          cat("Top enriched Gene Ontology BP term clusters (reduced GO terms) with associated genes for the ", s$text, " genes:\n", fill=T)
-          cat("![](", GO_cnet, ")\n", fill=T)
-      } else {
-          cat("no GO enrichment results for the ", s$text, " genes available.\n", fill=T)
-      }
+    cat("###### Term-gene network (reduced terms)\n", fill=T)
+    place_img(GO_cnet,
+              text=paste("Top enriched Gene Ontology BP term clusters (reduced GO terms) with associated genes for the", s$text, "genes:"),
+              alt_text=paste("no GO enrichment results for the", s$text, "genes available."))
 
-      # Pathway Enrichment Plots
-      cat("##### Reactome pathways {.tabset .tabset-pills}\n", fill=T)
-      cat("Reactome pathways enriched in the list of ", s$text, " genes.\n", fill=T)
+    cat("##### {-}\n", fill=T)
 
-      Reactome_Pathway_bar <- paste0(SHINYREPS_GO_ENRICHMENT, "/", conts$contrast.name[i], paste0("_Reactome_barplot" , s$suffix, ".png"))
-      Reactome_network     <- paste0(SHINYREPS_GO_ENRICHMENT, "/", conts$contrast.name[i], paste0("_Reactome_network" , s$suffix, ".png"))
-      Reactome_cnet        <- paste0(SHINYREPS_GO_ENRICHMENT, "/", conts$contrast.name[i], paste0("_Reactome_cnetplot", s$suffix, ".png"))
+    # Pathway Enrichment Plots
+    cat("##### Reactome pathways {.tabset .tabset-pills}\n", fill=T)
+    cat("Reactome pathways enriched in the list of ", s$text, " genes.\n", fill=T)
 
-      # if there are Reactome Pathway enrichment results (the barplot was created)
-      if(file.exists(Reactome_Pathway_bar)) {
-          cat("###### Barplot\n", fill=T)
-          cat("Top enriched Reactome pathways for the ", s$text, " genes:\n", fill=T)
-          cat("![](", Reactome_Pathway_bar, ")\n", fill=T)
+    Reactome_Pathway_bar <- file.path(SHINYREPS_GO_ENRICHMENT, paste0(conts$contrast.name[i], "_Reactome_barplot" , s$suffix, ".png"))
+    Reactome_network     <- file.path(SHINYREPS_GO_ENRICHMENT, paste0(conts$contrast.name[i], "_Reactome_network" , s$suffix, ".png"))
+    Reactome_cnet        <- file.path(SHINYREPS_GO_ENRICHMENT, paste0(conts$contrast.name[i], "_Reactome_cnetplot", s$suffix, ".png"))
 
-          cat("###### Network\n", fill=T)
-          cat("Network plot of the top enriched Reactome pathways for the ", s$text, " genes (connecting lines represent shared genes):\n", fill=T)
-          cat("![](", Reactome_network, ")\n", fill=T)
+    # if there are Reactome Pathway enrichment results (the barplot was created)
+    cat("###### Barplot\n", fill=T)
+    place_img(Reactome_Pathway_bar,
+              text=paste("Top enriched Reactome pathways for the", s$text, "genes:"),
+              alt_text=paste("no Reactome Pathway enrichment results for the", s$text, "genes available"))
 
-          cat("###### Term-gene network\n", fill=T)
-          cat("Top enriched Reactome pathways with associated genes for the ", s$text, " genes:\n", fill=T)
-          cat("![](", Reactome_cnet, ")\n", fill=T)
-      } else {
-          cat("no Reactome Pathway enrichment results for the ", s$text, " genes available\n", fill=T)
-      }
+    cat("###### Network\n", fill=T)
+    place_img(Reactome_network,
+              text=paste("Network plot of the top enriched Reactome pathways for the", s$text, "genes (connecting lines represent shared genes):"),
+              alt_text=paste("no Reactome Pathway enrichment results for the", s$text, "genes available"))
 
-      cat("##### KEGG pathways {.tabset .tabset-pills}\n", fill=T)
-      cat("KEGG pathways enriched in the list of ", s$text, " genes.\n", fill=T)
-      KEGG_Pathway_bar <- paste0(SHINYREPS_GO_ENRICHMENT, "/", conts$contrast.name[i], paste0("_KEGG_barplot" , s$suffix, ".png"))
-      KEGG_network     <- paste0(SHINYREPS_GO_ENRICHMENT, "/", conts$contrast.name[i], paste0("_KEGG_network" , s$suffix, ".png"))
-      KEGG_cnet        <- paste0(SHINYREPS_GO_ENRICHMENT, "/", conts$contrast.name[i], paste0("_KEGG_cnetplot", s$suffix, ".png"))
+    cat("###### Term-gene network\n", fill=T)
+    place_img(Reactome_cnet,
+              text=paste("Top enriched Reactome pathways with associated genes for the", s$text, "genes:"),
+              alt_text=paste("no Reactome Pathway enrichment results for the", s$text, "genes available"))
 
-      # if there are KEGG Pathway enrichment results (the barplot was created)
-      if(file.exists(KEGG_Pathway_bar)) {
-          cat("###### Barplot\n", fill=T)
-          cat("Top enriched KEGG pathways for the ", s$text, " genes:\n", fill=T)
-          cat("![](", KEGG_Pathway_bar, ")\n", fill=T)
+    cat("##### {-}\n", fill=T)
 
-          cat("###### Network\n", fill=T)
-          cat("Network plot of the top enriched KEGG pathways for the ", s$text, " genes (connecting lines represent shared genes):\n", fill=T)
-          cat("![](", KEGG_network, ")\n", fill=T)
+    cat("##### KEGG pathways {.tabset .tabset-pills}\n", fill=T)
+    cat("KEGG pathways enriched in the list of ", s$text, " genes.\n", fill=T)
 
-          cat("###### Term-gene network\n", fill=T)
-          cat("Top enriched KEGG pathways with associated genes for the ", s$text, " genes:\n", fill=T)
-          cat("![](", KEGG_cnet, ")\n", fill=T)
-      } else {
-          cat("no KEGG Pathway enrichment results for the ", s$text, " genes available.\n", fill=T)
-      }
+    KEGG_Pathway_bar <- file.path(SHINYREPS_GO_ENRICHMENT, paste0(conts$contrast.name[i], "_KEGG_barplot" , s$suffix, ".png"))
+    KEGG_network     <- file.path(SHINYREPS_GO_ENRICHMENT, paste0(conts$contrast.name[i], "_KEGG_network" , s$suffix, ".png"))
+    KEGG_cnet        <- file.path(SHINYREPS_GO_ENRICHMENT, paste0(conts$contrast.name[i], "_KEGG_cnetplot", s$suffix, ".png"))
 
+    # if there are KEGG Pathway enrichment results (the barplot was created)
+    cat("###### Barplot\n", fill=T)
+    place_img(KEGG_Pathway_bar,
+              text=paste("Top enriched KEGG pathways for the", s$text, "genes:"),
+              alt_text=paste("no KEGG Pathway enrichment results for the", s$text, "genes available."))
+
+    cat("###### Network\n", fill=T)
+    place_img(KEGG_network,
+              text=paste("Network plot of the top enriched KEGG pathways for the", s$text, "genes (connecting lines represent shared genes):"),
+              alt_text=paste("no KEGG Pathway enrichment results for the", s$text, "genes available."))
+
+    cat("###### Term-gene network\n", fill=T)
+    place_img(KEGG_cnet,
+              text=paste("Top enriched KEGG pathways with associated genes for the", s$text, "genes:"),
+              alt_text=paste("no KEGG Pathway enrichment results for the ", s$text, " genes available."))
+
+    cat("##### {-}\n", fill=T)
     cat("#### {-}\n", fill=T)
   }
 

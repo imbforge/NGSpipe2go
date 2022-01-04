@@ -1,8 +1,8 @@
 #####################################
 ##
-## What: DE_DESeq2.R
-## Who : Sergi Sayols
-## When: 29-01-2015
+## What: DE_DESeq2_miRNAmature.R
+## Who : Sergi Sayols, Anke Busch
+## When: 29-01-2015, 07-07-2021
 ##
 ## Script to perform DE different conditions, based on DESeq2 Negative Binomial model
 ## and the counts from htseq-count.
@@ -14,6 +14,7 @@
 ##                          # must fit the format expected in DESeqDataSetFromHTSeqCount
 ## contrasts=contrasts.txt  # file describing the contrasts
 ## gtf=gene_model.gtf       # gene model in gtf format - for fpkm calculation
+## type=type                # tag name describing the biotype or gene_type in the annotation file
 ## filter=TRUE              # perform automatic independent filtering of lowly expressed genes to maximise power
 ## prefix=RE                # prefix to remove from the sample name
 ## suffix=RE                # suffix to remove from the sample name (usually _readcounts.tsv)
@@ -58,6 +59,7 @@ args <- commandArgs(T)
 ftargets     <- parseArgs(args,"targets=","targets.txt")     # file describing the targets
 fcontrasts   <- parseArgs(args,"contrasts=","contrasts.txt") # file describing the contrasts
 gene.model   <- parseArgs(args,"gtf=","")       # gtf gene model
+rna.type     <- parseArgs(args,"type=","type")
 filter.genes <- parseArgs(args,"filter=",TRUE,convert="as.logical") # automatic independent filtering
 pre          <- parseArgs(args,"prefix=","")    # prefix to remove from the sample name
 suf          <- parseArgs(args,"suffix=","_readcounts.tsv")    # suffix to remove from the sample name
@@ -65,9 +67,9 @@ cwd          <- parseArgs(args,"cwd=","./")     # current working directory
 out          <- parseArgs(args,"out=","DE.DESeq2") # output filename
 pattern      <- parseArgs(args,"pattern=","\\.readcounts.tsv") # output filename
 FC           <- parseArgs(args, "FC=", 1 , convert="as.numeric") # FC filter non log2 
-FDR           <- parseArgs(args, "FDR=", 0.01 , convert="as.numeric") # filter FDR 
+FDR          <- parseArgs(args, "FDR=", 0.01 , convert="as.numeric") # filter FDR 
 
-runstr <- "Rscript DE.DESeq2.R [targets=targets.txt] [contrasts=contrasts.txt] [gtf=] [filter=TRUE] [prefix=RE] [suffix=RE] [cwd=.] [base=] [out=DE.DESeq2] [pattern=RE] [FC=1] [FDR=0.01]"
+runstr <- "Rscript DE.DESeq2_miRNAmature.R [targets=targets.txt] [contrasts=contrasts.txt] [gtf=] [type=type] [filter=TRUE] [prefix=RE] [suffix=RE] [cwd=.] [base=] [out=DE.DESeq2] [pattern=RE] [FC=1] [FDR=0.01]"
 if(!file.exists(ftargets))   stop(paste("File",ftargets,"does NOT exist. Run with:\n",runstr))
 if(!file.exists(fcontrasts)) stop(paste("File",fcontrasts,"does NOT exist. Run with:\n",runstr))
 if(!file.exists(cwd))        stop(paste("Dir",cwd,"does NOT exist. Run with:\n",runstr))
@@ -87,61 +89,68 @@ add_factors <- colnames(targets)[!colnames(targets) %in% c("group", "sample", "f
 targets <- targets[, c("sample", "file", "group", add_factors)]
 
 # grep sample identifier in count file names
-countfiles <- list.files(cwd)
-countfiles <- countfiles[grep(pattern, countfiles)] # filter for valid count files
-
-# remove file ending of target file names
-targets$sample_ext <- gsub("\\..*$", "",targets$file) 
-
-index_targetsfile <- sapply(paste0(targets$sample_ext, "\\."), grep,  countfiles) # grep targets in countfiles
-
-## check matching ambiguity
-if(is(index_targetsfile, "list")) { # list means either zero or multiple matches
-  if(any(x <- sapply(index_targetsfile, length)>1)) {
-    stop(paste("\nA targets.txt entry matches multiple count file names\ntargets.txt: "),
-         paste(targets$file[x], collapse=", "),
-         "\ncount file names: ", paste(countfiles[unlist(index_targetsfile[x])], collapse=", "))
-  }
-  warning(paste("Entries in targets.txt which are not found in list of count files are removed from targets table:", 
-                paste(targets$file[sapply(index_targetsfile, length)==0], collapse=", ")))
-  targets <- targets[!(sapply(index_targetsfile, length)==0),] # remove target entries
-  index_targetsfile <- sapply(targets$sample_ext, grep, countfiles) # recreate index vector after removal of targets.txt entries
-}
-
-if(any(x <- duplicated(index_targetsfile))) { # check for multiple target entries matching the same file name
-  stop(paste("\nMultiple targets.txt entries match to the same count file name\ntargets.txt: ", 
-             paste(targets$file[x | duplicated(index_targetsfile, fromLast=T)], collapse=", "),
-             "\ncount file names:", paste(countfiles[unlist(index_targetsfile[x])], collapse=", "), "\n"))
-}
-
-if (length(unique(index_targetsfile)) < length(countfiles)) { # check for count file names not included
-  warning(paste("\nCount file names not included in targets.txt are ignored: ",  paste(countfiles[-index_targetsfile], collapse=", ")))
-}
-
-targets$file <- countfiles[index_targetsfile] # replace entries in targets$file by count file names
+  countfiles <- list.files(cwd)
+  countfiles <- countfiles[grep(pattern, countfiles)] # filter for valid count files
   
+  # remove file ending of target file names
+  targets$sample_ext <- gsub("\\..*$", "",targets$file) 
+
+  index_targetsfile <- sapply(targets$sample_ext, grep,  countfiles) # grep targets in countfiles
+
+  ## check matching ambiguity
+      if(class(index_targetsfile)=="list") { # list means either zero or multiple matches
+        if(any(x <- sapply(index_targetsfile, length)>1)) {
+          stop(paste("\nA targets.txt entry matches multiple count file names\ntargets.txt: "),
+               paste(targets$file[x], collapse=", "),
+               "\ncount file names: ", paste(countfiles[unlist(index_targetsfile[x])], collapse=", "))
+        }
+        warning(paste("Entries in targets.txt which are not found in list of count files are removed from targets table:", 
+                      paste(targets$file[sapply(index_targetsfile, length)==0], collapse=", ")))
+        targets <- targets[!(sapply(index_targetsfile, length)==0),] # remove target entries
+        index_targetsfile <- sapply(targets$sample_ext, grep, countfiles) # recreate index vector after removal of targets.txt entries
+      }
+      
+      if(any(x <- duplicated(index_targetsfile))) { # check for multiple target entries matching the same file name
+        stop(paste("\nMultiple targets.txt entries match to the same count file name\ntargets.txt: ", 
+                   paste(targets$file[x | duplicated(index_targetsfile, fromLast=T)], collapse=", "),
+                   "\ncount file names:", paste(countfiles[unlist(index_targetsfile[x])], collapse=", "), "\n"))
+      }
+      
+      if (length(unique(index_targetsfile)) < length(countfiles)) { # check for count file names not included
+        warning(paste("\nCount file names not included in targets.txt are ignored: ",  paste(countfiles[-index_targetsfile], collapse=", ")))
+      }
+  
+  targets$file <- countfiles[index_targetsfile] # replace entries in targets$file by count file names
+  
+
+
 # load contrasts
 conts <- read.delim(fcontrasts,head=TRUE,colClasses="character",comment.char="#")
 
 ##
-## calculate gene transcript lengths (union of all annotated exons) using rtracklayer & GenomicRanges
+## calculate gene transcript lengths using rtracklayer & GenomicRanges
 ##
-gtf <- import.gff(gene.model, format="gtf", feature.type="exon")
-gtf.flat <- unlist(reduce(split(gtf, elementMetadata(gtf)$gene_id)))
-gene.lengths <- tapply(width(gtf.flat), names(gtf.flat), sum)
+gtf <- import.gff(gene.model, format="gff3", feature.type="miRNA")
+gtf.flat <- unlist(reduce(split(gtf, elementMetadata(gtf)$Name)))
+# there can be multiple copies of the same miRNA, using "sum" to get the length, would add them all
+# gene.lengths <- tapply(width(gtf.flat), names(gtf.flat), sum)
+# use "mean" instead
+gene.lengths <- tapply(width(gtf.flat), names(gtf.flat), mean)
 
 # make sure we have a gene_name column (needed as output in the report later)
 if(! "gene_name" %in% colnames(mcols(gtf))) {
-    if("gene_id" %in% colnames(mcols(gtf))) {
-        gtf$gene_name <- gtf$gene_id
+    if("Name" %in% colnames(mcols(gtf))) {
+        gtf$gene_name <- gtf$Name
     } else {
         gtf$gene_name <- NA
     }
 }
 
 # create a txdb object to collect the genes coordinates for later usage
-txdb  <- makeTxDbFromGRanges(gtf)
-genes <- as.data.frame(genes(txdb))
+## for some reason, this function does not work for the miRNA gff, use as.data.frame instead
+#txdb  <- makeTxDbFromGRanges(gtf)
+#genes <- as.data.frame(genes(txdb))
+genes <- as.data.frame(gtf)
 
 ##
 ## DESeq analysis: right now it only allows simple linear models with pairwise comparisons
@@ -184,15 +193,19 @@ pairwise.dds.and.res <- apply(conts,1,function(cont) {
     colnames(quantification) <- paste0(colnames(quantification),".robustFPKM")
 
     # extract the gene_name and genomic coordinates of each gene
-    res$gene_name <- gtf$gene_name[match(rownames(res), gtf$gene_id)]
-    i <- match(rownames(res), genes$gene_id)
-    res$chr    <- genes$seqnames[i]
-    res$start  <- genes$start[i]
-    res$end    <- genes$end[i]
-    res$strand <- genes$strand[i]
+    res$gene_name <- gtf$gene_name[match(rownames(res), gtf$Name)]
+    res$gene_type <- data.frame(gtf[match(rownames(res), gtf$Name),])[,rna.type]
+    # since the same miRNA can occur on more than one locations,
+    # extracting location information is not useful or otherwise all
+    # location would need to be extracted, don't do this at this point
+    #i <- match(rownames(res), genes$Name)
+    #res$chr    <- genes$seqnames[i]
+    #res$start  <- genes$start[i]
+    #res$end    <- genes$end[i]
+    #res$strand <- genes$strand[i]
     
     # write the results
-    x <- merge(res[, c("gene_name", "chr", "start", "end", "strand", "baseMean", "log2FoldChange", "padj")], quantification, by=0)
+    x <- merge(res[, c("gene_name", "gene_type", "baseMean", "log2FoldChange", "padj")], quantification, by=0)
     x <- x[order(x$padj),]
 
     #separate the data from x into the tested genes, the upregulated genes and the downregulated genes
@@ -204,13 +217,13 @@ pairwise.dds.and.res <- apply(conts,1,function(cont) {
                    all_genes = x)
     
     colnames(x)[which(colnames(x) %in% c("baseMean", "log2FoldChange", "padj"))] <- mcols(res)$description[match(c("baseMean", "log2FoldChange", "padj"), colnames(res))]
-    colnames(x)[1] <- "gene_id"
+    colnames(x)[1] <- "Name"
 
     write.csv(x, file=paste0(out, "/", cont.name, ".csv"), row.names=F)
-    #we also have to replace the columnnames within the x_info list
+    # we also have to replace the column names within the x_info list
     x_info <- lapply(x_info, function(y){
                        colnames(y)[which(colnames(y) %in% c("baseMean", "log2FoldChange", "padj"))] <- mcols(res)$description[match(c("baseMean", "log2FoldChange", "padj"), colnames(res))]
-                       colnames(y)[1] <- "gene_id"
+                       colnames(y)[1] <- "Name"
                        return(y)
                    })
     #add a description before writing out the the excel file
@@ -220,7 +233,7 @@ pairwise.dds.and.res <- apply(conts,1,function(cont) {
     list(dds,res)
 })
 
-## separate pairwise PCAs to a list
+## separate pairwise dds to a list
 pairwise.dds <- lapply(pairwise.dds.and.res,function(x){return(x[[1]])})
 
 ## separate results to a list
@@ -259,24 +272,18 @@ names(robustRPKM) <- paste0(names(robustRPKM),".robustRPKM")
 names(TPM)        <- paste0(names(TPM),".TPM")
 
 # extract the gene_name and genomic coordinates of each gene
-names.rpkm.df <- data.frame(gene_name=gtf$gene_name[match(rownames(robustRPKM), gtf$gene_id)],row.names=rownames(robustRPKM))
-i <- match(rownames(names.rpkm.df), genes$gene_id)
-names.rpkm.df$chr    <- genes$seqnames[i]
-names.rpkm.df$start  <- genes$start[i]
-names.rpkm.df$end    <- genes$end[i]
-names.rpkm.df$strand <- genes$strand[i]
-names.tpm.df <- data.frame(gene_name=gtf$gene_name[match(rownames(TPM), gtf$gene_id)],row.names=rownames(TPM))
-i <- match(rownames(names.tpm.df), genes$gene_id)
-names.tpm.df$chr    <- genes$seqnames[i]
-names.tpm.df$start  <- genes$start[i]
-names.tpm.df$end    <- genes$end[i]
-names.tpm.df$strand <- genes$strand[i]
+names.rpkm.df <- data.frame(gene_name=gtf$gene_name[match(rownames(robustRPKM), gtf$Name)],
+                            gene_type=data.frame(gtf[match(rownames(robustRPKM), gtf$Name),])[,rna.type],
+                            row.names=rownames(robustRPKM))
+names.tpm.df <- data.frame(gene_name=gtf$gene_name[match(rownames(TPM), gtf$Name)],
+                           gene_type=data.frame(gtf[match(rownames(TPM), gtf$Name),])[,rna.type], 
+                           row.names=rownames(TPM))
 
 # merge location and quantification
 robustRPKM.names.df <- merge(names.rpkm.df,robustRPKM,by=0)
 TPM.names.df        <- merge(names.tpm.df,TPM,by=0)
-colnames(robustRPKM.names.df)[1] <- "gene_id"
-colnames(TPM.names.df)[1]        <- "gene_id"
+colnames(robustRPKM.names.df)[1] <- "Name"
+colnames(TPM.names.df)[1]        <- "Name"
 
 # write to file
 write.csv(robustRPKM.names.df, file=paste0(out, "/allSamples.robustRPKM.csv"), row.names=F)
@@ -286,10 +293,9 @@ write.xlsx(TPM.names.df, file=paste0(out, "/allSamples.TPM.xlsx"), row.names=F)
 
 # extract rlog assay and change to user friendly gene identifiers
 assay.rld <- assay(rld)
-rownames(assay.rld) <- gtf$gene_name[match(rownames(assay(rld)), gtf$gene_id)]
+#rownames(assay.rld) <- gtf$gene_name[match(rownames(assay(rld)), gtf$Name)]
 
 # extract information for legend
-#legend.df <- as.data.frame(colData(rld)[,c("group","subject")])
 if (length(add_factors)==0) {
 	legend.df <- data.frame(group=colData(rld)[,c("group")],row.names=rownames(colData(rld)))
 } else {
@@ -297,21 +303,20 @@ if (length(add_factors)==0) {
 }
 
 # fix group colors for legend and possible first additional factor if available
-        if (length(add_factors)==0) {
-                legend_colors <- list(group = setNames(brewer.pal(9,"Set1")[1:length(unique(colData(rld)[,"group"]))],
-                                                       unique(colData(rld)[,"group"])))
+if (length(add_factors)==0) {
+        legend_colors <- list(group = setNames(brewer.pal(9,"Set1")[1:length(unique(colData(rld)[,"group"]))],
+                                               unique(colData(rld)[,"group"])))
+} else {
+        if (length(unique(colData(rld)[,add_factors[1]])) <= 8) {
+                mypalette <- brewer.pal(8,"Dark2")[1:length(unique(colData(rld)[,add_factors[1]]))]
         } else {
-                if (length(unique(colData(rld)[,add_factors[1]])) <= 8) {
-                        mypalette <- brewer.pal(8,"Dark2")[1:length(unique(colData(rld)[,add_factors[1]]))]
-                } else {
-                        mypalette <- colorRampPalette(brewer.pal(8,"Dark2"))(length(unique(colData(rld)[,add_factors[1]])))
-                }
-                legend_colors <- list(group = setNames(brewer.pal(9,"Set1")[1:length(unique(colData(rld)[,"group"]))],
-                                                       unique(colData(rld)[,"group"])),
-                                      subject = setNames(mypalette,
-                                                         unique(colData(rld)[,add_factors[1]])))
-                names(legend_colors) <- c("group",add_factors[1])
+                mypalette <- colorRampPalette(brewer.pal(8,"Dark2"))(length(unique(colData(rld)[,add_factors[1]])))
         }
+        legend_colors <- list(group = setNames(brewer.pal(9,"Set1")[1:length(unique(colData(rld)[,"group"]))],
+                                               unique(colData(rld)[,"group"])),
+                              subject = setNames(mypalette, unique(colData(rld)[,add_factors[1]])))
+        names(legend_colors) <- c("group",add_factors[1])
+}
 
 # sample to sample distance heatmap
 sampleDists <- dist(t(assay.rld))
@@ -400,4 +405,4 @@ x <- mapply(function(res, cont) {
 dev.off()
 #save the sessionInformation
 writeLines(capture.output(sessionInfo()),paste(out, "/DE_DESeq2_session_info.txt", sep=""))
-save(dds, rld, res, pairwise.dds, conts, gtf, add_factors, file=paste0(out,"/DE_DESeq2.RData"))
+save(dds, rld, res, pairwise.dds, conts, gtf, add_factors, robustRPKM.names.df, TPM.names.df, file=paste0(out,"/DE_DESeq2.RData"))
