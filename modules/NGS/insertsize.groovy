@@ -21,7 +21,7 @@ InsertSize = {
             ${TOOL_ENV} &&
             ${PREAMBLE} &&
 
-            java ${InsertSize_vars.java_flags} -jar \${picard} CollectInsertSizeMetrics $INSERTSIZE_FLAGS INPUT=$input OUTPUT=$output HISTOGRAM_FILE=${output.prefix}_hist.pdf
+            java ${InsertSize_vars.java_flags} -jar \${PICARD} CollectInsertSizeMetrics $INSERTSIZE_FLAGS INPUT=$input OUTPUT=$output HISTOGRAM_FILE=${output.prefix}_hist.pdf
         ""","InsertSize"
     }
 }

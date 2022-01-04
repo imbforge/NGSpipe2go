@@ -17,7 +17,7 @@ AddRG = {
             ${TOOL_ENV} &&
             ${PREAMBLE} &&
 
-            java $JAVA_FLAGS -jar \${picard} AddOrReplaceReadGroups I=$input O=$output SO=coordinate RGID=${EXP} RGLB=${EXP} RGPL=illumina RGPU=genomics RGSM=${EXP}
+            java $JAVA_FLAGS -jar \${PICARD} AddOrReplaceReadGroups I=$input O=$output SO=coordinate RGID=${EXP} RGLB=${EXP} RGPL=illumina RGPU=genomics RGSM=${EXP}
         ""","AddRG"
     }
 }
