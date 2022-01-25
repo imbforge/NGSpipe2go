@@ -1,7 +1,7 @@
 cellrangerarc_count = {
-    doc title: "Cell Ranger ARC (10x Multiome) alignment",
-        desc:  "Align single/paired end reads",
-        constraints: "Paired end reads expected to have _S1_L001_R[12]_001.fastq.gz suffix.",
+    doc title: "Cell Ranger ARC (10X Multiome) alignment",
+        desc:  "Align GEX & ATAC paired end reads (for ATAC, 10X barcode is in i5 index)",
+        constraints: "All FASTQ files expected to have _S1_L001_R[123]_001.fastq.gz suffix.",
         bpipe_version: "tested with bpipe 0.9.9.8",
         author: "Frank Rühle, Martin Oti"
 
@@ -14,7 +14,7 @@ cellrangerarc_count = {
 
     output.dir = cellrangerarc_count_vars.outdir + "/" 
 
-    // cellranger flags
+    // cellranger-arc count flags
     def CELLRANGERARC_FLAGS =
         " --id="     + SAMPLENAME_BASE +
         " --reference=" + cellrangerarc_count_vars.reference + 

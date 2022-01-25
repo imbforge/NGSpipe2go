@@ -7,7 +7,7 @@ cellrangerarc_aggr = {
 
     output.dir = cellrangerarc_aggr_vars.outdir + "/"
 
-    // cellranger flags
+    // cellranger-arc aggr flags
     def CELLRANGERARC_AGGR_FLAGS =
         " --reference=" + cellrangerarc_aggr_vars.reference + 
         (cellrangerarc_aggr_vars.id        ? " --id="            + cellrangerarc_aggr_vars.id : " --id=aggr") + 
