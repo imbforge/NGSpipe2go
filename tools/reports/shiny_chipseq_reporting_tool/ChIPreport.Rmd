@@ -432,6 +432,7 @@ ha = do.call(HeatmapAnnotation, anno_list) # gap = unit(2, "mm"), annotation_nam
 UpSet(us1, top_annotation = ha, right_annotation=NULL, row_names_side = "right", 
       column_title="Overlap of peaks from different pipeline branches",
       comb_col = "steelblue", bg_col = "#F0F0FF", height=unit(4, "cm") ) # height=3 # heatmap_height=unit(24, "cm")
+}
 ```
 
 
