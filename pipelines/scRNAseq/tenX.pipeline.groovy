@@ -47,6 +47,6 @@ Bpipe.run {
     ] + 
     cellranger_aggr +
     (RUN_TRACKHUB ? trackhub_config + trackhub : dontrun.using(module:"trackhub")) +
-    collectToolVersions + collectBpipeLogs + shinyReports
+    collectToolVersions + collectBpipeLogs + MultiQC + shinyReports
 }
 
