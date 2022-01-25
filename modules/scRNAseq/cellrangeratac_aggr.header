@@ -1,0 +1,13 @@
+cellrangeratac_aggr_vars=[
+    outdir       : RESULTS,
+    id           : "aggr",
+    reference    : ESSENTIAL_TENX_REFERENCE,
+    normalize    : "depth", // "none" or "depth" (default). Equalize the average mapped read depth per cell between GEM wells by sub-sampling before merging.
+    cores        : 8,
+    localmem     : 64,
+    extra        : ""     // extra parms to sent to the tool
+]
+
+load PIPELINE_ROOT + "/modules/scRNAseq/cellrangeratac_aggr.groovy"
+
+

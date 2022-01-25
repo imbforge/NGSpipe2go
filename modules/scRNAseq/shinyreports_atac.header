@@ -1,0 +1,47 @@
+shinyReports_vars=[
+    project         : PROJECT,          //project directory
+    org             : ESSENTIAL_ORG,    //UCSC organism
+    db              : ESSENTIAL_DB,     //UCSC assembly version
+    paired          : ESSENTIAL_PAIRED, // paired-end data [yes|no]
+    log             : LOGS,             //where the logs lie
+    qc              : QC,               //where the QC lie
+    res             : RESULTS,          //where the results lie
+    cellranger_aggr_id: (binding.variables.containsKey("cellranger_aggr_vars") ? cellranger_aggr_vars.id : (binding.variables.containsKey("cellrangeratac_aggr_vars") ? cellrangeratac_aggr_vars.id : (binding.variables.containsKey("cellrangerarc_aggr_vars") ? cellrangerarc_aggr_vars.id : "aggr"))), // folder name for results from cellranger / cellranger-atac / cellranger-arc aggr
+    prefix          : ESSENTIAL_SAMPLE_PREFIX, //standard sample prefix
+    strandedness    : ESSENTIAL_STRANDED,             //strandedness of the library [no|yes|reverse]
+    fastqc_out      : FastQC_vars.outdir,      //where the Fastqc output lie
+    fastqc_log      : LOGS + "/FastQC",        //where the Fastqc logs lie
+    fastqc_summarized   : "FALSE",                        //should FastQC plots be summarized in the report?
+    fastqscreen_out : FastqScreen_vars.outdir,        //where the FastQScreen output lie
+    fastqscreen_log : LOGS + "/FastQScreen",          //where the FastQScreen log lie
+    fastqscreen_perc : ESSENTIAL_FASTQSCREEN_PERC,     //contaminant percentage to be plotted
+    bamindex_log    : LOGS + "/BAMindexer",    //where the Samtools/BamIndexer logs lie
+    bustard         : QC + "/DemultiplexedBustardSummary.xml",  //where the bustard xml file lies
+    bam2bw_log      : LOGS + "/bam2bw",              //where the Bam2BW logs lie
+    markdups_log    : LOGS + "/MarkDups",            //where the picard MarkDuplicates logs lie
+    plots_column    : 3,                             //number of columns to splits the plot grids (dupradar, genebodycov...). Min=2L. L=integer in R
+    sort_alpha      : "TRUE",                        //should samples be sorted alphabetically in the report?
+    insertsize      : QC + "/insertsize",     //where the insertsize statistics are found
+    trackhub_done   : PROJECT + "/trackhub.done",    //contains trackhub URL
+    tool_versions   : collectToolVersions_vars.outdir + "/tool_versions.txt", //where the tool versions listed
+    run_cutadapt    : RUN_CUTADAPT,    
+    cutadapt_stats  : Cutadapt_vars.statsdir,              // cutadapt stat files
+    seqtype         : PIPELINE,
+    target          : new File(PIPELINE_ROOT + "/pipelines/scRNAseq/targets.txt").getCanonicalPath(),
+    // filtering module output in report
+    samplepattern1  : "", // pattern for sample names to select to display in report (e.g. "\\.R1" for MARS-Seq because R2 contains only barcode)
+    samplepattern2  : "", // pattern2 for sample names to exclude from report
+    maxno           : "", // the maximum plot number will be restricted accordingly to the first 'maxno' plots (e.g. for SMART-Seq with hundreds of fastq files). Empty string means no restriction.
+    colorByFactor   : "", // variables for grouping and plotting (if empty, default value selected depending on seqtype)
+    // Criteria for filtering out low quality cells
+    type_of_threshold         : "absolute", // either "absolute" or "relative" (i.e. using MAD)
+    threshold_total_counts_min: 2000,       // lower threshold 2000
+    threshold_total_counts_max: "",       // May be empty
+    threshold_total_features_detected: 500, // lower threshold 500
+    threshold_pct_counts_Mt   : 50,         // upper threshold 50
+    nmads                     : 3,          // number of absolute deviations from median. Only relevant if type_of_threshold = "relative".
+    apply_QCfilter_by_factor  : ""      // may be empty. Relative QC fiter criteria is applied separately for each group defined by this factor (must be given in targets.txt). Only relevant if type_of_threshold = "relative".
+]
+
+load PIPELINE_ROOT + "/modules/scRNAseq/shinyreports_atac.groovy"
+

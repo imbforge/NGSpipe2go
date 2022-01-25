@@ -32,6 +32,7 @@ tools_defaults = [
     bowtie2        : [ runenv: "lmod", version: "2.3.4"        ],
     cellranger     : [ runenv: "lmod", version: "6.0.0"        ],
     cellrangerarc  : [ runenv: "lmod", version: "2.0.0"        ],
+    cellrangeratac : [ runenv: "lmod", version: "2.0.0"        ],
     bwa            : [ runenv: "lmod", version: "0.7.15"       ],
     cutadapt       : [ runenv: "lmod", version: "1.18"         ],
     deeptools      : [ runenv: "lmod", version: "3.1"          ],
@@ -129,6 +130,11 @@ tools_envs = [
     cellrangerarc: [
         "2.0.0": [
             lmod: "module load cellrangerARC/2.0.0"
+        ]
+    ],
+    cellrangeratac: [
+        "2.0.0": [
+            lmod: "module load cellrangerATAC/2.0.0"
         ]
     ],
     cutadapt: [

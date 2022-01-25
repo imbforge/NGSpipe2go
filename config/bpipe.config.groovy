@@ -95,6 +95,18 @@ config {
       procs="8" 
       memory="64"
     }
+    cellrangeratac_count { 
+      queue=long_queue 
+      walltime="20:00:00" 
+      procs="8" 
+      memory="64"
+    }
+    cellrangeratac_aggr { 
+      queue=long_queue 
+      walltime="20:00:00" 
+      procs="8" 
+      memory="64"
+    }
     cellrangerarc_count { 
       queue=long_queue 
       walltime="20:00:00" 
