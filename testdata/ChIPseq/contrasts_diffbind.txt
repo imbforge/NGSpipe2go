@@ -1,1 +1,2 @@
-NF_YA_ESCvsNF_YA_TN=(NF_YA_ESC-NF_YA_TN)
+contrast.name	contrast	mmatrix
+NF_YA_ESCvsNF_YA_TN	(NF_YA_ESC-NF_YA_TN)	~group
