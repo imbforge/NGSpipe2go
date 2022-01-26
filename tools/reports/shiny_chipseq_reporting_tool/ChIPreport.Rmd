@@ -421,6 +421,9 @@ for(b in names(peakscovcomb)) {
   }
 }
 
+emptyPeakSets <- sapply(peakscovcombReorder, function(x) {any(sapply(x, function(y) {length(y)==0}))})
+peakscovcombReorder <- peakscovcombReorder[!emptyPeakSets] # exclude entries with empty peak sets
+
 anno_list = list()
 us1 <- make_comb_mat(peakscovcombReorder[[1]], mode = c("distinct"))
 for(p in names(peakscovcombReorder)) {
@@ -445,8 +448,10 @@ The following plots show the feature distribution based on their chromosome regi
 ```{r feature_distribution_paragraph, echo=F, results='asis', error=F, warning=F, message=F}
 featureDist <- lapply(branches, function(peaksdir) {
   functionalPlot <- file.path( SHINYREPS_PEAK_ANNOTATION, peaksdir, "ChIPseq_Feature_Distribution_Barplot.png")
-  if(length(branches)>1) {cat(paste("\n\n#### Feature distribution from", if(peaksdir==""){"default"} else {peaksdir}, "pipeline branch\n"))}
-  cat("![Peak_Annotation img](", functionalPlot, ")",fill=T)
+  if (file.exists(functionalPlot)) {
+    if(length(branches)>1) {cat(paste("\n\n#### Feature distribution from", if(peaksdir==""){"default"} else {peaksdir}, "pipeline branch\n"))}
+    cat("![Peak_Annotation img](", functionalPlot, ")",fill=T)
+  } else {cat("\nNo plot available\n")}
   return(functionalPlot)
 })
 ```
@@ -457,8 +462,10 @@ featureDist <- lapply(branches, function(peaksdir) {
 ```{r feature_distribution_TSS_paragraph, echo=F, results='asis', error=F, warning=F, message=F}
 TFbindingDist <- lapply(branches, function(peaksdir) {
     functionalPlotTSS <- file.path( SHINYREPS_PEAK_ANNOTATION, peaksdir, "ChIPseq_Feature_Distribution_Related_to_TSS_Barplot.png")
-    if(length(branches)>1) {cat(paste("\n\n#### TF-binding loci distribution from", if(peaksdir==""){"default"} else {peaksdir}, "pipeline branch\n"))}
-    cat("![Peak_Annotation img](", functionalPlotTSS, ")",fill=T)
+    if (file.exists(functionalPlotTSS)) {
+      if(length(branches)>1) {cat(paste("\n\n#### TF-binding loci distribution from", if(peaksdir==""){"default"} else {peaksdir}, "pipeline branch\n"))}
+      cat("![Peak_Annotation img](", functionalPlotTSS, ")",fill=T)
+    } else {cat("\nNo plot available\n")}
     return(functionalPlotTSS)
 })
 ```
