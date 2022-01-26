@@ -155,7 +155,9 @@ db <- dba(sampleSheet=targets, config=data.frame(AnalysisMethod=DBA_DESEQ2, frag
                                                  bCorPlot=F, singleEnd=!PE)) 
 
 # create DBA object containing consensus peaks per group (needed later)
-db2 <- dba.peakset(db, consensus=DBA_CONDITION)
+db2 <- dba(db, mask=sapply(db$peaks, nrow)>0) # diffbind crashes if peaksets with no peaks are included for generating consensus peakset
+db2 <- dba.peakset(db2, consensus=DBA_CONDITION)
+
 
 # Heatmap using occupancy (peak caller score) data
 png(paste0(OUT, "/heatmap_occupancy.png"), width = 150, height = 150, units = "mm", res=300)
