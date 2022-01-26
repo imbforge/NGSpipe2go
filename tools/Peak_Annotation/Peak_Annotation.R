@@ -63,6 +63,12 @@ if(packageVersion('ChIPseeker')>0) { # bug in ChIPseeker: MACS xls files (1-base
     return(x)})
 } 
 
+# remove empty peaksets
+nonEmptyPeaksets <- sapply(peaks, length) >0
+peaks <- peaks[nonEmptyPeaksets]
+peakFiles <- peakFiles[nonEmptyPeaksets]
+filename <- filename[nonEmptyPeaksets]
+
 
 if(transcriptType!="Bioconductor"){ # check the input format for the transcript annotation
    txdb <- makeTxDbFromGFF(transcriptDb, format="gtf") # if the input format is gtf file, then this file will be used to create a TxDb object
