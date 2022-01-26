@@ -21,14 +21,14 @@ shinyReports = {
             cp ${PIPELINE_ROOT}/tools/reports/shiny_scrnaseq_reporting_tool/styles.css ${REPORTS}              &&
             cp ${PIPELINE_ROOT}/tools/reports/shiny_scrnaseq_reporting_tool/app.R ${REPORTS}                   &&
 
-            if [ -e "${REPORTS}/sc.report.Rmd" ]; then
-                echo 'sc.report.Rmd already exists. Older copy will be kept and not overwritten';
+            if [ -e "${REPORTS}/${shinyReports_vars.report}" ]; then
+                echo "${shinyReports_vars.report} already exists. Older copy will be kept and not overwritten";
             else
-                cp ${PIPELINE_ROOT}/tools/reports/shiny_scrnaseq_reporting_tool/sc.report.Rmd ${REPORTS};
+                cp ${PIPELINE_ROOT}/tools/reports/shiny_scrnaseq_reporting_tool/${shinyReports_vars.report} ${REPORTS};
             fi &&
 
             PROJECT=\$(basename ${shinyReports_vars.project})                     &&
-            sed -i "2,2s/SHINYREPS_PROJECT/\${PROJECT}/" ${REPORTS}/sc.report.Rmd &&
+            sed -i "2,2s/SHINYREPS_PROJECT/\${PROJECT}/" ${REPORTS}/${shinyReports_vars.report} &&
 
             echo "SHINYREPS_PROJECT=${shinyReports_vars.project}" >  $output &&
             echo "SHINYREPS_ORG=${shinyReports_vars.org}"         >> $output &&
