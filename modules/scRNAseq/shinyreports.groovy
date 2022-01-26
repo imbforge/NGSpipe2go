@@ -25,6 +25,10 @@ shinyReports = {
                 echo "${shinyReports_vars.report} already exists. Older copy will be kept and not overwritten";
             else
                 cp ${PIPELINE_ROOT}/tools/reports/shiny_scrnaseq_reporting_tool/${shinyReports_vars.report} ${REPORTS};
+                if [ "${shinyReports_vars.seqtype}" == "tenXmultiome" ]; then
+                    cp ${PIPELINE_ROOT}/tools/reports/shiny_scrnaseq_reporting_tool/sc.report.Rmd ${REPORTS};
+                    cp ${PIPELINE_ROOT}/tools/reports/shiny_scrnaseq_reporting_tool/scatac.report.Rmd ${REPORTS};
+                fi
             fi &&
 
             PROJECT=\$(basename ${shinyReports_vars.project})                     &&
