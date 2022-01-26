@@ -35,6 +35,9 @@ not_yet_attached <- attach_packages(c("tidyverse", "AnnotationDbi", "batchelor",
 # load global variables
 loadGlobalVars(f="shinyReports.txt")
 
+# this file is for scRNA-seq only, set tenXmultiome pipeline to tenX
+if (SHINYREPS_SEQTYPE == "tenXmultiome") {SHINYREPS_SEQTYPE <- "tenX"}
+
 # create folder for output files
 if (!file.exists(file.path("report_files"))) {dir.create(file.path("report_files"))}
 
@@ -96,7 +99,8 @@ switch(SHINYREPS_SEQTYPE,
     tenX={
       #Columns required: "sample_id", "molecule_h5"
       targets_pools <- read.delim(SHINYREPS_TARGET, sep="\t")
-      matrix_dir = file.path(SHINYREPS_RES, SHINYREPS_CELLRANGERAGGR_ID, "outs/count/filtered_feature_bc_matrix/") 
+      matrix_dir = file.path(SHINYREPS_RES, SHINYREPS_CELLRANGERAGGR_ID, "outs/count/filtered_feature_bc_matrix/")
+      if (!dir.exists(matrix_dir)) {matrix_dir = file.path(SHINYREPS_RES, SHINYREPS_CELLRANGERAGGR_ID, "outs/filtered_feature_bc_matrix/")}
       targets = read.delim(file.path(matrix_dir, "barcodes.tsv.gz"), header = FALSE, stringsAsFactors = FALSE)
       names(targets) = "cell_id"
       targets <- cbind(targets, targets_pools[as.numeric(gsub("^.*-", "", targets$cell_id)),])
@@ -556,6 +560,7 @@ switch(SHINYREPS_SEQTYPE,
       colnames(counts) = targets$cell_id
       feature.names = read.delim(features.path, header = FALSE, stringsAsFactors = FALSE)
       rownames(counts) = feature.names$V1
+      counts <- counts[feature.names$V3 == "Gene Expression",]
     },
     stop(c("Don't find seqtype:", SHINYREPS_SEQTYPE))   
 )
