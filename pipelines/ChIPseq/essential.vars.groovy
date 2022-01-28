@@ -48,10 +48,15 @@ ESSENTIAL_DUP="auto"           // how MACS2 deals with duplicated reads or fragm
 ESSENTIAL_MACS2_GSIZE="10000000"  // mapable genome size for MACS2 (approx. size in bp or use "hs" for human, "mm" for mouse, "ce" for worm, "dm" for fly)
 
 // Differential binding analysis with DiffBind
-// Note that DiffBind3 works with "default" parameters which depend on the context of other parameter settings (see DiffBind documentation for explanation). Unlike DiffBind2, DiffBind3 includes the data from ALL samples in a single model.
-// Mind that for both DiffBind versions the initial consensus peakset is generated from all samples in the dataset. 
-// For an experiment containing ChIP samples generated with different antibodies you should run the DiffBind module separately per pulldown. 
-// A pipeline update doing this automatically is currently under construction.
+// Note that DiffBind3 works with "default" parameters which depend on the 
+// context of other parameter settings (see DiffBind documentation for 
+// explanation). Unlike DiffBind2, DiffBind3 includes the data from ALL samples in 
+// a single model.
+// **IMPORTANT NOTE:** Mind that for DiffBind 3 the contrasts are processed 
+// isolated from each other. This means that a consensus peakset is generated 
+// separately for each contrast and does not incorporate peaks called in other 
+// pulldowns unrelated to the contrast. A pipeline update that allows processing 
+// together pulldowns from different contrasts is currently under construction.
 RUN_DIFFBIND=true
 ESSENTIAL_DIFFBIND_VERSION=3         // Beginning with version 3, DiffBind has included new functionalities and modified default settings. Earlier versions are also supported here.
 ESSENTIAL_DIFFBIND_LIBRARY="default" // DiffBind method to calculate library sizes. One of "full", "RiP", "background" and "default"  
