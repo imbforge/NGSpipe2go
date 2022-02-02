@@ -1520,7 +1520,7 @@ if(length(hvg) == 0) {
 ##### parameters to set:
 # define up to 2 categories to be indicated in the plot by color and shape.
 annoFactors <- colorByFactor2 
-ncomponents=2  # number of principal components to obtain  
+ncomponents=50  # number of principal components to obtain  
 exprs_values="logcounts"
 #####
 
@@ -1564,8 +1564,8 @@ A major weakness of t-SNE is that the cost function is not convex, as a result o
 ##### parameters to set:
 # define up to 2 categories to be indicated in the plot by color and shape.
 annoFactors <- colorByFactor2
-ncomponents=2  
-perplexity=c(25, 50)
+ncomponents=2 # for tSNE, dims should be either 1, 2 or 3 
+perplexity=c(30)
 exprs_values="logcounts"
 #####
 
@@ -1587,7 +1587,13 @@ if(length(annoFactors)>2) {stop("\nno more than 2 categories allowed in 'annoFac
                            perplexity=p, dimred = NULL, ntop = nrow(sce), exprs_values=exprs_values)
     }
  
+```
+
+
+```{r TSNE_plot_various_perplexities2, results='asis', fig.height=5*length(grep("TSNE", reducedDimNames(sce)))/2, fig.width=10, echo=F, error=F, warning=F, message=F}
   # plot TSNE
+  # Since multiple perplexities can be selected resulting in multiple plots, 
+  # the figure height must be set accordingly (5 inch x number of plots / ncol)
   gridExtra::grid.arrange(grobs=lapply(grep("TSNE", reducedDimNames(sce), value=T), function(d) {
  
       scater::plotReducedDim(sce, dimred = d, 
@@ -1596,8 +1602,9 @@ if(length(annoFactors)>2) {stop("\nno more than 2 categories allowed in 'annoFac
         ggtitle(paste("TSNE plot of", if(grepl("allgenes", d)) {"all genes"} else {"HVGs"}, "with perplexity", gsub("^.*p", "", d)))
 
   }), ncol=2)
-  
+
 ```
+
 
 
 ## Identification of sub-populations with UMAP 
@@ -1749,29 +1756,43 @@ Graph construction avoids making strong assumptions about the shape of the clust
 
 ```{r clustering_graphbased, results='asis'}
 exprs_values = "logcounts"
+data2clust <- c(exprs_values, "PCA") # use full expression matrix and/or reduced dimension matrix ("PCA", "TSNE", "UMAP") for clustering
 dotshape <- colorByFactor2[1]
+
 numberNearestNeighbors <- c(10, 20) # number of nearest neighbors k
+typeOfWeighting <- "rank"  # type of weighting scheme to use for shared neighbors ("rank", "number", "jaccard")
 # available clustering strategies in igraph
 cluster_algo <- c("cluster_walktrap", "cluster_louvain", "cluster_infomap", "cluster_fast_greedy", "cluster_label_prop", "cluster_leading_eigen")[1:2]
 
-cat(paste0("\nClustering is applied on the respective dimension reduction slot, i.e. PCA, TSNE (with perplexity ", paste(paste0("p=",perplexity), collapse=", "), ") or UMAP (with n_neighbors=", paste(n_neighbors, collapse = ", "), "), which were calculated either based on the highly variable genes (HVGs) or on all genes (see suffix 'allgenes').\n"))
+cat(paste0("\nClustering is applied on ", 
+    if(exprs_values %in% data2clust) {paste0("the expression matrix (", exprs_values, ")", 
+    if(length(data2clust)>1) {" and "} else {".\n"})}, 
+    if(any(c("PCA", "TSNE", "UMAP") %in% data2clust)) {paste0("the respective dimension reduction slots (", 
+    if("PCA" %in% data2clust) {paste0("PCA", if(any(c("TSNE", "UMAP") %in% data2clust)) {", "})}, 
+    if("TSNE" %in% data2clust) {paste0("TSNE (with perplexity ", paste(paste0("p=",perplexity), collapse=", "), ")", if("UMAP" %in% data2clust) {", "})}, 
+    if("UMAP" %in% data2clust) {paste0("UMAP (with n_neighbors=", paste(n_neighbors, collapse = ", "), ")")}, 
+      "), which were calculated either based on highly variable genes (HVGs) or on all genes (see suffix 'allgenes').\n")}))
 cat("\nGraph-based clustering algorithms applied:", paste(cluster_algo, collapse = ", "), "\n")
-cat("\nNumber of nearest neighbors k to consider during graph construction:", paste(numberNearestNeighbors, collapse = ", "), "\n\n")
+cat("\nNumber of nearest neighbors k to consider during graph construction:", paste(numberNearestNeighbors, collapse = ", "), "\n")
 
 sce_buildgraph <- list()
 sce_igraphclust <- list()
 clmod <- list() # clusterModularity
 cluster.gr <- list() # cluster interaction graph
+data2clustext <- c(exprs_values, unlist(lapply(data2clust, grep, reducedDimNames(sce), value=T))) # catch all corresponding red dim names 
+
 
 dir_igraph <- file.path("report_files", "cluster", "igraph")
 if (!file.exists(dir_igraph)) {dir.create(dir_igraph, recursive=T) }
 
-for(d in reducedDimNames(sce)) {    
 
+for(d in data2clustext) {    
+  
   for(k in numberNearestNeighbors) {
   
     set.seed(100)
-    sce_buildgraph[[paste(d, paste0("k",k), sep="_")]] <- buildSNNGraph(sce, k=k, use.dimred = d) # type= rank, number, jaccard
+    sce_buildgraph[[paste(d, paste0("k",k), sep="_")]] <- buildSNNGraph(sce, k=k, type=typeOfWeighting, use.dimred = if(d==exprs_values){NULL} else {d}) 
+    # assay.type = exprs_values not used anymore in buildSNNGraph
     
     for (clu in cluster_algo) {
       
@@ -1799,49 +1820,59 @@ for(d in reducedDimNames(sce)) {
 
 
 ### plot graph-based clusterings (separated for PCA, TSNE and UMAP)
-  for (d in c("PCA", "TSNE", "UMAP")) {
-        plot_Items <- grep(d, names(sce_igraphclust), value=T)
-        
-      # dim reduction plots
-        plot_cluster <- mclapply(plot_Items, function(i) {
-                  scater::plotReducedDim(sce, 
-                    dimred = sub("^([A-Z]*[_p0-9]*[_allgenes]*)_.*", "\\1", i),
-                    by_exprs_values = exprs_values,
-                    colour_by=paste0("igraph_", i), shape_by = dotshape, point_size=plot_pointsize) +
-                    scale_color_discrete(name="cluster") +
-                    guides(color=guide_legend(ncol=2)) + theme(aspect.ratio = 1) +
-                    ggtitle(gsub("_", " ", i))
-              }, mc.cores=1)
-      
+  plottypes <- c("PCA", "TSNE", "UMAP")
+  for (d in plottypes) { # save one plot per plottype
+      plot_Items <- grep(d, reducedDimNames(sce), value=T)
+      plot_cluster <- list()
+      for (p in plot_Items) { # reduced dims on HVGs and all genes 
+        for (cl in names(sce_igraphclust)) { # cluster results to color
+          # skip elements with clustering done on red dim on HVGs but illustrated on red dim allgenes and vice versa
+          # to reduce number of plots and remove unnecessary ones
+          if(any(sapply(plottypes, grepl, cl)) & grepl("_allgenes", cl) & !grepl("_allgenes", p)) {next}  
+          if(any(sapply(plottypes, grepl, cl)) & !grepl("_allgenes", cl) & grepl("_allgenes", p)) {next} 
+          # dim reduction plots
+            plot_cluster[[paste(cl, p, sep="_")]] <- invisible(scater::plotReducedDim(sce, 
+                        dimred = p,
+                        by_exprs_values = exprs_values,
+                        colour_by= paste0("igraph_", cl), 
+                        shape_by = dotshape, point_size=plot_pointsize) +
+              scale_color_discrete(name="cluster") +
+              guides(color=guide_legend(ncol=2)) + theme(aspect.ratio = 1) +
+              ggtitle(paste("Graph-based clustering on", gsub("_", " ", cl), "\nillustrated by", gsub("_", " ", p))) +
+              theme(plot.title = element_text(size = 9)))
+        } # end cl-loop
+      } # end p-loop
       filenamePlot <- file.path(dir_igraph, paste0("igraph_", d, "_cluster_plots.png"))
       ggsave(filename=filenamePlot,
-                      plot=gridExtra::grid.arrange(grobs=plot_cluster, ncol=2), 
-                      width = 200, height = 80*ceiling(length(plot_Items)/2), 
-                      units = c("mm"),  dpi = 300, device="png")
+             plot=gridExtra::grid.arrange(grobs=plot_cluster, ncol=2), 
+             width = 200, height = 80*ceiling(length(plot_cluster)/2), 
+             units = c("mm"),  dpi = 300, device="png",
+             limitsize = FALSE)
   
   # include plots in report    
   cat(paste0("![plot of ", basename(filenamePlot), "](", filenamePlot, ")"))
-  }
+  } # end d-loop
 
 
 # heatmaps
-for (d in c("PCA", "TSNE", "UMAP")) {
+for (d in data2clust) {
  plot_Items <- grep(d, names(clmod), value=T)
 
    cl_heatmap <-  mclapply(plot_Items, function(i) {
-                      pheatmap::pheatmap(log2(clmod[[i]]+1), cluster_rows=FALSE, cluster_cols=FALSE,
+                      invisible(pheatmap::pheatmap(log2(clmod[[i]]+1), cluster_rows=FALSE, cluster_cols=FALSE,
                           color=colorRampPalette(c("white", "blue"))(100), silent=T,
-                          main= paste("cl heatmap", gsub("_", " ", i)))[["gtable"]]
+                          main= paste("cl heatmap", gsub("_", " ", i)))[["gtable"]])
                }, mc.cores=1)
 
    ggsave(filename=file.path(dir_igraph, paste0("igraph_", d, "_cluster_heatmaps.png")),
-          plot=plot(arrangeGrob(grobs=cl_heatmap, ncol=2)), 
-          width = 200, height = 80*ceiling(length(plot_Items)/2), units = c("mm"),  dpi = 300, device="png")
+          plot=gridExtra::grid.arrange(grobs=cl_heatmap, ncol=2), 
+          width = 200, height = 80*ceiling(length(plot_Items)/2), units = c("mm"),  dpi = 300, device="png",
+          limitsize = FALSE)
 }
 
 
 # cluster graph plots
-  for (d in c("PCA", "TSNE", "UMAP")) {
+  for (d in data2clust) {
     plot_Items <- grep(d, names(cluster.gr), value=T)
     
       png(filename= file.path(dir_igraph, paste0("igraph_", d, "_cluster_graph.png")), units = "mm", res= 300,
@@ -1855,13 +1886,11 @@ for (d in c("PCA", "TSNE", "UMAP")) {
   dev.off()
   par(mfrow = c(1, 1))
  }
-      
-
 
 ```
 
 
-```{r clustering_graphbased_assignment_heatmap, results='asis', fig.height=3+0.5*length(sce_igraphclust), fig.width=12}
+```{r clustering_graphbased_assignment_heatmap, results='asis', fig.height=3+0.5*max(sapply(sce_igraphclust, function(x) {length(unique(x))}), na.rm=T), fig.width=12}
 
 # prepare single table with cell numbers per cluster for each clustering setting to display as heatmap
 igraph_clusterassign <- map_dfr(sce_igraphclust, table) %>%
@@ -1898,13 +1927,23 @@ Hierarchical clustering aims to generate a dendrogram containing a hierarchy of 
 The dendrogram describes the relationships between cells and subpopulations at various resolutions and in a quantitative manner based on the branch lengths. Users can cut the tree at different heights to define clusters with different granularity, where clusters defined at high resolution are guaranteed to be nested within those defined at a lower resolution. If cells cannot be assigned to any cluster e.g. because there is no neighboring cluster exceeding the defined minimum cluster size, they are labeled as cluster 0. The dendrogram is also a natural representation of the data in situations where cells have descended from a relatively recent common ancestor. For larger datasets hierarchical clustering may be too slow.
 
 ```{r clustering_hierarchical, warning=F, results='asis'}
-hclust_methods <- c("ward.D2")
-minClusterSize <- c(20)
 exprs_values <- "logcounts"
-dotshape <- colorByFactor2[1]
+data2clust <- c(exprs_values, "PCA") # use full expression matrix and/or reduced dimension matrix ("PCA", "TSNE", "UMAP") for clustering
+hclust_methods <- c("ward.D2") 
+# methods for hierarchical clustering: one or combination of "ward.D", "ward.D2", "single", "complete", 
+# "average" (= UPGMA), "mcquitty" (= WPGMA), "median" (= WPGMC) or "centroid" (= UPGMC)
+minClusterSize <- c(20)
 deepSplit <- c(1,2) 
+dotshape <- colorByFactor2[1]
 
-cat(paste0("\nClustering is applied on the respective dimension reduction slot, i.e. PCA, TSNE (with perplexity ", paste(paste0("p=",perplexity), collapse=", "), ") or UMAP (with n_neighbors=", paste(n_neighbors, collapse = ", "), "), which were calculated either based on the highly variable genes (HVGs) or on all genes (see suffix 'allgenes').\n"))
+cat(paste0("\nClustering is applied on ", 
+    if(exprs_values %in% data2clust) {paste0("the expression matrix (", exprs_values, ")", 
+    if(length(data2clust)>1) {" and "} else {".\n"})}, 
+    if(any(c("PCA", "TSNE", "UMAP") %in% data2clust)) {paste0("the respective dimension reduction slots (", 
+    if("PCA" %in% data2clust) {paste0("PCA", if(any(c("TSNE", "UMAP") %in% data2clust)) {", "})}, 
+    if("TSNE" %in% data2clust) {paste0("TSNE (with perplexity ", paste(paste0("p=",perplexity), collapse=", "), ")", if("UMAP" %in% data2clust) {", "})}, 
+    if("UMAP" %in% data2clust) {paste0("UMAP (with n_neighbors=", paste(n_neighbors, collapse = ", "), ")")}, 
+      "), which were calculated either based on highly variable genes (HVGs) or on all genes (see suffix 'allgenes').\n")}))
 cat("\nHierarchical clustering algorithms applied:", paste(hclust_methods, collapse = ", "), "\n")
 cat("\nMinimum cluster size cs:", paste(minClusterSize, collapse = ", "), "\n")
 cat(paste0("\ndeepSplit ds: ", paste(deepSplit, collapse = ", "), "."), "This parameter provides control over sensitivity to cluster splitting. The higher the value, the more and smaller clusters will be produced.\n\n")
@@ -1913,12 +1952,17 @@ dist_sce <- list()
 tree_sce <- list()
 dend <- list()
 clust_sce <- list()
+data2clustext <- c(exprs_values, unlist(lapply(data2clust, grep, reducedDimNames(sce), value=T))) # catch all corresponding red dim names 
 
 dir_hclust <- file.path("report_files", "cluster", "hclust")
 if (!file.exists(dir_hclust)) {dir.create(dir_hclust, recursive=T) }
 
-for(d in reducedDimNames(sce)) {    
+for(d in data2clustext) {    
+  if(d %in% assayNames(sce)) {
+    dist_sce[[d]] <- dist(assay(sce, d))
+  } else {
     dist_sce[[d]] <- dist(reducedDim(sce, d))
+  }
 
   for(h in hclust_methods) {
     set.seed(100)
@@ -1950,33 +1994,43 @@ for(d in reducedDimNames(sce)) {
 
 
 ### plot clusterings (separated for PCA, TSNE and UMAP)
-  for (d in c("PCA", "TSNE", "UMAP")) {
-    plot_Items <- grep(d, names(clust_sce), value=T)
-    
+plottypes <- c("PCA", "TSNE", "UMAP")
+  for (d in plottypes) {
+    plot_Items <- grep(d, reducedDimNames(sce), value=T)
+    plot_cluster <- list()
+    for (p in plot_Items) { # reduced dims on HVGs and all genes 
+      for (cl in names(clust_sce)) { # cluster results to color
+      # skip elements with clustering done on red dim on HVGs but illustrated on red dim allgenes and vice versa
+      # to reduce number of plots and remove unnecessary ones
+      if(any(sapply(plottypes, grepl, cl)) & grepl("_allgenes", cl) & !grepl("_allgenes", p)) {next}  
+      if(any(sapply(plottypes, grepl, cl)) & !grepl("_allgenes", cl) & grepl("_allgenes", p)) {next} 
+   
       # dim reduction plots
-        plot_cluster <- mclapply(plot_Items, function(i) {
-                  scater::plotReducedDim(sce, 
-                    dimred = sub("^([A-Z]*[_p0-9]*[_allgenes]*)_.*", "\\1", i),
+        plot_cluster[[paste(cl, p, sep="_")]] <- invisible(scater::plotReducedDim(sce, 
+                    dimred =p,
                     by_exprs_values = exprs_values,
-                    colour_by=paste0("hclust_", i), shape_by = dotshape, point_size=plot_pointsize) +
+                    colour_by=paste0("hclust_", cl), 
+                    shape_by = dotshape, point_size=plot_pointsize) +
                     scale_color_discrete(name="cluster") +
                     guides(color=guide_legend(ncol=2)) +
-                    ggtitle(gsub("_", " ", i)) + theme(aspect.ratio = 1)
-              }, mc.cores=1)
-  
-        
+                    ggtitle(paste("Hierarchical clustering on", gsub("_", " ", cl), "\nillustrated by", gsub("_", " ", p))) +
+        theme(plot.title = element_text(size = 9)))
+
+      } # end cl-loop
+  } # end p-loop
       filenamePlot <- file.path(dir_hclust, paste0("hclust_", d, "_cluster_plots.png"))
       ggsave(filename=filenamePlot,
                       plot=gridExtra::grid.arrange(grobs=plot_cluster, ncol=2), 
-                      width = 200, height = 80*ceiling(length(plot_Items)/2), 
-                      units = c("mm"),  dpi = 300, device="png")
+                      width = 200, height = 80*ceiling(length(plot_cluster)/2), 
+                      units = c("mm"),  dpi = 300, device="png",
+         limitsize = FALSE)
     
       # include plots in report    
       cat(paste0("![plot of ", basename(filenamePlot), "](", filenamePlot, ")"))
   }
   
 ## plot dendrograms
- for (d in c("PCA", "TSNE", "UMAP")) {
+ for (d in data2clust) {
     plot_Items <- grep(d, names(clust_sce), value=T)
     
      png(filename= file.path(dir_hclust, paste0("hclust_", d, "_dendrograms.png")), units = "mm", res= 300,
@@ -1985,7 +2039,7 @@ for(d in reducedDimNames(sce)) {
       par(mfrow = c(ceiling(length(plot_Items)/2), 2))
       
       for (i in plot_Items) {
-        plot(dend[[i]], main=paste("hclust dendrogram\n", gsub("_", " ", i)))
+        plot(dend[[i]], main=paste("hclust dendrogram", gsub("_", " ", i)))
       }
       par(mfrow = c(1, 1))
       dev.off()
@@ -1994,7 +2048,7 @@ for(d in reducedDimNames(sce)) {
 ```
 
 
-```{r clustering_hierarchical_assignment_heatmap, results='asis', fig.height=3+0.5*length(clust_sce), fig.width=12}
+```{r clustering_hierarchical_assignment_heatmap, results='asis', fig.height=3+0.5*max(sapply(clust_sce, function(x) {length(unique(x))}), na.rm=T), fig.width=12}
 
 # prepare single table with cell numbers per cluster for each clustering setting to display as heatmap
 hclust_clusterassign <- map_dfr(clust_sce, table) %>%
@@ -2030,7 +2084,7 @@ Heatmap(hclust_clusterassign, cluster_rows = F, cluster_columns = F, name="#cell
 annoFactors <- colorByFactor2
 ######################
      
-  selected_clustering_method <- "igraph_TSNE_p25_k10_louvain"    
+  selected_clustering_method <- "igraph_PCA_allgenes_k10_louvain"    
   name_dimred <- gsub("^.*(((TSNE)(_p[[:digit:]]+)*|(UMAP)|(PCA))(_allgenes)*).*$", "\\1",  selected_clustering_method) # get corresponding reducedDimName
   cat("Selected clustering:", selected_clustering_method, "\n\nreducedDimName:", name_dimred, "\n\n")
   
@@ -2273,7 +2327,7 @@ cat("\nFor each cluster heatmap, we include all genes with an assigned rank <=",
         
             filenamePlot <- file.path(dir_marker, paste0("heatmap_of_upregulated_gene_marker_cluster_", cl, ".png"))
             ggsave(filename=filenamePlot,
-                   plot=plot(arrangeGrob(grobs=list(list_heatmaps, list_heatmaps_spec), ncol=2)), 
+                   plot=gridExtra::grid.arrange(grobs=list(list_heatmaps, list_heatmaps_spec), ncol=2), 
                    width = 200, height = 150, units = c("mm"),  dpi = 300, device="png")
     
             # include plots in report    
