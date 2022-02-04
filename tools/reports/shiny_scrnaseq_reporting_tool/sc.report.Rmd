@@ -2085,8 +2085,8 @@ annoFactors <- colorByFactor2
 ######################
      
   selected_clustering_method <- "igraph_PCA_allgenes_k10_louvain"    
-  name_dimred <- gsub("^.*(((TSNE)(_p[[:digit:]]+)*|(UMAP)|(PCA))(_allgenes)*).*$", "\\1",  selected_clustering_method) # get corresponding reducedDimName
-  cat("Selected clustering:", selected_clustering_method, "\n\nreducedDimName:", name_dimred, "\n\n")
+  name_dimred <- "PCA_allgenes"
+  cat("Selected clustering:", selected_clustering_method, "\n\nillustrated by:", name_dimred, "\n\n")
   
   colLabels(sce) <- factor(colData(sce)[, selected_clustering_method])
   
