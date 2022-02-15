@@ -15,8 +15,8 @@ PRERMATS = {
     //extract only the contrasts name and 
     //create respective targets file name for rmats
     contrasts.eachWithIndex { item, index ->
-        item = ( item =~ /\t.*$/).replaceFirst("")
-        contrasts[index]=item + PRERMATS_vars.suffix
+        item_list = item.split("\t")
+        contrasts[index]=(item_list[1]).substring(1,item_list[1].length()-1) + PRERMATS_vars.suffix
         println contrasts[index]
     }
 
@@ -34,7 +34,7 @@ PRERMATS = {
                    echo "Skipping header line of contrasts file\n";
                    continue;
                 fi;
-                contrast=`grep \${i} $PRERMATS_vars.contrasts | cut -f1`;
+                contrast=\${i:1:-1};
                 groups[0]=`echo \${i:1:-1} | cut -d- -f1`;
                 groups[1]=`echo \${i:1:-1} | cut -d- -f2`;
                 groups=`echo \${groups[0]} \${groups[1]}`;

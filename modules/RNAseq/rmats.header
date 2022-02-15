@@ -1,7 +1,7 @@
 rMATS_vars=[
     outdir  : RESULTS + "/rMATS",
     suffix  : PRERMATS_vars.suffix,
-    sep     : ".vs.",
+    sep     : "-",
     paired  : (ESSENTIAL_PAIRED == "yes"),
     stranded: ESSENTIAL_STRANDED,
     gtf     : ESSENTIAL_GENESGTF,
