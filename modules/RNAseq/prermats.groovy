@@ -15,7 +15,7 @@ PRERMATS = {
     //extract only the contrasts name and 
     //create respective targets file name for rmats
     contrasts.eachWithIndex { item, index ->
-        item_list = item.split("\t")
+        def item_list = item.split("\t")
         contrasts[index]=(item_list[1]).substring(1,item_list[1].length()-1) + PRERMATS_vars.suffix
         println contrasts[index]
     }
