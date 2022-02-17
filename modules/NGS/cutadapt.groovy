@@ -29,6 +29,7 @@ Cutadapt = {
         (Cutadapt_vars.minimum_overlap     ? " --overlap="        + Cutadapt_vars.minimum_overlap     : "") +
         (Cutadapt_vars.minimum_length_keep ? " --minimum-length " + Cutadapt_vars.minimum_length_keep : "") +
         (Cutadapt_vars.maximum_length_keep ? " --maximum-length " + Cutadapt_vars.maximum_length_keep : "") +
+        (Cutadapt_vars.qualitycutoff       ? (Cutadapt_vars.nextseqtrim ? " --nextseq-trim=" : " --quality-cutoff=") + Cutadapt_vars.qualitycutoff : "") +
         (Cutadapt_vars.errorrate           ? " --error-rate "     + Cutadapt_vars.errorrate           : "") +
         (Cutadapt_vars.extra               ? " "                  + Cutadapt_vars.extra               : "")
 

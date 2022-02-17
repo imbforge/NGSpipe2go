@@ -6,6 +6,8 @@ Cutadapt_vars=[
     minimum_overlap    : ESSENTIAL_MINADAPTEROVERLAP,  // minimal overlap of the read and the adapter for an adapter to be found (default 3)
     minimum_length_keep: ESSENTIAL_MINREADLENGTH,      // minimal length of reads to be kept
     maximum_length_keep: (binding.hasVariable('ESSENTIAL_MAXREADLENGTH') ? ESSENTIAL_MAXREADLENGTH : ""),  // maximal length of reads to be kept
+    nextseqtrim        : ESSENTIAL_NEXTSEQTRIM,        // accounts for terminal G bases during base quality trimming incorporated by faulty dark cycles observed with two-color chemistry (as in NextSeq) 
+    qualitycutoff      : "20",                         // trim low-quality ends from reads (if nextseqtrim is true, qualities of terminal G bases are ignored)
     errorrate          : "0.1",                        // maximum allowed error rate as value between 0 and 1 (default 0.1 =10%)
     extra              : ""                            // add additional parameter for further adapter trimming here
 ]
