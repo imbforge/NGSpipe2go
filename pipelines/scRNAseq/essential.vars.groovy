@@ -51,6 +51,7 @@ RUN_CUTADAPT=false
 ESSENTIAL_ADAPTER_SEQUENCE="Nextera=CTGTCTCTTATACACATCT" //standard sequence to trim illumina reads
 ESSENTIAL_MINADAPTEROVERLAP=5
 ESSENTIAL_MINREADLENGTH=30
+ESSENTIAL_NEXTSEQTRIM=true     // accounts for terminal G bases during base quality trimming incorporated by faulty dark cycles observed with two-color chemistry (as in NextSeq) 
 
 //global vars
 PROJECT=ESSENTIAL_PROJECT
