@@ -601,7 +601,7 @@ conts <- read.delim(file.path(SHINYREPS_PROJECT, "contrasts.txt"), header=T,comm
 uconts <- unique(conts[,c("contrast.name","contrast")])
 for(i in 1:nrow(uconts)) {
     # subsection
-    cont.name <- uconts$contrast.name[i]
+    cont.name <- gsub("[\\(\\)]", "", uconts$contrast[i])
     if(!dir.exists(file.path(SHINYREPS_RES, "rMATS", paste0(cont.name,"_rMATS")))) {next()}
 
     cat("\n\n", fill=T)
