@@ -20,10 +20,10 @@ rMATS = {
         RMATS_FLAGS = "--libType fr-unstranded " + RMATS_FLAGS
     }
     else if (rMATS_vars.stranded == "yes") {
-        RMATS_FLAGS = "--libType fr-firststrand " + RMATS_FLAGS
+        RMATS_FLAGS = "--libType fr-secondstrand " + RMATS_FLAGS
     }
     else {
-        RMATS_FLAGS = "--libType fr-secondstrand " + RMATS_FLAGS
+        RMATS_FLAGS = "--libType fr-firststrand " + RMATS_FLAGS
     }
 
     def MASER_FLAGS = 
