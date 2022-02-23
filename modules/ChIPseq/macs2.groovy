@@ -47,8 +47,8 @@ macs2 = {
                         INPUTflag="";
                     fi &&   
                     echo "\$NAMEoutput" >> $output &&
-                    macs2 callpeak -t ${macs2_vars.mapped}/\$IP \$INPUTflag -n $subdir\${NAMEoutput}_macs2 $MACS2_FLAGS &&
-                    if [ \$? -ne 0 ]; then rm $output; fi &&
+                    macs2 callpeak -t ${macs2_vars.mapped}/\$IP \$INPUTflag -n $subdir\${NAMEoutput}_macs2 $MACS2_FLAGS ;
+                    if [ \$? -ne 0 ]; then rm $output; fi ;
                     find . -maxdepth 1 -name "$subdir\${NAMEoutput}_macs2*" -exec sh -c 'mv "\$1" "$output.dir/\${1#./$subdir}"' _ {} \\;;
                 fi;
             done

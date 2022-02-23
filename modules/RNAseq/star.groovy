@@ -30,7 +30,7 @@ STAR = {
         (STAR_vars.unmapped_bam ? " --outSAMunmapped " + STAR_vars.unmapped_bam   : "") +
         (STAR_vars.ref          ? " --genomeDir "      + STAR_vars.ref            : "") +
         (STAR_vars.threads      ? " --runThreadN "     + STAR_vars.threads        : "") +
-        (STAR_vars.mm           ? " --outFilterMismatchNoverLmax " + STAR_vars.mm : "") + 
+        (STAR_vars.mm           ? " --outFilterMismatchNoverReadLmax " + STAR_vars.mm : "") + 
         (STAR_vars.mm_abs       ? " --outFilterMismatchNmax " + STAR_vars.mm_abs  : "") +
         (STAR_vars.overhang     ? " --sjdbOverhang "   + STAR_vars.overhang       : "") +
         (STAR_vars.gtf          ? " --sjdbGTFfile "    + STAR_vars.gtf            : "") +

@@ -88,8 +88,18 @@ if(!is.numeric(FOLD))        stop("Fold threshold is not numeric. Run with:\n",r
 if(!is.logical(ANNOTATE))    stop("Annotate not logical. Run with:\n",runstr)
 if(!is.logical(PE))          stop("Paired end (pe) not logical. Run with:\n",runstr)
 if(ANNOTATE & !is.numeric(TSS)) stop("Region around TSS not numeric. Run with:\n",runstr)
-if(ANNOTATE & !require(TXDB, character.only=TRUE))   stop("Transcript DB", TXDB, "not installed\n")
 if(ANNOTATE & !require(ANNODB, character.only=TRUE)) stop("Annotation DB", ANNODB, "not installed\n")
+
+if(ANNOTATE) {
+  if(grepl("\\.gtf$", TXDB)){ # check the input format for the transcript annotation
+    library(GenomicFeatures)
+    txdb <- makeTxDbFromGFF(TXDB, format="gtf") # if the input format is gtf file, then this file will be used to create a TxDb object
+  } else {
+    if(!require(TXDB, character.only=TRUE)) stop("Transcript DB", TXDB, "not installed\n")
+    txdb <- eval(parse(text=TXDB)) # if the input format is bioconductor, then the transcript annoation library will be used 
+  }
+}
+
 
 # check for DiffBind version
 currentDiffbindVersion <- packageVersion('DiffBind')
@@ -145,7 +155,9 @@ db <- dba(sampleSheet=targets, config=data.frame(AnalysisMethod=DBA_DESEQ2, frag
                                                  bCorPlot=F, singleEnd=!PE)) 
 
 # create DBA object containing consensus peaks per group (needed later)
-db2 <- dba.peakset(db, consensus=DBA_CONDITION)
+db2 <- dba(db, mask=sapply(db$peaks, nrow)>0) # diffbind crashes if peaksets with no peaks are included for generating consensus peakset
+db2 <- dba.peakset(db2, consensus=DBA_CONDITION)
+
 
 # Heatmap using occupancy (peak caller score) data
 png(paste0(OUT, "/heatmap_occupancy.png"), width = 150, height = 150, units = "mm", res=300)
@@ -285,7 +297,6 @@ dev.off()
 ##
 if(ANNOTATE) {
   library(ChIPseeker)
-  txdb <- eval(parse(text=TXDB))
   result <- lapply(result, function(x) {
     tryCatch({
       x.ann <- annotatePeak(x, TxDb=txdb, annoDb=ANNODB, tssRegion=TSS, verbose=T)

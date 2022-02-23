@@ -27,7 +27,6 @@ ESSENTIAL_FRAGMENT_USAGE="yes" // should fragments be reconstituted for generati
 ESSENTIAL_DEDUPLICATION=(ESSENTIAL_PAIRED == "yes") // remove duplicated reads in the filtered branch of the pipeline for paired-end but not for single-end data (may need to be changed in case of ultra-deep PE sequencing of small genomes).  
 ESSENTIAL_BAMCOVERAGE="--binSize 10 --normalizeUsing CPM"  // deepTools options for making normalised bigWig tracks
 
-
 // Annotation parameters
 ESSENTIAL_BSGENOME="BSgenome.Scerevisiae.UCSC.sacCer3"  // Bioconductor genome reference used by some modules
 ESSENTIAL_TXDB="TxDb.Scerevisiae.UCSC.sacCer3.sgdGene"  // needed for peak annotation
@@ -35,12 +34,12 @@ ESSENTIAL_ANNODB="org.Sc.sgd.db"  // needed for peak annotation
 ESSENTIAL_DB="sacCer3"            // UCSC assembly version for GREAT analysis (only for UCSC hg19, hg38, mm9 and mm10)
 ESSENTIAL_BLACKLIST=""            // path to a BED file with blacklisted regions (default: empty string). Peaks in these regions will be removed from the peakset. 
 
-
 // Adapter trimming with Cutadapt (optional). Usually not needed when the reads are much shorter than the library inserts.
 RUN_CUTADAPT=false
 ESSENTIAL_ADAPTER_SEQUENCE="Illumina=CTGTCTCTTATACACATCT" // standard sequence to trim illumina reads 
 ESSENTIAL_MINADAPTEROVERLAP=3  // minimal overlap of the read and the adapter for an adapter to be found (default 3)
 ESSENTIAL_MINREADLENGTH=20     // minimal length of reads to be kept
+ESSENTIAL_NEXTSEQTRIM=true     // accounts for terminal G bases during base quality trimming incorporated by faulty dark cycles observed with two-color chemistry (as in NextSeq) 
 
 // Peak calling with MACS2
 ESSENTIAL_MACS2_BROAD=false    // use "true" for broad peak calling in MACS2 (default: "false")
@@ -48,15 +47,19 @@ ESSENTIAL_DUP="auto"           // how MACS2 deals with duplicated reads or fragm
 ESSENTIAL_MACS2_GSIZE="10000000"  // mapable genome size for MACS2 (approx. size in bp or use "hs" for human, "mm" for mouse, "ce" for worm, "dm" for fly)
 
 // Differential binding analysis with DiffBind
-// Note that DiffBind3 works with "default" parameters which depend on the context of other parameter settings (see DiffBind documentation for explanation). Unlike DiffBind2, DiffBind3 includes the data from ALL samples in a single model.
-// Mind that for both DiffBind versions the initial consensus peakset is generated from all samples in the dataset. 
-// For an experiment containing ChIP samples generated with different antibodies you should run the DiffBind module separately per pulldown. 
-// A pipeline update doing this automatically is currently under construction.
+// Note that DiffBind3 works with "default" parameters which depend on the 
+// context of other parameter settings (see DiffBind documentation for 
+// explanation). Unlike DiffBind2, DiffBind3 includes the data from ALL samples in 
+// a single model.
+// **IMPORTANT NOTE:** Mind that for DiffBind 3 the contrasts are processed 
+// isolated from each other. This means that a consensus peakset is generated 
+// separately for each contrast and does not incorporate peaks called in other 
+// pulldowns unrelated to the contrast. A pipeline update that allows processing 
+// together pulldowns from different contrasts is currently under construction.
 RUN_DIFFBIND=true
 ESSENTIAL_DIFFBIND_VERSION=3         // Beginning with version 3, DiffBind has included new functionalities and modified default settings. Earlier versions are also supported here.
 ESSENTIAL_DIFFBIND_LIBRARY="default" // DiffBind method to calculate library sizes. One of "full", "RiP", "background" and "default"  
 ESSENTIAL_DIFFBIND_NORM="default"    // DiffBind method to calculate normalization factors. One of "lib", "RLE", "TMM", "native" and "default". Not applicable for DiffBind2.
-
 
 // further optional pipeline stages to include
 RUN_IN_PAIRED_END_MODE=(ESSENTIAL_PAIRED == "yes")
@@ -75,5 +78,4 @@ REPORTS=PROJECT + "/reports"
 RESULTS=PROJECT + "/results"
 TMP=PROJECT + "/tmp"
 TRACKS=PROJECT + "/tracks"
-
 

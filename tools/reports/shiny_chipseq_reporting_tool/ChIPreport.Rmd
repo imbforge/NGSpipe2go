@@ -407,31 +407,36 @@ displayPlots <- lapply(branches, function(dir) {
 
 ```{r peak_venn_paragraph_combined, echo=F, results='asis', error=F, warning=F, message=F, fig.height= (nrow(targets)*2.1+5)/2.54}
 if(length(branches)>1) {
-cat("\n\n### Overlap of peaks from different pipeline branches\n")  
+  cat("\n\n### Overlap of peaks from different pipeline branches\n")  
+    
+  peakscovcomb <- lapply(branches, function(peaksdir) {
+    x <- ChIPhelper.init("readPeaks", subdir=peaksdir, peaks_as="GRanges")
+  })
   
-peakscovcomb <- lapply(branches, function(peaksdir) {
-  x <- ChIPhelper.init("readPeaks", subdir=peaksdir, peaks_as="GRanges")
-})
-
-peakscovcombReorder <- list()
-for(b in names(peakscovcomb)) {
- for(p in names(peakscovcomb[[b]])) {
-     peakscovcombReorder[[p]][[b]] <- data.frame()
-     peakscovcombReorder[[p]][[b]] <- peakscovcomb[[b]][[p]]
+  peakscovcombReorder <- list()
+  for(b in names(peakscovcomb)) {
+    for(p in names(peakscovcomb[[b]])) {
+      peakscovcombReorder[[p]][[b]] <- data.frame()
+      peakscovcombReorder[[p]][[b]] <- peakscovcomb[[b]][[p]]
+    }
   }
-}
 
-anno_list = list()
-us1 <- make_comb_mat(peakscovcombReorder[[1]], mode = c("distinct"))
-for(p in names(peakscovcombReorder)) {
-    anno_list[[ p ]] <- anno_barplot(comb_size(make_comb_mat(peakscovcombReorder[[p]], mode = c("distinct"))), 
-        gp = gpar(fill = "steelblue"), height = unit(2, "cm"))
-}
-ha = do.call(HeatmapAnnotation, anno_list) # gap = unit(2, "mm"), annotation_name_side = "left", annotation_name_rot = 0
+  emptyPeakSets <- sapply(peakscovcombReorder, function(x) {any(sapply(x, function(y) {length(y)==0}))})
+  peakscovcombReorder <- peakscovcombReorder[!emptyPeakSets] # exclude entries with empty peak sets
 
-UpSet(us1, top_annotation = ha, right_annotation=NULL, row_names_side = "right", 
-      column_title="Overlap of peaks from different pipeline branches",
-      comb_col = "steelblue", bg_col = "#F0F0FF", height=unit(4, "cm") ) # height=3 # heatmap_height=unit(24, "cm")
+  anno_list <- list()
+  for(p in names(peakscovcombReorder)) {
+    anno_list[[p]] <- anno_barplot(comb_size(make_comb_mat(peakscovcombReorder[[p]], mode="distinct")), 
+                                   gp=gpar(fill="steelblue"), height=unit(2, "cm"))
+  }
+
+  i <- which.max(sapply(anno_list, function(x) x@n))   # keep only contrasts which have representation in [filt, unfilt, filt*unfilt]
+  anno_list <- anno_list[sapply(anno_list, function(x) x@n == anno_list[[i]]@n)]
+  ha <- do.call(HeatmapAnnotation, anno_list) # gap=unit(2, "mm"), annotation_name_side="left", annotation_name_rot=0
+  us1 <- make_comb_mat(peakscovcombReorder[[i]], mode=c("distinct"))
+  UpSet(us1, top_annotation=ha, right_annotation=NULL, row_names_side="right", 
+        column_title="Overlap of peaks from different pipeline branches",
+        comb_col="steelblue", bg_col="#F0F0FF", height=unit(4, "cm") ) # height=3 # heatmap_height=unit(24, "cm")
 }
 ```
 
@@ -445,8 +450,10 @@ The following plots show the feature distribution based on their chromosome regi
 ```{r feature_distribution_paragraph, echo=F, results='asis', error=F, warning=F, message=F}
 featureDist <- lapply(branches, function(peaksdir) {
   functionalPlot <- file.path( SHINYREPS_PEAK_ANNOTATION, peaksdir, "ChIPseq_Feature_Distribution_Barplot.png")
-  if(length(branches)>1) {cat(paste("\n\n#### Feature distribution from", if(peaksdir==""){"default"} else {peaksdir}, "pipeline branch\n"))}
-  cat("![Peak_Annotation img](", functionalPlot, ")",fill=T)
+  if (file.exists(functionalPlot)) {
+    if(length(branches)>1) {cat(paste("\n\n#### Feature distribution from", if(peaksdir==""){"default"} else {peaksdir}, "pipeline branch\n"))}
+    cat("![Peak_Annotation img](", functionalPlot, ")",fill=T)
+  } else {cat("\nNo plot available\n")}
   return(functionalPlot)
 })
 ```
@@ -457,8 +464,10 @@ featureDist <- lapply(branches, function(peaksdir) {
 ```{r feature_distribution_TSS_paragraph, echo=F, results='asis', error=F, warning=F, message=F}
 TFbindingDist <- lapply(branches, function(peaksdir) {
     functionalPlotTSS <- file.path( SHINYREPS_PEAK_ANNOTATION, peaksdir, "ChIPseq_Feature_Distribution_Related_to_TSS_Barplot.png")
-    if(length(branches)>1) {cat(paste("\n\n#### TF-binding loci distribution from", if(peaksdir==""){"default"} else {peaksdir}, "pipeline branch\n"))}
-    cat("![Peak_Annotation img](", functionalPlotTSS, ")",fill=T)
+    if (file.exists(functionalPlotTSS)) {
+      if(length(branches)>1) {cat(paste("\n\n#### TF-binding loci distribution from", if(peaksdir==""){"default"} else {peaksdir}, "pipeline branch\n"))}
+      cat("![Peak_Annotation img](", functionalPlotTSS, ")",fill=T)
+    } else {cat("\nNo plot available\n")}
     return(functionalPlotTSS)
 })
 ```
@@ -654,15 +663,17 @@ diffplots <- lapply(branches, function(dir) {
 
 ## Used tools and versions for this analysis ##
 ```{r ToolVersions_paragraph, echo=F, results='asis', error=F, warning=F, message=F}
+cat("\n", fill=TRUE)
 cat(Toolhelper.ToolVersions(), sep="\n")
-cat("\n")
+cat("\n", fill=TRUE)
 ```
 
 ### R session info for generation of this report
 
-```{r R_sessionInfo, echo=F, results='asis', error=F, warning=F, message=F}
-cat("\n")
+```{r R_sessionInfo, echo=F, error=F, warning=F, message=F}
+cat("\n", fill=TRUE)
 sessionInfo()
+cat("\n", fill=TRUE)
 ```
 
 

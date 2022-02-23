@@ -378,7 +378,7 @@ ChIPhelper.display.plots<- function(web=FALSE, plotdir="", subdir="", plots_colu
                      ncol=COLUMNS, byrow=T)
   colnames(df.names) <- rep(" ", COLUMNS)
   
-  kable(as.data.frame(df.names), output=F, align="c", format="markdown")
+  kable(as.data.frame(df.names), output=F, align="c", format="html") %>% kableExtra::kable_styling()
 }
 
 
@@ -444,8 +444,8 @@ ChIPhelper.Bowtie <- function() {
                    discarded=paste( format( as.numeric(x[6, ]), big.mark=", "), x[7, ], sep=" "), 
                    duplicates=paste0(format(as.numeric(x[8, ]), big.mark=", "), " (", round(100 * as.numeric(x[8, ]) / as.numeric(x[2, ]), 2), "%)")
   )
-  kable(df, align=c("l", "r", "r", "r", "r", "r"), output=F, format="markdown", row.names=FALSE,
-        col.names=c("sample names", "all reads", "mapped (% of all)", "unmapped (% of all)", "too many map. pos. (% all)", "duplicates (% of mapped)"))
+  kable(df, align=c("l", "r", "r", "r", "r", "r"), output=F, format="html", row.names=FALSE,
+        col.names=c("sample names", "all reads", "mapped (% of all)", "unmapped (% of all)", "too many map. pos. (% all)", "duplicates (% of mapped)")) %>% kableExtra::kable_styling()
 }
 
 
@@ -514,7 +514,7 @@ ChIPhelper.Bowtie2 <- function() {
   colnames(x) <- gsub(".bam.log$", "", colnames(x))
   colnames(x) <- gsub("\\..*$", "", colnames(x))
   rownames(x)[1] <- if(!isPaired) {"all reads"} else {"all pairs"}
-  kable(t(x), align=c(rep("r",10)), output=F, format="markdown", row.names=T)
+  kable(t(x), align=c(rep("r",10)), output=F, format="html", row.names=T) %>% kableExtra::kable_styling()
 }
 
 
@@ -648,8 +648,7 @@ ChIPhelper.Fastqc <- function(web=FALSE, subdir="",
   # add a row with the sample name (as given in the rownames) before every row
   df.new <- do.call(rbind,lapply(1:nrow(df),function(i) {rbind(c("",rownames(df)[i],""),df[i,])}))
   rownames(df.new) <- NULL
-  # kable(df.new, output=F, align="c", format="markdown") # print sample names in additional rows
-  kable(df, output=F, align="c") # print sample names as rownames
+  kable(df, output=F, align="c", format="html") %>% kableExtra::kable_styling() # print sample names as rownames
 }
 
 
@@ -901,7 +900,7 @@ ChIPhelper.IPstrength<- function(web=FALSE, subdir="") {
                      ncol=COLUMNS, byrow=T)
   colnames(df.names) <- rep(" ", COLUMNS)
   
-  kable(as.data.frame(df.names), output=F, align="c", format="markdown")
+  kable(as.data.frame(df.names), output=F, align="c", format="html") %>% kableExtra::kable_styling()
 }
 
 ##
@@ -940,7 +939,7 @@ ChIPhelper.peakAnnotationCoverage <- function(web=FALSE, subdir="") {
                      ncol=COLUMNS, byrow=T)
   colnames(df.names) <- rep(" ", COLUMNS)
   
-  kable(as.data.frame(df.names), output=F, align="c", format="markdown")
+  kable(as.data.frame(df.names), output=F, align="c", format="html") %>% kableExtra::kable_styling()
 }
 
 ##
@@ -979,7 +978,7 @@ ChIPhelper.peakAnnotationUpSet <- function(web=FALSE, subdir="") {
                      ncol=COLUMNS, byrow=T)
   colnames(df.names) <- rep(" ", COLUMNS)
   
-  kable(as.data.frame(df.names), output=F, align="c", format="markdown")
+  kable(as.data.frame(df.names), output=F, align="c", format="html") %>% kableExtra::kable_styling()
 }
 
 ##
@@ -1023,7 +1022,7 @@ ChIPhelper.PhantomPeak <- function(web=FALSE, subdir="", ...) {
                      ncol=COLUMNS, byrow=T)
   colnames(df.names) <- rep(" ", COLUMNS)
   
-  kable(as.data.frame(df.names), output=F, align="c", format="markdown")
+  kable(as.data.frame(df.names), output=F, align="c", format="html") %>% kableExtra::kable_styling()
 }
 
 
@@ -1050,7 +1049,7 @@ ChIPhelper.PBC <- function(subdir="", ...) {
   df <- as.data.frame(df)
   colnames(df) <- "PBC"
   rownames(df) <- gsub("_PBC.csv", "", rownames(df))
-  kable(as.data.frame(df), output=F, format="markdown")
+  kable(as.data.frame(df), output=F, format="html") %>% kableExtra::kable_styling()
 }
 
 
@@ -1102,7 +1101,7 @@ ChIPhelper.insertsize <- function(subdir="",
     rownames(insertsizes) <- samplenames 
     insertsizes <- insertsizes[,c("MEDIAN_INSERT_SIZE","MEAN_INSERT_SIZE", "STANDARD_DEVIATION")]
     colnames(insertsizes) <- c("Median", "Mean", "SD")
-    knitr::kable(insertsizes, output=F, align=c("l"), format="markdown") %>% kableExtra::kable_styling()
+    knitr::kable(insertsizes, output=F, align=c("l"), format="html") %>% kableExtra::kable_styling()
   }
 }
 
@@ -1284,7 +1283,7 @@ Toolhelper.ToolVersions <- function() {
   tryCatch({
     ver <- read.delim(file=SHINYREPS_TOOL_VERSIONS)
     colnames(ver) <- c("Tool name","Environment", "Version")
-    kable(as.data.frame(ver),output=F)
+    knitr::kable(as.data.frame(ver), output=F, align=c("l"), format="html") %>% kableExtra::kable_styling()
   }, error=function(e) cat("tool versions not available.\n", fill=TRUE))
 }
 
@@ -1302,7 +1301,7 @@ ChIPhelper.BLACKLISTFILTER <- function(subdir="") {
   # construct the image url from the folder contents (skip current dir .)
   samples <- read.csv(sub("/([^/]*)$", paste0("/",subdir,"/\\1"), SHINYREPS_BLACKLIST_FILTER), row.names=1)
   colnames(samples) <- c("# peaks with MACS2", "# peaks wo overlapping with BRs", "% peaks overlapping BRs")
-  kable(samples, output=F, format="markdown")
+  kable(samples, output=F, format="html") %>% kableExtra::kable_styling()
 }
 
 
@@ -1357,10 +1356,10 @@ ChIPhelper.diffbind <- function(subdir="") {
     }
     
     cat("\nOverview of applied DiffBind Settings:\n\n")
-    cat(knitr::kable(diffbindSettings, format="markdown"), sep="\n")
+    cat(knitr::kable(diffbindSettings, format="html") %>% kableExtra::kable_styling(), sep="\n")
     
     cat(paste0("\nDataset in DiffBind analysis (", db$totalMerged, " sites in matrix):\n\n"))
-    cat(knitr::kable(infodb, format="markdown"), sep="\n")
+    cat(knitr::kable(infodb, format="html") %>% kableExtra::kable_styling(), sep="\n")
     cat("\n\n")
     
     # plots for 1st panel (independent from contrasts)
@@ -1388,7 +1387,7 @@ ChIPhelper.diffbind <- function(subdir="") {
     while(length(panel1) %% COLUMNS != 0) panel1 <- c(panel1, "")
     panel1 <- matrix(panel1, ncol=COLUMNS, byrow=T)
     colnames(panel1) <- rep(" ", COLUMNS)
-    cat(kable(as.data.frame(panel1), output=F, align="c", format="markdown"), sep="\n")
+    cat(kable(as.data.frame(panel1), output=F, align="c", format="html") %>% kableExtra::kable_styling(), sep="\n")
     cat("\n\n")
     
     
@@ -1405,7 +1404,7 @@ ChIPhelper.diffbind <- function(subdir="") {
         res_table <- res[[cont]][,names(res[[cont]]) %in% c("seqnames",	"start", "end", "width", "strand", "Conc",
                                                             "Fold", "p.value", "FDR", "annotation", "geneId", "distanceToTSS")]
         
-        cat(knitr::kable(res_table[1:min(nrow(res[[cont]]), maxTableEntries),], format="markdown"),sep="\n")
+        cat(knitr::kable(res_table[1:min(nrow(res[[cont]]), maxTableEntries),], format="html") %>% kableExtra::kable_styling(),sep="\n")
         # DT::datatable(res_table)
         
         cat("\nThe 'Conc' column of the result table shows the mean read concentration over all the samples 
@@ -1427,7 +1426,7 @@ ChIPhelper.diffbind <- function(subdir="") {
         while(length(panel2) %% COLUMNS != 0) panel2 <- c(panel2, "")
         panel2 <- matrix(panel2, ncol=COLUMNS, byrow=T)
         colnames(panel2) <- rep(" ", COLUMNS)
-        cat(kable(as.data.frame(panel2), output=F, align="c", format="markdown"), sep="\n")
+        cat(kable(as.data.frame(panel2), output=F, align="c", format="html") %>% kableExtra::kable_styling(), sep="\n")
         cat("\n\n")
         
         
@@ -1487,7 +1486,7 @@ ChIPhelper.diffbind <- function(subdir="") {
 ChIPhelper.cutadapt <- function(targetsdf=SHINYREPS_TARGET, colorByFactor="group", 
                                 sampleColumnName =c("IPname", "INPUTname"), fileColumnName =c("IP", "INPUT"),
                                 plotfun=ChIPhelper.cutadapt.plot, labelOutliers=T, outlierIQRfactor=1.5, ...)
-  {
+{
   
   # logs folder
   if(!all(sapply(SHINYREPS_CUTADAPT_STATS, file.exists))) {
@@ -1498,7 +1497,7 @@ ChIPhelper.cutadapt <- function(targetsdf=SHINYREPS_TARGET, colorByFactor="group
   
   # select subset of samples if desired
   x <- selectSampleSubset(x, ...)
-
+  
   # get Command line parameters of first file
   cutadaptpars <- system(paste("grep \"Command line parameters\"", x[1]), intern=T)
   
@@ -1506,7 +1505,8 @@ ChIPhelper.cutadapt <- function(targetsdf=SHINYREPS_TARGET, colorByFactor="group
   
   x <- sapply(x, function(f) { 
     
-    trimmed.R1.perc <- trimmed.R2.perc <- trimmed.reads.perc <- tooshort.reads.perc <- NULL # initialize with NULL in case not needed
+    # initialize with NULL in case not needed
+    trimmed.R1.perc <- trimmed.R2.perc <- trimmed.reads.perc <- trimmed.qual.perc <- tooshort.reads.perc <- toolong.reads.perc <- NULL 
     
     if(paired) { # log lines slightly differ dependent on se or pe
       total.reads <- system(paste("grep \"Total read pairs processed\"", f, "| awk '{print $5}'"), intern=TRUE)
@@ -1515,6 +1515,8 @@ ChIPhelper.cutadapt <- function(targetsdf=SHINYREPS_TARGET, colorByFactor="group
       trimmed.R1.perc <- gsub("\\(|\\)|\\%", "", trimmed.R1.perc)
       trimmed.R2.perc <- system(paste("grep \"Read 2 with adapter\"", f, "| awk '{print $6}'"), intern=TRUE)
       trimmed.R2.perc <- gsub("\\(|\\)|\\%", "", trimmed.R2.perc)
+      # trimmed.qual.R1 <- system(paste("grep --after-context=2 \"Quality-trimmed\"", f, "| grep \"Read 1\" | awk '{print $3}'"), intern=TRUE) # not needed per read
+      # trimmed.qual.R2 <- system(paste("grep --after-context=2 \"Quality-trimmed\"", f, "| grep \"Read 2\" | awk '{print $3}'"), intern=TRUE) # not needed per read
       
     } else {
       total.reads <- system(paste("grep \"Total reads processed\"", f, "| awk '{print $4}'"), intern=TRUE)
@@ -1523,8 +1525,12 @@ ChIPhelper.cutadapt <- function(targetsdf=SHINYREPS_TARGET, colorByFactor="group
       trimmed.reads.perc <- gsub("\\(|\\)|\\%", "", trimmed.reads.perc)
     }
     
+    trimmed.qual.perc <- system(paste("grep \"Quality-trimmed\"", f, "| awk '{print $4}'"), intern=TRUE)
+    trimmed.qual.perc <- gsub("\\(|\\)|\\%", "", trimmed.qual.perc)
     tooshort.reads.perc <- system(paste("grep \"that were too short\"", f, "| awk '{print $7}'"), intern=TRUE)
     tooshort.reads.perc <- gsub("\\(|\\)|\\%", "", tooshort.reads.perc)
+    toolong.reads.perc <- system(paste("grep \"that were too long\"", f, "| awk '{print $7}'"), intern=TRUE)
+    toolong.reads.perc <- gsub("\\(|\\)|\\%", "", toolong.reads.perc)
     
     # trimming of each adapter
     adapters <- system(paste("grep Sequence:", f, "| awk '{print $9}'"), intern=T)
@@ -1538,8 +1544,10 @@ ChIPhelper.cutadapt <- function(targetsdf=SHINYREPS_TARGET, colorByFactor="group
     names(adapters.perc) <- paste0(if(paired) {namespart1} else {""}, adapterprime, namespart2)
     
     ## add trimmed reads for each adapter here
-    return(c("total reads"=total.reads, trimmed_R1=trimmed.R1.perc, trimmed_R2=trimmed.R2.perc, 
-             trimmed=trimmed.reads.perc, "too short"=tooshort.reads.perc, adapters.perc))
+    return(c("total reads"=total.reads, 
+             "bp quality trimmed"=trimmed.qual.perc,
+             "R1 adapter trimmed"=trimmed.R1.perc, "R2 adapter trimmed"=trimmed.R2.perc, "adapter trimmed"=trimmed.reads.perc, 
+             "too short"=tooshort.reads.perc, "too long"=toolong.reads.perc, adapters.perc))
   })
   
   # transpose dataframe
@@ -1608,7 +1616,7 @@ ChIPhelper.cutadapt <- function(targetsdf=SHINYREPS_TARGET, colorByFactor="group
     if("sample" %in% colnames(x.df) && !any(duplicated(x.df$sample))) { # use sample column as identifier if present and unique
       x.df$filename <- x.df$sample
       row.names(x.df) <- x.df$sample } 
-
+    
     if(any(!colorByFactor %in% colnames(x.df))) { # any colorByFactor not available?
       if(all(!colorByFactor %in% colnames(x.df))) { # none colorByFactor available?
         cat("\nNone of the column names given in colorByFactor is available. Perhaps sample names are not part of fastq file names? Using filename instead.")
@@ -1624,9 +1632,11 @@ ChIPhelper.cutadapt <- function(targetsdf=SHINYREPS_TARGET, colorByFactor="group
   }
   
   # melt data frame for plotting
-  x.melt <- reshape2::melt(x.df, measure.vars=c(grep("trimmed", colnames(x.df), value=T), 
-                                                "too short", 
-                                                grep("(Adapter)|(})", colnames(x.df), value=T)), variable.name="reads")
+  vars2plot <- c(grep("adapter trimmed", colnames(x.df), value=T), 
+                 "too short", "too long",
+                 grep("(Adapter)|(})", colnames(x.df), value=T))
+  vars2plot <- vars2plot[vars2plot %in% colnames(x.df)]
+  x.melt <- reshape2::melt(x.df, measure.vars=vars2plot, variable.name="reads")
   # everything which is not a value should be a factor
   
   # one plot for each element of colorByFactor
@@ -1636,11 +1646,16 @@ ChIPhelper.cutadapt <- function(targetsdf=SHINYREPS_TARGET, colorByFactor="group
     plot(violin.list[[i]])
   }
   
-  DT::datatable(x.df[,c(colorByFactor, "total reads", 
-                        grep("trimmed", colnames(x.df), value=T),
-                        "too short", 
-                        grep("(Adapter)|(})", colnames(x.df), value=T))], 
-                options = list(pageLength= 20))
+  vars4table <- c(colorByFactor, "total reads", 
+                  grep("adapter trimmed", colnames(x.df), value=T),
+                  "bp quality trimmed", "too short", "too long",
+                  grep("(Adapter)|(})", colnames(x.df), value=T))
+  vars4table <- vars4table[vars4table %in% colnames(x.df)]
+  vars4table.colnames <- vars4table
+  vars4table.colnames[!vars4table.colnames %in% c(colorByFactor, "total reads")] <- paste("%", vars4table.colnames[!vars4table.colnames %in% c(colorByFactor, "total reads")])
+  DT::datatable(x.df[,vars4table], 
+                options = list(pageLength= 20),
+                colnames=vars4table.colnames)
 }
 
 

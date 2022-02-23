@@ -43,6 +43,7 @@ ESSENTIAL_FASTQSCREEN=ESSENTIAL_FASTQSCREEN_GENOME + ",PHIX::/fsimb/common/genom
 ESSENTIAL_ADAPTER_SEQUENCE="Nextera=CTGTCTCTTATACACATCT" // 3'adapter sequence for R1. 
 ESSENTIAL_MINADAPTEROVERLAP=5
 ESSENTIAL_MINREADLENGTH=30
+ESSENTIAL_NEXTSEQTRIM=true   // accounts for terminal G bases during base quality trimming incorporated by faulty dark cycles observed with two-color chemistry (as in NextSeq) 
 
 
 //project folders

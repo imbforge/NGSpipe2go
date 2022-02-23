@@ -1278,7 +1278,7 @@ DEhelper.cutadapt <- function(colorByFactor=NULL, targetsdf=targets, sampleColum
   
   x <- sapply(x, function(f) { 
     
-    trimmed.R1.perc <- trimmed.R2.perc <- trimmed.reads.perc <- NULL # initialise with NULL in case not needed
+    trimmed.R1.perc <- trimmed.R2.perc <- trimmed.reads.perc <- trimmed.qual.perc <- tooshort.reads.perc <- toolong.reads.perc <- NULL 
     
     if(paired) { # log lines slightly differ dependent on se or pe
       total.reads <- system(paste("grep \"Total read pairs processed\"", f, "| awk '{print $5}'"), intern=TRUE)
@@ -1295,8 +1295,12 @@ DEhelper.cutadapt <- function(colorByFactor=NULL, targetsdf=targets, sampleColum
       trimmed.reads.perc <- gsub("\\(|\\)|\\%", "", trimmed.reads.perc)
     }
     
+    trimmed.qual.perc <- system(paste("grep \"Quality-trimmed\"", f, "| awk '{print $4}'"), intern=TRUE)
+    trimmed.qual.perc <- gsub("\\(|\\)|\\%", "", trimmed.qual.perc)
     tooshort.reads.perc <- system(paste("grep \"that were too short\"", f, "| awk '{print $7}'"), intern=TRUE)
     tooshort.reads.perc <- gsub("\\(|\\)|\\%", "", tooshort.reads.perc)
+    toolong.reads.perc <- system(paste("grep \"that were too long\"", f, "| awk '{print $7}'"), intern=TRUE)
+    toolong.reads.perc <- gsub("\\(|\\)|\\%", "", toolong.reads.perc)
     
     # trimming of each adapter
     adapters <- system(paste("grep Sequence:", f, "| awk '{print $9}'"), intern=T)
@@ -1310,8 +1314,10 @@ DEhelper.cutadapt <- function(colorByFactor=NULL, targetsdf=targets, sampleColum
     names(adapters.perc) <- paste0(namespart1, adapterprime, namespart2)
 
     ## add trimmed reads for each adapter here
-    return(c(total_reads=total.reads, trimmed_R1=trimmed.R1.perc, trimmed_R2=trimmed.R2.perc, 
-             trimmed=trimmed.reads.perc, tooshort=tooshort.reads.perc, adapters.perc))
+    return(c("total reads"=total.reads, 
+             "bp quality trimmed"=trimmed.qual.perc,
+             "R1 adapter trimmed"=trimmed.R1.perc, "R2 adapter trimmed"=trimmed.R2.perc, "adapter trimmed"=trimmed.reads.perc, 
+             "too short"=tooshort.reads.perc, "too long"=toolong.reads.perc, adapters.perc))
   })
   
   # transpose dataframe
@@ -1372,9 +1378,11 @@ DEhelper.cutadapt <- function(colorByFactor=NULL, targetsdf=targets, sampleColum
   }
   
   # melt data frame for plotting
-  x.melt <- melt(x.df, measure.vars=c(grep("trimmed", colnames(x.df), value=T), 
-                                      "tooshort", 
-                                      grep("(Adapter)|(})", colnames(x.df), value=T)), variable="reads")
+  vars2plot <- c(grep("adapter trimmed", colnames(x.df), value=T), 
+                 "too short", "too long",
+                 grep("(Adapter)|(})", colnames(x.df), value=T))
+  vars2plot <- vars2plot[vars2plot %in% colnames(x.df)]
+  x.melt <- reshape2::melt(x.df, measure.vars=vars2plot, variable.name="reads")
   # everything which is not a value should be a factor
   
   # now we do a violin plot of the trimmed/too_short/etc. ones and color it
@@ -1407,11 +1415,16 @@ DEhelper.cutadapt <- function(colorByFactor=NULL, targetsdf=targets, sampleColum
     plot(violin.list[[i]])
   }
   
-  DT::datatable(x.df[,c("total_reads", 
-                        grep("trimmed", colnames(x.df), value=T),
-                        "tooshort", 
-                        grep("(Adapter)|(})", colnames(x.df), value=T))], 
-                options = list(pageLength= 20))
+  vars4table <- c(colorByFactor, "total reads", 
+                  grep("adapter trimmed", colnames(x.df), value=T),
+                  "bp quality trimmed", "too short", "too long",
+                  grep("(Adapter)|(})", colnames(x.df), value=T))
+  vars4table <- vars4table[vars4table %in% colnames(x.df)]
+  vars4table.colnames <- vars4table
+  vars4table.colnames[!vars4table.colnames %in% c(colorByFactor, "total reads")] <- paste("%", vars4table.colnames[!vars4table.colnames %in% c(colorByFactor, "total reads")])
+  DT::datatable(x.df[,vars4table], 
+                options = list(pageLength= 20),
+                colnames=vars4table.colnames)
 }
 
 

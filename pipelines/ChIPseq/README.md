@@ -49,6 +49,7 @@ All analysis steps are illustrated in the pipeline [flowchart](https://viewer.di
   - ESSENTIAL_DB: UCSC assembly version for GREAT analysis (only for UCSC hg19, hg38, mm9 and mm10)
   - ESSENTIAL_BLACKLIST: path to bed file with problematic 'blacklist regions' to be excluded from analysis (optional).
   - ESSENTIAL_ADAPTER_SEQUENCE: adapter sequence to trim with Cutadapt (optional)
+  - ESSENTIAL_NEXTSEQTRIM: most Illumina instruments use a two-color chemistry like the NextSeq (exceptions: MiSeq, HiSeq). This option accounts for terminal G bases incorporated by faulty dark cycles during base quality trimming with cutadapt.
   - ESSENTIAL_MACS2_BROAD: use broad setting for broad peak calling in MACS2 (default false).
   - ESSENTIAL_DEDUPLICATION: remove duplicated reads in filtered branch (default false is strongly recommended for single end data). 
   - ESSENTIAL_DUP: how MACS2 deals with duplicated reads or fragments.
@@ -68,7 +69,7 @@ If differential binding analysis is selected it is required additionally:
 
 This pipeline supports 2 different DiffBind versions (v2 and v3) for differential binding analysis. Beginning with version 3, DiffBind has included new functionality and modified default settings. The major change in version 3.0 is in how the data are modeled. In previous versions, a separate model was derived for each contrast, including data only for those samples present in the contrast. Model design options were implicit and limited to either a single factor, or a subset of two-factor "blocked" designs. Starting in version 3.0, the default mode is to include all the data in a single model, allowing for any allowable design formula and any set of allowable contrasts. 
 
-**IMPORTANT NOTE:** Mind that for both DiffBind versions the initial consensus peakset is generated from all samples in the dataset. For an experiment containing ChIP samples generated with different antibodies you should run the DiffBind module separately per pulldown. A pipeline update doing this automatically is currently under construction.
+**IMPORTANT NOTE:** Mind that for DiffBind 3 the contrasts are processed isolated from each other. This means that a consensus peakset is generated separately for each contrast and does not incorporate peaks called in other pulldowns unrelated to the contrast. A pipeline update that allows processing together pulldowns from different contrasts is currently under construction.
 
 There are also more normalization options available in DiffBind v3 and a new option to generate greylists as described in the [GreyListChIP](https://bioconductor.org/packages/release/bioc/vignettes/GreyListChIP/inst/doc/GreyList-demo.pdf) vignette (see diffbind3.header for default settings). The purpose of greylists is to identify regions with anomalous signal in the input or control sample, so that reads in those regions may be removed prior to analysis. 
 
