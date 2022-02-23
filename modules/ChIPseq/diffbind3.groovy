@@ -40,7 +40,7 @@ diffbind3 = {
     def PREAMBLE = get_preamble(stage:stageName, outdir:output.dir, input:new File(input1.prefix).getName())
 
     // run the chunk
-    produce("diffbind.RData", "diffbind.xlsx", "diffbind.rds") {
+    produce("diffbind.xlsx", "diffbind.rds") {
         exec """
             ${TOOL_ENV} &&
             ${PREAMBLE} &&
