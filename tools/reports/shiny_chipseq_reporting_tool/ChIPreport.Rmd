@@ -407,13 +407,13 @@ displayPlots <- lapply(branches, function(dir) {
 
 ```{r peak_venn_paragraph_combined, echo=F, results='asis', error=F, warning=F, message=F, fig.height= (nrow(targets)*2.1+5)/2.54}
 if(length(branches)>1) {
-cat("\n\n### Overlap of peaks from different pipeline branches\n")  
+  cat("\n\n### Overlap of peaks from different pipeline branches\n")  
+    
+  peakscovcomb <- lapply(branches, function(peaksdir) {
+    x <- ChIPhelper.init("readPeaks", subdir=peaksdir, peaks_as="GRanges")
+  })
   
-peakscovcomb <- lapply(branches, function(peaksdir) {
-  x <- ChIPhelper.init("readPeaks", subdir=peaksdir, peaks_as="GRanges")
-})
-
-peakscovcombReorder <- list()
+  peakscovcombReorder <- list()
   for(b in names(peakscovcomb)) {
     for(p in names(peakscovcomb[[b]])) {
       peakscovcombReorder[[p]][[b]] <- data.frame()
@@ -426,9 +426,8 @@ peakscovcombReorder <- list()
 
   anno_list <- list()
   for(p in names(peakscovcombReorder)) {
-      anno_list[[p]] <- anno_barplot(comb_size(make_comb_mat(peakscovcombReorder[[p]], mode="distinct")), 
-                                     gp=gpar(fill="steelblue"), height=unit(2, "cm"))
-
+    anno_list[[p]] <- anno_barplot(comb_size(make_comb_mat(peakscovcombReorder[[p]], mode="distinct")), 
+                                   gp=gpar(fill="steelblue"), height=unit(2, "cm"))
   }
 
   i <- which.max(sapply(anno_list, function(x) x@n))   # keep only contrasts which have representation in [filt, unfilt, filt*unfilt]

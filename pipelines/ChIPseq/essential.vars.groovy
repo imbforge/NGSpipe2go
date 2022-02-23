@@ -27,14 +27,12 @@ ESSENTIAL_FRAGMENT_USAGE="yes" // should fragments be reconstituted for generati
 ESSENTIAL_DEDUPLICATION=(ESSENTIAL_PAIRED == "yes") // remove duplicated reads in the filtered branch of the pipeline for paired-end but not for single-end data (may need to be changed in case of ultra-deep PE sequencing of small genomes).  
 ESSENTIAL_BAMCOVERAGE="--binSize 10 --normalizeUsing CPM"  // deepTools options for making normalised bigWig tracks
 
-
 // Annotation parameters
 ESSENTIAL_BSGENOME="BSgenome.Scerevisiae.UCSC.sacCer3"  // Bioconductor genome reference used by some modules
 ESSENTIAL_TXDB="TxDb.Scerevisiae.UCSC.sacCer3.sgdGene"  // needed for peak annotation
 ESSENTIAL_ANNODB="org.Sc.sgd.db"  // needed for peak annotation
 ESSENTIAL_DB="sacCer3"            // UCSC assembly version for GREAT analysis (only for UCSC hg19, hg38, mm9 and mm10)
 ESSENTIAL_BLACKLIST=""            // path to a BED file with blacklisted regions (default: empty string). Peaks in these regions will be removed from the peakset. 
-
 
 // Adapter trimming with Cutadapt (optional). Usually not needed when the reads are much shorter than the library inserts.
 RUN_CUTADAPT=false
@@ -63,7 +61,6 @@ ESSENTIAL_DIFFBIND_VERSION=3         // Beginning with version 3, DiffBind has i
 ESSENTIAL_DIFFBIND_LIBRARY="default" // DiffBind method to calculate library sizes. One of "full", "RiP", "background" and "default"  
 ESSENTIAL_DIFFBIND_NORM="default"    // DiffBind method to calculate normalization factors. One of "lib", "RLE", "TMM", "native" and "default". Not applicable for DiffBind2.
 
-
 // further optional pipeline stages to include
 RUN_IN_PAIRED_END_MODE=(ESSENTIAL_PAIRED == "yes")
 RUN_PEAK_ANNOTATION=true
@@ -81,5 +78,4 @@ REPORTS=PROJECT + "/reports"
 RESULTS=PROJECT + "/results"
 TMP=PROJECT + "/tmp"
 TRACKS=PROJECT + "/tracks"
-
 
