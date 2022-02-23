@@ -50,7 +50,7 @@ tools_defaults = [
     pingpongpro: [ runenv: "lmod", version: "1.0"               ],
     qualimap   : [ runenv: "lmod", version: "2.2.1"             ],
     repenrich  : [ runenv: "lmod", version: "1.2"               ],
-    rmats      : [ runenv: "lmod", version: "4.1.0"             ],
+    rmats      : [ runenv: "lmod", version: "4.1.2"             ],
     rseqc      : [ runenv: "lmod", version: "3.0.0"             ],
     samtools   : [ runenv: "lmod", version: "1.9"               ],
     seqtk      : [ runenv: "lmod", version: "1.3"               ],
@@ -258,6 +258,9 @@ tools_envs = [
     rmats: [
         "4.1.0": [
             lmod: "module load rmats/4.1.0"
+        ],
+        "4.1.2": [
+            lmod: "module load rmats/4.1.2"
         ]
     ],
     rseqc: [
