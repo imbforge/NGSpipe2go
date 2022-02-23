@@ -36,7 +36,7 @@ diffbind3 = {
         (diffbind3_vars.paired            ? " pe="                + diffbind3_vars.paired              : "") +
         (diffbind3_vars.extra             ? " "                   + diffbind3_vars.extra               : "")
 
-    def TOOL_ENV = prepare_tool_env("R", "4.0.3", "lmod")
+    def TOOL_ENV = prepare_tool_env("R", tools["R"]["version"], tools["R"]["runenv"])
     def PREAMBLE = get_preamble(stage:stageName, outdir:output.dir, input:new File(input1.prefix).getName())
 
     // run the chunk
