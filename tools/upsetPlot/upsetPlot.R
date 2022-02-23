@@ -106,6 +106,19 @@ ChIPhelper.init <- function(task, subdir="", peaks_as="data.frame") {
     exist <- sapply(comparisons, file.exists) # check if files exist for targets entries
     targets <- targets[exist, ]
     comparisons <- comparisons[exist]
+
+    # remove targets which have no peaks
+    peakcount <- sapply(comparisons, function(x) {
+      tryCatch({
+        nrow(read.delim(x, head=TRUE, comment="#"))
+      }, error=function(e) 0)
+    })
+    if(!all(peakcount > 0)) {
+      warning("Sample(s) ", paste(basename(comparisons)[!(peakcount > 0)], collapse=", "),
+              " excluded from Diffbind because didn't have any peaks called")
+      comparisons <- comparisons[peakcount > 0 ] 
+      targets <- targets[peakcount > 0, ] 
+    }
     
     columnNames2replace <- c(seqnames="chr", abs_summit="summit", pileup="tags", X.log10.pvalue.="-log10 pvalue", X.log10.FDR="-log10 FDR", X.log10.qvalue.="-log10 FDR")
     

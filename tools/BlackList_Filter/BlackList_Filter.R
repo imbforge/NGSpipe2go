@@ -38,6 +38,19 @@ if(file.exists(blacklistRegions)) {
 
 
 peakFiles <-list.files(peakData,pattern=".xls", full.names = TRUE) # list of the full path of the .xls file 
+
+# remove targets which have no peaks
+peakcount <- sapply(peakFiles, function(x) {
+  tryCatch({
+    nrow(read.delim(x, head=TRUE, comment="#"))
+  }, error=function(e) 0)
+})
+if(!all(peakcount > 0)) {
+  warning("Sample(s) ", paste(basename(peakFiles)[!(peakcount > 0)], collapse=", "),
+          " excluded from Diffbind because didn't have any peaks called")
+  peakFiles <- peakFiles[peakcount > 0 ] 
+}
+
 peaks <- lapply(peakFiles, readPeakFile) # read all the xls files using 'readPeakFile' function
 if(packageVersion('ChIPseeker')>0) { # bug in ChIPseeker: MACS xls files (1-based) are read as 0-based. Modify condition if fixed in future version.
         peaks <- lapply(peaks, function(x) {

@@ -45,8 +45,6 @@ runstr <- paste0("Call with: Rscript Peak_Annotation.R [peakData=",peakData,"] [
 cat(runstr)
 if (!is.numeric(regionTSS)) stop("regionTSS not numeric. Run with:\n",runstr)
 
-peakFiles <-list.files(peakData,pattern=".xls", full.names = TRUE) # list of the full path of the .xls file 
-
 if(length(list.files(peakData,pattern="_macs2_blacklist_filtered_peaks.xls")) > 0) {
       peakFiles <-list.files(peakData,pattern="_macs2_blacklist_filtered_peaks.xls", full.names = TRUE)
       filename <- strsplit(basename(peakFiles), "_macs2_blacklist_filtered_peaks.xls") # take the filenames and put it as names for the plots	
@@ -55,6 +53,20 @@ if(length(list.files(peakData,pattern="_macs2_blacklist_filtered_peaks.xls")) > 
       filename <- strsplit(basename(peakFiles), "_macs2_peaks.xls") # take the filenames and put it as names for the plots     
 }
 
+# remove targets which have no peaks
+peakcount <- sapply(peakFiles, function(x) {
+  tryCatch({
+    nrow(read.delim(x, head=TRUE, comment="#"))
+  }, error=function(e) 0)
+})
+if(!all(peakcount > 0)) {
+  warning("Sample(s) ", paste(basename(peakFiles)[!(peakcount > 0)], collapse=", "),
+          " excluded from Diffbind because didn't have any peaks called")
+  peakFiles <- peakFiles[peakcount > 0 ] 
+  filename <- filename[peakcount > 0 ]
+}
+
+
 peaks <- lapply(peakFiles, readPeakFile) # read all the xls files using 'readPeakFile' function
 # bug in ChIPseeker: MACS xls files (1-based) are read as 0-based. Modify condition if fixed in future version:
 if(packageVersion('ChIPseeker')>0) { # bug in ChIPseeker: MACS xls files (1-based) are read as 0-based. Modify condition if fixed in future version.
@@ -62,12 +74,6 @@ if(packageVersion('ChIPseeker')>0) { # bug in ChIPseeker: MACS xls files (1-base
     BiocGenerics::start(x) <- BiocGenerics::start(x)-1
     return(x)})
 } 
-
-# remove empty peaksets
-nonEmptyPeaksets <- sapply(peaks, length) >0
-peaks <- peaks[nonEmptyPeaksets]
-peakFiles <- peakFiles[nonEmptyPeaksets]
-filename <- filename[nonEmptyPeaksets]
 
 
 if(transcriptType!="Bioconductor"){ # check the input format for the transcript annotation
