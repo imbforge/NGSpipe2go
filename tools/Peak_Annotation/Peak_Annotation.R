@@ -61,7 +61,7 @@ peakcount <- sapply(peakFiles, function(x) {
 })
 if(!all(peakcount > 0)) {
   warning("Sample(s) ", paste(basename(peakFiles)[!(peakcount > 0)], collapse=", "),
-          " excluded from Diffbind because didn't have any peaks called")
+          " excluded because didn't have any peaks called")
   peakFiles <- peakFiles[peakcount > 0 ] 
   filename <- filename[peakcount > 0 ]
 }

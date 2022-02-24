@@ -86,7 +86,7 @@ ChIPhelper.init <- function(task, subdir="", peaks_as="data.frame") {
     })
     if(!all(peakcount > 0)) {
       warning("Sample(s) ", paste(basename(comparisons)[!(peakcount > 0)], collapse=", "),
-              " excluded from Diffbind because didn't have any peaks called")
+              " excluded because didn't have any peaks called")
       comparisons <- comparisons[peakcount > 0 ] 
       targets <- targets[peakcount > 0, ] 
     }

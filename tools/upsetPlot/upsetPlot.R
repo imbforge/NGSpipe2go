@@ -115,7 +115,7 @@ ChIPhelper.init <- function(task, subdir="", peaks_as="data.frame") {
     })
     if(!all(peakcount > 0)) {
       warning("Sample(s) ", paste(basename(comparisons)[!(peakcount > 0)], collapse=", "),
-              " excluded from Diffbind because didn't have any peaks called")
+              " excluded because didn't have any peaks called")
       comparisons <- comparisons[peakcount > 0 ] 
       targets <- targets[peakcount > 0, ] 
     }
@@ -180,6 +180,7 @@ ChIPhelper.UpSetPlot <- function(subdir="", Mode = "intersect", peakOverlapMode=
     combColors <- fillColors <- "steelblue" # default color
     
     if(!is.null(targetsdf)) { # coloring setnames and respective combinations by group from targets file
+      targetsdf <- targetsdf[paste0(targetsdf$IPname, " vs. ", targetsdf$INPUTname) %in% names(peak.ranges),] # remove samples without peaks
       targetsdf <- targetsdf[order(targetsdf$group, targetsdf$IPname), ]
       mypalette <- define.group.palette(length(levels(factor(targetsdf$group))))
       legend_colors <- setNames(mypalette, levels(factor(targetsdf$group)))
@@ -245,6 +246,7 @@ ChIPhelper.UpSetPlot <- function(subdir="", Mode = "intersect", peakOverlapMode=
     upsetReturn[["matrix_bp"]] <- upset_matrix
     
     if(!is.null(targetsdf)) { # coloring setnames and respective combinations by group from targets file
+      targetsdf <- targetsdf[paste0(targetsdf$IPname, " vs. ", targetsdf$INPUTname) %in% names(peak.ranges),] # remove samples without peaks
       targetsdf <- targetsdf[order(targetsdf$group, targetsdf$IPname), ]
       mypalette <- define.group.palette(length(levels(factor(targetsdf$group))))
       legend_colors <- setNames(mypalette, levels(factor(targetsdf$group)))
