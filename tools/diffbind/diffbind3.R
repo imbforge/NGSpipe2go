@@ -156,8 +156,6 @@ targetsAll <- data.frame(
 
 ##
 ## diffbind crashes if peaksets with no peaks are included for generating consensus peakset
-##
-
 # remove targets which have no peaks
 peaks <- sapply(targetsAll$Peaks, function(x) {
   tryCatch({
@@ -193,6 +191,7 @@ for (sub in unique(contsAll$sub_experiment)) {
     print(paste("process sub_experiment", sub))
     subexpPrefix <- paste0("SubExp_", sub, "_")
   } else {
+    if(any(is.na(contsAll$sub_experiment))) {stop("Please specify sub_experiments in contrasts_diffbind.txt")}
     subexpPrefix <- ""
     }
   
@@ -207,8 +206,7 @@ for (sub in unique(contsAll$sub_experiment)) {
                                                    doBlacklist=BLACKLIST, doGreylist=GREYLIST)) 
   
   # create DBA object containing consensus peaks per group (needed later)
-  db2 <- dba(db, mask=sapply(db$peaks, nrow)>0) # diffbind crashes if peaksets with no peaks are included for generating consensus peakset
-  db2 <- dba.peakset(db2, consensus=DBA_CONDITION)
+  db2 <- dba.peakset(db, consensus=DBA_CONDITION)
   
   # Heatmap using occupancy (peak caller score) data
   png(file.path(OUT, paste0(subexpPrefix, "heatmap_occupancy.png")), width = 150, height = 150, units = "mm", res=300)
@@ -285,8 +283,7 @@ for (sub in unique(contsAll$sub_experiment)) {
       }
       db <- dba.contrast(db, design=mmatrix, contrast=contrast)
      }
-  
-  
+
   # run the diffbind analysis (DESeq2) for all contrasts
     db <- dba.analyze(db) 
   
