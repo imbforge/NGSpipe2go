@@ -169,16 +169,17 @@ if(!all(peaks > 0)) {
   targetsAll <- targetsAll[peaks > 0, ] 
 }
 
-# and contrasts with "orphan" targets
+# and contrasts with "orphan" targets or groups containing only 1 replicate 
 valid_conts <- sapply(strsplit(contsAll$contrast, "\\W"), function(factors) {
   factors <- gsub("(^\\s+|\\s+$)", "", factors)  # remove leading spaces
   factors <- factors[factors != ""]
-  all(factors %in% targetsAll$Condition)
+  #all(factors %in% targetsAll$Condition)
+  all(sapply(factors, function(x) {nrow(targetsAll[targetsAll$Condition==x,])>1}))
 })
 
 if(!all(valid_conts)) {
   warning("Contrast(s) ", paste(contsAll$contrast.name[!valid_conts], collapse=", "),
-          " excluded from Diffbind because some factors didn't have a valid peakset")
+          " excluded from Diffbind because groups included which didn't have more than one valid peaksets")
   contsAll <- contsAll[valid_conts, ]
 }
 
