@@ -2131,7 +2131,7 @@ DEhelper.rmats <- function() {
                 top$FDR <- signif(top$FDR, 3)
                 cat("\n##### Significant", e, "events : ", nrow(top) ,"\n\n")
                 rownames(top)=NULL
-                print(kable(head(top, nrow(top)), format="html", align=c("c"), caption=paste("top", e, "events")) %>%
+                cat(kable(head(top, nrow(top)), format="html", align=c("c"), caption=paste("top", e, "events")) %>%
 		      kable_styling() %>%
 		      kableExtra::scroll_box(width = "100%", height = "200px")
 		      )
