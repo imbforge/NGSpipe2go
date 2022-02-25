@@ -6,10 +6,13 @@ rMATS = {
 
     output.dir = rMATS_vars.outdir
     def RMATS_FLAGS =
-        (rMATS_vars.gtf     ? " --gtf "        +  rMATS_vars.gtf     : "" ) +
-        (rMATS_vars.length  ? " --readLength " +  rMATS_vars.length  : "" ) +
-        (rMATS_vars.threads ? " --nthread "    +  rMATS_vars.threads : "" ) + 
-        (rMATS_vars.extra   ? " "              +  rMATS_vars.extra   : "" ) 
+        (rMATS_vars.gtf        ? " --gtf "        +  rMATS_vars.gtf     : "" ) +
+        (rMATS_vars.length     ? " --readLength " +  rMATS_vars.length  : "" ) +
+        (rMATS_vars.threads    ? " --nthread "    +  rMATS_vars.threads : "" ) + 
+        (rMATS_vars.varreadlen ? " --variable-read-length "             : "" ) +
+        (rMATS_vars.allowclip  ? " --allow-clipping "                   : "" ) +
+        (rMATS_vars.novelss    ? " --novelSS "                          : "" ) +
+        (rMATS_vars.extra      ? " "              +  rMATS_vars.extra   : "" ) 
 
     if(rMATS_vars.paired) {
         RMATS_FLAGS = RMATS_FLAGS + " -t paired"
@@ -19,6 +22,10 @@ rMATS = {
     if(rMATS_vars.stranded == "no") {
         RMATS_FLAGS = "--libType fr-unstranded " + RMATS_FLAGS
     }
+    // use "fr-secondstrand" for forward-stranded libraries and
+    //     "fr-firststrand" for reverse-stranded libraries
+    // firststrand/secondstrand refer to the strand being sequenced, 
+    // which is synthesized first/second
     else if (rMATS_vars.stranded == "yes") {
         RMATS_FLAGS = "--libType fr-secondstrand " + RMATS_FLAGS
     }
