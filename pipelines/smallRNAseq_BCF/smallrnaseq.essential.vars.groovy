@@ -30,6 +30,8 @@ ESSENTIAL_MAXREADLENGTH=Integer.toString(ESSENTIAL_READLENGTH - ESSENTIAL_MINADA
 ESSENTIAL_UMI_LENGTH=8         // (2x4bp)
 ESSENTIAL_ADAPTER_SEQUENCE="TGGAATTCTCGGGTGCCAAGG" // needed for cutadapt adapter trimming
 ESSENTIAL_BASEQUALCUTOFF=0     // trim low-quality ends from reads (if nextseqtrim is true, qualities of terminal G bases are ignored)  
+                               // keep this parameter at 0 to switch off low-quality base pair trimming at the ends of reads
+                               // (smallRNAseq reads often have UMIs at the end, which should not be remove)
 ESSENTIAL_NEXTSEQTRIM=false    // accounts for terminal G bases during base quality trimming incorporated by faulty dark cycles observed with two-color chemistry (as in NextSeq) 
 ESSENTIAL_MINIMAL_QUAL=20      // all reads with any base quality below this value will be removed during quality filtering
 
