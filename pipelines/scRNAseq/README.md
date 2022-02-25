@@ -38,8 +38,9 @@ All analysis steps are illustrated in the pipeline flowchart ([droplet-based](ht
   - ESSENTIAL_STRANDED: strandness of library (no|yes|reverse).
   - ESSENTIAL_READLENGTH: read length of library.
   - ESSENTIAL_THREADS: number of threads for parallel tasks.
-  - ESSENTIAL_ADAPTER_SEQUENCE: (optional) adapter sequence to be trimmed if RUN_CUTADAPT=true.
-  - ESSENTIAL_NEXTSEQTRIM: most Illumina instruments use a two-color chemistry like the NextSeq (exceptions: MiSeq, HiSeq). This option accounts for terminal G bases incorporated by faulty dark cycles during base quality trimming with cutadapt.
+  - ESSENTIAL_ADAPTER_SEQUENCE: (optional) adapter sequence to be trimmed if *RUN_CUTADAPT=true*.
+  - ESSENTIAL_BASEQUALCUTOFF: base quality threshold to trim low-quality ends from reads with Cutadapt. If *ESSENTIAL_NEXTSEQTRIM* is true, qualities of terminal G bases are ignored. To switch off base quality trimming in Cutadapt entirely, set *ESSENTIAL_BASEQUALCUTOFF=0* and *ESSENTIAL_NEXTSEQTRIM=false*.
+  - ESSENTIAL_NEXTSEQTRIM: most Illumina instruments use a two-color chemistry like the NextSeq (exceptions: MiSeq, HiSeq). This option accounts for terminal high quality G bases incorporated by faulty dark cycles during base quality trimming with Cutadapt.
   - ESSENTIAL_BCPATTERN: (optional) barcode and UMI pattern as it is present in MARS-Seq data.
 - additional (more specialized) parameter can be given in the header files of the individual pipeline modules (see module header files linked in the flowchart for default parameter). 
 
