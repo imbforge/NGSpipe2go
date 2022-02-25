@@ -2118,8 +2118,14 @@ DEhelper.rmats <- function() {
     rmats_top <- maser::topEvents(rmats_filt, fdr = SHINYREPS_MASER_FDR, deltaPSI = SHINYREPS_MASER_DPSI)
 
     # Plot the distribution of splicing events
-    plotspldist <- maser::splicingDistribution(rmats_filt, fdr = SHINYREPS_MASER_FDR, deltaPSI = SHINYREPS_MASER_DPSI)
-    print(plotspldist)
+    n_splice_events=0
+    for(e in c("A3SS", "A5SS", "SE", "RI", "MXE")) {
+	    n_splice_events = n_splice_events + nrow(slot(rmats_top, paste0(e,"_events")))
+    }
+    if(n_splice_events > 0) {
+	    plotspldist <- maser::splicingDistribution(rmats_filt, fdr = SHINYREPS_MASER_FDR, deltaPSI = SHINYREPS_MASER_DPSI)
+	    print(plotspldist)
+    }
 
     for(e in c("A3SS", "A5SS", "SE", "RI", "MXE")) {
         if(nrow(slot(rmats_top, paste0(e,"_events"))) > 0) {

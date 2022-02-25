@@ -84,9 +84,15 @@ if(!error_status) {
   rmats_top <- maser::topEvents(rmats_filt, fdr = fdr, deltaPSI = dpsi)
   #print(rmats_top)
 
-  plotspldist <- maser::splicingDistribution(rmats_filt, fdr = fdr, deltaPSI = dpsi)
   pdf(paste0(rmats_dir,"/Global_SplicingEvents.pdf"))
-  print(plotspldist)
+  n_splice_events=0
+  for(e in c("A3SS", "A5SS", "SE", "RI", "MXE")) {
+	  n_splice_events = n_splice_events + nrow(slot(rmats_top, paste0(e,"_events")))
+  }
+  if(n_splice_events > 0) {
+	  plotspldist <- maser::splicingDistribution(rmats_filt, fdr = SHINYREPS_MASER_FDR, deltaPSI = SHINYREPS_MASER_DPSI)
+          print(plotspldist)
+  }
 
   for(e in c("A3SS", "A5SS", "SE", "RI", "MXE")) {
 	if(nrow(slot(rmats_top, paste0(e,"_events"))) > 0) {
