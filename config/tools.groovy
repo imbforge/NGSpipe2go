@@ -259,9 +259,6 @@ tools_envs = [
         ]
     ],
     rmats: [
-        "4.1.0": [
-            lmod: "module load rmats/4.1.0"
-        ],
         "4.1.2": [
             lmod: "module load rmats/4.1.2"
         ]
