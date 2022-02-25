@@ -38,7 +38,7 @@ tools_defaults = [
     fastqc     : [ runenv: "lmod", version: "0.11.8"            ],
     fastqscreen: [ runenv: "lmod", version: "0.13"              ],
     fastx      : [ runenv: "lmod", version: "0.0.14"            ],
-    gatk       : [ runenv: "lmod", version: "3.4-46"            ],
+    gatk       : [ runenv: "lmod", version: "4.2.0.0"           ],
     htseq      : [ runenv: "lmod", version: "0.6.1"             ],
     java       : [ runenv: "lmod", version: "1.8"               ],
     kentutils  : [ runenv: "lmod", version: "v365"              ],
@@ -179,6 +179,9 @@ tools_envs = [
     gatk: [
         "3.4-46": [
             lmod: "module load GATK/3.4-46"
+        ],
+        "4.2.0.0": [
+            lmod: "module load GATK/4.2.0.0"
         ]
     ],
     htseq: [
