@@ -38,8 +38,8 @@ PRERMATS = {
                 groups[0]=`echo \${i:1:-1} | cut -d- -f1`;
                 groups[1]=`echo \${i:1:-1} | cut -d- -f2`;
                 groups=`echo \${groups[0]} \${groups[1]}`;
-                echo \${groups[0]} \${groups[1]};
-                awk -v G="\$groups" 'BEGIN { split(G, g, / /)} { if( \$3 == g[1] || \$3 == g[2] ) print \$0 }' $PRERMATS_vars.targets > $output.dir/\${contrast}_targets_rMATS.txt;
+                echo \${groups};
+                awk -v G="\$groups" 'BEGIN {OFS="\t"}{ split(G, g, / /)} { if( \$3 == g[1] || \$3 == g[2] ) { split(\$2,f,"."); \$2=f[1]; print \$0 } }' $PRERMATS_vars.targets > $output.dir/\${contrast}_targets_rMATS.txt;
             done
         """, "PRERMATS"
     }
