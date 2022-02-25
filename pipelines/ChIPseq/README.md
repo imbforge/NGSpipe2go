@@ -49,7 +49,8 @@ All analysis steps are illustrated in the pipeline [flowchart](https://viewer.di
   - ESSENTIAL_DB: UCSC assembly version for GREAT analysis (only for UCSC hg19, hg38, mm9 and mm10)
   - ESSENTIAL_BLACKLIST: path to bed file with problematic 'blacklist regions' to be excluded from analysis (optional).
   - ESSENTIAL_ADAPTER_SEQUENCE: adapter sequence to trim with Cutadapt (optional)
-  - ESSENTIAL_NEXTSEQTRIM: most Illumina instruments use a two-color chemistry like the NextSeq (exceptions: MiSeq, HiSeq). This option accounts for terminal G bases incorporated by faulty dark cycles during base quality trimming with cutadapt.
+  - ESSENTIAL_BASEQUALCUTOFF: base quality threshold to trim low-quality ends from reads with Cutadapt. If *ESSENTIAL_NEXTSEQTRIM* is true, qualities of terminal G bases are ignored. To switch off base quality trimming in Cutadapt entirely, set *ESSENTIAL_BASEQUALCUTOFF=0* and *ESSENTIAL_NEXTSEQTRIM=false*.
+  - ESSENTIAL_NEXTSEQTRIM: most Illumina instruments use a two-color chemistry like the NextSeq (exceptions: MiSeq, HiSeq). This option accounts for terminal high quality G bases incorporated by faulty dark cycles during base quality trimming with Cutadapt.
   - ESSENTIAL_MACS2_BROAD: use broad setting for broad peak calling in MACS2 (default false).
   - ESSENTIAL_DEDUPLICATION: remove duplicated reads in filtered branch (default false is strongly recommended for single end data). 
   - ESSENTIAL_DUP: how MACS2 deals with duplicated reads or fragments.

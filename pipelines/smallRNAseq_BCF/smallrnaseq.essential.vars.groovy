@@ -29,7 +29,8 @@ ESSENTIAL_MINREADLENGTH=26     // remaining read length plus UMIs (2x4)
 ESSENTIAL_MAXREADLENGTH=Integer.toString(ESSENTIAL_READLENGTH - ESSENTIAL_MINADAPTEROVERLAP) // maximal read length to keep (all w/o adapter are discarded)
 ESSENTIAL_UMI_LENGTH=8         // (2x4bp)
 ESSENTIAL_ADAPTER_SEQUENCE="TGGAATTCTCGGGTGCCAAGG" // needed for cutadapt adapter trimming
-ESSENTIAL_NEXTSEQTRIM=true     // accounts for terminal G bases during base quality trimming incorporated by faulty dark cycles observed with two-color chemistry (as in NextSeq) 
+ESSENTIAL_BASEQUALCUTOFF=0     // trim low-quality ends from reads (if nextseqtrim is true, qualities of terminal G bases are ignored)  
+ESSENTIAL_NEXTSEQTRIM=false    // accounts for terminal G bases during base quality trimming incorporated by faulty dark cycles observed with two-color chemistry (as in NextSeq) 
 ESSENTIAL_MINIMAL_QUAL=20      // all reads with any base quality below this value will be removed during quality filtering
 
 // DESeq2 specific parameters 

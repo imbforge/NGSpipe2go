@@ -39,6 +39,7 @@ RUN_CUTADAPT=false
 ESSENTIAL_ADAPTER_SEQUENCE="Illumina=CTGTCTCTTATACACATCT" // standard sequence to trim illumina reads 
 ESSENTIAL_MINADAPTEROVERLAP=3  // minimal overlap of the read and the adapter for an adapter to be found (default 3)
 ESSENTIAL_MINREADLENGTH=20     // minimal length of reads to be kept
+ESSENTIAL_BASEQUALCUTOFF=20    // trim low-quality ends from reads (if nextseqtrim is true, qualities of terminal G bases are ignored)  
 ESSENTIAL_NEXTSEQTRIM=true     // accounts for terminal G bases during base quality trimming incorporated by faulty dark cycles observed with two-color chemistry (as in NextSeq) 
 
 // Peak calling with MACS2
@@ -50,12 +51,9 @@ ESSENTIAL_MACS2_GSIZE="10000000"  // mapable genome size for MACS2 (approx. size
 // Note that DiffBind3 works with "default" parameters which depend on the 
 // context of other parameter settings (see DiffBind documentation for 
 // explanation). Unlike DiffBind2, DiffBind3 includes the data from ALL samples in 
-// a single model.
-// **IMPORTANT NOTE:** Mind that for DiffBind 3 the contrasts are processed 
-// isolated from each other. This means that a consensus peakset is generated 
-// separately for each contrast and does not incorporate peaks called in other 
-// pulldowns unrelated to the contrast. A pipeline update that allows processing 
-// together pulldowns from different contrasts is currently under construction.
+// a single model. 
+// In this pipeline, you can specify sub_experiments in contrasts_diffbind.txt
+// to define those sample groups which shall be combined in a model.
 RUN_DIFFBIND=true
 ESSENTIAL_DIFFBIND_VERSION=3         // Beginning with version 3, DiffBind has included new functionalities and modified default settings. Earlier versions are also supported here.
 ESSENTIAL_DIFFBIND_LIBRARY="default" // DiffBind method to calculate library sizes. One of "full", "RiP", "background" and "default"  
