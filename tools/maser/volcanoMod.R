@@ -1,4 +1,4 @@
-# The scripts were taken from the maser package and modified by Frank Ruehle (see # mod)
+# The scripts were taken from the maser package and modified by Frank Ruehle (see # mod) and Anke Busch (see # modAB)
 volcanoMod <- function (events, type = c("A3SS", "A5SS", "SE", "RI", "MXE"), 
           fdr = 0.05, deltaPSI = 0.1, title = "") 
 {
@@ -31,17 +31,27 @@ volcanoMod <- function (events, type = c("A3SS", "A5SS", "SE", "RI", "MXE"),
   plot.df <- data.frame(ID = stats$ID, deltaPSI = stats$IncLevelDifference, 
                         log10pval = log10pval, Status = factor(status, 
 							       levels = c("Not significant", events$conditions[1], events$conditions[2])))
-  if (length(unique(status)) < 3) {
-    colors <- c("blue", "red")
-  }  else {
-    colors <- c("grey", "blue", "red")
-  }
+  # modAB: change maser color scheme:
+  # modAB:   * always plot "Not significant" in grey
+  # modAB:   * use the same group colors as for PCAs and heatmaps in DESeq2 section
+  # modAB:     (the reference group (i.e. A in B.vs.A) is colored in brewer.pal(9,"Set1")[1])
+  #if (length(unique(status)) < 3) {    # modAB
+  #  colors <- c("blue", "red")         # modAB
+  #}  else {                            # modAB
+  #  colors <- c("grey", "blue", "red") # modAB
+  #}                                    # modAB
   ggplot(plot.df, aes(x = deltaPSI, y = log10pval, colour = Status)) + 
-    geom_point(aes(colour = Status)) + scale_colour_manual(values = colors) + 
-    theme_bw() + theme(axis.text.x = element_text(size = 12), 
-                       axis.text.y = element_text(size = 12), axis.title.x = element_text(face = "plain", 
-                                                                                          colour = "black", size = 12), axis.title.y = element_text(face = "plain", 
-                                                                                                                                                    colour = "black", size = 12), panel.grid.minor = element_blank(), 
-                       plot.background = element_blank()) + labs(title = title, 
-                                                                 y = "Log10 Adj. Pvalue", x = "Delta PSI") # mod: switched axis labels
+    geom_point(aes(colour = Status),alpha=0.7) + # modAB: added transparency
+    #scale_colour_manual(values = colors) + # modAB: use colors as given below
+    scale_colour_manual(values = c("grey",brewer.pal(9,"Set1")[1:2]),
+                        breaks = c("Not significant",events$conditions[2],events$conditions[1]),
+                        labels = c("Not significant",events$conditions[2],events$conditions[1])) +
+    theme_bw() + 
+    theme(axis.text.x = element_text(size = 12),
+          axis.text.y = element_text(size = 12),
+          axis.title.x = element_text(face = "plain", colour = "black", size = 12), 
+          axis.title.y = element_text(face = "plain", colour = "black", size = 12), 
+          panel.grid.minor = element_blank(), 
+          plot.background = element_blank()) + 
+    labs(title = title, y = "Log10 Adj. Pvalue", x = "Delta PSI") # mod: switched axis labels
 }
