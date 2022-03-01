@@ -5,7 +5,7 @@ tpm = {
         bpipe_version: "",
         author: "Anke Busch"
 
-    output.dir  = tpm_vars.outdir
+    output.dir  = tpm_vars.outdir + "/$subdir"
     def TPM_FLAGS =
         (tpm_vars.genesgtf ? " -g " + tpm_vars.genesgtf : "") +
         (tpm_vars.feature  ? " -f " + tpm_vars.feature  : "") +

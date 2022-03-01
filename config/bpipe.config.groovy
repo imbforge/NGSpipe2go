@@ -83,6 +83,11 @@ config {
       procs="4"
       memory="24"
     }
+    CapSTARRseq_FoldChange { 
+      walltime="01:00:00" 
+      procs="1" 
+      memory="4"
+    }
     CatFastQ { 
       walltime="1:00:00" 
       procs="1" 

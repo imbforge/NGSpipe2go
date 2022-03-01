@@ -1,6 +1,6 @@
 diffbind3_vars=[
     diffbindversion  : ESSENTIAL_DIFFBIND_VERSION,  // diffbind version to use
-    targets          : "targets.txt",               // targets file. Check the bin directory for the format
+    targets          : "targets_peaks.txt",               // targets file. Check the bin directory for the format
     contrasts        : "contrasts_diffbind.txt",    // contrasts file. Check the bin directory for the format
     cwd              : PROJECT,                     // current working directory
     outdir           : RESULTS + "/diffbind",       // output directory

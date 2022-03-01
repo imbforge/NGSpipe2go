@@ -1,5 +1,0 @@
-sample	file	group	replicate
-WT_1	datasetID_WT_1	WT	1
-WT_2	datasetID_WT_2	WT	2
-KO_1	datasetID_KO_1	KO	1
-KO_2	datasetID_KO_2	KO	2

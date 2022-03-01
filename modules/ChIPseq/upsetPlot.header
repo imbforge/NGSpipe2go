@@ -1,7 +1,7 @@
 UPSET_vars=[
     outdir    : RESULTS + "/upsetPlot",
     files     : RESULTS + "/macs2",
-    targets   : "targets.txt", // targets file describing the samples
+    targets   : "targets_peaks.txt", // targets file describing the samples
     mode      : "intersect",
     peakOverlapMode    : "peaknumber",
     setsize   : "25",

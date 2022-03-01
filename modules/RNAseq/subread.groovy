@@ -5,7 +5,7 @@ subread_count = {
         bpipe_version: "tested with bpipe 0.9.8.7",
         author: "Oliver Drechsel"
 
-    output.dir  = subread_count_vars.outdir
+    output.dir  = subread_count_vars.outdir + "/$subdir"
     def SUBREAD_FLAGS =
         "--donotsort " +
         (subread_count_vars.threads  ? " -T " + subread_count_vars.threads  : "") +

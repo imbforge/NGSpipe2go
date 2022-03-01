@@ -1,2 +1,0 @@
-contrast.name	contrast	mmatrix
-mut.vs.wt	(mut-wt)	~group

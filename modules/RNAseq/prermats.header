@@ -1,9 +1,0 @@
-PRERMATS_vars=[
-    outdir   : RESULTS + "/PRERMATS",
-    targets  : "targets.txt",
-    contrasts: "contrasts.txt",
-    suffix  : "_targets_rMATS.txt"
-]
-
-load PIPELINE_ROOT + "/modules/RNAseq/prermats.groovy"
-

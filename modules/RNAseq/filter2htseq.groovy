@@ -5,7 +5,7 @@ filter2htseq = {
         bpipe_version: "tested with bpipe 0.9.8.7",
         author: "Oliver Drechsel"
 
-    output.dir = filter2htseq_vars.outdir
+    output.dir = filter2htseq_vars.outdir + "/$subdir"
 
     def PREAMBLE = get_preamble(stage:stageName, outdir:output.dir, input:new File(input1.prefix).getName())
 
