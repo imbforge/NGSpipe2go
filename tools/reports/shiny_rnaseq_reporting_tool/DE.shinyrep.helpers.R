@@ -2123,20 +2123,23 @@ DEhelper.rmats <- function() {
 	    n_splice_events = n_splice_events + nrow(slot(rmats_top, paste0(e,"_events")))
     }
     if(n_splice_events > 0) {
-	    cat("#### Distribution of splicing events {.tabset .tabset-pills}\n\n")
 	    plotspldist <- maser::splicingDistribution(rmats_filt, fdr = SHINYREPS_MASER_FDR, deltaPSI = SHINYREPS_MASER_DPSI)
 	    print(plotspldist)
     }
 
     for(e in c("A3SS", "A5SS", "SE", "RI", "MXE")) {
+
+        cat("\n\n", fill=T)
+        cat("#### ", e,"{.tabset}\n\n",fill=T)
+        cat("\n\n", fill=T)
+
         if(nrow(slot(rmats_top, paste0(e,"_events"))) > 0) {
-                cat("\n\n", fill=T)
                 top <- summary(rmats_top, type=e)
                 top <- top[order(top$FDR), !colnames(top) %in% c("GeneID")]
                 colnames(top) <- plyr::mapvalues(colnames(top), from=c("ID", "PValue", "IncLevelDifference"), to=c("rMATS_ID", "pval", "deltaPSI"))
                 top$pval <- signif(top$pval, 3)
                 top$FDR <- signif(top$FDR, 3)
-                cat("\n#### Significant", e, "events : ", nrow(top) ,"{.tabset .tabset-pills} \n\n")
+                cat("\n##### Significant", e, "events : ", nrow(top) ,"\n\n")
                 rownames(top)=NULL
                 cat(kable(head(top, nrow(top)), format="html", align=c("c"), caption=paste("top", e, "events")) %>%
 		      kable_styling() %>%
@@ -2147,11 +2150,11 @@ DEhelper.rmats <- function() {
 		#plotPCA<-maser::pca(rmats_filt, type = e)
                 #print(plotPCA)
                 cat("\n\n")
-                cat("\n#### Volcano plot of ", e,"events {.tabset .tabset-pills} \n\n")
+                cat("\n##### Volcano plot of ", e,"events \n\n")
                 plotVolcano<-volcanoMod(rmats_filt, fdr = SHINYREPS_MASER_FDR, deltaPSI = SHINYREPS_MASER_DPSI, type = e)
                 print(plotVolcano)
                 cat("\n\n")
-                cat("\n#### Top Significant", e, "event {.tabset .tabset-pills} \n\n")
+                cat("\n##### Top Significant", e, "event \n\n")
 		if(e == "SE") {
 			cat("\n\n The Event track depicts location of exons involved in skipping event. The *Inclusion* track shows transcripts overlapping the cassette exon as well as both flanking exons (i.e upstream and downstream exons). On the other hand, the skipping track displays transcripts overlapping both flanking exons but missing the cassette exon. The PSI track displays the **inclusion level for the cassette exon** (a.k.a. alternative exon) from the different replicates as a box plot for each condition. A higher PSI value indicate that there is a significant increase of the cassette exon in the respective condition. \n\n")
 		}
@@ -2172,6 +2175,8 @@ DEhelper.rmats <- function() {
                 ## Display affected transcripts and PSI levels
                 plotTranscriptsMod(events=top1, type = e, event_id = top$rMATS_ID[1], gtf = ens_gtf, zoom = F, show_PSI = TRUE, title =top$geneSymbol[1])
 
+        } else {
+            cat("\n\n No significant ",e," event found.\n\n")
         }
     }  
 }
