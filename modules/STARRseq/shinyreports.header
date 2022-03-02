@@ -13,6 +13,7 @@ shinyReports_vars=[
     run_diffbind        : RUN_DIFFBIND,                   //whether differential peak activity between groups was performed
     run_enrich          : RUN_ENRICHMENT,                 //whether GREAT gene GO enrichment was run
     capstarrseq_diffexp : CAPSTARRSEQ_DIFFEXP,            //whether CapSTARR-seq was processed using differential expression approach
+    gtf                 : ESSENTIAL_GENESGTF,             //for CapSTARR-seq, GTF file with target regions
     fastqc_out          : FastQC_vars.outdir,             //where the Fastqc output lie
     fastqc_log          : LOGS + "/FastQC",               //where the Fastqc logs lie
     fastqc_summarized   : "FALSE",                        //should FastQC plots be summarized in the report?
