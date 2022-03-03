@@ -52,12 +52,17 @@ The “read quality” plot summarizes at each read position the Phred quality s
 
 ```{r FastQC_qual_summarized, echo=F,results='asis',error=F,warning=F,message=F,fig.align='center'}
 
-if (SHINYREPS_FASTQC_SUMMARIZED) {
-    fastqc_summary_plot <- DEhelper.Fastqc.custom(web=F,summarizedPlots=T)
-    plot(fastqc_summary_plot$p.qual)
-    cat("\n", fill = T)
+if (SHINYREPS_CAPSTARRSEQ_DIFFEXP=="true") {
+    if (SHINYREPS_FASTQC_SUMMARIZED) {
+        fastqc_summary_plot <- DEhelper.Fastqc.custom(web=F,summarizedPlots=T)
+        plot(fastqc_summary_plot$p.qual)
+        cat("\n", fill = T)
+    } else {
+        fastqc_summary_plot <- DEhelper.Fastqc.custom(web=F,summarizedPlots=F)
+    }
 } else {
-    fastqc_summary_plot <- DEhelper.Fastqc.custom(web=F,summarizedPlots=F)
+    fastqc_summary_plot <- ChIPhelper.Fastqc.custom(web=F,summarizedPlots=SHINYREPS_FASTQC_SUMMARIZED,
+                                                    metrics=c("BaseQuals", "SeqContent", "GcContent", "DupLevels"))
 }
 
 ```
@@ -120,12 +125,17 @@ DEhelper.cutadapt()
 ```{r FastQC_qual_summarized_trimmed, echo=F,results='asis',error=F,warning=F,message=F,fig.align='center', eval=SHINYREPS_RUN_CUTADAPT=="true"}
 cat("### FastQC of trimmed reads QC {.tabset}\n\n")
 cat("#### Read quality\n\n")
-if (SHINYREPS_FASTQC_SUMMARIZED) {
-    fastqc_summary_plot <- DEhelper.Fastqc.custom(web=F,summarizedPlots=T, subdir="trimmed")
-    plot(fastqc_summary_plot$p.qual)
-    cat("\n", fill = T)
+if (SHINYREPS_CAPSTARRSEQ_DIFFEXP=="true") {
+    if (SHINYREPS_FASTQC_SUMMARIZED) {
+        fastqc_summary_plot <- DEhelper.Fastqc.custom(web=F,summarizedPlots=T, subdir="trimmed")
+        plot(fastqc_summary_plot$p.qual)
+        cat("\n", fill = T)
+    } else {
+        fastqc_summary_plot <- DEhelper.Fastqc.custom(web=F,summarizedPlots=F, subdir="trimmed")
+    }
 } else {
-    fastqc_summary_plot <- DEhelper.Fastqc.custom(web=F,summarizedPlots=F, subdir="trimmed")
+    fastqc_summary_plot <- ChIPhelper.Fastqc.custom(web=F,summarizedPlots=SHINYREPS_FASTQC_SUMMARIZED,
+                                                    metrics=c("BaseQuals", "SeqContent", "GcContent", "DupLevels"))
 }
 ```
 
@@ -275,7 +285,7 @@ subread <- lapply(branches, function(dir) {
 
 The plot below depicts sample similarity based on priniciple component analysis (PCA) with the 500 genes showing the highest variance. Overall, replicates are expected to show relatively small distances between them, while sample groups often show higher distances between them, depending on the magnitude of expression changes. If the samples cluster other than by group, there might be sample prep batch effects or some other unaccounted biological/technical factors in the experiment. 
 
-```{r MDSplot_paragraph, echo=F, error=F, warning=F, message=F, fig.align="center", out.width="100%"}
+```{r MDSplot_paragraph, echo=F, error=F, warning=F, message=F, fig.align="center", out.width="100%", eval=SHINYREPS_CAPSTARRSEQ_DIFFEXP=="true"}
 deseq2_mds <- lapply(branches, function(branch){
   if(length(branches)>1) {cat(paste("\n\n### MDS plot from", branch, "pipeline branch\n\n"))}
   DEhelper.DESeq2.MDS(dds=deseq[[branch]]$dds, rld=deseq[[branch]]$rld)        # sample MDS 
@@ -286,7 +296,7 @@ deseq2_mds <- lapply(branches, function(branch){
 
 A heatmap clustogram of the Euclidean distances between the samples gives an intuitive measure of sample similarity:
 
-```{r Heatmap2_paragraph, echo=F, error=F, warning=F, message=F, fig.align="center"}
+```{r Heatmap2_paragraph, echo=F, error=F, warning=F, message=F, fig.align="center", eval=SHINYREPS_CAPSTARRSEQ_DIFFEXP=="true"}
 deseq2_heatmap_samples <- lapply(branches, function(branch){
   if(length(branches)>1) {cat(paste("\n\n### Sample-to-sample heatmap from", branch, "pipeline branch\n\n"))}
   DEhelper.DESeq2.heatmap(dds=deseq[[branch]]$rld, gtf=deseq[[branch]]$gtf, type="distance")         # heatmap of sample to sample distances
@@ -297,7 +307,7 @@ deseq2_heatmap_samples <- lapply(branches, function(branch){
 
 Additionally, hierarchical clustering of the samples based on the most variable genes reveals replicate consistency and can spot batches of samples related by other characteristics rather than condition:
 
-```{r Heatmap1_paragraph_sd, echo=F, error=F, warning=F, message=F, fig.align="center"}
+```{r Heatmap1_paragraph_sd, echo=F, error=F, warning=F, message=F, fig.align="center", eval=SHINYREPS_CAPSTARRSEQ_DIFFEXP=="true"}
 deseq2_heatmap_mvg <- lapply(branches, function(branch){
   if(length(branches)>1) {cat(paste("\n\n### Most variable regions heatmap from", branch, "pipeline branch\n\n"))}
   DEhelper.DESeq2.heatmap(dds=deseq[[branch]]$rld, gtf=deseq[[branch]]$gtf, type="cluster_sd")   # heatmap of top variant 'n' genes of the rlog transformed counts (normalized and stabilized)
@@ -308,7 +318,7 @@ deseq2_heatmap_mvg <- lapply(branches, function(branch){
 
 Finally, a hierarchical clustering of the samples based on the genes with the highest average expression level:
 
-```{r Heatmap1_paragraph_mean, echo=F, error=F, warning=F, message=F, fig.align="center"}
+```{r Heatmap1_paragraph_mean, echo=F, error=F, warning=F, message=F, fig.align="center", eval=SHINYREPS_CAPSTARRSEQ_DIFFEXP=="true"}
 deseq2_heatmap_highexpr <- lapply(branches, function(branch){
   if(length(branches)>1) {cat(paste("\n\n### Highest avg expression regions heatmap from", branch, "pipeline branch\n\n"))}
   DEhelper.DESeq2.heatmap(dds=deseq[[branch]]$rld, gtf=deseq[[branch]]$gtf, type="cluster_mean")    # heatmap of top variant 'n' genes of the rlog transformed counts (normalized and stabilized)
