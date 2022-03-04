@@ -1533,8 +1533,10 @@ ChIPhelper.insertsize <- function(subdir="",
 }
 
 
-# Helper to plot the insertsize histogram equivalent to the one from picard
-# Input is the Picard generated metrics file
+##
+## Helper to plot the insertsize histogram equivalent to the one from picard
+## Input is the Picard generated metrics file
+##
 ChIPhelper.insertsize.helper <- function(metricsFile, 
                                          sampleColumnName =c("IPname", "INPUTname"), 
                                          fileColumnName =c("IP", "INPUT")){
@@ -1734,15 +1736,16 @@ ChIPhelper.Fastqc.custom <- function(web=FALSE, summarizedPlots=TRUE, subdir="",
   qclist[["no.of.samples"]] <- length(f)
   
   # create proper name vectoir as labels
-  lbls <- gsub("_fastqc.zip$", "", names(fastqc.stats))
-  names(lbls) <- gsub("_fastqc.zip", ".fastq.gz", names(fastqc.stats))
+  lbls <- gsub("_fastqc.zip$", "", basename(names(fastqc.stats)))
+  names(lbls) <- gsub("_fastqc.zip", ".fastq.gz", basename(names(fastqc.stats)))
   
   if(file.exists(SHINYREPS_TARGET)){
     
     # get target names
     targets <- read.delim(SHINYREPS_TARGET, stringsAsFactors = F)
     
-    if(length(fileColumnName)>1) { # melt targets in case of multiple file name columns (as for ChIP-Seq) and create general targets format 
+    # melt targets in case of multiple file name columns (as for ChIP-Seq) and create general targets format
+    if(length(fileColumnName)>1) {
       targets <- targets[, colnames(targets)[colnames(targets) %in% unique(c(fileColumnName, sampleColumnName))]]
       targets <- reshape2::melt(targets, measure.vars=fileColumnName, value.name = "file") # 'file' column created
       targets <- targets[!duplicated(targets$file), ] # in case the same inputs are used for several samples
@@ -1776,138 +1779,437 @@ ChIPhelper.Fastqc.custom <- function(web=FALSE, summarizedPlots=TRUE, subdir="",
   # change names also in fastqc.stats (needed for seq. quality plot)
   names(fastqc.stats) <- lbls
   
-  # summary plot (independent from summarizedPlots)
-  if("Summary" %in% metrics) {
-    qclist[["Summary"]] <- ngsReports::plotSummary(fastqc.stats, labels=lbls)
-  }
-  
-  
-  if (summarizedPlots == TRUE) {
-    
-    # prepare for plotting  
-    df <- reshape2::melt(lapply(fastqc.stats , function(x) x@Per_base_sequence_quality[, c("Base","Mean")]))
-    names(df)[names(df)=="L1"] <- "samplename"
-    
-    # color code the samples as done by fastqc:
-    # A warning will be issued if the lower quartile for any base is less than 10, or if the median for any base is less than 25.
-    # A failure will be raised if the lower quartile for any base is less than 5 or if the median for any base is less than 20. 
-    # (https://www.bioinformatics.babraham.ac.uk/projects/fastqc/Help/3%20Analysis%20Modules/2%20Per%20Base%20Sequence%20Quality.html)
-    cols <- c(pass    = "#5cb85c",
-              warning = "#f0ad4e",
-              fail    = "#d9534f")
-    colorcode <- do.call(rbind,lapply(names(fastqc.stats),
-                                      function(i) {
-                                        min.l.quart <- min(fastqc.stats[[i]]@Per_base_sequence_quality$Lower_Quartile)
-                                        min.med <- min(fastqc.stats[[i]]@Per_base_sequence_quality$Median)
-                                        col.sample <- ifelse(min.l.quart>=10 & min.med>=25, 
-                                                             cols["pass"],
-                                                             ifelse(min.l.quart>=5 & min.med>=20,
-                                                                    cols["warning"],
-                                                                    cols["fail"]))
-                                        return(data.frame(sample=i,
-                                                          min.lower.quart=min.l.quart,
-                                                          min.median=min.med,
-                                                          col=col.sample))
-                                      }
-    ))
-    
-    ## only label "warning"s and "fail"ures 
-    to.be.labelled <- colorcode[colorcode$col == cols["warning"] | colorcode$col == cols["fail"],]
-    
-    ## in case all samples "pass"ed, label "all" in legend
-    if (nrow(to.be.labelled) == 0) {
-      to.be.labelled <- data.frame(sample="overlay of all samples", col=cols["pass"], row.names=NULL)
-    } else {
-      to.be.labelled <- rbind(to.be.labelled,c("all other samples","","",col=cols["pass"]))
-    }
-    
-    # fix position on x-axis since there can be intervals of positions summarized in fastqc
-    df$position <- factor(df$Base, levels=unique(df$Base))
-    xlen <- length(unique(df$Base))
-    
-    if("BaseQuals" %in% metrics) {
-      qclist[["BaseQuals"]] <- ggplot(df, aes(x=as.numeric(position), y=value)) +
-        labs(x = "position in read (bp)",
-             y = "mean quality score (Phred)") +
-        geom_rect(aes(xmin = -Inf, xmax = Inf, ymin = -Inf, ymax = 20), fill = "#edc0c4", alpha = 0.3, color=NA) +
-        geom_rect(aes(xmin = -Inf, xmax = Inf, ymin = 20, ymax = 28), fill = "#f0e2cc", alpha = 0.3, color=NA) +
-        geom_rect(aes(xmin = -Inf, xmax = Inf, ymin = 28, ymax = Inf), fill = "#ceebd1", alpha = 0.3, color=NA) +
-        geom_line(aes(color=samplename)) +
-        scale_color_manual(values = as.character(colorcode$col),
-                           breaks = colorcode$sample,
-                           labels = colorcode$sample) +
-        geom_point(data=to.be.labelled,
-                   mapping=aes(x=NaN, y=NaN, fill=sample),
-                   inherit.aes=FALSE, show.legend=TRUE, size = 1.5, shape = 21, color = "white") +
-        scale_fill_manual(values = as.character(to.be.labelled$col),
-                          breaks = to.be.labelled$sample,
-                          labels = to.be.labelled$sample) +
-        geom_hline(yintercept = c(0,10,20,30,40),color="white",alpha=0.3) +
-        geom_vline(xintercept = seq(0,xlen,10),color="white",alpha=0.3) +
-        coord_cartesian(xlim = c(1,xlen), ylim = c(0,42)) +
-        guides(color=FALSE,
-               fill=guide_legend(title="",ncol=3)) +
-        theme(axis.text.x = element_text(size=6,angle=90,hjust=0.5,vjust=0.5),
-              axis.text.y = element_text(size=8),
-              axis.title  = element_text(size=10),
-              plot.title  = element_text(size=12),
-              legend.text = element_text(size=7),
-              legend.position = "top") +
-        scale_x_continuous(breaks=unique(as.numeric(df$position)),
-                           labels=unique(df$Base))
-    }
-    ## use rev(lbls) to plot in reverse order
-    if("SeqContent" %in% metrics) {
-      qclist[["SeqContent"]] <- ngsReports::plotSeqContent(fastqc.stats, labels=rev(lbls)) +
+    if (summarizedPlots == TRUE) {
+      
+      # prepare for plotting  
+      df <- reshape2::melt(lapply(fastqc.stats , function(x) x@Per_base_sequence_quality[, c("Base","Mean")]))
+      names(df)[names(df)=="L1"] <- "samplename"
+      
+      # color code the samples as done by fastqc:
+      # A warning will be issued if the lower quartile for any base is less than 10, or if the median for any base is less than 25.
+      # A failure will be raised if the lower quartile for any base is less than 5 or if the median for any base is less than 20. 
+      # (https://www.bioinformatics.babraham.ac.uk/projects/fastqc/Help/3%20Analysis%20Modules/2%20Per%20Base%20Sequence%20Quality.html)
+      cols <- c(pass    = "#5cb85c",
+                warning = "#f0ad4e",
+                fail    = "#d9534f")
+      colorcode <- do.call(rbind,lapply(names(fastqc.stats),
+                                        function(i) {
+                                            min.l.quart <- min(fastqc.stats[[i]]@Per_base_sequence_quality$Lower_Quartile)
+                                            min.med <- min(fastqc.stats[[i]]@Per_base_sequence_quality$Median)
+                                            col.sample <- ifelse(min.l.quart>=10 & min.med>=25, 
+                                                                 cols["pass"],
+                                                                 ifelse(min.l.quart>=5 & min.med>=20,
+                                                                        cols["warning"],
+                                                                        cols["fail"]))
+                                            return(data.frame(sample=i,
+                                                              min.lower.quart=min.l.quart,
+                                                              min.median=min.med,
+                                                              col=col.sample))
+                                        }
+      ))
+      
+      ## only label "warning"s and "fail"ures 
+      to.be.labelled <- colorcode[colorcode$col == cols["warning"] | colorcode$col == cols["fail"],]
+      
+      ## in case all samples "pass"ed, label "all" in legend
+      if (nrow(to.be.labelled) == 0) {
+          to.be.labelled <- data.frame(sample="overlay of all samples", col=cols["pass"], row.names=NULL)
+      } else {
+         to.be.labelled <- rbind(to.be.labelled,c("all other samples","","",col=cols["pass"]))
+      }
+      
+      # fix position on x-axis since there can be intervals of positions summarized in fastqc
+      df$position <- factor(df$Base, levels=unique(df$Base))
+      xlen <- length(unique(df$Base))
+      
+      p.qual <- ggplot(df, aes(x=as.numeric(position), y=value)) +
+         labs(x = "position in read (bp)",
+              y = "mean quality score (Phred)") +
+         geom_rect(aes(xmin = -Inf, xmax = Inf, ymin = -Inf, ymax = 20), fill = "#edc0c4", alpha = 0.3, color=NA) +
+         geom_rect(aes(xmin = -Inf, xmax = Inf, ymin = 20, ymax = 28), fill = "#f0e2cc", alpha = 0.3, color=NA) +
+         geom_rect(aes(xmin = -Inf, xmax = Inf, ymin = 28, ymax = Inf), fill = "#ceebd1", alpha = 0.3, color=NA) +
+         geom_line(aes(color=samplename)) +
+         scale_color_manual(values = as.character(colorcode$col),
+                            breaks = colorcode$sample,
+                            labels = colorcode$sample) +
+         geom_point(data=to.be.labelled,
+                    mapping=aes(x=NaN, y=NaN, fill=sample),
+                    inherit.aes=FALSE, show.legend=TRUE, size = 1.5, shape = 21, color = "white") +
+         scale_fill_manual(values = as.character(to.be.labelled$col),
+                           breaks = to.be.labelled$sample,
+                           labels = to.be.labelled$sample) +
+         geom_hline(yintercept = c(0,10,20,30,40),color="white",alpha=0.3) +
+         geom_vline(xintercept = seq(0,xlen,10),color="white",alpha=0.3) +
+         coord_cartesian(xlim = c(1,xlen), ylim = c(0,42)) +
+         guides(color="none",
+                fill=guide_legend(title="",ncol=3)) +
+         theme(axis.text.x = element_text(size=6,angle=90,hjust=0.5,vjust=0.5),
+               axis.text.y = element_text(size=8),
+               axis.title  = element_text(size=10),
+               plot.title  = element_text(size=12),
+               legend.text = element_text(size=7),
+               legend.position = "top") +
+         scale_x_continuous(breaks=unique(as.numeric(df$position)),
+                            labels=unique(df$Base))
+      
+      p.content <- ngsReports::plotSeqContent(fastqc.stats, labels=rev(lbls)) +
         labs(y = "") +
         theme(legend.position="right") +
-        guides(fill=FALSE, color="legend") +
+        guides(fill="none", color="legend") +
         geom_point(mapping=aes(x=Inf, y=Inf, color=base),
                    data=data.frame(base=c("T", "A", "C", "G")),
                    inherit.aes=FALSE, show.legend=TRUE) +
         scale_color_manual("", values=c("red", "green", "blue", "black")) 
-    }
-    
+      
   } else {
-    
-    if("BaseQuals" %in% metrics) {
-      qclist[["BaseQuals"]] <- ngsReports::plotBaseQuals(fastqc.stats, labels=lbls, plotType="boxplot") +
+      p.qual <- ngsReports::plotBaseQuals(fastqc.stats, labels=lbls, plotType="boxplot") +
         theme(axis.text.x = element_text(size=5))
-    }
-    if("SeqContent" %in% metrics) {
-      qclist[["SeqContent"]] <- ngsReports::plotSeqContent(fastqc.stats, labels=lbls, plotType="line") +
+      p.content <- ngsReports::plotSeqContent(fastqc.stats, labels=lbls, plotType="line") +
         theme(axis.text.x = element_text(size=5), legend.position = "top")
-    }
   }
   
   # GC content line plot 
   # in case you want to add a theoretical distribution to the plot, use function plotGcContent with 
   # the following settings:
-  # ngsReports::plotGcContent(fastqc.stats, plotType="line", gcType="Genome", labels=lbls, theoreticalGC=TRUE, species=SPECIES)
+  # ngsReports::plotGcContent(fastqc.stats, plotType="line", gcType="Genome", theoreticalGC=TRUE, species=SPECIES)
   # the default value for SPECIES is "Hsapiens", thus, if you don't specify it, human will be used as a default
-  if("GcContent" %in% metrics) {
-    p.gc <- ngsReports::plotGcContent(fastqc.stats, usePlotly=summarizedPlots, plotType="line", gcType="Genome", labels=lbls, theoreticalGC=FALSE) 
-    if(!summarizedPlots) {
-      p.gc <- p.gc + guides(color=guide_legend(title="",ncol=4)) + 
-        theme(legend.position = "top", legend.text = element_text(size=8)) 
+  p.gc <- ngsReports::plotGcContent(fastqc.stats, usePlotly=summarizedPlots, plotType="line", gcType="Genome", labels=lbls, theoreticalGC=FALSE) 
+  if(!summarizedPlots) {
+    p.gc <- p.gc + guides(color=guide_legend(title="",ncol=4)) + 
+      theme(legend.position = "top", legend.text = element_text(size=8)) 
+  }
+  
+  return(list(no.of.samples=length(f), p.qual=p.qual, p.content=p.content, p.gc=p.gc))
+}
+
+
+##
+## ChIPhelper.fastqscreen: add FastqScreen data to and plot it as a barplot
+##
+#' ChIPhelper.fastqscreen: summarizes FastQScreen results, creates summarized barplots, only relevant contanimants shown
+#'
+#' @param perc.to.plot - a numeric vector of length 1 setting the percent cutoff of relevant contaminants, if any sample
+#'                       shows more than perc.to.plot, contaminant will be shown in plot
+#' @param sampleColumnName - character vector with column names of targets file indicating sample names
+#' @param fileColumnName - character vector with column names of targets file indicating sample file names (must have order corresponding to sampleColumnName)
+#'
+#' @return a list including a plot, the number of samples, and the number of plotted contaminants
+#'
+ChIPhelper.fastqscreen <- function(perc.to.plot = 1,
+                                   sampleColumnName =c("IPname", "INPUTname"), 
+                                   fileColumnName =c("IP", "INPUT")) {
+  
+  # logs folder
+  if(!file.exists(SHINYREPS_FASTQSCREEN_OUT)) {
+    return(list(errortext="FastQScreen statistics not available",
+                no.of.genomes=1,
+                no.of.samples=1))
+  }
+  
+  # construct the folder name, which is different for web and noweb
+  QC <- SHINYREPS_FASTQSCREEN_OUT
+   
+  # construct the image url from the folder contents (skip current dir .)
+  samples <- list.files(SHINYREPS_FASTQSCREEN_OUT, pattern="_screen.txt$", recursive=T, full.names=T)
+  df <- lapply(samples, function(f) {
+    #we read in the file 
+    screen_data <- read.delim(f, header=T, skip=1)
+    #the last line is our %hit_no_genomes
+    no_hit <- as.numeric(gsub("%Hit_no_genomes: ", "",screen_data[nrow(screen_data),1]))
+    screen_data <- screen_data[-nrow(screen_data),]
+    rownames(screen_data) <- screen_data$Genome
+    screen_data <- screen_data[, !(colnames(screen_data)=="Genome")]
+    #we get the number of unique/multiple hits per one genome and calculate sum (of the percentages)
+    one_genome <- data.frame(perc=rowSums(screen_data[, 
+                                                      grepl("one_genome.1",
+                                                            colnames(screen_data))]))
+    one_genome$genome <- rownames(one_genome)
+    one_genome$category <- "one genome"
+    multi_genome <- data.frame(perc=rowSums(screen_data[, colnames(screen_data) %in% 
+                                                          c("X.One_hit_multiple_genomes.1",
+                                                            "X.Multiple_hits_multiple_genomes")]))
+    multi_genome$genome <- rownames(multi_genome)
+    multi_genome$category <- "multiple genomes"
+    
+    mapping_info <- rbind(one_genome, multi_genome)
+    mapping_info <- rbind(mapping_info, c(perc=no_hit, genome="no hit", category="no hit"))
+    mapping_info$perc <- as.numeric(mapping_info$perc)
+    mapping_info$category <- factor(mapping_info$category, levels=c("one genome","multiple genomes","no hit"))
+    return(mapping_info)
+  })
+  
+  # sample names
+  samples <- gsub("_screen.txt", "", basename(samples))
+  
+  if(file.exists(SHINYREPS_TARGET)){
+    
+    # get target names
+    targets <- read.delim(SHINYREPS_TARGET)
+    
+    # melt targets in case of multiple file name columns (as for ChIP-Seq) and create general targets format
+    if(length(fileColumnName)>1) {
+      targets <- targets[, colnames(targets)[colnames(targets) %in% unique(c(fileColumnName, sampleColumnName))]]
+      targets <- reshape2::melt(targets, measure.vars=fileColumnName, value.name = "file") # 'file' column created
+      targets <- targets[!duplicated(targets$file), ] # in case the same inputs are used for several samples
+      for(i in 1:length(sampleColumnName)) {targets$sample[targets$variable == fileColumnName[i]] <- targets[targets$variable == fileColumnName[i], sampleColumnName[i]]} # 'sample' column created
+      targets <- targets[, !colnames(targets) %in% sampleColumnName] # sampleColumnName not needed any more
+    } else {
+      targets$file <- targets[,fileColumnName]
+      targets$sample <- targets[,sampleColumnName]
     }
-    qclist[["GcContent"]] <- p.gc
+    
+    targets$sample_ext <- gsub("\\..*$", "",targets$file )
+    
+    # replace files names with nicer sample names given in targets file
+    # if sample is missing in targets file, use reduced file name
+    samples <- sapply(samples, function(i) { ifelse(sum(sapply(targets$sample_ext, grepl, i))==1,
+                                                    ifelse(sapply("R1", grepl, i), 
+                                                           paste0(targets[sapply(targets$sample_ext, grepl, i),"sample"], ".R1"),
+                                                           ifelse(sapply("R2", grepl, i), 
+                                                                  paste0(targets[sapply(targets$sample_ext, grepl, i),"sample"], ".R2"),
+                                                                  targets[sapply(targets$sample_ext, grepl, i),"sample"])),
+                                                    gsub(paste0("^",SHINYREPS_PREFIX),"",i))})                                                    
+  } else {
+    if(!is.na(SHINYREPS_PREFIX)) {
+      samples <- gsub(paste0("^",SHINYREPS_PREFIX), "", samples)
+    }
   }
   
-  if("SeqQuals" %in% metrics) {
-    qclist[["SeqQuals"]] <- ngsReports::plotSeqQuals(fastqc.stats, usePlotly=summarizedPlots, plotType="line", labels=lbls)
-  }
-  if("DupLevels" %in% metrics) {
-    qclist[["DupLevels"]] <- ngsReports::plotDupLevels(fastqc.stats, usePlotly=summarizedPlots, plotType="line", labels=lbls)
-  }
-  if("Overrep" %in% metrics) {
-    qclist[["Overrep"]] <- ngsReports::plotOverrep(fastqc.stats, usePlotly=summarizedPlots, plotType="line", labels=lbls)
-  }
-  if("AdapterContent" %in% metrics) {
-    qclist[["AdapterContent"]] <- ngsReports::plotAdapterContent(fastqc.stats, usePlotly=summarizedPlots, plotType="line", labels=lbls)
+  names(df) <- samples
+  #createing a df out of the lists
+  df <- reshape2::melt(df, value.name="perc")
+  colnames(df) <- gsub("L1", "sample", colnames(df))
+
+  # filter for relevant contaminants (e.g. showing >=1% (perc.to.plot) in any sample)
+  max.per.genome <- aggregate(df$perc,list(df$genome),max)
+  relevant.genomes <- max.per.genome[max.per.genome[,2]>=perc.to.plot,1]
+  df <- df[df$genome %in% relevant.genomes,]
+
+  # sort alphabetically
+  df$sample <- factor(df$sample, levels=unique(df$sample)[order(unique(df$sample),decreasing=TRUE)])
+  
+  # replace "Mycoplasma" by "Mycoplasma species", FastQScreen itself cannot deal with space characters
+  df$genome <- gsub("Mycoplasma","Mycoplasma species",df$genome)
+
+  # split/wrap per genome
+  df$genome <- factor(df$genome, levels=unique(df$genome))
+
+  p.category.wrap <- ggplot(df, aes(x=sample, y=perc, fill=category)) +
+          geom_col(position=position_stack(reverse=T),width=0.8) +
+          scale_fill_manual(values=c(alpha("#4281a4",0.8),alpha("#ffa62b",0.8),"gray60")) +   
+          scale_y_continuous(breaks=seq(0,100,by=10)) +
+          theme_bw(base_size=10) +
+          labs(x = "",
+               y = "% mapped") +
+          theme(axis.text.x = element_text(vjust=0.5, angle=90),
+                legend.position = "top") +
+          guides(fill=guide_legend(title="mapped to", ncol=3)) +
+          facet_wrap(~genome,ncol=2) +
+          coord_flip()
+  
+  return(list(p.category.wrap=p.category.wrap,
+              no.of.genomes=length(unique(df$genome)),
+              no.of.samples=length(unique(df$sample))))      
+}
+
+
+
+##
+## ChIPhelper.dupRadar: go through dupRadar output dir and create a md table with
+##     the duplication plots
+##
+ChIPhelper.dupRadar <- function(web=FALSE,
+                                sampleColumnName =c("IPname", "INPUTname"), 
+                                fileColumnName =c("IP", "INPUT")) {
+    
+    # logs folder
+    if(!file.exists(SHINYREPS_DUPRADAR_LOG)) {
+        return("DupRadar statistics not available")
+    }
+
+    SHINYREPS_PLOTS_COLUMN <- tryCatch(as.integer(SHINYREPS_PLOTS_COLUMN),error=function(e){3})
+    if(SHINYREPS_PLOTS_COLUMN < 2) {
+        SHINYREPS_PLOTS_COLUMN <- 3L    # default to 4 columns
+    }
+
+    # construct the folder name, which is different for web and noweb
+    QC <- if(web) "/dupRadar" else SHINYREPS_DUPRADAR_LOG
+    
+    # construct the image url from the folder contents (skip current dir .)
+    samples <- list.files(SHINYREPS_DUPRADAR_LOG, pattern=".png$")
+    df <- sapply(samples, function(f) {
+        paste0("![dupRadar img](", QC, "/", basename(f), ")")
+    })
+    
+    # sample names 
+    samples <- sapply(df, function(x) {
+        gsub("_dupRadar.png)$", "", basename(x))
+    })
+
+    if(file.exists(SHINYREPS_TARGET)){
+
+        # get target names
+        targets <- read.delim(SHINYREPS_TARGET)
+        
+        # melt targets in case of multiple file name columns (as for ChIP-Seq) and create general targets format
+        if(length(fileColumnName)>1) {
+          targets <- targets[, colnames(targets)[colnames(targets) %in% unique(c(fileColumnName, sampleColumnName))]]
+          targets <- reshape2::melt(targets, measure.vars=fileColumnName, value.name = "file") # 'file' column created
+          targets <- targets[!duplicated(targets$file), ] # in case the same inputs are used for several samples
+          for(i in 1:length(sampleColumnName)) {targets$sample[targets$variable == fileColumnName[i]] <- targets[targets$variable == fileColumnName[i], sampleColumnName[i]]} # 'sample' column created
+          targets <- targets[, !colnames(targets) %in% sampleColumnName] # sampleColumnName not needed any more
+        } else {
+          targets$file <- targets[,fileColumnName]
+          targets$sample <- targets[,sampleColumnName]
+        }
+        
+        targets$sample_ext <- gsub("\\..*$", "",targets$file )
+        
+        # replace files names with nicer sample names given in targets file
+        # if sample is missing in targets file, use reduced file name
+        samples <- sapply(samples, function(i) { ifelse(sum(sapply(targets$sample_ext, grepl, i))==1,   
+                                                        targets[sapply(targets$sample_ext, grepl, i),"sample"], 
+                                                        gsub(paste0("^",SHINYREPS_PREFIX),"",i))})
+    } else {
+        if(!is.na(SHINYREPS_PREFIX)) {
+            samples <- gsub(paste0("^",SHINYREPS_PREFIX), "", samples)
+        }
+    }
+
+    # sort alphabetically
+    samples <- samples[order(samples)]
+    df <- df[names(samples)]
+
+    # fill up additional columns if number of samples is not a multiple of SHINYREPS_PLOTS_COLUMN
+    while(length(df) %% SHINYREPS_PLOTS_COLUMN != 0) df <- c(df, "")
+    while(length(samples) %% SHINYREPS_PLOTS_COLUMN != 0) samples <- c(samples, "")
+
+    df      <- matrix(df     , ncol=SHINYREPS_PLOTS_COLUMN, byrow=T)
+    samples <- matrix(samples, ncol=SHINYREPS_PLOTS_COLUMN, byrow=T)
+    
+    # add a row with the sample names
+    df.names <- matrix(sapply(1:nrow(df), function(i) { c(df[i, ], samples[i, ]) }), 
+                       ncol=SHINYREPS_PLOTS_COLUMN, byrow=T)
+    colnames(df.names) <- rep(" ", SHINYREPS_PLOTS_COLUMN)
+    
+    kable(as.data.frame(df.names), align="c", output=F, format="markdown")
+}
+
+
+##
+## ChIPhelper.Subread: parse Subread summary stats and create a md table
+##
+ChIPhelper.Subread <- function(subdir="",
+                               sampleColumnName =c("IPname", "INPUTname"), 
+                               fileColumnName =c("IP", "INPUT")) {
+    
+    FOLDER <- file.path(SHINYREPS_SUBREAD, subdir)
+    SUFFIX <- paste0(SHINYREPS_SUBREAD_SUFFIX, '$')
+    
+    # check if folder exists
+    if(!file.exists(FOLDER)) {
+        return("Subread statistics not available")
+    }
+    
+    # create a matrix using feature names as rownames, sample names as colnames
+    x <- sapply(list.files(FOLDER, pattern=SUFFIX), function(f) {
+        
+        f <- file(paste0(FOLDER, '/', f))
+        l <- readLines(f)
+        close(f)
+        
+	## get all interesting rows, extract count and category names
+        assigned.and.unassigned <- l[grep("Assigned|Unassigned",l)]
+        category.counts <- as.numeric(sapply(assigned.and.unassigned, function(i) {strsplit(i,"\t")[[1]][2]}))
+        names(category.counts) <- sapply(assigned.and.unassigned, function(i) {strsplit(i,"\t")[[1]][1]})
+        return(category.counts)
+    })
+    
+    # correct column names
+    colnames(x) <- gsub(paste0(SUFFIX, "$"), "", colnames(x))
+    
+    if(file.exists(SHINYREPS_TARGET)){
+
+        # get target names
+        targets <- read.delim(SHINYREPS_TARGET)
+        
+        # melt targets in case of multiple file name columns (as for ChIP-Seq) and create general targets format
+        if(length(fileColumnName)>1) {
+          targets <- targets[, colnames(targets)[colnames(targets) %in% unique(c(fileColumnName, sampleColumnName))]]
+          targets <- reshape2::melt(targets, measure.vars=fileColumnName, value.name = "file") # 'file' column created
+          targets <- targets[!duplicated(targets$file), ] # in case the same inputs are used for several samples
+          for(i in 1:length(sampleColumnName)) {targets$sample[targets$variable == fileColumnName[i]] <- targets[targets$variable == fileColumnName[i], sampleColumnName[i]]} # 'sample' column created
+          targets <- targets[, !colnames(targets) %in% sampleColumnName] # sampleColumnName not needed any more
+        } else {
+          targets$file <- targets[,fileColumnName]
+          targets$sample <- targets[,sampleColumnName]
+        }
+        
+        targets$sample_ext <- gsub("\\..*$", "", targets$file )
+    
+        # replace files names with nicer sample names given in targets file
+	# if sample is missing in targets file, use reduced file name
+        colnames(x) <- sapply(colnames(x), function(i) { ifelse(sum(sapply(targets$sample_ext, grepl, i))==1,
+                                                                targets[sapply(targets$sample_ext, grepl, i),"sample"],
+                                                                gsub(paste0("^",SHINYREPS_PREFIX),"",i))})
+    } else {
+
+        if(!is.na(SHINYREPS_PREFIX)) {
+            colnames(x) <- gsub(paste0("^",SHINYREPS_PREFIX), "", colnames(x))
+        }
+    }
+
+    # create md table (omitting various values that are 0 for now)
+    # from x we remove the ones which are unmapped to calculate percentages
+    # only for the mapped ones
+    x <- x[rownames(x) != "Unassigned_Unmapped", ]
+    x <- rbind(total=x, colSums(x))
+    rownames(x)[nrow(x)] <- "total"
+    df <- data.frame(assigned=paste0(format(x["Assigned", ], big.mark=","), " (", format((x["Assigned", ]/x["total", ])*100, digits=2, nsmall=2, trim=T), "%)"), 
+		     unassigned_ambig=paste0(format(x["Unassigned_Ambiguity", ], big.mark=","), " (", format((x["Unassigned_Ambiguity", ]/x["total", ])*100, digits=2, nsmall=2, trim=T), "%)"), 
+		     unassigned_multimap=paste0(format(x["Unassigned_MultiMapping", ], big.mark=","), " (", format((x["Unassigned_MultiMapping", ]/x["total", ])*100, digits=2, nsmall=2, trim=T), "%)"), 
+		     unassigned_nofeat=paste0(format(x["Unassigned_NoFeatures", ], big.mark=","), " (", format((x["Unassigned_NoFeatures", ]/x["total", ])*100, digits=2, nsmall=2, trim=T), "%)"))
+    rownames(df) <- colnames(x)
+
+    # sort alphabetically for plotting
+    df <- df[order(rownames(df)),]
+    kable(df, align=c("r", "r", "r", "r"), output=F, format="markdown")
+    
+}
+
+
+##
+#' selectSampleSubset: select subset of samples for including in report (e.g. in case of multiple fastq files in scRNA-seq) 
+#'
+#' @param samples character vector with sample names. 
+#' @param samplePattern regular expression to filter (include) on \code{samples}. No filtering if NULL or NA.
+#' @param excludePattern regular expression to filter (exclude) on \code{samples}. No filtering if NULL or NA.
+#' @param grepInBasename logical. If \code{TRUE} apply pattern to filename, not to full path.
+#'
+#' @return character vector with selected sample names
+selectSampleSubset <- function(samples, samplePattern=NULL, excludePattern=NULL, grepInBasename=T, maxno=NULL) {
+  
+  if(!gtools::invalid(samplePattern)) {
+    x <- if(grepInBasename) {basename(samples)} else {samples} # if TRUE apply pattern to filename, not to full path
+    if(!any(grepl(samplePattern, x))) {
+      warning(paste("\nYour pattern", samplePattern, "was not found in sample names and is ignored.\n")) 
+    } else {
+      samples <- samples[grep(samplePattern, x, invert=F)]
+    }
+    if(length(samples)==0) {stop("\nYou have selected no files!\n")}
   }
   
-  return(qclist)
+  if(!gtools::invalid(excludePattern)) {
+    x <- if(grepInBasename) {basename(samples)} else {samples} # if TRUE apply pattern to filename, not to full path
+    samples <- samples[grep(excludePattern, x, invert=T)]
+    if(length(samples)==0) {stop("\nYou have selected no files!\n")}
+  }
+  
+  if(!gtools::invalid(maxno) && is.numeric(maxno)) {
+    samples <- samples[1:min(length(samples), maxno)]
+    if(maxno > length(samples)) {cat("\nSample number restricted to", maxno)}
+  }
+  return(samples)
 }
 
 

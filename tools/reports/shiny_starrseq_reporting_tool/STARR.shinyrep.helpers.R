@@ -476,8 +476,8 @@ ChIPhelper.ngsReports.Fastqc <- function(subdir="",
   f <- selectSampleSubset(f, ...)
   
   x <- ngsReports::FastqcDataList(f)
-  lbls <- gsub(paste0("(^", SHINYREPS_PREFIX, "|.fastqc.zip$)"), "", names(x))
-  names(lbls) <- gsub(".fastqc.zip", ".fastq.gz", names(x))
+  lbls <- gsub(paste0("(^", SHINYREPS_PREFIX, "|.fastqc.zip$)"), "", basename(names(x)))
+  names(lbls) <- gsub(".fastqc.zip", ".fastq.gz", basename(names(x)))
   
   if("Summary" %in% metrics) {
     qclist[["Summary"]] <- ngsReports::plotSummary(x, labels=lbls)
@@ -617,8 +617,8 @@ ChIPhelper.Fastqc.custom <- function(web=FALSE, summarizedPlots=TRUE, subdir="",
   qclist[["no.of.samples"]] <- length(f)
   
   # create proper name vectoir as labels
-  lbls <- gsub("_fastqc.zip$", "", names(fastqc.stats))
-  names(lbls) <- gsub("_fastqc.zip", ".fastq.gz", names(fastqc.stats))
+  lbls <- gsub("_fastqc.zip$", "", basename(names(fastqc.stats)))
+  names(lbls) <- gsub("_fastqc.zip", ".fastq.gz", basename(names(fastqc.stats)))
   
   if(file.exists(SHINYREPS_TARGET)){
     
@@ -791,6 +791,136 @@ ChIPhelper.Fastqc.custom <- function(web=FALSE, summarizedPlots=TRUE, subdir="",
   }
   
   return(qclist)
+}
+
+
+##
+## ChIPhelper.fastqscreen: add FastqScreen data to and plot it as a barplot
+##
+#' ChIPhelper.fastqscreen: summarizes FastQScreen results, creates summarized barplots, only relevant contanimants shown
+#'
+#' @param perc.to.plot - a numeric vector of length 1 setting the percent cutoff of relevant contaminants, if any sample
+#'                       shows more than perc.to.plot, contaminant will be shown in plot
+#' @param sampleColumnName - character vector with column names of targets file indicating sample names
+#' @param fileColumnName - character vector with column names of targets file indicating sample file names (must have order corresponding to sampleColumnName)
+#'
+#' @return a list including a plot, the number of samples, and the number of plotted contaminants
+#'
+ChIPhelper.fastqscreen <- function(perc.to.plot = 1,
+                                   sampleColumnName =c("IPname", "INPUTname"), 
+                                   fileColumnName =c("IP", "INPUT")) {
+  
+  # logs folder
+  if(!file.exists(SHINYREPS_FASTQSCREEN_OUT)) {
+    return(list(errortext="FastQScreen statistics not available",
+                no.of.genomes=1,
+                no.of.samples=1))
+  }
+  
+  # construct the folder name, which is different for web and noweb
+  QC <- SHINYREPS_FASTQSCREEN_OUT
+   
+  # construct the image url from the folder contents (skip current dir .)
+  samples <- list.files(SHINYREPS_FASTQSCREEN_OUT, pattern="_screen.txt$", recursive=T, full.names=T)
+  df <- lapply(samples, function(f) {
+    #we read in the file 
+    screen_data <- read.delim(f, header=T, skip=1)
+    #the last line is our %hit_no_genomes
+    no_hit <- as.numeric(gsub("%Hit_no_genomes: ", "",screen_data[nrow(screen_data),1]))
+    screen_data <- screen_data[-nrow(screen_data),]
+    rownames(screen_data) <- screen_data$Genome
+    screen_data <- screen_data[, !(colnames(screen_data)=="Genome")]
+    #we get the number of unique/multiple hits per one genome and calculate sum (of the percentages)
+    one_genome <- data.frame(perc=rowSums(screen_data[, 
+                                                      grepl("one_genome.1",
+                                                            colnames(screen_data))]))
+    one_genome$genome <- rownames(one_genome)
+    one_genome$category <- "one genome"
+    multi_genome <- data.frame(perc=rowSums(screen_data[, colnames(screen_data) %in% 
+                                                          c("X.One_hit_multiple_genomes.1",
+                                                            "X.Multiple_hits_multiple_genomes")]))
+    multi_genome$genome <- rownames(multi_genome)
+    multi_genome$category <- "multiple genomes"
+    
+    mapping_info <- rbind(one_genome, multi_genome)
+    mapping_info <- rbind(mapping_info, c(perc=no_hit, genome="no hit", category="no hit"))
+    mapping_info$perc <- as.numeric(mapping_info$perc)
+    mapping_info$category <- factor(mapping_info$category, levels=c("one genome","multiple genomes","no hit"))
+    return(mapping_info)
+  })
+  
+  # sample names
+  samples <- gsub("_screen.txt", "", basename(samples))
+  
+  if(file.exists(SHINYREPS_TARGET)){
+    
+    # get target names
+    targets <- read.delim(SHINYREPS_TARGET)
+    
+    # melt targets in case of multiple file name columns (as for ChIP-Seq) and create general targets format
+    if(length(fileColumnName)>1) {
+      targets <- targets[, colnames(targets)[colnames(targets) %in% unique(c(fileColumnName, sampleColumnName))]]
+      targets <- reshape2::melt(targets, measure.vars=fileColumnName, value.name = "file") # 'file' column created
+      targets <- targets[!duplicated(targets$file), ] # in case the same inputs are used for several samples
+      for(i in 1:length(sampleColumnName)) {targets$sample[targets$variable == fileColumnName[i]] <- targets[targets$variable == fileColumnName[i], sampleColumnName[i]]} # 'sample' column created
+      targets <- targets[, !colnames(targets) %in% sampleColumnName] # sampleColumnName not needed any more
+    } else {
+      targets$file <- targets[,fileColumnName]
+      targets$sample <- targets[,sampleColumnName]
+    }
+    
+    targets$sample_ext <- gsub("\\..*$", "",targets$file )
+    
+    # replace files names with nicer sample names given in targets file
+    # if sample is missing in targets file, use reduced file name
+    samples <- sapply(samples, function(i) { ifelse(sum(sapply(targets$sample_ext, grepl, i))==1,
+                                                    ifelse(sapply("R1", grepl, i), 
+                                                           paste0(targets[sapply(targets$sample_ext, grepl, i),"sample"], ".R1"),
+                                                           ifelse(sapply("R2", grepl, i), 
+                                                                  paste0(targets[sapply(targets$sample_ext, grepl, i),"sample"], ".R2"),
+                                                                  targets[sapply(targets$sample_ext, grepl, i),"sample"])),
+                                                    gsub(paste0("^",SHINYREPS_PREFIX),"",i))})                                                    
+  } else {
+    if(!is.na(SHINYREPS_PREFIX)) {
+      samples <- gsub(paste0("^",SHINYREPS_PREFIX), "", samples)
+    }
+  }
+  
+  names(df) <- samples
+  #createing a df out of the lists
+  df <- reshape2::melt(df, value.name="perc")
+  colnames(df) <- gsub("L1", "sample", colnames(df))
+
+  # filter for relevant contaminants (e.g. showing >=1% (perc.to.plot) in any sample)
+  max.per.genome <- aggregate(df$perc,list(df$genome),max)
+  relevant.genomes <- max.per.genome[max.per.genome[,2]>=perc.to.plot,1]
+  df <- df[df$genome %in% relevant.genomes,]
+
+  # sort alphabetically
+  df$sample <- factor(df$sample, levels=unique(df$sample)[order(unique(df$sample),decreasing=TRUE)])
+  
+  # replace "Mycoplasma" by "Mycoplasma species", FastQScreen itself cannot deal with space characters
+  df$genome <- gsub("Mycoplasma","Mycoplasma species",df$genome)
+
+  # split/wrap per genome
+  df$genome <- factor(df$genome, levels=unique(df$genome))
+
+  p.category.wrap <- ggplot(df, aes(x=sample, y=perc, fill=category)) +
+          geom_col(position=position_stack(reverse=T),width=0.8) +
+          scale_fill_manual(values=c(alpha("#4281a4",0.8),alpha("#ffa62b",0.8),"gray60")) +   
+          scale_y_continuous(breaks=seq(0,100,by=10)) +
+          theme_bw(base_size=10) +
+          labs(x = "",
+               y = "% mapped") +
+          theme(axis.text.x = element_text(vjust=0.5, angle=90),
+                legend.position = "top") +
+          guides(fill=guide_legend(title="mapped to", ncol=3)) +
+          facet_wrap(~genome,ncol=2) +
+          coord_flip()
+  
+  return(list(p.category.wrap=p.category.wrap,
+              no.of.genomes=length(unique(df$genome)),
+              no.of.samples=length(unique(df$sample))))      
 }
 
 
