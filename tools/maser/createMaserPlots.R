@@ -21,7 +21,7 @@ library(rtracklayer)
 library(knitr)
 library(kableExtra)
 library(openxlsx)
-
+library(RColorBrewer)
 ##
 ## get arguments from the command line
 ##
@@ -90,7 +90,7 @@ if(!error_status) {
 	  n_splice_events = n_splice_events + nrow(slot(rmats_top, paste0(e,"_events")))
   }
   if(n_splice_events > 0) {
-	  plotspldist <- maser::splicingDistribution(rmats_filt, fdr = SHINYREPS_MASER_FDR, deltaPSI = SHINYREPS_MASER_DPSI)
+	  plotspldist <- maser::splicingDistribution(rmats_filt, fdr = fdr, deltaPSI = dpsi)
           print(plotspldist)
   }
 
