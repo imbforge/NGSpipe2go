@@ -26,12 +26,15 @@ All analysis steps are illustrated in the pipeline [flowchart](https://viewer.di
 
 
 ### Pipeline parameter settings
-- targets.txt: tab-separated txt-file giving information about the analysed samples. The following columns are required 
+- targets.txt: tab-separated txt-file giving information about the analysed samples. The following columns are required, but any number of additional columns can be added, for e.g. time point, sex, treatment, clone.
   - sample: sample identifier for use in plots and and tables
   - file: read counts file name (a unique sub-string of the file name is sufficient, this sub-string is grepped against the count file names produced by the pipeline) 
   - group: variable for sample grouping (e.g. by condition)
   - replicate: replicate number of samples belonging to the same group
-- contrasts.txt: indicate intended group comparisons for differential expression analysis, e.g. *KOvsWT=(KO-WT)* if targets.txt contains the groups *KO* and *WT*. Give 1 contrast per line.  
+- contrasts.txt: tab-separated txt-file with information about the samples to be compared. The following columns are required
+  - contrast.name: an identifier/name for the groups you want to compare
+  - contrast: indicate intended group comparisons for differential expression analysis; the group names must be defined in the targets.txt file.  E.g. *(KO-WT)* if targets.txt contains the groups *KO* and *WT*.
+  - mmatrix: the design formula which needs to be used to perform the differential analysis. More than one formala maybe given in multiple lines of this file. E.g. *~group* is sufficient if you do not need to correct for additional factors. If you need to additionally correct for, say, sex information *~group+sex* should be used. The values you use in the design formula must be defined in the targets.txt file; in this case *sex* information should be present in the targets.txt file.  
 - essential.vars.groovy: essential parameter describing the experiment including: 
   - ESSENTIAL_PROJECT: your project folder name
   - ESSENTIAL_STAR_REF: path to STAR indexed reference genome
