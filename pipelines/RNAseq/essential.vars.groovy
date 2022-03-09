@@ -32,7 +32,8 @@ RUN_TRACKHUB=false              // prepare a Track Hub for the UCSC genome brows
 RUN_FASTQSCREEN=true            // check for contaminations using FastQ Screen
 RUN_CUTADAPT=false              // optional read trimming with Cutadapt e.g. if using high read length
 RUN_IN_PAIRED_END_MODE=(ESSENTIAL_PAIRED == "yes") // no need to change this line
-RUN_RMATS=true // check for differential splicing events
+RUN_RMATS=true // check for differential splicing events using the provided contrasts; mmatrix of contrasts file will be ignored
+// In a typical setup, batch effect correction is not necessary for rMATS, as it calculates a ratio of splicing events with in each sample separately and then compares it with the respective replicates. Before comparing with replicates, they also model the variation among the replicates by random effects in a mixed model. In general, the variation accounting technical differences among replicates seems to be taken care by it. 
 
 // FASTQ-Screen parameters
 ESSENTIAL_FASTQSCREEN_PERC=1    // contaminant filter, if a contaminant is consuming at least this percentage of reads in at least one sample, contaminant will be shown in report
