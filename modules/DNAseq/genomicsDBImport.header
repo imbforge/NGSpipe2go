@@ -1,0 +1,12 @@
+GenomicsDBImport_vars=[
+    outdir        : RESULTS,
+    workspace_name: "GenomicsDBImport",
+    java_flags    : "-Xmx4g -Xms4g",
+    call_region   : ESSENTIAL_CALL_REGION,
+    sample_map    : "sample.map", // will be generated from targets file
+    extra         : ""
+]
+
+load  PIPELINE_ROOT + "/modules/DNAseq/genomicsDBImport.groovy"
+
+
