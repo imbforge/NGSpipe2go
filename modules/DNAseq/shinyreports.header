@@ -1,22 +1,34 @@
 shinyReports_vars=[
     project               : PROJECT,                 //project directory
+    paired                : ESSENTIAL_PAIRED,        //paired-end data [yes|no]
     log                   : LOGS,                    //where the logs lie
     qc                    : QC,                      //where the QC lie
     res                   : RESULTS,                 //where the results lie
     prefix                : ESSENTIAL_SAMPLE_PREFIX, //standard sample prefix
+    plots_column          : "3",                     //number of columns to splits the plot grids (dupradar, genebodycov...). Min=2L. L=integer in R
+    sort_alpha            : "TRUE",                  //should samples be sorted alphabetically in the report?
     fastqc_out            : FastQC_vars.outdir,      //where the Fastqc output lie
     fastqc_log            : LOGS + "/FastQC",        //where the Fastqc logs lie
+    fastqc_summarized     : "FALSE",                 //should FastQC plots be summarized in the report?
+    fastqscreen_out       : FastqScreen_vars.outdir,        //where the FastQScreen output lie
+    fastqscreen_log       : LOGS + "/FastQScreen",          //where the FastQScreen log lie
+    fastqscreen_perc      : ESSENTIAL_FASTQSCREEN_PERC,     //contaminant percentage to be plotted
+    run_cutadapt          : RUN_CUTADAPT,                   //apply read trimming
+    cutadapt_stats        : Cutadapt_vars.statsdir,        //cutadapt stat files
+    bqsr_stats            : BaseRecalibration_vars.statsdir,    //BQSR stat files
     bwa_log               : LOGS + "/BWA_pe",        //where the BWA (samtools flagstat) logs lie
-    bwa_suffix            : ".bam.log",              //extension given to the BWA log files
+    bwa_suffix            : ".log",                  //extension given to the BWA log files
     markdups_log          : LOGS + "/MarkDups",      //where the picard MarkDuplicates logs lie
-    gatkug_log            : LOGS + "/VariantCallUG", //where the GATK UnifiedGenotyper logs lie
-    gatkug_suffix         : ".UG.vcf.gz.log",        //extension given to the GATK UnifiedGenotyper log files
     gatkhc_log            : LOGS + "/VariantCallHC", //where the GATK HaplotypeCaller logs lie
-    gatkhc_suffix         : ".HC.vcf.gz.log",        //extension given to the GATK Haplotypecaller log files
+    gatkhc_suffix         : ".log",                  //extension given to the GATK Haplotypecaller log files
+    variantcallingmetrics : CollectVariantCallingMetrics_vars.outdir, //location of GATK variantEval results
     gatkvarianteval       : VariantEval_vars.outdir, //location of GATK variantEval results
     gatkvarianteval_suffix: ".report",               //extension given to the GATK VariantEval output files
-    res_gatkhc_suffix     : ".HC.vcf.gz",            //extension of the GATK HaplotypeCaller output files
-    tool_versions         : collectToolVersions_vars.outdir + "/tool_versions.txt" //where the tool versions listed
+    res_gatkhc            : GenotypeGVCFs_vars.outdir, //where the final GATK HaplotypeCaller vcf files lie
+    res_gatkhc_suffix     : ".vcf.gz",               //extension of the GATK HaplotypeCaller output files
+    res_snpeff            : snpEff_vars.outdir, //where the final GATK HaplotypeCaller vcf files lie
+    tool_versions         : collectToolVersions_vars.outdir + "/tool_versions.txt", //where the tool versions listed
+    target                : new File(PIPELINE_ROOT + "/pipelines/DNAseq/targets.txt").getCanonicalPath()
 ]
 
 load  PIPELINE_ROOT + "/modules/DNAseq/shinyreports.groovy"
