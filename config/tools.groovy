@@ -38,7 +38,7 @@ tools_defaults = [
     fastqc     : [ runenv: "lmod", version: "0.11.8"            ],
     fastqscreen: [ runenv: "lmod", version: "0.13"              ],
     fastx      : [ runenv: "lmod", version: "0.0.14"            ],
-    gatk       : [ runenv: "lmod", version: "4.2.0.0"           ],
+    gatk       : [ runenv: "lmod", version: "4.2.5.0"           ],
     htseq      : [ runenv: "lmod", version: "0.6.1"             ],
     java       : [ runenv: "lmod", version: "1.8"               ],
     kentutils  : [ runenv: "lmod", version: "v365"              ],
@@ -54,12 +54,14 @@ tools_defaults = [
     rseqc      : [ runenv: "lmod", version: "3.0.0"             ],
     samtools   : [ runenv: "lmod", version: "1.9"               ],
     seqtk      : [ runenv: "lmod", version: "1.3"               ],
+    snpEff     : [ runenv: "lmod", version: "5.0e"              ],
     starfusion : [ runenv: "lmod", version: "0.8.0"             ],
     star       : [ runenv: "lmod", version: "2.7"               ],
     stringtie  : [ runenv: "lmod", version: "1.3.5"             ],
     subread    : [ runenv: "lmod", version: "1.6"               ],
     trimgalore : [ runenv: "lmod", version: "0.5.0"             ],
-    umitools   : [ runenv: "lmod", version: "1.0.0"             ]
+    umitools   : [ runenv: "lmod", version: "1.0.0"             ],
+    vcftools   : [ runenv: "lmod", version: "1.16"              ]
 ]
 
 // This map defines how to prepare the environment in order to have in PATH all
@@ -182,6 +184,9 @@ tools_envs = [
         ],
         "4.2.0.0": [
             lmod: "module load GATK/4.2.0.0"
+        ],
+        "4.2.5.0": [
+            lmod: "module load GATK/4.2.5.0"
         ]
     ],
     htseq: [
@@ -312,6 +317,11 @@ tools_envs = [
             conda: "${conda_call} source activate ${conda_tools}/seqtk/1.3"
         ]
     ],
+    snpEff: [
+        "5.0e": [
+            lmod: "module load snpEff/5.0e"
+        ]
+    ],
     starfusion: [
         "0.8.0": [
             lmod: "module load STAR-Fusion/0.8.0"
@@ -364,6 +374,11 @@ tools_envs = [
         "1.0.0": [
             lmod: "module load umitools/1.0.0",
             conda: "${conda_call} source activate ${conda_tools}/umitools/1.0.0"
+        ]
+    ],
+    vcftools: [
+        "1.16": [
+            lmod: "module load vcftools/1.16"
         ]
     ]
 ]

@@ -347,6 +347,11 @@ config {
       procs="1" 
       memory="4"
     }
+    snpEff { 
+      walltime="3:00:00" 
+      procs="1" 
+      memory="8"
+    }
     SplitNCigarReads { 
       queue=long_queue 
       procs="8" 
@@ -372,6 +377,11 @@ config {
       walltime="16:00:00" 
       procs="1" 
       memory="32"
+    }
+    ValidateVariants { 
+      walltime="2:00:00" 
+      procs="8" 
+      memory="20"
     }
     VariantCallHC { 
       walltime="48:00:00" 
