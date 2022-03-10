@@ -1,0 +1,9 @@
+STARRPeaker_procCov_vars=[
+    outdir     : ESSENTIAL_STARRPEAKER_COVTSV.replaceFirst(/\/[^\/]+$/, ''),  // output dir
+    covtsv     : ESSENTIAL_STARRPEAKER_COVTSV,                  // output covariates file
+    covbigwigs : ESSENTIAL_STARRPEAKER_COVBIGWIGS,              // comma-separated list of covariate bigwig file paths
+    linfoldtsv : ESSENTIAL_STARRPEAKER_LINFOLDTSV               // LinearFold TSV file, if present
+]
+
+load PIPELINE_ROOT + "/modules/STARRseq/starrpeaker_proccov.groovy"
+

@@ -1,0 +1,13 @@
+STARRPeaker_makeBin_vars=[
+    outdir    : ESSENTIAL_STARRPEAKER_BINBED.replaceFirst(/\/[^\/]+$/, ''),          // output dir
+    chromsize : ESSENTIAL_CHROMSIZES,              // chromosome sizes file
+    bed       : ESSENTIAL_STARRPEAKER_BINBED,      // BED file with genomic bins used for peak calling
+    blacklist : ESSENTIAL_BLACKLIST,               // blacklist BED file (NOTE: REQUIRED PARAMETER, NOT OPTIONAL!)
+    length    : "500",                             // bin length
+    step      : "100",                             // step size
+    genesbed  : ESSENTIAL_GENESBED,                // capture regions BED file, if CapSTARR-seq run
+    slop      : "200"                              // for capture regions, how much to extend the edges (bedtools slop -b)
+]
+
+load PIPELINE_ROOT + "/modules/STARRseq/starrpeaker_makebin.groovy"
+

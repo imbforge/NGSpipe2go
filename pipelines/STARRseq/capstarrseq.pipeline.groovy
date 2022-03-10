@@ -28,6 +28,8 @@ load PIPELINE_ROOT + "/modules/RNAseq/filter2htseq.header"
 load PIPELINE_ROOT + "/modules/RNAseq/tpm.header"
 load PIPELINE_ROOT + "/modules/RNAseq/dupradar.header"
 load PIPELINE_ROOT + "/modules/STARRseq/capstarrseqfoldchange.header"
+load PIPELINE_ROOT + "/modules/STARRseq/starrpeaker_procbam.header"
+load PIPELINE_ROOT + "/modules/STARRseq/starrpeaker_callpeak.header"
 load PIPELINE_ROOT + "/modules/NGS/multiqc.header"
 load PIPELINE_ROOT + "/modules/miscellaneous/collect_tool_versions.header"
 load PIPELINE_ROOT + "/modules/STARRseq/shinyreports.header"
@@ -49,13 +51,17 @@ Bpipe.run {
             [    (RUN_IN_PAIRED_END_MODE ? InsertSize.using(subdir:"withduplicates") : dontrun.using(module: "InsertSize")),
                  bamCoverage.using(subdir:"withduplicates"),
                  subread_count.using(subdir:"withduplicates") + filter2htseq.using(subdir:"withduplicates") +
-                 tpm.using(subdir:"withduplicates")
+                 tpm.using(subdir:"withduplicates"),
+                 (RUN_STARRPEAKER ? STARRPeaker_procBam.using(subdir:"withduplicates") +
+                                    STARRPeaker_callPeak.using(subdir:"withduplicates") : dontrun.using(module:"starrpeaker"))
             ], 
         "%.bam" * [RmDups + BAMindexer] + collect_bams + "%.bam" *  // branch deduplicated
             [    (RUN_IN_PAIRED_END_MODE ? InsertSize.using(subdir:"deduplicated") : dontrun.using(module: "InsertSize")),
                  bamCoverage.using(subdir:"deduplicated"),
                  subread_count.using(subdir:"deduplicated") + filter2htseq.using(subdir:"deduplicated") +
-                 tpm.using(subdir:"deduplicated")
+                 tpm.using(subdir:"deduplicated"),
+                 (RUN_STARRPEAKER ? STARRPeaker_procBam.using(subdir:"deduplicated") +
+                                    STARRPeaker_callPeak.using(subdir:"deduplicated") : dontrun.using(module:"starrpeaker"))
             ]
         
     ] + // end parallel branches

@@ -1,0 +1,16 @@
+STARRPeaker_procBam_vars=[
+    outdir    : RESULTS + "/starrpeaker",             // output dir
+    targets   : "targets_peaks.txt",                  // targets file describing the samples
+    chromsize : ESSENTIAL_CHROMSIZES,                 // chromosome sizes file
+    bed       : ESSENTIAL_STARRPEAKER_BINBED,         // BED file with genomic bins used in peak calling
+    mapped    : MAPPED,                               // where the bam files are stored
+    cpus      : Integer.toString(ESSENTIAL_THREADS),  // number of threads to use
+    strand    : "all",                                // use all/fwd/rev stranded fragments
+    min       : "200",                                // minimum insert size
+    max       : "1000",                               // maximum insert size
+    se        : ESSENTIAL_PAIRED=="no",               // use single-end instead of paired-end sequencing
+    readstart : false                                 // use read start position instead of fragment center
+]
+
+load PIPELINE_ROOT + "/modules/STARRseq/starrpeaker_procbam.groovy"
+

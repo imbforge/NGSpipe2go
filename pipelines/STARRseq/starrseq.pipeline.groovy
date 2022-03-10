@@ -33,6 +33,8 @@ load PIPELINE_ROOT + "/modules/NGS/rmdups.header"
 load PIPELINE_ROOT + "/modules/NGS/trackhub.header"
 load PIPELINE_ROOT + "/modules/NGS/trackhub_config.header"
 load PIPELINE_ROOT + "/modules/NGS/multiqc.header"
+load PIPELINE_ROOT + "/modules/STARRseq/starrpeaker_procbam.header"
+load PIPELINE_ROOT + "/modules/STARRseq/starrpeaker_callpeak.header"
 load PIPELINE_ROOT + "/modules/miscellaneous/collect_tool_versions.header"
 load PIPELINE_ROOT + "/modules/STARRseq/shinyreports.header"
 
@@ -57,7 +59,9 @@ Bpipe.run {
                                           [bamCoverage.using(subdir:"withduplicates"), 
                                            phantompeak.using(subdir:"withduplicates")]), 
                 ipstrength.using(subdir:"withduplicates"), 
-                macs2.using(subdir:"withduplicates")
+                macs2.using(subdir:"withduplicates"),
+                (RUN_STARRPEAKER ? STARRPeaker_procBam.using(subdir:"withduplicates") +
+                                   STARRPeaker_callPeak.using(subdir:"withduplicates") : dontrun.using(module:"starrpeaker"))
             ], 
         "%.bam" * [RmDups + BAMindexer] + collect_bams + "%.bam" *  // branch deduplicated
             [   // QC specific to paired end (pe) or single end (se) design
@@ -66,7 +70,9 @@ Bpipe.run {
                                           [bamCoverage.using(subdir:"deduplicated"), 
                                            phantompeak.using(subdir:"deduplicated")]), 
                 ipstrength.using(subdir:"deduplicated"), 
-                macs2.using(subdir:"deduplicated")  
+                macs2.using(subdir:"deduplicated"),
+                (RUN_STARRPEAKER ? STARRPeaker_procBam.using(subdir:"deduplicated") +
+                                   STARRPeaker_callPeak.using(subdir:"deduplicated") : dontrun.using(module:"starrpeaker"))
             ]
 
     ] + // end parallel branches

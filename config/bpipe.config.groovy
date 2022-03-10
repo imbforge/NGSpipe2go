@@ -527,6 +527,32 @@ config {
       procs="1" 
       memory="1"
     }
+    STARRPeaker_calcFoldingEnergy { 
+      queue=long_queue 
+      walltime="16:00:00" 
+      procs="12" 
+      memory="10"
+    }
+    STARRPeaker_callPeak { 
+      walltime="01:00:00" 
+      procs="1" 
+      memory="4"
+    }
+    STARRPeaker_makeBin { 
+      walltime="0:10:00" 
+      procs="1" 
+      memory="1"
+    }
+    STARRPeaker_procBam { 
+      walltime="04:00:00" 
+      procs="8" 
+      memory="10"
+    }
+    STARRPeaker_procCov { 
+      walltime="04:00:00" 
+      procs="1" 
+      memory="10"
+    }
     subread2rnatypes { 
       walltime="02:00:00" 
       procs="4" 

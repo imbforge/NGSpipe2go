@@ -28,9 +28,18 @@ ESSENTIAL_ANNODB="org.Mm.eg.db"   // needed for peak annotation
 ESSENTIAL_BLACKLIST=""            // path to a BED file with blacklisted regions (default: empty string). Peaks in these regions will be removed from the peakset.
 
 
-// Target regions (only relevant for CapSTARR-seq; ignored in conventional STARR-seq runs)
+// Capture regions files (only relevant for CapSTARR-seq; use empty strings for conventional STARR-seq)
 ESSENTIAL_GENESBED=ESSENTIAL_PROJECT+"/capture_regions.bed"  // for CapSTARR-seq: capture regions BED file
 ESSENTIAL_GENESGTF=ESSENTIAL_PROJECT+"/capture_regions.gtf"  // for CapSTARR-seq: capture regions GTF file (each capture region should be a single-exon, single transcript gene with "gene_id" and "gene_name" fields. Only "exon" GTF entries are required)
+
+// Peak calling with STARRPeaker (can be used for both conventional STARR-seq and CapSTARR-seq)
+RUN_STARRPEAKER=false
+ESSENTIAL_STARRPEAKER_BINBED="/full/path/to/genomic_bins.bin.bed"  // BED file with genomic bins used in peak calling (should end in ".bin.bed")
+ESSENTIAL_STARRPEAKER_COVTSV="/full/path/to/genomic_bin_covariates.tsv"   // tab-separated file with covariate scores per genomic bin (one covariate per column). This file can be created from the two variables below with the STARRPeaker_preproc.pipeline.groovy pipeline
+ESSENTIAL_STARRPEAKER_COVBIGWIGS="/path/to/covariate1.bw,/path/to/covariate2.bw"   // comma-separated list if bigwig files to generate covariates file from
+ESSENTIAL_STARRPEAKER_LINFOLDTSV="/full/path/to/linearfold_output.tsv"   // LinearFold output file
+ESSENTIAL_STARRPEAKER_LINFOLDEXE="/full/path/to/linearfold_v"            // full path to LinearFold executable
+
 
 // STARR-seq specific parameters
 CAPSTARRSEQ_DIFFEXP=false       // for CapSTARR-seq: whether to use differential expression or fold change approach. Differential expression requires the STARR-seq DNA to have been extracted from the samples, as well as the RNA
@@ -44,7 +53,6 @@ RUN_IN_PAIRED_END_MODE=(ESSENTIAL_PAIRED == "yes") // no need to change this lin
 // Optional pipeline stages specific to conventional STARR-seq (not CapSTARR-seq)
 RUN_PEAK_ANNOTATION=true
 RUN_ENRICHMENT=true
-RUN_TRACKHUB=false
 RUN_UPSETPLOT=false // For larger projects, the calculation of the respective combination matrix may take several hours.
 
 
@@ -62,7 +70,7 @@ ESSENTIAL_NEXTSEQTRIM=true   // accounts for terminal G bases during base qualit
 
 // Peak calling with MACS2 (only required for conventional STARR-seq)
 ESSENTIAL_MACS2_BROAD=false    // use "true" for broad peak calling in MACS2 (default: "false")
-ESSENTIAL_DUP="auto"           // how MACS2 deals with duplicated reads or fragments: "auto" (default), "all" or 1
+ESSENTIAL_DUP="all"           // how MACS2 deals with duplicated reads or fragments: "auto" (default), "all" or 1
 ESSENTIAL_MACS2_GSIZE="mm"  // mapable genome size for MACS2 (approx. size in bp or use "hs" for human, "mm" for mouse, "ce" for worm, "dm" for fly)
 
 // Differential binding analysis with DiffBind (only required for conventional STARR-seq)

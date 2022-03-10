@@ -1,0 +1,13 @@
+STARRPeaker_callPeak_vars=[
+    outdir    : RESULTS + "/starrpeaker",          // output dir
+    chromsize : ESSENTIAL_CHROMSIZES,              // chromosome sizes file
+    bed       : ESSENTIAL_STARRPEAKER_BINBED,      // BED file with genomic bins used in peak calling
+    cov       : ESSENTIAL_STARRPEAKER_COVTSV,      // tab-separated file with covariate scores per genomic bin (one covariate per column)
+    threshold : "0.05",                            // peak calling q-value threshold
+    mincov    : "10",                              // minimum coverage
+    eq        : "1e-5",                            // extreme quantile to remove
+    mode      : "1"                                // mode: 1 - use input as covariate, 2 - use input as offset
+]
+
+load PIPELINE_ROOT + "/modules/STARRseq/starrpeaker_callpeak.groovy"
+

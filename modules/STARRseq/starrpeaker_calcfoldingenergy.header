@@ -1,0 +1,11 @@
+STARRPeaker_calcFoldingEnergy_vars=[
+    outdir     : ESSENTIAL_STARRPEAKER_LINFOLDTSV.replaceFirst(/\/[^\/]+$/, ''),          // output dir
+    bed        : ESSENTIAL_STARRPEAKER_BINBED,       // BED file with genomic bins used in peak calling
+    out        : ESSENTIAL_STARRPEAKER_LINFOLDTSV,   // LinearFold output file with covariate scores
+    genome     : ESSENTIAL_BOWTIE_GENOME,            // full path to genome fasta file
+    linearfold : ESSENTIAL_STARRPEAKER_LINFOLDEXE,   // full path to LinearFold executable file (linearfold_v)
+    cpus      : Integer.toString(ESSENTIAL_THREADS)  // number of threads to use
+]
+
+load PIPELINE_ROOT + "/modules/STARRseq/starrpeaker_calcfoldingenergy.groovy"
+
