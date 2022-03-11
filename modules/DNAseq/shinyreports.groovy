@@ -53,6 +53,7 @@ shinyReports = {
             echo "SHINYREPS_GATKhc_OUT=${shinyReports_vars.res_gatkhc}"     >> $output &&
             echo "SHINYREPS_RES_GATKhc_SUFFIX=${shinyReports_vars.res_gatkhc_suffix}" >> $output &&
             echo "SHINYREPS_SNPEFF_OUT=${shinyReports_vars.res_snpeff}"     >> $output &&
+            echo "SHINYREPS_TRACKHUB_DONE=${shinyReports_vars.trackhub_done}" >> $output &&
             echo "SHINYREPS_TOOL_VERSIONS=${shinyReports_vars.tool_versions}" >> $output &&
             echo "SHINYREPS_TARGET=${shinyReports_vars.target}" >> $output
         ""","shinyReports"

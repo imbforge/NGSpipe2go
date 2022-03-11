@@ -27,6 +27,7 @@ shinyReports_vars=[
     res_gatkhc            : GenotypeGVCFs_vars.outdir, //where the final GATK HaplotypeCaller vcf files lie
     res_gatkhc_suffix     : ".vcf.gz",               //extension of the GATK HaplotypeCaller output files
     res_snpeff            : snpEff_vars.outdir, //where the final GATK HaplotypeCaller vcf files lie
+    trackhub_done         : TRACKS + "/trackhub.done",     //contains trackhub URL
     tool_versions         : collectToolVersions_vars.outdir + "/tool_versions.txt", //where the tool versions listed
     target                : new File(PIPELINE_ROOT + "/pipelines/DNAseq/targets.txt").getCanonicalPath()
 ]

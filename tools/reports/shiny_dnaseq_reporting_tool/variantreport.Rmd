@@ -152,6 +152,38 @@ The mapping statistics show the total number of reads delivered to the aligner, 
 cat(VARhelper.BWA(),sep="\n")
 ```
 
+
+## Potential contaminants and rRNA content ##
+
+A competitive mapping to the reference genome and known rRNAs (H. sapiens, M. musculus, C. elegans, D. melanogaster, D. rerio, X. tropicalis) as well as frequently occurring Mycoplasma species (M. arginini, M. fermentans, M. hominis, M. hyorhinis, M. orale, and Acholeplasma laidlawii), PhiX and ERCC spike-in sequences, E. coli and B. taurus (bovine) was performed with FastQScreen (http://www.bioinformatics.babraham.ac.uk/projects/fastq_screen/).
+
+In the following plot only relevant contaminants are shown. A contaminant is considered relevant if it consumes `r SHINYREPS_FASTQSCREEN_PERC`% of reads or more in at least one sample. The "one genome" label refers to the amount of reads mapping to that genome only, no matter if they are mapping uniquely or multiple times. The "multiple genomes" label refers to the amount of read mapping to this genome but also to other genomes in the screening regardless of whether they are uniquely or multi-mapping. 
+
+```{r fastqscreen_paragraph, echo=F, results='asis', fig.width=10, error=F, warning=F, message=F}
+fastqscreen_plots <- VARhelper.fastqscreen(perc.to.plot=SHINYREPS_FASTQSCREEN_PERC)
+```
+
+```{r fastqscreen_paragraph2, echo=F,results='asis',error=F,warning=F,message=F,fig.align='center',fig.height=(round((3*fastqscreen_plots$no.of.genomes)/4)+1)*fastqscreen_plots$no.of.samples/8+1}
+  if(is.null(fastqscreen_plots$errortext)) {
+    plot(fastqscreen_plots$p.category.wrap)
+    } else {
+      cat(fastqscreen_plots$errortext)
+      }
+```
+
+
+## UCSC genome browser tracks ##
+
+The browser tracks are generated using bamCoverage tool in [deepTools](https://deeptools.readthedocs.io/en/develop/) and they are normalized using the Counts Per Million mapped reads (CPM) method.
+
+
+To view the tracks in the UCSC Genome Browser, navigate to the [UCSC Genome Browser Track Hub page](https://genome-euro.ucsc.edu/cgi-bin/hgHubConnect) and enter the following line into the `URL` field:
+
+```{r Trackhub, echo=F, results='asis', error=F, warning=F, message=F}
+cat(VARhelper.Trackhub(), sep="\n")
+```
+
+
 ### Variant calling
 Variant calling is performed using GATK HaplotypeCaller. This tools includes default read filters that exclude reads from variant calling.
 
