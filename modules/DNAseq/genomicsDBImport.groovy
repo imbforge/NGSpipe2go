@@ -6,6 +6,7 @@ GenomicsDBImport = {
         author: "Frank Rühle"
 
     output.dir = GenomicsDBImport_vars.outdir
+    TARGETS = PROJECT + PIPELINE_ROOT + "/pipelines/DNAseq/targets.txt"
 
     def GenomicsDBImport_FLAGS =
         (GenomicsDBImport_vars.sample_map     ? " --sample-name-map " + GenomicsDBImport_vars.outdir + "/" + GenomicsDBImport_vars.sample_map : "" ) +
@@ -24,7 +25,7 @@ GenomicsDBImport = {
             rm -f ${GenomicsDBImport_vars.outdir}/${GenomicsDBImport_vars.sample_map} &&
             vcfarray=($inputs.vcf.gz) &&
             for file in "\${vcfarray[@]}"; do
-              echo -e \$(echo \$(grep \$(echo \$(basename \${file}) | sed 's/\\..*//') targets.txt | awk '{print \$1}')'\\t'\${file}) >> ${GenomicsDBImport_vars.outdir}/${GenomicsDBImport_vars.sample_map};
+              echo -e \$(echo \$(grep \$(echo \$(basename \${file}) | sed 's/\\..*//') $TARGETS | awk '{print \$1}')'\\t'\${file}) >> ${GenomicsDBImport_vars.outdir}/${GenomicsDBImport_vars.sample_map};
             done &&
 
             gatk --java-options "${GenomicsDBImport_vars.java_flags}" GenomicsDBImport $GenomicsDBImport_FLAGS --tmp-dir \${TMP} --genomicsdb-workspace-path $output
