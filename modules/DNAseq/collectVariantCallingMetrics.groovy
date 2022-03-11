@@ -10,7 +10,6 @@ CollectVariantCallingMetrics = {
     def SAMPLENAME = new File(input)
     def SAMPLENAME_BASE = SAMPLENAME.getName()
     def SAMPLENAME_BASE_PRUNED = SAMPLENAME_BASE.replace(".vcf", "").replace(".gz", "") 
-    println SAMPLENAME_BASE_PRUNED
 
     def CollectVariantCallingMetrics_vars_FLAGS = 
             (CollectVariantCallingMetrics_vars.bwa_ref        ? " -R "      + CollectVariantCallingMetrics_vars.bwa_ref        : "" ) +
