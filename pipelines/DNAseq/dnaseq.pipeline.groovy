@@ -32,13 +32,14 @@ load PIPELINE_ROOT + "/modules/DNAseq/shinyreports.header"
 
 // Main pipeline task
 dontrun = { println "didn't run $module" }
+collect_bams = { forward inputs.bam }
 
 Bpipe.run {
     "%.fastq.gz" * [ FastQC, (RUN_FASTQSCREEN ? FastqScreen : dontrun.using(module: "FastqScreen")) ] +
     (RUN_CUTADAPT ? Cutadapt + FastQC.using(subdir:"trimmed") : dontrun.using(module:"Cutadapt")) +
-    (RUN_IN_PAIRED_END_MODE ? "%.R*.fastq.gz" * [ BWA_pe ] : "%.fastq.gz" * [ BWA_se ] ) +
-    "%.bam" * [
-        RmDups + BAMindexer + [
+    (RUN_IN_PAIRED_END_MODE ? "%.R*.fastq.gz" * [ BWA_pe + BAMindexer ] : "%.fastq.gz" * [ BWA_se + BAMindexer ] ) + 
+    collect_bams + "%.bam" * [ 
+        (RUN_RMDUPS ? RmDups + BAMindexer : dontrun.using(module:"RmDups")) + [
             bamCoverage,
             BaseRecalibration + VariantCallHC 
             ]
