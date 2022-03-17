@@ -93,6 +93,11 @@ config {
       procs="1" 
       memory="2"
     }
+    CollectVariantCallingMetrics { 
+      walltime="03:00:00" 
+      procs="1" 
+      memory="32"
+    }
     CombinedStats { 
       walltime="01:00:00" 
       procs="1" 
@@ -203,6 +208,11 @@ config {
       procs="1" 
       memory="1"
     }
+    GatherBQSRReports { 
+      walltime="03:00:00" 
+      procs="4" 
+      memory="16"
+    }
     GO_Enrichment { 
       walltime="01:00:00" 
       procs="4" 
@@ -214,6 +224,16 @@ config {
       memory="1"
     }
     GenerateStarIndexFromSJ { 
+      walltime="04:00:00" 
+      procs="8" 
+      memory="32"
+    }
+    GenomicsDBImport { 
+      walltime="04:00:00" 
+      procs="8" 
+      memory="32"
+    }
+    GenotypeGVCFs { 
       walltime="04:00:00" 
       procs="8" 
       memory="32"
@@ -350,7 +370,7 @@ config {
     snpEff { 
       walltime="3:00:00" 
       procs="1" 
-      memory="8"
+      memory="16"
     }
     SplitNCigarReads { 
       queue=long_queue 
