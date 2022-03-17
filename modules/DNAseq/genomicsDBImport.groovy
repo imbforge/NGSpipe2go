@@ -1,7 +1,7 @@
 GenomicsDBImport = {
     doc title: "GATK GenomicsDBImport",
         desc:  "Import single-sample GVCFs into GenomicsDB before joint genotyping.",
-        constraints: "input GVCFs must possess genotype likelihoods containing the allele produced by HaplotypeCaller with the '-ERC GVCF' or '-ERC BP_RESOLUTION' settings. At least one interval must be provided. Input GVCFs cannot contain multiple entries for a single genomic position. If CombineGVCFs cannot be applied use the slower CombineGVCFs instead.",
+        constraints: "input GVCFs must possess genotype likelihoods containing the allele produced by HaplotypeCaller with the '-ERC GVCF' or '-ERC BP_RESOLUTION' settings. At least one interval must be provided. Input GVCFs cannot contain multiple entries for a single genomic position. If GenomicsDBImport cannot be applied use CombineGVCFs instead.",
         bpipe_version: "tested with bpipe 0.9.9.8.slurm",
         author: "Frank Rühle"
 
