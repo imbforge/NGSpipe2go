@@ -1,1 +1,0 @@
-mut.vs.wt=(mut-wt)

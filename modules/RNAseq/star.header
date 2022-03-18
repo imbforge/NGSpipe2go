@@ -9,9 +9,9 @@ STAR_vars=[
 
     // settings imported from essential vars
     threads         : Integer.toString(ESSENTIAL_THREADS),
-    ref             : ESSENTIAL_STAR_REF,
+    ref             : ESSENTIAL_STARR_STAR_REF,
     overhang        : Integer.toString(ESSENTIAL_READLENGTH - 1),
-    gtf             : ESSENTIAL_GENESGTF,   // gene model GTF file
+    gtf             : ESSENTIAL_STARR_GTF,   // gene model GTF file
     paired          : (ESSENTIAL_PAIRED == "yes"),
 
     // additional settings

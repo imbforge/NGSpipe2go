@@ -1,9 +1,9 @@
 AddUMIBarcodeToFastq = {
     doc title: "Adds UMI and Barcode of to the fastq header",
-        desc:  "adds UMI and barcode of the second read in MARS-Seq samples to the fastq header using umitools",
+        desc:  "Adds UMI and barcode of the first read in 10X amplicon-seq samples to the fastq header of the second read using umitools",
         constraints: "",
         bpipe_version: "tested with bpipe 0.9.9.2",
-        author: "Nastasja Kreim, Frank Rühle"
+        author: "Nastasja Kreim, Frank Rühle, Martin Oti"
 
     output.dir = AddUMIBarcodeToFastq_vars.outdir
 
@@ -23,9 +23,9 @@ AddUMIBarcodeToFastq = {
             ${TOOL_ENV} &&
             ${PREAMBLE} &&
 
-            umi_tools extract $umi_tools_FLAGS -I $input2 --stdout \${TMP}/\$(basename ${input2.prefix}).barcode.fastq.gz --read2-in $input1 --read2-out=\${TMP}/\$(basename ${OUTPUTFILE}).umibarcode.fastq.gz &&
+            umi_tools extract $umi_tools_FLAGS -I $input1 --stdout \${TMP}/\$(basename ${input1.prefix}).barcode.fastq.gz --read2-in $input2 --read2-out=\${TMP}/\$(basename ${OUTPUTFILE}).umibarcode.fastq.gz &&
             
-            rm \${TMP}/\$(basename ${input2.prefix}).barcode.fastq.gz &&
+            rm \${TMP}/\$(basename ${input1.prefix}).barcode.fastq.gz &&
             mv \${TMP}/\$(basename ${OUTPUTFILE}).umibarcode.fastq.gz $output
         ""","AddUMIBarcodeToFastq"
     }

@@ -373,6 +373,11 @@ config {
       procs="1" 
       memory="4"
     }
+    SplitmRNA { 
+      walltime="02:00:00" 
+      procs="1" 
+      memory="4"
+    }
     SplitNCigarReads { 
       queue=long_queue 
       procs="8" 
