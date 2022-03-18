@@ -21,6 +21,7 @@ cellranger_count = {
         (cellranger_count_vars.expect_cells ? " --expect-cells="  + cellranger_count_vars.expect_cells : "") + 
         (cellranger_count_vars.cores        ? " --localcores="    + cellranger_count_vars.cores        : "") + 
         (cellranger_count_vars.localmem     ? " --localmem="      + cellranger_count_vars.localmem     : "") + 
+        (cellranger_count_vars.nuclei       ? " --include-introns" : "") + 
         (cellranger_count_vars.extra        ? " "                 + cellranger_count_vars.extra        : "")
 
     def TOOL_ENV = prepare_tool_env("cellranger", tools["cellranger"]["version"], tools["cellranger"]["runenv"]) 
