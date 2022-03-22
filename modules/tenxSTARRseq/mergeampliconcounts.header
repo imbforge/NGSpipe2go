@@ -1,0 +1,10 @@
+MergeAmpliconCounts_vars=[
+    starrgtf   : ESSENTIAL_STARR_GTF,  // the STARR library GTF (can be compressed)
+    umicounts  : (binding.hasVariable('umicount_vars') ? umicount_vars.outdir : RESULTS + "/umicount"),  // umicounts files dir
+    aggr       : (binding.hasVariable('cellranger_aggr_vars') ? cellranger_aggr_vars.outdir + "/" + cellranger_aggr_vars.id : RESULTS + "/aggr"),  // 10X 'aggr' output dir
+    prefix     : "pcr_",  // prefix for STARR library GTF gene IDs (to distinguish from non-amplified counts)
+    sce        : RESULTS + "/sce.RDS"  // counts SCE .RDS file
+]
+
+load PIPELINE_ROOT + "/modules/RNAseq/mergeampliconcounts.groovy"
+

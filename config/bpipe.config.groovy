@@ -280,6 +280,16 @@ config {
       procs="1" 
       memory="10"
     }
+    MergeAmpliconCounts { 
+      walltime="01:00:00" 
+      procs="1" 
+      memory="16"
+    }
+    MergeSTARRCounts { 
+      walltime="01:00:00" 
+      procs="1" 
+      memory="16"
+    }
     MirDeep2 { 
       walltime="04:00:00" 
       procs="2" 

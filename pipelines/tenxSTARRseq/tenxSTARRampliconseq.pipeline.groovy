@@ -28,6 +28,7 @@ load PIPELINE_ROOT + "/modules/scRNAseq/subread.header"
 load PIPELINE_ROOT + "/modules/scRNAseq/umicount.header"
 load PIPELINE_ROOT + "/modules/scRNAseq/umidedup.header"
 load PIPELINE_ROOT + "/modules/tenxSTARRseq/splitmrna.header"
+load PIPELINE_ROOT + "/modules/tenxSTARRseq/mergeampliconcounts.header"
 load PIPELINE_ROOT + "/modules/miscellaneous/collectbpipes.module.2.header"
 load PIPELINE_ROOT + "/modules/miscellaneous/collect_tool_versions.header"
 load PIPELINE_ROOT + "/modules/scRNAseq/shinyreports.header"
@@ -46,7 +47,7 @@ Bpipe.run {
           STAR + BAMindexer + [
               subread_count + BAMindexer + umicount
           ]
-      ] +
+      ] + MergeAmpliconCounts +
     (RUN_TRACKHUB ? trackhub_config + trackhub : dontrun.using(module:"trackhub")) +
     collectToolVersions + collectBpipeLogs + MultiQC + shinyReports
 }
