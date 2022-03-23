@@ -16,6 +16,9 @@ shinyReports_vars=[
     fastqc_summarized   : "FALSE",                        //should FastQC plots be summarized in the report?
     fastqscreen_out     : FastqScreen_vars.outdir,        //where the FastQScreen output lie
     fastqscreen_log     : LOGS + "/FastQScreen",          //where the FastQScreen log lie
+    fastqscreen_perc    : ESSENTIAL_FASTQSCREEN_PERC,     //contaminant percentage to be plotted
+    run_cutadapt        : RUN_CUTADAPT,                   //apply read trimming
+    cutadapt_stats      : QC + "/Cutadapt",               //cutadapt stat files
     bamindex_log        : LOGS + "/BAMindexer",           //where the Samtools/BamIndexer logs lie
     dupradar_log        : dupRadar_vars.outdir,           //where the dupRadar logs lie
     rnatypes_log        : QC + "/RNAtypes",               //where the RNAtypes logs lie
@@ -24,6 +27,13 @@ shinyReports_vars=[
     genebodycov_log     : geneBodyCov2_vars.outdir,
     de_deseq            : DE_DESeq2_vars.outdir + "/DE_DESeq2.RData",   //where the DE_DESeq2 output lies
     de_deseq_mm         : DE_DESeq2_MM_vars.outdir + "/DE_DESeq2.RData",//where the DE_DESeq2_MM output lies
+    de_deseq_FDR        : DE_DESeq2_vars.FDR,             // which FDR threshold was used for the DESeq2 analysis
+    de_deseq_FC         : DE_DESeq2_vars.FC,              // which FC threshold was used for the DESeq2 analysis
+    maser_scripts       : new File(PIPELINE_ROOT + "/tools/maser/").getCanonicalPath(),// location of edited maser functions to accomodate other species
+    maser_ftype         : maser_vars.ftype,               // which type of splicing events to consider
+    maser_mincov        : maser_vars.mincov,              // ignore splicing events with read coverage below this count
+    maser_fdr           : maser_vars.fdr,                 // FDR cut-off to select statistically significant splicing events identified by rMATS
+    maser_dpsi          : maser_vars.dpsi,                // minimum percentage spliced in (PSI) to include in plots
     subread             : subread_count_vars.outdir,      // location of the subread counts
     subread_suffix      : ".raw_readcounts.tsv.summary",  // the extension of the subread stats file
     subread_log         : LOGS + "/subread_count",        //where the Subread/FeatureCounts logs lie

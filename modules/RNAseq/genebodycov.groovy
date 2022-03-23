@@ -12,7 +12,7 @@ geneBodyCov = {
         (geneBodyCov_vars.extra  ? " "    + geneBodyCov_vars.extra  : "" ) 
 
     def TOOL_ENV = prepare_tool_env("rseqc", tools["rseqc"]["version"], tools["rseqc"]["runenv"])
-    def PREAMBLE = get_preamble("geneBodyCoverage")
+    def PREAMBLE = get_preamble(stage:stageName, outdir:output.dir, input:new File(input1.prefix).getName())
 
     // run the chunk
     transform(".bam") to (".geneBodyCoverage.curves.png", ".geneBodyCoverage.r", ".geneBodyCoverage.txt") {

@@ -10,14 +10,14 @@ AddRG = {
     def EXP = (f.getName() =~ /.bam/).replaceFirst("")
 
     def TOOL_ENV = prepare_tool_env("picard", tools["picard"]["version"], tools["picard"]["runenv"])
-    def PREAMBLE = get_preamble("AddRG")
+    def PREAMBLE = get_preamble(stage:stageName, outdir:output.dir, input:new File(input1.prefix).getName())
 
     transform(".bam") to (".rg.bam"){
         exec """
             ${TOOL_ENV} &&
             ${PREAMBLE} &&
 
-            java $JAVA_FLAGS -jar \${picard} AddOrReplaceReadGroups I=$input O=$output SO=coordinate RGID=${EXP} RGLB=${EXP} RGPL=illumina RGPU=genomics RGSM=${EXP}
+            java $JAVA_FLAGS -jar \${PICARD} AddOrReplaceReadGroups I=$input O=$output SO=coordinate RGID=${EXP} RGLB=${EXP} RGPL=illumina RGPU=genomics RGSM=${EXP}
         ""","AddRG"
     }
 }

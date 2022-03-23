@@ -1,0 +1,9 @@
+tpm_vars=[
+    outdir  : RESULTS + "/TPMs",
+    genesgtf: ESSENTIAL_GENESGTF,
+    feature : "exon",              // considered features in genes
+    extra   : ""                   // extra parms to sent to the tool
+]
+
+load PIPELINE_ROOT + "/modules/RNAseq/tpm.groovy"
+

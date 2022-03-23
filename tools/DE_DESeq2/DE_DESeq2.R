@@ -10,16 +10,18 @@
 ##
 ## Args:
 ## -----
-## targets=targets.txt      # file describing the targets.
-##                          # Must fit the format expected in DESeqDataSetFromHTSeqCount
+## targets=targets.txt      # file describing the targets 
+##                          # must fit the format expected in DESeqDataSetFromHTSeqCount
 ## contrasts=contrasts.txt  # file describing the contrasts
-## mmatrix=~condition       # model matrix. Wrapper constrained to always use an intercept in the model
-## gtf=gene_model.gtf       # gene model in gtf format, for rpkm calculation
+## gtf=gene_model.gtf       # gene model in gtf format - for fpkm calculation
 ## filter=TRUE              # perform automatic independent filtering of lowly expressed genes to maximise power
 ## prefix=RE                # prefix to remove from the sample name
 ## suffix=RE                # suffix to remove from the sample name (usually _readcounts.tsv)
 ## cwd=.                    # current working directory where the files .tsv files are located
 ## out=DE.DESeq2            # prefix filename for output
+## pattern=","\\.readcounts.tsv" # pattern for the count files
+## FC=1                     # FC filter to use in the testing (non log2!)
+## FDR=0.01                 # FDR filter to use in the testing 
 ##
 ## IMPORTANT: This is a simplified wrapper to DESeq2 which is only able to do Wald tests on
 ##            simple experiments. It's meant only for pairwise comparisons in non-multifactor
@@ -55,7 +57,6 @@ parseArgs <- function(args,string,default=NULL,convert="as.character") {
 args <- commandArgs(T)
 ftargets     <- parseArgs(args,"targets=","targets.txt")     # file describing the targets
 fcontrasts   <- parseArgs(args,"contrasts=","contrasts.txt") # file describing the contrasts
-mmatrix      <- parseArgs(args,"mmatrix=","~condition")      # model matrix
 gene.model   <- parseArgs(args,"gtf=","")       # gtf gene model
 filter.genes <- parseArgs(args,"filter=",TRUE,convert="as.logical") # automatic independent filtering
 pre          <- parseArgs(args,"prefix=","")    # prefix to remove from the sample name
@@ -63,13 +64,16 @@ suf          <- parseArgs(args,"suffix=","_readcounts.tsv")    # suffix to remov
 cwd          <- parseArgs(args,"cwd=","./")     # current working directory
 out          <- parseArgs(args,"out=","DE.DESeq2") # output filename
 pattern      <- parseArgs(args,"pattern=","\\.readcounts.tsv") # output filename
+FC           <- parseArgs(args, "FC=", 1 , convert="as.numeric") # FC filter non log2 
+FDR           <- parseArgs(args, "FDR=", 0.01 , convert="as.numeric") # filter FDR 
 
-runstr <- "Rscript DE.DESeq2.R [targets=targets.txt] [contrasts=contrasts.txt] [mmatrix=~condition] [gtf=] [filter=TRUE] [prefix=RE] [suffix=RE] [cwd=.] [base=] [out=DE.DESeq2] [pattern=RE]"
+runstr <- "Rscript DE.DESeq2.R [targets=targets.txt] [contrasts=contrasts.txt] [gtf=] [filter=TRUE] [prefix=RE] [suffix=RE] [cwd=.] [base=] [out=DE.DESeq2] [pattern=RE] [FC=1] [FDR=0.01]"
 if(!file.exists(ftargets))   stop(paste("File",ftargets,"does NOT exist. Run with:\n",runstr))
 if(!file.exists(fcontrasts)) stop(paste("File",fcontrasts,"does NOT exist. Run with:\n",runstr))
 if(!file.exists(cwd))        stop(paste("Dir",cwd,"does NOT exist. Run with:\n",runstr))
 if(is.na(filter.genes))      stop(paste("Filter genes has to be either TRUE or FALSE. Run with:\n",runstr))
 if(!file.exists(gene.model)) stop(paste("GTF File:", gene.model, " does NOT exist. Run with: \n", runstr))
+if(FDR>1| FDR < 0 )                    stop(paste("FDR has to be between 0 and 1! Run with: \n", runstr))
 
 ##
 ## create the design and contrasts matrix
@@ -83,43 +87,44 @@ add_factors <- colnames(targets)[!colnames(targets) %in% c("group", "sample", "f
 targets <- targets[, c("sample", "file", "group", add_factors)]
 
 # grep sample identifier in count file names
-  countfiles <- list.files(cwd)
-  countfiles <- countfiles[grep(pattern, countfiles)] # filter for valid count files
-  
-  index_targetsfile <- sapply(targets$file, grep,  countfiles) # grep targets in countfiles
+countfiles <- list.files(cwd)
+countfiles <- countfiles[grep(pattern, countfiles)] # filter for valid count files
 
-  ## check matching ambiguity
-      if(class(index_targetsfile)=="list") { # list means either zero or multiple matches
-        if(any(x <- sapply(index_targetsfile, length)>1)) {
-          stop(paste("\nA targets.txt entry matches multiple count file names\ntargets.txt: "),
-               paste(targets$file[x], collapse=", "),
-               "\ncount file names: ", paste(countfiles[unlist(index_targetsfile[x])], collapse=", "))
-        }
-        warning(paste("Entries in targets.txt which are not found in list of count files are removed from targets.txt:", 
-                      targets$file[sapply(index_targetsfile, length)==0], collapse=", "))
-        targets <- targets[!(sapply(index_targetsfile, length)==0),] # remove target entries
-        index_targetsfile <- sapply(targets$file, grep,  countfiles) # recreate index vector after removal of targets.txt entries
-      }
-      
-      if(any(x <- duplicated(index_targetsfile))) { # check for multiple target entries matching the same file name
-        stop(paste("\nMultiple targets.txt entries match to the same count file name\ntargets.txt: ", 
-                   paste(targets$file[x | duplicated(index_targetsfile, fromLast=T)], collapse=", "),
-                   "\ncount file names:", paste(countfiles[unlist(index_targetsfile[x])], collapse=", "), "\n"))
-      }
-      
-      if (length(unique(index_targetsfile)) < length(countfiles)) { # check for count file names not included
-        warning(paste("Count file names not included in targets.txt are ignored: ",  paste(countfiles[-index_targetsfile], collapse=", ")))
-      }
-  
-  targets$file <- countfiles[index_targetsfile] # replace entries in targets$file by count file names
-  
+# remove file ending of target file names
+targets$sample_ext <- gsub("\\..*$", "",targets$file) 
 
+index_targetsfile <- sapply(paste0(targets$sample_ext, "\\."), grep,  countfiles) # grep targets in countfiles
 
+## check matching ambiguity
+if(is(index_targetsfile, "list")) { # list means either zero or multiple matches
+  if(any(x <- sapply(index_targetsfile, length)>1)) {
+    stop(paste("\nA targets.txt entry matches multiple count file names\ntargets.txt: "),
+         paste(targets$file[x], collapse=", "),
+         "\ncount file names: ", paste(countfiles[unlist(index_targetsfile[x])], collapse=", "))
+  }
+  warning(paste("Entries in targets.txt which are not found in list of count files are removed from targets table:", 
+                paste(targets$file[sapply(index_targetsfile, length)==0], collapse=", ")))
+  targets <- targets[!(sapply(index_targetsfile, length)==0),] # remove target entries
+  index_targetsfile <- sapply(targets$sample_ext, grep, countfiles) # recreate index vector after removal of targets.txt entries
+}
+
+if(any(x <- duplicated(index_targetsfile))) { # check for multiple target entries matching the same file name
+  stop(paste("\nMultiple targets.txt entries match to the same count file name\ntargets.txt: ", 
+             paste(targets$file[x | duplicated(index_targetsfile, fromLast=T)], collapse=", "),
+             "\ncount file names:", paste(countfiles[unlist(index_targetsfile[x])], collapse=", "), "\n"))
+}
+
+if (length(unique(index_targetsfile)) < length(countfiles)) { # check for count file names not included
+  warning(paste("\nCount file names not included in targets.txt are ignored: ",  paste(countfiles[-index_targetsfile], collapse=", ")))
+}
+
+targets$file <- countfiles[index_targetsfile] # replace entries in targets$file by count file names
+  
 # load contrasts
-conts <- read.delim(fcontrasts,head=F,comment.char="#")
+conts <- read.delim(fcontrasts,head=TRUE,colClasses="character",comment.char="#")
 
 ##
-## calculate gene lengths
+## calculate gene transcript lengths (union of all annotated exons) using rtracklayer & GenomicRanges
 ##
 gtf <- import.gff(gene.model, format="gtf", feature.type="exon")
 gtf.flat <- unlist(reduce(split(gtf, elementMetadata(gtf)$gene_id)))
@@ -141,11 +146,12 @@ genes <- as.data.frame(genes(txdb))
 ##
 ## DESeq analysis: right now it only allows simple linear models with pairwise comparisons
 ##
-pairwise.dds.and.res <- lapply(conts[,1],function(cont) {
+pairwise.dds.and.res <- apply(conts,1,function(cont) {
 
     # parse the formula in cont, get contrasts from resultNames(dds) and create a vector with coefficients
-    cont.name <- gsub("(.+)=(.+)","\\1",cont)
-    cont.form <- gsub("(.+)=(.+)","\\2",cont)
+    cont.name <- cont[1]
+    cont.form <- cont[2]
+    mmatrix   <- cont[3]
     factors   <- gsub("(^\\s+|\\s+$)", "", unlist(strsplit(cont.form,"\\W")))
     factors   <- factors[factors != ""]
     if(length(factors) != 2) {
@@ -164,13 +170,18 @@ pairwise.dds.and.res <- lapply(conts[,1],function(cont) {
 
     # create DESeq object
     dds <- DESeq(dds)
-    res <- results(dds, independentFiltering=filter.genes, format="DataFrame")
+    #we call it with the specified threshold for FC and for FDR
+    res <- results(dds, 
+                   independentFiltering=filter.genes,
+                   format="DataFrame",
+                   lfcThreshold =log2(FC),
+                   alpha = FDR)
 
-    # calculate quantification (RPKM if gene model provided, rlog transformed values otherwise)
+    # calculate quantification (FPKM if gene model provided, rlog transformed values otherwise)
     quantification <- apply(fpm(dds), 2, function(x, y) 1e3 * x / y, gene.lengths[rownames(fpm(dds))])
     
-    # add comment "robustRPKM" to columns, such that it's clear what the value represents
-    colnames(quantification) <- paste0(colnames(quantification),".robustRPKM")
+    # add comment "robustFPKM" to columns, such that it's clear what the value represents
+    colnames(quantification) <- paste0(colnames(quantification),".robustFPKM")
 
     # extract the gene_name and genomic coordinates of each gene
     res$gene_name <- gtf$gene_name[match(rownames(res), gtf$gene_id)]
@@ -183,12 +194,28 @@ pairwise.dds.and.res <- lapply(conts[,1],function(cont) {
     # write the results
     x <- merge(res[, c("gene_name", "chr", "start", "end", "strand", "baseMean", "log2FoldChange", "padj")], quantification, by=0)
     x <- x[order(x$padj),]
+
+    #separate the data from x into the tested genes, the upregulated genes and the downregulated genes
+    tested_genes <- x[!is.na(x$padj),]
+    #create the output list 
+    x_info <- list(up     = tested_genes[tested_genes$log2FoldChange > log2(FC) & tested_genes$padj < FDR, ],
+                   down   = tested_genes[tested_genes$log2FoldChange < log2(FC) & tested_genes$padj < FDR, ],
+                   tested = tested_genes,
+                   all_genes = x)
     
     colnames(x)[which(colnames(x) %in% c("baseMean", "log2FoldChange", "padj"))] <- mcols(res)$description[match(c("baseMean", "log2FoldChange", "padj"), colnames(res))]
     colnames(x)[1] <- "gene_id"
 
     write.csv(x, file=paste0(out, "/", cont.name, ".csv"), row.names=F)
-    write.xlsx(x, file=paste0(out, "/", cont.name, ".xlsx"), row.names=F)
+    #we also have to replace the columnnames within the x_info list
+    x_info <- lapply(x_info, function(y){
+                       colnames(y)[which(colnames(y) %in% c("baseMean", "log2FoldChange", "padj"))] <- mcols(res)$description[match(c("baseMean", "log2FoldChange", "padj"), colnames(res))]
+                       colnames(y)[1] <- "gene_id"
+                       return(y)
+                   })
+    #add a description before writing out the the excel file
+    x_info[["Description"]] <-data.frame(Descripton=paste("This DESeq2 analysis was performed using a FC filter of ", FC, "and a filter for the adjusted p-value of ", FDR, "."))
+    write.xlsx(x_info, file=paste0(out, "/", cont.name, ".xlsx"), row.names=F)
     
     list(dds,res)
 })
@@ -198,7 +225,7 @@ pairwise.dds <- lapply(pairwise.dds.and.res,function(x){return(x[[1]])})
 
 ## separate results to a list
 res <- lapply(pairwise.dds.and.res,function(x){return(x[[2]])})
-names(res) <-  gsub("=.*", "", conts[,1]) 
+names(res) <-  conts[,1] 
 
 
 ##
@@ -207,35 +234,55 @@ names(res) <-  gsub("=.*", "", conts[,1])
 pdf(paste0(out,"/DE_DESeq2.pdf"))
 
 # make a DESeq2 object with all the samples
-dds <- DESeqDataSetFromHTSeqCount(sampleTable=targets,
-                                  directory=cwd, 
-                                  design=as.formula(mmatrix))
+dds <- DESeqDataSetFromHTSeqCount(sampleTable = targets,
+                                  directory   = cwd, 
+                                  design      = ~ group )    # expect a group column in the targets file. It's also expected everywhere from here on
 dds <- DESeq(dds)
 rld <- rlog(dds)
+
+
+# define TPM function
+tpm <- function(counts, lengths) {
+   rate <- counts / lengths
+   rate / sum(rate) * 1e6
+}
 
 ## quantify all samples at the same time (necessary to get unique FPM per sample per gene, since robust FPMs
 ## depend on all samples in the data frame, not just on individual samples
 
 # quantify
-quantification <- as.data.frame(apply(fpm(dds,robust=TRUE), 2, function(x, y) 1e3 * x / y, gene.lengths[rownames(fpm(dds,robust=TRUE))]))
+robustRPKM <- as.data.frame(apply(fpm(dds,robust=TRUE), 2, function(x, y) 1e3 * x / y, gene.lengths[rownames(fpm(dds,robust=TRUE))]))
+TPM        <- as.data.frame(apply(assay(dds), 2, tpm, gene.lengths[rownames(assay(dds))]))
 
-# add comment "robustRPKM" to columns, such that it's clear what the value represents
-names(quantification) <- paste0(names(quantification),".robustRPKM")
+# add comment "robustRPKM" and "TPM" to columns, such that it's clear what the value represents
+names(robustRPKM) <- paste0(names(robustRPKM),".robustRPKM")
+names(TPM)        <- paste0(names(TPM),".TPM")
 
 # extract the gene_name and genomic coordinates of each gene
-names.df <- data.frame(gene_name=gtf$gene_name[match(rownames(quantification), gtf$gene_id)],row.names=rownames(quantification))
-i <- match(rownames(names.df), genes$gene_id)
-names.df$chr    <- genes$seqnames[i]
-names.df$start  <- genes$start[i]
-names.df$end    <- genes$end[i]
-names.df$strand <- genes$strand[i]
+names.rpkm.df <- data.frame(gene_name=gtf$gene_name[match(rownames(robustRPKM), gtf$gene_id)],row.names=rownames(robustRPKM))
+i <- match(rownames(names.rpkm.df), genes$gene_id)
+names.rpkm.df$chr    <- genes$seqnames[i]
+names.rpkm.df$start  <- genes$start[i]
+names.rpkm.df$end    <- genes$end[i]
+names.rpkm.df$strand <- genes$strand[i]
+names.tpm.df <- data.frame(gene_name=gtf$gene_name[match(rownames(TPM), gtf$gene_id)],row.names=rownames(TPM))
+i <- match(rownames(names.tpm.df), genes$gene_id)
+names.tpm.df$chr    <- genes$seqnames[i]
+names.tpm.df$start  <- genes$start[i]
+names.tpm.df$end    <- genes$end[i]
+names.tpm.df$strand <- genes$strand[i]
 
 # merge location and quantification
-quantification.names.df <- merge(names.df,quantification,by=0)
-colnames(quantification.names.df)[1] <- "gene_id"
+robustRPKM.names.df <- merge(names.rpkm.df,robustRPKM,by=0)
+TPM.names.df        <- merge(names.tpm.df,TPM,by=0)
+colnames(robustRPKM.names.df)[1] <- "gene_id"
+colnames(TPM.names.df)[1]        <- "gene_id"
 
-write.csv(quantification.names.df, file=paste0(out, "/allSamples.robustRPKM.csv"), row.names=F)
-write.xlsx(quantification.names.df, file=paste0(out, "/allSamples.robustRPKM.xlsx"), row.names=F)
+# write to file
+write.csv(robustRPKM.names.df, file=paste0(out, "/allSamples.robustRPKM.csv"), row.names=F)
+write.xlsx(robustRPKM.names.df, file=paste0(out, "/allSamples.robustRPKM.xlsx"), row.names=F)
+write.csv(TPM.names.df, file=paste0(out, "/allSamples.TPM.csv"), row.names=F)
+write.xlsx(TPM.names.df, file=paste0(out, "/allSamples.TPM.xlsx"), row.names=F)
 
 # extract rlog assay and change to user friendly gene identifiers
 assay.rld <- assay(rld)

@@ -1,13 +1,25 @@
 rMATS_vars=[
-    outdir  : RESULTS + "/rMATS",
-    suffix  : PREMATS_SUFFIX,
-    sep     : ".vs.",
-    paired  : (ESSENTIAL_PAIRED == "yes"),
-    stranded: ESSENTIAL_STRANDED,
-    gtf     : ESSENTIAL_GENESGTF,
-    length  : ESSENTIAL_READLENGTH,
-    threads : Integer.toString(ESSENTIAL_THREADS),
-    extra   : " --cstat 0.0001"
+    outdir    : RESULTS + "/rMATS",
+    suffix    : PRERMATS_vars.suffix,
+    sep       : "-",
+    paired    : (ESSENTIAL_PAIRED == "yes"),
+    stranded  : ESSENTIAL_STRANDED,
+    gtf       : ESSENTIAL_GENESGTF,
+    length    : ESSENTIAL_READLENGTH,
+    threads   : Integer.toString(ESSENTIAL_THREADS),
+    varreadlen: true,                  // allow reads with lengths that differ from ESSENTIAL_READLENGTH
+    allowclip : true,                  // allow alignments with soft or hard clipping to be used
+    novelss   : true,                  // enable detection of novel (unannotated) splice sites
+    extra     : " --cstat 0.0001"      // set e.g. --paired-stats if samples are paired and a paired stats model should be used
+]
+
+maser_vars=[
+    gtf     : ESSENTIAL_GENESGTF,      // Needs to be an ensembl annotation for the plots to work correctly
+    db      : ESSENTIAL_DB,
+    ftype   : "JCEC",                  // tells which type of splicing events to consider: juncton counts (JC) or junction-exon counts (JCEC)
+    mincov  : "5",                     // ignore splicing events with read coverage below this count
+    fdr     : "0.01",                  // FDR cut-off to select statistically significant splicing events identified by rMATS
+    dpsi    : "0.1"                    // minimum percentage spliced in (PSI) to include in plots
 ]
 
 load PIPELINE_ROOT + "/modules/RNAseq/rmats.groovy"

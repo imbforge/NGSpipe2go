@@ -78,6 +78,11 @@ config {
       procs="4" 
       memory="24"
     }
+    bowtie1_sRNA {
+      walltime="04:00:00"
+      procs="4"
+      memory="24"
+    }
     CatFastQ { 
       walltime="1:00:00" 
       procs="1" 
@@ -124,6 +129,11 @@ config {
       procs="1" 
       memory="2"
     }
+    CollectVariantCallingMetrics { 
+      walltime="03:00:00" 
+      procs="1" 
+      memory="32"
+    }
     CombinedStats { 
       walltime="01:00:00" 
       procs="1" 
@@ -150,7 +160,7 @@ config {
       memory="50"
     }
     Cutadapt { 
-      walltime="02:00:00" 
+      walltime="04:00:00" 
       procs="1" 
       memory="4"
     }
@@ -162,6 +172,11 @@ config {
     DE_DESeq2 { 
       walltime="01:00:00" 
       procs="1" 
+      memory="4"
+    }
+    DE_DESeq2_miRNAmature {
+      walltime="01:00:00"
+      procs="1"
       memory="4"
     }
     DE_DESeq2_MM { 
@@ -229,10 +244,15 @@ config {
       procs="1" 
       memory="1"
     }
+    GatherBQSRReports { 
+      walltime="03:00:00" 
+      procs="4" 
+      memory="16"
+    }
     GO_Enrichment { 
       walltime="01:00:00" 
       procs="4" 
-      memory="8"
+      memory="16"
     }
     GREAT { 
       walltime="01:00:00" 
@@ -240,6 +260,16 @@ config {
       memory="1"
     }
     GenerateStarIndexFromSJ { 
+      walltime="04:00:00" 
+      procs="8" 
+      memory="32"
+    }
+    GenomicsDBImport { 
+      walltime="04:00:00" 
+      procs="8" 
+      memory="32"
+    }
+    GenotypeGVCFs { 
       walltime="04:00:00" 
       procs="8" 
       memory="32"
@@ -346,7 +376,7 @@ config {
     STAR { 
       walltime="04:00:00" 
       procs="4" 
-      memory="48"
+      memory="40"
     }
     STAR_pe { 
       walltime="04:00:00" 
@@ -373,6 +403,11 @@ config {
       procs="1" 
       memory="4"
     }
+    snpEff { 
+      walltime="3:00:00" 
+      procs="1" 
+      memory="16"
+    }
     SplitNCigarReads { 
       queue=long_queue 
       procs="8" 
@@ -392,6 +427,17 @@ config {
       walltime="01:00:00" 
       procs="1" 
       memory="2"
+    }
+    upsetPlot { 
+      queue=long_queue 
+      walltime="16:00:00" 
+      procs="1" 
+      memory="32"
+    }
+    ValidateVariants { 
+      walltime="2:00:00" 
+      procs="8" 
+      memory="20"
     }
     VariantCallHC { 
       walltime="48:00:00" 
@@ -436,7 +482,7 @@ config {
     blacklist_filter { 
       walltime="01:00:00" 
       procs="1" 
-      memory="1"
+      memory="32"
     }
     collectBpipeLogs { 
       walltime="00:45:00" 
@@ -454,9 +500,9 @@ config {
       memory="32"
     }
     dupRadar { 
-      walltime="02:00:00" 
+      walltime="05:00:00" 
       procs="4" 
-      memory="1"
+      memory="10"
     }
     extend { 
       walltime="01:00:00" 
@@ -467,6 +513,11 @@ config {
       walltime="05:00:00" 
       procs="8" 
       memory="12"
+    }
+    filter_smallRNA_counts {
+      walltime="00:30:00"
+      procs="1"
+      memory="1"
     }
     filter2htseq { 
       walltime="00:30:00" 
@@ -486,7 +537,7 @@ config {
     ipstrength { 
       walltime="02:00:00" 
       procs="2" 
-      memory="8"
+      memory="16"
     }
     macs2 { 
       walltime="04:00:00" 
@@ -523,6 +574,11 @@ config {
       procs="1" 
       memory="10"
     }
+    rMATS {
+      walltime="03:00:00" 
+      procs="4" 
+      memory="8" 
+    }
     rnatypes { 
       walltime="0:10:00" 
       procs="4" 
@@ -534,13 +590,23 @@ config {
       memory="1"
     }
     subread2rnatypes { 
-      walltime="01:00:00" 
+      walltime="02:00:00" 
       procs="4" 
-      memory="1"
+      memory="10"
     }
     subread_count { 
       walltime="00:30:00" 
       procs="4" 
+      memory="4"
+    }
+    subread_miRNAmature_count {
+      walltime="00:30:00"
+      procs="4"
+      memory="4"
+    }
+    tpm {
+      walltime="00:30:00"
+      procs="1"
       memory="4"
     }
     trackhub { 

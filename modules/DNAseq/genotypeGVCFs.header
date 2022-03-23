@@ -1,0 +1,11 @@
+GenotypeGVCFs_vars=[
+    outdir        : RESULTS + "/GenotypeGVCFs",
+    vcf_name      :"joinedsamples.vcf.gz",
+    java_flags    : "-Xmx4g",
+    bwa_ref       : ESSENTIAL_BWA_REF,
+    extra         : ""
+]
+
+load  PIPELINE_ROOT + "/modules/DNAseq/genotypeGVCFs.groovy"
+
+

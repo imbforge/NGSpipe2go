@@ -8,7 +8,7 @@ STAR_vars=[
     attributes      : "NH HI AS nM MD",// reported SAM attributes, standard: NH HI AS nM, extra: MD (mismatched and deleted reference bases)
 
     // settings imported from essential vars
-    threads         : Integer.toString(ESSENTIAL_THREADS),
+    threads         : "1",             // for faster results (but non-deterministic multimapper assignment) use: Integer.toString(ESSENTIAL_THREADS),
     ref             : ESSENTIAL_STAR_REF,
     overhang        : Integer.toString(ESSENTIAL_READLENGTH - 1),
     gtf             : ESSENTIAL_GENESGTF,   // gene model GTF file

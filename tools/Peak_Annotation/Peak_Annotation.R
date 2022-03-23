@@ -36,16 +36,14 @@ parseArgs <- function(args,string,default=NULL,convert="as.character") {
 args <- commandArgs(T)
 peakData <- parseArgs(args,"peakData=") # .xls result from MACS2
 transcriptType <- parseArgs(args, "transcriptType=", "Bioconductor") # transcript annotation type
-transcriptDb <- parseArgs(args, "transcriptDb=", "TxDb.Hsapiens.UCSC.hg19.knownGene") # transcript annotation database
-orgDb <- parseArgs(args, "orgDb=", "org.Hs.eg.db") # genome wide annotation
+transcriptDb <- parseArgs(args, "transcriptDb=", "") # transcript annotation database
+orgDb <- parseArgs(args, "orgDb=", "") # genome wide annotation
 regionTSS <- parseArgs(args, "regionTSS=", 3000, "as.numeric") # TSS region parameter 
 out <- parseArgs(args,"out=", "Peak_Annotation") # output directory
 
 runstr <- paste0("Call with: Rscript Peak_Annotation.R [peakData=",peakData,"] [transcriptType=",transcriptType,"] [transcriptDb=",transcriptDb,"] [orgDb=",orgDb,"] [regionTSS=",regionTSS,"][out=",out,"]")
 cat(runstr)
 if (!is.numeric(regionTSS)) stop("regionTSS not numeric. Run with:\n",runstr)
-
-peakFiles <-list.files(peakData,pattern=".xls", full.names = TRUE) # list of the full path of the .xls file 
 
 if(length(list.files(peakData,pattern="_macs2_blacklist_filtered_peaks.xls")) > 0) {
       peakFiles <-list.files(peakData,pattern="_macs2_blacklist_filtered_peaks.xls", full.names = TRUE)
@@ -55,12 +53,33 @@ if(length(list.files(peakData,pattern="_macs2_blacklist_filtered_peaks.xls")) > 
       filename <- strsplit(basename(peakFiles), "_macs2_peaks.xls") # take the filenames and put it as names for the plots     
 }
 
+# remove targets which have no peaks
+peakcount <- sapply(peakFiles, function(x) {
+  tryCatch({
+    nrow(read.delim(x, head=TRUE, comment="#"))
+  }, error=function(e) 0)
+})
+if(!all(peakcount > 0)) {
+  warning("Sample(s) ", paste(basename(peakFiles)[!(peakcount > 0)], collapse=", "),
+          " excluded because didn't have any peaks called")
+  peakFiles <- peakFiles[peakcount > 0 ] 
+  filename <- filename[peakcount > 0 ]
+}
+
+
 peaks <- lapply(peakFiles, readPeakFile) # read all the xls files using 'readPeakFile' function
+# bug in ChIPseeker: MACS xls files (1-based) are read as 0-based. Modify condition if fixed in future version:
+if(packageVersion('ChIPseeker')>0) { # bug in ChIPseeker: MACS xls files (1-based) are read as 0-based. Modify condition if fixed in future version.
+  peaks <- lapply(peaks, function(x) {
+    BiocGenerics::start(x) <- BiocGenerics::start(x)-1
+    return(x)})
+} 
+
 
 if(transcriptType!="Bioconductor"){ # check the input format for the transcript annotation
    txdb <- makeTxDbFromGFF(transcriptDb, format="gtf") # if the input format is gtf file, then this file will be used to create a TxDb object
 } else {
-   library(transcriptDb, character.only = TRUE) # if the input format is bioconductor, then the transcript annoation library will be used 
+   library(transcriptDb, character.only = TRUE) # if the input format is bioconductor, then the transcript annotation library will be used 
    txdb <- eval(parse(text=transcriptDb))
   
 }
@@ -99,6 +118,7 @@ for(i in 1:length(peakAnno)){
 
 # create xls output contains the peak annotation
 outputData <- lapply(peakAnno, as.data.frame)
+names(outputData) <- make.names(substr(names(outputData), 1, 31), unique=TRUE)
 write.xlsx(outputData, file=paste0(out, "/Peak_Annotation.xlsx"))
 
 # save the sessionInformation

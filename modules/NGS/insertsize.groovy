@@ -14,14 +14,14 @@ InsertSize = {
     def TOOL_ENV = prepare_tool_env("R", tools["R"]["version"], tools["R"]["runenv"]) + " && " +
                    prepare_tool_env("java", tools["java"]["version"], tools["java"]["runenv"]) + " && "+
                    prepare_tool_env("picard", tools["picard"]["version"], tools["picard"]["runenv"])
-    def PREAMBLE = get_preamble("InsertSize")
+    def PREAMBLE = get_preamble(stage:stageName, outdir:output.dir, input:new File(input1.prefix).getName())
 
     transform(".bam") to ("_insertsizemetrics.tsv") {
         exec """
             ${TOOL_ENV} &&
             ${PREAMBLE} &&
 
-            java ${InsertSize_vars.java_flags} -jar \${picard} CollectInsertSizeMetrics $INSERTSIZE_FLAGS INPUT=$input OUTPUT=$output HISTOGRAM_FILE=${output.prefix}_hist.pdf
+            java ${InsertSize_vars.java_flags} -jar \${PICARD} CollectInsertSizeMetrics $INSERTSIZE_FLAGS INPUT=$input OUTPUT=$output HISTOGRAM_FILE=${output.prefix}_hist.pdf
         ""","InsertSize"
     }
 }

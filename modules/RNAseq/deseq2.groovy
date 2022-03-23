@@ -9,7 +9,6 @@ DE_DESeq2 = {
     def DE_DESeq2_FLAGS =
         (DE_DESeq2_vars.targets   ? " targets="   + DE_DESeq2_vars.targets   : "") +
         (DE_DESeq2_vars.contrasts ? " contrasts=" + DE_DESeq2_vars.contrasts : "") +
-        (DE_DESeq2_vars.mmatrix   ? " mmatrix="   + DE_DESeq2_vars.mmatrix   : "") +
         (DE_DESeq2_vars.filter    ? " filter="    + DE_DESeq2_vars.filter    : "") +
         (DE_DESeq2_vars.prefix    ? " prefix="    + DE_DESeq2_vars.prefix    : "") +
         (DE_DESeq2_vars.suffix    ? " suffix="    + DE_DESeq2_vars.suffix    : "") +
@@ -17,10 +16,12 @@ DE_DESeq2 = {
         (DE_DESeq2_vars.outdir    ? " out="       + DE_DESeq2_vars.outdir    : "") +
         (DE_DESeq2_vars.genes     ? " gtf="       + DE_DESeq2_vars.genes     : "") +
         (DE_DESeq2_vars.pattern   ? " pattern="   + DE_DESeq2_vars.pattern   : "") +
+        (DE_DESeq2_vars.FDR       ? " FDR="       + DE_DESeq2_vars.FDR       : "") +
+        (DE_DESeq2_vars.FC        ? " FC="        + DE_DESeq2_vars.FC        : "") +
         (DE_DESeq2_vars.extra     ? " "           + DE_DESeq2_vars.extra     : "") 
 
     def TOOL_ENV = prepare_tool_env("R", tools["R"]["version"], tools["R"]["runenv"])
-    def PREAMBLE = get_preamble("DE_DESeq2")
+    def PREAMBLE = get_preamble(stage:stageName, outdir:output.dir, input:new File(input1.prefix).getName())
 
     // run the chunk
     produce("DE_DESeq2.RData") {

@@ -26,7 +26,6 @@ diffbind3 = {
         (diffbind3_vars.normalization     ? " normalization="     + diffbind3_vars.normalization       : "") +
         (diffbind3_vars.substractControl  ? " substractControl="  + diffbind3_vars.substractControl    : "") +
         (diffbind3_vars.conditionColumn   ? " conditionColumn="   + diffbind3_vars.conditionColumn     : "") +
-        (diffbind3_vars.design            ? " design="            + diffbind3_vars.design              : "") +
         (diffbind3_vars.fdr_threshold     ? " fdr_threshold="     + diffbind3_vars.fdr_threshold       : "") +
         (diffbind3_vars.fold              ? " fold="              + diffbind3_vars.fold                : "") +
         (diffbind3_vars.annotate          ? " annotate="          + diffbind3_vars.annotate            : "") +
@@ -37,11 +36,11 @@ diffbind3 = {
         (diffbind3_vars.paired            ? " pe="                + diffbind3_vars.paired              : "") +
         (diffbind3_vars.extra             ? " "                   + diffbind3_vars.extra               : "")
 
-    def TOOL_ENV = prepare_tool_env("R", "4.0.3", "lmod")
-    def PREAMBLE = get_preamble("diffbind")
+    def TOOL_ENV = prepare_tool_env("R", tools["R"]["version"], tools["R"]["runenv"])
+    def PREAMBLE = get_preamble(stage:stageName, outdir:output.dir, input:new File(input1.prefix).getName())
 
     // run the chunk
-    produce("diffbind.RData", "diffbind.xlsx", "diffbind.rds") {
+    produce("diffbind.xlsx", "diffbind.rds") {
         exec """
             ${TOOL_ENV} &&
             ${PREAMBLE} &&

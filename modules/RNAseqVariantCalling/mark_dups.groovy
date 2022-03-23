@@ -13,14 +13,14 @@ MarkDups = {
         (MarkDups_vars.extra      ? " "                       + MarkDups_vars.extra      : "")
 
     def TOOL_ENV = prepare_tool_env("picard", tools["picard"]["version"], tools["picard"]["runenv"])
-    def PREAMBLE = get_preamble("MarkDups")
+    def PREAMBLE = get_preamble(stage:stageName, outdir:output.dir, input:new File(input1.prefix).getName())
 
     transform(".rg.bam") to (".rg.duprm.bam"){
         exec """
             ${TOOL_ENV} &&
             ${PREAMBLE} &&
 
-            java ${MarkDups_vars.java_flags} -jar \${picard} MarkDuplicates $MarkDups_FLAGS INPUT=$input OUTPUT=$output METRICS_FILE=${input.prefix}_dupmetrics.tsv
+            java ${MarkDups_vars.java_flags} -jar \${PICARD} MarkDuplicates $MarkDups_FLAGS INPUT=$input OUTPUT=$output METRICS_FILE=${input.prefix}_dupmetrics.tsv
         ""","MarkDups"
     }
 }

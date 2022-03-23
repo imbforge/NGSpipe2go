@@ -38,7 +38,7 @@ or for ChIP-seq projects
 Adjust the project-specific information in the pipeline dependent files (see pipeline specific README files for detailed information):
 
 - *essential.vars.groovy* specifies the main project variables like project dir and reference genome
-- *xxx.vars.groovy* additional software parameters can be customised in the vars-file accompanying each bpipe module.
+- *xxx.header* additional software parameters can be customised in the vars-file accompanying each bpipe module.
 - *xxx.pipeline.groovy* describes the steps of the selected pipeline and the location of the respective modules
 - *targets.txt* and *contrasts.txt* contain the sample names and the differential group comparisons
 
@@ -46,7 +46,7 @@ Optionally adjust some general pipeline settings defined in the NGSpipe2go ***co
 
 - *bpipe.config.groovy*: define workload manager resources (default workload manager is "slurm", if not needed set executor="local")
 - *preambles.groovy*: define module preambles if needed (or stay with default preambles)
-- *tools.groovy*: define default versions and running environments for all installed pipeline tools, modify accordingly if new tools or tool versions are installed on your system. If you want to use a different tool version for a certain project you can overwrite the default value in the pipeline-specific file *NGSpipe2go/pipelines/<pipeline>/tools.groovy*.
+- *tools.groovy*: define default versions and running environments for all installed pipeline tools, modify accordingly if new tools or tool versions are installed on your system. If you want to use a different tool version for a certain project you can overwrite the default value in the pipeline-specific file *NGSpipe2go/pipelines/<pipeline>/tools.groovy*. Currently, we are using lmod, conda and/or singularity containers as running environments. Conda itself is loaded as lmod module if conda tools are specified. If you want to use conda but haven't installed it as lmod module make otherwise sure that it is available in the path.
 
 ## Run a pipeline ##
 

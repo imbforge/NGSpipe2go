@@ -20,7 +20,7 @@ BWA_pe = {
 
     def TOOL_ENV = prepare_tool_env("bwa", tools["bwa"]["version"], tools["bwa"]["runenv"]) + " && " +
                    prepare_tool_env("samtools", tools["samtools"]["version"], tools["samtools"]["runenv"])
-    def PREAMBLE = get_preamble("BWA_pe")
+    def PREAMBLE = get_preamble(stage:stageName, outdir:output.dir, input:new File(input1.prefix).getName())
 
     produce(OUTPUTFILE + ".bam") {
         exec """
@@ -57,7 +57,7 @@ BWA_se = {
 
     def TOOL_ENV = prepare_tool_env("bwa", tools["bwa"]["version"], tools["bwa"]["runenv"]) + " && " +
                    prepare_tool_env("samtools", tools["samtools"]["version"], tools["samtools"]["runenv"])
-    def PREAMBLE = get_preamble("BWA_se")
+    def PREAMBLE = get_preamble(stage:stageName, outdir:output.dir, input:new File(input1.prefix).getName())
 
     transform(".fastq.gz") to(".bam") {
         exec """

@@ -4,28 +4,29 @@ shinyReports_vars=[
     qc              : QC,                   //where the QC lie
     res             : RESULTS,              //where the results lie
     prefix          : ESSENTIAL_SAMPLE_PREFIX,
-    targets         : "targets.txt",
+    target          : new File(PIPELINE_ROOT + "/pipelines/ChIPseq/targets.txt").getCanonicalPath(),
     paired          : ESSENTIAL_PAIRED,
     run_cutadapt    : RUN_CUTADAPT,    
     run_peakanno    : RUN_PEAK_ANNOTATION,    
     run_diffbind    : RUN_DIFFBIND,    
     run_enrich      : RUN_ENRICHMENT,
     cutadapt_stats  : Cutadapt_vars.statsdir,              // cutadapt stat files
-    bowtie_log      : LOGS + (ESSENTIAL_USE_BOWTIE1 ? "/bowtie1" : "/bowtie2"),  //where the Bowtie logs lie
+    bowtie_log      : LOGS + "/bowtie2",  //where the Bowtie logs lie
     bamindex_log    : LOGS + "/BAMindexer", //where the Samtools/BamIndexer logs lie
     markdups_log    : LOGS + "/MarkDups",   //where the MarkDups logs lie
     extend_log      : LOGS + "/extend",     //where the extend/BedTools logs lie
     fastqc          : FastQC_vars.outdir,   //where the Fastqc logs lie
     fastqc_log      : LOGS + "/FastQC",     //where the Fastqc logs lie
+    fastqc_summarized : "FALSE",            //should FastQC plots be summarized in the report?
     ipstrength      : ipstrength_vars.outdir,   //where the IPstrength files lie
     ipstrength_log  : LOGS + "/ipstrength",     //where the IPstrength/R logs lie
     pbc             : pbc_vars.outdir,          //where the PBC files lie
     phantompeak     : phantompeak_vars.outdir,  //where the PhantomPeak files lie
     phantom_log     : LOGS + "/phantompeak",    //where the PhantomPeak/R logs lie
-    bustard         : QC + "/DemultiplexedBustardSummary.xml",    //where the bustard xml file lies
     macs2           : macs2_vars.outdir,    //where the MACS2 results lie
     macs2_log       : LOGS + "/macs2",      //where the macs2 logs lie
     blacklist_filter: blacklist_filter_vars.outdir + "/peaks_detected_table.csv",
+    upset           : UPSET_vars.outdir,    //where the upset plots lie
     plots_column    : "4",                  //number of columns to splits the plot grids (ipstrength, phantompeaks...). Min=2
     insertsize      : QC + "/insertsize",     //where the insertsize statistics are found (for paired end only)
     peak_annotation : peak_annotation_vars.outdir, // where the peak annotation results lie

@@ -1,37 +1,39 @@
 shinyReports_vars=[
-    project          : PROJECT,    //project directory
-    minadapteroverlap: ESSENTIAL_MINADAPTEROVERLAP,
-    minreadlength    : ESSENTIAL_MINREADLENGTH,
-    prefix           : ESSENTIAL_SAMPLE_PREFIX, //standard sample prefix
-    bowtie_res       : MAPPED,
-    bowtie_suffix    : ".bowtie.log",
-    bowtie_plot_dir  : MAPPED + "/plots",
-    bowtie_log       : LOGS + "/Bowtie_se",
-    star_suffix      : "Log.final.out",         //extension given to the STAR log files
-    starparms_suffix : "Log.out",               //extension given to the STAR log files
-    star_log         : LOGS + "/STAR",          //where the STAR logs lie
-    star_plot_dir    : MAPPED + "/plots",
-    cutadapt_plot_dir: CutadaptStats_vars.plotdir,
-    cutadapt_log     : LOGS + "/Cutadapt",
-    qualityfilter_plot_dir: FastQQualityFilterStats_vars.plotdir,
-    qualityfilter_log: LOGS + "/FastQQualityFilter",
-    dedup_plot_dir   : DedupStats_vars.plotdir,
-    dedup_log        : LOGS + "/FilterDuplicates",
-    rawfiltersummary_plot_dir: PROCESSED + "/plots",
-    fastqc_out       : FastQC_vars.outdir,      //where the Fastqc output lie
-    fastqc_log       : LOGS + "/FastQC",        //where the Fastqc logs lie
-    fastqscreen_out  : FastQScreen_vars.outdir,
-    fastqscreen_log  : LOGS + "/FastQScreen",
-    bamindex_log     : LOGS + "/BAMindexer",    //where the Samtools/BamIndexer logs lie
-    rnatypes_log     : subread2rnatypes_vars.outdir,
-    rnatypes         : subread2rnatypes_vars.outdir,
-    rnatypes_suffix  : ".readcounts.tsv",       //the extension of the subread results files
-    rnatypes_cutoff  : 0.005,                   //all types occurring in a larger fraction than shinyReports_vars.rnatypes_cutoff will be plotted individually
-    subread          : SubreadCount_vars.outdir,
-    subread_suffix   : ".raw_readcounts.tsv.summary", // the extension of the subread stats file
-    subread_log      : LOGS + "/SubreadCount",  //where the Subread/FeatureCounts logs lie
-    plots_column     : 3L,    //number of columns to splits the plot grids (dupradar, genebodycov...). Min=2L. L=integer in R
-    tool_versions    : collectToolVersions_vars.outdir + "/tool_versions.txt" //where the tool versions listed
+    project           : PROJECT,                       // project directory
+    org               : ESSENTIAL_ORG,                  //UCSC organism
+    prefix            : ESSENTIAL_SAMPLE_PREFIX,       // standard sample prefix
+    paired            : ESSENTIAL_PAIRED,              // paired-end data [yes|no]
+    strandedness      : ESSENTIAL_STRANDED,            // strandedness of the library [no|yes|reverse]
+    minadapteroverlap : ESSENTIAL_MINADAPTEROVERLAP,   // min. overlap of read and adapter
+    minreadlength     : ESSENTIAL_MINREADLENGTH,       // min. read length to keep
+    maxreadlength     : ESSENTIAL_MAXREADLENGTH,       // max. read length to kepp
+    cutadapt_stats    : QC + "/Cutadapt",              // cutadapt summary output dir
+    qualityfilter_log : LOGS_MY + "/filterQuality",    // quality filtering log dir
+    quality_min       : ESSENTIAL_MINIMAL_QUAL,        // min. accepted base quality
+    dedup_log         : LOGS_MY + "/removeDup",        // dedup log dir
+    remove_dup        : (REMOVE_DUPLICATES ? "TRUE" : "FALSE"), // were duplicates removed?
+    bowtie_res        : LOGS_MY + "/mapping",          // bowtie logs/results
+    bowtie_suffix     : ".bowtie.log",                 // suffix of bowtie log files
+    fastqc_out        : FastQC_vars.outdir,            // where the Fastqc output lie
+    fastqc_summarized : "FALSE",                       // should FastQC plots be summarized in the report?
+    fastqscreen_out   : FastqScreen_vars.outdir,       // FastQScreen output dir
+    fastqscreen_perc  : ESSENTIAL_FASTQSCREEN_PERC,    // contaminant percentage to be plotted
+    rnatypes          : subread2rnatypes_vars.outdir,  // rnatypes data dir
+    rnatypes_suffix   : ".readcounts.tsv",             // the extension of the subread results files
+    rnatypes_cutoff   : 0.005,                         // all types occurring in a larger fraction than shinyReports_vars.rnatypes_cutoff will be plotted individually
+    subread           : subread_count_vars.outdir,     // subread (featureCounts) output dir
+    subread_suffix    : ".raw_readcounts.tsv.summary", // the extension of the subread stats file
+    subread_suf_type  : "\"\\.readcounts.tsv\"",       // file ending of subread count files 
+    plots_column      : "3"                 ,          // number of columns to splits the plot grids (dupradar, genebodycov...)
+    tool_versions     : collectToolVersions_vars.outdir + "/tool_versions.txt", // where the tool versions listed
+    target            : new File(PIPELINE_ROOT + "/pipelines/smallRNAseq_BCF/targets.txt").getCanonicalPath(),
+    de_deseq_dir      : DE_DESeq2_vars.outdir,         // DESeq2 main output dir
+    de_deseq_file     : "DE_DESeq2.RData",             // DESeq2 output file name
+    de_deseq_FDR      : DE_DESeq2_vars.FDR,            // which FDR threshold was used for the DESeq2 analysis     
+    de_deseq_FC       : DE_DESeq2_vars.FC,             // which FC threshold was used for the DESeq2 analysis
+    feature_type      : ESSENTIAL_FEATURETYPE,         // gencode uses gene_type; ensemble uses gene_biotype
+    smallrna_type     : ESSENTIAL_SMALLRNA,            // gene type, which is analyzed separately incl. a separate DE report
+    maturemirna       : (RUN_MATUREMIRNA_ANALYSIS ? "TRUE" : "FALSE") // was a separate analysis on mature miRNA run?
 ]
 
 load PIPELINE_ROOT + "/modules/smallRNAseq_BCF/shinyreports.groovy"

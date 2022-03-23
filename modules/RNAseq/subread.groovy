@@ -10,12 +10,13 @@ subread_count = {
         "--donotsort " +
         (subread_count_vars.threads  ? " -T " + subread_count_vars.threads  : "") +
         (subread_count_vars.genesgtf ? " -a " + subread_count_vars.genesgtf : "") +
+        (subread_count_vars.feature  ? " -t " + subread_count_vars.feature  : "") +
         (subread_count_vars.paired   ? " -p "                               : "") +
         (subread_count_vars.extra    ? " "    + subread_count_vars.extra    : "") +
-        (subread_count_vars.stranded == "no" ? " -s0 " : (subread2rnatypes_vars.stranded == "yes" ? " -s1 " : " -s2 "))
+        (subread_count_vars.stranded == "no" ? " -s0 " : (subread_count_vars.stranded == "yes" ? " -s1 " : " -s2 "))
 
     def TOOL_ENV = prepare_tool_env("subread", tools["subread"]["version"], tools["subread"]["runenv"])
-    def PREAMBLE = get_preamble("subread_count")
+    def PREAMBLE = get_preamble(stage:stageName, outdir:output.dir, input:new File(input1.prefix).getName())
 
     // run the chunk
     transform(".bam") to (".raw_readcounts.tsv") {

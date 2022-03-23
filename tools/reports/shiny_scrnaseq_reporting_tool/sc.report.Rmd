@@ -1542,14 +1542,14 @@ if(length(annoFactors)>2) {stop("\nno more than 2 categories allowed in 'annoFac
 
 # plot PCA
   gridExtra::grid.arrange(grobs=lapply(grep("PCA", reducedDimNames(sce), value=T), function(d) {
- 
+
       scater::plotReducedDim(sce, dimred = d, 
         by_exprs_values = exprs_values,
         colour_by=dotcol, shape_by = dotshape, point_size=plot_pointsize) +  
         ggtitle(paste("PCA plot of", if(grepl("allgenes", d)) {"all genes"} else {"HVGs"}))
 
   }), ncol=2)
-  
+
 ```
 
 ## Identification of sub-populations with t-SNE 
@@ -1595,7 +1595,7 @@ if(length(annoFactors)>2) {stop("\nno more than 2 categories allowed in 'annoFac
   # Since multiple perplexities can be selected resulting in multiple plots, 
   # the figure height must be set accordingly (5 inch x number of plots / ncol)
   gridExtra::grid.arrange(grobs=lapply(grep("TSNE", reducedDimNames(sce), value=T), function(d) {
- 
+
       scater::plotReducedDim(sce, dimred = d, 
         by_exprs_values = exprs_values,
         colour_by=dotcol, shape_by = dotshape, point_size=plot_pointsize) +  
@@ -1641,18 +1641,19 @@ if(length(annoFactors)>2) {stop("\nno more than 2 categories allowed in 'annoFac
 
  # plot UMAP 
    gridExtra::grid.arrange(grobs=lapply(grep("UMAP", reducedDimNames(sce), value=T), function(d) {
- 
+
       scater::plotReducedDim(sce, dimred = d, 
         by_exprs_values = exprs_values,
         colour_by=dotcol, shape_by = dotshape, point_size=plot_pointsize) +  
         ggtitle(paste("UMAP plot of", if(grepl("allgenes", d)) {"all genes"} else {"HVGs"}))
 
   }), ncol=2)
- 
+
 ```
 
+# {-}
 
-# Clustering
+# Clustering {.tabset .tabset-pills}
 
 ## Defining clusters with SC3
 
@@ -1664,31 +1665,33 @@ library(pkgmaker)
 
 rowData(sce)$feature_symbol <- rowData(sce)$SYMBOL # column feature_symbol needed for SC3
 
-  set.seed(100)
-    sce <- sc3_prepare(sce, gene_filter=T, n_cores=8, rand_seed = 100) # 
-  set.seed(100)
-    sce <- sc3_estimate_k(sce) 
-    nr_clusters <- metadata(sce)$sc3$k_estimation
-    cat("Number of estimated clusters:", nr_clusters, "\n")
-  set.seed(100)
-    sce <- sc3_calc_dists(sce) 
-  set.seed(100)
-    sce <- sc3_calc_transfs(sce)
-  set.seed(100)
-    sce <- sc3_kmeans(sce, ks=nr_clusters) 
-  set.seed(100)
-    sce <- sc3_calc_consens(sce) # assigns clusters in colData(sce)
- 
+set.seed(100)
+sce <- sc3_prepare(sce, gene_filter=T, n_cores=8, rand_seed = 100) # 
+set.seed(100)
+sce <- sc3_estimate_k(sce) # metadata(sce)$sc3$k_estimation 12
+nr_clusters <- metadata(sce)$sc3$k_estimation
+cat("Number of selected clusters:", nr_clusters, "\n")
+set.seed(100)
+sce <- sc3_calc_dists(sce) # repeated runs not identical despite of setting rand_seed in sc3_prepare
+set.seed(100)
+sce <- sc3_calc_transfs(sce)
+set.seed(100)
+sce <- sc3_kmeans(sce, ks=nr_clusters) 
+set.seed(100)
+sce <- sc3_calc_consens(sce) # assigns clusters in colData(sce)
+
 # metadata(sce)$sc3
 # colData(sce)[ , grep("sc3_", colnames(colData(sce))), drop=F]   
 # rowData(sce)[ , grep("sc3_", colnames(rowData(sce))), drop=F]
 
 # print cluster assignment
-  kbl(t(table(colData(sce)[, paste0("sc3_", nr_clusters, "_clusters")])), align = "l", format="simple", caption="cells per cluster") %>% kable_styling(full_width = F) 
+kbl(t(table(colData(sce)[, paste0("sc3_", nr_clusters, "_clusters")])), align = "l", format="simple", caption="cells per cluster") %>% kable_styling(full_width = F) 
 
 # store cluster assignments (csv file for compatibility with Loupe import)
 dir_sc3 <- file.path("report_files", "cluster", "SC3")
-if (!file.exists(dir_sc3)) {dir.create(dir_sc3, recursive=T) }
+if (!file.exists(dir_sc3)) {
+  dir.create(dir_sc3, recursive=T) 
+  }
 write.table(data.frame(barcode=colnames(sce), colData(sce)[,c(group.vars, grep("sc3_", colnames(colData(sce)), value=T))]), 
             file =file.path(dir_sc3, paste0("SC3_", nr_clusters, "_cluster_assignments.csv")), sep=",", quote = F, row.names = F)
 
@@ -1744,7 +1747,6 @@ cat(paste0("\nClustering is applied on the gene list filtered by SC3 (", sum(row
 
  rm(sceSC3)
 ```
-
 
 
 ## Graph-based clustering with igraph
@@ -2024,10 +2026,10 @@ plottypes <- c("PCA", "TSNE", "UMAP")
                       width = 200, height = 80*ceiling(length(plot_cluster)/2), 
                       units = c("mm"),  dpi = 300, device="png",
          limitsize = FALSE)
-    
-      # include plots in report    
-      cat(paste0("![plot of ", basename(filenamePlot), "](", filenamePlot, ")"))
-  }
+
+    # include plots in report    
+    cat(paste0("![plot of ", basename(filenamePlot), "](", filenamePlot, ")"))
+}
   
 ## plot dendrograms
  for (d in data2clust) {
@@ -2276,7 +2278,7 @@ if(nlevels(factor(colData(sce)[,clustervar])) >=2) {
       } else {
         cat("The analysis is adjusted for:", DE_var2adjust, "\n\n")
       } 
-    }
+  }
     
     
   # find upregulated markers for each cluster and upregulated marker specific for each cluster
@@ -2292,7 +2294,7 @@ if(nlevels(factor(colData(sce)[,clustervar])) >=2) {
                          row.data=rowData(sce)[,"SYMBOL", drop=F], direction="up", pval.type="all")
                          # use pval.type="some" if "all" is too stringent 
   
-   
+
 cat("\nFor each cluster heatmap, we include all genes with an assigned rank <=", rank_threshold, ", i.e. the top", rank_threshold, "genes from each comparison. These genes distinguish that cluster from the other clusters. For the heatmaps showing genes which are up-regulated in a specific cluster only, we use include the same number of top genes as defined for the previous heatmap.\n\n")
    
    list_heatmaps <- NULL
@@ -2329,19 +2331,21 @@ cat("\nFor each cluster heatmap, we include all genes with an assigned rank <=",
             ggsave(filename=filenamePlot,
                    plot=gridExtra::grid.arrange(grobs=list(list_heatmaps, list_heatmaps_spec), ncol=2), 
                    width = 200, height = 150, units = c("mm"),  dpi = 300, device="png")
+
+
+        # include plots in report    
+        cat(paste0("![plot of ", basename(filenamePlot), "](", filenamePlot, ")"))
+        cat("\n", fill = T)
+    } else {
+      cat("\nHeatmaps skipped because only 1 column to plot.\n")
+    }
     
-            # include plots in report    
-            cat(paste0("![plot of ", basename(filenamePlot), "](", filenamePlot, ")"))
-            cat("\n", fill = T)
-        } else {cat("\nHeatmaps skipped because only 1 column to plot.")}
-        
-      return(list(all_up=list_heatmaps, cluster_spec=list_heatmaps_spec))
-    })
+    return(list(all_up=list_heatmaps, cluster_spec=list_heatmaps_spec))
+  })
   
 } else {
   cat("\nNo marker genes to calculate because clustering variable has only 1 cluster\n")
 }
-
 ```
 
 
@@ -2584,6 +2588,7 @@ print(kable(sum.tab, align = "l", row.names=F, format="simple") %>% kable_stylin
 
 
 
+
 ```{r store_data, echo=F, results='hide', error=F, warning=F, message=F, eval=T}
 
 # store count data (all and by pool)
@@ -2639,8 +2644,7 @@ if (!file.exists(dir_shinyapp)) {dir.create(dir_shinyapp) }
    
 ```
 
-
-# Used tools and versions for this analysis ##
+# Used tools and versions for this analysis
 
 Read mapping was performed with STAR using the following parameters:
 

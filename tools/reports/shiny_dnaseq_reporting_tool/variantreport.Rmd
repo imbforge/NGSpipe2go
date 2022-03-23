@@ -15,24 +15,135 @@ require(Cairo)
 knitr::opts_chunk[['set']](dev='CairoPNG')
 source('variant.shinyrep.helpers.R')
 loadGlobalVars()
+
+# print targets file
+targets <- read.delim(SHINYREPS_TARGET)
+DT::datatable(targets, caption="Targets file (sample sheet) used for analysis")
+
 ``` 
 
-## Raw reads QC ##
 
-### Raw reads qualities, sequence bias and duplication
+## Raw reads QC {.tabset .tabset-pills}
 
 The raw sequence reads of all samples are analysed with the popular FastQC tool (http://www.bioinformatics.babraham.ac.uk/projects/fastqc/).
 
-1. The "Read qualities" heatmap plot summarizes the mean quality score at each position.
-The color on the graph shows the Phred quality scores, which are logarithmically related to the base-calling error probabilities. The higher the score the better the base call. The background of the graph divides the y axis into very good quality calls (green), calls of reasonable quality (yellow), and calls of poor quality (red). Typically, the majority of calls on all base positions fall into the green area.
 
-2. The "Sequence bias" heatmap plot shows the proportion of each base (% G, A, T and C) at each position. In a random library there would be little difference between the positions of a sequence run, so the lines in this plot should run parallel with each other. But most RNA-seq libraries show sequence imbalance in the first 10-12 read positions due to RT priming biases, which should however look fairly similar in all samples.
+### Read quality
 
-3. The "GC Content" plot shows the GC% distribution of all reads and the ideal normal distribution based on the data (black line). Typically, the lines should tightly overlap and look essentially the same in all samples. An unusually shaped distribution could indicate a contaminated library.
+The “read quality” plot summarizes at each read position the Phred quality scores, which are logarithmically related to the base-calling error probabilities. The higher the Phred scores, the better the base calls. The elements of the plot are as follows: the central red line is the median value, the yellow box represents the inter-quartile range (25-75%), the upper and lower whiskers represent the 10% and 90% points, and the blue line represents the mean quality. The background of the graph divides the y-axis into very good quality calls (green), calls of intermediate quality (yellow), and calls of poor quality (red). Typically, the majority of calls on all base positions fall into the green area. Due to binning of quality score in recent sequencing technologies (e.g. Illumina NextSeq), sequencing qualities may be the same on many position and sample profiles may appear very similar.
 
-```{r FastQC_paragraph, echo=F,results='asis',error=F,warning=F,message=F,fig.align='center'}
-VARhelper.ngsReports.Fastqc()
+```{r FastQC_qual_summarized, echo=F,results='asis',error=F,warning=F,message=F,fig.align='center'}
+
+if (SHINYREPS_FASTQC_SUMMARIZED) {
+    fastqc_summary_plot <- VARhelper.Fastqc.custom(web=F,summarizedPlots=T)
+    plot(fastqc_summary_plot$p.qual)
+    cat("\n", fill = T)
+} else {
+    fastqc_summary_plot <- VARhelper.Fastqc.custom(web=F,summarizedPlots=F)
+}
+
 ```
+
+```{r FastQC_qual, echo=F,results='asis',error=F,warning=F,message=F,fig.align='center',fig.height=round((3*fastqc_summary_plot$no.of.samples)/4)+1}
+
+if (SHINYREPS_FASTQC_SUMMARIZED == FALSE) {
+    plot(fastqc_summary_plot$p.qual)
+    cat("\n", fill = T)
+}
+
+```
+
+
+### Sequence bias
+
+The "sequence bias" plot shows the proportion of each base (% T, C, A and G) at each position. In a random library there would be little difference between the positions of a sequence run, so the lines in this plot should run parallel with each other. But most RNA-seq libraries show sequence imbalance in the first 10-12 read positions due to RT priming biases, which should however look fairly similar in all samples. In case the nucleotide content is summarized in a heatmap for all samples, gray colored fields represent a balanced nucleotide content.
+
+
+```{r FastQC_nuc_content_summarized, echo=F,results='asis',error=F,warning=F,message=F,fig.align='center', fig.height=(fastqc_summary_plot$no.of.samples/5)+0.5}
+
+if (SHINYREPS_FASTQC_SUMMARIZED) {
+    plot(fastqc_summary_plot$p.content)
+    cat("\n", fill = T)
+} else {
+    fastqc_summary_plot <- VARhelper.Fastqc.custom(web=F,summarizedPlots=F)
+}
+
+```
+
+```{r FastQC_nuc_content, echo=F,results='asis',error=F,warning=F,message=F,fig.align='center',fig.height=round((3*fastqc_summary_plot$no.of.samples)/4)+1}
+
+if (SHINYREPS_FASTQC_SUMMARIZED == FALSE) {
+    plot(fastqc_summary_plot$p.content)
+    cat("\n", fill = T)
+}
+
+```
+
+
+### GC content
+
+The "GC content" plot shows the GC% distribution of all reads and all samples. Typically, the lines should tightly overlap and look essentially the same in all samples. An unusually shaped distribution could indicate a contaminated library.
+
+```{r FastQC_GC, echo=F,results='asis',error=F,warning=F,message=F,fig.align='center'}
+
+fastqc_summary_plot$p.gc
+cat("\n", fill = T)
+
+```
+
+
+```{r cutadapt, echo=F, results='asis', error=F, warning=F, message=F, eval=SHINYREPS_RUN_CUTADAPT=="true"}
+cat("## Adapter trimming with Cutadapt\n")
+cat("\nThe following plot shows the amount of reads trimmed (in percent) for the selected adapter sequences. The column 'tooshort' gives the percentage of reads removed due to the minimum length threshold after trimming. Additionally to the column 'trimmed' which is for all adapters combined, there are columns for every single adapter giving the percentage of reads trimmed for this adapter.\n\n")
+
+VARhelper.cutadapt()
+```
+
+```{r FastQC_qual_summarized_trimmed, echo=F,results='asis',error=F,warning=F,message=F,fig.align='center', eval=SHINYREPS_RUN_CUTADAPT=="true"}
+cat("### FastQC of trimmed reads QC {.tabset}\n\n")
+cat("#### Read quality\n\n")
+if (SHINYREPS_FASTQC_SUMMARIZED) {
+    fastqc_summary_plot <- VARhelper.Fastqc.custom(web=F,summarizedPlots=T, subdir="trimmed")
+    plot(fastqc_summary_plot$p.qual)
+    cat("\n", fill = T)
+} else {
+    fastqc_summary_plot <- VARhelper.Fastqc.custom(web=F,summarizedPlots=F, subdir="trimmed")
+}
+```
+
+```{r FastQC_qual_trimmed, echo=F,results='asis',error=F,warning=F,message=F,fig.align='center',fig.height=min(170, round((3*fastqc_summary_plot$no.of.samples)/4)+1), eval=SHINYREPS_RUN_CUTADAPT=="true"}
+
+if (SHINYREPS_FASTQC_SUMMARIZED == FALSE) {
+    plot(fastqc_summary_plot$p.qual)
+    cat("\n", fill = T)
+}
+```
+
+```{r FastQC_nuc_content_summarized_trimmed, echo=F,results='asis',error=F,warning=F,message=F,fig.align='center', fig.height=min(170, (fastqc_summary_plot$no.of.samples/5)+0.5), eval=SHINYREPS_RUN_CUTADAPT=="true"}
+cat("#### Sequence bias of trimmed reads\n")
+
+if (SHINYREPS_FASTQC_SUMMARIZED) {
+    plot(fastqc_summary_plot$p.content)
+    cat("\n", fill = T)
+} 
+```
+
+```{r FastQC_nuc_content_trimmed, echo=F,results='asis',error=F,warning=F,message=F,fig.align='center',fig.height=min(170, round((3*fastqc_summary_plot$no.of.samples)/4)+1), eval=SHINYREPS_RUN_CUTADAPT=="true"}
+
+if (SHINYREPS_FASTQC_SUMMARIZED == F) {
+    plot(fastqc_summary_plot$p.content)
+    cat("\n", fill = T)
+}
+```
+
+```{r FastQC_GC_trimmed, echo=F,results='asis',error=F,warning=F,message=F,fig.align='center', eval=SHINYREPS_RUN_CUTADAPT=="true"}
+cat("#### GC content of trimmed reads\n")
+fastqc_summary_plot$p.gc
+cat("### {-}\n", fill = T)
+```
+
+## {-}
+
 
 ### Mapping
 The mapping statistics show the total number of reads delivered to the aligner, the number of mapped reads and reads not mapping at all to the ref aligning to the wrong reference genome.
@@ -41,14 +152,40 @@ The mapping statistics show the total number of reads delivered to the aligner, 
 cat(VARhelper.BWA(),sep="\n")
 ```
 
-### Variant calling
-Variant calling can be performed using GATK UnifiedGenotyper and GATK HaplotypeCaller.
-Both tools include default read filters that exclude reads from variant calling.
 
-#### GATK UnifiedGenotyper filtered read statistics
-```{r GATKug_paragraph, echo=F,results='asis',error=F,warning=F,message=F}
-cat(VARhelper.GATKug(),sep="\n")
+## Potential contaminants and rRNA content ##
+
+A competitive mapping to the reference genome and known rRNAs (H. sapiens, M. musculus, C. elegans, D. melanogaster, D. rerio, X. tropicalis) as well as frequently occurring Mycoplasma species (M. arginini, M. fermentans, M. hominis, M. hyorhinis, M. orale, and Acholeplasma laidlawii), PhiX and ERCC spike-in sequences, E. coli and B. taurus (bovine) was performed with FastQScreen (http://www.bioinformatics.babraham.ac.uk/projects/fastq_screen/).
+
+In the following plot only relevant contaminants are shown. A contaminant is considered relevant if it consumes `r SHINYREPS_FASTQSCREEN_PERC`% of reads or more in at least one sample. The "one genome" label refers to the amount of reads mapping to that genome only, no matter if they are mapping uniquely or multiple times. The "multiple genomes" label refers to the amount of read mapping to this genome but also to other genomes in the screening regardless of whether they are uniquely or multi-mapping. 
+
+```{r fastqscreen_paragraph, echo=F, results='asis', fig.width=10, error=F, warning=F, message=F}
+fastqscreen_plots <- VARhelper.fastqscreen(perc.to.plot=SHINYREPS_FASTQSCREEN_PERC)
 ```
+
+```{r fastqscreen_paragraph2, echo=F,results='asis',error=F,warning=F,message=F,fig.align='center',fig.height=(round((3*fastqscreen_plots$no.of.genomes)/4)+1)*fastqscreen_plots$no.of.samples/8+1}
+  if(is.null(fastqscreen_plots$errortext)) {
+    plot(fastqscreen_plots$p.category.wrap)
+    } else {
+      cat(fastqscreen_plots$errortext)
+      }
+```
+
+
+## UCSC genome browser tracks ##
+
+The browser tracks are generated using bamCoverage tool in [deepTools](https://deeptools.readthedocs.io/en/develop/) and they are normalized using the Counts Per Million mapped reads (CPM) method.
+
+
+To view the tracks in the UCSC Genome Browser, navigate to the [UCSC Genome Browser Track Hub page](https://genome-euro.ucsc.edu/cgi-bin/hgHubConnect) and enter the following line into the `URL` field:
+
+```{r Trackhub, echo=F, results='asis', error=F, warning=F, message=F}
+cat(VARhelper.Trackhub(), sep="\n")
+```
+
+
+### Variant calling
+Variant calling is performed using GATK HaplotypeCaller. This tools includes default read filters that exclude reads from variant calling.
 
 #### GATK HaplotypeCaller filtered read statistics
 
@@ -69,7 +206,6 @@ Variant statistics show the basic properties of your variants as triplets for "a
 The calculated ratios should be similar in "all", "known" and "novel" subsets. Highly deviating values in the "novel" subset indicate a high false positive rate.
 Due to selective pressure transitions are more likely to be retained in the genome than transversions.
 For (human) Exome sequencing a Ti/Tv ration of 2.8-3 would be good, while whole genome sequencing might result in values 2-2.1. A completely random Ti/Tv ratio would be 0.5.
-Sample names end with .HC (HaplotypeCaller) and .UG (UnifiedGenotyper).
 
 [one source of many](http://www.cureffi.org/2012/10/17/descriptive-statistics-and-quality-control-on-variants/)
 

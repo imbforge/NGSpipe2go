@@ -19,17 +19,18 @@ STAR = {
 
     // star flags
     def STAR_FLAGS =
-        " --runMode alignReads "        +
-        " --genomeLoad NoSharedMemory " +
-        " --outStd SAM "                +
+        " --runMode alignReads "         +
+        " --genomeLoad NoSharedMemory "  +
+        " --outStd SAM "                 +
+        " --outMultimapperOrder Random " +
         (STAR_vars.attributes   ? " --outSAMattributes " + STAR_vars.attributes   : " --outSAMattributes Standard ") +
-        " --outSJfilterReads Unique "   +
-        " --readFilesCommand zcat "     +
-        " --outFileNamePrefix "         + STAR_vars.logdir + "/" + OUTPUTFILE +
+        " --outSJfilterReads Unique "    +
+        " --readFilesCommand zcat "      +
+        " --outFileNamePrefix "          + STAR_vars.logdir + "/" + OUTPUTFILE +
         (STAR_vars.unmapped_bam ? " --outSAMunmapped " + STAR_vars.unmapped_bam   : "") +
         (STAR_vars.ref          ? " --genomeDir "      + STAR_vars.ref            : "") +
         (STAR_vars.threads      ? " --runThreadN "     + STAR_vars.threads        : "") +
-        (STAR_vars.mm           ? " --outFilterMismatchNoverLmax " + STAR_vars.mm : "") + 
+        (STAR_vars.mm           ? " --outFilterMismatchNoverReadLmax " + STAR_vars.mm : "") + 
         (STAR_vars.mm_abs       ? " --outFilterMismatchNmax " + STAR_vars.mm_abs  : "") +
         (STAR_vars.overhang     ? " --sjdbOverhang "   + STAR_vars.overhang       : "") +
         (STAR_vars.gtf          ? " --sjdbGTFfile "    + STAR_vars.gtf            : "") +
@@ -43,7 +44,7 @@ STAR = {
 
     def TOOL_ENV = prepare_tool_env("star", tools["star"]["version"], tools["star"]["runenv"]) + " && " +
                    prepare_tool_env("samtools", tools["samtools"]["version"], tools["samtools"]["runenv"])
-    def PREAMBLE = get_preamble("STAR")
+    def PREAMBLE = get_preamble(stage:stageName, outdir:output.dir, input:new File(input1.prefix).getName())
 
     // code chunk
     // TODO: warn if the genome index was created using another version of STAR?

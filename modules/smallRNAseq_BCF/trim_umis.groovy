@@ -11,7 +11,7 @@ TrimUMIs = {
         (TrimUMIs_vars.right_trim ? " -e " + TrimUMIs_vars.right_trim : "")
 
     def TOOL_ENV = prepare_tool_env("seqtk", tools["seqtk"]["version"], tools["seqtk"]["runenv"])
-    def PREAMBLE = get_preamble("TrimUMIs")
+    def PREAMBLE = get_preamble(stage:stageName, outdir:output.dir, input:new File(input1.prefix).getName())
 
     transform(".fastq.gz") to (".trimmed.fastq.gz") {
         exec """

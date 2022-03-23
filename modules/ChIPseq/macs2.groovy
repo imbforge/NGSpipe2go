@@ -1,7 +1,7 @@
 macs2 = {
     doc title: "MACS2",
         desc:  "MACS2 wrapper",
-        constraints: "Performs treatment versus control peak calling. If no input control sample is available, the INPUT field in the targets.txt file must be given as none.",
+        constraints: "Performs treatment versus control peak calling. If no input control sample is available, the INPUT field in the targets.txt file must be given as `none`.",
         bpipe_version: "tested with bpipe 0.9.8.7",
         author: "Sergi Sayols, Frank Rühle"
 
@@ -16,7 +16,7 @@ macs2 = {
         (macs2_vars.extra  ? " " + macs2_vars.extra               : "")
 
     def TOOL_ENV = prepare_tool_env("macs2", tools["macs2"]["version"], tools["macs2"]["runenv"])
-    def PREAMBLE = get_preamble("macs2")
+    def PREAMBLE = get_preamble(stage:stageName, outdir:output.dir, input:new File(input1.prefix).getName())
 
     transform(".bam") to("_macs2.done") {
         exec """
@@ -47,8 +47,8 @@ macs2 = {
                         INPUTflag="";
                     fi &&   
                     echo "\$NAMEoutput" >> $output &&
-                    macs2 callpeak -t ${macs2_vars.mapped}/\$IP \$INPUTflag -n $subdir\${NAMEoutput}_macs2 $MACS2_FLAGS &&
-                    if [ \$? -ne 0 ]; then rm $output; fi &&
+                    macs2 callpeak -t ${macs2_vars.mapped}/\$IP \$INPUTflag -n $subdir\${NAMEoutput}_macs2 $MACS2_FLAGS ;
+                    if [ \$? -ne 0 ]; then rm $output; fi ;
                     find . -maxdepth 1 -name "$subdir\${NAMEoutput}_macs2*" -exec sh -c 'mv "\$1" "$output.dir/\${1#./$subdir}"' _ {} \\;;
                 fi;
             done

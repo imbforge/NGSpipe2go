@@ -10,10 +10,12 @@ if(!require(chipseqDBData)) {
 
 nfyadata <- NFYAData()
 nfyadata$name <- gsub("[- ]", "_", gsub("[\\(\\)]", "", nfyadata$Description))
-dir.create("./rawdata", showWarnings=FALSE)
-Map(name=nfyadata$name, path=nfyadata$Path, function(name, path) {
-  system(paste0("/fsimb/common/tools/samtools/1.9/bin/samtools bam2fq ", path,
-                " | /fsimb/common/tools/pigz/2.4/pigz -p8 > ./rawdata/", name, ".fastq.gz"))
+nfyadata$path <- sapply(nfyadata$Path, function(x) x$path)
+cat("mkdir ./rawdata", file="download_rawdata.sh", fill=TRUE, append=FALSE)
+cat("module load samtools", file="download_rawdata.sh", fill=TRUE, append=TRUE)
+Map(name=nfyadata$name, path=nfyadata$path, function(name, path) {
+  cat("samtools bam2fq ", path, " | /fsimb/common/tools/pigz/2.4/pigz -p8 > ./rawdata/", name, ".fastq.gz\n",
+      file="download_rawdata.sh", sep="", append=TRUE)
 })
 ```
 

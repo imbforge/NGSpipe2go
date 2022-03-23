@@ -2,8 +2,8 @@ bamCoverage_vars=[
     outdir    : TRACKS,
     cores     : Integer.toString(ESSENTIAL_THREADS),
     paired    : RUN_IN_PAIRED_END_MODE,       // run in se or pe mode    
-    fragments : (ESSENTIAL_FRAGMENT_USAGE == "yes"),
-    fraglength: ESSENTIAL_FRAGLEN,
+    fragments : (binding.hasVariable('ESSENTIAL_FRAGMENT_USAGE') && binding.hasVariable('ESSENTIAL_FRAGLEN') ? ESSENTIAL_FRAGMENT_USAGE == "yes" : false),
+    fraglength: (binding.hasVariable('ESSENTIAL_FRAGLEN') ? ESSENTIAL_FRAGLEN : "200"),
     // If you want to exclude chromsomes for normalisation e.g. rDNA or mitochondrion add
     // the following parameter --ignoreForNormalization \"chrM, rDNA\".
     // If you like to use offsets, blacklist regions, center reads or anything like it please

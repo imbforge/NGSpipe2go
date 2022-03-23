@@ -7,17 +7,13 @@ shinyReports = {
 
     output.dir = REPORTS
 
-    def PREAMBLE = get_preamble("shinyReports")
+    def PREAMBLE = get_preamble(stage:stageName, outdir:output.dir, input:new File(input1.prefix).getName())
 
     produce("shinyReports.txt") {
         exec """
             ${PREAMBLE} &&
 
-            cp ${PIPELINE_ROOT}/tools/reports/shiny_rnaseq_reporting_tool/server.R ${REPORTS}                &&
-            cp ${PIPELINE_ROOT}/tools/reports/shiny_rnaseq_reporting_tool/ui.R ${REPORTS}                    &&
             cp ${PIPELINE_ROOT}/tools/reports/shiny_rnaseq_reporting_tool/DE.shinyrep.helpers.R ${REPORTS}   &&
-            cp ${PIPELINE_ROOT}/tools/reports/shiny_rnaseq_reporting_tool/bustard.pl ${REPORTS}              &&
-            cp ${PIPELINE_ROOT}/tools/reports/shiny_rnaseq_reporting_tool/BustardSummary.toMD.xsl ${REPORTS} &&
             cp ${PIPELINE_ROOT}/tools/reports/shiny_rnaseq_reporting_tool/styles.css ${REPORTS}              &&
 
             if [ -e "${REPORTS}/DEreport.Rmd" ]; then
@@ -46,6 +42,9 @@ shinyReports = {
             echo "SHINYREPS_FASTQC_SUMMARIZED=${shinyReports_vars.fastqc_summarized}" >> $output &&
             echo "SHINYREPS_FASTQSCREEN_OUT=${shinyReports_vars.fastqscreen_out}" >> $output &&
             echo "SHINYREPS_FASTQSCREEN_LOG=${shinyReports_vars.fastqscreen_log}" >> $output &&
+            echo "SHINYREPS_FASTQSCREEN_PERC=${shinyReports_vars.fastqscreen_perc}" >> $output &&
+            echo "SHINYREPS_RUN_CUTADAPT=${shinyReports_vars.run_cutadapt}"  >> $output &&
+ 	    echo "SHINYREPS_CUTADAPT_STATS=${shinyReports_vars.cutadapt_stats}" >> $output &&
             echo "SHINYREPS_BAMINDEX_LOG=${shinyReports_vars.bamindex_log}"     >> $output &&
             echo "SHINYREPS_DUPRADAR_LOG=${shinyReports_vars.dupradar_log}" >> $output &&
             echo "SHINYREPS_RNATYPES_LOG=${shinyReports_vars.rnatypes_log}" >> $output &&
@@ -54,6 +53,13 @@ shinyReports = {
             echo "SHINYREPS_GENEBODYCOV_LOG=${shinyReports_vars.genebodycov_log}" >> $output &&
             echo "SHINYREPS_DE_DESEQ=${shinyReports_vars.de_deseq}"       >> $output &&
             echo "SHINYREPS_DE_DESEQ_MM=${shinyReports_vars.de_deseq_mm}" >> $output &&
+            echo "SHINYREPS_DE_DESEQ_FDR=${shinyReports_vars.de_deseq_FDR}"       >> $output &&
+            echo "SHINYREPS_DE_DESEQ_FC=${shinyReports_vars.de_deseq_FC}"       >> $output &&
+            echo "SHINYREPS_MASER_SCRIPTS=${shinyReports_vars.maser_scripts}" >> $output &&
+            echo "SHINYREPS_MASER_FTYPE=${shinyReports_vars.maser_ftype}" >> $output &&
+            echo "SHINYREPS_MASER_MINCOV=${shinyReports_vars.maser_mincov}" >> $output &&
+            echo "SHINYREPS_MASER_FDR=${shinyReports_vars.maser_fdr}" >> $output &&
+            echo "SHINYREPS_MASER_DPSI=${shinyReports_vars.maser_dpsi}" >> $output &&
             echo "SHINYREPS_SUBREAD=${shinyReports_vars.subread}"         >> $output &&
             echo "SHINYREPS_SUBREAD_SUFFIX=${shinyReports_vars.subread_suffix}"  >> $output &&
             echo "SHINYREPS_SUBREAD_LOG=${shinyReports_vars.subread_log}"        >> $output &&

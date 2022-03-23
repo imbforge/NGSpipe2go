@@ -1,12 +1,8 @@
-PREMATS_vars=[
-    outdir   : RESULTS + "/preMATS",
-    //The rmats targets file differs from the normal targets file by supplying a
-    //fragment size for your samples in the last column.
-    //It's a good idea to reuse the pipeline's targets.txt with an extra column
-    //containing the fragment size
-    targets  : "targets_rMATS.txt",
+PRERMATS_vars=[
+    outdir   : RESULTS + "/PRERMATS",
+    targets  : "targets.txt",
     contrasts: "contrasts.txt",
-    suffix  : "_targets_rMats.txt"
+    suffix  : "_targets_rMATS.txt"
 ]
 
 load PIPELINE_ROOT + "/modules/RNAseq/prermats.groovy"

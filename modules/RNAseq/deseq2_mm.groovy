@@ -10,18 +10,19 @@ DE_DESeq2_MM = {
     def DE_DESeq2_MM_FLAGS =
         (DE_DESeq2_MM_vars.targets   ? " targets="   + DE_DESeq2_MM_vars.targets   : "") +
         (DE_DESeq2_MM_vars.contrasts ? " contrasts=" + DE_DESeq2_MM_vars.contrasts : "") +
-        (DE_DESeq2_MM_vars.mmatrix   ? " mmatrix="   + DE_DESeq2_MM_vars.mmatrix   : "") +
         (DE_DESeq2_MM_vars.filter    ? " filter="    + DE_DESeq2_MM_vars.filter    : "") +
         (DE_DESeq2_MM_vars.prefix    ? " prefix="    + DE_DESeq2_MM_vars.prefix    : "") +
         (DE_DESeq2_MM_vars.suffix    ? " suffix="    + DE_DESeq2_MM_vars.suffix    : "") +
         (DE_DESeq2_MM_vars.cwd       ? " cwd="       + DE_DESeq2_MM_vars.cwd       : "") +
         (DE_DESeq2_MM_vars.outdir    ? " out="       + DE_DESeq2_MM_vars.outdir    : "") +
         (DE_DESeq2_MM_vars.genes     ? " gtf="       + DE_DESeq2_MM_vars.genes     : "") +
-        (DE_DESeq2_vars.pattern      ? " pattern="   + DE_DESeq2_vars.pattern      : "") +
+        (DE_DESeq2_MM_vars.pattern   ? " pattern="   + DE_DESeq2_MM_vars.pattern      : "") +
+        (DE_DESeq2_MM_vars.FDR       ? " FDR="       + DE_DESeq2_MM_vars.FDR        : "") +
+        (DE_DESeq2_MM_vars.FC        ? " FC="        + DE_DESeq2_MM_vars.FC        : "") +
         (DE_DESeq2_MM_vars.extra     ? " "           + DE_DESeq2_MM_vars.extra     : "") 
 
     def TOOL_ENV = prepare_tool_env("R", tools["R"]["version"], tools["R"]["runenv"])
-    def PREAMBLE = get_preamble("DE_DESeq2_MM")
+    def PREAMBLE = get_preamble(stage:stageName, outdir:output.dir, input:new File(input1.prefix).getName())
 
     // run the chunk
     // should match deseq2.module.groovy, adding a step in between to convert all dupRadar input counts to HTSeq

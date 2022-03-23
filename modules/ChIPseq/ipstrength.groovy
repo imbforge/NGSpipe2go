@@ -1,7 +1,7 @@
 ipstrength = {
     doc title: "IPstrength plot",
         desc:  "IPstrength",
-        constraints: "install the right reference BSgenome",
+        constraints: "install the right reference BSgenome. If no input control sample is available, the INPUT field in the targets.txt file must be given as `none`.",
         bpipe_version: "tested with bpipe 0.9.8.7",
         author: "Sergi Sayols, Frank Rühle"
 
@@ -9,7 +9,7 @@ ipstrength = {
     output.dir = ipstrength_vars.outdir + "/$subdir" 
 
     def TOOL_ENV = prepare_tool_env("R", tools["R"]["version"], tools["R"]["runenv"])
-    def PREAMBLE = get_preamble("ipstrength")
+    def PREAMBLE = get_preamble(stage:stageName, outdir:output.dir, input:new File(input1.prefix).getName())
 
     transform(".bam") to("_ipstrength.done") {
         exec """
@@ -32,10 +32,14 @@ ipstrength = {
                 INPUTname=\$(echo $TARGET | tr '\t' ' ' | cut -f4 -d" ");
 
                 if [ "\$BAM" != "\$INPUT" ]; then
-                    echo "\${IPname} vs \${INPUTname}" >> $output ;
-                    Rscript ${PIPELINE_ROOT}/tools/ENCODEqc/IPstrength.R ${ipstrength_vars.mapped}/\$IP \$IPname ${ipstrength_vars.mapped}/\$INPUT \$INPUTname $subdir\${IPname}.vs.\${INPUTname}_ipstrength ${ipstrength_vars.bsgenome};
-                    if [ \$? -ne 0 ]; then rm $output; fi;
-                    find . -maxdepth 1 -name "$subdir\${IPname}.vs.\${INPUTname}_ipstrength*" -exec sh -c 'mv "\$1" "$output.dir/\${1#./$subdir}"' _ {} \\;;
+                    if [ "\$INPUT" != "none.\$extension" ]; then
+                      echo "\${IPname} vs \${INPUTname}" >> $output ;
+                      Rscript ${PIPELINE_ROOT}/tools/ENCODEqc/IPstrength.R ${ipstrength_vars.mapped}/\$IP \$IPname ${ipstrength_vars.mapped}/\$INPUT \$INPUTname $subdir\${IPname}.vs.\${INPUTname}_ipstrength ${ipstrength_vars.bsgenome};
+                      if [ \$? -ne 0 ]; then rm $output; fi;
+                      find . -maxdepth 1 -name "$subdir\${IPname}.vs.\${INPUTname}_ipstrength*" -exec sh -c 'mv "\$1" "$output.dir/\${1#./$subdir}"' _ {} \\;;
+                    else
+                      echo "\${IPname} skipped because no input" >> $output ;
+                  fi;
                 fi;
             done
         ""","ipstrength"

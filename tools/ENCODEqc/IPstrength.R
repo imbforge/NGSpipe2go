@@ -45,7 +45,9 @@ IP.name    <- args[2]
 input      <- args[3]
 input.name <- args[4]
 output     <- args[5]
+if(is.na(args[6])) {args[6] <- "no_bsgenome_provided"} # apply tileGenome without bsgenome provided
 bsgenome   <- args[6]
+
 
 if(length(args) != 6)   stop("Rscript IPstrength.R <IP> <IP.name> <input> <input.name> <output> <bsgenome>")
 if(!file.exists(IP))    stop(paste("File",IP   ,"does NOT exist"))
@@ -59,7 +61,7 @@ cat("Program called with args:",args,fill=T)
 ## 1-Read bam files and count reads per bin
 ##
 if(!require(bsgenome,character.only=T)) {
-    cat("Tiling genome from",IP,"...\n")
+    cat("No valid BSgenome package provided! Tiling genome from",IP,"...\n")
     aln  <- BamFile(IP)
     bins <- tileGenome(seqinfo(aln),tilewidth=BIN_SIZE,cut.last.tile.in.chrom=TRUE)
 } else {

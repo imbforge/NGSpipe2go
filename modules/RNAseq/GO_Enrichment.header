@@ -1,15 +1,14 @@
 GO_Enrichment_vars=[
     rdata   : DE_DESeq2_vars.outdir,
-    log2fold: "0",
-    padj    : "0.01",
+    log2fold: ESSENTIAL_DESEQ2_FC,
+    padj    : ESSENTIAL_DESEQ2_FDR,
     org     : ESSENTIAL_ORG,
     univ    : "expressed",
     type    : "gene_name",
-    category: "5",
+    category: "20",
     outdir  : RESULTS + "/GO_Analysis",
     cores   : Integer.toString(ESSENTIAL_THREADS),
     extra   : ""
 ]
 
 load PIPELINE_ROOT + "/modules/RNAseq/GO_Enrichment.groovy"
-
