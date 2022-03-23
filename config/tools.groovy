@@ -134,6 +134,24 @@ tools_envs = [
             lmod: "module load conda/4.8.3"
         ]
     ],
+    cellranger: [
+        "3.1.0": [
+            lmod: "module load cellranger/3.1.0_debian9"
+        ],
+        "6.0.0": [
+            lmod: "module load cellranger/6.0.0"
+        ]
+    ],
+    cellrangerarc: [
+        "2.0.0": [
+            lmod: "module load cellrangerARC/2.0.0"
+        ]
+    ],
+    cellrangeratac: [
+        "2.0.0": [
+            lmod: "module load cellrangerATAC/2.0.0"
+        ]
+    ],
     cutadapt: [
         "1.18": [
             lmod: "module load cutadapt/1.18",
