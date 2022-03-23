@@ -4,6 +4,7 @@ SplitmRNA_vars=[
     adapter_sequence   : ESSENTIAL_STARR_FILTERSEQ,  // STARR construct 3' end of polyadenylation sugnal (end of 10X first read)
     minimum_overlap    : ESSENTIAL_MINADAPTEROVERLAP,  // minimal overlap of the read and the adapter for an adapter to be found
     errorrate          : "0.1",                      // maximum allowed error rate as value between 0 and 1 (default 0.1 =10%)
+    action             : "none",                     // don't trim adapter (fixed number of base pairs will be removed)
     extra              : ""                          // add additional parameter for further adapter trimming here
 ]
 
