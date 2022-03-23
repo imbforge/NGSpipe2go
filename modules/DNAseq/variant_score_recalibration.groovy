@@ -33,11 +33,16 @@ VariantScoreRecalibration = {
         (VariantScoreRecalibration_vars.bwa_ref        ? " -R " + VariantScoreRecalibration_vars.bwa_ref : "" ) +
         (VariantScoreRecalibration_vars.known_variants ? " --truth-sensitivity-filter-level " + VariantScoreRecalibration_vars.indel_filter_level : "" )
 
+    def VariantsToTable_FLAGS = "--show-filtered -F CHROM -F POS -F ID -F REF -F ALT -F FILTER -F TYPE -F EVENTLENGTH -F QUAL -F TRANSITION -F HET -F HOM-REF -F HOM-VAR -F NO-CALL -F VAR -F MULTI-ALLELIC -F NSAMPLES -F NCALLED -F QD -F FS -F SOR -F MQ -F MQRankSum -F ReadPosRankSum"
+
     def TOOL_ENV = prepare_tool_env("java", tools["java"]["version"], tools["java"]["runenv"]) + " && " +
-                   prepare_tool_env("gatk", tools["gatk"]["version"], tools["gatk"]["runenv"])
+                   prepare_tool_env("gatk", tools["gatk"]["version"], tools["gatk"]["runenv"]) + " && " +
+                   prepare_tool_env("R", tools["R"]["version"], tools["R"]["runenv"]) + " && " +
+                   prepare_tool_env("picard", tools["picard"]["version"], tools["picard"]["runenv"])
+
     def PREAMBLE = get_preamble(stage:stageName, outdir:output.dir, input:new File(input1.prefix.prefix).getName())
 
-    transform (".vcf.gz") to (".indels.recal", ".indels.tranches", ".indels.plots.R", ".snps.recal", ".snps.tranches", ".snps.plots.R", ".vqsr.vcf.gz") {
+    transform (".vcf.gz") to (".indels.recal", ".indels.tranches", ".indels.plots.R", ".snps.recal", ".snps.tranches", ".snps.plots.R", ".vqsr.vcf.gz", ".filteredVariants.table") {
         exec """
             ${TOOL_ENV} &&
             ${PREAMBLE} &&
@@ -45,7 +50,10 @@ VariantScoreRecalibration = {
             gatk --java-options "${VariantScoreRecalibration_vars.java_flags}" VariantRecalibrator -V $input -O $output1 --tranches-file $output2 --rscript-file $output3 $VariantRecalibrator_INDEL_FLAGS &&
             gatk --java-options "${VariantScoreRecalibration_vars.java_flags}" ApplyVQSR -V $input --recal-file $output1 --tranches-file $output2 -O \${TMP}/\$(basename ${input}).indel.vqsr.vcf.gz $ApplyVQSR_INDEL_FLAGS &&
             gatk --java-options "${VariantScoreRecalibration_vars.java_flags}" VariantRecalibrator -V \${TMP}/\$(basename ${input}).indel.vqsr.vcf.gz -O $output4 --tranches-file $output5 --rscript-file $output6 $VariantRecalibrator_SNP_FLAGS &&
-            gatk --java-options "${VariantScoreRecalibration_vars.java_flags}" ApplyVQSR -V \${TMP}/\$(basename ${input}).indel.vqsr.vcf.gz --recal-file $output4 --tranches-file $output5 -O $output7 $ApplyVQSR_SNP_FLAGS
+            gatk --java-options "${VariantScoreRecalibration_vars.java_flags}" ApplyVQSR -V \${TMP}/\$(basename ${input}).indel.vqsr.vcf.gz --recal-file $output4 --tranches-file $output5 -O \${TMP}/\$(basename ${input}).unsorted.vqsr.vcf.gz $ApplyVQSR_SNP_FLAGS &&
+            java ${VariantScoreRecalibration_vars.java_flags} -jar \${PICARD} SortVcf I=\${TMP}/\$(basename ${input}).unsorted.vqsr.vcf.gz O=$output7 &&
+            gatk --java-options "${VariantScoreRecalibration_vars.java_flags}" VariantsToTable -V $output7 -O $output8 $VariantsToTable_FLAGS
+
         ""","VariantScoreRecalibration"
     }
     
