@@ -6,5 +6,5 @@ MergeAmpliconCounts_vars=[
     sce        : RESULTS + "/sce.RDS"  // counts SCE .RDS file
 ]
 
-load PIPELINE_ROOT + "/modules/RNAseq/mergeampliconcounts.groovy"
+load PIPELINE_ROOT + "/modules/tenxSTARRseq/mergeampliconcounts.groovy"
 

@@ -5,5 +5,5 @@ MergeSTARRCounts_vars=[
     sce        : RESULTS + "/sce.RDS"  // output SCE .RDS file
 ]
 
-load PIPELINE_ROOT + "/modules/RNAseq/mergestarrcounts.groovy"
+load PIPELINE_ROOT + "/modules/tenxSTARRseq/mergestarrcounts.groovy"
 

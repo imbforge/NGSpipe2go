@@ -2,8 +2,8 @@ PIPELINE="tenxSTARRampliconseq"
 PIPELINE_VERSION="1.0"
 PIPELINE_ROOT="./NGSpipe2go/"    // may need adjustment for some projects
 
-load PIPELINE_ROOT + "/pipelines/scRNAseq/essential.vars.groovy"
-load PIPELINE_ROOT + "/pipelines/scRNAseq/tools.groovy"
+load PIPELINE_ROOT + "/pipelines/tenxSTARRseq/essential.vars.groovy"
+load PIPELINE_ROOT + "/pipelines/tenxSTARRseq/tools.groovy"
 load PIPELINE_ROOT + "/config/preambles.groovy"
 load PIPELINE_ROOT + "/config/bpipe.config.groovy"
 
@@ -21,7 +21,6 @@ load PIPELINE_ROOT + "/modules/RNAseq/genebodycov2.header"
 load PIPELINE_ROOT + "/modules/RNAseq/inferexperiment.header"
 load PIPELINE_ROOT + "/modules/RNAseq/qualimap.header"
 load PIPELINE_ROOT + "/modules/RNAseq/star.header"
-load PIPELINE_ROOT + "/modules/RNAseq/filter2htseq.header"
 load PIPELINE_ROOT + "/modules/RNAseq/subread2rnatypes.header"
 load PIPELINE_ROOT + "/modules/scRNAseq/addumibarcodetofastq.header"
 load PIPELINE_ROOT + "/modules/scRNAseq/subread.header"
