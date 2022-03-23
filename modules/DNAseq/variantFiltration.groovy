@@ -48,7 +48,7 @@ VariantFiltration = {
                    prepare_tool_env("picard", tools["picard"]["version"], tools["picard"]["runenv"])
     def PREAMBLE = get_preamble(stage:stageName, outdir:output.dir, input:new File(input1.prefix.prefix).getName())
 
-    transform (".vcf.gz") to (".filtered.vcf.gz") {
+    transform (".vcf.gz") to (".filtered.vcf.gz", ".filteredVariants.table") {
         exec """
             ${TOOL_ENV} &&
             ${PREAMBLE} &&
@@ -58,8 +58,8 @@ VariantFiltration = {
             gatk --java-options "${VariantFiltration_vars.java_flags}" VariantFiltration -V \${TMP}/snp_\$(basename ${input}) -O \${TMP}/snp_filtered_\$(basename ${input}) $VariantFiltration_SNP_FLAGS &&
             java ${VariantFiltration_vars.java_flags} -jar \${PICARD} SortVcf I=\${TMP}/indel_filtered_\$(basename ${input}) O=\${TMP}/indel_filtered_sorted_\$(basename ${input}) &&
             java ${VariantFiltration_vars.java_flags} -jar \${PICARD} SortVcf I=\${TMP}/snp_filtered_\$(basename ${input}) O=\${TMP}/snp_filtered_sorted_\$(basename ${input}) &&
-            java ${VariantFiltration_vars.java_flags} -jar \${PICARD} MergeVcfs I=\${TMP}/indel_filtered_sorted_\$(basename ${input}) I=\${TMP}/snp_filtered_sorted_\$(basename ${input}) O=$output &&
-            gatk --java-options "${VariantFiltration_vars.java_flags}" VariantsToTable -V $output -O ${output.dir}/filteredVariants.table $VariantsToTable_FLAGS
+            java ${VariantFiltration_vars.java_flags} -jar \${PICARD} MergeVcfs I=\${TMP}/indel_filtered_sorted_\$(basename ${input}) I=\${TMP}/snp_filtered_sorted_\$(basename ${input}) O=$output1 &&
+            gatk --java-options "${VariantFiltration_vars.java_flags}" VariantsToTable -V $output1 -O $output2 $VariantsToTable_FLAGS
             
         ""","VariantFiltration"
     }
