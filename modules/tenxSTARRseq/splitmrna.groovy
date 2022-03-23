@@ -19,6 +19,7 @@ SplitmRNA = {
 
     def SPLITMRNA_FLAGS =
         (SplitmRNA_vars.adapter_sequence  ? " --adapter starr='"  + SplitmRNA_vars.adapter_sequence + "\$'"  : "") +
+        (SplitmRNA_vars.minimum_overlap   ? " --overlap="         + SplitmRNA_vars.minimum_overlap           : "") +
         (SplitmRNA_vars.errorrate         ? " --error-rate "      + SplitmRNA_vars.errorrate                 : "") +
         (SplitmRNA_vars.extra             ? " "                   + SplitmRNA_vars.extra                     : "")
 
