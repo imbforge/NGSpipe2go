@@ -8,7 +8,7 @@ SplitmRNA = {
 
     def SAMPLENAME = new File(input.prefix.prefix)
     def SAMPLENAME_BASE = SAMPLENAME.getName()
-    def SAMPLENAME_BASE_PRUNED = SAMPLENAME_BASE.replace("_S.*_L00._R._001", "") // delete .R1 in combined log file of pe design
+    def SAMPLENAME_BASE_PRUNED = SAMPLENAME_BASE.replace(/_S.*_L00._R._001/, "") // delete Illumina fastq name suffix
     def SAMPLENAME_BASE_R2 = SAMPLENAME_BASE.replace("_R1_001", "_R2_001") // needed for paired end processing
 
     // create the log folder if it doesn't exists
@@ -37,7 +37,7 @@ SplitmRNA = {
 
             cutadapt $SPLITMRNA_FLAGS --output=\${TMP}/${SAMPLENAME_BASE}.{name}.uncut.fastq.gz --paired-output \${TMP}/${SAMPLENAME_BASE_R2}.{name}.fastq.gz --untrimmed-output=\${TMP}/${SAMPLENAME_BASE}.endogenous.uncut.fastq.gz --untrimmed-paired-output \${TMP}/${SAMPLENAME_BASE_R2}.endogenous.fastq.gz $input1 $input2 1> ${SPLITMRNA_STATSDIR}/${SAMPLENAME_BASE_PRUNED}.cutadapt_splitmrna.log &&
 
-            cutadapt --cut -$ADAPTERLENGTH --output=\${TMP}/${SAMPLENAME_BASE}.{name}.fastq.gz \${TMP}/${SAMPLENAME_BASE}.{name}.uncut.fastq.gz 1> ${SPLITMRNA_STATSDIR}/${SAMPLENAME_BASE_PRUNED}.cutadapt_splitmrna.log &&
+            cutadapt --cut -$ADAPTERLENGTH --output=\${TMP}/${SAMPLENAME_BASE}.starr.fastq.gz \${TMP}/${SAMPLENAME_BASE}.starr.uncut.fastq.gz 1> ${SPLITMRNA_STATSDIR}/${SAMPLENAME_BASE_PRUNED}.cutadapt_splitmrna.log &&
             cutadapt --cut -$ADAPTERLENGTH --output=\${TMP}/${SAMPLENAME_BASE}.endogenous.fastq.gz \${TMP}/${SAMPLENAME_BASE}.endogenous.uncut.fastq.gz 1> ${SPLITMRNA_STATSDIR}/${SAMPLENAME_BASE_PRUNED}.cutadapt_splitmrna.log &&
 
             rm \${TMP}/${SAMPLENAME_BASE}.*.uncut.fastq.gz    &&
