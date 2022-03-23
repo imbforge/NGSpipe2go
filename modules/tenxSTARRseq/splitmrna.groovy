@@ -35,10 +35,8 @@ SplitmRNA = {
             ${TOOL_ENV} &&
             ${PREAMBLE} &&
 
-            # Demultiplex with 3' end of read 1 (but don't remove demultiplexing adapter)
             cutadapt $SPLITMRNA_FLAGS --output=\${TMP}/${SAMPLENAME_BASE}.{name}.uncut.fastq.gz --paired-output \${TMP}/${SAMPLENAME_BASE_R2}.{name}.fastq.gz --untrimmed-output=\${TMP}/${SAMPLENAME_BASE}.endogenous.uncut.fastq.gz --untrimmed-paired-output \${TMP}/${SAMPLENAME_BASE_R2}.endogenous.fastq.gz $input1 $input2 1> ${SPLITMRNA_STATSDIR}/${SAMPLENAME_BASE_PRUNED}.cutadapt_splitmrna.log &&
 
-            # Remove fixed length demultiplexing adapter from 3' end of read 1
             cutadapt --cut -$ADAPTERLENGTH --output=\${TMP}/${SAMPLENAME_BASE}.{name}.fastq.gz \${TMP}/${SAMPLENAME_BASE}.{name}.uncut.fastq.gz 1> ${SPLITMRNA_STATSDIR}/${SAMPLENAME_BASE_PRUNED}.cutadapt_splitmrna.log &&
             cutadapt --cut -$ADAPTERLENGTH --output=\${TMP}/${SAMPLENAME_BASE}.endogenous.fastq.gz \${TMP}/${SAMPLENAME_BASE}.endogenous.uncut.fastq.gz 1> ${SPLITMRNA_STATSDIR}/${SAMPLENAME_BASE_PRUNED}.cutadapt_splitmrna.log &&
 
