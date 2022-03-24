@@ -41,7 +41,7 @@ Bpipe.run {
     "%.fastq.gz" * [ FastQC + FastqScreen +
       (RUN_CUTADAPT ? Cutadapt + FastQC.using(subdir:"trimmed") : dontrun.using(module:"Cutadapt")) ] + 
       "%_R*_001.fastq.gz" * [ SplitmRNA ] +
-      "%_S*_L*_R*_001.starr.fastq.gz" * [        // STARR mRNA branch: map with STAR & count UMIs
+      "%_S*_L*_R*_001_starr.fastq.gz" * [        // STARR mRNA branch: map with STAR & count UMIs
           AddUMIBarcodeToFastq +
           STAR + BAMindexer + [
               subread_count + BAMindexer + umicount

@@ -4,6 +4,7 @@ cellranger_count_vars=[
     expect_cells    : ESSENTIAL_TENX_EXPECTED_CELLS,
     cores           : 8,
     localmem        : 64,
+    nuclei          : (ESSENTIAL_TENX_NUCLEI == "yes"),
     extra           : " --chemistry=SC3Pv3"               // extra parms to sent to the tool
 ]
 

@@ -41,7 +41,7 @@ Bpipe.run {
       (RUN_CUTADAPT ? Cutadapt + FastQC.using(subdir:"trimmed") : dontrun.using(module:"Cutadapt")) ] + 
       "%_R*_001.fastq.gz" * [ SplitmRNA ] +
       [         // parallel branches with endogenous and STARR mRNA processing
-          "%_S*_L*_R*_001.endogenous.fastq.gz" * [    // Cell Ranger branch for endogenous mRNA
+          "%_S*_L*_R*_001_endogenous.fastq.gz" * [    // Cell Ranger branch for endogenous mRNA
               cellranger_count + [
                  bamCoverage,
                  inferexperiment,
@@ -51,7 +51,7 @@ Bpipe.run {
                  geneBodyCov2
               ]
           ] + cellranger_aggr,
-          "%_S*_L*_R*_001.starr.fastq.gz" * [        // STARR mRNA branch: map with STAR & count UMIs
+          "%_S*_L*_R*_001_starr.fastq.gz" * [        // STARR mRNA branch: map with STAR & count UMIs
               AddUMIBarcodeToFastq +
               STAR + BAMindexer + [
                   subread_count + BAMindexer + umicount
