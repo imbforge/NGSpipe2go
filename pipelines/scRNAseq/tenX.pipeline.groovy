@@ -40,7 +40,7 @@ Bpipe.run {
             inferexperiment,
             qualimap,
             subread2rnatypes,
-            dupRadar,
+            //dupRadar,
             geneBodyCov2
          ]
     ] + 
