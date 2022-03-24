@@ -40,10 +40,8 @@ Bpipe.run {
         STAR + BAMindexer + [
             subread_count + filter2htseq, 
             subread2rnatypes,
-            MarkDups2 + BAMindexer + [
-                dupRadar,
-                geneBodyCov2
-            ],
+            dupRadar,
+            geneBodyCov2
             bamCoverage,
             inferexperiment,
             qualimap,
