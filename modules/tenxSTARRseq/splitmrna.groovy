@@ -31,13 +31,13 @@ SplitmRNA = {
     def TOOL_ENV = prepare_tool_env("cutadapt", tools["cutadapt"]["version"], tools["cutadapt"]["runenv"])
     def PREAMBLE = get_preamble("cutadapt")
 
-    transform(".fastq.gz") to ("_endogenous.fastq.gz", "_starr.fastq.gz") {
+    transform(".fastq.gz") to (".fastq.gz", "_starr.fastq.gz") {
 
         exec """
             ${TOOL_ENV} &&
             ${PREAMBLE} &&
 
-            cutadapt $SPLITMRNA_FLAGS --output=\${TMP}/${SAMPLENAME_BASE}_{name}.fastq.gz --paired-output \${TMP}/${SAMPLENAME_BASE_R2}_{name}.fastq.gz --untrimmed-output=\${TMP}/${SAMPLENAME_BASE}_endogenous.fastq.gz --untrimmed-paired-output \${TMP}/${SAMPLENAME_BASE_R2}_endogenous.fastq.gz $input1 $input2 1> ${SPLITMRNA_STATSDIR}/${SAMPLENAME_BASE_PRUNED}.cutadapt_splitmrna.log &&
+            cutadapt $SPLITMRNA_FLAGS --output=\${TMP}/${SAMPLENAME_BASE}_{name}.fastq.gz --paired-output \${TMP}/${SAMPLENAME_BASE_R2}_{name}.fastq.gz --untrimmed-output=\${TMP}/${SAMPLENAME_BASE}.fastq.gz --untrimmed-paired-output \${TMP}/${SAMPLENAME_BASE_R2}.fastq.gz $input1 $input2 1> ${SPLITMRNA_STATSDIR}/${SAMPLENAME_BASE_PRUNED}.cutadapt_splitmrna.log &&
 
             mv -t $output.dir \${TMP}/${SAMPLENAME_BASE}*.fastq.gz    &&
             mv -t $output.dir \${TMP}/${SAMPLENAME_BASE_R2}*.fastq.gz
