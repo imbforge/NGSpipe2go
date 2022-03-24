@@ -34,7 +34,7 @@ tools_defaults = [
     cellrangerarc  : [ runenv: "lmod", version: "2.0.0"        ],
     cellrangeratac : [ runenv: "lmod", version: "2.0.0"        ],
     bwa            : [ runenv: "lmod", version: "0.7.15"       ],
-    cutadapt       : [ runenv: "lmod", version: "1.18"         ],
+    cutadapt       : [ runenv: "lmod", version: "2.4"          ],
     deeptools      : [ runenv: "lmod", version: "3.1"          ],
     fastqc         : [ runenv: "lmod", version: "0.11.8"       ],
     fastqscreen    : [ runenv: "lmod", version: "0.13"         ],
@@ -142,6 +142,9 @@ tools_envs = [
             lmod: "module load cutadapt/1.18",
             conda: "source activate ${conda_tools}/cutadapt/1.18",
             singularity :"alias cutadapt=\"singularity run --app cutadapt ${singularity_tools}/cutadapt/1.18r0/cutadapt.simg\""
+        ],
+        "2.4": [
+            lmod: "module load cutadapt/2.4",
         ]
     ],
     deeptools: [
@@ -379,4 +382,5 @@ String prepare_tool_env (String tool, String version, String runenv) {
         return ":"   // return the POSIX shell null command
     }
 }
+
 

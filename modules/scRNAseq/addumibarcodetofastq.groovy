@@ -8,7 +8,7 @@ AddUMIBarcodeToFastq = {
     output.dir = AddUMIBarcodeToFastq_vars.outdir
 
     def File f = new File(input1)
-    def OUTPUTFILE = (f.getName() =~ /(.R1)*.fastq.gz/).replaceFirst("")
+    def OUTPUTFILE = (f.getName() =~ /_S.*_L00._R1_001.*.fastq.gz/).replaceFirst("")
 
     def umi_tools_FLAGS =
         (AddUMIBarcodeToFastq_vars.bcpattern   ? " --bc-pattern=" + AddUMIBarcodeToFastq_vars.bcpattern   : "") +

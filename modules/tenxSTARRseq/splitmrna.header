@@ -3,13 +3,11 @@ SplitmRNA_vars=[
     statsdir            : QC + "/SplitmRNA",
     adapter_sequence    : ESSENTIAL_STARR_FILTERSEQ,      // STARR construct 3' end of polyadenylation sugnal (end of 10X first read)
     minimum_overlap     : ESSENTIAL_MINFILTERSEQOVERLAP,  // minimal overlap of the read and the adapter for an adapter to be found
-    minimum_length_keep : ESSENTIAL_MIN10XREADLENGTHS,    // minimal length of 10X reads to be kept, separate for read 1 & read 2
-    maximum_length_keep : ESSENTIAL_MAX10XREADLENGTHS,    // maximal length of 10X reads to be kept, separate for read 1 & read 2
     errorrate           : "0.1",                          // maximum allowed error rate as value between 0 and 1 (default 0.1 =10%)
-    action              : "trim",                         // trim reads (to above-specified sizes)
     extra               : ""                              // add additional parameter for further adapter trimming here
 ]
 
 load PIPELINE_ROOT + "/modules/tenxSTARRseq/splitmrna.groovy"
+
 
 

@@ -384,7 +384,7 @@ config {
       memory="4"
     }
     SplitmRNA { 
-      walltime="04:00:00" 
+      walltime="05:00:00" 
       procs="1" 
       memory="4"
     }

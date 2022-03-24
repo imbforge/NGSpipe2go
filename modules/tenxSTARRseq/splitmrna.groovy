@@ -20,10 +20,7 @@ SplitmRNA = {
     def SPLITMRNA_FLAGS =
         (SplitmRNA_vars.adapter_sequence    ? " --adapter starr='"  + SplitmRNA_vars.adapter_sequence + "\$'"  : "") +
         (SplitmRNA_vars.minimum_overlap     ? " --overlap="         + SplitmRNA_vars.minimum_overlap           : "") +
-        (SplitmRNA_vars.minimum_length_keep ? " --minimum-length "  + SplitmRNA_vars.minimum_length_keep       : "") +
-        (SplitmRNA_vars.maximum_length_keep ? " --maximum-length "  + SplitmRNA_vars.maximum_length_keep       : "") +
         (SplitmRNA_vars.errorrate           ? " --error-rate "      + SplitmRNA_vars.errorrate                 : "") +
-        (SplitmRNA_vars.action              ? " --action "          + SplitmRNA_vars.action                    : "") +
         (SplitmRNA_vars.extra               ? " "                   + SplitmRNA_vars.extra                     : "")
 
     def ADAPTERLENGTH = SplitmRNA_vars.adapter_sequence.length()
@@ -31,18 +28,29 @@ SplitmRNA = {
     def TOOL_ENV = prepare_tool_env("cutadapt", tools["cutadapt"]["version"], tools["cutadapt"]["runenv"])
     def PREAMBLE = get_preamble("cutadapt")
 
-    transform(".fastq.gz") to (".fastq.gz", "_starr.fastq.gz") {
+////    transform("*.fastq.gz") to (".fastq.gz", "_starr.fastq.gz") {
+    transform("*.fastq.gz") to (".fastq.gz") {
 
         exec """
             ${TOOL_ENV} &&
             ${PREAMBLE} &&
 
-            cutadapt $SPLITMRNA_FLAGS --output=\${TMP}/${SAMPLENAME_BASE}_{name}.fastq.gz --paired-output \${TMP}/${SAMPLENAME_BASE_R2}_{name}.fastq.gz --untrimmed-output=\${TMP}/${SAMPLENAME_BASE}.fastq.gz --untrimmed-paired-output \${TMP}/${SAMPLENAME_BASE_R2}.fastq.gz $input1 $input2 1> ${SPLITMRNA_STATSDIR}/${SAMPLENAME_BASE_PRUNED}.cutadapt_splitmrna.log &&
+            cutadapt --action none $SPLITMRNA_FLAGS --output=\${TMP}/${SAMPLENAME_BASE}_{name}.uncut.fastq.gz --paired-output \${TMP}/${SAMPLENAME_BASE_R2}_{name}.fastq.gz --untrimmed-output=\${TMP}/${SAMPLENAME_BASE}.uncut.fastq.gz --untrimmed-paired-output \${TMP}/${SAMPLENAME_BASE_R2}.fastq.gz $input1 $input2 1> ${SPLITMRNA_STATSDIR}/${SAMPLENAME_BASE_PRUNED}.cutadapt_splitmrna.log &&
+
+            if [ -f \${TMP}/${SAMPLENAME_BASE}_starr.uncut.fastq.gz ]; then 
+                cutadapt --cut -$ADAPTERLENGTH --output=\${TMP}/${SAMPLENAME_BASE}_starr.fastq.gz \${TMP}/${SAMPLENAME_BASE}_starr.uncut.fastq.gz 1> ${SPLITMRNA_STATSDIR}/${SAMPLENAME_BASE_PRUNED}.cutadapt_splitmrna.log &&
+                rm \${TMP}/${SAMPLENAME_BASE}_starr.uncut.fastq.gz;
+            fi  &&
+            if [ -f \${TMP}/${SAMPLENAME_BASE}.uncut.fastq.gz ]; then 
+                cutadapt --cut -$ADAPTERLENGTH --output=\${TMP}/${SAMPLENAME_BASE}.fastq.gz \${TMP}/${SAMPLENAME_BASE}.uncut.fastq.gz 1> ${SPLITMRNA_STATSDIR}/${SAMPLENAME_BASE_PRUNED}.cutadapt_splitmrna.log &&
+                rm \${TMP}/${SAMPLENAME_BASE}.uncut.fastq.gz;
+            fi  &&
 
             mv -t $output.dir \${TMP}/${SAMPLENAME_BASE}*.fastq.gz    &&
             mv -t $output.dir \${TMP}/${SAMPLENAME_BASE_R2}*.fastq.gz
         ""","SplitmRNA"
     }
 }
+
 
 
