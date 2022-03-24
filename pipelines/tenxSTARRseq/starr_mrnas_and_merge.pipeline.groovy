@@ -1,4 +1,4 @@
-PIPELINE="tenxSTARRampliconseq"
+PIPELINE="starr_mrnas"
 PIPELINE_VERSION="1.0"
 PIPELINE_ROOT="./NGSpipe2go/"    // may need adjustment for some projects
 
@@ -21,7 +21,10 @@ load PIPELINE_ROOT + "/modules/NGS/multiqc.header"
 
 dontrun = { println "didn't run $module" }
 
-// Amplicon sequencing pipeline: Like the 10X STARR-seq pipeline, but skips the 10X part
+// STARR mRNA processing pipeline
+// Can be used for STARR mRNAs from original 10X sequencing, or for PCR-amplified STARR data
+// Run after the 10X endogenous mRNA pipeline ("split_and_tenx_endogenous.pipeline.groovy")
+// Merges its counts with the 10X pipeline's, and stores in SingleCellExperiment .RDS file
 Bpipe.run { 
     "%.fastq.gz" * [
           AddUMIBarcodeToFastq +

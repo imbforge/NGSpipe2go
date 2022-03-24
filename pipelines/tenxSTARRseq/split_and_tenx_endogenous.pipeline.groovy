@@ -1,4 +1,4 @@
-PIPELINE="tenxSTARRseq"
+PIPELINE="tenx_endogenous"
 PIPELINE_VERSION="1.0"
 PIPELINE_ROOT="./NGSpipe2go/"    // may need adjustment for some projects
 
@@ -28,6 +28,9 @@ load PIPELINE_ROOT + "/modules/NGS/multiqc.header"
 
 dontrun = { println "didn't run $module" }
 
+// 10X endogenous mRNA processing pipeline
+// Starts by splitting FASTQs into endogenous & STARR mRNAs, then runs Cellranger on endogenous mRNAs
+// STARR mRNAs to be processed later with the separate "starr_mrnas_and_merge.pipeline.groovy" pipeline
 Bpipe.run { 
     "%.fastq.gz" * [ FastQC + FastqScreen +
       (RUN_CUTADAPT ? Cutadapt + FastQC.using(subdir:"trimmed") : dontrun.using(module:"Cutadapt")) ] + 
