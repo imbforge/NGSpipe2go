@@ -18,13 +18,13 @@ SplitmRNA = {
     }
 
     def SPLITMRNA_FLAGS =
-        (SplitmRNA_vars.adapter_sequence   ? " --adapter starr='"  + SplitmRNA_vars.adapter_sequence + "\$'"  : "") +
-        (SplitmRNA_vars.minimum_overlap    ? " --overlap="         + SplitmRNA_vars.minimum_overlap           : "") +
-        (Cutadapt_vars.minimum_length_keep ? " --minimum-length "  + Cutadapt_vars.minimum_length_keep        : "") +
-        (Cutadapt_vars.maximum_length_keep ? " --maximum-length "  + Cutadapt_vars.maximum_length_keep        : "") +
-        (SplitmRNA_vars.errorrate          ? " --error-rate "      + SplitmRNA_vars.errorrate                 : "") +
-        (SplitmRNA_vars.action             ? " --action "          + SplitmRNA_vars.action                    : "") +
-        (SplitmRNA_vars.extra              ? " "                   + SplitmRNA_vars.extra                     : "")
+        (SplitmRNA_vars.adapter_sequence    ? " --adapter starr='"  + SplitmRNA_vars.adapter_sequence + "\$'"  : "") +
+        (SplitmRNA_vars.minimum_overlap     ? " --overlap="         + SplitmRNA_vars.minimum_overlap           : "") +
+        (SplitmRNA_vars.minimum_length_keep ? " --minimum-length "  + SplitmRNA_vars.minimum_length_keep       : "") +
+        (SplitmRNA_vars.maximum_length_keep ? " --maximum-length "  + SplitmRNA_vars.maximum_length_keep       : "") +
+        (SplitmRNA_vars.errorrate           ? " --error-rate "      + SplitmRNA_vars.errorrate                 : "") +
+        (SplitmRNA_vars.action              ? " --action "          + SplitmRNA_vars.action                    : "") +
+        (SplitmRNA_vars.extra               ? " "                   + SplitmRNA_vars.extra                     : "")
 
     def ADAPTERLENGTH = SplitmRNA_vars.adapter_sequence.length()
         

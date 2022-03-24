@@ -14,8 +14,8 @@ ESSENTIAL_FRAGMENT_USAGE="no"  // "no" for SR data; "yes" for PE data to make bi
 ESSENTIAL_BAMCOVERAGE="--binSize 1 --skipNonCoveredRegions --normalizeUsing CPM" // NO smoothing should be done for RNAseq
 
 // 10X mRNA demultiplexing cutadapt settings (set lengths for read 1 & read 2 separately)
-ESSENTIAL_MINREADLENGTHS="28:" + ESSENTIAL_READLENGTH.toString()
-ESSENTIAL_MAXREADLENGTHS="28:" + ESSENTIAL_READLENGTH.toString()
+ESSENTIAL_MIN10XREADLENGTHS="28:" + ESSENTIAL_READLENGTH.toString()
+ESSENTIAL_MAX10XREADLENGTHS="28:" + ESSENTIAL_READLENGTH.toString()
 ESSENTIAL_MINFILTERSEQOVERLAP=10
 
 // Alignment with Cellranger (used for main 10X pipeline branch)
