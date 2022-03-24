@@ -23,7 +23,7 @@ cellrangerarc_count = {
         (cellrangerarc_count_vars.extra        ? " "                 + cellrangerarc_count_vars.extra        : "")
 
     def TOOL_ENV = prepare_tool_env("cellrangerarc", tools["cellrangerarc"]["version"], tools["cellrangerarc"]["runenv"]) 
-    def PREAMBLE = get_preamble("cellrangerarc")
+    def PREAMBLE = get_preamble(stage:stageName, outdir:output.dir, input:new File(input1.prefix).getName())
 
     transform('.fastq.gz') to('.bam') {
         exec """

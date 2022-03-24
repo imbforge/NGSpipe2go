@@ -17,7 +17,7 @@ cellrangeratac_aggr = {
         (cellrangeratac_aggr_vars.extra     ? " "                 + cellrangeratac_aggr_vars.extra        : "")
 
     def TOOL_ENV = prepare_tool_env("cellrangeratac", tools["cellrangeratac"]["version"], tools["cellrangeratac"]["runenv"]) 
-    def PREAMBLE = get_preamble("cellrangeratac")
+    def PREAMBLE = get_preamble(stage:stageName, outdir:output.dir, input:new File(input1.prefix).getName())
 
     produce("cellrangeratac_aggr_id_" + cellrangeratac_aggr_vars.id + ".done") {
         exec """

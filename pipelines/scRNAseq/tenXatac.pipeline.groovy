@@ -16,7 +16,6 @@ load PIPELINE_ROOT + "/modules/NGS/fastqscreen.header"
 load PIPELINE_ROOT + "/modules/NGS/markdups2.header"
 load PIPELINE_ROOT + "/modules/NGS/insertsize.header"
 load PIPELINE_ROOT + "/modules/NGS/cutadapt.header"
-load PIPELINE_ROOT + "/modules/miscellaneous/collectbpipes.module.2.header"
 load PIPELINE_ROOT + "/modules/miscellaneous/collect_tool_versions.header"
 load PIPELINE_ROOT + "/modules/scRNAseq/shinyreports.header"
 load PIPELINE_ROOT + "/modules/NGS/multiqc.header"
@@ -35,6 +34,6 @@ Bpipe.run {
     ] + 
     cellrangeratac_aggr +
     (RUN_TRACKHUB ? trackhub_config + trackhub : dontrun.using(module:"trackhub")) +
-    collectToolVersions + collectBpipeLogs + MultiQC + shinyReports
+    collectToolVersions + MultiQC + shinyReports
 }
 

@@ -16,7 +16,7 @@ cellranger_aggr = {
         (cellranger_aggr_vars.extra     ? " "                 + cellranger_aggr_vars.extra        : "")
 
     def TOOL_ENV = prepare_tool_env("cellranger", tools["cellranger"]["version"], tools["cellranger"]["runenv"]) 
-    def PREAMBLE = get_preamble("cellranger")
+    def PREAMBLE = get_preamble(stage:stageName, outdir:output.dir, input:new File(input1.prefix).getName())
 
     produce("cellranger_aggr_id_" + cellranger_aggr_vars.id + ".done") {
         exec """
