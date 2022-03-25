@@ -10,23 +10,23 @@ shinyReports_vars=[
     cellranger_aggr_id: (binding.variables.containsKey("cellranger_aggr_vars") ? cellranger_aggr_vars.id : (binding.variables.containsKey("cellrangeratac_aggr_vars") ? cellrangeratac_aggr_vars.id : (binding.variables.containsKey("cellrangerarc_aggr_vars") ? cellrangerarc_aggr_vars.id : "aggr"))), // folder name for results from cellranger / cellranger-atac / cellranger-arc aggr
     prefix          : ESSENTIAL_SAMPLE_PREFIX, //standard sample prefix
     strandedness    : ESSENTIAL_STRANDED,             //strandedness of the library [no|yes|reverse]
-    star_log        : binding.variables.get("STAR_vars.logdir"),  //where the STAR logs lie
+    star_log        : (binding.variables.containsKey("STAR_vars") ? STAR_vars.logdir : ""),  //where the STAR logs lie
     star_suffix     : "Log.final.out",         //extension given to the STAR log files
     starparms_suffix: "Log.out",               //extension given to the STAR log files
-    fastqc_out      : binding.variables.get("FastQC_vars.outdir"),  //where the Fastqc output lie
+    fastqc_out      : (binding.variables.containsKey("FastQC_vars") ? FastQC_vars.outdir : ""),  //where the Fastqc output lie
     fastqc_log      : LOGS + "/FastQC",        //where the Fastqc logs lie
     fastqc_summarized   : "FALSE",             //should FastQC plots be summarized in the report?
-    fastqscreen_out : binding.variables.get("FastqScreen_vars.outdir"),  //where the FastQScreen output lie
+    fastqscreen_out : (binding.variables.containsKey("FastqScreen_vars") ? FastqScreen_vars.outdir : ""),  //where the FastQScreen output lie
     fastqscreen_log : LOGS + "/FastQScreen",          //where the FastQScreen log lie
     fastqscreen_perc : ESSENTIAL_FASTQSCREEN_PERC,     //contaminant percentage to be plotted
     bamindex_log    : LOGS + "/BAMindexer",    //where the Samtools/BamIndexer logs lie
-    dupradar_log    : binding.variables.get("dupRadar_vars.outdir"),    //where dupRadar results lie
+    dupradar_log    : (binding.variables.containsKey("dupRadar_vars") ? dupRadar_vars.outdir : ""),    //where dupRadar results lie
     rnatypes_log    : LOGS + "/RNAtypes",      //where the RNAtypes logs lie
-    rnatypes        : binding.variables.get("subread2rnatypes_vars.outdir"), //where the RNAtypes count results lie
+    rnatypes        : (binding.variables.containsKey("subread2rnatypes_vars") ? subread2rnatypes_vars.outdir : ""), //where the RNAtypes count results lie
     rnatypes_suffix : "counts.tsv",            //the extension of the subread results files
-    genebodycov_log : binding.variables.get("geneBodyCov2_vars.outdir"),
+    genebodycov_log : (binding.variables.containsKey("geneBodyCov2_vars") ? geneBodyCov2_vars.outdir : ""),
     bustard         : QC + "/DemultiplexedBustardSummary.xml",  //where the bustard xml file lies
-    subread         : binding.variables.get("subread_count_vars.outdir"),     // location of the subread counts
+    subread         : (binding.variables.containsKey("subread_count_vars") ? subread_count_vars.outdir : ""),     // location of the subread counts
     subread_suffix  : ".raw_readcounts.tsv.summary", // the extension of the subread stats file
     subread_log     : LOGS + "/subread_count",       //where the Subread/FeatureCounts logs lie
     bam2bw_log      : LOGS + "/bam2bw",              //where the Bam2BW logs lie
@@ -35,12 +35,12 @@ shinyReports_vars=[
     markdups_log    : LOGS + "/MarkDups",            //where the picard MarkDuplicates logs lie
     plots_column    : 3,                             //number of columns to splits the plot grids (dupradar, genebodycov...). Min=2L. L=integer in R
     sort_alpha      : "TRUE",                        //should samples be sorted alphabetically in the report?
-    inferexperiment_logs: binding.variables.get("inferexperiment_vars.outdir"), //where the inferexperiment logs lie
-    qualimap_logs   : binding.variables.get("qualimap_vars.outdir"),  //where the qualimap output files are
+    inferexperiment_logs: (binding.variables.containsKey("inferexperiment_vars") ? inferexperiment_vars.outdir : ""), //where the inferexperiment logs lie
+    qualimap_logs   : (binding.variables.containsKey("qualimap_vars") ? qualimap_vars.outdir : ""),  //where the qualimap output files are
     trackhub_done   : PROJECT + "/trackhub.done",    //contains trackhub URL
     tool_versions   : collectToolVersions_vars.outdir + "/tool_versions.txt", //where the tool versions listed
     run_cutadapt    : RUN_CUTADAPT,    
-    cutadapt_stats  : binding.variables.get("Cutadapt_vars.statsdir"),  // cutadapt stat files
+    cutadapt_stats  : (binding.variables.containsKey("Cutadapt_vars") ? Cutadapt_vars.statsdir : ""),  // cutadapt stat files
     gtf             : ESSENTIAL_GENESGTF, 
     seqtype         : PIPELINE,
     target          : new File(PIPELINE_ROOT + "/pipelines/scRNAseq/targets.txt").getCanonicalPath(),
