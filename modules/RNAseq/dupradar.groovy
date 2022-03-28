@@ -21,7 +21,7 @@ dupRadar = {
     def PREAMBLE = get_preamble(stage:stageName, outdir:output.dir, input:new File(input1.prefix).getName())
 
     // run the chunk
-    transform(".bam") to("_dupRadar.png") {
+    transform(".bam") to("_dupRadar.png","_dupRadar.tsv") {
         exec """
             ${TOOL_ENV} &&
             ${PREAMBLE} &&

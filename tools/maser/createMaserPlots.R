@@ -103,7 +103,7 @@ if(!error_status) {
 		top <- summary(rmats_top, type=e)
 		#write the results for each event and contrast
 		write.csv(top, file=paste0(rmats_dir,"/","Significant_",e,"_events.csv"), row.names = F)
-		write.xlsx(top, file=paste0(rmats_dir,"/","Significant_",e,"_events.xlsx"), row.names = F)	
+		write.xlsx(top, file=paste0(rmats_dir,"/","Significant_",e,"_events.xlsx"), row.names = F, overwrite = T)	
 	}
   }
   dev.off()
