@@ -186,15 +186,17 @@ if(!all(valid_conts)) {
 
 ### start loop for sub_experiment 
 result <- list()
+if(any(is.null(contsAll$sub_experiment))){
+  stop("Please specify sub_experiments in contrasts_diffbind.txt")
+}
 for (sub in unique(contsAll$sub_experiment)) {
 
   if(length(unique(contsAll$sub_experiment))>1) {
     print(paste("process sub_experiment", sub))
     subexpPrefix <- paste0("SubExp_", sub, "_")
   } else {
-    if(any(is.na(contsAll$sub_experiment))) {stop("Please specify sub_experiments in contrasts_diffbind.txt")}
     subexpPrefix <- ""
-    }
+  }
   
   conts <- contsAll[contsAll$sub_experiment==sub,]  
   groups2use   <- gsub("(^\\s+|\\s+$)", "", unlist(strsplit(conts$contrast,"\\W")))
