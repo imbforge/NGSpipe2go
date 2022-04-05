@@ -12,7 +12,7 @@ NGSpipe2go is a software framework to facilitate the development, customization 
 - [DNA-Seq](https://gitlab.rlp.net/imbforge/NGSpipe2go/-/blob/master/pipelines/DNAseq/README.md)
 - [RNA-Seq](https://gitlab.rlp.net/imbforge/NGSpipe2go/-/blob/master/pipelines/RNAseq/README.md)
 - RNA-Seq for variant calling
-- smallRNA-Seq
+- [smallRNA-Seq](https://gitlab.rlp.net/imbforge/NGSpipe2go/-/blob/master/pipelines/smallRNAseq_BCF/README.md)
 - [single cell RNA-Seq](https://gitlab.rlp.net/imbforge/NGSpipe2go/-/blob/master/pipelines/scRNAseq/README.md)
 
 ## NGSpipe2go preparations ##
@@ -73,3 +73,13 @@ The results of the pipeline modules will be saved in the *./results* folder. The
     rmarkdown::render("DEreport.Rmd")
     or
     rmarkdown::render("ChIPreport.Rmd")
+
+
+## Notes
+
+When deleting intermediate files and re-running the pipeline, attribute caching of NFS servers might lead to incorrectly seen time stamps of files and, thus, downstream files not being updated. This can be circumvented by either remove all downstream files before re-running or forcing all modules to be run on the same node as the bpipe instance itself is running. The latter can be achived by adding
+
+    custom_submit_options="--nodelist=NODENAME"
+
+to the general options specified in the config file *bpipe.config.groovy*.
+
