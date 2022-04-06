@@ -371,7 +371,7 @@ config {
     RmDups { 
       walltime="04:00:00" 
       procs="1" 
-      memory="5"
+      memory="8"
     }
     STAR { 
       walltime="04:00:00" 
