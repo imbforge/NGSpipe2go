@@ -16,7 +16,6 @@ load PIPELINE_ROOT + "/modules/NGS/fastqscreen.header"
 load PIPELINE_ROOT + "/modules/NGS/markdups2.header"
 load PIPELINE_ROOT + "/modules/NGS/insertsize.header"
 load PIPELINE_ROOT + "/modules/NGS/cutadapt.header"
-load PIPELINE_ROOT + "/modules/RNAseq/dupradar.header"
 load PIPELINE_ROOT + "/modules/RNAseq/genebodycov2.header"
 load PIPELINE_ROOT + "/modules/RNAseq/inferexperiment.header"
 load PIPELINE_ROOT + "/modules/RNAseq/qualimap.header"
@@ -40,7 +39,6 @@ Bpipe.run {
             inferexperiment,
             qualimap,
             subread2rnatypes,
-            //dupRadar,
             geneBodyCov2
          ]
     ] + 
