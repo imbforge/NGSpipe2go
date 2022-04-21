@@ -250,9 +250,9 @@ config {
     }
     MPSprofiling { 
       queue=long_queue 
-      walltime="4:00:00" 
+      walltime="8:00:00" 
       procs="1" 
-      memory="32"
+      memory="128"
     }
     MULTIQC {
       queue="bcflong"
