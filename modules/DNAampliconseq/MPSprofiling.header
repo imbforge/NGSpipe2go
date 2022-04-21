@@ -7,12 +7,12 @@ MPSprofiling_vars=[
     logdir   : LOGS + "/MPSprofiling",      // log directory
     expdesign : ESSENTIAL_EXPDESIGN,        // experimental design
     threshold_rel_countssum : 0.001,        // lower threshold for first qc filtering (samples with sample sum < threshold_rel_countssum * mean sample sum are removed). 0 means no exclusion.
-    removeLowCountsRaw  : "TRUE",          // remove sequences with low counts (especially for long variable regions). This is independent from background subtraction.
+    removeLowCountsRaw  : "FALSE",          // remove sequences with low counts (especially for long variable regions). This is independent from background subtraction.
     minCountThreshold   : "3",              // min threshold for sequence count to keep if removeLowCountsRaw=="TRUE"
     excludeSeqsNotInAllFractions : "FALSE", // discard all sequences per sub_experiment, which were not detected in all fractions of this sub_experiment
     remove_NA_bynuc_PSI   : "TRUE",         // remove entries with PSI == NA from bynuc and byaa files (exception: there are no different bins at all for calculation of PSIs)
     remove_NA_byaa_pooledPSI   : "TRUE",  
-    invertedDesign : "TRUE",                // reverse complement sequence in case of inverted design
+    invertedDesign : "FALSE",                // reverse complement sequence in case of inverted design
     extra    : ""                           // extra parms to sent to the tool
 ]
 
