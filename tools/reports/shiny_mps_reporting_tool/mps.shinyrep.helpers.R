@@ -853,7 +853,7 @@ MPShelper.umiextract <- function(colorByFactor=NULL, targetsdf=targets, ...){
   if(!is.na(SHINYREPS_PREFIX)) {
     row.names(x.df) <- gsub(SHINYREPS_PREFIX, "", row.names(x.df))
   }
-  row.names(x.df) <- gsub("(?:\\.R1)?\\.cutadapt.assembled.umibarcode.log$", "", row.names(x.df))
+  row.names(x.df) <- gsub("(?:\\.R1)?\\..*$", "", row.names(x.df))
   if(nrow(x.df)>1){
     if(is.na(SHINYREPS_PREFIX)) {row.names(x.df)  <- gsub(lcPrefix(row.names(x.df) ), "", row.names(x.df) )}
     row.names(x.df)  <- gsub(lcSuffix(row.names(x.df) ), "", row.names(x.df) )
