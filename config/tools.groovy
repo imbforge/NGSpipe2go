@@ -26,7 +26,7 @@ def singularity_tools = "/fsimb/common/singularity_tools"
 // default runenvs and versions for each tools.
 // Names should match those of tools_envs
 tools_defaults = [
-    R          : [ runenv: "lmod", version: "3.6.0"        ],
+    R          : [ runenv: "lmod", version: "4.0.3"        ],
     bamqc      : [ runenv: "lmod", version: "0.1.25_devel" ],
     bamutil    : [ runenv: "lmod", version: "1.0.13"       ],
     bedtools   : [ runenv: "lmod", version: "2.27"         ],
