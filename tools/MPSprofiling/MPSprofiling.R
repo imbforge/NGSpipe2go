@@ -54,12 +54,18 @@ inputdir     <- parseArgs(args,"inputdir=","./")     # input files directory
 out          <- parseArgs(args,"out=","MPSprofiling") # output directory
 expdesign  <- parseArgs(args,"expdesign=","amplicon1")  
 threshold_rel_countssum  <- parseArgs(args,"threshold_rel_countssum=", 0, convert="as.numeric")  # threshold for first qc filtering (proportion of sample sum from mean sample sum)
+removeLowCountsRaw <- parseArgs(args,"removeLowCountsRaw=", FALSE, convert="as.logical")  
+minCountThreshold  <- parseArgs(args,"minCountThreshold=", 0, convert="as.numeric")
 excludeSeqsNotInAllFractions  <- parseArgs(args,"excludeSeqsNotInAllFractions=", FALSE, convert="as.logical")  # discard all sequences per sub_experiment, which were not detected in all fractions of this sub_experiment
+remove_NA_bynuc_PSI  <- parseArgs(args,"remove_NA_bynuc_PSI=", TRUE, convert="as.logical")  
+remove_NA_byaa_pooledPSI  <- parseArgs(args,"remove_NA_byaa_pooledPSI=", TRUE, convert="as.logical")  
+invertedDesign  <- parseArgs(args,"invertedDesign=", FALSE, convert="as.logical")  
 
-remove_NA_bynuc_PSI <- TRUE # remove entries with PSI == NA from bynuc and byaa files (exception: there are no different bins at all for calculation of PSIs)
-remove_NA_byaa_pooledPSI <- TRUE
 
-runstr <- "Rscript MPSprofiling.R [targets=targets.txt] [prefix=RE] [suffix=RE] [inputdir=.] [out=MPSprofiling] [expdesign=amplicon1] [threshold_rel_countssum=0] [excludeSeqsNotInAllFractions=F]"
+
+
+
+runstr <- "Rscript MPSprofiling.R [targets=targets.txt] [prefix=RE] [suffix=RE] [inputdir=.] [out=MPSprofiling] [expdesign=amplicon1] [threshold_rel_countssum=0] [excludeSeqsNotInAllFractions=F] [remove_NA_bynuc_PSI=T] [remove_NA_byaa_pooledPSI=T] [invertedDesign=F]"
 if(!file.exists(ftargets))   stop(paste("File",ftargets,"does NOT exist. Run with:\n",runstr))
 if(!file.exists(inputdir))   stop(paste("Dir",inputdir,"does NOT exist. Run with:\n",runstr))
 
@@ -131,7 +137,7 @@ targets <- targets[,required_target_columns]
   # remove barcodes containg Ns
   counts <- counts[!grepl("N", counts$sequence), ]
     
-  
+
   # sum all counts per sample for initial QC filtering
   counts_summary <- counts %>%
     dplyr::group_by(sample) %>%
@@ -145,6 +151,11 @@ targets <- targets[,required_target_columns]
       print(removedSamples)
       counts <- filter(counts, !(sum < threshold_rel_countssum * mean(counts_summary$sum)))
       
+      
+  ## rev comp sequence in case of inverted design
+  if(invertedDesign) {
+    counts$sequence <- factor(as.character(Biostrings::reverseComplement(Biostrings::DNAStringSet(as.character(counts$sequence)))))    
+    }
       
   
     #### start analysis 
@@ -168,10 +179,8 @@ targets <- targets[,required_target_columns]
     # add column f as transformed bin index [0,1]
     counts$f <- (counts$bin_rank -1) / (counts$totalfractions -1) 
   
-    
-  # in case there are sequences with zero counts, these entries can be removed
-  removeLowCountsRaw = FALSE # there are no zero counts since only observed sequences are counted
-  minCountThreshold = 30
+  
+  # in case there are sequences with zero counts, these entries can be removed (there are no zero counts since only observed sequences are counted)
   if(removeLowCountsRaw) {
     logindex_nocounts <- counts$count < minCountThreshold
     if(sum(logindex_nocounts)>0) {
@@ -179,9 +188,8 @@ targets <- targets[,required_target_columns]
       print(counts[logindex_nocounts, c("sample", "bin", "sequence")][1:min(20,sum(logindex_nocounts)),])
       cat("\n")
       counts <- counts[!logindex_nocounts,]
-     }
     }
-  
+  }
   
 
   ### background subtraction

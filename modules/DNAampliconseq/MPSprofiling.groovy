@@ -17,9 +17,14 @@ MPSprofiling = {
         (MPSprofiling_vars.outdir    ? " out="       + MPSprofiling_vars.outdir    : "") +
         (MPSprofiling_vars.logdir    ? " log="       + MPSprofiling_vars.logdir    : "") +       
         (MPSprofiling_vars.expdesign ? " expdesign=" + MPSprofiling_vars.expdesign : "") +
-        (MPSprofiling_vars.threshold_rel_countssum    ? " threshold_rel_countssum=" + MPSprofiling_vars.threshold_rel_countssum : "") +
-        (MPSprofiling_vars.excludeSeqsNotInAllFractions    ? " excludeSeqsNotInAllFractions=" + MPSprofiling_vars.excludeSeqsNotInAllFractions : "") +
-        (MPSprofiling_vars.extra     ? " "           + MPSprofiling_vars.extra     : "")
+        (MPSprofiling_vars.threshold_rel_countssum      ? " threshold_rel_countssum="      + MPSprofiling_vars.threshold_rel_countssum      : "") +
+        (MPSprofiling_vars.removeLowCountsRaw           ? " removeLowCountsRaw="           + MPSprofiling_vars.removeLowCountsRaw           : "") +
+        (MPSprofiling_vars.minCountThreshold            ? " minCountThreshold="            + MPSprofiling_vars.minCountThreshold            : "") +
+        (MPSprofiling_vars.excludeSeqsNotInAllFractions ? " excludeSeqsNotInAllFractions=" + MPSprofiling_vars.excludeSeqsNotInAllFractions : "") +
+        (MPSprofiling_vars.remove_NA_bynuc_PSI          ? " remove_NA_bynuc_PSI="          + MPSprofiling_vars.remove_NA_bynuc_PSI          : "") +
+        (MPSprofiling_vars.remove_NA_byaa_pooledPSI     ? " remove_NA_byaa_pooledPSI="     + MPSprofiling_vars.remove_NA_byaa_pooledPSI     : "") +
+        (MPSprofiling_vars.invertedDesign               ? " invertedDesign="               + MPSprofiling_vars.invertedDesign               : "") +
+        (MPSprofiling_vars.extra                        ? " "                              + MPSprofiling_vars.extra                        : "")
 
     def TOOL_ENV = prepare_tool_env("R", tools["R"]["version"], tools["R"]["runenv"])
     def PREAMBLE = get_preamble("MPSprofiling")
