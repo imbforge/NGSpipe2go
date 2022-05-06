@@ -1,7 +1,7 @@
 TrimUMIs_vars=[
-    outdir    : PROCESSED,
-    left_trim : 4,
-    right_trim: 4
+    outdir    : TRIMMED,
+    left_trim : ESSENTIAL_UMI_LENGTH_LEFT,
+    right_trim: ESSENTIAL_UMI_LENGTH_RIGHT
 ]
 
 load PIPELINE_ROOT + "/modules/smallRNAseq_BCF/trim_umis.groovy"

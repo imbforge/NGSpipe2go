@@ -1,5 +1,5 @@
 FilterDuplicates_vars=[
-    outdir: PROCESSED,
+    outdir: TRIMMED,
     logdir: LOGS_MY + "/removeDup"
 ]
 
