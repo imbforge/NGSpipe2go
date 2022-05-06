@@ -240,7 +240,9 @@ smallRNAhelper.Fastqc.custom <- function(web=FALSE, summarizedPlots=TRUE, subdir
           geom_point(mapping=aes(x=Inf, y=Inf, color=base),
                      data=data.frame(base=c("T", "A", "C", "G")),
                      inherit.aes=FALSE, show.legend=TRUE) +
-          scale_color_manual("", values=c("red", "green", "blue", "black")) 
+          scale_color_manual("", 
+                             values=c("red", "green", "blue", "black"),
+                             breaks=c("T", "A", "C", "G")) 
 
     } else {
 
