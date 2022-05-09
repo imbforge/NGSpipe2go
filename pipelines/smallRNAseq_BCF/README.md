@@ -47,9 +47,10 @@ Specify the desired analysis details for your data in file *smallrnaseq.essentia
   - ESSENTIAL_ORG: organism name
   - ESSENTIAL_BAMCOVERAGE: parameters used for bigWig coverage track generation 
   - ESSENTIAL_READLENGTH: read length of library  (incl. insert, UMIs, adapter)
+  - ESSENTIAL_UMI_LENGTH_LEFT: length (bp) of the left UMI
+  - ESSENTIAL_UMI_LENGTH_RIGHT: length (bp) of the right UMI
+  - ESSENTIAL_MINREADLENGTH_EXCL_UMI: minimal read length (bp) after adapter and UMI trimming
   - ESSENTIAL_MINADAPTEROVERLAP: minimal overlap of read and adapter (used for adapter trimming)
-  - ESSENTIAL_MINREADLENGTH: minimal read length after adapter trimming (incl. UMIs) 
-  - ESSENTIAL_UMI_LENGTH: total length of all UMIs
   - ESSENTIAL_ADAPTER_SEQUENCE: adapter sequence to be trimmed by Cutadapt
   - ESSENTIAL_BASEQUALCUTOFF: base quality threshold to trim low-quality ends from reads with Cutadapt. If *ESSENTIAL_NEXTSEQTRIM* is true, qualities of terminal G bases are ignored. To switch off base quality trimming in Cutadapt entirely, set *ESSENTIAL_BASEQUALCUTOFF=0* and *ESSENTIAL_NEXTSEQTRIM=false*.
   - ESSENTIAL_NEXTSEQTRIM: most Illumina instruments use a two-color chemistry like the NextSeq (exceptions: MiSeq, HiSeq). This option accounts for terminal high quality G bases incorporated by faulty dark cycles during base quality trimming with Cutadapt.

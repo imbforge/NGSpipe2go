@@ -1,9 +1,9 @@
 FastQQualityFilter_vars=[
-    outdir     : PROCESSED,
+    outdir     : TRIMMED,
     logdir     : LOGS_MY + "/filterQuality",
     min_qual   : ESSENTIAL_MINIMAL_QUAL,  // minimal quality of bases in reads to be kept
-    min_percent: 100, // percentage of bases fulfilling the minimal quality requirement
-    qual_format: 33,  // format of the quality scores
+    min_percent: "100", // percentage of bases fulfilling the minimal quality requirement
+    qual_format: "33",  // format of the quality scores
     extra      : "-v -z"
 ]
 
