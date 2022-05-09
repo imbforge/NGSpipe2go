@@ -13,7 +13,7 @@ All analysis steps are illustrated in the pipeline [flowchart](https://viewer.di
 - adapter trimming with Cutadapt (optional)
 - mapping reads or read pairs to the reference genome using bowtie2.
 - filter out multimapping reads from bowtie2 output with samtools (performed in parallel pipeline branch).
-- identify and remove duplicate reads with Picard MarkDuplicates (performed in parallel pipeline branch). 
+- identify and remove duplicate reads with bamutil dedup (performed in parallel pipeline branch). 
 - generation of bigWig tracks for visualisation of alignment with deeptools bamCoverage. For single end design, reads are extended to the average fragment size.
 - characterization of insert size using Picard CollectInsertSizeMetrics (for paired end libraries only).
 - characterize library complexity by PCR Bottleneck Coefficient using the GenomicAlignments R-package (for single read libraries only). 
@@ -79,6 +79,7 @@ There are also more normalization options available in DiffBind v3 and a new opt
 ## Programs required
 - Bedtools
 - Bowtie2
+- Bamutil
 - Cutadapt
 - deepTools
 - encodeChIPqc (provided by another project from imbforge)

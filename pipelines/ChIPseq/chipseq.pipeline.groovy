@@ -1,5 +1,5 @@
 PIPELINE="ChIPseq"
-PIPELINE_VERSION="1.2.6"
+PIPELINE_VERSION="1.2.7"
 PIPELINE_ROOT="./NGSpipe2go"
 
 load PIPELINE_ROOT + "/pipelines/ChIPseq/essential.vars.groovy"
@@ -48,17 +48,18 @@ Bpipe.run {
 
          [ // parallel branches with and without multi mappers
 
-            "%.bam" * [MarkDups + BAMindexer + pbc] + collect_bams + "%.bam" * // branch unfiltered 
-		[       // QC specific to paired end (pe) or single end (se) design
-	    		(RUN_IN_PAIRED_END_MODE ? [bamCoverage.using(subdir:"unfiltered"), 
-                                                   InsertSize.using(subdir:"unfiltered")] : 
-                                                  [bamCoverage.using(subdir:"unfiltered"), 
-                                                   phantompeak.using(subdir:"unfiltered")]), 
+            "%.bam" *
+		[       pbc,
+                        // branch unfiltered
+                        // QC specific to paired end (pe) or single end (se) design
+                        (RUN_IN_PAIRED_END_MODE ? [bamCoverage.using(subdir:"unfiltered"),
+                                                   InsertSize.using(subdir:"unfiltered")] :
+                                                  [bamCoverage.using(subdir:"unfiltered"),
+                                                   phantompeak.using(subdir:"unfiltered")]),
                 	ipstrength.using(subdir:"unfiltered"), 
 		        macs2.using(subdir:"unfiltered")                   
-            ], 
-            "%.bam" * [ filbowtie2unique + BAMindexer +  // branch filtered
-               (ESSENTIAL_DEDUPLICATION ? [RmDups + BAMindexer] : [MarkDups + BAMindexer])] + collect_bams + "%.bam" * 
+                ], 
+            "%.bam" * [ filbowtie2unique + BAMindexer ] + collect_bams + "%.bam" * //branch filtered
                 [       // QC specific to paired end (pe) or single end (se) design
 	    		(RUN_IN_PAIRED_END_MODE ? [bamCoverage.using(subdir:"filtered"), 
                                                    InsertSize.using(subdir:"filtered")] : 
@@ -86,4 +87,3 @@ Bpipe.run {
     collectToolVersions + MultiQC + 
     shinyReports
 }
-

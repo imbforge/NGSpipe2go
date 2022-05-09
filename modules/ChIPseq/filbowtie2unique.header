@@ -6,5 +6,9 @@ filbowtie2unique_vars=[
     samtools_threads : Integer.toString(ESSENTIAL_THREADS)
 ]
 
+dupremoval_vars=[
+    remove_pcr_dups  : ESSENTIAL_DEDUPLICATION // added to remove PCR duplicates
+]
+
 load PIPELINE_ROOT + "/modules/ChIPseq/filbowtie2unique.groovy"
 
