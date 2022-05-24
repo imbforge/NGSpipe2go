@@ -51,7 +51,8 @@ CWD        <- parseArgs(args,"cwd=","./")     # current working directory
 BAMS       <- parseArgs(args,"bams=",paste0(CWD, "/mapped"))  # directory with the bam files
 PEAKS      <- parseArgs(args,"peaks=",paste0(CWD, "/results/macs2"))  # directory with the peak files
 OUT        <- parseArgs(args,"out=", paste0(CWD, "/results/diffbind")) # directory where the output files will go
-FRAGSIZE   <- parseArgs(args,"fragsize=", 200, "as.numeric")# fragment size
+FRAGSIZE   <- parseArgs(args,"fragsize=", 200, "as.numeric") # fragment size
+CORES      <- parseArgs(args,"cores=", 4, "as.numeric") # fragment size
 BLACKLIST  <- parseArgs(args,"blacklist=", FALSE, "as.logical") # if true, blacklist will be applied
 GREYLIST   <- parseArgs(args,"greylist=", FALSE, "as.logical") # if true greylist will be generated for each Control
 SUMMITS    <- parseArgs(args,"summits=", 200, "as.numeric") # summits for re-centering consensus peaks
@@ -59,6 +60,8 @@ FILTER     <- parseArgs(args,"filter=", 5, "as.numeric") # value to use for filt
 ANALYSISMETHOD  <- parseArgs(args,"analysisMethod=", "DESeq2", "as.character") # method for which to normalize (either "DESeq2" or "edgeRGLM")
 LIBRARYSIZE     <- parseArgs(args,"librarySize=", "default", "as.character")   # use total number of reads in bam for normalization (FALSE=only peaks)
 NORMALIZATION   <- parseArgs(args,"normalization=", "default", "as.character")   # use total number of reads in bam for normalization (FALSE=only peaks)
+BACKGROUND      <- parseArgs(args,"background=", FALSE, "as.logical") # background may either be logical (default binsize 15000) or numeric with custom binsize.
+if(is.na(BACKGROUND)) {BACKGROUND <- parseArgs(args,"background=", "15000", "as.numeric")}
 SUBSTRACTCONTROL<- parseArgs(args,"substractControl=", "default", "as.character")  # subtract input
 CONDITIONCOLUMN <- parseArgs(args,"conditionColumn=", "group", "as.character") # this targets column is interpreted as 'Condition' and is used as for defining the default design
 FDR_TRESHOLD    <- parseArgs(args,"fdr_threshold=", 0.05, "as.numeric") # summits for re-centering consensus peaks
@@ -113,9 +116,9 @@ if(currentDiffbindVersion < 3) {
 ##
 
 # load targets and make analysis
-contsAll   <- read.delim(FCONTRASTS, head=T, stringsAsFactors = F, comment.char="#")
+contsAll   <- read.delim(FCONTRASTS, head=T, stringsAsFactors = F, comment.char="#", sep="\t")
 if(length(unique(contsAll$mmatrix))!=1) {stop("\nCan't use multiple design matrices in a single db object! Either unify the mmatrix entries in the contrast file or run diffbind in split mode.\n")}
-targets_raw <- read.delim(FTARGETS, head=T, colClasses="character", comment.char="#")
+targets_raw <- read.delim(FTARGETS, head=T, colClasses="character", comment.char="#", sep="\t")
 
 # determine file suffixes for targets 
 donefiles <- list.files(PEAKS,pattern=".done$")
@@ -206,8 +209,9 @@ for (sub in unique(contsAll$sub_experiment)) {
   
   # Construct DBA object
   db <- dba(sampleSheet=targets, config=data.frame(AnalysisMethod=ANALYSISMETHOD, th=FDR_TRESHOLD, fragmentSize=FRAGSIZE,
+                                                   RunParallel=TRUE, cores=CORES,
                                                    doBlacklist=BLACKLIST, doGreylist=GREYLIST)) 
-  
+
   # create DBA object containing consensus peaks per group (needed later)
   db2 <- dba.peakset(db, consensus=DBA_CONDITION)
   
@@ -255,10 +259,9 @@ for (sub in unique(contsAll$sub_experiment)) {
     names(infodb)[names(infodb) == "Reads"] <- "fullLibSize"
     if(all(c("fullLibSize", "FRiP") %in% names(infodb))) {infodb$ReadPeaks <- round(infodb$fullLibSize*infodb$FRiP)}
     
-    
     # Normalizing the data
     db <- dba.normalize(db, method = db$config$AnalysisMethod, normalize = NORMALIZATION, library = LIBRARYSIZE, 
-                        offsets = FALSE, bSubControl = SUBSTRACTCONTROL_FINAL, background = FALSE)
+                        offsets = FALSE, bSubControl = SUBSTRACTCONTROL_FINAL, background = BACKGROUND) 
     # The major change in DiffBind version 3.0 is in how the data are modeled. In previous versions, a separate model was derived for each contrast, 
     # including data only for those samples present in the contrast. Model design options were implicit and limited to either a single factor, or 
     # a subset of two-factor "blocked" designs. Starting in version 3.0, the default mode is to include all the data in a single model, allowing 
@@ -289,8 +292,7 @@ for (sub in unique(contsAll$sub_experiment)) {
 
   # run the diffbind analysis (DESeq2) for all contrasts
     db <- dba.analyze(db) 
-  
-  
+
   # PCA plot
   png(file.path(OUT, paste0(subexpPrefix, "pca_plot_all_samples.png")), width = 150, height = 150, units = "mm", res=300)
     dba.plotPCA(db, DBA_CONDITION, label=DBA_ID)
@@ -385,9 +387,6 @@ for (sub in unique(contsAll$sub_experiment)) {
     result[[sub]] <- lapply(result[[sub]], function(x) {
       tryCatch({
         x.ann <- ChIPseeker::annotatePeak(x, TxDb=txdb, annoDb=ANNODB, tssRegion=TSS, verbose=T)
-        #plotAnnoBar(x.ann)
-        #plotDistToTSS(x.ann)
-        #as.data.frame(x.ann)
       },
         error=function(e) NULL
       )
@@ -416,6 +415,15 @@ write.table(infodb, file=file.path(OUT, paste0(subexpPrefix, "info_dba_object.tx
                               "adjust offsets"="Indicates that offsets have been specified using the offsets parameter, and they should be adjusted for library size and mean centering before being used in a DESeq2 analysis"
                               )
   if(NORMALIZATION=="default") {explNormalization <- paste0("refers to method '", infoNorm$norm.method, "'. ", explNormalization)}
+
+  explBackground <- if(is.logical(infoNorm$background)) {
+                          if(isTRUE(infoNorm$background)) {
+                            "background bins used for normalization coumputed with default bin size 15000 bp"} else {
+                            "no background bins computed"}
+                        } else {
+                          paste("background bins used for normalization coumputed with bin size", infoNorm$background, "bp")
+                          }
+  
   
   # create overview table with diffbind settings
   diffbindSettings <- rbind(c(Parameter="DiffBind package version", Value=as.character(currentDiffbindVersion), Comment= paste(if(currentDiffbindVersion$major != floor(DIFFBINDVERSION)) {paste0("Major version not concordant with intended DiffBind v", DIFFBINDVERSION, ". Please check R module." )} else {""}, DiffBindWarningText)),
@@ -427,6 +435,7 @@ write.table(infodb, file=file.path(OUT, paste0(subexpPrefix, "info_dba_object.tx
                             c("Analysis method", ANALYSISMETHOD, ""),
                             c("Library size", LIBRARYSIZE, explLibrarySize),
                             c("Normalization method", NORMALIZATION, explNormalization),
+                            c("Background", BACKGROUND, explBackground),
                             c("Subtract control read counts", SUBSTRACTCONTROL, if(SUBSTRACTCONTROL=="default") {paste("set to", SUBSTRACTCONTROL_FINAL, "because greylist is", if(SUBSTRACTCONTROL_FINAL){"not"} else {""}, "available.")} else {""}),
                             c("Design", "contrast_diffbind.txt", paste(db$design, "(with", CONDITIONCOLUMN, "as Condition column)")),
                             c("FDR threshold", FDR_TRESHOLD, "significance threshold for differential binding analysis."),
