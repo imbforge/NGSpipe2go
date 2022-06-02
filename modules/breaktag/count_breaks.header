@@ -1,0 +1,8 @@
+count_breaks_vars=[
+    outdir          : RESULTS,
+    paired          : RUN_IN_PAIRED_END_MODE,
+    threads         : Integer.toString(ESSENTIAL_THREADS)
+]
+
+load  PIPELINE_ROOT + "/modules/breaktag/count_breaks.groovy"
+

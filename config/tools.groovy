@@ -51,6 +51,7 @@ tools_defaults = [
     pear           : [ runenv: "lmod", version: "0.9.11"            ],
     picard         : [ runenv: "lmod", version: "2.20"              ],
     pingpongpro    : [ runenv: "lmod", version: "1.0"               ],
+    python         : [ runenv: "lmod", version: "3.7"               ],
     qualimap       : [ runenv: "lmod", version: "2.2.1"             ],
     repenrich      : [ runenv: "lmod", version: "1.2"               ],
     rmats          : [ runenv: "lmod", version: "4.1.2"             ],
@@ -296,6 +297,11 @@ tools_envs = [
     pingpongpro: [
         "1.0": [
             lmod: "module load pingpongpro/1.0"
+        ]
+    ],
+    python: [
+        "3.7": [
+            lmod: "module load python/3.7_debian9"
         ]
     ],
     qualimap: [

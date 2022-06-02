@@ -1,0 +1,8 @@
+pattern_filtering_vars=[
+    outdir  : RAWDATA,
+    paired  : RUN_IN_PAIRED_END_MODE,
+    targets : TARGETS
+]
+
+load  PIPELINE_ROOT + "/modules/breaktag/pattern_filtering.groovy"
+
