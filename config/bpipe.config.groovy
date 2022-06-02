@@ -139,6 +139,11 @@ config {
       procs="1"
       memory="4"
     }
+    count_breaks {
+      walltime="04:00:00"
+      procs="4"
+      memory="8"
+    }
     CountNonStrutReads {
       walltime="03:00:00"
       procs="1"
