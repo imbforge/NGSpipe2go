@@ -562,7 +562,7 @@ config {
     pattern_filtering {
       walltime="04:00:00"
       procs="2"
-      memory="4"
+      memory="1"
     }
     pbc {
       walltime="02:00:00"
