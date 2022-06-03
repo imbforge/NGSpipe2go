@@ -6,8 +6,6 @@ count_breaks = {
 
     output.dir = count_breaks_vars.outdir
 
-    def File f = new File(input)
-
     def samtools_view_FLAGS = "-b" +
         (count_breaks_vars.paired ? " -f 0x0040" : "")
 
