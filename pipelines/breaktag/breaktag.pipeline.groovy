@@ -10,6 +10,7 @@ load PIPELINE_ROOT + "/config/bpipe.config.groovy"
 load PIPELINE_ROOT + "/modules/breaktag/pattern_filtering.header"
 load PIPELINE_ROOT + "/modules/breaktag/bwa.header"
 load PIPELINE_ROOT + "/modules/breaktag/count_breaks.header"
+load PIPELINE_ROOT + "/modules/breaktag/count_breaks_strandless.header"
 load PIPELINE_ROOT + "/modules/breaktag/collect_stats.header"
 load PIPELINE_ROOT + "/modules/NGS/fastqc.header"
 load PIPELINE_ROOT + "/modules/NGS/multiqc.header"
@@ -26,6 +27,7 @@ Bpipe.run {
     pattern_filtering +
     bwa +
     count_breaks +
+    count_breaks_strandless +
     collect_stats
   ] +
   collectToolVersions +

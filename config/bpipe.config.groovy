@@ -144,6 +144,11 @@ config {
       procs="4"
       memory="16"
     }
+    count_breaks_strandless {
+      walltime="01:00:00"
+      procs="1"
+      memory="1"
+    }
     CountNonStrutReads {
       walltime="03:00:00"
       procs="1"
