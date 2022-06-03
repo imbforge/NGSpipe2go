@@ -28,7 +28,7 @@ config {
       queue=long_queue
       walltime="24:00:00"
       procs="16"
-      memory="16"
+      memory="32"
     }
     Bam2FastQ {
       walltime="1:00:00"
