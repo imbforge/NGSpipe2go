@@ -142,7 +142,7 @@ config {
     count_breaks {
       walltime="04:00:00"
       procs="4"
-      memory="8"
+      memory="16"
     }
     CountNonStrutReads {
       walltime="03:00:00"
@@ -560,7 +560,7 @@ config {
       memory="2"
     }
     pattern_filtering {
-      walltime="01:00:00"
+      walltime="04:00:00"
       procs="2"
       memory="4"
     }
