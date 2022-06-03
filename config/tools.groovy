@@ -302,6 +302,9 @@ tools_envs = [
     python: [
         "3.7": [
             lmod: "module load python/3.7_debian9"
+        ],
+        "3.10.4": [
+            lmod: "module load python/3.10.4"
         ]
     ],
     qualimap: [
