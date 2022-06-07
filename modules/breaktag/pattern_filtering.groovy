@@ -6,9 +6,9 @@ pattern_filtering = {
     output.dir = pattern_filtering_vars.outdir
 
     def File f = new File(input1)
-    def OUTFILE = (PAIRED ? [(f.getName() =~ /.R1.fastq.gz/).replaceFirst(".R1.filtered.fastq.gz"),
-                             (f.getName() =~ /.R2.fastq.gz/).replaceFirst(".R2.filtered.fastq.gz")]
-                          :  (f.getName() =~ /.fastq.gz/).replaceFirst(".filtered.fastq.gz"))
+    def OUTFILE = (pattern_filtering_vars.paired ? [(f.getName() =~ /.R1.fastq.gz/).replaceFirst(".R1.filtered.fastq.gz"),
+                                                    (f.getName() =~ /.R2.fastq.gz/).replaceFirst(".R2.filtered.fastq.gz")]
+                                                 :  (f.getName() =~ /.fastq.gz/).replaceFirst(".filtered.fastq.gz"))
 
     def pattern_filtering_INPUT = (pattern_filtering_vars.paired ? "-1 $input1 -2 $input2" : "-1 $input")
     def pattern_filtering_FLAGS = "-d -o filtered"

@@ -17,7 +17,7 @@ count_breaks = {
                    prepare_tool_env("python"  , tools["python"]["version"]  , tools["python"]["runenv"])
     def PREAMBLE = get_preamble(stage:stageName, outdir:output.dir, input:new File(input1.prefix).getName())
 
-    transform("bam") to("bed") {
+    transform(".bam") to(".bed.gz") {
         exec """
             ${TOOL_ENV} &&
             ${PREAMBLE} &&
@@ -36,7 +36,8 @@ count_breaks = {
               awk '{ if (\$4 == "-") {\$2=\$2-1;\$3=\$3-1}; print }' | \
               sort --parallel=$count_breaks_vars.threads -k1,1 -k2,2g -k3,3g | \
               uniq -c | \
-              awk 'BEGIN{OFS="\t"} { print \$2,\$3,\$4,".",\$1,\$5 }' > $output
+              awk 'BEGIN{OFS="\t"} { print \$2,\$3,\$4,".",\$1,\$5 }' | \
+              gzip -c > $output
             ""","count_breaks"
     }
 }
