@@ -20,7 +20,7 @@ pattern_filtering = {
         ${PREAMBLE} &&
 
         if [ ! -e ${pattern_filtering_vars.targets} ]; then
-          echo "Targets file ${pattern_filtering_vars.targets} doesn't exist" >> $output &&
+          echo "Targets file ${pattern_filtering_vars.targets} doesn't exist" >> $output1 &&
           exit 1;
         fi;
 
@@ -30,7 +30,12 @@ pattern_filtering = {
         pattern=\$(echo $TARGET | tr '\t' ' ' | cut -f2 -d" ");
         umi=\$(echo $TARGET | tr '\t' ' ' | cut -f3 -d" ");
 
-        perl ${PIPELINE_ROOT}/tools/breaktag/pattern_filtering.pl $pattern_filtering_FLAGS $pattern_filtering_INPUT -u "\$umi" -r "\$pattern"
+        perl ${PIPELINE_ROOT}/tools/breaktag/pattern_filtering.pl $pattern_filtering_FLAGS $pattern_filtering_INPUT -u "\$umi" -r "\$pattern";
+        if [ \$? -eq 0 ]; then
+          f=$input1;
+          mv \${f%.fastq.gz}.filt.fastq.gz $output1;
+          [ "$pattern_filtering_vars.paired" = "false" ] || (f=$input2; mv \${f%.fastq.gz}.filt.fastq.gz $output2);
+        fi
       ""","pattern_filtering"
     }
 }

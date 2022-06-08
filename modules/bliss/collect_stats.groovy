@@ -8,10 +8,10 @@ collect_stats = {
 
     def PREAMBLE = get_preamble(stage:stageName, outdir:output.dir, input:new File(input1.prefix).getName())
 
-    transform("bed") to("txt") {
+    transform(".stradnless.bed.gz") to(".txt") {
         exec """
             ${PREAMBLE} &&
-            echo "$input stats" > $output
+            zcat $input | awk '{i+=\$5} END {print "breaks: ", i; print "loci: ", NR;}' > $output
         """
     }
     forward input
