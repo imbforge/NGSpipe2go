@@ -1,6 +1,6 @@
 count_breaks = {
     doc title: "Count breaks per position",
-    desc:  "Count breals. Executes a special UMI filtering step for breaktag (though UMIs are not mandatory)",
+    desc:  "Count breals. Executes a special UMI filtering step for bliss (though UMIs are not mandatory)",
     constraints: "none",
     author: "Sergi Sayols"
 
@@ -31,7 +31,7 @@ count_breaks = {
               uniq -c | \
               awk 'BEGIN{OFS=","} { print \$2,\$1 }' > \$tmpfile &&
 
-            python3 ${PIPELINE_ROOT}/tools/breaktag/umi_filtering.py \$tmpfile | \
+            python3 ${PIPELINE_ROOT}/tools/bliss/umi_filtering.py \$tmpfile | \
               cut -f-4 | \
               awk '{ if (\$4 == "-") {\$2=\$2-1;\$3=\$3-1}; print }' | \
               sort --parallel=$count_breaks_vars.threads -k1,1 -k2,2g -k3,3g | \
