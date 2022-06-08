@@ -1,5 +1,5 @@
 pattern_filtering_vars=[
-    outdir : RAWDATA + "/filt,
+    outdir : RAWDATA + "/filt",
     paired : RUN_IN_PAIRED_END_MODE,
     targets: TARGETS
 ]
