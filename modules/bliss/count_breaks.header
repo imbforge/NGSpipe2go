@@ -1,5 +1,5 @@
 count_breaks_vars=[
-    outdir          : RESULTS,
+    outdir          : RESULTS + "/counts",
     paired          : RUN_IN_PAIRED_END_MODE,
     threads         : Integer.toString(ESSENTIAL_THREADS)
 ]

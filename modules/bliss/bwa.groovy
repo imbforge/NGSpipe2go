@@ -7,7 +7,7 @@ bwa = {
     output.dir = BWA_vars.outdir
 
     def File f = new File(input1)
-    def OUTFILE = (f.getName() =~ /(.R1)*.fastq.gz/).replaceFirst("")
+    def OUTFILE = (f.getName() =~ /(.R1)*.filt.fastq.gz/).replaceFirst(".bam")
 
     def BWA_INPUT = (BWA_vars.paired ? "$input1 $input2" : "$input")
     def BWA_FLAGS =
@@ -23,7 +23,7 @@ bwa = {
                    prepare_tool_env("samtools", tools["samtools"]["version"], tools["samtools"]["runenv"])
     def PREAMBLE = get_preamble(stage:stageName, outdir:output.dir, input:new File(input1.prefix).getName())
 
-    produce(OUTFILE + ".bam") {
+    produce(OUTFILE) {
         exec """
             ${TOOL_ENV} &&
             ${PREAMBLE} &&

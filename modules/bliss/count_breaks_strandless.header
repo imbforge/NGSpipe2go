@@ -1,5 +1,5 @@
 count_breaks_strandless_vars=[
-    outdir: RESULTS
+    outdir: RESULTS + "/counts"
 ]
 
 load  PIPELINE_ROOT + "/modules/breaktag/count_breaks_strandless.groovy"
