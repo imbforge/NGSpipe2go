@@ -700,7 +700,7 @@ ChIPhelper.Fastqc.custom <- function(web=FALSE, summarizedPlots=TRUE, subdir="",
   
   # create proper name vectoir as labels
   lbls <- gsub("_fastqc.zip$", "", names(fastqc.stats))
-  names(lbls) <- gsub("_fastqc.zip", ".fastq.gz", names(fastqc.stats))
+  names(lbls) <- gsub("_fastqc.zip", ".fastq.gz", basename(names(fastqc.stats)))
   
   if(file.exists(SHINYREPS_TARGET)){
     
@@ -743,7 +743,7 @@ ChIPhelper.Fastqc.custom <- function(web=FALSE, summarizedPlots=TRUE, subdir="",
   
   # summary plot (independent from summarizedPlots)
   if("Summary" %in% metrics) {
-    qclist[["Summary"]] <- ngsReports::plotSummary(fastqc.stats, labels=lbls)
+    qclist[["Summary"]] <- ngsReports::plotSummary(fastqc.stats, labels=rev(lbls))
   }
   
   
@@ -830,19 +830,19 @@ ChIPhelper.Fastqc.custom <- function(web=FALSE, summarizedPlots=TRUE, subdir="",
         geom_point(mapping=aes(x=Inf, y=Inf, color=base),
                    data=data.frame(base=c("T", "A", "C", "G")),
                    inherit.aes=FALSE, show.legend=TRUE) +
-        scale_color_manual("", 
-                           values=c("red", "green", "blue", "black"),
+        scale_color_manual("", 	
+                           values=c("red", "green", "blue", "black"),	
                            breaks=c("T", "A", "C", "G")) 
     }
     
   } else {
     
     if("BaseQuals" %in% metrics) {
-      qclist[["BaseQuals"]] <- ngsReports::plotBaseQuals(fastqc.stats, labels=lbls, plotType="boxplot") +
+	      qclist[["BaseQuals"]] <- ngsReports::plotBaseQuals(fastqc.stats, labels=rev(lbls), plotType="boxplot") +	
         theme(axis.text.x = element_text(size=5))
     }
     if("SeqContent" %in% metrics) {
-      qclist[["SeqContent"]] <- ngsReports::plotSeqContent(fastqc.stats, labels=lbls, plotType="line") +
+	      qclist[["SeqContent"]] <- ngsReports::plotSeqContent(fastqc.stats, labels=rev(lbls), plotType="line") +	
         theme(axis.text.x = element_text(size=5), legend.position = "top")
     }
   }
@@ -853,7 +853,7 @@ ChIPhelper.Fastqc.custom <- function(web=FALSE, summarizedPlots=TRUE, subdir="",
   # ngsReports::plotGcContent(fastqc.stats, plotType="line", gcType="Genome", labels=lbls, theoreticalGC=TRUE, species=SPECIES)
   # the default value for SPECIES is "Hsapiens", thus, if you don't specify it, human will be used as a default
   if("GcContent" %in% metrics) {
-    p.gc <- ngsReports::plotGcContent(fastqc.stats, usePlotly=summarizedPlots, plotType="line", gcType="Genome", labels=lbls, theoreticalGC=FALSE) 
+    p.gc <- ngsReports::plotGcContent(fastqc.stats, usePlotly=summarizedPlots, plotType="line", gcType="Genome", labels=rev(lbls), theoreticalGC=FALSE) 
     if(!summarizedPlots) {
       p.gc <- p.gc + guides(color=guide_legend(title="",ncol=4)) + 
         theme(legend.position = "top", legend.text = element_text(size=8)) 
@@ -862,16 +862,16 @@ ChIPhelper.Fastqc.custom <- function(web=FALSE, summarizedPlots=TRUE, subdir="",
   }
   
   if("SeqQuals" %in% metrics) {
-    qclist[["SeqQuals"]] <- ngsReports::plotSeqQuals(fastqc.stats, usePlotly=summarizedPlots, plotType="line", labels=lbls)
+    qclist[["SeqQuals"]] <- ngsReports::plotSeqQuals(fastqc.stats, usePlotly=summarizedPlots, plotType="line", labels=rev(lbls))
   }
   if("DupLevels" %in% metrics) {
-    qclist[["DupLevels"]] <- ngsReports::plotDupLevels(fastqc.stats, usePlotly=summarizedPlots, plotType="line", labels=lbls)
+    qclist[["DupLevels"]] <- ngsReports::plotDupLevels(fastqc.stats, usePlotly=summarizedPlots, plotType="line", labels=rev(lbls))
   }
   if("Overrep" %in% metrics) {
-    qclist[["Overrep"]] <- ngsReports::plotOverrep(fastqc.stats, usePlotly=summarizedPlots, plotType="line", labels=lbls)
+    qclist[["Overrep"]] <- ngsReports::plotOverrep(fastqc.stats, usePlotly=summarizedPlots, plotType="line", labels=rev(lbls))
   }
   if("AdapterContent" %in% metrics) {
-    qclist[["AdapterContent"]] <- ngsReports::plotAdapterContent(fastqc.stats, usePlotly=summarizedPlots, plotType="line", labels=lbls)
+    qclist[["AdapterContent"]] <- ngsReports::plotAdapterContent(fastqc.stats, usePlotly=summarizedPlots, plotType="line", labels=rev(lbls))
   }
   
   return(qclist)
