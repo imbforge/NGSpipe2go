@@ -37,7 +37,9 @@ count_breaks = {
               sort --parallel=$count_breaks_vars.threads -k1,1 -k2,2g -k3,3g | \
               uniq -c | \
               awk 'BEGIN{OFS="\t"} { print \$2,\$3,\$4,".",\$1,\$5 }' | \
-              gzip -c > $output
+              gzip -c > $output &&
+
+            rm \$tmpfile
             ""","count_breaks"
     }
 }
