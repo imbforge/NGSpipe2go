@@ -8,7 +8,7 @@ collect_stats = {
 
     def PREAMBLE = get_preamble(stage:stageName, outdir:output.dir, input:new File(input1.prefix).getName())
 
-    transform(".stradnless.bed.gz") to(".txt") {
+    transform(".strandless.bed.gz") to(".txt") {
         exec """
             ${PREAMBLE} &&
             zcat $input | awk '{i+=\$5} END {print "breaks: ", i; print "loci: ", NR;}' > $output
