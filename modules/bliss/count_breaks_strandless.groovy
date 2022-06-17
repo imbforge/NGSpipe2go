@@ -8,7 +8,7 @@ count_breaks_strandless = {
 
     def PREAMBLE = get_preamble(stage:stageName, outdir:output.dir, input:new File(input1.prefix).getName())
 
-    transform(".bed.gz") to(".stradnless.bed.gz") {
+    transform(".bed.gz") to(".strandless.bed.gz") {
         exec """
             ${PREAMBLE} &&
 
