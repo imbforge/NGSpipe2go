@@ -13,7 +13,7 @@ count_breaks_strandless = {
             ${PREAMBLE} &&
 
             zcat $input | \
-              perl -aln -e 'if(\$F[0]==\$F0[0] && \$F[1]==\$F0[1] && \$F[2]==\$F0[2]){ \$F0[5]+=\$F[5]; } else { \$F0[5]="*"; print join("\t", @F0); @F0=@F; } END{ \$F[5]="*"; print join("\t", @F) }' | \
+              perl -aln -e 'if(\$F[0]==\$F0[0] && \$F[1]==\$F0[1] && \$F[2]==\$F0[2]){ \$F0[4]+=\$F[4]; } else { \$F0[5]="*"; print join("\t", @F0); @F0=@F; } END{ \$F[5]="*"; print join("\t", @F) }' | \
               tail -n +2 | \
               gzip -c > $output
         ""","count_breaks_strandless"
