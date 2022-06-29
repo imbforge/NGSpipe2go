@@ -68,11 +68,11 @@ ChIPhelper.init <- function(task, subdir="", peaks_as="data.frame") {
       return("MACS2 results not available")
     }
     
-    # check is blacklist filtered peak files are available
-    if(file.exists(file.path(SHINYREPS_MACS2, peaksSubdir, paste0(targets$IPname, ".vs.", targets$INPUTname,"_macs2_blacklist_filtered_peaks.xls")))[1]) {
-      comparisons <- file.path(SHINYREPS_MACS2, peaksSubdir, paste0(targets$IPname, ".vs.", targets$INPUTname,"_macs2_blacklist_filtered_peaks.xls"))
+    # check is blacklist filtered peak files are available (".vs.none" is removed in case there were no controls samples)
+    if(file.exists(file.path(SHINYREPS_MACS2, peaksSubdir, gsub(".vs.none", "", paste0(targets$IPname, ".vs.", targets$INPUTname,"_macs2_blacklist_filtered_peaks.xls"))))[1]) {
+      comparisons <- file.path(SHINYREPS_MACS2, peaksSubdir, gsub(".vs.none", "", paste0(targets$IPname, ".vs.", targets$INPUTname,"_macs2_blacklist_filtered_peaks.xls")))
     } else { # no blacklist filtered peak files available, read unfiltered peak files
-      comparisons <- file.path(SHINYREPS_MACS2, peaksSubdir, paste0(targets$IPname, ".vs.", targets$INPUTname,"_macs2_peaks.xls"))
+      comparisons <- file.path(SHINYREPS_MACS2, peaksSubdir, gsub(".vs.none", "", paste0(targets$IPname, ".vs.", targets$INPUTname,"_macs2_peaks.xls")))
     }
     exist <- sapply(comparisons, file.exists) # check if files exist for targets entries
     targets <- targets[exist, ]
@@ -1014,8 +1014,11 @@ ChIPhelper.fastqscreen <- function(perc.to.plot = 1,
 ##
 ChIPhelper.IPstrength<- function(web=FALSE, subdir="") {
   
-  # logs folder
-  if(!file.exists(file.path(SHINYREPS_IPSTRENGTH, subdir))) {
+  # construct the folder name, which is different for web and noweb
+  QC <- if(web) file.path("/ipstrength", subdir) else file.path(SHINYREPS_IPSTRENGTH, subdir)
+  
+  # logs folder (check also if zero entries due to lack of input files)
+  if(!file.exists(QC) | length(list.files(QC, pattern=".png$"))==0) {
     return("IPstrength statistics not available")
   }
   
@@ -1023,9 +1026,6 @@ ChIPhelper.IPstrength<- function(web=FALSE, subdir="") {
   if(SHINYREPS_PLOTS_COLUMN < 2) {
     SHINYREPS_PLOTS_COLUMN <- 4L    # default to 4 columns
   }
-  
-  # construct the folder name, which is different for web and noweb
-  QC <- if(web) file.path("/ipstrength", subdir) else file.path(SHINYREPS_IPSTRENGTH, subdir)
   
   # construct the image url from the folder contents (skip current dir .)
   samples <- list.files(QC, pattern=".png$")
