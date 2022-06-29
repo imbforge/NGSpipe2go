@@ -242,7 +242,7 @@ tools_envs = [
     ],
     java: [
         "1.8": [
-            lmod: "module load jdk/1.8.0_101",
+            lmod: "module load jdk/1.8.0_332",
             singularity: "alias java=\"singularity run --app java ${singularity_tools}/openjdk/8u181r0/openjdk8.simg\""
         ]
     ],
