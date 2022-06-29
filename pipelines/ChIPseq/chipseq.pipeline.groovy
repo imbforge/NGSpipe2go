@@ -26,6 +26,7 @@ load PIPELINE_ROOT + "/modules/NGS/bamindexer.header"
 load PIPELINE_ROOT + "/modules/NGS/extend.header"
 load PIPELINE_ROOT + "/modules/NGS/bamqc.header"
 load PIPELINE_ROOT + "/modules/NGS/fastqc.header"
+load PIPELINE_ROOT + "/modules/NGS/fastqscreen.header"
 load PIPELINE_ROOT + "/modules/NGS/insertsize.header"
 load PIPELINE_ROOT + "/modules/NGS/markdups.header"
 load PIPELINE_ROOT + "/modules/NGS/rmdups.header"
@@ -42,9 +43,10 @@ collect_bams = { forward inputs.bam }
 
 Bpipe.run {
 	(RUN_IN_PAIRED_END_MODE ? "%.R*.fastq.gz" : "%.fastq.gz") * [
-		FastQC +  
-                (RUN_CUTADAPT ? Cutadapt + FastQC.using(subdir:"trimmed") : dontrun.using(module:"Cutadapt")) +
-                bowtie2 + BAMindexer + BamQC ] + collect_bams +   
+		FastQC, 
+		(RUN_FASTQSCREEN ? FastqScreen : dontrun.using(module: "FastqScreen")), 
+		(RUN_CUTADAPT ? Cutadapt + FastQC.using(subdir:"trimmed") : dontrun.using(module:"Cutadapt")) +
+		bowtie2 + BAMindexer + BamQC ] + collect_bams +   
 
          [ // parallel branches with and without multi mappers
 

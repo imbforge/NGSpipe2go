@@ -18,6 +18,9 @@ shinyReports_vars=[
     fastqc          : FastQC_vars.outdir,   //where the Fastqc logs lie
     fastqc_log      : LOGS + "/FastQC",     //where the Fastqc logs lie
     fastqc_summarized : "FALSE",            //should FastQC plots be summarized in the report?
+    fastqscreen_out   : FastqScreen_vars.outdir,        //where the FastQScreen output lie
+    fastqscreen_log   : LOGS + "/FastQScreen",          //where the FastQScreen log lie
+    fastqscreen_perc  : ESSENTIAL_FASTQSCREEN_PERC,     //contaminant percentage to be plotted
     ipstrength      : ipstrength_vars.outdir,   //where the IPstrength files lie
     ipstrength_log  : LOGS + "/ipstrength",     //where the IPstrength/R logs lie
     pbc             : pbc_vars.outdir,          //where the PBC files lie
