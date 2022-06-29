@@ -219,7 +219,7 @@ config {
       procs="1"
       memory="1"
     }
-    FastQScreen {
+    FastqScreen {
       walltime="01:00:00"
       procs="4"
       memory="8"

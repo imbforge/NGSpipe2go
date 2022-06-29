@@ -375,7 +375,7 @@ smallRNAhelper.fastqscreen <- function(perc.to.plot = 1) {
   p.category.wrap <- ggplot(df, aes(x=sample, y=perc, fill=category)) +
           geom_col(position=position_stack(reverse=T),width=0.8) +
           scale_fill_manual(values=c(alpha("#4281a4",0.8),alpha("#ffa62b",0.8),"gray60")) +   
-          scale_y_continuous(breaks=seq(0,100,by=10)) +
+          scale_y_continuous(breaks=seq(0,100,by=10),limits=c(0,100)) +
           theme_bw(base_size=10) +
           labs(x = "",
                y = "% mapped") +
