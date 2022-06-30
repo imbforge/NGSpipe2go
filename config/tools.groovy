@@ -34,7 +34,7 @@ tools_defaults = [
     cellranger     : [ runenv: "lmod", version: "6.0.0"             ],
     cellrangerarc  : [ runenv: "lmod", version: "2.0.0"             ],
     cellrangeratac : [ runenv: "lmod", version: "2.0.0"             ],
-    bwa            : [ runenv: "lmod", version: "0.7.15"            ],
+    bwa            : [ runenv: "lmod", version: "0.7.17"            ],
     conda          : [ runenv: "lmod", version: "4.8.3"             ],
     cutadapt       : [ runenv: "lmod", version: "4.0"               ],
     deeptools      : [ runenv: "lmod", version: "3.5.1_conda"       ],
