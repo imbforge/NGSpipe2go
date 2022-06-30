@@ -19,6 +19,8 @@ pattern_filtering = {
       exec """
         ${PREAMBLE} &&
 
+        echo "Running pattern filtering on $inputs";
+
         if [ ! -e ${pattern_filtering_vars.targets} ]; then
           echo "Targets file ${pattern_filtering_vars.targets} doesn't exist" >> $output1 &&
           exit 1;
@@ -33,8 +35,7 @@ pattern_filtering = {
         perl ${PIPELINE_ROOT}/tools/bliss/pattern_filtering.pl $pattern_filtering_FLAGS $pattern_filtering_INPUT -u "\$umi" -r "\$pattern";
         if [ \$? -eq 0 ]; then
           f=${input1};
-          mv \${f%.fastq.gz}.filt.fastq.gz $output.dir;
-          [ "$pattern_filtering_vars.paired" = "false" ] || (f=${input2}; mv \${f%.fastq.gz}.filt.fastq.gz $output.dir);
+          mv \${f%.fastq.gz}*.filt.fastq.gz $output.dir;
         fi
       ""","pattern_filtering"
     }
