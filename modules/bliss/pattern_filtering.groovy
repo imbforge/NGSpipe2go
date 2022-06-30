@@ -34,8 +34,8 @@ pattern_filtering = {
 
         perl ${PIPELINE_ROOT}/tools/bliss/pattern_filtering.pl $pattern_filtering_FLAGS $pattern_filtering_INPUT -u "\$umi" -r "\$pattern";
         if [ \$? -eq 0 ]; then
-          f=${input1};
-          mv \${f%.fastq.gz}*.filt.fastq.gz $output.dir;
+          f=\$(echo ${input1} | sed -E 's/(.R1)*.fastq.gz//');
+          mv \${f}*.filt.fastq.gz $output.dir;
         fi
       ""","pattern_filtering"
     }
