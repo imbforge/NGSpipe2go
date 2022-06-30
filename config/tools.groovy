@@ -37,7 +37,7 @@ tools_defaults = [
     bwa            : [ runenv: "lmod", version: "0.7.17"            ],
     conda          : [ runenv: "lmod", version: "4.8.3"             ],
     cutadapt       : [ runenv: "lmod", version: "4.0"               ],
-    deeptools      : [ runenv: "lmod", version: "3.5.1_conda"       ],
+    deeptools      : [ runenv: "lmod", version: "3.5.1"             ],
     fastqc         : [ runenv: "lmod", version: "0.11.9"            ],
     fastqscreen    : [ runenv: "lmod", version: "0.15.2"            ],
     fastx          : [ runenv: "lmod", version: "0.0.14"            ],
@@ -51,7 +51,7 @@ tools_defaults = [
     pear           : [ runenv: "lmod", version: "0.9.11"            ],
     picard         : [ runenv: "lmod", version: "2.20"              ],
     pingpongpro    : [ runenv: "lmod", version: "1.0"               ],
-    python         : [ runenv: "lmod", version: "3.7"               ],
+    python         : [ runenv: "lmod", version: "3.10"              ],
     qualimap       : [ runenv: "lmod", version: "2.2.1"             ],
     repenrich      : [ runenv: "lmod", version: "1.2"               ],
     rmats          : [ runenv: "lmod", version: "4.1.2"             ],
@@ -75,9 +75,6 @@ tools_defaults = [
 //   * 3rd level: runenv  --> one of [lmod|singularity|conda]
 tools_envs = [
     R: [
-        "3.5.1": [
-            lmod: "module load R/3.5.1_debian9"
-        ],
         "3.6.0": [
             lmod: "module load R/3.6.0",
             singularity: "alias Rscript=\"singularity run --app Rscript ${singularity_tools}/R/3.6.0r0/R.simg\""
@@ -107,7 +104,7 @@ tools_envs = [
     ],
     bedtools: [
         "2.27": [
-            lmod: "module load bedtools/2.27.1_debian9",
+            lmod: "module load bedtools/2.27.1",
             conda: "${conda_call} source activate ${conda_tools}/bedtools/2.27.1",
             singularity: "alias bedtools=\"singularity run --app bedtools ${singularity_tools}/bedtools/2.27.1r0/bedtools.simg\""
         ]
@@ -148,9 +145,6 @@ tools_envs = [
         ]
     ],
     cellranger: [
-        "3.1.0": [
-            lmod: "module load cellranger/3.1.0_debian9"
-        ],
         "6.0.0": [
             lmod: "module load cellranger/6.0.0"
         ]
@@ -182,18 +176,8 @@ tools_envs = [
         ]
     ],
     deeptools: [
-        "3.1": [
-            lmod: "module load deepTools/3.1.0_debian9",
-            singularity: """
-                alias bamCoverage=\"singularity run --app bamCoverage $singularity_tools deeptools/3.1.2r0/deeptools.simg\";
-                alias bamCompare=\"singularity run --app bamCompare $singularity_tools deeptools/3.1.2r0/deeptools.simg\"
-            """
-        ],
-        "3.2": [
-            conda: "${conda_call} source activate ${conda_tools}/deeptools/3.2.0"
-        ],
-        "3.5.1_conda": [
-            lmod: "module load deepTools/3.5.1_conda"
+        "3.5.1": [
+            lmod: "module load deepTools/3.5.1"
         ]
     ],
     fastqc: [
@@ -256,7 +240,7 @@ tools_envs = [
     ],
     macs2: [
         "2.1.2": [
-            lmod: "module load macs2/2.1.2_debian9",
+            lmod: "module load macs2/2.1.2",
             conda: "${conda_call} source activate ${conda_tools}/macs2/2.1.2",
             singularity: "alias macs2=\"singularity run --app macs2 ${singularity_tools}/macs2/2.1.2.1r0/macs.simg\""
         ]
@@ -300,10 +284,7 @@ tools_envs = [
         ]
     ],
     python: [
-        "3.7": [
-            lmod: "module load python/3.7_debian9"
-        ],
-        "3.10.4": [
+        "3.10": [
             lmod: "module load python/3.10.4"
         ]
     ],
@@ -324,38 +305,8 @@ tools_envs = [
     ],
     rseqc: [
         "3.0.0": [
-            lmod: "module load RSeQC/3.0.0_debian9",
+            lmod: "module load RSeQC/3.0.0",
             conda: "${conda_call} source activate ${conda_tools}/rseqc/3.0.0",
-            singularity: """
-                alias bam2fq.py=\"singularity run --app bam2fq.py ${singularity_tools}/rseqc/3.0.0r0/rseqc.simg\";
-                alias bam2wig.py=\"singularity run --app bam2wig.py ${singularity_tools}/rseqc/3.0.0r0/rseqc.simg\";
-                alias bam_stat.py=\"singularity run --app bam_stat.py ${singularity_tools}/rseqc/3.0.0r0/rseqc.simg\";
-                alias clipping_profile.py=\"singularity run --app clipping_profile.py ${singularity_tools}/rseqc/3.0.0r0/rseqc.simg\";
-                alias deletion_profile.py=\"singularity run --app deletion_profile.py ${singularity_tools}/rseqc/3.0.0r0/rseqc.simg\";
-                alias divide_bam.py=\"singularity run --app divide_bam.py ${singularity_tools}/rseqc/3.0.0r0/rseqc.simg\";
-                alias FPKM_count.py=\"singularity run --app FPKM_count.py ${singularity_tools}/rseqc/3.0.0r0/rseqc.simg\";
-                alias geneBody_coverage.py=\"singularity run --app geneBody_coverage.py ${singularity_tools}/rseqc/3.0.0r0/rseqc.simg\";
-                alias geneBody_coverage2.py=\"singularity run --app geneBody_coverage2.py ${singularity_tools}/rseqc/3.0.0r0/rseqc.simg\";
-                alias infer_experiment.py=\"singularity run --app infer_experiment.py ${singularity_tools}/rseqc/3.0.0r0/rseqc.simg\";
-                alias inner_distance.py=\"singularity run --app inner_distance.py ${singularity_tools}/rseqc/3.0.0r0/rseqc.simg\";
-                alias insertion_profile.py=\"singularity run --app insertion_profile.py ${singularity_tools}/rseqc/3.0.0r0/rseqc.simg\";
-                alias junction_annotation.pyc=\"singularity run --app junction_annotation.py ${singularity_tools}/rseqc/3.0.0r0/rseqc.simg\";
-                alias junction_saturation.pyc=\"singularity run --app junction_saturation.py ${singularity_tools}/rseqc/3.0.0r0/rseqc.simg\";
-                alias mismatch_profile.py=\"singularity run --app mismatch_profile.py ${singularity_tools}/rseqc/3.0.0r0/rseqc.simg\";
-                alias normalize_bigwig.py=\"singularity run --app normalize_bigwig.py ${singularity_tools}/rseqc/3.0.0r0/rseqc.simg\";
-                alias overlay_bigwig.py=\"singularity run --app overlay_bigwig.py ${singularity_tools}/rseqc/3.0.0r0/rseqc.simg\";
-                alias read_distribution.py=\"singularity run --app read_distribution.py ${singularity_tools}/rseqc/3.0.0r0/rseqc.simg\";
-                alias read_duplication.py=\"singularity run --app read_duplication.py ${singularity_tools}/rseqc/3.0.0r0/rseqc.simg\";
-                alias read_GC.py=\"singularity run --app read_GC.py ${singularity_tools}/rseqc/3.0.0r0/rseqc.simg\";
-                alias read_hexamer.py=\"singularity run --app read_hexamer.py ${singularity_tools}/rseqc/3.0.0r0/rseqc.simg\";
-                alias read_NVC.py=\"singularity run --app read_NVC.py ${singularity_tools}/rseqc/3.0.0r0/rseqc.simg\";
-                alias read_quality.py=\"singularity run --app read_quality.py ${singularity_tools}/rseqc/3.0.0r0/rseqc.simg\";
-                alias RNA_fragment_size.py=\"singularity run --app RNA_fragment_size.py ${singularity_tools}/rseqc/3.0.0r0/rseqc.simg\";
-                alias RPKM_saturation.py=\"singularity run --app RPKM_saturation.py ${singularity_tools}/rseqc/3.0.0r0/rseqc.simg\";
-                alias spilt_bam.py=\"singularity run --app spilt_bam.py ${singularity_tools}/rseqc/3.0.0r0/rseqc.simg\";
-                alias split_paired_bam.py=\"singularity run --app split_paired_bam.py ${singularity_tools}/rseqc/3.0.0r0/rseqc.simg\";
-                alias tin.py=\"singularity run --app tin.py ${singularity_tools}/rseqc/3.0.0r0/rseqc.simg\"
-            """
         ],
         "4.0.0": [
             lmod: "module load RSeQC/4.0.0"
@@ -388,10 +339,6 @@ tools_envs = [
         ]
     ],
     star: [
-        "2.6": [
-            lmod: "module load star/2.6.1b_debian9",
-            singularity: "alias STAR=\"singularity run --app STAR ${singularity_tools}/star/2.6.1br0/STAR.simg\""
-        ],
         "2.7": [
             lmod: "module load star/2.7.3a",
             conda: "${conda_call} source activate ${conda_tools}/star/2.7.0d",
@@ -408,8 +355,6 @@ tools_envs = [
     ],
     subread: [
         "1.6": [
-            lmod: "module load subread/1.6.5_debian9",
-            conda: "${conda_call} source activate ${conda_tools}/subread/1.6.3",
             singularity: """
                 alias exactSNP=\"singularity run --app exactSNP ${singularity_tools}/subread/1.6.3r0/subread.simg\";
                 alias featureCounts=\"singularity run --app featureCounts ${singularity_tools}/subread/1.6.3r0/subread.simg\";
