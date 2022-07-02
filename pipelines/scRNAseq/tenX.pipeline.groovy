@@ -9,6 +9,7 @@ load PIPELINE_ROOT + "/config/bpipe.config.groovy"
 
 load PIPELINE_ROOT + "/modules/scRNAseq/cellranger_count.header"
 load PIPELINE_ROOT + "/modules/scRNAseq/cellranger_aggr.header"
+load PIPELINE_ROOT + "/modules/scRNAseq/demux_hto.header"
 load PIPELINE_ROOT + "/modules/NGS/bamcoverage.header"
 load PIPELINE_ROOT + "/modules/NGS/bamindexer.header"
 load PIPELINE_ROOT + "/modules/NGS/fastqc.header"
@@ -35,6 +36,7 @@ Bpipe.run {
       (RUN_CUTADAPT ? Cutadapt + FastQC.using(subdir:"trimmed") : dontrun.using(module:"Cutadapt")) ] + 
       "%_L*_R*_001.fastq.gz" * [
          cellranger_count + [
+            (RUN_DEMUX ? demux_hto : dontrun.using(module:"demux_hto")),
             bamCoverage,
             inferexperiment,
             qualimap,

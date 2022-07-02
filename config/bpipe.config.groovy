@@ -204,6 +204,11 @@ config {
       procs="1"
       memory="1"
     }
+    demux_hto { 
+      walltime="03:00:00" 
+      procs="1" 
+      memory="32"
+    }
     FastQC {
       walltime="02:00:00"
       procs="1"

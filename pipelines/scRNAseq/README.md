@@ -16,6 +16,7 @@ All analysis steps are illustrated in the pipeline flowchart ([droplet-based](ht
 - mapping to the genome using STAR
 - generation of bigWig tracks for visualisation of alignment
 - quantification with featureCounts (Subread) and UMI-tools (if UMIs are used for deduplication) or cellranger count (for 10X)
+- optional sample de-multiplexing if cell hashing was applied. In this case, *targets.txt* (see below) must contain one entry for each de-multiplexed sample (give an appropriate *sample* name for each combination of file name and hashtag oligo (HTO). De-multiplexing is done using the CITE-seq-Count tool followed by HTODemux function in Seurat R-package.
 - downstream analysis in R using a pre-designed markdown report file (*sc.report.Rmd*). Modify this file to fit your custom parameter and thresholds and render it to your final html report. The Rmd file uses, among others, the following methods and packages:
   - QC: the [scater](http://bioconductor.org/packages/release/bioc/html/scater.html) package.
   - normalization: the [scran](http://bioconductor.org/packages/release/bioc/html/scran.html) package.
@@ -50,11 +51,14 @@ All analysis steps are illustrated in the pipeline flowchart ([droplet-based](ht
   - file: (required) file name identifier. Must be a unique substring of the corresponding input sample file name, e.g. full sample name with filetype suffixes removed (the sample name itself must not contain dots). 
   - group: (required) default variable for cell grouping (e.g. by condition). You can provide additional grouping variables optionally.
   - replicate: (required) define sample replicates within groups.
+  - file_HTO: (if cell hashing is used only) file name identifier of the HTO library corresponding to *file*
+  - seq_HTO: (if cell hashing is used only) sequence of hashtag oligo (HTO)
+  - name_HTO: (if cell hashing is used only) name of hashtag oligo (HTO)
   - plate: (for plate-based pipelines only) plate ID (number).
   - row: (for plate-based pipelines only) plate row (letter).
   - col: (for plate-based pipelines only) late column (number).
   - cells: (for plate-based pipelines only) number of cells per well (one of "0c", "1c", "10c" with "0c" and "10c" being control wells).
-  - pool: (for plate-based and pooled libraries like MARS-seq only) the pool ID comprises all cells from 1 library pool (i.e. a set of unique cell barcodes; the cell barcodes are re-used in other pools). Must be a unique substring of the input sample file name. For pool-based design, the pool ID is grebbed against the respective count data filename instead of the sample name as stated above.
+  - pool: (for plate-based and pooled libraries like MARS-seq only) the pool ID comprises all cells from 1 library pool (i.e. a set of unique cell barcodes; the cell barcodes are re-used in other pools). Must be a unique substring of the input sample file name. For pool-based design, the pool ID is grepped against the respective count data filename instead of the sample name as stated above.
   - barcode: (for plate-based and pooled libraries like MARS-seq only) cell barcodes used as cell identifier in the count files. After merging the count data with targets.txt, the barcodes are replaced with sample IDs given in the sample column (i.e. here, sample names need not be a substring of input sample file name).
 
 ### Programs required
@@ -62,6 +66,7 @@ All analysis steps are illustrated in the pipeline flowchart ([droplet-based](ht
 - FastQScreen
 - STAR
 - Cellranger (for 10X)
+- CITE-seq-Count (for cell hashing)
 - Samtools
 - Bedtools
 - Subread

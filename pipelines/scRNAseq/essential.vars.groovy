@@ -25,6 +25,9 @@ ESSENTIAL_TENX_AGGRCSV="aggregation.csv"
 ESSENTIAL_TENX_NORMALIZED="mapped"
 ESSENTIAL_TENX_NUCLEI="no"         // set to "yes" if 10X run with nuclei instead of cells
 
+// Sample demultiplexing
+RUN_DEMUX=false  // demultiplexing if cell hashing was applied (if true provide file_HTO, seq_HTO and name_HTO in targets.txt)
+
 // Reference genomes for FastqScreen
 ESSENTIAL_FASTQSCREEN_PERC=1    // contaminant filter, if a contaminant is consuming at least this percentage of reads in at least one sample, contaminant will be shown in report
 ESSENTIAL_FASTQSCREEN_GENOME="Human::/fsimb/common/genomes/homo_sapiens/gencode/release-25_GRCh38.p7/full/index/bowtie2/GRCh38.p7.genome"  //bowtie2 reference for the genome the samples are from, this is used for the fastqscreen

@@ -76,7 +76,7 @@ selgenes <- c("") # selected genes (symbols) for expression plots
 switch(SHINYREPS_SEQTYPE,
     MARSseq={
     # Columns required: "sample", "file", "barcode", "plate", "row", "col", "cells", "group", "pool"   
-      targets <- read.delim(SHINYREPS_TARGET, sep="\t")
+      targets <- read.delim(SHINYREPS_TARGET, sep="\t", comment.char = "#")
       group.vars <- colnames(targets)[!colnames(targets) %in% c("sample", "file", "barcode", "row", "col")] 
       targets[,group.vars] <- lapply(targets[,group.vars], factor)
       # pool-wise targets to annotate plots made before demultiplexing by cell barcode
@@ -88,7 +88,7 @@ switch(SHINYREPS_SEQTYPE,
    }, 
     SmartSeq2={
     # Columns required: "sample", "file", "plate", "row", "col", "cells", "group"
-      targets <- read.delim(SHINYREPS_TARGET, sep="\t")
+      targets <- read.delim(SHINYREPS_TARGET, sep="\t", comment.char = "#")
       group.vars <- colnames(targets)[!colnames(targets) %in% c("sample", "file", "barcode", "row", "col")] 
       targets[,group.vars] <- lapply(targets[,group.vars], factor)
       targets4plots <- targets
@@ -97,20 +97,49 @@ switch(SHINYREPS_SEQTYPE,
       colorByFactor2 <- if(!is.na(SHINYREPS_COLORBYFACTOR)) {SHINYREPS_COLORBYFACTOR} else {"group"} # default for downstream plots (up to 2 categories)
     },
     tenX={
-      #Columns required: "sample_id", "molecule_h5"
-      targets_pools <- read.delim(SHINYREPS_TARGET, sep="\t")
+      aggrcsv <- read.delim(file.path(SHINYREPS_PROJECT, "aggr.csv"), sep=",") # aggr.csv contains the order of GEM wells
+      # load targets.txt (data per fastq file). Columns required: "sample", "file", "group", "replicate"
+      targets_pools <- read.delim(SHINYREPS_TARGET, sep="\t", comment.char = "#")
+      # create targets on cell level
       matrix_dir = file.path(SHINYREPS_RES, SHINYREPS_CELLRANGERAGGR_ID, "outs/count/filtered_feature_bc_matrix/")
       if (!dir.exists(matrix_dir)) {matrix_dir = file.path(SHINYREPS_RES, SHINYREPS_CELLRANGERAGGR_ID, "outs/filtered_feature_bc_matrix/")}
       targets = read.delim(file.path(matrix_dir, "barcodes.tsv.gz"), header = FALSE, stringsAsFactors = FALSE)
       names(targets) = "cell_id"
-      targets <- cbind(targets, targets_pools[as.numeric(gsub("^.*-", "", targets$cell_id)),])
+      
+      if(SHINYREPS_RUN_DEMUX) { # add HTO information if cell hashing applied
+        demuxfiles <- lapply(1:nrow(aggrcsv), function(x) {
+          read.delim(file.path(SHINYREPS_DEMUX_OUT, gsub("_S._L..._R._001", "",aggrcsv$sample_id)[x], "Seurat", "demux.txt"), sep="\t")
+        })
+        demuxfiles <- dplyr::bind_rows(demuxfiles, .id = "GEMwell")
+        demuxfiles$cell_id <- paste(demuxfiles$cell_id, demuxfiles$GEMwell, sep="-")
+        targets <- merge(targets, demuxfiles[, c("cell_id", "GEMwell", "HTO_maxID", "HTO_classification.global", 
+                                                  "nCount_HTO", "nFeature_HTO", "HTO_secondID", "HTO_margin")], by="cell_id")
+        targets$name_HTO <- gsub("-.*$", "", targets$HTO_maxID)
+      }
+     
+      # merge targets with targets_pools and sort 
+      # ensure that GEM wells merged in aggr module are assigned the sample names from targets.txt in correct order
+      # the -digit suffix of the cell barcode reflects the order that the GEM wells were provided in the aggr.csv
+      targets$file <- gsub("_S._L..._R._001", "", aggrcsv[as.numeric(gsub("^.*-", "", targets$cell_id)), "sample_id"])
+      targets <- merge(targets, targets_pools) # if "name_HTO" column is present in targets, it is used for merging as well (unmapped cells discarded)
       rownames(targets) <- targets$cell_id
+      StartingColumnNames <- c("cell_id", "sample", "file", "group", "replicate")
+      targets <- targets[order(targets$sample, targets$cell_id), c(StartingColumnNames, colnames(targets)[!colnames(targets) %in% StartingColumnNames])]
+      
+      # define group.vars
       group.vars <- colnames(targets)[!colnames(targets) %in% c("cell_id", "sample", "file")] 
       targets[,group.vars] <- lapply(targets[,group.vars], factor)
       group.vars <- group.vars[sapply(group.vars, function(x) {length(unique(targets[,x]))>1})] # remove group vars with single value
-      targets4plots <- targets_pools
-      colorByFactor <- "sample" # default for pipeline overview plots
-      colorByFactor2 <- if(!is.na(SHINYREPS_COLORBYFACTOR)) {SHINYREPS_COLORBYFACTOR} else {"sample"} # default for downstream plots (up to 2 categories)
+      # in case of hto multiplexing targets_pools is collapsed to (not de-multiplexed) fastq files for the fastq-file level QC plots (targets4plots).
+      # But 'group' and 'replicate' columns are not kept if they show multiple values per file (e.g. multiplexed samples belong to different groups). 
+      # This is only relevant for the gene body coverage plots per group or per replicate, which would be misleading in that case.
+      collapsedColumns <- sapply(c("sample", "group", "replicate"), function(x) {
+          all(sapply(unique(targets_pools$file), function(y) {length(unique(targets_pools[targets_pools$file==y, x]))==1}))
+          })
+      targets4plots <- targets_pools[!duplicated(targets_pools$file), c("file", names(collapsedColumns)[collapsedColumns])] 
+      if(!"sample" %in% colnames(targets4plots)) {targets4plots$sample <- targets4plots$file} # "sample" column is needed. Same as "file" if ambiguous.
+      colorByFactor <- "sample" # default for pipeline overview plots on file level
+      colorByFactor2 <- if(!is.na(SHINYREPS_COLORBYFACTOR)) {SHINYREPS_COLORBYFACTOR} else {"sample"} # default for downstream plots on cell level (up to 2 categories)
    },
     stop(c("Don't find seqtype:", SHINYREPS_SEQTYPE))   
 )
@@ -152,11 +181,11 @@ The color on the graph shows the Phred quality scores, which are logarithmically
 ##### 
 
 if (SHINYREPS_FASTQC_SUMMARIZED) {
-    fastqc_summary_plot <- DEhelper.Fastqc.custom(web=F,summarizedPlots=T, samplePattern=SHINYREPS_SAMPLEPATTERN1, excludePattern=SHINYREPS_SAMPLEPATTERN2, maxno=SHINYREPS_MAXNO)
+    fastqc_summary_plot <- DEhelper.Fastqc.custom(web=F,summarizedPlots=T, targetsdf=targets4plots, samplePattern=SHINYREPS_SAMPLEPATTERN1, excludePattern=SHINYREPS_SAMPLEPATTERN2, maxno=SHINYREPS_MAXNO)
     plot(fastqc_summary_plot$p.qual)
     cat("\n", fill = T)
 } else {
-    fastqc_summary_plot <- DEhelper.Fastqc.custom(web=F,summarizedPlots=F, samplePattern=SHINYREPS_SAMPLEPATTERN1, excludePattern=SHINYREPS_SAMPLEPATTERN2, maxno=SHINYREPS_MAXNO)
+    fastqc_summary_plot <- DEhelper.Fastqc.custom(web=F,summarizedPlots=F, targetsdf=targets4plots, samplePattern=SHINYREPS_SAMPLEPATTERN1, excludePattern=SHINYREPS_SAMPLEPATTERN2, maxno=SHINYREPS_MAXNO)
 }
 
 ```
@@ -225,11 +254,11 @@ DEhelper.cutadapt(colorByFactor=colorByFactor, targetsdf=targets4plots)
 cat("### FastQC of trimmed reads QC\n\n")
 cat("#### Read quality\n\n")
 if (SHINYREPS_FASTQC_SUMMARIZED) {
-    fastqc_summary_plot <- DEhelper.Fastqc.custom(web=F,summarizedPlots=T, subdir="trimmed", samplePattern=SHINYREPS_SAMPLEPATTERN1, excludePattern=SHINYREPS_SAMPLEPATTERN2, maxno=SHINYREPS_MAXNO)
+    fastqc_summary_plot <- DEhelper.Fastqc.custom(web=F,summarizedPlots=T, subdir="trimmed", targetsdf=targets4plots, samplePattern=SHINYREPS_SAMPLEPATTERN1, excludePattern=SHINYREPS_SAMPLEPATTERN2, maxno=SHINYREPS_MAXNO)
     plot(fastqc_summary_plot$p.qual)
     cat("\n", fill = T)
 } else {
-    fastqc_summary_plot <- DEhelper.Fastqc.custom(web=F,summarizedPlots=F, subdir="trimmed", samplePattern=SHINYREPS_SAMPLEPATTERN1, excludePattern=SHINYREPS_SAMPLEPATTERN2, maxno=SHINYREPS_MAXNO)
+    fastqc_summary_plot <- DEhelper.Fastqc.custom(web=F,summarizedPlots=F, subdir="trimmed", targetsdf=targets4plots, samplePattern=SHINYREPS_SAMPLEPATTERN1, excludePattern=SHINYREPS_SAMPLEPATTERN2, maxno=SHINYREPS_MAXNO)
 }
 ```
 
@@ -271,7 +300,7 @@ The plots below show meta-gene profiles of 5' to 3' read coverage and can reveal
 
 ```{r GeneBodyCoverage_paragraph, echo=F, error=F, warning=F, message=F, results='asis', fig.align="center"}
 
-plot_list <- DEhelper.geneBodyCov2(web=F, samplePattern=SHINYREPS_SAMPLEPATTERN1, excludePattern=SHINYREPS_SAMPLEPATTERN2, maxno=SHINYREPS_MAXNO)
+plot_list <- DEhelper.geneBodyCov2(web=F, targetsdf=targets4plots, samplePattern=SHINYREPS_SAMPLEPATTERN1, excludePattern=SHINYREPS_SAMPLEPATTERN2, maxno=SHINYREPS_MAXNO)
 
 cat("#### Gene body coverage per sample: plotly")
 cat("\n\n", fill=T)
@@ -341,12 +370,13 @@ if("p_per_cells_splitByGroupReplicate" %in% names(plot_list)){
 ```
 
 
+
 ```{r strandspecificity,  echo=F, results='asis', error=F, warning=F, message=F}
 cat("## Strand specificity\n")
 
 cat("\nThe table below shows the fraction of reads mapped in sense or antisense to gene exons - around 0.5 for non-stranded library prep protocols and close to 0 or 1 for strand-specific RNA-seq protocols. The strandedness is calculated as the percentage of unambiguous reads that are on the strand, which is expected by the library preparation protocol.\n\n")
 
-DEhelper.strandspecificity(samplePattern=SHINYREPS_SAMPLEPATTERN1, excludePattern=SHINYREPS_SAMPLEPATTERN2, maxno=SHINYREPS_MAXNO)
+DEhelper.strandspecificity(samplePattern=SHINYREPS_SAMPLEPATTERN1, targetsdf=targets4plots, excludePattern=SHINYREPS_SAMPLEPATTERN2, maxno=SHINYREPS_MAXNO)
 ```
 
 
@@ -355,7 +385,7 @@ DEhelper.strandspecificity(samplePattern=SHINYREPS_SAMPLEPATTERN1, excludePatter
 Illustrate genomic origin of reads
 
 ```{r Qualimap, fig.height=min(170, ceiling(0.12*fastqc_summary_plot$no.of.samples)+1)}
-DEhelper.Qualimap(samplePattern=SHINYREPS_SAMPLEPATTERN1, excludePattern=SHINYREPS_SAMPLEPATTERN2, maxno=SHINYREPS_MAXNO)
+DEhelper.Qualimap(targetsdf=targets4plots, samplePattern=SHINYREPS_SAMPLEPATTERN1, excludePattern=SHINYREPS_SAMPLEPATTERN2, maxno=SHINYREPS_MAXNO)
 ```
 
 
@@ -364,7 +394,7 @@ DEhelper.Qualimap(samplePattern=SHINYREPS_SAMPLEPATTERN1, excludePattern=SHINYRE
 The following plot shows the fraction of reads assigned to various RNA classes. These plots help in determining if the sample prep protocol worked well and may reveal issues with rRNA contamination. 
 
 ```{r RNAtypes_paragraph, echo=F, results='asis', error=F, warning=F, message=F, fig.height=min(170, ceiling(0.12*fastqc_summary_plot$no.of.samples)+1)}
-DEhelper.RNAtypes(samplePattern=SHINYREPS_SAMPLEPATTERN1, excludePattern=SHINYREPS_SAMPLEPATTERN2, maxno=SHINYREPS_MAXNO)
+DEhelper.RNAtypes(targetsdf=targets4plots, samplePattern=SHINYREPS_SAMPLEPATTERN1, excludePattern=SHINYREPS_SAMPLEPATTERN2, maxno=SHINYREPS_MAXNO)
 ```
 
 
@@ -408,7 +438,7 @@ The mapping statistics below show the number input raw reads and percentages of 
 if (SHINYREPS_SEQTYPE=="tenX") {
   cat("\nMapping Statistics can be found in the cellranger web summary.\n")
 } else {
-star_stats <- DEhelper.STAR()
+star_stats <- DEhelper.STAR(targetsdf=targets4plots)
 
 cat("Mapping to the reference genome & transcriptome is performed with STAR (https://github.com/alexdobin/STAR). The program version, genome assembly and software parameters are described in the table at the end of the report.
 
@@ -424,7 +454,6 @@ cat("#### Mapping statistics\n", fill=T)
 star_stats$stat
 }
 ```
-
 
 
 ```{r umicount, echo=F, results='asis', error=F, warning=F, message=F, eval= (SHINYREPS_SEQTYPE=="MARSseq")}
@@ -453,7 +482,7 @@ A competitive mapping to the reference genome and known rRNAs (H. sapiens, M. mu
 In the following plot only relevant contaminants are shown. A contaminant is considered relevant if it consumes `r SHINYREPS_FASTQSCREEN_PERC`% of reads or more in at least one sample. The "one genome" label refers to the amount of reads mapping to that genome only, no matter if they are mapping uniquely or multiple times. The "multiple genome" label refers to the amount of read mapping to this genome but also to other genomes in the screening regardless of whether they are uniquely or multi mapping. 
 
 ```{r fastqscreen_paragraph, echo=F, results='asis', fig.width=10, error=F, warning=F, message=F}
-fastqscreen_plots <- DEhelper.fastqscreen(perc.to.plot=SHINYREPS_FASTQSCREEN_PERC, ncol=3, samplePattern=SHINYREPS_SAMPLEPATTERN1, excludePattern=SHINYREPS_SAMPLEPATTERN2, maxno=SHINYREPS_MAXNO)
+fastqscreen_plots <- DEhelper.fastqscreen(perc.to.plot=SHINYREPS_FASTQSCREEN_PERC, ncol=3, targetsdf=targets4plots, samplePattern=SHINYREPS_SAMPLEPATTERN1, excludePattern=SHINYREPS_SAMPLEPATTERN2, maxno=SHINYREPS_MAXNO)
 ```
 
 ```{r fastqscreen_paragraph2, echo=F,results='asis',error=F,warning=F,message=F,fig.align='center', fig.height=min(170, (round((1.5*fastqscreen_plots$no.of.rows))+1)*fastqscreen_plots$no.of.samples/8+1)}
@@ -481,9 +510,8 @@ cat(DEhelper.Trackhub(), sep="\n")
 Measuring the fraction of duplicated reads is commonly used to control for excessive PCR over-amplification during library preparation and/or for suboptimal amount of input material. However, in RNA-seq duplicated reads may also arise naturally due to the highly expressed (e.g. housekeeping) genes, which makes the overall read duplication rate useless. The IMB-developed tool dupRadar (http://bioconductor.org/packages/release/bioc/html/dupRadar.html) gives an informative insight into the duplication problem by graphically relating the gene expression levels and the observed duplication rates. Thus, problematic samples can be easily identified by visual inspection.
 
 ```{r Dupradar_paragraph, echo=F, results='asis', error=F, warning=F, message=F}
-cat(DEhelper.dupRadar(web=F, samplePattern=SHINYREPS_SAMPLEPATTERN1, excludePattern=SHINYREPS_SAMPLEPATTERN2, maxno=SHINYREPS_MAXNO), sep="\n")
+cat(DEhelper.dupRadar(web=F, targetsdf=targets4plots, samplePattern=SHINYREPS_SAMPLEPATTERN1, excludePattern=SHINYREPS_SAMPLEPATTERN2, maxno=SHINYREPS_MAXNO), sep="\n")
 ```
-
 
 
 # Low-level analysis of single-cell RNAseq data
@@ -554,13 +582,15 @@ switch(SHINYREPS_SEQTYPE,
     tenX={
       # matrix_dir already defined above 
       barcode.path <- file.path(matrix_dir, "barcodes.tsv.gz")
+      barcode.names <- read.delim(barcode.path, header = FALSE, stringsAsFactors = FALSE)
       features.path <- file.path(matrix_dir, "features.tsv.gz")
-      matrix.path <- file.path(matrix_dir, "matrix.mtx.gz")
-      counts <- readMM(file = matrix.path)
-      colnames(counts) = targets$cell_id
       feature.names = read.delim(features.path, header = FALSE, stringsAsFactors = FALSE)
+      matrix.path <- file.path(matrix_dir, "matrix.mtx.gz")
+      counts <- Matrix::readMM(file = matrix.path)
+      colnames(counts) = barcode.names$V1
       rownames(counts) = feature.names$V1
       counts <- counts[feature.names$V3 == "Gene Expression",]
+      counts <- counts[,targets$cell_id] # subset cell barcodes by targets (e.g. for successful cell hashing)
     },
     stop(c("Don't find seqtype:", SHINYREPS_SEQTYPE))   
 )

@@ -1034,7 +1034,7 @@ DEhelper.STAR.violin <- function(colorByFactor=NULL, targetsdf=targets, ...) {
 ##
 ## DEhelper.STAR: parse STAR log files and create a md table
 ##
-DEhelper.STAR <- function() {
+DEhelper.STAR <- function(targetsdf=targets) {
   
   # log file
   LOG <- SHINYREPS_STAR_LOG
@@ -1086,7 +1086,8 @@ DEhelper.STAR <- function() {
   # amount of unique_mapping reads
   if(file.exists(SHINYREPS_TARGET)){
     
-    targets <- read.delim(SHINYREPS_TARGET)
+    #targets <- read.delim(SHINYREPS_TARGET, comment.char = "#")
+    targets <- targetsdf
     targets$sample_ext <- gsub("\\..*$", "",targets$file )
     add_factors <- colnames(targets)[!colnames(targets) %in% c("group", "sample", "file")]
     
@@ -1303,7 +1304,7 @@ DEhelper.ngsReports.Fastqc <- function(subdir="", ...) {
   
   x <- ngsReports::FastqcDataList(f)
   lbls <- gsub(paste0("(^", SHINYREPS_PREFIX, "|.fastqc.zip$)"), "", names(x))
-  names(lbls) <- gsub(".fastqc.zip", ".fastq.gz", names(x))
+  names(lbls) <- gsub(".fastqc.zip", ".fastq.gz", basename(names(x)))
   
   print(ngsReports::plotBaseQuals(x, labels=lbls))
   print(ngsReports::plotSeqContent(x, labels=lbls) +
@@ -1322,7 +1323,7 @@ DEhelper.ngsReports.Fastqc <- function(subdir="", ...) {
 ##
 ## DEhelper.Fastqc.custom: prepare Fastqc summary plots
 ##
-DEhelper.Fastqc.custom <- function(web=FALSE, summarizedPlots=TRUE, subdir="", ...) {
+DEhelper.Fastqc.custom <- function(web=FALSE, summarizedPlots=TRUE, targetsdf=targets, subdir="", ...) {
   
   # logs folder
   if(!file.exists(file.path(SHINYREPS_FASTQC_OUT, subdir))) {
@@ -1342,12 +1343,13 @@ DEhelper.Fastqc.custom <- function(web=FALSE, summarizedPlots=TRUE, subdir="", .
   
   # create proper name vector as labels
   lbls <- gsub("_fastqc.zip$", "", names(fastqc.stats))
-  names(lbls) <- gsub("_fastqc.zip", ".fastq.gz", names(fastqc.stats))
+  names(lbls) <- gsub("_fastqc.zip", ".fastq.gz", basename(names(fastqc.stats)))
   
   if(file.exists(SHINYREPS_TARGET)){
     
     # get target names
-    targets <- read.delim(SHINYREPS_TARGET)
+    #targets <- read.delim(SHINYREPS_TARGET, comment.char = "#")
+    targets <- targetsdf
     targets$sample_ext <- gsub("\\..*$", "",targets$file )
 
     # replace files names with nicer sample names given in targets file 
@@ -1487,7 +1489,7 @@ DEhelper.Fastqc.custom <- function(web=FALSE, summarizedPlots=TRUE, subdir="", .
 #'
 #' @return a list including a plot, the number of samples, and the number of plotted contaminants
 #'
-DEhelper.fastqscreen <- function(subdir="", perc.to.plot = 1, ncol=2, ...) {
+DEhelper.fastqscreen <- function(subdir="", targetsdf=targets, perc.to.plot = 1, ncol=2, ...) {
   
   # logs folder
   if(!file.exists(SHINYREPS_FASTQSCREEN_OUT)) {
@@ -1542,7 +1544,8 @@ DEhelper.fastqscreen <- function(subdir="", perc.to.plot = 1, ncol=2, ...) {
   if(file.exists(SHINYREPS_TARGET)){
     
     # get target names
-    targets <- read.delim(SHINYREPS_TARGET)
+    #targets <- read.delim(SHINYREPS_TARGET, comment.char = "#")
+    targets <- targetsdf
     targets$sample_ext <- gsub("\\..*$", "",targets$file )
 
     # replace files names with nicer sample names given in targets file
@@ -1608,7 +1611,7 @@ DEhelper.fastqscreen <- function(subdir="", perc.to.plot = 1, ncol=2, ...) {
 ## DEhelper.dupRadar: go through dupRadar output dir and create a md table with
 ##     the duplication plots
 ##
-DEhelper.dupRadar <- function(web=F, ...) {
+DEhelper.dupRadar <- function(web=F, targetsdf=targets, ...) {
   
   # logs folder
   if(!file.exists(SHINYREPS_DUPRADAR_LOG)) {
@@ -1641,7 +1644,8 @@ DEhelper.dupRadar <- function(web=F, ...) {
   if(file.exists(SHINYREPS_TARGET)){
     
     # get target names
-    targets <- read.delim(SHINYREPS_TARGET)
+    #targets <- read.delim(SHINYREPS_TARGET, comment.char = "#")
+    targets <- targetsdf
     targets$sample_ext <- gsub("\\..*$", "",targets$file )
     
     # replace files names with nicer sample names given in targets file
@@ -1680,7 +1684,7 @@ DEhelper.dupRadar <- function(web=F, ...) {
 ##
 ## DEhelper.RNAtypes: parse Subread count results for RNAtypes usage
 ##
-DEhelper.RNAtypes <- function(...) {
+DEhelper.RNAtypes <- function(targetsdf=targets, ...) {
   
   FOLDER <- SHINYREPS_RNATYPES
   SUFFIX <- paste0(SHINYREPS_RNATYPES_SUFFIX, '$')
@@ -1692,7 +1696,8 @@ DEhelper.RNAtypes <- function(...) {
   
   if(file.exists(SHINYREPS_TARGET)){
     # get target names
-    targets <- read.delim(SHINYREPS_TARGET)
+    #targets <- read.delim(SHINYREPS_TARGET, comment.char = "#")
+    targets <- targetsdf
     targets$sample_ext <- gsub("\\..*$", "", targets$file)
     add_factors <- colnames(targets)[!colnames(targets) %in% c("group", "sample", "file")]
   }
@@ -1764,7 +1769,7 @@ DEhelper.RNAtypes <- function(...) {
 ## DEhelper.geneBodyCov: go through geneBodyCov output dir and create a md table with
 ##     the gene coverage plots
 ##
-DEhelper.geneBodyCov <- function(web=FALSE, ...) {
+DEhelper.geneBodyCov <- function(web=FALSE, targetsdf=targets, ...) {
     
     # logs folder
     if(!all(sapply(SHINYREPS_GENEBODYCOV_LOG, file.exists))) {
@@ -1798,7 +1803,8 @@ DEhelper.geneBodyCov <- function(web=FALSE, ...) {
     if(file.exists(SHINYREPS_TARGET)){
       
       # get target names
-      targets <- read.delim(SHINYREPS_TARGET)
+      #targets <- read.delim(SHINYREPS_TARGET)
+      targets <- targetsdf
       targets$sample_ext <- gsub("\\..*$", "",targets$file )
       
       # replace files names with nicer sample names given in targets file
@@ -1835,7 +1841,7 @@ DEhelper.geneBodyCov <- function(web=FALSE, ...) {
 ##
 ## DEhelper.geneBodyCov2: go through geneBodyCov output dir and plot into one plot
 ##
-DEhelper.geneBodyCov2 <- function(web=F, ...) {
+DEhelper.geneBodyCov2 <- function(web=F, targetsdf=targets, ...) {
   
   # logs folder
   if(!file.exists(SHINYREPS_GENEBODYCOV_LOG)) {
@@ -1856,7 +1862,8 @@ DEhelper.geneBodyCov2 <- function(web=F, ...) {
   if(file.exists(SHINYREPS_TARGET)){
     
     # get target names
-    targets <- read.delim(SHINYREPS_TARGET)
+    #targets <- read.delim(SHINYREPS_TARGET, comment.char = "#")
+    targets <- targetsdf
     targets$sample_ext <- gsub("\\..*$", "",targets$file )
 
     # replace files names with nicer sample names given in targets file
@@ -2083,7 +2090,7 @@ DEhelper.geneBodyCov2 <- function(web=F, ...) {
 ##
 ##DEhelper.strandspecificity: get the strand specificity from the qc and display them
 ##
-DEhelper.strandspecificity <- function(...){
+DEhelper.strandspecificity <- function(targetsdf=targets, ...){
   
   # logs folder
   if(!file.exists(SHINYREPS_INFEREXPERIMENT_LOGS)) {
@@ -2100,7 +2107,8 @@ DEhelper.strandspecificity <- function(...){
   if(file.exists(SHINYREPS_TARGET)){
     
     # get target names
-    targets <- read.delim(SHINYREPS_TARGET, sep="\t")
+    #targets <- read.delim(SHINYREPS_TARGET, comment.char = "#")
+    targets <- targetsdf
     targets$sample_ext <- gsub("\\..*$", "",targets$file )
 
     # replace files names with nicer sample names given in targets file
@@ -2554,7 +2562,7 @@ DEhelper.Subread <- function() {
 ##
 ## extract the intron/exon and intergenic regions from the qualimap report
 ##
-DEhelper.Qualimap <- function(...) {
+DEhelper.Qualimap <- function(targetsdf=targets, ...) {
   
   # logs folder
   if(!file.exists(SHINYREPS_QUALIMAP_LOGS)) {
@@ -2588,7 +2596,8 @@ DEhelper.Qualimap <- function(...) {
   if(file.exists(SHINYREPS_TARGET)){
     
     # get target names
-    targets <- read.delim(SHINYREPS_TARGET)
+    #targets <- read.delim(SHINYREPS_TARGET, comment.char = "#")
+    targets <- targetsdf
     targets$sample_ext <- gsub("\\..*$", "",targets$file )
 
     # replace files names with nicer sample names given in targets file
