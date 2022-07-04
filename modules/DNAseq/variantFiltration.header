@@ -1,0 +1,26 @@
+VariantFiltration_vars=[
+    outdir                      : RESULTS + "/VariantFiltration",
+    bwa_ref                     : ESSENTIAL_BWA_REF,
+    java_flags                  : "-Xmx8g",
+
+    // Note that these expressions will tag any sites as failing the filter where the value matches the expression.
+    // For explanations of filter criteria see https://gatk.broadinstitute.org/hc/en-us/articles/360035890471 
+    snp_filter_QD               : "QD < 2.0", 
+    snp_filter_QUAL             : "",
+    snp_filter_SOR              : "SOR > 3.0",
+    snp_filter_FS               : "FS > 60.0",
+    snp_filter_MQ               : "MQ < 40.0",
+    snp_filter_MQRankSum        : "MQRankSum < -12.5",
+    snp_filter_ReadPosRankSum   : "ReadPosRankSum < -8.0",
+
+    indel_filter_QD             : "QD < 2.0",
+    indel_filter_QUAL           : "",
+    indel_filter_SOR            : "SOR > 10.0",
+    indel_filter_FS             : "FS > 200.0",
+    indel_filter_MQ             : "",
+    indel_filter_MQRankSum      : "",
+    indel_filter_ReadPosRankSum : "ReadPosRankSum < -20.0"
+]
+
+load PIPELINE_ROOT + "/modules/DNAseq/variantFiltration.groovy"
+

@@ -23,22 +23,27 @@ ESSENTIAL_BAMCOVERAGE="--binSize 1 --skipNonCoveredRegions --normalizeUsing CPM"
 // size of bins (in bases)  and method to normalize the number of reads per bin to generate bigwig file.
 
 // Parameters describing the reads
-ESSENTIAL_READLENGTH=75        // actual read length in original raw data (incl. insert, UMIs, adapter)
-ESSENTIAL_MINADAPTEROVERLAP=5  // minimal overlap with adapter
-ESSENTIAL_MINREADLENGTH=26     // remaining read length plus UMIs (2x4) 
-ESSENTIAL_MAXREADLENGTH=Integer.toString(ESSENTIAL_READLENGTH - ESSENTIAL_MINADAPTEROVERLAP) // maximal read length to keep (all w/o adapter are discarded)
-ESSENTIAL_UMI_LENGTH=8         // (2x4bp)
+ESSENTIAL_READLENGTH="75"             // actual read length in original raw data (incl. insert, UMIs, adapter)
+ESSENTIAL_UMI_LENGTH_LEFT="4"         // length (bp) of left UMI
+ESSENTIAL_UMI_LENGTH_RIGHT="4"        // length (bp) of right UMI
+ESSENTIAL_MINREADLENGTH_EXCL_UMI="18" // remaining read length excl UMIs
+ESSENTIAL_MINREADLENGTH=Integer.toString(ESSENTIAL_MINREADLENGTH_EXCL_UMI.toInteger() + ESSENTIAL_UMI_LENGTH_LEFT.toInteger() + ESSENTIAL_UMI_LENGTH_RIGHT.toInteger()) // remaining read length plus UMIs 
+ESSENTIAL_MINADAPTEROVERLAP="5"       // minimal overlap with adapter
+ESSENTIAL_MAXREADLENGTH=Integer.toString(ESSENTIAL_READLENGTH.toInteger() - ESSENTIAL_MINADAPTEROVERLAP.toInteger()) // maximal read length to keep (all w/o adapter are discarded)
 ESSENTIAL_ADAPTER_SEQUENCE="TGGAATTCTCGGGTGCCAAGG" // needed for cutadapt adapter trimming
-ESSENTIAL_NEXTSEQTRIM=true     // accounts for terminal G bases during base quality trimming incorporated by faulty dark cycles observed with two-color chemistry (as in NextSeq) 
-ESSENTIAL_MINIMAL_QUAL=20      // all reads with any base quality below this value will be removed during quality filtering
+ESSENTIAL_BASEQUALCUTOFF=0     // trim low-quality ends from reads (if nextseqtrim is true, qualities of terminal G bases are ignored)  
+                               // keep this parameter at 0 to switch off low-quality base pair trimming at the ends of reads
+                               // (smallRNAseq reads often have UMIs at the end, which should not be removed)
+ESSENTIAL_NEXTSEQTRIM=false    // accounts for terminal G bases during base quality trimming incorporated by faulty dark cycles observed with two-color chemistry (as in NextSeq) 
+ESSENTIAL_MINIMAL_QUAL="20"    // all reads with any base quality below this value will be removed during quality filtering
 
 // DESeq2 specific parameters 
-ESSENTIAL_DESEQ2_FDR=0.01       // FDR significance cutoff in the DESeq2 model (may be increased for noisy or underpowered datasets) 
-ESSENTIAL_DESEQ2_FC=1           // optional Fold-Change cutoff to incorporate into the DESeq2 model (default "FC=1" means no Fold-Change filter is used) 
+ESSENTIAL_DESEQ2_FDR="0.01"    // FDR significance cutoff in the DESeq2 model (may be increased for noisy or underpowered datasets) 
+ESSENTIAL_DESEQ2_FC="1"        // optional Fold-Change cutoff to incorporate into the DESeq2 model (default "FC=1" means no Fold-Change filter is used) 
 // Using FC threshold in the DESeq2 model is usually more conservative than post-hoc gene filtering by FC (which should anyway be avoided, see https://doi.org/10.1093/bib/bbab053) 
 
 // FASTQ-Screen parameters
-ESSENTIAL_FASTQSCREEN_PERC=1  // contaminant filter, if a contaminant is consuming at least this percentage of reads in at least one sample, contaminant will be shown in report 
+ESSENTIAL_FASTQSCREEN_PERC="1" // contaminant filter, if a contaminant is consuming at least this percentage of reads in at least one sample, contaminant will be shown in report 
 ESSENTIAL_FASTQSCREEN_GENOME="M.musculus::/fsimb/common/genomes/mus_musculus/gencode/release-M10_GRCm38.p4/full/index/bowtie2/2.3.4.3/GRCm38.p4"  //bowtie2 reference for the genome the samples are from, this is used for the fastqscreen 
 ESSENTIAL_FASTQSCREEN=ESSENTIAL_FASTQSCREEN_GENOME + ",PhiX::/fsimb/common/genomes/phix/19930428/NCBI/index/bowtie2/2.3.4.3/ncbi_phix,ERCC::/fsimb/common/genomes/ERCC/index/bowtie2/2.3.4.3/ERCC92,rRNA::/fsimb/common/genomes/contaminants/fastqscreen_references/rrna/v1/index/bowtie2/2.3.4.3/hs_mm_ce_dm_rn_dr_xt_rRNA,Mycoplasma::/fsimb/common/genomes/contaminants/fastqscreen_references/mycoplasma/v1/index/bowtie2/2.3.4.3/mycoplasma_all_ref,E.coli::/fsimb/common/genomes/Escherichia_coli/ensembl/full/index/bowtie2/Escherichia_coli_str_k_12_substr_dh10b.ASM1942v1.31.dna.genome" //references for fastqscreen to use if run, this are our standard references please include yours 
 
@@ -55,7 +60,6 @@ QC=PROJECT + "/qc"
 REPORTS=PROJECT + "/reports"
 RESULTS=PROJECT + "/results"
 TRIMMED=PROJECT + "/rawdata_processed"
-PROCESSED=TRIMMED
 MAPPED=PROJECT + "/mapped"
 TMP=PROJECT + "/tmp"
 TRACKS=PROJECT + "/tracks"

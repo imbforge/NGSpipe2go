@@ -1,9 +1,13 @@
 filbowtie2unique_vars=[
     mapped           : MAPPED,
     paired           : RUN_IN_PAIRED_END_MODE, // run in se or pe mode
-    samtools_mapq_pe : "3", // MAPQ for paired end data; >=3 should exclude "true multireads", multi mapped reads within the window of insert size
-    samtools_mapq_se : "3", // MAPQ for single end data; 
+    samtools_mapq_pe : "10", // MAPQ for paired end data; >=3 should exclude "true multireads", multi mapped reads within the window of insert size
+    samtools_mapq_se : "10", // MAPQ for single end data; 
     samtools_threads : Integer.toString(ESSENTIAL_THREADS)
+]
+
+dupremoval_vars=[
+    remove_pcr_dups  : ESSENTIAL_DEDUPLICATION // added to remove PCR duplicates
 ]
 
 load PIPELINE_ROOT + "/modules/ChIPseq/filbowtie2unique.groovy"

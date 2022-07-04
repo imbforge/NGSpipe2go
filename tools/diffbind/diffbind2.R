@@ -122,9 +122,8 @@ targets <- read.delim(FTARGETS, head=T, colClasses="character", comment.char="#"
 
 # determine file suffixes for targets 
 donefiles <- list.files(PEAKS,pattern=".done$")
-bam_suffix <- sub("^[^\\.]*\\.", "", gsub("_macs2.done$", "", donefiles[1]))
-bam_suffix <- paste0(bam_suffix, ".bam")
-
+bam_suffix <- sub("^[^\\.]*\\.*", "", gsub("_macs2.done$", "", donefiles[1]))
+bam_suffix <- ifelse(bam_suffix == "", paste0(bam_suffix, "bam"), paste0(bam_suffix, ".bam"))
 # check if blacklist filtering was applied
 peakfiles <- list.files(PEAKS,pattern=".xls")
 isBlacklistFilt <- any(grepl("blacklist_filtered", peakfiles)) 

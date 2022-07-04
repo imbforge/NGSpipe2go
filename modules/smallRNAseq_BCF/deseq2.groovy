@@ -25,11 +25,18 @@ DE_DESeq2 = {
     def TOOL_ENV = prepare_tool_env("R", tools["R"]["version"], tools["R"]["runenv"])
     def PREAMBLE = get_preamble(stage:stageName, outdir:output.dir, input:new File(input1.prefix).getName())
 
+    // The DE_DESeq2 module is not using any of its inputs, but needs to check their
+    // time stamp in order to know, if DE_DESeq2 should run (in case of pre-existing 
+    // results). This can be done by outputting/echo'ing all inputs. In order to not 
+    // confuse the pipeline user, this output is written to /dev/null
+    // --- THE echo COMMAND BELOW MUST NOT BE REMOVED ---
+
     // run the chunk
     produce("DE_DESeq2.RData") {
         exec """
             ${TOOL_ENV} &&
             ${PREAMBLE} &&
+            echo $inputs > /dev/null &&
 
             Rscript ${PIPELINE_ROOT}/tools/DE_DESeq2/DE_DESeq2.R $DE_DESeq2_FLAGS
         ""","DE_DESeq2"

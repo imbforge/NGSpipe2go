@@ -1,0 +1,12 @@
+BWA_vars=[
+    outdir          : MAPPED,
+    paired          : RUN_IN_PAIRED_END_MODE,
+    ref             : ESSENTIAL_BWA_REF,
+    threads         : Integer.toString(ESSENTIAL_THREADS),
+    minqual         : Integer.toString(ESSENTIAL_QUALITY),
+    samtools_threads: Integer.toString(ESSENTIAL_THREADS),
+    extra           : "-v 1" // output only errors to stderr
+]
+
+load  PIPELINE_ROOT + "/modules/bliss/bwa.groovy"
+

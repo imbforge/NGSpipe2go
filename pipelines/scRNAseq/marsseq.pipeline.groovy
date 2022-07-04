@@ -1,5 +1,5 @@
-PIPELINE="scRNAseq_marsseq"
-PIPELINE_VERSION="1.0"
+PIPELINE="MARSseq"
+PIPELINE_VERSION="1.2"
 PIPELINE_ROOT="./NGSpipe2go/"    // may need adjustment for some projects
 
 load PIPELINE_ROOT + "/pipelines/scRNAseq/essential.vars.groovy"
@@ -7,9 +7,12 @@ load PIPELINE_ROOT + "/pipelines/scRNAseq/tools.groovy"
 load PIPELINE_ROOT + "/config/preambles.groovy"
 load PIPELINE_ROOT + "/config/bpipe.config.groovy"
 
+load PIPELINE_ROOT + "/modules/scRNAseq/cellranger_count.header"
+load PIPELINE_ROOT + "/modules/scRNAseq/cellranger_aggr.header"
 load PIPELINE_ROOT + "/modules/NGS/bamcoverage.header"
 load PIPELINE_ROOT + "/modules/NGS/bamindexer.header"
 load PIPELINE_ROOT + "/modules/NGS/fastqc.header"
+load PIPELINE_ROOT + "/modules/NGS/fastqscreen.header"
 load PIPELINE_ROOT + "/modules/NGS/markdups2.header"
 load PIPELINE_ROOT + "/modules/NGS/cutadapt.header"
 load PIPELINE_ROOT + "/modules/RNAseq/dupradar.header"
@@ -32,9 +35,10 @@ load PIPELINE_ROOT + "/modules/NGS/multiqc.header"
 dontrun = { println "didn't run $module" }
 
 Bpipe.run {
-    "%.fastq.gz" * [ FastQC ] + "%.R*.fastq.gz" * [
-        AddUMIBarcodeToFastq + Cutadapt + [
-            FastQC,
+    "%.R*.fastq.gz" * [
+        FastQC + FastqScreen + 
+        AddUMIBarcodeToFastq + 
+        (RUN_CUTADAPT ? Cutadapt + FastQC.using(subdir:"trimmed") : dontrun.using(module:"Cutadapt")) + [
             STAR + BAMindexer + [
                 subread_count + BAMindexer + umicount,
                 bamCoverage,

@@ -1,5 +1,5 @@
 VariantScoreRecalibration_vars=[
-    outdir                   : RESULTS,
+    outdir                   : RESULTS + "/VQSR",
     java_flags               : "-Xmx24g -Xms24g",
     known_variants           : ESSENTIAL_KNOWN_VARIANTS,
     hapmap_variants          : ESSENTIAL_HAPMAP_VARIANTS,

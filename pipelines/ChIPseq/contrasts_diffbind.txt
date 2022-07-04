@@ -1,2 +1,2 @@
-contrast.name	contrast	mmatrix
-mutvswt	(mut_Pol2-wt_Pol2)	~group
+contrast.name	contrast	mmatrix	sub_experiment
+mutvswt	(mut_Pol2-wt_Pol2)	~group	1

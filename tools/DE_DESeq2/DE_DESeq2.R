@@ -215,7 +215,7 @@ pairwise.dds.and.res <- apply(conts,1,function(cont) {
                    })
     #add a description before writing out the the excel file
     x_info[["Description"]] <-data.frame(Descripton=paste("This DESeq2 analysis was performed using a FC filter of ", FC, "and a filter for the adjusted p-value of ", FDR, "."))
-    write.xlsx(x_info, file=paste0(out, "/", cont.name, ".xlsx"), row.names=F)
+    write.xlsx(x_info, file=paste0(out, "/", cont.name, ".xlsx"), row.names=F, overwrite = T)
     
     list(dds,res)
 })
@@ -280,9 +280,9 @@ colnames(TPM.names.df)[1]        <- "gene_id"
 
 # write to file
 write.csv(robustRPKM.names.df, file=paste0(out, "/allSamples.robustRPKM.csv"), row.names=F)
-write.xlsx(robustRPKM.names.df, file=paste0(out, "/allSamples.robustRPKM.xlsx"), row.names=F)
+write.xlsx(robustRPKM.names.df, file=paste0(out, "/allSamples.robustRPKM.xlsx"), row.names=F, overwrite = T)
 write.csv(TPM.names.df, file=paste0(out, "/allSamples.TPM.csv"), row.names=F)
-write.xlsx(TPM.names.df, file=paste0(out, "/allSamples.TPM.xlsx"), row.names=F)
+write.xlsx(TPM.names.df, file=paste0(out, "/allSamples.TPM.xlsx"), row.names=F, overwrite = T)
 
 # extract rlog assay and change to user friendly gene identifiers
 assay.rld <- assay(rld)

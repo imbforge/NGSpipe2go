@@ -1,0 +1,12 @@
+snpEff_vars=[
+    outdir         : RESULTS + "/snpEff",
+    java_flags     : "-Xmx8g",
+    config         : "",                      // specify if not default
+    genome_version : ESSENTIAL_SNPEFF_GENOME, // the corresponding snpEff database
+    output_format  : "gatk",                  // either of vcf, gatk, bed, bedAnn
+    extra          : ""
+]
+
+load  PIPELINE_ROOT + "/modules/DNAseq/snpEff.groovy"
+
+

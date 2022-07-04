@@ -1,13 +1,16 @@
 rMATS_vars=[
-    outdir  : RESULTS + "/rMATS",
-    suffix  : PRERMATS_vars.suffix,
-    sep     : "-",
-    paired  : (ESSENTIAL_PAIRED == "yes"),
-    stranded: ESSENTIAL_STRANDED,
-    gtf     : ESSENTIAL_GENESGTF,
-    length  : ESSENTIAL_READLENGTH,
-    threads : Integer.toString(ESSENTIAL_THREADS),
-    extra   : " --cstat 0.0001"
+    outdir    : RESULTS + "/rMATS",
+    suffix    : PRERMATS_vars.suffix,
+    sep       : "-",
+    paired    : (ESSENTIAL_PAIRED == "yes"),
+    stranded  : ESSENTIAL_STRANDED,
+    gtf       : ESSENTIAL_GENESGTF,
+    length    : ESSENTIAL_READLENGTH,
+    threads   : Integer.toString(ESSENTIAL_THREADS),
+    varreadlen: true,                  // allow reads with lengths that differ from ESSENTIAL_READLENGTH
+    allowclip : true,                  // allow alignments with soft or hard clipping to be used
+    novelss   : true,                  // enable detection of novel (unannotated) splice sites
+    extra     : " --cstat 0.0001"      // set e.g. --paired-stats if samples are paired and a paired stats model should be used
 ]
 
 maser_vars=[

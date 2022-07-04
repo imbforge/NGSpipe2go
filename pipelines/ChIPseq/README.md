@@ -13,7 +13,7 @@ All analysis steps are illustrated in the pipeline [flowchart](https://viewer.di
 - adapter trimming with Cutadapt (optional)
 - mapping reads or read pairs to the reference genome using bowtie2.
 - filter out multimapping reads from bowtie2 output with samtools (performed in parallel pipeline branch).
-- identify and remove duplicate reads with Picard MarkDuplicates (performed in parallel pipeline branch). 
+- identify and remove duplicate reads with bamutil dedup (performed in parallel pipeline branch). 
 - generation of bigWig tracks for visualisation of alignment with deeptools bamCoverage. For single end design, reads are extended to the average fragment size.
 - characterization of insert size using Picard CollectInsertSizeMetrics (for paired end libraries only).
 - characterize library complexity by PCR Bottleneck Coefficient using the GenomicAlignments R-package (for single read libraries only). 
@@ -49,14 +49,15 @@ All analysis steps are illustrated in the pipeline [flowchart](https://viewer.di
   - ESSENTIAL_DB: UCSC assembly version for GREAT analysis (only for UCSC hg19, hg38, mm9 and mm10)
   - ESSENTIAL_BLACKLIST: path to bed file with problematic 'blacklist regions' to be excluded from analysis (optional).
   - ESSENTIAL_ADAPTER_SEQUENCE: adapter sequence to trim with Cutadapt (optional)
-  - ESSENTIAL_NEXTSEQTRIM: most Illumina instruments use a two-color chemistry like the NextSeq (exceptions: MiSeq, HiSeq). This option accounts for terminal G bases incorporated by faulty dark cycles during base quality trimming with cutadapt.
+  - ESSENTIAL_BASEQUALCUTOFF: base quality threshold to trim low-quality ends from reads with Cutadapt. If *ESSENTIAL_NEXTSEQTRIM* is true, qualities of terminal G bases are ignored. To switch off base quality trimming in Cutadapt entirely, set *ESSENTIAL_BASEQUALCUTOFF=0* and *ESSENTIAL_NEXTSEQTRIM=false*.
+  - ESSENTIAL_NEXTSEQTRIM: most Illumina instruments use a two-color chemistry like the NextSeq (exceptions: MiSeq, HiSeq). This option accounts for terminal high quality G bases incorporated by faulty dark cycles during base quality trimming with Cutadapt.
   - ESSENTIAL_MACS2_BROAD: use broad setting for broad peak calling in MACS2 (default false).
   - ESSENTIAL_DEDUPLICATION: remove duplicated reads in filtered branch (default false is strongly recommended for single end data). 
   - ESSENTIAL_DUP: how MACS2 deals with duplicated reads or fragments.
   - ESSENTIAL_MACS2_GSIZE: mapable genome size for MACS2
-  - ESSENTIAL_DIFFBIND_VERSION: DiffBind version 2 or 3 to use.
+  - ESSENTIAL_DIFFBIND_VERSION: DiffBind version to use (either 3 or 2, default 3).
   - ESSENTIAL_DIFFBIND_LIBRARY: DiffBind method to calculate library sizes. One of "full", "RiP", "background" and "default" ("default" refers to method "full", see [DiffBind documentation](http://bioconductor.org/packages/release/bioc/vignettes/DiffBind/inst/doc/DiffBind.pdf) for explanation). For DiffBind version 2, any other method than RiP refers to TRUE, i.e. use total number of reads instead of reads overlapping peaks.
-  - ESSENTIAL_DIFFBIND_NORM: DiffBind method to calculate normalization factors. One of "lib", "RLE", "TMM", "native" and "default" ("default" refers to method "lib", see [DiffBind documentation](http://bioconductor.org/packages/release/bioc/vignettes/DiffBind/inst/doc/DiffBind.pdf) for explanation). Not applicable for DiffBind version2.
+  - ESSENTIAL_DIFFBIND_NORM: DiffBind method to calculate normalization factors. One of "lib", "RLE", "TMM", "native" and "default" ("default" refers to method "lib", see [DiffBind documentation](http://bioconductor.org/packages/release/bioc/vignettes/DiffBind/inst/doc/DiffBind.pdf) for explanation). Not applicable for DiffBind version 2.
   
 - additional (more specialized) parameter can be given in the header files of the individual pipeline modules (see module header files linked in the flowchart for default parameter).
 
@@ -65,18 +66,20 @@ If differential binding analysis is selected it is required additionally:
 - contrasts_diffbind.txt: tab-separated txt-file giving intended group comparisons for differential binding analysis (1 contrast per line). 
   - contrast.name: name of contrast to be used in report.
   - contrast: definition of contrast using the format '(group1-group2)' with 'group1' and 'group2' being groups defined in the 'group' column of the targets.txt file (pairwise comparisons only).
-  - mmatrix: design formula to be applied for this contrast. If no further factors to be included use '~group'. A multifactor formula must be composed from the following allowable factors: Tissue, Factor, Treatment, Replicate, Caller and group (aka Condition). For diffbind2 multifactor design is not supported and this column is ignored (group column is used automatically).
+  - mmatrix: design formula to be applied for this contrast. If no further factors to be included use '~group'. A multifactor formula must be composed from the following allowable factors: Tissue, Factor, Treatment, Replicate, Caller and group (aka Condition). For diffbind version 2 multifactor design is not supported and this column is ignored (group column is used automatically).
+  - sub_experiment: any name to summarize the contrasts into sub-experiments. All sample groups involved in contrasts with the same sub_experiment name are loaded into a diffbind object and are analyzed together. This includes generation of a consensus peakset and normalization of this sample set. Peaks called in samples belonging to other sub-experiments are not included in the consensus peakset. 
 
-This pipeline supports 2 different DiffBind versions (v2 and v3) for differential binding analysis. Beginning with version 3, DiffBind has included new functionality and modified default settings. The major change in version 3.0 is in how the data are modeled. In previous versions, a separate model was derived for each contrast, including data only for those samples present in the contrast. Model design options were implicit and limited to either a single factor, or a subset of two-factor "blocked" designs. Starting in version 3.0, the default mode is to include all the data in a single model, allowing for any allowable design formula and any set of allowable contrasts. 
+We recommend using DiffBind version >=3 for differential binding analysis (set as default). The older Diffbind v2 is still supported here as legacy but not recommended anymore. Beginning with version 3, DiffBind has included new functionality and modified default settings. The major change in version 3.0 is in how the data are modeled. In previous versions, a separate model was derived for each contrast, including data only for those samples present in the contrast. Model design options were implicit and limited to either a single factor, or a subset of two-factor "blocked" designs. Starting in version 3.0, the default mode is to include all the data in a single model, allowing for any allowable design formula and any set of allowable contrasts. 
 
-**IMPORTANT NOTE:** Mind that for DiffBind 3 the contrasts are processed isolated from each other. This means that a consensus peakset is generated separately for each contrast and does not incorporate peaks called in other pulldowns unrelated to the contrast. A pipeline update that allows processing together pulldowns from different contrasts is currently under construction.
+If you have an experiment which involves different antibody pulldowns you may want to have the respective contrasts normalized and analyzed separately. In this case specify contrasts belonging together in a sub-experiment by assigning them the same sub_experiment name in *contrasts_diffbind.txt*. The sub-experiments are processed isolated from each other (this behavior is not implemented for Diffbind v2).
 
-There are also more normalization options available in DiffBind v3 and a new option to generate greylists as described in the [GreyListChIP](https://bioconductor.org/packages/release/bioc/vignettes/GreyListChIP/inst/doc/GreyList-demo.pdf) vignette (see diffbind3.header for default settings). The purpose of greylists is to identify regions with anomalous signal in the input or control sample, so that reads in those regions may be removed prior to analysis. 
+There are also more normalization options available in DiffBind v3 and a new option to generate greylists as described in the [GreyListChIP](https://bioconductor.org/packages/release/bioc/vignettes/GreyListChIP/inst/doc/GreyList-demo.pdf) vignette (see *diffbind3.header* for default settings). The purpose of greylists is to identify regions with anomalous signal in the input or control sample, so that reads in those regions may be removed prior to analysis. 
 
 
 ## Programs required
 - Bedtools
 - Bowtie2
+- Bamutil
 - Cutadapt
 - deepTools
 - encodeChIPqc (provided by another project from imbforge)

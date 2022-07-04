@@ -1,7 +1,7 @@
 macs2 = {
     doc title: "MACS2",
         desc:  "MACS2 wrapper",
-        constraints: "Performs treatment versus control peak calling. If no input control sample is available, the INPUT field in the targets.txt file must be given as none.",
+        constraints: "Performs treatment versus control peak calling. If no input control sample is available, the INPUT field in the targets.txt file must be given as `none`.",
         bpipe_version: "tested with bpipe 0.9.8.7",
         author: "Sergi Sayols, Frank Rühle"
 

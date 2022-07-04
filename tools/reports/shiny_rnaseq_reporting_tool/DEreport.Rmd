@@ -579,7 +579,7 @@ for(i in 1:nrow(conts)) {
 ```
 
 
-## Differential splicing analysis ##
+## Differential splicing analysis 
 
 Differential splicing analysis is performed with the rMATS software suite (http://rnaseq-mats.sourceforge.net/), which uses the RNA-Seq data to detect differential alternative splicing events. The statistical model of rMATS calculates the probability that the difference in the isoform ratio of a gene between two conditions exceeds an user-defined threshold (Default: 0.01%). It is important to note that, rMATS is designed to analyze only the basic types of alternative splicing events involving two isoforms from an alternatively spliced region. These types include exon skipping (SE), alternative 5' splice sites (A5SS), alternative 3' splice sites (A3SS), mutually exclusive exons (MXE), and retained introns (RI). 
 
@@ -605,7 +605,7 @@ for(i in 1:nrow(uconts)) {
     if(!dir.exists(file.path(SHINYREPS_RES, "rMATS", paste0(cont.name,"_rMATS")))) {next()}
 
     cat("\n\n", fill=T)
-    cat("### ", cont.name, fill=T)
+    cat("### ", cont.name, "{.tabset .tabset-pills}", fill=T)
     cat("\n\n", fill=T)
     if(file.exists(file.path(SHINYREPS_RES, "rMATS", paste0(cont.name,"_rMATS"),"maser_processed.RData"))) {
         load(file.path(SHINYREPS_RES, "rMATS", paste0(cont.name,"_rMATS"),"maser_processed.RData"))

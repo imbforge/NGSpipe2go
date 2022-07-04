@@ -1,0 +1,9 @@
+GatherBQSRReports_vars=[
+    outdir        : BaseRecalibration_vars.statsdir,
+    java_flags    : "-Xmx20000m",
+    extra         : ""
+]
+
+load PIPELINE_ROOT + "/modules/DNAseq/gatherBQSRReports.groovy"
+
+

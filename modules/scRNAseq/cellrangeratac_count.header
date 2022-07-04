@@ -1,0 +1,11 @@
+cellrangeratac_count_vars=[
+    outdir          : MAPPED,
+    reference       : ESSENTIAL_TENX_REFERENCE, 
+    cores           : 8,
+    localmem        : 64,
+    extra           : ""               // extra parms to sent to the tool
+]
+
+load PIPELINE_ROOT + "/modules/scRNAseq/cellrangeratac_count.groovy"
+
+

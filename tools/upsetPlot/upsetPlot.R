@@ -98,14 +98,27 @@ ChIPhelper.init <- function(task, subdir="", peaks_as="data.frame") {
       return("MACS2 results not available")
     }
     # check is blacklist filtered peak files are available
-    if(file.exists(file.path(PEAKDATA, peaksSubdir, paste0(targets$IPname, ".vs.", targets$INPUTname,"_macs2_blacklist_filtered_peaks.xls")))[1]) {
-      comparisons <- file.path(PEAKDATA, peaksSubdir, paste0(targets$IPname, ".vs.", targets$INPUTname,"_macs2_blacklist_filtered_peaks.xls"))
+    if(file.exists(file.path(PEAKDATA, peaksSubdir, gsub(".vs.none", "", paste0(targets$IPname, ".vs.", targets$INPUTname,"_macs2_blacklist_filtered_peaks.xls"))))[1]) {
+      comparisons <- file.path(PEAKDATA, peaksSubdir, gsub(".vs.none", "", paste0(targets$IPname, ".vs.", targets$INPUTname,"_macs2_blacklist_filtered_peaks.xls")))
     } else { # no blacklist filtered peak files available, read unfiltered peak files
-      comparisons <- file.path(PEAKDATA, peaksSubdir, paste0(targets$IPname, ".vs.", targets$INPUTname,"_macs2_peaks.xls"))
+      comparisons <- file.path(PEAKDATA, peaksSubdir, gsub(".vs.none", "", paste0(targets$IPname, ".vs.", targets$INPUTname,"_macs2_peaks.xls")))
     }
     exist <- sapply(comparisons, file.exists) # check if files exist for targets entries
     targets <- targets[exist, ]
     comparisons <- comparisons[exist]
+
+    # remove targets which have no peaks
+    peakcount <- sapply(comparisons, function(x) {
+      tryCatch({
+        nrow(read.delim(x, head=TRUE, comment="#"))
+      }, error=function(e) 0)
+    })
+    if(!all(peakcount > 0)) {
+      warning("Sample(s) ", paste(basename(comparisons)[!(peakcount > 0)], collapse=", "),
+              " excluded because didn't have any peaks called")
+      comparisons <- comparisons[peakcount > 0 ] 
+      targets <- targets[peakcount > 0, ] 
+    }
     
     columnNames2replace <- c(seqnames="chr", abs_summit="summit", pileup="tags", X.log10.pvalue.="-log10 pvalue", X.log10.FDR="-log10 FDR", X.log10.qvalue.="-log10 FDR")
     
@@ -167,6 +180,7 @@ ChIPhelper.UpSetPlot <- function(subdir="", Mode = "intersect", peakOverlapMode=
     combColors <- fillColors <- "steelblue" # default color
     
     if(!is.null(targetsdf)) { # coloring setnames and respective combinations by group from targets file
+      targetsdf <- targetsdf[paste0(targetsdf$IPname, " vs. ", targetsdf$INPUTname) %in% names(peak.ranges),] # remove samples without peaks
       targetsdf <- targetsdf[order(targetsdf$group, targetsdf$IPname), ]
       mypalette <- define.group.palette(length(levels(factor(targetsdf$group))))
       legend_colors <- setNames(mypalette, levels(factor(targetsdf$group)))
@@ -232,6 +246,7 @@ ChIPhelper.UpSetPlot <- function(subdir="", Mode = "intersect", peakOverlapMode=
     upsetReturn[["matrix_bp"]] <- upset_matrix
     
     if(!is.null(targetsdf)) { # coloring setnames and respective combinations by group from targets file
+      targetsdf <- targetsdf[paste0(targetsdf$IPname, " vs. ", targetsdf$INPUTname) %in% names(peak.ranges),] # remove samples without peaks
       targetsdf <- targetsdf[order(targetsdf$group, targetsdf$IPname), ]
       mypalette <- define.group.palette(length(levels(factor(targetsdf$group))))
       legend_colors <- setNames(mypalette, levels(factor(targetsdf$group)))

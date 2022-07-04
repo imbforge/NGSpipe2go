@@ -67,7 +67,7 @@ BWA_se = {
             bwa mem $BWA_FLAGS -R \"@RG\\tID:\${OUTPUTFILE}\\tSM:\${OUTPUTFILE}\\tPL:illumina\\tLB:\${OUTPUTFILE}\\tPU:genomics\" $BWA_vars.ref $input | samtools view $SAMTOOLS_VIEW_FLAGS - | samtools sort $SAMTOOLS_SORT_FLAGS -T \${TMP}/${OUTPUTFILE}_sort - > ${output} &&
 
             samtools flagstat ${output} 1>&2
-        ""","BWA_se"
+        ""","BWA_pe"
     }
 }
 

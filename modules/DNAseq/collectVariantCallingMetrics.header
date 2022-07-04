@@ -1,0 +1,11 @@
+CollectVariantCallingMetrics_vars=[
+    outdir        : QC + "/GATK_VariantCallingMetrics",
+    java_flags    : "-Xmx20000m",
+    bwa_ref       : ESSENTIAL_BWA_REF,
+    known_variants: ESSENTIAL_KNOWN_VARIANTS,
+    extra         : ""
+]
+
+load PIPELINE_ROOT + "/modules/DNAseq/collectVariantCallingMetrics.groovy"
+
+// metrics explained here: https://broadinstitute.github.io/picard/picard-metric-definitions.html

@@ -21,7 +21,7 @@ library(rtracklayer)
 library(knitr)
 library(kableExtra)
 library(openxlsx)
-
+library(RColorBrewer)
 ##
 ## get arguments from the command line
 ##
@@ -35,7 +35,7 @@ args <- commandArgs(T)
 gtf <- parseArgs(args,"gtf=","") # gtf gene model
 db_gtf <- parseArgs(args, "db=","") # the essential_db parameter
 ftype <- parseArgs(args, "ftype=", "") # which type of splicing events to consider: juncton counts (JC) or junction-exon counts (JCEC)
-mincov <- parseArgs(args,"mincov=","") # ignore splicing events with read coverage below this count
+mincov <- parseArgs(args,"mincov=",5, convert="as.numeric") # ignore splicing events with read coverage below this count
 fdr <- parseArgs(args,"fdr=","", convert="as.numeric") # FDR cut-off to select statistically significant splicing events identified by rMATS
 dpsi <- parseArgs(args,"dpsi=","", convert="as.numeric") # minimum percentage spliced in (PSI) to include in plots
 scripts_dir <- parseArgs(args,"scripts_dir=","") # Needed to load the modified maser scripts
@@ -84,9 +84,15 @@ if(!error_status) {
   rmats_top <- maser::topEvents(rmats_filt, fdr = fdr, deltaPSI = dpsi)
   #print(rmats_top)
 
-  plotspldist <- maser::splicingDistribution(rmats_filt, fdr = fdr, deltaPSI = dpsi)
   pdf(paste0(rmats_dir,"/Global_SplicingEvents.pdf"))
-  print(plotspldist)
+  n_splice_events=0
+  for(e in c("A3SS", "A5SS", "SE", "RI", "MXE")) {
+	  n_splice_events = n_splice_events + nrow(slot(rmats_top, paste0(e,"_events")))
+  }
+  if(n_splice_events > 0) {
+	  plotspldist <- maser::splicingDistribution(rmats_filt, fdr = fdr, deltaPSI = dpsi)
+          print(plotspldist)
+  }
 
   for(e in c("A3SS", "A5SS", "SE", "RI", "MXE")) {
 	if(nrow(slot(rmats_top, paste0(e,"_events"))) > 0) {
@@ -97,7 +103,7 @@ if(!error_status) {
 		top <- summary(rmats_top, type=e)
 		#write the results for each event and contrast
 		write.csv(top, file=paste0(rmats_dir,"/","Significant_",e,"_events.csv"), row.names = F)
-		write.xlsx(top, file=paste0(rmats_dir,"/","Significant_",e,"_events.xlsx"), row.names = F)	
+		write.xlsx(top, file=paste0(rmats_dir,"/","Significant_",e,"_events.xlsx"), row.names = F, overwrite = T)	
 	}
   }
   dev.off()

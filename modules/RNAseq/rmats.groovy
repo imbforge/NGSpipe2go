@@ -6,10 +6,13 @@ rMATS = {
 
     output.dir = rMATS_vars.outdir
     def RMATS_FLAGS =
-        (rMATS_vars.gtf     ? " --gtf "        +  rMATS_vars.gtf     : "" ) +
-        (rMATS_vars.length  ? " --readLength " +  rMATS_vars.length  : "" ) +
-        (rMATS_vars.threads ? " --nthread "    +  rMATS_vars.threads : "" ) + 
-        (rMATS_vars.extra   ? " "              +  rMATS_vars.extra   : "" ) 
+        (rMATS_vars.gtf        ? " --gtf "        +  rMATS_vars.gtf     : "" ) +
+        (rMATS_vars.length     ? " --readLength " +  rMATS_vars.length  : "" ) +
+        (rMATS_vars.threads    ? " --nthread "    +  rMATS_vars.threads : "" ) + 
+        (rMATS_vars.varreadlen ? " --variable-read-length "             : "" ) +
+        (rMATS_vars.allowclip  ? " --allow-clipping "                   : "" ) +
+        (rMATS_vars.novelss    ? " --novelSS "                          : "" ) +
+        (rMATS_vars.extra      ? " "              +  rMATS_vars.extra   : "" ) 
 
     if(rMATS_vars.paired) {
         RMATS_FLAGS = RMATS_FLAGS + " -t paired"
@@ -19,11 +22,15 @@ rMATS = {
     if(rMATS_vars.stranded == "no") {
         RMATS_FLAGS = "--libType fr-unstranded " + RMATS_FLAGS
     }
+    // use "fr-secondstrand" for forward-stranded libraries and
+    //     "fr-firststrand" for reverse-stranded libraries
+    // firststrand/secondstrand refer to the strand being sequenced, 
+    // which is synthesized first/second
     else if (rMATS_vars.stranded == "yes") {
-        RMATS_FLAGS = "--libType fr-firststrand " + RMATS_FLAGS
+        RMATS_FLAGS = "--libType fr-secondstrand " + RMATS_FLAGS
     }
     else {
-        RMATS_FLAGS = "--libType fr-secondstrand " + RMATS_FLAGS
+        RMATS_FLAGS = "--libType fr-firststrand " + RMATS_FLAGS
     }
 
     def MASER_FLAGS = 
@@ -64,6 +71,9 @@ rMATS = {
             echo \$bamgroup1 > $output.dir/\${input_var%${rMATS_vars.suffix}}_rMATS/\${groups[1]}_samples.txt &&
             run_rmats --b1 $output.dir/\${input_var%${rMATS_vars.suffix}}_rMATS/\${groups[0]}_samples.txt --b2 $output.dir/\${input_var%${rMATS_vars.suffix}}_rMATS/\${groups[1]}_samples.txt $RMATS_FLAGS --od $output.dir/\${input_var%${rMATS_vars.suffix}}_rMATS --tmp $output.dir/\${input_var%${rMATS_vars.suffix}}_rMATS_tmp && 
             Rscript ${PIPELINE_ROOT}/tools/maser/createMaserPlots.R $MASER_FLAGS rmats_dir=$output.dir/\${input_var%${rMATS_vars.suffix}}_rMATS scripts_dir=${PIPELINE_ROOT}/tools/maser group1=\${groups[0]} group2=\${groups[1]} &&
+
+            rm -rf $output.dir/*_tmp/ &&
+
             touch $output;
         ""","rMATS"
     }

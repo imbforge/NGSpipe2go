@@ -1,5 +1,5 @@
 PIPELINE="ChIPseq"
-PIPELINE_VERSION="1.2.6"
+PIPELINE_VERSION="1.2.7"
 PIPELINE_ROOT="./NGSpipe2go"
 
 load PIPELINE_ROOT + "/pipelines/ChIPseq/essential.vars.groovy"
@@ -26,6 +26,7 @@ load PIPELINE_ROOT + "/modules/NGS/bamindexer.header"
 load PIPELINE_ROOT + "/modules/NGS/extend.header"
 load PIPELINE_ROOT + "/modules/NGS/bamqc.header"
 load PIPELINE_ROOT + "/modules/NGS/fastqc.header"
+load PIPELINE_ROOT + "/modules/NGS/fastqscreen.header"
 load PIPELINE_ROOT + "/modules/NGS/insertsize.header"
 load PIPELINE_ROOT + "/modules/NGS/markdups.header"
 load PIPELINE_ROOT + "/modules/NGS/rmdups.header"
@@ -42,23 +43,25 @@ collect_bams = { forward inputs.bam }
 
 Bpipe.run {
 	(RUN_IN_PAIRED_END_MODE ? "%.R*.fastq.gz" : "%.fastq.gz") * [
-		FastQC +  
-                (RUN_CUTADAPT ? Cutadapt + FastQC.using(subdir:"trimmed") : dontrun.using(module:"Cutadapt")) +
-                bowtie2 + BAMindexer + BamQC ] + collect_bams +   
+		FastQC, 
+		(RUN_FASTQSCREEN ? FastqScreen : dontrun.using(module: "FastqScreen")), 
+		(RUN_CUTADAPT ? Cutadapt + FastQC.using(subdir:"trimmed") : dontrun.using(module:"Cutadapt")) +
+		bowtie2 + BAMindexer + BamQC ] + collect_bams +   
 
          [ // parallel branches with and without multi mappers
 
-            "%.bam" * [MarkDups + BAMindexer + pbc] + collect_bams + "%.bam" * // branch unfiltered 
-		[       // QC specific to paired end (pe) or single end (se) design
-	    		(RUN_IN_PAIRED_END_MODE ? [bamCoverage.using(subdir:"unfiltered"), 
-                                                   InsertSize.using(subdir:"unfiltered")] : 
-                                                  [bamCoverage.using(subdir:"unfiltered"), 
-                                                   phantompeak.using(subdir:"unfiltered")]), 
+            "%.bam" *
+		[       pbc,
+                        // branch unfiltered
+                        // QC specific to paired end (pe) or single end (se) design
+                        (RUN_IN_PAIRED_END_MODE ? [bamCoverage.using(subdir:"unfiltered"),
+                                                   InsertSize.using(subdir:"unfiltered")] :
+                                                  [bamCoverage.using(subdir:"unfiltered"),
+                                                   phantompeak.using(subdir:"unfiltered")]),
                 	ipstrength.using(subdir:"unfiltered"), 
 		        macs2.using(subdir:"unfiltered")                   
-            ], 
-            "%.bam" * [ filbowtie2unique + BAMindexer +  // branch filtered
-               (ESSENTIAL_DEDUPLICATION ? [RmDups + BAMindexer] : [MarkDups + BAMindexer])] + collect_bams + "%.bam" * 
+                ], 
+            "%.bam" * [ filbowtie2unique + BAMindexer ] + collect_bams + "%.bam" * //branch filtered
                 [       // QC specific to paired end (pe) or single end (se) design
 	    		(RUN_IN_PAIRED_END_MODE ? [bamCoverage.using(subdir:"filtered"), 
                                                    InsertSize.using(subdir:"filtered")] : 
@@ -86,4 +89,3 @@ Bpipe.run {
     collectToolVersions + MultiQC + 
     shinyReports
 }
-
