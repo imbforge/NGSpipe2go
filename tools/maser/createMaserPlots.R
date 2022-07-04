@@ -35,7 +35,7 @@ args <- commandArgs(T)
 gtf <- parseArgs(args,"gtf=","") # gtf gene model
 db_gtf <- parseArgs(args, "db=","") # the essential_db parameter
 ftype <- parseArgs(args, "ftype=", "") # which type of splicing events to consider: juncton counts (JC) or junction-exon counts (JCEC)
-mincov <- parseArgs(args,"mincov=","") # ignore splicing events with read coverage below this count
+mincov <- parseArgs(args,"mincov=",5, convert="as.numeric") # ignore splicing events with read coverage below this count
 fdr <- parseArgs(args,"fdr=","", convert="as.numeric") # FDR cut-off to select statistically significant splicing events identified by rMATS
 dpsi <- parseArgs(args,"dpsi=","", convert="as.numeric") # minimum percentage spliced in (PSI) to include in plots
 scripts_dir <- parseArgs(args,"scripts_dir=","") # Needed to load the modified maser scripts
