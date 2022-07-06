@@ -183,7 +183,7 @@ tools_envs = [
     ],
     deeptools: [
         "3.5.1": [
-            lmod: "module load deepTools/3.5.1"
+            lmod: "module load deepTools/3.5.1_singularity"
         ]
     ],
     fastqc: [
