@@ -24,6 +24,7 @@
 ##
 ######################################
 options(stringsAsFactors=FALSE)
+library(parallel)
 library(DiffBind) # load specific diffbind version #########################
 library(openxlsx)
 library(dplyr)
