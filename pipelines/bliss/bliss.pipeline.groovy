@@ -22,7 +22,7 @@ dontrun = { println "didn't run $module" }
 collect_bams = { forward inputs.bam }
 
 Bpipe.run {
-	(RUN_IN_PAIRED_END_MODE ? "%.R*.fastq.gz" : "%.fastq.gz") * [
+  (RUN_IN_PAIRED_END_MODE ? "%.R*.fastq.gz" : "%.fastq.gz") * [
     FastQC,
     pattern_filtering +
     bwa +
