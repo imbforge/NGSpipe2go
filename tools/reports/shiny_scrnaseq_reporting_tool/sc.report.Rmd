@@ -27,8 +27,8 @@ source("sc.shinyrep.helpers.R")
 
 # load required packages
 not_yet_attached <- attach_packages(c("tidyverse", "AnnotationDbi", "batchelor", "Biobase", "BiocSingular", "bluster", "Cairo", "celldex", "circlize",
-          "cluster", "ComplexHeatmap", "corrplot", "dendextend", "DESeq2", "DropletUtils", "dynamicTreeCut", "edgeR", "GeneOverlap", "ggbeeswarm",
-          "ggrepel", "gplots", "grid", "gridExtra", "igraph", "knitr", "kableExtra", "limma", "M3Drop", "Matrix", "parallel", 
+          "cluster", "ComplexHeatmap", "corrplot", "dendextend", "DESeq2", "DropletUtils", "dynamicTreeCut", "edgeR", "ExperimentHub", "GeneOverlap",
+          "ggbeeswarm", "ggrepel", "gplots", "grid", "gridExtra", "igraph", "knitr", "kableExtra", "limma", "M3Drop", "Matrix", "parallel", 
           "pheatmap", "pkgmaker", "plotly", "png", "RColorBrewer", "reshape2", "rmarkdown", "rtracklayer", "Rtsne","SC3", "scales", 
           "scater", "scDblFinder", "scran", "shinydashboard", "SingleR", "uwot", "VennDiagram", "vipor", "viridis"))
 
@@ -127,7 +127,8 @@ switch(SHINYREPS_SEQTYPE,
       targets <- targets[order(targets$sample, targets$cell_id), c(StartingColumnNames, colnames(targets)[!colnames(targets) %in% StartingColumnNames])]
       
       # define group.vars
-      group.vars <- colnames(targets)[!colnames(targets) %in% c("cell_id", "sample", "file")] 
+      demux_columns <- c("GEMwell","HTO_maxID","nCount_HTO","HTO_secondID", "HTO_margin", "file_HTO","seq_HTO","samplename_suffix_HTO")
+      group.vars <- colnames(targets)[!colnames(targets) %in% c("cell_id", "sample", "file", demux_columns)] 
       targets[,group.vars] <- lapply(targets[,group.vars], factor)
       group.vars <- group.vars[sapply(group.vars, function(x) {length(unique(targets[,x]))>1})] # remove group vars with single value
       # in case of hto multiplexing targets_pools is collapsed to (not de-multiplexed) fastq files for the fastq-file level QC plots (targets4plots).
@@ -731,7 +732,8 @@ qc.plots <- lapply(c("Lib.size", "detected", "subsets_Mito_percent"), function(t
             scale_fill_brewer(palette = "Set1") +
             xlab(xlabel) +
             ylab(paste0("# cells")) + 
-            theme(legend.position="top")
+            theme(legend.position="top") + 
+            guides(color=guide_legend(ncol=2))
           return(p)
 })
 
@@ -747,11 +749,12 @@ qc.plots.violin <- lapply(c("Lib.size", "detected", "subsets_Mito_percent"), fun
   p <- ggplot(qc.frame, aes_string(annoFactors[1],to.plot,color=annoFactors[1]))+
       geom_violin() +
       geom_quasirandom() +
-      scale_fill_hue(l=40, c=40) +
+      scale_fill_brewer(palette = "Set1") +
       ylab(ylabel) +
       xlab(annoFactors[1]) +
       theme(axis.text.x=element_text(angle=45, vjust=1, hjust=1)) + 
-      theme(legend.position="top")
+      theme(legend.position="top") +
+      guides(color=guide_legend(ncol=2))
     return(p)
  })
 
@@ -1786,7 +1789,7 @@ Graph-based clustering is a flexible and scalable technique for clustering large
 Graph construction avoids making strong assumptions about the shape of the clusters or the distribution of cells within each cluster, compared to other methods. k is the number of nearest neighbors used to construct the graph. This controls the resolution of the clustering where higher k yields a more inter-connected graph and broader clusters. Users can exploit this by experimenting with different values of k to obtain a satisfactory resolution.
 
 
-```{r clustering_graphbased, results='asis'}
+```{r clustering_graphbased, results='asis', fig.show='hide'}
 exprs_values = "logcounts"
 data2clust <- c(exprs_values, "PCA") # use full expression matrix and/or reduced dimension matrix ("PCA", "TSNE", "UMAP") for clustering
 dotshape <- colorByFactor2[1]
@@ -1958,7 +1961,7 @@ Hierarchical clustering aims to generate a dendrogram containing a hierarchy of 
 
 The dendrogram describes the relationships between cells and subpopulations at various resolutions and in a quantitative manner based on the branch lengths. Users can cut the tree at different heights to define clusters with different granularity, where clusters defined at high resolution are guaranteed to be nested within those defined at a lower resolution. If cells cannot be assigned to any cluster e.g. because there is no neighboring cluster exceeding the defined minimum cluster size, they are labeled as cluster 0. The dendrogram is also a natural representation of the data in situations where cells have descended from a relatively recent common ancestor. For larger datasets hierarchical clustering may be too slow.
 
-```{r clustering_hierarchical, warning=F, results='asis'}
+```{r clustering_hierarchical, warning=F, results='asis', fig.show='hide'}
 exprs_values <- "logcounts"
 data2clust <- c(exprs_values, "PCA") # use full expression matrix and/or reduced dimension matrix ("PCA", "TSNE", "UMAP") for clustering
 hclust_methods <- c("ward.D2") 
@@ -2136,6 +2139,7 @@ annoFactors <- colorByFactor2
                       by_exprs_values = exprs_values,
                       colour_by=annoFactors[1], point_size=plot_pointsize) +
                       #ggtitle(paste(gsub("_", " ", name_dimred), "colored by", annoFactors[1])) + 
+                      guides(color=guide_legend(ncol=2)) +
                       theme(legend.position = "top", aspect.ratio = 1)
    
    ggsave(plot=plot_selected, filename= file.path("report_files", "cluster", paste0(selected_clustering_method, "_selected_cluster_plot.png")),
@@ -2284,7 +2288,7 @@ Several different statistical tests are available to quantify the differences in
 In addition to that, we use a more stringent cluster specific approach. Instead of identifying genes up-regulated compared to any of the other clusters, we only consider genes that are up-regulated in all pairwise comparisons involving the cluster of interest. To achieve this, we use an intersection-union test where the combined p-value for each gene is the maximum of the p-values from all pairwise comparisons (apply setting pval.type="all"). A gene will only achieve a low combined p-value if it is strongly differentially expressed in all comparisons to other clusters.
 
 
-```{r findmarkers_per_cluster, fig.width=11, fig.height=20, results='asis'}
+```{r findmarkers_per_cluster, fig.width=11, fig.height=20, results='asis', fig.show='hide'}
 DE_var2adjust <- "final_var2adjust" # it will be checked if DE_var2adjust exists in sce. Can also be NULL.
 clustervar <- selected_clustering_method
 groupingvar <- colorByFactor2 
