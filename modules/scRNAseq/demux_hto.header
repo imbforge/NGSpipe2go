@@ -16,7 +16,9 @@ demux_hto_vars=[
     threads             : ESSENTIAL_THREADS,
     cellranger_output   : MAPPED, // result files from cellranger to demultiplex 
     excludeFailedHTO    : "hashtag8-TGACGCCGTTGTTGT",   // format: "name_HTO-seq_HTO", if an antibody fails completely, it may make sense to exclude the corresponding HTO from analysis
-    extra               : ""    // extra parameter to send to Cite-Seq-Count
+    min_cells           : 1,   // Include features detected in at least this many cells.
+    min_features        : 1,   // Include cells where at least this many features are detected
+    extra               : ""   // extra parameter to send to Cite-Seq-Count
 ]
 
 load PIPELINE_ROOT + "/modules/scRNAseq/demux_hto.groovy"
