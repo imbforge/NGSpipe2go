@@ -19,7 +19,6 @@ load PIPELINE_ROOT + "/modules/DNAampliconseq/MPSprofiling.header"
 
 load PIPELINE_ROOT + "/modules/NGS/multiqc.header"
 load PIPELINE_ROOT + "/modules/miscellaneous/collect_tool_versions.header"
-load PIPELINE_ROOT + "/modules/miscellaneous/collectbpipes.module.2.header"
 load PIPELINE_ROOT + "/modules/DNAampliconseq/shinyreports.header"
 
 // Main pipeline task
@@ -33,5 +32,5 @@ Bpipe.run {
                AddUMIBarcodeToFastq + barcode_count
     ] +
             (RUN_MPSprofiling ? MPSprofiling : dontrun.using(module:"MPSprofiling")) +
-            MultiQC + collectToolVersions + collectBpipeLogs + shinyReports
+            collectToolVersions + MultiQC + shinyReports
 }
