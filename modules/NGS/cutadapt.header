@@ -5,8 +5,11 @@ Cutadapt_vars=[
     adapter_sequence   : ESSENTIAL_ADAPTER_SEQUENCE,   // adapter to be trimmed off the 3' end (paired data: of the first read)
     minimum_overlap    : ESSENTIAL_MINADAPTEROVERLAP,  // minimal overlap of the read and the adapter for an adapter to be found (default 3)
     minimum_length_keep: ESSENTIAL_MINREADLENGTH,      // minimal length of reads to be kept
+    maximum_length_keep: (binding.hasVariable('ESSENTIAL_MAXREADLENGTH') ? ESSENTIAL_MAXREADLENGTH : ""),  // maximal length of reads to be kept
+    qualitycutoff      : Integer.toString(ESSENTIAL_BASEQUALCUTOFF),  // threshold to trim low-quality ends from reads 
+    nextseqtrim        : ESSENTIAL_NEXTSEQTRIM,        // accounts for terminal G bases during base quality trimming incorporated by faulty dark cycles observed with two-color chemistry (as in NextSeq) 
     errorrate          : "0.1",                        // maximum allowed error rate as value between 0 and 1 (default 0.1 =10%)
-    extra              : " -A IlluminaR2=AGATCGGAAGAGCGTCGTGTAGGGA"                            // add additional parameter for further adapter trimming here
+    extra              : " -A IlluminaR2=AGATCGGAAGAGCGTCGTGTAGGGA --max-expected-errors 1"     // add additional parameter for further adapter trimming here
 ]
 
 load PIPELINE_ROOT + "/modules/NGS/cutadapt.groovy"
