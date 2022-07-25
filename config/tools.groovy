@@ -26,7 +26,7 @@ def singularity_tools = "/fsimb/common/singularity_tools"
 // default runenvs and versions for each tools.
 // Names should match those of tools_envs
 tools_defaults = [
-    R          : [ runenv: "lmod", version: "4.0.3"        ],
+    R          : [ runenv: "lmod", version: "R/Bioconductor_3.14_singularity"        ],
     bamqc      : [ runenv: "lmod", version: "0.1.25_devel" ],
     bamutil    : [ runenv: "lmod", version: "1.0.13"       ],
     bedtools   : [ runenv: "lmod", version: "2.27"         ],
@@ -34,9 +34,9 @@ tools_defaults = [
     bowtie2    : [ runenv: "lmod", version: "2.3.4"        ],
     bwa        : [ runenv: "lmod", version: "0.7.15"       ],
     conda      : [ runenv: "lmod", version: "4.8.3"        ],
-    cutadapt   : [ runenv: "conda", version: "3.4"         ],
+    cutadapt   : [ runenv: "lmod", version: "4.0"          ],
     deeptools  : [ runenv: "lmod", version: "3.1"          ],
-    fastqc     : [ runenv: "lmod", version: "0.11.8"       ],
+    fastqc     : [ runenv: "lmod", version: "0.11.9"       ],
     fastqscreen: [ runenv: "lmod", version: "0.13"         ],
     fastx      : [ runenv: "lmod", version: "0.0.14"       ],
     gatk       : [ runenv: "lmod", version: "3.4-46"       ],
@@ -45,7 +45,7 @@ tools_defaults = [
     kentutils  : [ runenv: "lmod", version: "v365"         ],
     macs2      : [ runenv: "lmod", version: "2.1.2"        ],
     mirdeep2   : [ runenv: "lmod", version: "2.0.0.8"      ],
-    multiqc    : [ runenv: "lmod", version: "1.7"          ],
+    multiqc    : [ runenv: "lmod", version: "1.9"          ],
     pear       : [ runenv: "lmod", version: "0.9.11"       ],
     picard     : [ runenv: "lmod", version: "2.20"         ],
     pingpongpro: [ runenv: "lmod", version: "1.0"          ],
@@ -60,7 +60,7 @@ tools_defaults = [
     stringtie  : [ runenv: "lmod", version: "1.3.5"        ],
     subread    : [ runenv: "lmod", version: "1.6"          ],
     trimgalore : [ runenv: "lmod", version: "0.5.0"        ],
-    umitools   : [ runenv: "conda", version: "1.1.2"        ]
+    umitools   : [ runenv: "lmod", version: "1.1.2"        ]
 ]
 
 // This map defines how to prepare the environment in order to have in PATH all
@@ -70,12 +70,18 @@ tools_defaults = [
 //   * 3rd level: runenv  --> one of [lmod|singularity|conda]
 tools_envs = [
     R: [
-        "3.5.1": [
-            lmod: "module load R/3.5.1_debian9"
-        ],
         "3.6.0": [
             lmod: "module load R/3.6.0",
             singularity: "alias Rscript=\"singularity run --app Rscript ${singularity_tools}/R/3.6.0r0/R.simg\""
+        ],
+        "4.0.3": [
+            lmod: "module load R/4.0.3"
+        ],
+        "Bioconductor_3.13": [
+            lmod: "module load R/Bioconductor_3.13_singularity"
+        ],
+        "R/Bioconductor_3.14_singularity" : [
+            lmod: "module load R/Bioconductor_3.14_singularity"
         ]
     ],
     bamqc: [
@@ -132,18 +138,14 @@ tools_envs = [
         ],
         "3.4": [
             conda: "${conda_call} source activate ${conda_tools}/cutadapt/3.4"
+        ],
+        "4.0": [
+            lmod: "module load cutadapt/4.0"
         ]
     ],
     deeptools: [
-        "3.1": [
-            lmod: "module load deepTools/3.1.0_debian9",
-            singularity: """
-                alias bamCoverage=\"singularity run --app bamCoverage $singularity_tools deeptools/3.1.2r0/deeptools.simg\";
-                alias bamCompare=\"singularity run --app bamCompare $singularity_tools deeptools/3.1.2r0/deeptools.simg\"
-            """
-        ],
-        "3.2": [
-            conda: "${conda_call} source activate ${conda_tools}/deeptools/3.2.0"
+        "3.5.1": [
+            lmod: "module load deepTools/3.5.1_singularity"
         ]
     ],
     fastqc: [
@@ -151,12 +153,21 @@ tools_envs = [
             lmod: "module load fastqc/0.11.8",
             conda: "${conda_call} source activate ${conda_tools}/fastqc/0.11.8",
             singularity: "alias fastqc=\"singularity run --app fastqc ${singularity_tools}/fastqc/0.11.8r0/fastqc.simg\""
+        ],
+        "0.11.9": [
+            lmod: "module load fastqc/0.11.9"
         ]
     ],
     fastqscreen: [
         "0.13": [
             lmod: "module load fastq_screen/0.13",
             conda: "${conda_call} source activate ${conda_tools}/fastq_screen/0.13"
+        ],
+        "0.14.1": [
+            lmod: "module load fastq_screen/0.14.1"
+        ],
+        "0.15.2": [
+            lmod: "module load fastq_screen/0.15.2"
         ]
     ],
     fastx: [
@@ -207,6 +218,9 @@ tools_envs = [
             lmod: "module load MultiQC/1.7",
             conda: "${conda_call} source activate ${conda_tools}/MultiQC/1.7",
             singularity: "alias multiqc=\"singularity run --app multiqc ${singularity_tools}/MultiQC/1.7/multiqc.simg\""
+        ],
+        "1.9": [
+            lmod: "module load MultiQC/1.9"
         ]
     ],
     pear: [
@@ -354,6 +368,7 @@ tools_envs = [
             conda: "${conda_call} source activate ${conda_tools}/umitools/1.1.1"
         ],
         "1.1.2": [
+            lmod: "module load umitools/1.1.2",
             conda: "${conda_call} source activate ${conda_tools}/umitools/1.1.2"
         ]
     ]
