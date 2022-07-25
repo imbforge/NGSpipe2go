@@ -12,7 +12,7 @@ FastQC = {
         (FastQC_vars.extra ? " " + FastQC_vars.extra : "")
 
     def TOOL_ENV = prepare_tool_env("fastqc", tools["fastqc"]["version"], tools["fastqc"]["runenv"])
-    def PREAMBLE = get_preamble("FastQC")
+    def PREAMBLE = get_preamble(stage:stageName, outdir:output.dir, input:new File(input1.prefix).getName())
 
     transform("*.fastq.gz") to ("_fastqc.zip") {
         exec """

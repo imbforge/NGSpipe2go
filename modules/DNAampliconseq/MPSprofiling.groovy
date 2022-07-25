@@ -27,7 +27,7 @@ MPSprofiling = {
         (MPSprofiling_vars.extra                        ? " "                              + MPSprofiling_vars.extra                        : "")
 
     def TOOL_ENV = prepare_tool_env("R", tools["R"]["version"], tools["R"]["runenv"])
-    def PREAMBLE = get_preamble("MPSprofiling")
+    def PREAMBLE = get_preamble(stage:stageName, outdir:output.dir, input:new File(input1.prefix).getName())
 
     // run the chunk
     produce("MPSprofiling.RData") {

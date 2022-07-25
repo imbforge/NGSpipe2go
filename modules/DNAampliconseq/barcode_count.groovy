@@ -28,7 +28,7 @@ barcode_count = {
         (barcode_count_vars.extra   ? barcode_count_vars.extra : "")
 
     def TOOL_ENV = prepare_tool_env("umitools", tools["umitools"]["version"], tools["umitools"]["runenv"])
-    def PREAMBLE = get_preamble("barcode_count")
+    def PREAMBLE = get_preamble(stage:stageName, outdir:output.dir, input:new File(input1.prefix).getName())
 
     def BCSEP = barcode_count_vars.barcode_separator
 

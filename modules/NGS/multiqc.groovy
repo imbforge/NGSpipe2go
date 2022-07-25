@@ -6,11 +6,11 @@ MultiQC = {
         author: "Giuseppe Petrosino"
 
     output.dir = MultiQC_vars.outdir
-    def MULTIQC_FLAGS =
+    def MultiQC_FLAGS =
         (MultiQC_vars.extra ? " " + MultiQC_vars.extra : "")
 
     def TOOL_ENV = prepare_tool_env("multiqc", tools["multiqc"]["version"], tools["multiqc"]["runenv"])
-    def PREAMBLE = get_preamble("MULTIQC")
+    def PREAMBLE = get_preamble(stage:stageName, outdir:output.dir, input:new File(input1.prefix).getName())
 
     produce("multiqc_report.html") {
         exec """

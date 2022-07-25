@@ -30,7 +30,7 @@ AddUMIBarcodeToFastq = {
     def umitools_logdirWL = new File(AddUMIBarcodeToFastq_vars.logdirWL)
 
     def TOOL_ENV = prepare_tool_env("umitools", tools["umitools"]["version"], tools["umitools"]["runenv"])
-    def PREAMBLE = get_preamble("AddUMIBarcodeToFastq")
+    def PREAMBLE = get_preamble(stage:stageName, outdir:output.dir, input:new File(input1.prefix).getName())
 
 
     def pattern1_FLAGS =

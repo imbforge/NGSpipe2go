@@ -40,7 +40,7 @@ pear = {
         (pear_vars.extra  ? " "             + pear_vars.extra       : "")
 
     def TOOL_ENV = prepare_tool_env("pear", tools["pear"]["version"], tools["pear"]["runenv"])
-    def PREAMBLE = get_preamble("pear")
+    def PREAMBLE = get_preamble(stage:stageName, outdir:output.dir, input:new File(input1.prefix).getName())
 
     // run the chunk
     produce(OUTPUTFILE + ".assembled.fastq.gz"){
