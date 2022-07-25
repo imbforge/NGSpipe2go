@@ -19,7 +19,7 @@
 ######################################
 
 options(stringsAsFactors=FALSE)
-
+library(parallel)
 library(reshape2)
 library(kableExtra)
 #library(plyr)
