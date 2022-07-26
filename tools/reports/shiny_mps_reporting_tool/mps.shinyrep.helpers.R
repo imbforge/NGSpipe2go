@@ -667,7 +667,7 @@ MPShelper.cutadapt.plot <- function(data, color.value, labelOutliers=T, outlierI
 MPShelper.pear <- function(colorByFactor=NULL, targetsdf=targets, ...){
   
   x <- list.files(SHINYREPS_PEAR_LOG,pattern='*.log$',full.names=TRUE) 
-  x <- x[!grepl("fastq.gz", basename(x))]
+  x <- x[!grepl("fastq", basename(x))]
   
   # select subset of samples or use all samples if samplePattern=NULL
   x <- selectSampleSubset(x, ...)
@@ -829,7 +829,7 @@ MPShelper.umiextract <- function(colorByFactor=NULL, targetsdf=targets, ...){
   
   # for samples with very few reads some of the logfile outputs may be missing. 
   # In that case x is returned as list of character vectors of different length.
-  if(class(x)=="list") {
+  if(class(x)[1]=="list") { # length may be >1: "matrix" "array"
     x.df <- lapply(x, function(y) {t(as.data.frame(y))})
     #x.df <- plyr::rbind.fill.matrix(x.df)
     x.df <- dplyr::bind_rows(lapply(x.df, as.data.frame, drop=F))
