@@ -2,7 +2,7 @@ ESSENTIAL_PROJECT="/your/project/folder/"
 ESSENTIAL_THREADS=4
 ESSENTIAL_SAMPLE_PREFIX=""
 
-ESSENTIAL_EXPDESIGN="amplicon2"  // design of DNA Amplicon-Seq experiment.
+ESSENTIAL_EXPDESIGN="amplicon3"  // design of DNA Amplicon-Seq experiment.
 // the following experimental designs are implemented:
 // "amplicon1": Paired end sequencing with overlapping reads to be merged.
 //              Amplicon sequence contains cell barcodes to count and UMIs for deduplication.
@@ -48,11 +48,17 @@ ESSENTIAL_EXTRACTMETHOD="regex" // either "string" or "regex"
 
 // whitelist options
 ESSENTIAL_WHITELIST="" //the barcode list should be a list of valid barcodes separated by newline. Barcodes will be filtered (and corrected) against the whitelist.
-ESSENTIAL_WHITELIST2="" // list of valid barcodes for 2nd run of umi_tools extract (if needed)
+ESSENTIAL_WHITELIST2="whitelist2.txt" // list of valid barcodes for 2nd run of umi_tools extract (if needed)
 ESSENTIAL_EXTRACT_WHITELIST=false  // extract whitelist from data instead providing an external whitelist.
 ESSENTIAL_CORRECT_CB=false // correct cell barcodes to whitelist (alternatives must be given in whitelist). If false, just filter against whitelist. Omitted if no whitelist is given (neither external or extracted).
 ESSENTIAL_EXTRACT_WHITELIST2=false // // extract whitelist in optional 2nd run of umi_tools extract
 ESSENTIAL_CORRECT_CB2=false // correct cell barcodes to whitelist2
+
+
+// FASTQ-Screen parameters
+ESSENTIAL_FASTQSCREEN_PERC=1    // contaminant filter, if a contaminant is consuming at least this percentage of reads in at least one sample, contaminant will be shown in report
+ESSENTIAL_FASTQSCREEN_GENOME="Human::/fsimb/common/genomes/homo_sapiens/gencode/release-35_GRCh38.p13/full/index/bowtie2/2.3.4.3/GRCh38.p13"  //bowtie2 reference for the genome the samples are from, this is used for the fastqscreen
+ESSENTIAL_FASTQSCREEN=ESSENTIAL_FASTQSCREEN_GENOME + ",Yeast::/fsimb/common/genomes/saccharomyces_cerevisiae/ensembl/R64/canonical/index/bowtie2/2.3.4.3/Saccharomyces_cerevisiae.R64-1-1.dna.toplevel,PHIX::/fsimb/common/genomes/phix/19930428/NCBI/index/bowtie2/2.3.4.3/ncbi_phix,ERCC::/fsimb/common/genomes/ERCC/index/bowtie2/2.3.4.3/ERCC92,rRNA::/fsimb/common/genomes/contaminants/fastqscreen_references/rrna/v1/index/bowtie2/2.3.4.3/hs_mm_ce_dm_rn_dr_xt_rRNA,Mycoplasma::/fsimb/common/genomes/contaminants/fastqscreen_references/mycoplasma/v1/index/bowtie2/2.3.4.3/mycoplasma_all_ref,E.coli::/fsimb/common/genomes/Escherichia_coli/ensembl/full/index/bowtie2/Escherichia_coli_str_k_12_substr_dh10b.ASM1942v1.31.dna.genome,B.taurus::/fsimb/common/genomes/bos_taurus/ensembl/3.1/full/index/bowtie2/2.2.9/UMD3.1" //references for fastqscreen to use if run, this are our standard references please include yours 
 
 
 //Adapter trimming with Cutadapt (optional).
@@ -60,6 +66,9 @@ RUN_CUTADAPT=true
 ESSENTIAL_ADAPTER_SEQUENCE="IlluminaR1=AGATCGGAAGAGCACACGTCTGAAC" // standard sequence to trim illumina reads (IlluminaR2=AGATCGGAAGAGCGTCGTGTAGGGA, set in cutadapt header if needed)
 ESSENTIAL_MINADAPTEROVERLAP=3  // minimal overlap of the read and the adapter for an adapter to be found (cutadapt default 3)
 ESSENTIAL_MINREADLENGTH=15     // minimal length of reads to be kept (cutadapt default 0)
+ESSENTIAL_BASEQUALCUTOFF=20  // trim low-quality ends from reads (if nextseqtrim is true, qualities of terminal G bases are ignored)  
+ESSENTIAL_NEXTSEQTRIM=true   // accounts for terminal G bases during base quality trimming incorporated by faulty dark cycles observed with two-color chemistry (as in NextSeq) 
+
 
 
 //global vars that will be reused in some global vars
