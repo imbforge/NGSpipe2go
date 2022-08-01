@@ -5,6 +5,8 @@ peak_annotation_vars=[
     transcript_db  : ESSENTIAL_TXDB,   // eg, TxDb.Mmusculus.UCSC.mm9.knownGene"
     orgdb          : ESSENTIAL_ANNODB, // eg, org.Mm.eg.db
     regiontss      : "3000",
+    targets        : "targets.txt",
+    orderby        : "group",          // name of the column in targets.txt to order the libraries in plots
     extra          : ""
 ]
 

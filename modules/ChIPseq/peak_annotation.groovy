@@ -14,6 +14,8 @@ peak_annotation = {
         (peak_annotation_vars.transcript_db   ? " transcriptDb="   + peak_annotation_vars.transcript_db       : "") +
         (peak_annotation_vars.orgdb           ? " orgDb="          + peak_annotation_vars.orgdb               : "") +
         (peak_annotation_vars.regiontss       ? " regionTSS="      + peak_annotation_vars.regiontss           : "") +
+        (peak_annotation_vars.targets         ? " targets="        + peak_annotation_vars.targets             : "") +
+        (peak_annotation_vars.orderby         ? " orderby="        + peak_annotation_vars.orderby             : "") +
         (peak_annotation_vars.outdir          ? " out="            + peak_annotation_vars.outdir + "/$subdir" : "") +
         (peak_annotation_vars.extra           ? " "                + peak_annotation_vars.extra               : "")
 
