@@ -29,6 +29,8 @@ demux_hto = {
     // Seurat flags
     def SEURAT_FLAGS =
         (demux_hto_vars.excludeFailedHTO ? " excludeFailedHTO=" + demux_hto_vars.excludeFailedHTO    : "") + 
+        (demux_hto_vars.min_cells        ? " min_cells="        + demux_hto_vars.min_cells           : "") + 
+        (demux_hto_vars.min_features     ? " min_features="     + demux_hto_vars.min_features        : "") + 
         (                                  " hto_matrix_dir="   + output.dir + "/umi_count/"             ) + 
         (                                  " rna_matrix_dir="   + demux_hto_vars.cellranger_output + "/" + SAMPLENAME_BASE + "/outs/filtered_feature_bc_matrix/") + 
         (                                  " out="              + output.dir + "/Seurat/"                )  

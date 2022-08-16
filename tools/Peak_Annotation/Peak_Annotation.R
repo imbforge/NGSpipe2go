@@ -13,7 +13,9 @@
 ## transcriptDb=TxDb.Hsapiens.UCSC.hg19.knownGene   # either GTF file or transcript annotation database as transcript annotation database
 ## orgDb=org.Hs.eg.db                               # optionally genome wide annotation 
 ## regionTSS=3000                                   # TSS region parameter from -3000 to +3000
-## out=                                             # output directory
+## targets=targets.txt                              # tab separated file describing the samples to be processed
+## orderby=group                                    # column in targets to order samples in plots
+## out=Peak_Annotation                              # output directory
 ############################################################################
 options(stringsAsFactors=FALSE)
 options(bitmapType='cairo')
@@ -33,17 +35,30 @@ parseArgs <- function(args,string,default=NULL,convert="as.character") {
   
 }
 
-args <- commandArgs(T)
-peakData <- parseArgs(args,"peakData=") # .xls result from MACS2
+args           <- commandArgs(T)
+peakData       <- parseArgs(args,"peakData=")                        # .xls result from MACS2
 transcriptType <- parseArgs(args, "transcriptType=", "Bioconductor") # transcript annotation type
-transcriptDb <- parseArgs(args, "transcriptDb=", "") # transcript annotation database
-orgDb <- parseArgs(args, "orgDb=", "") # genome wide annotation
-regionTSS <- parseArgs(args, "regionTSS=", 3000, "as.numeric") # TSS region parameter 
-out <- parseArgs(args,"out=", "Peak_Annotation") # output directory
+transcriptDb   <- parseArgs(args, "transcriptDb=", "")               # transcript annotation database
+orgDb          <- parseArgs(args, "orgDb=", "")                      # genome wide annotation
+regionTSS      <- parseArgs(args, "regionTSS=", 3000, "as.numeric")  # TSS region parameter 
+ftargets       <- parseArgs(args, "targets=", "")                    # tab separated file describing the samples to be processed
+orderby        <- parseArgs(args, "orderby=", "")                    # column in targets to order samples in plots
+out            <- parseArgs(args,"out=", "Peak_Annotation") # output directory
 
-runstr <- paste0("Call with: Rscript Peak_Annotation.R [peakData=",peakData,"] [transcriptType=",transcriptType,"] [transcriptDb=",transcriptDb,"] [orgDb=",orgDb,"] [regionTSS=",regionTSS,"][out=",out,"]")
-cat(runstr)
-if (!is.numeric(regionTSS)) stop("regionTSS not numeric. Run with:\n",runstr)
+runstr <- paste0("Called with: Rscript Peak_Annotation.R",
+                   " peakData="      , peakData      ,
+                   " transcriptType=", transcriptType,
+                   " transcriptDb="  , transcriptDb  ,
+                   " orgDb="         , orgDb         ,
+                   " regionTSS="     , regionTSS     ,
+                   " targets="       , ftargets      ,
+                   " orderby="       , orderby       ,
+                   " out="           , out           )
+cat(runstr, fill=TRUE)
+if (!is.numeric(regionTSS)) stop("regionTSS not numeric.")
+if(ftargets != "" && !file.exists(ftargets)) stop("targets file", ftargets, "doesn't exist.")
+targets <- read.delim(ftargets)
+if(ftargets != "" && orderby != "" && !(orderby %in% colnames(targets))) stop("targets file doesn't have a column named", orderby)
 
 if(length(list.files(peakData,pattern="_macs2_blacklist_filtered_peaks.xls")) > 0) {
       peakFiles <-list.files(peakData,pattern="_macs2_blacklist_filtered_peaks.xls", full.names = TRUE)
@@ -85,12 +100,23 @@ if(transcriptType!="Bioconductor"){ # check the input format for the transcript 
 }
 
 if(orgDb!=""){ # check if genome wide annotation should be used
-  peakAnno <- lapply(peakFiles, annotatePeak, TxDb=txdb, tssRegion=c(-regionTSS,regionTSS), annoDb= orgDb)
+  peakAnno <- lapply(peakFiles, annotatePeak, TxDb=txdb, tssRegion=c(-regionTSS,regionTSS), annoDb=orgDb)
 } else {
   peakAnno <- lapply(peakFiles, annotatePeak, TxDb=txdb, tssRegion=c(-regionTSS,regionTSS))  
 }
 
 names(peakAnno) <- filename
+
+# sort samples if requested
+if(ftargets != "" && orderby != "") {
+  # built macs output name `NAMEoutput="\${IPname}.vs.\${INPUTname}"` as in NGSpipe2go/modules/ChIPseq/macs2.groovy
+  targets$NAMEoutput <- paste0(targets$IPname, ".vs.", targets$INPUTname)
+  targets$NAMEoutput <- sub("\\.vs\\.none", "", targets$NAMEoutput)   # fix macs2 outputs with no input
+
+  # calculate order, first by column `orderby`, then by the original contrast name
+  i <- order(targets[, orderby][match(names(peakAnno), targets$NAMEoutput)], names(peakAnno))
+  peakAnno <- peakAnno[i]
+}
 
 # create barplot showing the feature distribution
 png(file=paste0(out, "/ChIPseq_Feature_Distribution_Barplot.png"), width = 700, height = 500)

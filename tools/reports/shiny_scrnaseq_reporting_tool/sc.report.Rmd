@@ -621,6 +621,32 @@ rowData(sce)$SYMBOL <- new.names
 ```
 
 
+```{r demux, echo=F, message=FALSE, results='asis', eval=as.logical(SHINYREPS_RUN_DEMUX)}
+cat("## De-Multiplexing Cell Hashing\n\n")
+
+cat("\nSample multiplexing was applied using cell hashing. After cellranger analysis, the samples were demultiplexed using cite_seq_count and Seurat as outlined here: https://satijalab.org/seurat/articles/hashing_vignette.html. Only mapped singlets are used for downstream processing (note that doublets consisting of multiple cells of the same hashtag can not be identified here).\n")
+
+dirnamePlot <- file.path(SHINYREPS_DEMUX_OUT, list.files(SHINYREPS_DEMUX_OUT), "Seurat")
+for (i in 1:length(dirnamePlot)) {
+  cat(paste("\n### Demultiplexing for", list.files(SHINYREPS_DEMUX_OUT)[i], "\n\n"))
+
+  load(file.path(dirnamePlot[i], "infoNote.RData"))
+  print(kbl(as.data.frame(infoNote[["counts per hashtag"]]), caption="Counts per hashtag", row.names=T, col.names=c("read count"), format="simple", align = "l") %>% kable_styling()) # 
+  cat("\n", fill = T)
+  cat(infoNote[["hashtags used"]], "\n\n")
+  cat(infoNote[["CBs kept"]], "\n\n")
+  print(kbl(as.data.frame(infoNote[["Classification results"]]), caption="Classification results", row.names=F, col.names=c("", "bead count"), format="simple", align = "l") %>% kable_styling())
+  cat("\n", fill = T)
+
+  # include plots in report    
+  cat("\n", fill = T)
+  cat(paste0("![doublets](", file.path(dirnamePlot[i], "violinPlot_doublets.png"), "){width=45%}![singlets](", file.path(dirnamePlot[i], "tSNE_singlets.png"), "){width=45%}"))
+  cat("\n", fill = T)
+}
+
+```
+
+
 ```{r droplets_emptyDrops, echo=F, message=FALSE, results='asis', eval=(SHINYREPS_SEQTYPE == "tenX" && grepl("raw_feature_bc_matrix", matrix_dir))}
 
 ## ATTENTION: CellRanger version 3 automatically performs cell calling using an algorithm similar to emptyDrops().
