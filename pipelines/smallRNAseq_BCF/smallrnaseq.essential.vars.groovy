@@ -30,7 +30,8 @@ ESSENTIAL_MINREADLENGTH_EXCL_UMI="18" // remaining read length excl UMIs
 ESSENTIAL_MINREADLENGTH=Integer.toString(ESSENTIAL_MINREADLENGTH_EXCL_UMI.toInteger() + ESSENTIAL_UMI_LENGTH_LEFT.toInteger() + ESSENTIAL_UMI_LENGTH_RIGHT.toInteger()) // remaining read length plus UMIs 
 ESSENTIAL_MINADAPTEROVERLAP="5"       // minimal overlap with adapter
 ESSENTIAL_MAXREADLENGTH=Integer.toString(ESSENTIAL_READLENGTH.toInteger() - ESSENTIAL_MINADAPTEROVERLAP.toInteger()) // maximal read length to keep (all w/o adapter are discarded)
-ESSENTIAL_ADAPTER_SEQUENCE="TGGAATTCTCGGGTGCCAAGG" // needed for cutadapt adapter trimming
+// Cutadapt recommends using full length adapter sequences since adapter fragments might occur in the genome
+ESSENTIAL_ADAPTER_SEQUENCE="TruSeqSmallRNA=TGGAATTCTCGGGTGCCAAGG" // needed for cutadapt adapter trimming
 ESSENTIAL_BASEQUALCUTOFF=0     // trim low-quality ends from reads (if nextseqtrim is true, qualities of terminal G bases are ignored)  
                                // keep this parameter at 0 to switch off low-quality base pair trimming at the ends of reads
                                // (smallRNAseq reads often have UMIs at the end, which should not be removed)
