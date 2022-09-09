@@ -51,6 +51,7 @@ ESSENTIAL_BCPATTERN="CCCCCCCNNNNNNNN" //barcode pattern as it is present in MARS
                                      //work for MARS-Seq where the barcode and the umi are present in the second reads otherwise it has to be modified! 
 
 //Adapter trimming
+// Cutadapt recommends using full length adapter sequences since adapter fragments might occur in the genome
 RUN_CUTADAPT=false
 //ESSENTIAL_ADAPTER_SEQUENCE="TruSeqLTHT=AGATCGGAAGAGCACACGTCTGAACTCCAGTCA" 
 ESSENTIAL_ADAPTER_SEQUENCE="Nextera=CTGTCTCTTATACACATCT" //standard sequence to trim illumina reads
