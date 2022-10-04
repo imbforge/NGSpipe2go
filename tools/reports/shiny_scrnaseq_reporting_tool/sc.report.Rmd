@@ -2508,8 +2508,10 @@ cat("# Cell type annotation\n")
 
 ```{r diff_expression, results='asis', eval=("replicate" %in% colnames(colData(sce)) && length(unique(sce$replicate)) >1)}
 DE_var2adjust <- "final_var2adjust" # it will be checked if DE_var2adjust exists in sce. Can also be NULL.
-varDiffGroups <- colorByFactor2[1]
+varDiffGroups <- "group"
 ########################################
+
+if(file.exists(SHINYREPS_CONTRASTS)) {
 
 library(edgeR)
 
@@ -2519,7 +2521,7 @@ Differential analyses of replicated multi-condition scRNA-seq experiments can be
 
 ## Differential expression between conditions using pseudo-bulk samples
 
-Motivations behind the use of pseudo-bulking:
+Motivations behind the use of pseudo-bulking (for every gene, merge signal of all cells belonging to the same cluster and sample):
 
 - Larger counts are more amenable to standard DE analysis pipelines designed for bulk RNA-seq data. Normalization is more straightforward and certain statistical approximations are more accurate for large counts.
 - Collapsing cells into samples reflects the fact that our biological replication occurs at the sample level (Lun and Marioni 2017). Each sample is represented no more than once for each condition, avoiding problems from unmodelled correlations between samples. Supplying the per-cell counts directly to a DE analysis pipeline would imply that each cell is an independent biological replicate, which is not true from an experimental perspective. 
@@ -2549,92 +2551,116 @@ if(!DE_var2adjust %in% colnames(colData(sce))) {
     } 
   }
 
+
+# load contrasts for pair-wise group comparison
+conts <- read.delim(SHINYREPS_CONTRASTS,head=TRUE,colClasses="character",comment.char="#")
+
 # Creating pseudo-bulk samples from clusters (uses un-normalised "counts" matrix)
-  vars4aggregation <- c("diffgroups", "replicate", selected_clustering_method, "DE_var2adjust")
-  vars4aggregation <- vars4aggregation[vars4aggregation %in% names(colData(sce))] # in case there is no replicate variable
-  summed <- aggregateAcrossCells(sce, id=colData(sce)[,vars4aggregation],
-                use.assay.type = "counts") 
+  vars4aggregation <- c(selected_clustering_method, "sample", "DE_var2adjust")
+  vars4aggregation <- vars4aggregation[vars4aggregation %in% names(colData(sce))] # in case there is no DE_var2adjust
+  summed <- aggregateAcrossCells(sce, 
+                                 id=colData(sce)[,vars4aggregation],
+                                 use.assay.type = "counts") 
   
- de.results <- list()
+pairwise.de <- apply(conts,1,function(cont) {
 
-for (i in unique(colData(summed)[,selected_clustering_method])) {
-   
-    cat("\n#### Processing cluster", i, "\n\n")
-  
-    current <- summed[,colData(summed)[,selected_clustering_method] == i]
+    # parse the formula in cont
+    cont.name <- cont[1]
+    cont.form <- cont[2]
+    #mmatrix   <- cont[3] # mmatrix not needed, design factors are already defined
+    factors   <- gsub("(^\\s+|\\s+$)", "", unlist(strsplit(cont.form,"\\W")))
+    factors   <- factors[factors != ""]
+    if(length(factors) != 2) {
+        warning(paste(cont,"cannot deal with designs other than pairwise comparisons!"))
+        return(NA)
+    }
     
-    # Creating up a DGEList object for use in edgeR:
-    y <- DGEList(counts(current), samples=colData(current), genes=rowData(current)$SYMBOL)
+    cat("\n### Processing contrast", cont.name, "\n\n")
     
-    # preprocessing for bulk samples (is done here for each cluster separately)
-        # remove samples with very low library sizes
-        # discarded <- isOutlier(y$samples$lib.size, log=TRUE, type="lower") # relative outlier detection 
-        discarded <- current$ncells < 5
-        y <- y[,!discarded]
-        # remove genes that are lowly expressed
-        keep <- filterByExpr(y, group=current$diffgroups, min.count = 5, min.total.count = 10, large.n = 3, min.prop = 0.5)
-        y <- y[keep,]
+    de.results <- list()
 
-    # print filter metrics 
-     cat(paste0("\nFiltering samples for low cell number (<5) and genes for low expression.\n"))
-     cat("\n(pseudo-bulk) samples discarded:", sum(discarded), "of", length(discarded), "\n")
-     cat("\nGenes removed:", sum(!keep), "of", length(keep), "\n")
+  summedCont <- summed[, summed$group %in% factors] # select only samples included in the respective contrast
+  summedCont$group <- relevel(summedCont$group, factors[2]) # relevel to make sure the comparison is done in the right direction (B vs A and not A vs B)
+  summedCont$group <- factor(summedCont$group)
 
-    # correct for composition biases by normalization factors (currently using unprocessed count data)
-    y <- edgeR::calcNormFactors(y)
-    
-    # MDS plot for the pseudo-bulk profiles
-    #limma::plotMDS(cpm(y, log=TRUE), col=y$samples$diffgroups, main=paste("MDS plot for cluster", i))
-    
-    # Statistical modeling
-    design <- try(
-        if(!is.null(DE_var2adjust)) { 
-            model.matrix(~ factor(DE_var2adjust) + factor(diffgroups), y$samples)
-            } else {
-              model.matrix(~ factor(diffgroups), y$samples)
-            },  
-        silent=TRUE)
-    
-    if (is(design, "try-error") || 
-        qr(design)$rank==nrow(design) ||
-        qr(design)$rank < ncol(design) ||
-        nrow(y$genes)==0) {
-            # Skipping labels without contrasts or without 
-            # enough residual d.f. to estimate the dispersion
-            # or if all genes had been filtered out.
-            cat("\ncluster", i, "skipped\n")
-            next
-        }
 
-    # We estimate the negative binomial (NB) dispersions with estimateDisp(). 
-    y <- estimateDisp(y, design)
-    #summary(y$trended.dispersion)
-    #plotBCV(y)
+    for (i in levels(colData(summedCont)[,selected_clustering_method])) {
+       
+        cat("\n#### Processing cluster", i, "\n\n")
+        
+        current <- summedCont[,colData(summedCont)[,selected_clustering_method] == i]
+        
+        # Creating up a DGEList object for use in edgeR:
+        y <- DGEList(counts(current), samples=colData(current), genes=rowData(current)$SYMBOL)
+        
+        # preprocessing for bulk samples (is done here for each cluster separately)
+            # remove samples with very low library sizes
+            # discarded <- isOutlier(y$samples$lib.size, log=TRUE, type="lower") # relative outlier detection 
+            discarded <- current$ncells < 5
+            y <- y[,!discarded]
+            # remove genes that are lowly expressed
+            keep <- filterByExpr(y, group=current$diffgroups, min.count = 5, min.total.count = 10, large.n = 3, min.prop = 0.5)
+            y <- y[keep,]
     
-    # We also estimate the quasi-likelihood dispersions with glmQLFit() (Chen, Lun, and Smyth 2016). 
-    # This fits a GLM to the counts for each gene and estimates the QL dispersion from the GLM deviance. 
-    # We set robust=TRUE to avoid distortions from highly variable clusters (Phipson et al. 2016). 
-    # The QL dispersion models the uncertainty and variability of the per-gene variance (Figure 14.3),
-    # which is not well handled by the NB dispersions, so the two dispersion types complement each other 
-    # in the final analysis.
-    fit <- glmQLFit(y, design, robust=TRUE)
-    #summary(fit$var.prior)
-    #summary(fit$df.prior)
-    #plotQLDisp(fit)
+        # print filter metrics 
+         cat(paste0("\nFiltering samples for low cell number (<5) and genes for low expression.\n"))
+         cat("\n(pseudo-bulk) samples discarded:", sum(discarded), "of", length(discarded), "\n")
+         cat("\nGenes removed:", sum(!keep), "of", length(keep), "\n")
     
-    # We test for differences in expression using glmQLFTest(). DEGs are defined as those with non-zero 
-    # log-fold changes at a false discovery rate of 5%.
+        # correct for composition biases by normalization factors (currently using unprocessed count data)
+        y <- edgeR::calcNormFactors(y)
+        
+        # MDS plot for the pseudo-bulk profiles
+        #limma::plotMDS(cpm(y, log=TRUE), col=y$samples$diffgroups, main=paste("MDS plot for cluster", i))
+        
+        # Statistical modeling
+        design <- try(
+            if(!is.null(DE_var2adjust)) { 
+                model.matrix(~ factor(DE_var2adjust) + factor(diffgroups), y$samples)
+                } else {
+                  model.matrix(~ factor(diffgroups), y$samples)
+                },  
+            silent=TRUE)
+        
+        if (is(design, "try-error") || 
+            qr(design)$rank==nrow(design) ||
+            qr(design)$rank < ncol(design) ||
+            nrow(y$genes)==0) {
+                # Skipping labels without contrasts or without 
+                # enough residual d.f. to estimate the dispersion
+                # or if all genes had been filtered out.
+                cat("\ncluster", i, "skipped\n")
+                next
+            }
     
-    cat("\nDifferential expression results for", varDiffGroups, "in cluster", i, "\n")
-    res <- glmQLFTest(fit, coef=ncol(design))
-    #summary(decideTests(res))
-    print(kbl(as.data.frame(topTags(res)), align = "l", format="simple") %>% kable_styling(full_width = F)) 
-    write.table(data.frame(EnsemblID=rownames(topTags(res, n=nrow(res))), topTags(res, n=nrow(res))), 
-                file =file.path(dir_DE_per_cluster, paste0("DEgenes_cluster_", i, ".txt")),
-                quote = F, row.names = F,  sep="\t")
-    de.results[[i]] <- res
-    names(de.results)[[i]] <- i
-}    
+        # We estimate the negative binomial (NB) dispersions with estimateDisp(). 
+        y <- estimateDisp(y, design)
+        #summary(y$trended.dispersion)
+        #plotBCV(y)
+        
+        # We also estimate the quasi-likelihood dispersions with glmQLFit() (Chen, Lun, and Smyth 2016). 
+        # This fits a GLM to the counts for each gene and estimates the QL dispersion from the GLM deviance. 
+        # We set robust=TRUE to avoid distortions from highly variable clusters (Phipson et al. 2016). 
+        # The QL dispersion models the uncertainty and variability of the per-gene variance (Figure 14.3),
+        # which is not well handled by the NB dispersions, so the two dispersion types complement each other 
+        # in the final analysis.
+        fit <- glmQLFit(y, design, robust=TRUE)
+        #summary(fit$var.prior)
+        #summary(fit$df.prior)
+        #plotQLDisp(fit)
+        
+        # We test for differences in expression using glmQLFTest(). DEGs are defined as those with non-zero 
+        # log-fold changes at a false discovery rate of 5%.
+        
+        cat("\nDifferential expression results for", varDiffGroups, "in cluster", i, "\n")
+        res <- glmQLFTest(fit, coef=ncol(design))
+        #summary(decideTests(res))
+        print(kbl(as.data.frame(topTags(res)), align = "l", format="simple") %>% kable_styling(full_width = F)) 
+        write.table(data.frame(EnsemblID=rownames(topTags(res, n=nrow(res))), topTags(res, n=nrow(res))), 
+                    file =file.path(dir_DE_per_cluster, paste0("DEgenes_", cont.name, "_cluster_", i, ".txt")),
+                    quote = F, row.names = F,  sep="\t")
+        de.results[[as.character(i)]] <- res
+    }    
 
 cat("\n#### Summary for all clusters\n\n")    
 de.results <- de.results[lengths(de.results) != 0] # remove skipped clusters
@@ -2642,6 +2668,13 @@ summaries <- lapply(de.results, FUN=function(x) {summary(decideTests(x))[,1]})
 sum.tab <- do.call(rbind, summaries)
 sum.tab <- data.frame(cluster=rownames(sum.tab), sum.tab)
 print(kable(sum.tab, align = "l", row.names=F, format="simple") %>% kable_styling(full_width = F))
+
+return(de.results)
+})
+
+} else {
+  cat("\nDE analysis skipped because no contrasts.txt file defined.\n")
+}
 
 ```
 

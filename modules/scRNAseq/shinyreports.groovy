@@ -78,6 +78,7 @@ shinyReports = {
             echo "SHINYREPS_CUTADAPT_STATS=${shinyReports_vars.cutadapt_stats}" >> $output &&
             echo "SHINYREPS_GTF=${shinyReports_vars.gtf}"         >> $output &&
             echo "SHINYREPS_TARGET=${shinyReports_vars.target}"   >> $output &&
+            echo "SHINYREPS_CONTRASTS=${shinyReports_vars.contrasts}"   >> $output &&
             echo "SHINYREPS_MTGENES=${shinyReports_vars.mtgenes}" >> $output &&
             echo "SHINYREPS_SAMPLEPATTERN1=${shinyReports_vars.samplepattern1}" >> $output &&
             echo "SHINYREPS_SAMPLEPATTERN2=${shinyReports_vars.samplepattern2}" >> $output &&
