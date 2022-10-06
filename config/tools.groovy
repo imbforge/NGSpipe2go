@@ -56,6 +56,7 @@ tools_defaults = [
     qualimap       : [ runenv: "lmod", version: "2.2.1"             ],
     repenrich      : [ runenv: "lmod", version: "1.2"               ],
     rmats          : [ runenv: "lmod", version: "4.1.2"             ],
+    rnaseqc        : [ runenv: "lmod", version: "2.4.2"             ],
     rseqc          : [ runenv: "lmod", version: "4.0.0"             ],
     samtools       : [ runenv: "lmod", version: "1.10"              ],
     seqtk          : [ runenv: "lmod", version: "1.3"               ],
@@ -309,6 +310,11 @@ tools_envs = [
             lmod: "module load rmats/4.1.2"
         ]
     ],
+    rnaseqc: [
+        "2.4.2": [
+            lmod: "module load RNA-SeQC/2.4.2"
+        ]
+    ]
     rseqc: [
         "3.0.0": [
             lmod: "module load RSeQC/3.0.0",
