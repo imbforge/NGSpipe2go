@@ -1,0 +1,8 @@
+rnaseqc_vars=[
+    outdir: RESULTS + "/RNA-SeQC",
+    legacy: "--legacy",
+    gtf   : ESSENTIAL_GENESGTF,
+    extra : "-u -v"
+]
+
+load PIPELINE_ROOT + "modules/RNAseq/rnaseqc.groovy"
