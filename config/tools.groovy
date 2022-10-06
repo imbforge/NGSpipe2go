@@ -314,7 +314,7 @@ tools_envs = [
         "2.4.2": [
             lmod: "module load RNA-SeQC/2.4.2"
         ]
-    ]
+    ],
     rseqc: [
         "3.0.0": [
             lmod: "module load RSeQC/3.0.0",
