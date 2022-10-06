@@ -18,8 +18,7 @@ rnaseqc = {
 		${TOOL_ENV} &&
 		${PREAMBLE} &&
 		
-		rnaseqc ${rnaseqc_vars.gtf} $input $output.dir ${RNASEQC_FLAGS} &&
-		rm $output.dir/*.gene_tpm.gct $output.dir/*.exon_cv.tsv $output.dir/*.exon_reads.gct $output.dir/*.gene_fragments.gct $output.dir/*.metrics.tsv;
+		rnaseqc ${rnaseqc_vars.gtf} $input $output.dir ${RNASEQC_FLAGS};
 	""","rnaseqc"
 
 	}
