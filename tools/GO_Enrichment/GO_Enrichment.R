@@ -152,7 +152,7 @@ processContrast <-  function(x) {
 
             # create barplot showing top enriched GO terms
             CairoPNG(file=paste0(out, "/", contrast, "_GO_barplot_", suffix, "_genes.png"), width=900)
-            try(print(barplot(x, showCategory=plotCategory) + ylab("Number of genes")))
+            try(print(barplot(x, showCategory=plotCategory) + xlab("Number of genes")))
             dev.off()
       
             # create network plot
@@ -180,7 +180,7 @@ processContrast <-  function(x) {
 
             # create barplot showing top enriched KEGG Pathway terms
             CairoPNG(file=paste0(out, "/", contrast, "_KEGG_barplot_", suffix, "_genes.png"), width=900)
-            try(print(barplot(x, showCategory=plotCategory) + ylab("Number of genes")))
+            try(print(barplot(x, showCategory=plotCategory) + xlab("Number of genes")))
             dev.off()
       
             # create network plot for the results
@@ -201,7 +201,7 @@ processContrast <-  function(x) {
 
             # create barplot showing top enriched Reactome Pathway terms
             CairoPNG(file=paste0(out, "/", contrast, "_Reactome_barplot_", suffix, "_genes.png"), width=900)
-            try(print(barplot(x, showCategory=plotCategory) + ylab("Number of genes")))
+            try(print(barplot(x, showCategory=plotCategory) + xlab("Number of genes")))
             dev.off()
 
             # create network plot for the results
