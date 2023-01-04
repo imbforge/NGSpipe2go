@@ -62,7 +62,7 @@ tools_defaults = [
     seqtk          : [ runenv: "lmod", version: "1.3"               ],
     snpEff         : [ runenv: "lmod", version: "5.0e"              ],
     starfusion     : [ runenv: "lmod", version: "0.8.0"             ],
-    star           : [ runenv: "lmod", version: "2.7.10"            ],
+    star           : [ runenv: "lmod", version: "2.7"               ],
     stringtie      : [ runenv: "lmod", version: "1.3.5"             ],
     subread        : [ runenv: "lmod", version: "2.0.0"             ],
     trimgalore     : [ runenv: "lmod", version: "0.5.0"             ],
