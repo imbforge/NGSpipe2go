@@ -1,0 +1,3 @@
+contrast.name	contrast
+Treatment1.vs.Ctrl	(Treat1-Ctrl)
+Treatment2.vs.Ctrl	(Treat2-Ctrl)

@@ -56,12 +56,13 @@ tools_defaults = [
     qualimap       : [ runenv: "lmod", version: "2.2.1"             ],
     repenrich      : [ runenv: "lmod", version: "1.2"               ],
     rmats          : [ runenv: "lmod", version: "4.1.2"             ],
+    rnaseqc        : [ runenv: "lmod", version: "2.4.2"             ],
     rseqc          : [ runenv: "lmod", version: "4.0.0"             ],
     samtools       : [ runenv: "lmod", version: "1.10"              ],
     seqtk          : [ runenv: "lmod", version: "1.3"               ],
     snpEff         : [ runenv: "lmod", version: "5.0e"              ],
     starfusion     : [ runenv: "lmod", version: "0.8.0"             ],
-    star           : [ runenv: "lmod", version: "2.7.10"            ],
+    star           : [ runenv: "lmod", version: "2.7"               ],
     stringtie      : [ runenv: "lmod", version: "1.3.5"             ],
     subread        : [ runenv: "lmod", version: "2.0.0"             ],
     trimgalore     : [ runenv: "lmod", version: "0.5.0"             ],
@@ -307,6 +308,11 @@ tools_envs = [
     rmats: [
         "4.1.2": [
             lmod: "module load rmats/4.1.2"
+        ]
+    ],
+    rnaseqc: [
+        "2.4.2": [
+            lmod: "module load RNA-SeQC/2.4.2"
         ]
     ],
     rseqc: [

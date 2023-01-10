@@ -24,7 +24,7 @@ All analysis steps are illustrated in the pipeline flowchart ([droplet-based](ht
   - marker gene detection per cluster: findMarkers function of the [scran](http://bioconductor.org/packages/release/bioc/html/scran.html) package.
   - cell type annotation with [SingleR](http://bioconductor.org/packages/release/bioc/html/SingleR.html).
   - gene set enrichment analysis on the marker genes defining each cluster: goana function from [limma](https://bioconductor.org/packages/release/bioc/html/limma.html) package.
-  - differential expression analysis between sample groups using pseudo bulking: the [edgeR](https://www.bioconductor.org/packages/release/bioc/html/edgeR.html) package.
+  - differential expression analysis between sample groups per identified cell cluster using pseudo bulking: the [edgeR](https://www.bioconductor.org/packages/release/bioc/html/edgeR.html) package.
 
 ### Pipeline parameter settings
 - essential.vars.groovy: essential parameter describing the experiment 
@@ -60,6 +60,12 @@ All analysis steps are illustrated in the pipeline flowchart ([droplet-based](ht
   - cells: (for plate-based pipelines only) number of cells per well (one of "0c", "1c", "10c" with "0c" and "10c" being control wells).
   - pool: (for plate-based and pooled libraries like MARS-seq only) the pool ID comprises all cells from 1 library pool (i.e. a set of unique cell barcodes; the cell barcodes are re-used in other pools). Must be a unique substring of the input sample file name. For pool-based design, the pool ID is grepped against the respective count data filename instead of the sample name as stated above.
   - barcode: (for plate-based and pooled libraries like MARS-seq only) cell barcodes used as cell identifier in the count files. After merging the count data with targets.txt, the barcodes are replaced with sample IDs given in the sample column (i.e. here, sample names need not be a substring of input sample file name).
+
+
+- contrasts.txt: tab-separated txt-file with information about the sample groups to be compared in pair-wise differential expression analysis per identified cluster. The following columns are required
+  - contrast.name: an identifier/name for the groups you want to compare
+  - contrast: indicate intended group comparisons for differential expression analysis; the group names must be defined in the targets.txt file. E.g. *(KO-WT)* if targets.txt contains the groups *KO* and *WT*. Potential additional variables to adjust differential expression analysis for can be directly defined in *sc.report.Rmd* if needed.
+
 
 ### Programs required
 - FastQC
