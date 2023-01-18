@@ -151,7 +151,7 @@ DT::datatable(targets, caption="targets file (sample sheet) used for analysis")
 
 ```{r read_annotation}
 # load gene annotation provided in essential.vars.groovy
-gtf <- import.gff(SHINYREPS_GTF, format="gtf", feature.type="exon")
+gtf <- rtracklayer::import.gff(SHINYREPS_GTF, format="gtf", feature.type="exon")
 #gtf.flat <- unlist(reduce(split(gtf, elementMetadata(gtf)$gene_id)))
 #gene.lengths <- tapply(width(gtf.flat), names(gtf.flat), sum)
 gene.names <- unique(as.data.frame(gtf)[, c("gene_id", "gene_name")])
@@ -2482,12 +2482,15 @@ library(SingleR)
 
 cat("# Cell type annotation\n")
 
+# for other reference datasets check also listDatasets() of scRNAseq package 
+
 # Assigning cell labels from reference data (available for human only)
   cat("\nAssigning cell labels from built-in reference data constructed from Blueprint and ENCODE data (Martens and Stunnenberg 2013; The ENCODE Project Consortium 2012). This reference contains normalized expression values of 259 human bulk RNA-seq samples of pure stroma and immune cells. The Heatmap below shows the assignment score for each cell (column) and label (row). Scores are normalized to [0, 1] within each cell\n\n")
   logcountdata <- logcounts(sce)
   rownames(logcountdata) <- rowData(sce)$SYMBOL
   ref <- celldex::BlueprintEncodeData() # human bulk RNA-seq data from Blueprint and ENCODE
   pred <- SingleR(test=logcountdata, ref=ref, labels=ref$label.main) # alternative: ref$label.fine 
+  sce$Blueprint_main_label <- pred$labels
   plotScoreHeatmap(pred)
 
   #pred.cluster <- SingleR(test=logcountdata, ref=ref, labels=ref$label.main, clusters=colData(sce)[,selected_clustering_method])
@@ -2501,6 +2504,29 @@ cat("# Cell type annotation\n")
   pheatmap::pheatmap(log2(tab+10), color=colorRampPalette(c("white", "blue"))(101))
   cat("\n")
 
+  
+  cat("\nReduced dimension plot with indicated cell types\n\n")
+
+  plot_cluster <- scater::plotReducedDim(sce, 
+                      dimred = name_dimred,
+                      by_exprs_values = exprs_values,
+                      colour_by=selected_clustering_method, point_size=plot_pointsize) + # shape_by = dotshape, 
+                      scale_color_discrete(name="cluster") +
+                      theme(legend.position = "top", aspect.ratio = 1)
+   
+  plot_CT <- scater::plotReducedDim(sce, 
+                      dimred = name_dimred,
+                      by_exprs_values = exprs_values,
+                      colour_by="Blueprint_main_label", point_size=plot_pointsize) +
+                      guides(color=guide_legend(ncol=2)) +
+                      theme(legend.position = "top", aspect.ratio = 1)
+   
+    ggsave(plot=plot_CT, filename= file.path("report_files", "celltype_Blueprint_main_label.png"),
+           width = 120, height = 120, units = c("mm"),  dpi = 300)
+
+gridExtra::grid.arrange(plot_cluster, plot_CT, ncol=2, top=paste(gsub("_", " ", selected_clustering_method), "CT Ref: Blueprint data", sep=", "))
+
+  
 ```
 
 
@@ -2718,6 +2744,11 @@ for (p in (reducedDimNames(sce))) {
   )
   write.table(projection, file =file.path(dir_projections, paste0(p, ".csv")), sep=",", quote = F, row.names = F)
   }
+
+
+# store colData in report_files folder (csv file without numerical columns for compatibility with Loupe import)
+write.table(colData(sce)[, !sapply(colData(sce), is.numeric)], file="report_files/cells.csv", sep=",", quote = F, row.names = F)
+
 
 # save workspace
 save.image("report_files/WS.RData")
