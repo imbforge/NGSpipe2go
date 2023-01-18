@@ -19,6 +19,11 @@ config {
       procs="1"
       memory="2"
     }
+    assignSouporcellCluster { 
+      walltime="03:00:00" 
+      procs="1" 
+      memory="32"
+    }
     BAMindexer {
       walltime="01:00:00"
       procs="1"
@@ -206,7 +211,7 @@ config {
     }
     demux_gt {
       queue=long_queue
-      walltime="24:00:00"
+      walltime="12:00:00"
       procs="30"
       memory="64"
     }

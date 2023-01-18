@@ -25,8 +25,10 @@ ESSENTIAL_TENX_AGGRCSV="aggregation.csv"
 ESSENTIAL_TENX_NORMALIZED="mapped"
 ESSENTIAL_TENX_NUCLEI="no"         // set to "yes" if 10X run with nuclei instead of cells
 
-// Sample demultiplexing
-RUN_DEMUX=false  // demultiplexing if cell hashing was applied (if true provide file_HTO, seq_HTO and name_HTO in targets.txt)
+// Optional sample demultiplexing if sample pooling per GEM well was applied in 10X pipelines (specify one line per demultiplexed sample in targets.txt)
+// Either "demux_HTO" for cell hashing, "demux_GT" for demultiplexing by genetic variance or empty string (no demultiplexing)
+// if "demux_HTO" provide "file_HTO" (fastq file with corresponding HTO sequences), "seq_HTO" (HTO sequence) and "name_HTO" (HTO name) in targets.txt 
+RUN_DEMUX=""  
 
 // Reference genomes for FastqScreen
 ESSENTIAL_FASTQSCREEN_PERC=1    // contaminant filter, if a contaminant is consuming at least this percentage of reads in at least one sample, contaminant will be shown in report

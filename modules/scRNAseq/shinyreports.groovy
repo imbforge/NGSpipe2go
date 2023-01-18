@@ -42,6 +42,7 @@ shinyReports = {
             echo "SHINYREPS_CELLRANGERAGGR_ID=${shinyReports_vars.cellranger_aggr_id}"  >> $output &&
             echo "SHINYREPS_RUN_DEMUX=${shinyReports_vars.run_demux}" >> $output &&
             echo "SHINYREPS_DEMUX_OUT=${shinyReports_vars.demux_out}" >> $output &&
+            echo "SHINYREPS_DEMUXCLUSTER_OUT=${shinyReports_vars.demuxCluster_out}" >> $output &&
             echo "SHINYREPS_PREFIX=${shinyReports_vars.prefix}"   >> $output &&
             echo "SHINYREPS_STRANDEDNESS=${shinyReports_vars.strandedness}" >> $output &&
             echo "SHINYREPS_STAR_LOG=${shinyReports_vars.star_log}"       >> $output &&

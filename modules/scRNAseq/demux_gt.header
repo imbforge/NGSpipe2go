@@ -1,0 +1,12 @@
+demux_gt_vars=[
+    outdir              : RESULTS + "/demux_gt",
+    targets             : "targets.txt",  //targets file
+    ref                 : ESSENTIAL_TENX_TRANSCRIPTOME + "/fasta/genome.fa", // reference genome    
+    cellranger_output   : MAPPED, // result files from cellranger to demultiplex 
+    threads             : 30,
+    extra               : ""   // extra parameter to send to Cite-Seq-Count
+]
+
+load PIPELINE_ROOT + "/modules/scRNAseq/demux_gt.groovy"
+
+

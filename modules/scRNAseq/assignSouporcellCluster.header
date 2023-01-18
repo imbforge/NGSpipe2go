@@ -1,0 +1,10 @@
+assignSouporcellCluster_vars=[
+    outdir              : RESULTS + "/demux_gt" + "/assignSouporcellCluster",
+    souporcelldir       : RESULTS + "/demux_gt",
+    targets             : "targets.txt",  //targets file
+    extra               : ""   // extra parameter 
+]
+
+load PIPELINE_ROOT + "/modules/scRNAseq/assignSouporcellCluster.groovy"
+
+
