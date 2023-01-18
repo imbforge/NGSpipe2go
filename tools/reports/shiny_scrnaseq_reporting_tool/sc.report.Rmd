@@ -621,7 +621,7 @@ rowData(sce)$SYMBOL <- new.names
 ```
 
 
-```{r demux, echo=F, message=FALSE, results='asis', eval=as.logical(SHINYREPS_RUN_DEMUX)}
+```{r demux_HTO, echo=F, message=FALSE, results='asis', eval=!is.na(SHINYREPS_RUN_DEMUX) && SHINYREPS_RUN_DEMUX=="demux_HTO"}
 cat("## De-Multiplexing Cell Hashing\n\n")
 
 cat("\nSample multiplexing was applied using cell hashing. After cellranger analysis, the samples were demultiplexed using cite_seq_count and Seurat as outlined here: https://satijalab.org/seurat/articles/hashing_vignette.html. Only mapped singlets are used for downstream processing (note that doublets consisting of multiple cells of the same hashtag can not be identified here).\n")

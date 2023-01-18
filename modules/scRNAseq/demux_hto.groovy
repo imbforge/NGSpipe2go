@@ -63,7 +63,7 @@ demux_hto = {
 
             CITE-seq-Count -R1 \$Read1 -R2 \$Read2 ${CITE_SEQ_COUNT_FLAGS} -t $output.dir/hto_list.csv -o $output.dir &&
            
-            Rscript ${PIPELINE_ROOT}/tools/demux_hto/demux_hto.R ${SEURAT_FLAGS} &&
+            Rscript ${PIPELINE_ROOT}/tools/demux/demux_hto.R ${SEURAT_FLAGS} &&
 
             touch $output
 
