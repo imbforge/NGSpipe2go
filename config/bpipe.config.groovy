@@ -204,6 +204,12 @@ config {
       procs="1"
       memory="1"
     }
+    demux_gt {
+      queue=long_queue
+      walltime="24:00:00"
+      procs="30"
+      memory="64"
+    }
     demux_hto { 
       walltime="03:00:00" 
       procs="1" 
