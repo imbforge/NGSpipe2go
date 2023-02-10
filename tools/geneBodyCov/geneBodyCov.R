@@ -93,7 +93,7 @@ rangeCov <- mclapply(gtf, function(gene){
     # strandedness of library is already taken into account in the coverage analysis (cvg <- ...)
 
     # minus strand genes need to be flipped
-    if(decode(strand(gene)) == "-") {
+    if(unique(decode(strand(gene))) == "-") {
       x <- rev(unlist(cvg[gene], use.names=FALSE))
     } else {
       x <- unlist(cvg[gene], use.names=FALSE) 
