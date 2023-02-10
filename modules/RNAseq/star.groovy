@@ -15,7 +15,9 @@ STAR = {
 
     // calculate name of the sample being processed (added paired end support)
     def File f = new File(input)
-    def OUTPUTFILE = (f.getName() =~ /(.R1)*.fastq.gz/).replaceFirst("")
+    // separate removal of .fastq.gz and .R1 since possible file ending is .R1.cutadapt.fastq.gz,
+    // but .cutadapt needs to be kept
+    def OUTPUTFILE = ((f.getName() =~ /.fastq.gz/).replaceFirst("") =~ /.R1/).replaceFirst("")
 
     // star flags
     def STAR_FLAGS =
