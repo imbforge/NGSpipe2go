@@ -106,28 +106,87 @@ switch(SHINYREPS_SEQTYPE,
       targets = read.delim(file.path(matrix_dir, "barcodes.tsv.gz"), header = FALSE, stringsAsFactors = FALSE)
       names(targets) = "cell_id"
       
-      if(SHINYREPS_RUN_DEMUX) { # add HTO information if cell hashing applied
-        demuxfiles <- lapply(1:nrow(aggrcsv), function(x) {
-          read.delim(file.path(SHINYREPS_DEMUX_OUT, gsub("_S._L..._R._001", "",aggrcsv$sample_id)[x], "Seurat", "demux.txt"), sep="\t")
-        })
-        demuxfiles <- dplyr::bind_rows(demuxfiles, .id = "GEMwell")
-        demuxfiles$cell_id <- paste(demuxfiles$cell_id, demuxfiles$GEMwell, sep="-")
-        targets <- merge(targets, demuxfiles[, c("cell_id", "GEMwell", "HTO_maxID", "HTO_classification.global", 
-                                                  "nCount_HTO", "nFeature_HTO", "HTO_secondID", "HTO_margin")], by="cell_id")
-        targets$name_HTO <- gsub("-.*$", "", targets$HTO_maxID)
-      }
+      if(!is.na(SHINYREPS_RUN_DEMUX)) { # sample multiplexing applied?
+        
+        if(SHINYREPS_RUN_DEMUX=="demux_HTO") { # add HTO information if cell hashing applied
+          demuxfiles <- lapply(1:nrow(aggrcsv), function(x) {
+            read.delim(file.path(SHINYREPS_DEMUX_OUT, gsub("_S._L..._R._001", "", aggrcsv$sample_id)[x], "Seurat", "demux.txt"), sep="\t")
+          })
+          demuxfiles <- dplyr::bind_rows(demuxfiles, .id = "GEMwell")
+          demuxfiles$cell_id <- paste(demuxfiles$cell_id, demuxfiles$GEMwell, sep="-")
+          targets <- merge(targets, demuxfiles[, c("cell_id", "GEMwell", "HTO_maxID", "HTO_classification.global", 
+                                                    "nCount_HTO", "nFeature_HTO", "HTO_secondID", "HTO_margin")], by="cell_id")
+          targets$name_HTO <- gsub("-.*$", "", targets$HTO_maxID)
+        }
+        
+        if(SHINYREPS_RUN_DEMUX=="demux_GT") { # add information if sample multiplexing by genetic variance is applied
+
+          # load assignSouporcellCluster files to correlate cluster among samples
+          clusterassignFilenames <- list.files(SHINYREPS_DEMUXCLUSTER_OUT, pattern = "\\.txt$", full.names=T)
+          clusterassign <- lapply(clusterassignFilenames, read.delim, sep="\t", skip=5)
+          clustercount  <- as.numeric(gsub("clusters for experiment1 ", "", sapply(clusterassignFilenames, read.delim, skip=2, nrows=1)))
+          names(clusterassign) <- names(clustercount) <- gsub("\\.txt$", "", basename(clusterassignFilenames))
+          for (i in names(clusterassign)) {
+            colnames(clusterassign[[i]])[1:2] <- unlist(strsplit(i, split="_vs_"))
+            clusterassign[[i]] <- clusterassign[[i]][1:clustercount[i],1:2]
+          }
+
+          # load demux_GT files in order defined in aggrcsv
+          aggrcsvPrunedSampleId <- gsub("_S._L..._R._001", "", aggrcsv$sample_id)
+          demuxfiles <- lapply(1:nrow(aggrcsv), function(x) { # files loaded in order defined in aggrcsv
+            read.delim(file.path(SHINYREPS_DEMUX_OUT, aggrcsvPrunedSampleId[x], "clusters.tsv"), sep="\t")
+          })
+          
+          # print table with status column later
+          overviewStatus <- sapply(demuxfiles, function(x) table(x$status))
+          names(overviewStatus) <- aggrcsvPrunedSampleId
+          overviewStatus <- as.data.frame(dplyr::bind_rows(overviewStatus, .id = "file"))
+
+          # continue with singlets only
+          demuxfiles <- lapply(demuxfiles, function(x) {
+             x <- x[x$status=="singlet",]
+             x$subsample <- x$assignment # column used for re-assignment of souporcell clusters
+             return(x)})
+
+          # Replace cluster assignments for all samples in demuxfiles except for the first one which is used as reference
+          for (j in 2:length(aggrcsvPrunedSampleId)) {
+            clusterassignCurrent <- names(clusterassign)[grepl(aggrcsvPrunedSampleId[1], names(clusterassign)) & grepl(aggrcsvPrunedSampleId[j], names(clusterassign))]
+            newValues <- clusterassign[[clusterassignCurrent]][,aggrcsvPrunedSampleId[1]]
+            oldValues <- clusterassign[[clusterassignCurrent]][,aggrcsvPrunedSampleId[j]]
+            demuxfiles[[j]]$subsample <- plyr::mapvalues(demuxfiles[[j]]$assignment, from=oldValues, to=newValues) # new column with adjusted assignment
+          }
+
+          # bind rows to single dataframe and filter cell ids by merging with targets
+          demuxfiles <- dplyr::bind_rows(demuxfiles, .id = "GEMwell")
+          demuxfiles$cell_id <- paste(gsub("-.$", "", demuxfiles$barcode), demuxfiles$GEMwell, sep="-")
+          targets <- merge(targets, demuxfiles[, c("cell_id", "GEMwell", "subsample", "assignment", "status", "log_prob_singleton", "log_prob_doublet")], by="cell_id")
+          
+          # If subsample column in targets.txt is not pre-defined by user, it is automatically generated.
+          # This is used for merging targets with targets_pools to link the cell barcodes with sample names
+          # but note that in that case the assignment of subsamples to the sample ids in targets_pools is arbitrary 
+          # (need external genetic information for specific assignment).
+          if(is.null(targets_pools$subsample) || all(is.na(targets_pools$subsample))) {
+            targets_pools <- targets_pools %>% dplyr::group_by(file)  %>%
+                dplyr::mutate(subsample = 0:(dplyr::n_distinct(sample)-1)) %>% # enumerate samples per file (start with 0)
+                dplyr::ungroup() %>%
+                as.data.frame()
+          }
+        }
+    }
      
       # merge targets with targets_pools and sort 
       # ensure that GEM wells merged in aggr module are assigned the sample names from targets.txt in correct order
       # the -digit suffix of the cell barcode reflects the order that the GEM wells were provided in the aggr.csv
       targets$file <- gsub("_S._L..._R._001", "", aggrcsv[as.numeric(gsub("^.*-", "", targets$cell_id)), "sample_id"])
+      targets_pools$file <- gsub("(_S.)*(_L...)*(_R.)*(_001)*", "", targets_pools$file) # in case file name was pruned in targets_pools
       targets <- merge(targets, targets_pools) # if "name_HTO" column is present in targets, it is used for merging as well (unmapped cells discarded)
       rownames(targets) <- targets$cell_id
       StartingColumnNames <- c("cell_id", "sample", "file", "group", "replicate")
       targets <- targets[order(targets$sample, targets$cell_id), c(StartingColumnNames, colnames(targets)[!colnames(targets) %in% StartingColumnNames])]
       
       # define group.vars
-      demux_columns <- c("GEMwell","HTO_maxID","nCount_HTO","HTO_secondID", "HTO_margin", "file_HTO","seq_HTO","samplename_suffix_HTO")
+      demux_columns <- c("assignment", "status", "log_prob_singleton", "log_prob_doublet",
+                         "GEMwell","HTO_maxID","nCount_HTO","HTO_secondID", "HTO_margin", "file_HTO","seq_HTO")
       group.vars <- colnames(targets)[!colnames(targets) %in% c("cell_id", "sample", "file", demux_columns)] 
       targets[,group.vars] <- lapply(targets[,group.vars], factor)
       group.vars <- group.vars[sapply(group.vars, function(x) {length(unique(targets[,x]))>1})] # remove group vars with single value
@@ -147,11 +206,12 @@ switch(SHINYREPS_SEQTYPE,
 
 # print targets file
 DT::datatable(targets, caption="targets file (sample sheet) used for analysis")
+
 ```
 
 ```{r read_annotation}
 # load gene annotation provided in essential.vars.groovy
-gtf <- import.gff(SHINYREPS_GTF, format="gtf", feature.type="exon")
+gtf <- rtracklayer::import.gff(SHINYREPS_GTF, format="gtf", feature.type="exon")
 #gtf.flat <- unlist(reduce(split(gtf, elementMetadata(gtf)$gene_id)))
 #gene.lengths <- tapply(width(gtf.flat), names(gtf.flat), sum)
 gene.names <- unique(as.data.frame(gtf)[, c("gene_id", "gene_name")])
@@ -621,7 +681,7 @@ rowData(sce)$SYMBOL <- new.names
 ```
 
 
-```{r demux, echo=F, message=FALSE, results='asis', eval=as.logical(SHINYREPS_RUN_DEMUX)}
+```{r demux_HTO, echo=F, message=FALSE, results='asis', eval=!is.na(SHINYREPS_RUN_DEMUX) && SHINYREPS_RUN_DEMUX=="demux_HTO"}
 cat("## De-Multiplexing Cell Hashing\n\n")
 
 cat("\nSample multiplexing was applied using cell hashing. After cellranger analysis, the samples were demultiplexed using cite_seq_count and Seurat as outlined here: https://satijalab.org/seurat/articles/hashing_vignette.html. Only mapped singlets are used for downstream processing (note that doublets consisting of multiple cells of the same hashtag can not be identified here).\n")
@@ -645,6 +705,19 @@ for (i in 1:length(dirnamePlot)) {
 }
 
 ```
+
+
+
+```{r demux_GT, echo=F, message=FALSE, results='asis', eval=!is.na(SHINYREPS_RUN_DEMUX) && SHINYREPS_RUN_DEMUX=="demux_GT"}
+cat("## De-Multiplexing by Genotype\n\n")
+
+cat("\nSample multiplexing was applied by utilizing the natural genetic variation between samples. After cellranger analysis, the samples were demultiplexed using souporcell as outlined here: https://github.com/wheaton5/souporcell. Only mapped singlets are used for downstream processing. Note that the subsample IDs are aligned to each other across samples (GEMwells), but are not assigned to the experimental samples. For this we need external genetic information of each experimental sample to assign them to the clusters indentified by souporcell.\n")
+
+  print(kbl(overviewStatus, caption="Souporcell status", row.names=F, format="simple", align = "l") %>% kable_styling())  
+  cat("\n\n", fill = T)
+
+```
+
 
 
 ```{r droplets_emptyDrops, echo=F, message=FALSE, results='asis', eval=(SHINYREPS_SEQTYPE == "tenX" && grepl("raw_feature_bc_matrix", matrix_dir))}
@@ -2260,6 +2333,8 @@ cat("\n\nThe findDoubletClusters function from the scDblFinder package identifie
 
 # Technically, the p.value could be treated as the Simes combined p-value against the doublet hypothesis for the query cluster. However, this does not account for the multiple testing across all pairs of clusters for each chosen cluster, especially as we are choosing the pair that is most concordant with the doublet null hypothesis. 
 
+if(nlevels(factor(colData(sce)[,clustervar])) >=3) {
+
 dbl.out <- findDoubletClusters(sce, clusters=colData(sce)[,selected_clustering_method])
 dbl.out <- DataFrame(cluster=rownames(dbl.out), dbl.out[,1:which(colnames(dbl.out)=="best")], 
                       symbol=rowData(sce)$SYMBOL[match(dbl.out$best, rownames(sce))],
@@ -2267,6 +2342,10 @@ dbl.out <- DataFrame(cluster=rownames(dbl.out), dbl.out[,1:which(colnames(dbl.ou
 dbl.out[,c("p.value", "lib.size1", "lib.size2", "prop")] <- sapply(dbl.out[,c("p.value", "lib.size1", "lib.size2", "prop")], signif, digits=3)
 
 kbl(dbl.out, caption="Doublet detection with clusters") %>% kable_styling()
+
+} else {
+  cat("\nNo doublet detection possible because clustering variable has only", nlevels(factor(colData(sce)[,clustervar])), "cluster (min 3 needed)\n")
+}
 
 ```
 
@@ -2404,7 +2483,7 @@ cat("\nFor each cluster heatmap, we include all genes with an assigned rank <=",
   })
   
 } else {
-  cat("\nNo marker genes to calculate because clustering variable has only 1 cluster\n")
+  cat("\nNo marker genes to calculate because clustering variable has only", nlevels(factor(colData(sce)[,clustervar])), "cluster (min 2 needed)\n")
 }
 ```
 
@@ -2482,12 +2561,15 @@ library(SingleR)
 
 cat("# Cell type annotation\n")
 
+# for other reference datasets check also listDatasets() of scRNAseq package 
+
 # Assigning cell labels from reference data (available for human only)
   cat("\nAssigning cell labels from built-in reference data constructed from Blueprint and ENCODE data (Martens and Stunnenberg 2013; The ENCODE Project Consortium 2012). This reference contains normalized expression values of 259 human bulk RNA-seq samples of pure stroma and immune cells. The Heatmap below shows the assignment score for each cell (column) and label (row). Scores are normalized to [0, 1] within each cell\n\n")
   logcountdata <- logcounts(sce)
   rownames(logcountdata) <- rowData(sce)$SYMBOL
   ref <- celldex::BlueprintEncodeData() # human bulk RNA-seq data from Blueprint and ENCODE
   pred <- SingleR(test=logcountdata, ref=ref, labels=ref$label.main) # alternative: ref$label.fine 
+  sce$Blueprint_main_label <- pred$labels
   plotScoreHeatmap(pred)
 
   #pred.cluster <- SingleR(test=logcountdata, ref=ref, labels=ref$label.main, clusters=colData(sce)[,selected_clustering_method])
@@ -2501,6 +2583,29 @@ cat("# Cell type annotation\n")
   pheatmap::pheatmap(log2(tab+10), color=colorRampPalette(c("white", "blue"))(101))
   cat("\n")
 
+  
+  cat("\nReduced dimension plot with indicated cell types\n\n")
+
+  plot_cluster <- scater::plotReducedDim(sce, 
+                      dimred = name_dimred,
+                      by_exprs_values = exprs_values,
+                      colour_by=selected_clustering_method, point_size=plot_pointsize) + # shape_by = dotshape, 
+                      scale_color_discrete(name="cluster") +
+                      theme(legend.position = "top", aspect.ratio = 1)
+   
+  plot_CT <- scater::plotReducedDim(sce, 
+                      dimred = name_dimred,
+                      by_exprs_values = exprs_values,
+                      colour_by="Blueprint_main_label", point_size=plot_pointsize) +
+                      guides(color=guide_legend(ncol=2)) +
+                      theme(legend.position = "top", aspect.ratio = 1)
+   
+    ggsave(plot=plot_CT, filename= file.path("report_files", "celltype_Blueprint_main_label.png"),
+           width = 120, height = 120, units = c("mm"),  dpi = 300)
+
+gridExtra::grid.arrange(plot_cluster, plot_CT, ncol=2, top=paste(gsub("_", " ", selected_clustering_method), "CT Ref: Blueprint data", sep=", "))
+
+  
 ```
 
 
@@ -2718,6 +2823,11 @@ for (p in (reducedDimNames(sce))) {
   )
   write.table(projection, file =file.path(dir_projections, paste0(p, ".csv")), sep=",", quote = F, row.names = F)
   }
+
+
+# store colData in report_files folder (csv file without numerical columns for compatibility with Loupe import)
+write.table(colData(sce)[, !sapply(colData(sce), is.numeric)], file="report_files/cells.csv", sep=",", quote = F, row.names = F)
+
 
 # save workspace
 save.image("report_files/WS.RData")

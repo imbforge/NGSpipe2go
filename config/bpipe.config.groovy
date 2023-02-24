@@ -19,15 +19,9 @@ config {
       procs="1"
       memory="2"
     }
-    BAMindexer {
-      walltime="01:00:00"
-      procs="1"
-      memory="1"
-    }
-    BWA_pe {
-      queue=long_queue
-      walltime="24:00:00"
-      procs="16"
+    assignSouporcellCluster { 
+      walltime="03:00:00" 
+      procs="1" 
       memory="32"
     }
     Bam2FastQ {
@@ -50,21 +44,37 @@ config {
       procs="1"
       memory="1"
     }
+    bam2bw {
+      walltime="01:00:00"
+      procs="1"
+      memory="2"
+    }
+    bamCoverage {
+      walltime="20:00:00"
+      queue=long_queue
+      procs="8"
+      memory="32"
+    }
+    BAMindexer {
+      walltime="01:00:00"
+      procs="1"
+      memory="1"
+    }
     BamQC {
       walltime="02:00:00"
       procs="1"
       memory="2"
-    }
-    VariantScoreRecalibration {
-      walltime="04:00:00"
-      procs="1"
-      memory="25"
     }
     BaseRecalibration {
       walltime="48:00:00"
       queue=long_queue
       procs="8"
       memory="50"
+    }
+    blacklist_filter {
+      walltime="01:00:00"
+      procs="1"
+      memory="32"
     }
     bowtie1 {
       queue=long_queue
@@ -82,6 +92,12 @@ config {
       walltime="04:00:00"
       procs="4"
       memory="24"
+    }
+    BWA_pe {
+      queue=long_queue
+      walltime="24:00:00"
+      procs="16"
+      memory="32"
     }
     CatFastQ {
       walltime="1:00:00"
@@ -138,6 +154,11 @@ config {
       walltime="01:00:00"
       procs="1"
       memory="4"
+    }
+    collectBpipeLogs {
+      walltime="00:45:00"
+      procs="1"
+      memory="64"
     }
     count_breaks {
       walltime="04:00:00"
@@ -204,10 +225,36 @@ config {
       procs="1"
       memory="1"
     }
+    demux_gt {
+      queue=long_queue
+      walltime="12:00:00"
+      procs="30"
+      memory="64"
+    }
     demux_hto { 
       walltime="03:00:00" 
       procs="1" 
       memory="32"
+    }
+    diffbind2 {
+      walltime="01:00:00"
+      procs="8"
+      memory="64"
+    }
+    diffbind3 {
+      walltime="01:00:00"
+      procs="8"
+      memory="64"
+    }
+    dupRadar {
+      walltime="05:00:00"
+      procs="4"
+      memory="10"
+    }
+    extend {
+      walltime="01:00:00"
+      procs="4"
+      memory="8"
     }
     FastQC {
       walltime="02:00:00"
@@ -234,8 +281,18 @@ config {
       procs="1"
       memory="4"
     }
+    filbowtie2unique {
+      walltime="05:00:00"
+      procs="8"
+      memory="12"
+    }
     Filter2HTSeq {
       walltime="01:00:00"
+      procs="1"
+      memory="1"
+    }
+    filter2htseq {
+      walltime="00:30:00"
       procs="1"
       memory="1"
     }
@@ -259,20 +316,20 @@ config {
       procs="1"
       memory="1"
     }
+    filter_smallRNA_counts {
+      walltime="00:30:00"
+      procs="1"
+      memory="1"
+    }
     GatherBQSRReports {
       walltime="03:00:00"
       procs="4"
       memory="16"
     }
-    GO_Enrichment {
-      walltime="01:00:00"
+    geneBodyCov2 {
+      walltime="03:00:00"
       procs="4"
-      memory="16"
-    }
-    GREAT {
-      walltime="01:00:00"
-      procs="1"
-      memory="1"
+      memory="32"
     }
     GenerateStarIndexFromSJ {
       walltime="04:00:00"
@@ -289,6 +346,16 @@ config {
       procs="8"
       memory="32"
     }
+    GO_Enrichment {
+      walltime="01:00:00"
+      procs="4"
+      memory="16"
+    }
+    GREAT {
+      walltime="01:00:00"
+      procs="1"
+      memory="1"
+    }
     HTseqCount {
       walltime="04:00:00"
       procs="1"
@@ -300,10 +367,25 @@ config {
       procs="8"
       memory="50"
     }
+    inferexperiment {
+      walltime="02:00:00"
+      procs="1"
+      memory="4"
+    }
     InsertSize {
       walltime="04:00:00"
       procs="1"
       memory="10"
+    }
+    ipstrength {
+      walltime="02:00:00"
+      procs="2"
+      memory="16"
+    }
+    macs2 {
+      walltime="04:00:00"
+      procs="1"
+      memory="8"
     }
     MappingStats {
       walltime="02:00:00"
@@ -324,6 +406,16 @@ config {
       walltime="04:00:00"
       procs="1"
       memory="10"
+    }
+    miRDeep2 {
+      walltime="02:00:00"
+      procs="2"
+      memory="2"
+    }
+    miRDeep2Mapper {
+      walltime="04:00:00"
+      procs="8"
+      memory="2"
     }
     MirDeep2 {
       walltime="04:00:00"
@@ -346,10 +438,30 @@ config {
       procs="1"
       memory="25"
     }
+    pattern_filtering {
+      walltime="04:00:00"
+      procs="2"
+      memory="1"
+    }
+    pbc {
+      walltime="02:00:00"
+      procs="1"
+      memory="24"
+    }
+    peak_annotation {
+      walltime="02:00:00"
+      procs="1"
+      memory="8"  
+    } 
     pear {
       walltime="2:00:00"
       procs="1"
       memory="8"
+    }
+    phantompeak {
+      walltime="05:00:00"
+      procs="8"
+      memory="16"
     }
     PingPongPro {
       walltime="1:00:00"
@@ -371,6 +483,11 @@ config {
       procs="1"
       memory="4"
     }
+    qualimap {
+      walltime="04:00:00"
+      procs="1"
+      memory="10"
+    }
     RepEnrich {
       queue=long_queue
       walltime="24:00:00"
@@ -388,20 +505,20 @@ config {
       procs="1"
       memory="8"
     }
-    STAR {
-      walltime="04:00:00"
+    rMATS {
+      walltime="03:00:00"
       procs="4"
-      memory="40"
+      memory="8"
     }
-    STAR_pe {
-      walltime="04:00:00"
-      procs="8"
-      memory="6"
+    rnaseqc {
+      walltime="1:00:00"
+      procs="4"
+      memory="4"
     }
-    STAR_pe_2nd {
-      walltime="04:00:00"
-      procs="8"
-      memory="32"
+    rnatypes {
+      walltime="0:10:00"
+      procs="4"
+      memory="4"
     }
     SelectUnMapped {
       walltime="04:00:00"
@@ -418,6 +535,11 @@ config {
       procs="1"
       memory="4"
     }
+    shinyReports {
+      walltime="00:05:00"
+      procs="1"
+      memory="1"
+    }
     snpEff {
       walltime="3:00:00"
       procs="1"
@@ -433,10 +555,55 @@ config {
       procs="4"
       memory="12"
     }
+    STAR {
+      walltime="04:00:00"
+      procs="4"
+      memory="40"
+    }
+    STAR_pe {
+      walltime="04:00:00"
+      procs="8"
+      memory="6"
+    }
+    STAR_pe_2nd {
+      walltime="04:00:00"
+      procs="8"
+      memory="32"
+    }
     SubreadCount {
       walltime="01:00:00"
       procs="4"
       memory="2"
+    }
+    subread2rnatypes {
+      walltime="02:00:00"
+      procs="4"
+      memory="10"
+    }
+    subread_count {
+      walltime="00:30:00"
+      procs="4"
+      memory="4"
+    }
+    subread_miRNAmature_count {
+      walltime="00:30:00"
+      procs="4"
+      memory="4"
+    }
+    tpm {
+      walltime="00:30:00"
+      procs="1"
+      memory="4"
+    }
+    trackhub {
+      walltime="00:05:00"
+      procs="1"
+      memory="1"
+    }
+    trackhub_config {
+      walltime="00:05:00"
+      procs="1"
+      memory="1"
     }
     TrimUMIs {
       walltime="01:00:00"
@@ -448,6 +615,26 @@ config {
       walltime="16:00:00"
       procs="1"
       memory="32"
+    }
+    umi_filtering {
+      walltime="01:00:00"
+      procs="2"
+      memory="4"
+    }
+    umicount {
+      walltime="05:00:00"
+      procs="1"
+      memory="20"
+    }
+    umicount_tab {
+      walltime="05:00:00"
+      procs="1"
+      memory="20"
+    }
+    umidedup {
+      walltime="05:00:00"
+      procs="1"
+      memory="5"
     }
     ValidateVariants {
       walltime="2:00:00"
@@ -483,186 +670,10 @@ config {
       procs="2"
       memory="20"
     }
-    bam2bw {
-      walltime="01:00:00"
-      procs="1"
-      memory="2"
-    }
-    bamCoverage {
-      walltime="20:00:00"
-      queue=long_queue
-      procs="8"
-      memory="32"
-    }
-    blacklist_filter {
-      walltime="01:00:00"
-      procs="1"
-      memory="32"
-    }
-    collectBpipeLogs {
-      walltime="00:45:00"
-      procs="1"
-      memory="64"
-    }
-    diffbind2 {
-      walltime="01:00:00"
-      procs="8"
-      memory="32"
-    }
-    diffbind3 {
-      walltime="01:00:00"
-      procs="8"
-      memory="32"
-    }
-    dupRadar {
-      walltime="05:00:00"
-      procs="4"
-      memory="10"
-    }
-    extend {
-      walltime="01:00:00"
-      procs="4"
-      memory="8"
-    }
-    filbowtie2unique {
-      walltime="05:00:00"
-      procs="8"
-      memory="12"
-    }
-    filter_smallRNA_counts {
-      walltime="00:30:00"
-      procs="1"
-      memory="1"
-    }
-    filter2htseq {
-      walltime="00:30:00"
-      procs="1"
-      memory="1"
-    }
-    geneBodyCov2 {
-      walltime="03:00:00"
-      procs="4"
-      memory="32"
-    }
-    inferexperiment {
-      walltime="02:00:00"
-      procs="1"
-      memory="4"
-    }
-    ipstrength {
-      walltime="02:00:00"
-      procs="2"
-      memory="16"
-    }
-    macs2 {
+    VariantScoreRecalibration {
       walltime="04:00:00"
       procs="1"
-      memory="8"
-    }
-    miRDeep2 {
-      walltime="02:00:00"
-      procs="2"
-      memory="2"
-    }
-    miRDeep2Mapper {
-      walltime="04:00:00"
-      procs="8"
-      memory="2"
-    }
-    pattern_filtering {
-      walltime="04:00:00"
-      procs="2"
-      memory="1"
-    }
-    pbc {
-      walltime="02:00:00"
-      procs="1"
-      memory="24"
-    }
-    peak_annotation {
-      walltime="02:00:00"
-      procs="1"
-      memory="8"  
-    }  
-    phantompeak {
-      walltime="05:00:00"
-      procs="8"
-      memory="16"
-    }
-    qualimap {
-      walltime="04:00:00"
-      procs="1"
-      memory="10"
-    }
-    rMATS {
-      walltime="03:00:00"
-      procs="4"
-      memory="8"
-    }
-    rnaseqc {
-      walltime="1:00:00"
-      procs="4"
-      memory="4"
-    }
-    rnatypes {
-      walltime="0:10:00"
-      procs="4"
-      memory="4"
-    }
-    shinyReports {
-      walltime="00:05:00"
-      procs="1"
-      memory="1"
-    }
-    subread2rnatypes {
-      walltime="02:00:00"
-      procs="4"
-      memory="10"
-    }
-    subread_count {
-      walltime="00:30:00"
-      procs="4"
-      memory="4"
-    }
-    subread_miRNAmature_count {
-      walltime="00:30:00"
-      procs="4"
-      memory="4"
-    }
-    tpm {
-      walltime="00:30:00"
-      procs="1"
-      memory="4"
-    }
-    trackhub {
-      walltime="00:05:00"
-      procs="1"
-      memory="1"
-    }
-    trackhub_config {
-      walltime="00:05:00"
-      procs="1"
-      memory="1"
-    }
-    umi_filtering {
-      walltime="01:00:00"
-      procs="2"
-      memory="4"
-    }
-    umicount {
-      walltime="05:00:00"
-      procs="1"
-      memory="20"
-    }
-    umicount_tab {
-      walltime="05:00:00"
-      procs="1"
-      memory="20"
-    }
-    umidedup {
-      walltime="05:00:00"
-      procs="1"
-      memory="5"
+      memory="25"
     }
   }
 }

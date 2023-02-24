@@ -58,7 +58,8 @@ All analysis steps are illustrated in the pipeline [flowchart](https://viewer.di
   - ESSENTIAL_DIFFBIND_VERSION: DiffBind version to use (either 3 or 2, default 3).
   - ESSENTIAL_DIFFBIND_LIBRARY: DiffBind method to calculate library sizes. One of "full", "RiP", "background" and "default" ("default" refers to method "full", see [DiffBind documentation](http://bioconductor.org/packages/release/bioc/vignettes/DiffBind/inst/doc/DiffBind.pdf) for explanation). For DiffBind version 2, any other method than RiP refers to TRUE, i.e. use total number of reads instead of reads overlapping peaks.
   - ESSENTIAL_DIFFBIND_NORM: DiffBind method to calculate normalization factors. One of "lib", "RLE", "TMM", "native" and "default" ("default" refers to method "lib", see [DiffBind documentation](http://bioconductor.org/packages/release/bioc/vignettes/DiffBind/inst/doc/DiffBind.pdf) for explanation). Not applicable for DiffBind version 2.
-  
+  - ESSENTIAL_SUMMITS: Re-center peaks in DiffBind around consensus summit (point of greatest read overlap) with peak width 2x ESSENTIAL_SUMMITS in order to provide more standardized peak intervals (0 means no re-centering, default 200). This can prevent the widening effect of peaks occurring when neighboring peaks are merged for the consensus peak set. For broader peaks this should be set to 0, which means peak sets will not be modified.  
+
 - additional (more specialized) parameter can be given in the header files of the individual pipeline modules (see module header files linked in the flowchart for default parameter).
 
 If differential binding analysis is selected it is required additionally:

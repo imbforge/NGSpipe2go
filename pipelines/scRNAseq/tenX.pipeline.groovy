@@ -10,6 +10,8 @@ load PIPELINE_ROOT + "/config/bpipe.config.groovy"
 load PIPELINE_ROOT + "/modules/scRNAseq/cellranger_count.header"
 load PIPELINE_ROOT + "/modules/scRNAseq/cellranger_aggr.header"
 load PIPELINE_ROOT + "/modules/scRNAseq/demux_hto.header"
+load PIPELINE_ROOT + "/modules/scRNAseq/demux_gt.header"
+load PIPELINE_ROOT + "/modules/scRNAseq/assignSouporcellCluster.header"
 load PIPELINE_ROOT + "/modules/NGS/bamcoverage.header"
 load PIPELINE_ROOT + "/modules/NGS/bamindexer.header"
 load PIPELINE_ROOT + "/modules/NGS/fastqc.header"
@@ -36,7 +38,7 @@ Bpipe.run {
       (RUN_CUTADAPT ? Cutadapt + FastQC.using(subdir:"trimmed") : dontrun.using(module:"Cutadapt")) ] + 
       "%_L*_R*_001.fastq.gz" * [
          cellranger_count + [
-            (RUN_DEMUX ? demux_hto : dontrun.using(module:"demux_hto")),
+            (RUN_DEMUX ? (RUN_DEMUX == "demux_GT" ? demux_gt : (RUN_DEMUX == "demux_HTO" ? demux_hto : dontrun.using(module:"demux") )) : dontrun.using(module:"demux")),
             bamCoverage,
             inferexperiment,
             qualimap,
@@ -45,7 +47,9 @@ Bpipe.run {
          ]
     ] + 
     cellranger_aggr +
+    (RUN_DEMUX == "demux_GT" ? assignSouporcellCluster : dontrun.using(module:"assignSouporcellCluster")) +
     (RUN_TRACKHUB ? trackhub_config + trackhub : dontrun.using(module:"trackhub")) +
-    collectToolVersions + MultiQC + shinyReports
+    collectToolVersions + MultiQC + 
+    shinyReports
 }
 

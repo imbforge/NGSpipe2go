@@ -61,6 +61,7 @@ tools_defaults = [
     samtools       : [ runenv: "lmod", version: "1.10"              ],
     seqtk          : [ runenv: "lmod", version: "1.3"               ],
     snpEff         : [ runenv: "lmod", version: "5.0e"              ],
+    souporcell     : [ runenv: "lmod", version: "2.0_singularity"   ],
     starfusion     : [ runenv: "lmod", version: "0.8.0"             ],
     star           : [ runenv: "lmod", version: "2.7"               ],
     stringtie      : [ runenv: "lmod", version: "1.3.5"             ],
@@ -343,6 +344,11 @@ tools_envs = [
     snpEff: [
         "5.0e": [
             lmod: "module load snpEff/5.0e"
+        ]
+    ],
+    souporcell: [
+        "2.0_singularity": [
+            lmod: "module load souporcell/2.0_singularity"
         ]
     ],
     starfusion: [
