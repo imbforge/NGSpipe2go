@@ -1519,7 +1519,7 @@ ChIPhelper.diffbind <- function(subdir="") {
       db <- dba.load(dir=file.path(SHINYREPS_DIFFBIND, subdir), file='diffbind', pre=subexpPrefix)
       infodb <- read.table(file.path(SHINYREPS_DIFFBIND, subdir, paste0(subexpPrefix, "info_dba_object.txt")), header=T, sep="\t", stringsAsFactors = F)
       
-      if(subexpPrefix !="") {cat(paste0("\n####", gsub("SubExp", "Sub experiment", gsub("_", " ", subexpPrefix)), "\n\n"))}
+      if(subexpPrefix !="") {cat(paste0("\n#### ", gsub("SubExp", "Sub experiment", gsub("_", " ", subexpPrefix)), "\n\n"))}
       cat(paste0("\nDataset in DiffBind analysis (", db$totalMerged, " sites in matrix):\n\n"))
       cat(knitr::kable(infodb, format="html") %>% kableExtra::kable_styling(), sep="\n")
       cat("\n\n")
