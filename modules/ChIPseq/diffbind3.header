@@ -9,14 +9,15 @@ diffbind3_vars=[
     fragsize         : Integer.toString(ESSENTIAL_FRAGLEN), // average fragment size
     cores            : Integer.toString(ESSENTIAL_THREADS), // number of threads to use
     blacklist        : ESSENTIAL_BLACKLIST,  // if true, blacklist will be applied if available for that genome. Not necessary if a bed file is specified in ESSENTIAL_BLACKLIST to be used by the blacklist_filter module before (in this case or if false, diffbind will omit blacklist filtering).
-    greylist         : true,   // if true and if a valid BSgenome can be detected, a greylist will be generated for each Control.
+    greylist         : false,   // if true and if a valid BSgenome can be detected, a greylist will be generated for each Control.
     summits          : Integer.toString(ESSENTIAL_SUMMITS), // re-center peaks around consensus summit with peak width 2x summits (0 means no re-centering). 
     filter           : Integer.toString(0),         // value to use for filtering intervals with low read counts. 
+    minOverlap       : Integer.toString(2),         // the minimum number of peaksets a peak must be in to be included when adding a consensus peakset (default 2). 
     analysisMethod   : "DESeq2", // either "DESeq2" or "edgeRGLM", underlying method by which to analyze differential binding affinity. 
     librarySize      : ESSENTIAL_DIFFBIND_LIBRARY,   // method to use to calculate library sizes 
     normalization    : ESSENTIAL_DIFFBIND_NORM,   // method to use to calculate normalization factors
     background       : "false",   // use "background" bins (which should not have differential enrichment between samples) as the basis for normalization. If background is not logical but a numeric value, it will be used as the bin size. Default false.
-    substractControl : "default",                        // logical indicating whether Control read counts are subtracted for each site in each sample before performing analysis. If "default", it will be set to TRUE unless a greylist is applied successfully.
+    substractControl : "default",                        // logical indicating whether Control read counts are subtracted for each site in each sample before performing analysis. If "default", it will be set to TRUE unless a greylist is applied successfully by DiffBind (but not when greylist applied to MACS2 files beforehand).
     conditionColumn  : "group",   // this targets column is interpreted as 'Condition' and is used as for defining the default design.
     fdr_threshold    : 0.05,                         // FDR significance threshold for sites to be included in the DiffBind result
     fold             : 0,                           // only sites with an absolute log Fold value greater than equal to this will be included in the DiffBind report.
