@@ -32,7 +32,7 @@ ESSENTIAL_BSGENOME="BSgenome.Scerevisiae.UCSC.sacCer3"  // Bioconductor genome r
 ESSENTIAL_TXDB="TxDb.Scerevisiae.UCSC.sacCer3.sgdGene"  // needed for peak annotation
 ESSENTIAL_ANNODB="org.Sc.sgd.db"  // needed for peak annotation
 ESSENTIAL_DB="sacCer3"            // UCSC assembly version for GREAT analysis (only for UCSC hg19, hg38, mm9 and mm10)
-ESSENTIAL_BLACKLIST=""            // path to a BED file with blacklisted regions (default: empty string). Peaks in these regions will be removed from the peakset. 
+ESSENTIAL_BLACKLIST=""           // path to a BED file with blacklisted regions (default: empty string). Peaks in these regions will be removed from the peakset (skipped if greylist is selected below). 
 
 // FASTQ-Screen parameters
 ESSENTIAL_FASTQSCREEN_PERC=1    // contaminant filter, if a contaminant is consuming at least this percentage of reads in at least one sample, contaminant will be shown in report
@@ -70,6 +70,7 @@ ESSENTIAL_SUMMITS=200                // Re-center peaks around consensus summit 
 // further optional pipeline stages to include
 RUN_IN_PAIRED_END_MODE=(ESSENTIAL_PAIRED == "yes")
 RUN_FASTQSCREEN=true            // check for contaminations using FastQ Screen
+RUN_MAKE_GREYLIST=false          // greylist is generated from all Control files and is then applied to MACS2 peak files like a blacklist
 RUN_PEAK_ANNOTATION=true
 RUN_ENRICHMENT=true
 RUN_TRACKHUB=false

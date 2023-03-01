@@ -1,0 +1,12 @@
+make_greylist_vars=[
+    outdir    : RESULTS + "/greylist",
+    karyoFile : ESSENTIAL_CHROMSIZES,        // file with chromosome sizes
+    targets   : "targets.txt",               // targets file. Check the bin directory for the format
+    bams      : MAPPED,                      // directory with the bam files
+    peaks     : RESULTS + "/macs2",          // directory with peak caller output
+    maxgap    : "10000",                     // merge grey regions if distance below maxGap
+    extra     : ""
+]
+
+load PIPELINE_ROOT + "/modules/ChIPseq/make_greylist.groovy"
+
