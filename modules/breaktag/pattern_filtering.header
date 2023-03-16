@@ -4,5 +4,5 @@ pattern_filtering_vars=[
     targets: TARGETS
 ]
 
-load  PIPELINE_ROOT + "/modules/bliss/pattern_filtering.groovy"
+load  PIPELINE_ROOT + "/modules/breaktag/pattern_filtering.groovy"
 

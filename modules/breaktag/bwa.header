@@ -8,5 +8,5 @@ BWA_vars=[
     extra           : "-v 1" // output only errors to stderr
 ]
 
-load  PIPELINE_ROOT + "/modules/bliss/bwa.groovy"
+load  PIPELINE_ROOT + "/modules/breaktag/bwa.groovy"
 

@@ -57,7 +57,8 @@ CORES      <- parseArgs(args,"cores=", 4, "as.numeric") # fragment size
 BLACKLIST  <- parseArgs(args,"blacklist=", FALSE, "as.logical") # if true, blacklist will be applied
 GREYLIST   <- parseArgs(args,"greylist=", FALSE, "as.logical") # if true greylist will be generated for each Control
 SUMMITS    <- parseArgs(args,"summits=", 200, "as.numeric") # summits for re-centering consensus peaks
-FILTER     <- parseArgs(args,"filter=", 5, "as.numeric") # value to use for filtering intervals with low read counts
+FILTER     <- parseArgs(args,"filter=", 1, "as.numeric") # value to use for filtering intervals with low read counts
+MINOVERLAP <- parseArgs(args,"minOverlap=", 2, "as.numeric") # value to use for filtering intervals with low read counts
 ANALYSISMETHOD  <- parseArgs(args,"analysisMethod=", "DESeq2", "as.character") # method for which to normalize (either "DESeq2" or "edgeRGLM")
 LIBRARYSIZE     <- parseArgs(args,"librarySize=", "default", "as.character")   # use total number of reads in bam for normalization (FALSE=only peaks)
 NORMALIZATION   <- parseArgs(args,"normalization=", "default", "as.character")   # use total number of reads in bam for normalization (FALSE=only peaks)
@@ -86,6 +87,7 @@ if(!isTRUE(BLACKLIST))       {BLACKLIST <- FALSE} # if a specific blacklist is d
 if(!is.logical(GREYLIST))    stop("greylist not logical. Run with:\n",runstr)
 if(!is.numeric(SUMMITS))     stop("Summits is not numeric. Run with:\n",runstr)
 if(!is.numeric(FILTER))      stop("Filter threshold is not numeric. Run with:\n",runstr)
+if(!is.numeric(MINOVERLAP))  stop("minOverlap threshold is not numeric. Run with:\n",runstr)
 if(!is.numeric(FDR_TRESHOLD))      stop("FDR threshold is not numeric. Run with:\n",runstr)
 if(!is.numeric(FOLD))        stop("Fold threshold is not numeric. Run with:\n",runstr)
 if(!is.logical(ANNOTATE))    stop("Annotate not logical. Run with:\n",runstr)
@@ -190,6 +192,7 @@ if(!all(valid_conts)) {
 
 ### start loop for sub_experiment 
 result <- list()
+minOverlapError <- c() # stores if dba.peakset crashes
 if(any(is.null(contsAll$sub_experiment))){
   stop("Please specify sub_experiments in contrasts_diffbind.txt")
 }
@@ -213,8 +216,14 @@ for (sub in unique(contsAll$sub_experiment)) {
                                                    RunParallel=TRUE, cores=CORES,
                                                    doBlacklist=BLACKLIST, doGreylist=GREYLIST)) 
 
-  # create DBA object containing consensus peaks per group (needed later)
-  db2 <- dba.peakset(db, consensus=DBA_CONDITION)
+  # create DBA object with added consensus peak sets PER GROUP (1 consensus peakset per group, this is needed later for plots)
+  tryConsensus <- try(db2 <- dba.peakset(DBA=db, consensus=DBA_CONDITION, minOverlap=MINOVERLAP))  # crashes if minOverlap is too high for a certain group
+  if(class(tryConsensus)=="try-error") {
+    minOverlapError <- c(minOverlapError, sub)
+    warning(paste("minOverlap=", MINOVERLAP, "in db2 object failed. Consider to reduce this value. This would effect the entire downstream analysis."))
+    # db2 affects the Boxplot of consensus peaks and the consensus peakset venn diagram. 
+    # But MINOVERLAP would also affect the dba.count call for db (when generating the consensus peakset for all samples).
+  }
   
   # Heatmap using occupancy (peak caller score) data
   png(file.path(OUT, paste0(subexpPrefix, "heatmap_occupancy.png")), width = 150, height = 150, units = "mm", res=300)
@@ -226,8 +235,7 @@ for (sub in unique(contsAll$sub_experiment)) {
     olap.rate <- dba.overlap(db, mode=DBA_OLAP_RATE)
     plot(olap.rate, type='b', ylab='# peaks', xlab='Overlap at least this many peaksets', main="Overlap rate plot")
   dev.off()
-  
-  
+   
   ## process DBA object
   
     # apply black and grey lists and count reads
@@ -247,7 +255,7 @@ for (sub in unique(contsAll$sub_experiment)) {
       
     # identify all overlapping peaks and derives a consensus peakset for the experiment. 
     # Then count how many reads overlap each interval for each unique sample.
-    db <- dba.count(db, minOverlap=2, score=DBA_SCORE_NORMALIZED, summits=SUMMITS, filter=FILTER, 
+    db <- dba.count(db, minOverlap=MINOVERLAP, score=DBA_SCORE_NORMALIZED, summits=SUMMITS, filter=FILTER, 
                     bScaleControl=TRUE, minCount=0, bUseSummarizeOverlaps=TRUE) 
     # score: which score to use in the binding affinity matrix. Note that all raw read counts are maintained for use by dba.analyze, 
     # regardless of how the score is set here. 
@@ -273,7 +281,6 @@ for (sub in unique(contsAll$sub_experiment)) {
     infodb$normFactors <- infoNorm$norm.factors
     infodb$normLibSize <- round(infodb$fullLibSize/infodb$normFactors)
     
-  
     # apply the contrasts
      for (i in 1:nrow(conts)) {
      # parse formula in cont
@@ -306,30 +313,31 @@ for (sub in unique(contsAll$sub_experiment)) {
   
   
   # Boxplot of consensus peaks
-    lpeaks <- db2$peaks # db2 contains group consensus peaksets additional to the sample peaksets
-    dfcolnames <- colnames(lpeaks[[1]]) # Consensus peak dfs don't have colnames, therefore name columns 
-    lpeaks <- lapply(1:length(lpeaks), function(x) setNames(lpeaks[[x]], dfcolnames) )
-    
-    names(lpeaks) <- names(db2$masks$Consensus) # name list elements
-    names(lpeaks)[db2$masks$Consensus] <- paste0("Consensus\n", names(lpeaks)[db2$masks$Consensus])
-    
-    lpeaks <- lapply(lpeaks, function(x) { # calculate peak sizes
-      x$width <- abs(x[,grep("end", dfcolnames, ignore.case = T)] - x[,grep("start", dfcolnames, ignore.case = T)]) # columns names may upper or lower case
-      return(x)
-    })
-    
-    for(x in unique(db2$samples$Condition)) { # concatenate peak sizes of samples from the same group
-      lpeaks[[paste0("Replicates\n", x)]] <- dplyr::bind_rows(lpeaks[which(db2$samples$Condition==x)])
-    }
-    lpeaks <- lpeaks[grepl("(Consensus)|(Replicates)", names(lpeaks))] # samples not needed anymore
-    
-    plotdata <- dplyr::bind_rows(lpeaks, .id="group") # create data.frame for plotting
-    
-  png(file.path(OUT, paste0(subexpPrefix, "peak_width_boxplot.png")), width = 150, height = 150, units = "mm", res=300)
-   try(ggplot(plotdata, aes(x=group, y=width, fill=group)) + geom_boxplot(show.legend = FALSE) + 
-        theme(text = element_text(size=15), axis.text.x = element_text(angle=90, vjust=0.5)) + 
-        labs(title="Size of consensus peaks") + theme(plot.title = element_text(hjust = 0.5)) )
-  dev.off()
+  if(class(tryConsensus)=="DBA") { # check if db2 was successfully created
+      lpeaks <- db2$peaks # db2 contains group consensus peaksets additional to the sample peaksets
+      dfcolnames <- colnames(lpeaks[[1]]) # Consensus peak dfs don't have colnames, therefore name columns 
+      lpeaks <- lapply(1:length(lpeaks), function(x) setNames(lpeaks[[x]], dfcolnames) )
+      
+      names(lpeaks) <- names(db2$masks$Consensus) # name list elements
+      names(lpeaks)[db2$masks$Consensus] <- paste0("Consensus\n", names(lpeaks)[db2$masks$Consensus])
+      
+      lpeaks <- lapply(lpeaks, function(x) { # calculate peak sizes
+        x$width <- abs(x[,grep("end", dfcolnames, ignore.case = T)] - x[,grep("start", dfcolnames, ignore.case = T)]) # columns names may upper or lower case
+        return(x)
+      })
+      
+      for(x in unique(db2$samples$Condition)) { # concatenate peak sizes of samples from the same group
+        lpeaks[[paste0("Replicates\n", x)]] <- dplyr::bind_rows(lpeaks[which(db2$samples$Condition==x)])
+      }
+      lpeaks <- lpeaks[grepl("(Consensus)|(Replicates)", names(lpeaks))] # samples not needed anymore
+      
+      plotdata <- dplyr::bind_rows(lpeaks, .id="group") # create data.frame for plotting
+      
+    p <- ggplot(plotdata, aes(x=group, y=width, fill=group)) + geom_boxplot(show.legend = FALSE) + 
+          theme(text = element_text(size=15), axis.text.x = element_text(angle=90, vjust=0.5)) + 
+          labs(title="Size of consensus peaks") + theme(plot.title = element_text(hjust = 0.5)) 
+    ggsave(plot=p, filename=file.path(OUT, paste0(subexpPrefix, "peak_width_boxplot.png")))
+  }
     
   
   # Venn diagram of all contrasts
@@ -367,11 +375,13 @@ for (sub in unique(contsAll$sub_experiment)) {
           try(dba.plotVenn(db, mask=vennmask, main="Binding Site Overlaps Per Sample"))    # plot all relevant samples together
         dev.off()
       } else {  # generate a consensus peakset otherwise
-         vennmask2 <- dba.mask(db2, DBA_CONDITION, factor(dba.show(db2, bContrast=T)[cont, grep("group", names(dba.show(db2, bContrast=T)), ignore.case = T)])) # db2 see above
-         png(file.path(OUT, paste0(subexpPrefix, cont.name, "_venn_plot.png")), width = 150, height = 150, units = "mm", res=300)
-            try(dba.plotVenn(db2, main="Binding Site Overlaps Per Group",
-                          mask=db2$masks$Consensus & names(db2$masks$Consensus) %in% factor(dba.show(db, bContrast=T)[cont, grep("group", names(dba.show(db, bContrast=T)), ignore.case = T)]) ))
-         dev.off()
+        if(class(tryConsensus)=="DBA") { # check if db2 was successfully created
+           vennmask2 <- dba.mask(db2, DBA_CONDITION, factor(dba.show(db2, bContrast=T)[cont, grep("group", names(dba.show(db2, bContrast=T)), ignore.case = T)])) # db2 see above
+           png(file.path(OUT, paste0(subexpPrefix, cont.name, "_venn_plot.png")), width = 150, height = 150, units = "mm", res=300)
+              try(dba.plotVenn(db2, main="Binding Site Overlaps Per Group",
+                            mask=db2$masks$Consensus & names(db2$masks$Consensus) %in% factor(dba.show(db, bContrast=T)[cont, grep("group", names(dba.show(db, bContrast=T)), ignore.case = T)]) ))
+           dev.off()
+        }
       }
   
       tryCatch(dba.report(db, contrast=cont, bCalled=T, bUsePval=F, th=1, fold=0), # th=db$config$th, fold=FOLD # filtering is done later
@@ -401,44 +411,48 @@ write.table(infodb, file=file.path(OUT, paste0(subexpPrefix, "info_dba_object.tx
   
   # create context dependent parameter table   
   explLibrarySize <- switch(infoNorm$lib.method,
-                            full="Use the full library size for normalization",
-                            RiP="Use the number of reads that overlap consensus peaks for normalization",
-                            background="Use the total number of reads aligned to the chromosomes for which there is at least one peak (requires background bin calculation)"
+                            full="Use the full library size for normalization.",
+                            RiP="Use the number of reads that overlap consensus peaks for normalization.",
+                            background="Use the total number of reads aligned to the chromosomes for which there is at least one peak (requires background bin calculation)."
                             )
   if(LIBRARYSIZE=="default") {explLibrarySize <- paste0("refers to method '", infoNorm$lib.method, "'. ", explLibrarySize)}
   
   explNormalization <- switch(infoNorm$norm.method,
-                              RLE="RLE normalization (native to DESeq2)",
-                              TMM="TMM normalization (native to EDGER)",
-                              native="Use native method based on analysis method: RLE for DESeq2 or TMM for EDGER",
-                              lib="Normalize by library size only",
-                              offsets="Indicates that offsets have been specified using the offsets parameter, and they should be used without alteration",
-                              "adjust offsets"="Indicates that offsets have been specified using the offsets parameter, and they should be adjusted for library size and mean centering before being used in a DESeq2 analysis"
+                              RLE="RLE normalization (native to DESeq2).",
+                              TMM="TMM normalization (native to EDGER).",
+                              native="Use native method based on analysis method: RLE for DESeq2 or TMM for EDGER.",
+                              lib="Normalize by library size only.",
+                              offsets="Indicates that offsets have been specified using the offsets parameter, and they should be used without alteration.",
+                              "adjust offsets"="Indicates that offsets have been specified using the offsets parameter, and they should be adjusted for library size and mean centering before being used in a DESeq2 analysis."
                               )
   if(NORMALIZATION=="default") {explNormalization <- paste0("refers to method '", infoNorm$norm.method, "'. ", explNormalization)}
 
-  explBackground <- if(is.logical(infoNorm$background)) {
-                          if(isTRUE(infoNorm$background)) {
-                            "background bins used for normalization coumputed with default bin size 15000 bp"} else {
-                            "no background bins computed"}
+  explBackground <- if(isTRUE(infoNorm$background)) {
+                          if(is.numeric(BACKGROUND)) {
+                            paste("background bins used for normalization coumputed with bin size", BACKGROUND, "bp.")} else {
+                            "background bins used for normalization coumputed with default bin size 15000 bp."}
                         } else {
-                          paste("background bins used for normalization coumputed with bin size", infoNorm$background, "bp")
-                          }
+                            if(is.numeric(infoNorm$background)) { # if BACKGROUND is numeric, this may be stored here in future DiffBind versions
+                            paste("background bins used for normalization coumputed with bin size", infoNorm$background, "bp.")
+                            } else {"no background bins computed."}
+                        }
   
-  
+
   # create overview table with diffbind settings
   diffbindSettings <- rbind(c(Parameter="DiffBind package version", Value=as.character(currentDiffbindVersion), Comment= paste(if(currentDiffbindVersion$major != floor(DIFFBINDVERSION)) {paste0("Major version not concordant with intended DiffBind v", DIFFBINDVERSION, ". Please check R module." )} else {""}, DiffBindWarningText)),
+                            c("external blacklist applied", isBlacklistFilt, if(isBlacklistFilt) {"MACS2 peak files have already been blacklist or greylist filtered"} else {""}),
                             c("Apply auto-generated blacklist", BLACKLIST, if(BLACKLIST){if(class(blacklist_generated)=="try-error") {"Skipped because blacklist not available."} else {"Blacklist successfully generatedand applied."}} else {""}),
                             c("Apply auto-generated greylist", GREYLIST, if(GREYLIST){if(class(greylist_generated)=="try-error") {"Skipped because greylist not available."} else {"Greylist successfully generated and applied."}} else {""}),
                             c("Fragment size", FRAGSIZE, ""),
                             c("Summits", SUMMITS, if(SUMMITS==0) {"no re-centering of peaks."} else {paste0("re-center peaks around consensus summit with peak width 2x", SUMMITS, ".")}),
                             c("Filter threshold", FILTER, "threshold for filtering intervals with low read counts."),
+                            c("min Overlap", MINOVERLAP, if(length(minOverlapError) >0) {paste("Per-group consensus peaksets not available for subexperiment", paste(minOverlapError, collapse=", "), "(only relevant for some of the plots).")} else {paste("include peak in consensus if present in at least", MINOVERLAP, "peaksets.")} ),
                             c("Analysis method", ANALYSISMETHOD, ""),
                             c("Library size", LIBRARYSIZE, explLibrarySize),
                             c("Normalization method", NORMALIZATION, explNormalization),
                             c("Background", BACKGROUND, explBackground),
                             c("Subtract control read counts", SUBSTRACTCONTROL, if(SUBSTRACTCONTROL=="default") {paste("set to", SUBSTRACTCONTROL_FINAL, "because greylist is", if(SUBSTRACTCONTROL_FINAL){"not"} else {""}, "available.")} else {""}),
-                            c("Design", "contrast_diffbind.txt", paste(db$design, "(with", CONDITIONCOLUMN, "as Condition column)")),
+                            c("Design", "contrast_diffbind.txt", paste(db$design, "(with", CONDITIONCOLUMN, "as Condition column).")),
                             c("FDR threshold", FDR_TRESHOLD, "significance threshold for differential binding analysis."),
                             c("Fold threshold", FOLD, "log Fold threshold for differential binding analysis.")
   )

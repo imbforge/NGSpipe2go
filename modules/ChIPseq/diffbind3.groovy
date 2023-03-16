@@ -22,6 +22,7 @@ diffbind3 = {
         (diffbind3_vars.greylist          ? " greylist="          + diffbind3_vars.greylist            : "") +
         (diffbind3_vars.summits           ? " summits="           + diffbind3_vars.summits             : "") +
         (diffbind3_vars.filter            ? " filter="            + diffbind3_vars.filter              : "") +
+        (diffbind3_vars.minOverlap        ? " minOverlap="        + diffbind3_vars.minOverlap          : "") +
         (diffbind3_vars.analysisMethod    ? " analysisMethod="    + diffbind3_vars.analysisMethod      : "") +
         (diffbind3_vars.librarySize       ? " librarySize="       + diffbind3_vars.librarySize         : "") +
         (diffbind3_vars.normalization     ? " normalization="     + diffbind3_vars.normalization       : "") +

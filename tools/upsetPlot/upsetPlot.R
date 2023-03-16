@@ -198,18 +198,34 @@ ChIPhelper.UpSetPlot <- function(subdir="", Mode = "intersect", peakOverlapMode=
     png(file.path(OUT, paste0("upsetplot_", Mode, "_peaknumber.png")), width = 200, height = 100, units = "mm", res=300)
     
     try({
+      
+    intersectionSize <- HeatmapAnnotation(
+        "Intersection size" = anno_barplot(
+          comb_size(upset_matrix), 
+          border = FALSE, 
+          gp = gpar(fill = combColors), 
+          height = unit(3, "cm"),
+          axis_param = list(side = "right")
+        ),
+        annotation_name_side = "right", 
+        annotation_name_rot = 0)
+      
       ht <- draw(UpSet(upset_matrix,
+                       top_annotation = intersectionSize,
                        comb_order = order(comb_size(upset_matrix), decreasing = T),
                        comb_col = combColors,
                        bg_col = "#F0F0FF",
                        set_order = if(is.null(targetsdf)) {order(set_size(upset_matrix), decreasing = TRUE)} else {setnamesOrderByTargetsdf},
                        column_title=paste("# of", Mode, "peaks for each set (max", setsize, "sets shown)"),
-                       left_annotation = if(is.null(targetsdf)) {NULL} else {rowAnnotation(group = targetsdf$group, col=list(group=legend_colors))}, 
+                       left_annotation = if(is.null(targetsdf)) {NULL} else {
+                         rowAnnotation(group = targetsdf$group, col=list(group=legend_colors), show_legend = T,
+                                       annotation_legend_param = list(title_position = "leftcenter", legend_direction = "horizontal", ncol=1)
+                                       )},  
                        right_annotation = upset_right_annotation(upset_matrix, gp = gpar(fill = fillColors)),
                        column_title_gp = gpar(fontsize = 11),
-                       row_names_max_width = unit(5, "cm"),
-                       row_names_gp = gpar(fontsize = 10)
-      ) )
+                       row_names_gp = gpar(fontsize = 8),
+                       row_names_max_width = unit(6, "cm")
+      ), heatmap_legend_side="bottom" )
       if(addBarAnnotation){
         od = column_order(ht)
         cs = comb_size(upset_matrix)
@@ -264,18 +280,34 @@ ChIPhelper.UpSetPlot <- function(subdir="", Mode = "intersect", peakOverlapMode=
     png(file.path(OUT, paste0("upsetplot_", Mode, "_bp.png")), width = 200, height = 100, units = "mm", res=300)
     
     try({
+      
+      intersectionSize <- HeatmapAnnotation(
+        "Intersection size" = anno_barplot(
+          comb_size(upset_matrix), 
+          border = FALSE, 
+          gp = gpar(fill = combColors), 
+          height = unit(3, "cm"),
+          axis_param = list(side = "right")
+        ),
+        annotation_name_side = "right", 
+        annotation_name_rot = 0)
+
       ht <- draw(UpSet(upset_matrix,
+                       top_annotation = intersectionSize,
                        comb_order = order(comb_size(upset_matrix), decreasing = T),
                        comb_col = combColors,
                        bg_col = "#F0F0FF",
                        set_order = if(is.null(targetsdf)) {order(set_size(upset_matrix), decreasing = TRUE)} else {setnamesOrderByTargetsdf},
                        column_title=paste("# of", Mode, "bp for each set (max", setsize, "sets shown)"),
-                       left_annotation = if(is.null(targetsdf)) {NULL} else {rowAnnotation(group = targetsdf$group, col=list(group=legend_colors))}, 
+                       left_annotation = if(is.null(targetsdf)) {NULL} else {
+                         rowAnnotation(group = targetsdf$group, col=list(group=legend_colors), show_legend = T,
+                                       annotation_legend_param = list(title_position = "leftcenter", legend_direction = "horizontal", ncol=1)
+                         )},  
                        right_annotation = upset_right_annotation(upset_matrix, gp = gpar(fill = fillColors)),
                        column_title_gp = gpar(fontsize = 11),
-                       row_names_max_width = unit(5, "cm"),
-                       row_names_gp = gpar(fontsize = 10)
-      ))
+                       row_names_gp = gpar(fontsize = 8),
+                       row_names_max_width = unit(6, "cm")
+      ), heatmap_legend_side="bottom")
       if(addBarAnnotation){
         od = column_order(ht)
         cs = comb_size(upset_matrix)

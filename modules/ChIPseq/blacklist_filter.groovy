@@ -6,11 +6,14 @@ blacklist_filter = {
         author:"Giuseppe Petrosino, modified by Frank Ruehle"
 
     var subdir : ""
+    var blacklist: blacklist_filter_vars.blacklist
     output.dir = blacklist_filter_vars.outdir + "/$subdir" 
+    
+    println blacklist
 
     def BLACKLIST_FILTER_FLAGS =
         (blacklist_filter_vars.files     ? " peakData="         + blacklist_filter_vars.files   + "/$subdir" : "") +
-        (blacklist_filter_vars.blacklist ? " blacklistRegions=" + blacklist_filter_vars.blacklist            : "") +
+        (blacklist                       ? " blacklistRegions=" + blacklist                                  : "") +
         (blacklist_filter_vars.outdir    ? " out="              + blacklist_filter_vars.outdir  + "/$subdir" : "") +
         (blacklist_filter_vars.extra     ?                        blacklist_filter_vars.extra                : "")
 
