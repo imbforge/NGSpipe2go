@@ -1,6 +1,6 @@
 collect_stats = {
     doc title: "collect stats",
-    desc:  "collect bliss DSB stats",
+    desc:  "collect breaktag DSB stats",
     constraints: "none",
     author: "Sergi Sayols"
 

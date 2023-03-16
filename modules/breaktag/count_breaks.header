@@ -4,5 +4,5 @@ count_breaks_vars=[
     threads         : Integer.toString(ESSENTIAL_THREADS)
 ]
 
-load  PIPELINE_ROOT + "/modules/bliss/count_breaks.groovy"
+load  PIPELINE_ROOT + "/modules/breaktag/count_breaks.groovy"
 

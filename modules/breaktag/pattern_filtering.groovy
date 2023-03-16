@@ -32,7 +32,7 @@ pattern_filtering = {
         pattern=\$(echo $TARGET | tr '\t' ' ' | cut -f2 -d" ");
         umi=\$(echo $TARGET | tr '\t' ' ' | cut -f3 -d" ");
 
-        perl ${PIPELINE_ROOT}/tools/bliss/pattern_filtering.pl $pattern_filtering_FLAGS $pattern_filtering_INPUT -u "\$umi" -r "\$pattern";
+        perl ${PIPELINE_ROOT}/tools/breaktag/pattern_filtering.pl $pattern_filtering_FLAGS $pattern_filtering_INPUT -u "\$umi" -r "\$pattern";
         if [ \$? -eq 0 ]; then
           f=\$(echo ${input1} | sed -E 's/(.R1)*.fastq.gz//');
           mv \${f}*.filt.fastq.gz $output.dir;

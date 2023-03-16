@@ -1,0 +1,6 @@
+collect_stats_vars=[
+    outdir: RESULTS + "/stats"
+]
+
+load  PIPELINE_ROOT + "/modules/breaktag/collect_stats.groovy"
+
