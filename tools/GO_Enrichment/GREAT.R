@@ -39,6 +39,7 @@ adv_downstream   <- parseArgs(args, "adv_downstream=", 1, "as.numeric") # kb dow
 
 runstr <- paste0("Call with: Rscript GREAT.R [peakData=",peakData,"] [targets=",ftargets,"] [out=",out,"] [padj=",padj,"] [nterms=",nterms,"] [db=",db,"] [adv_upstream=",adv_upstream,"] [adv_downstream=",adv_downstream,"]")
 cat(runstr)
+cat("\n\n")
 
 ## check if genome assembly is supported
 supportedAssemblies <- c("hg38", "hg19", "mm9", "mm10") # supported in rGREAT version >=4
@@ -51,25 +52,24 @@ if (!db %in% supportedAssemblies) {
   # load targets
   targets <- read.table(ftargets,header=T)
   
+  # define peak file names depending on whether blacklist was applied and/or input control used
+  if(length(list.files(peakData,pattern="_macs2_blacklist_filtered_peaks.xls")) > 0) {
+    peakFilenames <- gsub("\\.vs\\.none", "", paste0(peakData, "/", targets$IPname, ".vs.", targets$INPUTname, "_macs2_blacklist_filtered_peaks.xls")) # remove '.vs.none' if no input control used
+  } else {
+    peakFilenames <- gsub("\\.vs\\.none", "", paste0(peakData, "/", targets$IPname, ".vs.", targets$INPUTname, "_macs2_peaks.xls"))
+  }
   
   # and return the tables
-  if(length(list.files(peakData,pattern="_macs2_blacklist_filtered_peaks.xls")) > 0) {
-          peaks <- lapply(paste0(peakData, "/", targets$IPname, ".vs.", targets$INPUTname, "_macs2_blacklist_filtered_peaks.xls"), function(x) {
-              x <- tryCatch(read.delim(x, comment.char="#"), error=function(e) as.data.frame(matrix(ncol=10)))
-              colnames(x) <- c("chr", "start", "end", "length", "summit", "tags", "-log10 pval", "fold enrichment", "-log10 FDR", "name")
-              x[order(x$chr, x$start, x$end), c(-7, -10)]
-          })
-  } else {
-          peaks <- lapply(paste0(peakData, "/", targets$IPname, ".vs.", targets$INPUTname, "_macs2_peaks.xls"), function(x) {
-              x <- tryCatch(read.delim(x, comment.char="#"), error=function(e) as.data.frame(matrix(ncol=10)))
-              colnames(x) <- c("chr", "start", "end", "length", "summit", "tags", "-log10 pval", "fold enrichment", "-log10 FDR", "name")
-              x[order(x$chr, x$start, x$end), c(-7, -10)]
-          })
-  }
+  peaks <- lapply(peakFilenames, function(x) {
+    x <- tryCatch(read.delim(x, comment.char="#"), error=function(e) as.data.frame(matrix(ncol=10)))
+    colnames(x) <- c("chr", "start", "end", "length", "summit", "tags", "-log10 pval", "fold enrichment", "-log10 FDR", "name")
+    x <- x[grepl("^chr", x$chr),] # remove non-standard chromosomes which would otherwise crash submitGreatJob
+    x[order(x$chr, x$start, x$end), c(-7, -10)]
+  })
   
   names(peaks) <- paste0(targets$IPname, " vs. ", targets$INPUTname)
   
-  
+
   
   groups <- unique(targets$group)
   
