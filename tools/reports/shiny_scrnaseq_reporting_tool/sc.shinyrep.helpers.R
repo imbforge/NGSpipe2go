@@ -1324,7 +1324,6 @@ DEhelper.ngsReports.Fastqc <- function(subdir="", ...) {
 ## DEhelper.Fastqc.custom: prepare Fastqc summary plots
 ##
 DEhelper.Fastqc.custom <- function(web=FALSE, summarizedPlots=TRUE, targetsdf=targets, subdir="", ...) {
-  
   # logs folder
   if(!file.exists(file.path(SHINYREPS_FASTQC_OUT, subdir))) {
     return("Fastqc statistics not available")
@@ -1345,8 +1344,7 @@ DEhelper.Fastqc.custom <- function(web=FALSE, summarizedPlots=TRUE, targetsdf=ta
   lbls <- gsub("_fastqc.zip$", "", names(fastqc.stats))
   names(lbls) <- gsub("_fastqc.zip", ".fastq.gz", basename(names(fastqc.stats)))
   
-  if(file.exists(SHINYREPS_TARGET)){
-    
+  if(file.exists(SHINYREPS_TARGET)){ 
     # get target names
     #targets <- read.delim(SHINYREPS_TARGET, comment.char = "#")
     targets <- targetsdf
@@ -1354,9 +1352,10 @@ DEhelper.Fastqc.custom <- function(web=FALSE, summarizedPlots=TRUE, targetsdf=ta
 
     # replace files names with nicer sample names given in targets file 
     # if sample is missing in targets file, use reduced file name
+    #cat('In if - before gsub')
     lbls <- sapply(lbls, function(i) { ifelse(sum(sapply(targets$sample_ext, grepl, i))==1,
                                               targets[sapply(targets$sample_ext, grepl, i),"sample"],
-                                              gsub(paste0("^",SHINYREPS_PREFIX),"",i))})
+                                              gsub("_001.fastq.gz", "", gsub(paste0("^",SHINYREPS_PREFIX),"",basename(i))))})
     
     if(any(grepl("[\\._]R1[\\._]|[\\._]R2[\\._]", names(lbls)))) {  # SHINYREPS_PAIRED == "yes" # for scRNA-Seq we may have se mapping but still an R2 with barcode
       x <- names(lbls)
@@ -1506,6 +1505,7 @@ DEhelper.fastqscreen <- function(subdir="", targetsdf=targets, perc.to.plot = 1,
   #samples <- list.files(SHINYREPS_FASTQSCREEN_OUT, pattern="_screen.txt$", recursive=T, full.names=T) # does not exclude subdir
   samples <- list.dirs(QC, recursive=F, full.names = T)
   samples <- samples[sapply(samples, function(x) {file.exists(file.path(x, "fastqscreen.conf"))})] # exclude potential subdir which is also listed by list.dirs or recursive list.files
+  samples <- samples[sapply(samples, function(x) {any(grepl(".*screen.html", list.files(x)))})] # exclude incomplete results
   samples <- list.files(samples, pattern="_screen.txt$", recursive=F, full.names=T)
 
   # select subset of samples to plot
