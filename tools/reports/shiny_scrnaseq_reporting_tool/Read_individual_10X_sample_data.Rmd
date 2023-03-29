@@ -1,0 +1,453 @@
+---
+title: "multiome"
+output:
+  html_document:
+    toc: true
+    toc_float: true
+    css: styles.css
+---
+
+<div class="contentbox">
+
+
+
+
+
+
+############################################################################################
+############################################################################################
+############################################################################################
+############################################################################################
+##
+## Alternative (non-cellranger aggr) 10X sample merging:
+## Read in individual 10X sample data, and merge them using Seurat/Signac
+## Both RNA and ATAC sample integration code are included below
+## Seurat-based RNA processing would replace Bioconductor-based processing in 'sc.report.Rmd'
+## Code copied from multiome custom analysis scripts; not adapted for report
+##
+############################################################################################
+############################################################################################
+############################################################################################
+############################################################################################
+
+
+
+
+
+
+
+
+## RNA data
+
+
+
+
+### Read in GTF file for gene annotation
+
+First read in the 10X GTF file to use as gene annotation for the RNA data. Note that adding gene-level annotation to Seurat objects is not as straightforward as with Single Cell Experiment objects, so leave the annotation in the `gtf` GRanges object until needed (e.g. for the cell type annotation).
+
+```{r read_gtf_annotation}
+
+# Load gene annotation provided in essential.vars.groovy
+gtf <- import.gff(SHINYREPS_GTF, format="gtf", feature.type="exon")
+#gtf.flat <- unlist(reduce(split(gtf, elementMetadata(gtf)$gene_id)))
+#gene.lengths <- tapply(width(gtf.flat), names(gtf.flat), sum)
+gene_names <- unique(as.data.frame(gtf)[, c("gene_id", "gene_name")])
+
+# Signac requires 'gene_biotype' field in annotation GTF, 10X (GENCODE) uses 'gene_type'
+if ("gene_type" %in% colnames(mcols(gtf))) {
+  gtf$gene_biotype <- gtf$gene_type
+}
+
+```
+
+
+### Read in 10X RNA count matrices and convert to Seurat objects
+
+Read in (Multiome) RNA feature expression data from 10X per-sample results folder.
+
+```{r read_rna_feature_matrices_to_seurat_objects}
+
+targets_pools <- read.delim(SHINYREPS_TARGET, sep=",")
+
+switch(SHINYREPS_SEQTYPE,
+    tenX={
+      sample_sobjs <- lapply(1:nrow(targets_pools), function(n){
+        sample_dir <- dirname(targets_pools[n,2])
+        matrix_dir <- file.path(sample_dir, "filtered_feature_bc_matrix")
+        barcode.path <- file.path(matrix_dir, "barcodes.tsv.gz")
+        features.path <- file.path(matrix_dir, "features.bed")
+        matrix.path <- file.path(matrix_dir, "matrix.mtx.gz")
+        counts <- readMM(file = matrix.path)
+        colnames(counts) <- read.delim(barcode.path, header = FALSE, stringsAsFactors = FALSE)$V1
+        feature.names <- read.delim(features.path, header = FALSE, stringsAsFactors = FALSE)
+        rownames(counts) <- feature.names$V1
+        # Create Seurat object
+        sample_sobj <- CreateSeuratObject(counts = counts,
+                                          assay = "RNA",
+                                          project = sub("_S1_L001_R1_001", "", targets_pools[n,1]),
+                                          min.cells = 3, min.features = 200)
+        sample_sobj
+      })
+      names(sample_sobjs) <- sub("_S1_L001_R1_001", "", targets_pools[,1])
+    },
+    tenXmultiome={
+      sample_sobjs <- lapply(1:nrow(targets_pools), function(n){
+        sample_dir <- dirname(targets_pools[n,2])
+        matrix_dir <- file.path(sample_dir, "filtered_feature_bc_matrix")
+        barcode.path <- file.path(matrix_dir, "barcodes.tsv.gz")
+        features.path <- file.path(matrix_dir, "features.tsv.gz")
+        matrix.path <- file.path(matrix_dir, "matrix.mtx.gz")
+        counts <- readMM(file = matrix.path)
+        colnames(counts) <- read.delim(barcode.path, header = FALSE, stringsAsFactors = FALSE)$V1
+        feature.names <- read.delim(features.path, header = FALSE, stringsAsFactors = FALSE)
+        rownames(counts) <- feature.names$V1
+        # Filter the gene expressions from the 10X matrix (contains both gene expression and ATAC peak data)
+        counts <- counts[feature.names$V3 == "Gene Expression",]
+        # Create Seurat object
+        sample_sobj <- CreateSeuratObject(counts = counts,
+                                          assay = "RNA",
+                                          project = sub("_gex_S1_L001_R1_001", "", targets_pools[n,1]),
+                                          min.cells = 3, min.features = 200)
+        sample_sobj
+      })
+      names(sample_sobjs) <- sub("_gex_S1_L001_R1_001", "", targets_pools[,1])
+    },
+    stop(c("RNA processing: SEQTYPE ", SHINYREPS_SEQTYPE, " is neither tenX nor tenXmultiome; stopping"))
+)
+
+```
+
+
+### Integrate individual 10X RNA samples into single dataset
+
+Integrate individual 10X RNA samples into single dataset in a single Seurat object.
+Approach based on: [https://satijalab.org/seurat/articles/integration_introduction.html](https://satijalab.org/seurat/articles/integration_introduction.html)
+
+
+```{r merge_rna_sample_seurat_objects}
+
+# Normalize each dataset independently using the 'SCTransform' method
+sample_sobjs <- lapply(X = sample_sobjs, FUN = SCTransform)
+
+# Select features that are repeatedly variable across datasets for integration
+anchor_features <- SelectIntegrationFeatures(object.list = sample_sobjs, nfeatures = 3000)
+
+# Preparation step required when using SCTransform for normalization
+sample_sobjs <- PrepSCTIntegration(object.list = sample_sobjs, anchor.features = anchor_features)
+
+# Identify anchors for integration
+integration_anchors <- FindIntegrationAnchors(object.list = sample_sobjs, anchor.features = anchor_features, normalization.method = "SCT")
+
+# Integrate samples into single combined dataset
+sobj <- IntegrateData(anchorset = integration_anchors, normalization.method = "SCT")
+
+# Make sure the original sample identities are available in the 'sample' field
+sobj$sample <- sobj$orig.ident
+
+saveRDS(sobj, file = file.path(dirs$results, "R_rna_merged_sobj.RDS"))
+##sobj <- readRDS(file = file.path(dirs$results, "R_rna_merged_sobj.RDS"))
+
+```
+
+
+### Create gene expression assay with gene names instead of ENSG IDs
+
+The `SCT` assay uses Ensembl Gene IDs as rownames. For plotting, we would generally like to use gene names instead, but this does not seem possible with some plotting functions, such as `CoveragePlot()`, which use the assay rownames only. However, `Seurat` does not officially support renaming features the way it supports renaming cells (see [https://github.com/satijalab/seurat/issues/2617](https://github.com/satijalab/seurat/issues/2617)). Therefore, create a new gene expression assay, and rename the rows from Ensembl Gene IDs to gene names.
+
+*(Note: It would be risky to modify the `SCT` assay itself, as the rest of the Seurat object assays and annotation use Ensembl Gene IDs. It would require modifying everything, including the annotation file. And it is preferable to keep the Ensembl Gene IDs as the official gene IDs in the annotation.)*
+
+```{r create_genename_expr_assay, eval=FALSE}
+
+sobj[["GeneExpr"]] <- sobj[["SCT"]]
+
+gene_names <- unique(mcols(Annotation(sobj))[, c("gene_id", "gene_name")])
+rownames(gene_names) <- gene_names$gene_id
+oldnames <- sobj[["GeneExpr"]]@counts@Dimnames[[1]]
+newnames <- scuttle::uniquifyFeatureNames(oldnames, gene_names[oldnames, "gene_name"])
+
+sobj[["GeneExpr"]]@counts@Dimnames[[1]] <- newnames
+sobj[["GeneExpr"]]@data@Dimnames[[1]] <- newnames
+
+saveRDS(sobj, file = file.path(dirs$results, "R_sobj_merged.RDS"))
+##sobj <- readRDS(file = file.path(dirs$results, "R_sobj_merged.RDS"))
+
+```
+
+
+
+
+
+
+
+
+## ATAC data
+
+
+
+
+### Read in 10X ATAC data
+
+First read in the 10X GTF file to use as gene annotation for the ATAC data.
+
+```{r read_gtf_annotation}
+
+# Load gene annotation provided in essential.vars.groovy
+gtf <- import.gff(SHINYREPS_GTF, format="gtf", feature.type="exon")
+#gtf.flat <- unlist(reduce(split(gtf, elementMetadata(gtf)$gene_id)))
+#gene.lengths <- tapply(width(gtf.flat), names(gtf.flat), sum)
+gene.names <- unique(as.data.frame(gtf)[, c("gene_id", "gene_name")])
+
+# Signac requires 'gene_biotype' field in annotation GTF, 10X (GENCODE) uses 'gene_type'
+if ("gene_type" %in% colnames(mcols(gtf))) {
+  gtf$gene_biotype <- gtf$gene_type
+}
+
+### Other changes necessary for Signac to properly parse the 10X GTF
+genome(gtf) <- SHINYREPS_DB
+seqlevelsStyle(gtf) <- "UCSC"
+gtf <- keepStandardChromosomes(gtf, pruning.mode = "coarse")
+
+```
+
+
+Read in (Multiome) ATAC peak locations and count data from 10X per-sample results folder.
+
+```{r read_atac_peak_matrices}
+
+targets_pools <- read.delim(SHINYREPS_TARGET, sep=",")
+
+switch(SHINYREPS_SEQTYPE,
+    tenXatac={
+      tenXsamples <- lapply(1:nrow(targets_pools), function(n){
+        sample_dir <- dirname(targets_pools[n,2])
+        matrix_dir <- file.path(sample_dir, "filtered_peak_bc_matrix")
+        barcode.path <- file.path(matrix_dir, "barcodes.tsv.gz")
+        features.path <- file.path(matrix_dir, "peaks.bed")
+        matrix.path <- file.path(matrix_dir, "matrix.mtx.gz")
+        counts <- readMM(file = matrix.path)
+        colnames(counts) <- read.delim(barcode.path, header = FALSE, stringsAsFactors = FALSE)$V1
+        feature.names <- read.delim(features.path, header = FALSE, stringsAsFactors = FALSE)
+        rownames(counts) <- feature.names$V1
+        # Peaks
+        peaks <- rtracklayer::import(file.path(sample_dir, "peaks.bed"), format = "BED")
+        # Fragments
+        fragments <- CreateFragmentObject(path = file.path(sample_dir, "fragments.tsv.gz"),
+                                          cells = colnames(counts))
+        # Return everything
+        list("counts" = counts, "peaks" = peaks, "fragments" = fragments)
+      })
+      names(tenXsamples) <- sub("_S1_L001_R1_001", "", targets_pools[,1])
+    },
+    tenXmultiome={
+      tenXsamples <- lapply(1:nrow(targets_pools), function(n){
+        sample_dir <- dirname(targets_pools[n,2])
+        matrix_dir <- file.path(sample_dir, "filtered_feature_bc_matrix")
+        barcode.path <- file.path(matrix_dir, "barcodes.tsv.gz")
+        features.path <- file.path(matrix_dir, "features.tsv.gz")
+        matrix.path <- file.path(matrix_dir, "matrix.mtx.gz")
+        counts <- readMM(file = matrix.path)
+        colnames(counts) <- read.delim(barcode.path, header = FALSE, stringsAsFactors = FALSE)$V1
+        feature.names <- read.delim(features.path, header = FALSE, stringsAsFactors = FALSE)
+        rownames(counts) <- feature.names$V1
+        # Filter the ATAC peaks from the 10X matrix (contains gene expression as well as ATAC peak data)
+        counts <- counts[feature.names$V3 == "Peaks",]
+        # Peaks
+        peaks <- rtracklayer::import(file.path(sample_dir, "atac_peaks.bed"), format = "BED")
+        # Fragments
+        fragments <- CreateFragmentObject(path = file.path(sample_dir, "atac_fragments.tsv.gz"),
+                                          cells = colnames(counts))
+        # Return everything
+        list("counts" = counts, "peaks" = peaks, "fragments" = fragments)
+      })
+      names(tenXsamples) <- sub("_gex_S1_L001_R1_001", "", targets_pools[,1])
+    },
+    stop(c("ATAC processing: SEQTYPE ", SHINYREPS_SEQTYPE, " is neither tenXatac nor tenXmultiome; stopping"))
+)
+
+```
+
+
+### Integrate 10X ATAC samples
+
+Approach based on: [https://satijalab.org/signac/articles/merging.html](https://satijalab.org/signac/articles/merging.html)
+
+
+First merge the peaks from the different samples.
+
+```{r merge_atac_peaks}
+
+# Create a unified set of peaks to quantify in each dataset
+combined_peaks <- reduce(unlist(GRangesList(lapply(tenXsamples, "[[", "peaks"))))
+
+# Filter out bad peaks based on length
+peakwidths <- width(combined_peaks)
+combined_peaks <- combined_peaks[peakwidths  < 10000 & peakwidths > 20]
+
+```
+
+
+Quantify the signal in the merged peaks for each sample.
+
+```{r quantify_merged_peaks}
+
+for (x in names(tenXsamples)) {
+  tenXsamples[[x]]$peakcounts <- FeatureMatrix(fragments = tenXsamples[[x]]$fragments,
+                                               features = combined_peaks,
+                                               cells = colnames(tenXsamples[[x]]$counts))
+}
+
+##saveRDS(tenXsamples, file = file.path(dirs$results, "R_tmp_tenXsamples.RDS"))
+
+```
+
+
+Create Seurat objects with per-sample ATAC data.
+
+```{r create_atac_sample_seurat_objects}
+
+sample_sobjs <- lapply(tenXsamples, function(x){
+  sample_assay <- CreateChromatinAssay(x$peakcounts, fragments = x$fragments)
+  sample_sobj <- CreateSeuratObject(sample_assay, assay = "ATAC")
+  sample_sobj
+})
+
+##saveRDS(sample_sobjs, file = file.path(dirs$results, "R_merged_sample_sobjs.RDS"))
+
+# The previous commands create large temporary objects, give memory back to OS
+gc()
+
+```
+
+
+Integrate per-sample ATAC data into single Seurat object.
+
+```{r merge_atac_sample_seurat_objects}
+
+# Add information to identify dataset of origin
+for (x in names(sample_sobjs)) {
+  sample_sobjs[[x]]$sample <- x
+}
+
+# Merge all datasets, adding a cell ID to make sure cell names are unique
+sobj_atac <- merge(x = sample_sobjs[[1]],
+              y = sample_sobjs[2:length(sample_sobjs)],
+              add.cell.ids = names(sample_sobjs))
+
+saveRDS(sobj_atac, file = file.path(dirs$results, "R_atac_merged_sobj.RDS"))
+##sobj_atac <- readRDS(file = file.path(dirs$results, "R_atac_merged_sobj.RDS"))
+
+# Clean up temporary objects, give memory back to OS
+gc()
+
+```
+
+
+Remove peaks from scaffolds that are not part of the canonical chromosomes. Otherwise it will give problems with the motif detection part of the code, because the bioconductor genome packages don't contain them but the 10X reference genomes do. (This is also the reason for removing them from the 10X GTF file above.)
+
+```{r remove_nonstandard_chrom_peaks}
+
+SHINYREPS2_SPECIES <- "Mus_musculus"
+SHINYREPS2_SEQLEVELSTYLE <- "UCSC"
+
+main_chroms <- GenomeInfoDb::genomeStyles(SHINYREPS2_SPECIES)[, SHINYREPS2_SEQLEVELSTYLE]
+keep_peaks <- as.logical(seqnames(granges(sobj_atac)) %in% main_chroms)
+sobj_atac[["ATAC"]] <- sobj_atac[["ATAC"]][keep_peaks, ]
+
+```
+
+
+Rename the ATAC assay cell IDs to be consistent with those of the Seurat RNA assay. The ATAC assay cell IDs prefix with the sample name, while the RNA assay cell IDs postfix with the sample number (as of Signac v1.5 & Seurat v4.0).
+
+*****************************************************
+*VERY CUSTOMIZED CODE; NEEDS TO BE MADE MORE GENERIC*
+*****************************************************
+
+```{r rename_atac_cellids}
+
+cell_ids <- colnames(sobj_atac[["ATAC"]])
+
+cell_ids <- sub("Control1_(.*-1)", "\\1_1", cell_ids)
+cell_ids <- sub("Control2_(.*-1)", "\\1_2", cell_ids)
+cell_ids <- sub("Treatment1_(.*-1)", "\\1_3", cell_ids)
+cell_ids <- sub("Treatment2_(.*-1)", "\\1_4", cell_ids)
+
+sobj_atac <- RenameCells(sobj_atac, new.names = cell_ids)
+
+```
+
+
+### Annotate merged ATAC Seurat object with GTF file
+
+```{r annotate_atac_object_with_gtf}
+
+Annotation(sobj_atac) <- gtf
+
+saveRDS(sobj_atac, file = file.path(dirs$results, "R_atac_merged_sobj.RDS"))
+##sobj_atac <- readRDS(file = file.path(dirs$results, "R_atac_merged_sobj.RDS"))
+
+```
+
+
+### Add ATAC assay to RNA Seurat object
+
+Add ATAC assay to the previously created RNA Seurat object.
+
+```{r combine_rna_and_atac_sobjs}
+
+sobj <- readRDS(file = file.path(dirs$results, "R_rna_merged_sobj.RDS"))
+
+# Filter both objects for cells common to both (synchronize cell IDs)
+shared_cells <- intersect(colnames(sobj_atac[["ATAC"]]), colnames(sobj[["RNA"]]))
+sobj <- subset(x = sobj, cells = shared_cells)
+sobj_atac <- subset(x = sobj_atac, cells = shared_cells)
+
+sobj[["ATAC"]] <- sobj_atac[["ATAC"]]
+
+saveRDS(sobj, file = file.path(dirs$results, "R_sobj_merged_initial.RDS"))
+##sobj <- readRDS(file = file.path(dirs$results, "R_sobj_merged_initial.RDS"))
+
+# Clean up
+rm(sobj_atac)
+gc()
+
+```
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+# Used tools and versions for this analysis ##
+
+Read mapping was performed with STAR using the following parameters:
+
+```{r STAR_parameters_paragraph, echo=F, results='asis', error=F, warning=F, message=F}
+cat(DEhelper.STARparms(), sep="\n")
+``` 
+
+The following tools were used for data processing:
+
+```{r ToolVersions_paragraph, echo=F, results='asis', error=F, warning=F, message=F}
+cat(Toolhelper.ToolVersions(), sep="\n")
+```
+
+R session info:
+
+```{r R_sessionInfo, echo=F, results='asis', error=F, warning=F, message=F}
+sessionInfo()
+```
+
+</div>
+
