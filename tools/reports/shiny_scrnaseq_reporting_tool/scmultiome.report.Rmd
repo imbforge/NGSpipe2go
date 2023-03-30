@@ -1244,8 +1244,10 @@ for (cl in sort(unique(sobj$clusters_atac))) {
 
 # Save results
 library(openxlsx)
-openxlsx::write.xlsx(da_groups_atac, file = file.path("report_files", "peaks_diffacces_clusters_atac.xlsx"), rowNames=T)
-saveRDS(da_groups_atac, file = file.path("report_files", "R_merged_atac_da_clusters_atac.RDS"))
+if(length(da_groups_atac)>0) {
+  openxlsx::write.xlsx(da_groups_atac, file = file.path("report_files", "peaks_diffacces_clusters_atac.xlsx"), rowNames=T)
+  saveRDS(da_groups_atac, file = file.path("report_files", "R_merged_atac_da_clusters_atac.RDS"))
+}
 gc()
 
 
@@ -1293,12 +1295,14 @@ for (cl in sort(unique(sobj$predicted.id))) {
 
 # Save results
 library(openxlsx)
-names(da_groups_atac_ct) <- gsub("Proliferating cell", "Prolif", names(da_groups_atac_ct)) # sheetNames too long! Max length is 31 characters.
-names(da_groups_atac_ct) <- gsub("Oligodendrocyte", "ODC", names(da_groups_atac_ct))
-names(da_groups_atac_ct) <- gsub("Proliferating radial glia", "PRG", names(da_groups_atac_ct))
-names(da_groups_atac_ct) <- gsub("Radial glia", "RG", names(da_groups_atac_ct))
-openxlsx::write.xlsx(da_groups_atac_ct, file = file.path("report_files", "peaks_diffacces_celltypes.xlsx"), rowNames=T)
-saveRDS(da_groups_atac_ct, file = file.path("report_files", "R_merged_atac_da_celltypes.RDS"))
+if(length(da_groups_atac_ct)>0) {
+  names(da_groups_atac_ct) <- gsub("Proliferating cell", "Prolif", names(da_groups_atac_ct)) # sheetNames too long! Max length is 31 characters.
+  names(da_groups_atac_ct) <- gsub("Oligodendrocyte", "ODC", names(da_groups_atac_ct))
+  names(da_groups_atac_ct) <- gsub("Proliferating radial glia", "PRG", names(da_groups_atac_ct))
+  names(da_groups_atac_ct) <- gsub("Radial glia", "RG", names(da_groups_atac_ct))
+  openxlsx::write.xlsx(da_groups_atac_ct, file = file.path("report_files", "peaks_diffacces_celltypes.xlsx"), rowNames=T)
+  saveRDS(da_groups_atac_ct, file = file.path("report_files", "R_merged_atac_da_celltypes.RDS"))
+}
 gc()
 
 
@@ -1369,8 +1373,10 @@ for (gp in names(da_groups_atac)) {
 }
 
 # Save results
-openxlsx::write.xlsx(da_enriched_motifs, file = file.path("report_files", "motif_enriched_clusters_atac.xlsx"))
-saveRDS(da_enriched_motifs, file = file.path("report_files", "R_merged_atac_da_enriched_motifs.RDS"))
+if(length(da_enriched_motifs)>0) {
+  openxlsx::write.xlsx(da_enriched_motifs, file = file.path("report_files", "motif_enriched_clusters_atac.xlsx"))
+  saveRDS(da_enriched_motifs, file = file.path("report_files", "R_merged_atac_da_enriched_motifs.RDS"))
+}
 gc()
 
 ```
@@ -1399,8 +1405,10 @@ for (gp in names(da_groups_atac_ct)) {
 }
 
 # Save results
-openxlsx::write.xlsx(da_enriched_motifs_ct, file = file.path("report_files", "motif_enriched_clusters_atac_celltypes.xlsx"))
-saveRDS(da_enriched_motifs_ct, file = file.path("report_files", "R_merged_atac_da_enriched_motifs_celltypes.RDS"))
+if(length(da_enriched_motifs_ct)>0) {
+  openxlsx::write.xlsx(da_enriched_motifs_ct, file = file.path("report_files", "motif_enriched_clusters_atac_celltypes.xlsx"))
+  saveRDS(da_enriched_motifs_ct, file = file.path("report_files", "R_merged_atac_da_enriched_motifs_celltypes.RDS"))
+}
 gc()
 
 ```
@@ -1471,8 +1479,10 @@ for (ct in sort(unique(sobj$clusters_atac))) {
 motifda_groups_atac <- lapply(motifda_groups_atac, function(x){x$motif.id <- rownames(x); x$motif.name <- unlist(sobj@assays$ATAC@motifs@motif.names)[rownames(x)]; x})
 
 # Save results
-openxlsx::write.xlsx(motifda_groups_atac, file = file.path("report_files", "motif_diffact_clusters_atac.xlsx"))
-saveRDS(motifda_groups_atac, file = file.path(dirs$rdata, "R_merged_atac_motifda_clusters_atac.RDS"))
+if(length(motifda_groups_atac)>0) {
+  openxlsx::write.xlsx(motifda_groups_atac, file = file.path("report_files", "motif_diffact_clusters_atac.xlsx"))
+  saveRDS(motifda_groups_atac, file = file.path(dirs$rdata, "R_merged_atac_motifda_clusters_atac.RDS"))
+}
 gc()
 
 DefaultAssay(sobj) <- "ATAC"
