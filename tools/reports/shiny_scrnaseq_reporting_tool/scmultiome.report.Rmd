@@ -12,6 +12,7 @@ output:
 
 
 
+
 # Description
 
 Enter project description here
@@ -1476,8 +1477,6 @@ gc()
 
 DefaultAssay(sobj) <- "ATAC"
 
-saveRDS(sobj, file = file.path("report_files", "R_sobj_merged.RDS"))
-##sobj <- readRDS(file = file.path("report_files", "R_sobj_merged.RDS"))
 
 ```
 
@@ -1507,8 +1506,16 @@ sobj <- Seurat::FindVariableFeatures(sobj, assay='SCT')
 # regions argument. Pando ships with a set of conserved regions 
 # (phastConsElements20Mammals.UCSC.hg38) as well as predicted regulatory 
 # elements from ENCODE (SCREEN.ccRE.UCSC.hg38) for the human genome (hg38).
+# data('phastConsElements20Mammals.UCSC.hg38')
+# data('SCREEN.ccRE.UCSC.hg38') # e.g. use it in initiate_grn as:
+# regions = union(phastConsElements20Mammals.UCSC.hg38, SCREEN.ccRE.UCSC.hg38)
+# When working with genomes other than human you can use the peaks that are correlated 
+# with the expression of nearby genes identified by the Seurat function LinkPeaks (see above).
+# Using only these genes is quite strict, as only a small fraction of genes will be linked, 
+# but the developers found that this does result in quite robust GRNs. Use as:
+# regions = StringToGRanges(Links(sobj[["ATAC"]])$peak)
 sobj <- initiate_grn(sobj,
-                     regions = NULL,
+                     regions = NULL, # if specified, intersections with peak ranges from peak_assay are used
                      peak_assay = "ATAC",
                      rna_assay = "SCT",
                      exclude_exons = TRUE) # new object is now called SeuratPlus
@@ -1541,9 +1548,13 @@ sobj <- find_motifs(
 # upstream and/or downstream of the gene (peak_to_gene_method='Signac') or by also 
 # considering overlapping regulatory regions as is done by GREAT (peak_to_gene_method='GREAT')
 sobj <- infer_grn(sobj,
-                  peak_to_gene_method = 'Signac',
+                  peak_to_gene_method = 'Signac', # One of 'Signac' or 'GREAT'
                   method = 'glm',
-                  genes = NULL) # select a subset of genes that we want to use for GRN inference
+                  genes = NULL, # select a subset of genes that we want to use for GRN inference
+                  upstream = 1e+05,
+                  downstream = 0,
+                  tf_cor = 0.1,
+                  peak_cor = 0) 
 # GetNetwork(sobj) # access the inferred Network object
 
 # Once the models are fit, model coefficients can be inspected with coef().
@@ -1554,31 +1565,64 @@ sobj <- infer_grn(sobj,
 # Based on the model coefficients, we can construct a network between TFs and target genes. 
 # This can be further summarized to construct gene and regulatory modules with the set of 
 # target genes and regulatory regions for each TF. 
-sobj <- find_modules(sobj)
+sobj <- find_modules(sobj, p_thresh = 0.05,
+                     rsq_thresh = 0.1,
+                     nvar_thresh = 10,
+                     min_genes_per_module = 5)
 
 # Print modules
 modules <- NetworkModules(sobj) # The meta slot holds a dataframe with module information.
 kbl(as.data.frame(modules@meta)[1:min(20,nrow(modules@meta)),], align = "l", format="simple", caption="Identified TF modules (i.e. the set of genes that are regulated by each transcription factor, first 20 entries)") %>% kable_styling(full_width = F)
 write.table(as.data.frame(modules@meta), file =file.path("report_files", "GRN_TF_modules.txt"), quote = F, row.names = F,  sep="\t")
 
-cat("Plot goodness-of-fit metrics")
+cat("Plot goodness-of-fit metrics of the fitted models. This shows us the explained variance of the model, as well as the number of variables in each model. We can observe that with more variables, the models will have a better fit. The dashed lines show the applied thresholds for in the find_modules function.\n")
 pgof <- plot_gof(sobj, point_size=3) 
 pgof
 ggsave(plot=pgof, filename="report_files/GRN_goodness_of_fit_metrics.pdf")
 
-cat("Plot size of the modules\n")
+cat("Plot size of the modules with respect to the number of target genes as well as the number of peaks and regulating TFs per target gene.\n")
 pmm <- plot_module_metrics(sobj) 
 pmm
 ggsave(plot=pmm, filename="report_files/GRN_module_metrics.pdf")
 
 # create the graph to be visualized and optionally a UMAP embedding for the nodes 
-sobj <- get_network_graph(sobj, rna_assay = "SCT")
-cat("Visualization of the network graph")
-pnetg <- plot_network_graph(sobj, layout = "umap") + ggtitle("Network graph")
+sobj <- get_network_graph(sobj, 
+                          rna_assay = "SCT", 
+                          graph_name = "module_graph", # we can access the graph with this name later
+                          umap_method = c("weighted", "corr", "coef", "none"), # method to compute edge weights for UMAP
+                          features = NULL) # plot a smaller subgraph of the GRN by selecting a set of genes as features
+cat("Visualization of the network graph. The nodes are colored and sized based on their centrality in the graph and the edges are colored by the direction of the regulation (inhibitory: grey; activating: orange)")
+pnetg <- plot_network_graph(sobj, 
+                            graph = "module_graph",
+                            layout = "umap") + ggtitle("Network graph")
 pnetg
 ggsave(plot=pnetg, filename="report_files/GRN_network_graph.pdf")
 
 
+# # Optional: Sometimes it is useful to plot a subgraph of the GRN centered around one TF (e.g. NEUROD4), to reveal a hierarchy of regulation.
+# sobj <- get_tf_network(sobj, tf="NEUROD4", graph="module_graph", keep_all_edges=F)
+# plot_tf_network(sobj, tf='NEUROD4', circular=T)
+# # further custom plotting of dedicated sub graphs if generated
+# library(ggraph)
+# subgraph <- NetworkGraph(sobj, graph='module_graph')
+#  ggraph(subgraph, layout='drl') +
+#     geom_edge_hive(aes(color=estimate), size=2, fill='grey') +
+#     geom_node_point(aes(size=centrality), shape=21, fill='grey') +
+#     geom_node_text(aes(label=name), size=4, shape=21, repel=T) +
+#     theme_void()
+
+
+```
+
+
+
+```{r store_data, echo=F, message=FALSE, error=F, warning=F, eval=T}
+
+# store colData in report_files folder (csv file without numerical columns for compatibility with Loupe import)
+write.table(sobj[[]][, !sapply(sobj[[]], is.numeric)], file="report_files/cells.csv", sep=",", quote = F, row.names = F)
+
+# store objects of analysis
+saveRDS(sobj, file="report_files/sobj.RData")
 
 ```
 
