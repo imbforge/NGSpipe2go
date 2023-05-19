@@ -24,13 +24,15 @@ load PIPELINE_ROOT + "/modules/ChIPseq/upsetPlot.header"
 load PIPELINE_ROOT + "/modules/NGS/cutadapt.header"
 load PIPELINE_ROOT + "/modules/NGS/bamcoverage.header"
 load PIPELINE_ROOT + "/modules/NGS/bamindexer.header"
-load PIPELINE_ROOT + "/modules/NGS/extend.header"
 load PIPELINE_ROOT + "/modules/NGS/bamqc.header"
+load PIPELINE_ROOT + "/modules/NGS/extend.header"
 load PIPELINE_ROOT + "/modules/NGS/fastqc.header"
 load PIPELINE_ROOT + "/modules/NGS/fastqscreen.header"
+load PIPELINE_ROOT + "/modules/NGS/filterchromosomes.header"
 load PIPELINE_ROOT + "/modules/NGS/insertsize.header"
 load PIPELINE_ROOT + "/modules/NGS/markdups.header"
 load PIPELINE_ROOT + "/modules/NGS/rmdups.header"
+load PIPELINE_ROOT + "/modules/NGS/samtoolscov.header"
 load PIPELINE_ROOT + "/modules/NGS/trackhub.header"
 load PIPELINE_ROOT + "/modules/NGS/trackhub_config.header"
 load PIPELINE_ROOT + "/modules/NGS/multiqc.header"
@@ -47,7 +49,7 @@ Bpipe.run {
 		FastQC, 
 		(RUN_FASTQSCREEN ? FastqScreen : dontrun.using(module: "FastqScreen")), 
 		(RUN_CUTADAPT ? Cutadapt + FastQC.using(subdir:"trimmed") : dontrun.using(module:"Cutadapt")) +
-		bowtie2 + BAMindexer + BamQC ] + collect_bams +   
+		bowtie2 + BAMindexer + BamQC] + collect_bams +   
 
          [ // parallel branches with and without multi mappers
 

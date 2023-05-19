@@ -10,7 +10,8 @@ shinyReports_vars=[
     run_peakanno    : RUN_PEAK_ANNOTATION,    
     run_diffbind    : RUN_DIFFBIND,    
     run_enrich      : RUN_ENRICHMENT,
-    cutadapt_stats  : Cutadapt_vars.statsdir,              // cutadapt stat files
+    cutadapt_stats  : (binding.hasVariable('Cutadapt_vars.statsdir')  ? Cutadapt_vars.statsdir : ""),    // cutadapt stat files
+    samtoolscov_out : (binding.hasVariable('samtoolscov_vars.outdir') ? samtoolscov_vars.outdir : ""),   // samtoolscov coverage files
     bowtie_log      : LOGS + "/bowtie2",  //where the Bowtie logs lie
     bamindex_log    : LOGS + "/BAMindexer", //where the Samtools/BamIndexer logs lie
     markdups_log    : LOGS + "/MarkDups",   //where the MarkDups logs lie
