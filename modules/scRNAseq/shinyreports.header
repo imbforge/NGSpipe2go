@@ -6,7 +6,7 @@ shinyReports_vars=[
     log             : LOGS,             //where the logs lie
     qc              : QC,               //where the QC lie
     res             : RESULTS,          //where the results lie
-    report          : (binding.variables.containsKey("cellrangerarc_aggr_vars") ? "scmultiome.report.Rmd" : (binding.variables.containsKey("cellrangeratac_aggr_vars") ? "scatac.report.Rmd" : "sc.report.Rmd")), // folder name for results from cellranger / cellranger-atac / cellranger-arc aggr
+    report          : (binding.variables.containsKey("cellrangerarc_aggr_vars") ? "scmultiome.report.split.Rmd" : (binding.variables.containsKey("cellrangeratac_aggr_vars") ? "scatac.report.Rmd" : "sc.report.Rmd")), // folder name for results from cellranger / cellranger-atac / cellranger-arc aggr
     cellranger_aggr_id: (binding.variables.containsKey("cellranger_aggr_vars") ? cellranger_aggr_vars.id : (binding.variables.containsKey("cellrangeratac_aggr_vars") ? cellrangeratac_aggr_vars.id : (binding.variables.containsKey("cellrangerarc_aggr_vars") ? cellrangerarc_aggr_vars.id : "aggr"))), // folder name for results from cellranger / cellranger-atac / cellranger-arc aggr
     run_demux       : RUN_DEMUX, //run sample de-multiplexing step
     demux_out       : (RUN_DEMUX=="demux_HTO" ? (binding.variables.containsKey("demux_hto_vars") ? demux_hto_vars.outdir : "") : (RUN_DEMUX=="demux_GT" ? (binding.variables.containsKey("demux_gt_vars") ? demux_gt_vars.outdir : "") : "") ),  //where the demux output lie
@@ -16,6 +16,19 @@ shinyReports_vars=[
     star_log        : (binding.variables.containsKey("STAR_vars") ? STAR_vars.logdir : ""),  //where the STAR logs lie
     star_suffix     : "Log.final.out",         //extension given to the STAR log files
     starparms_suffix: "Log.out",               //extension given to the STAR log files
+    diffPeaks_out   : (binding.variables.containsKey("diffPeaks_vars") ? diffPeaks_vars.outdir : ""),  
+    motifEnrich_out : (binding.variables.containsKey("motifEnrich_vars") ? motifEnrich_vars.outdir : ""),  
+    grn_out         : (binding.variables.containsKey("grn_vars") ? grn_vars.outdir : ""),  
+    sc_readAggrData_out : (binding.variables.containsKey("sc_readAggrData_vars") ? sc_readAggrData_vars.outdir : ""),  
+    sc_qc_out       : (binding.variables.containsKey("sc_qc_vars") ? sc_qc_vars.outdir : ""),  
+    peaks2genes_out : (binding.variables.containsKey("peaks2genes_vars") ? peaks2genes_vars.outdir : ""),  
+    sctransform_out : (binding.variables.containsKey("SCTransform_vars") ? SCTransform_vars.outdir : ""),  
+    sc_wnn_out      : (binding.variables.containsKey("wnn_vars") ? wnn_vars.outdir : ""),  
+    dnaaccess_out   : (binding.variables.containsKey("DNAaccess_vars") ? DNAaccess_vars.outdir : ""),  
+    CRmotifCounts_out : (binding.variables.containsKey("CRmotifCounts_vars") ? CRmotifCounts_vars.outdir : ""),  
+    CTannoSeurat_out : (binding.variables.containsKey("CTannoSeurat_vars") ? CTannoSeurat_vars.outdir : ""),  
+    CTannoMarker_out : (binding.variables.containsKey("CTannoMarker_vars") ? CTannoMarker_vars.outdir : ""),  
+    CTannoSelected  : ESSENTIAL_CELLTYPE_ANNO[0],  
     fastqc_out      : (binding.variables.containsKey("FastQC_vars") ? FastQC_vars.outdir : ""),  //where the Fastqc output lie
     fastqc_log      : LOGS + "/FastQC",        //where the Fastqc logs lie
     fastqc_summarized   : "FALSE",             //should FastQC plots be summarized in the report?
