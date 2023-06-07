@@ -356,6 +356,12 @@ config {
       procs="1"
       memory="1"
     }
+    grn {
+      queue=long_queue
+      walltime="08:00:00"
+      procs="1"
+      memory="254"  
+    } 
     HTseqCount {
       walltime="04:00:00"
       procs="1"
@@ -427,6 +433,12 @@ config {
       procs="4"
       memory="8"
     }
+    motifEnrich {
+      queue=long_queue
+      walltime="08:00:00"
+      procs="1"
+      memory="64"  
+    } 
     MULTIQC {
       queue=long_queue
       walltime="12:00:00"
@@ -448,6 +460,12 @@ config {
       procs="1"
       memory="24"
     }
+    peaks2genes {
+      queue=long_queue
+      walltime="08:00:00"
+      procs="1"
+      memory="64"  
+    } 
     peak_annotation {
       walltime="02:00:00"
       procs="1"
@@ -519,6 +537,16 @@ config {
       walltime="0:10:00"
       procs="4"
       memory="4"
+    }
+    sc_qc {
+      walltime="02:00:00"
+      procs="4"
+      memory="32"
+    }
+    sc_readData {
+      walltime="02:00:00"
+      procs="4"
+      memory="32"
     }
     SelectUnMapped {
       walltime="04:00:00"
