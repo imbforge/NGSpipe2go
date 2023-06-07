@@ -1,0 +1,10 @@
+sc_qc_vars=[
+    outdir          : QC + "/sc_qc",
+    project         : PROJECT,                     
+    res             : RESULTS,          //where the results lie
+    db              : ESSENTIAL_DB,        
+    extra    : ""                          //extra parms to sent to the tool
+]
+
+load PIPELINE_ROOT + "/modules/scRNAseq/sc_qc.groovy"
+
