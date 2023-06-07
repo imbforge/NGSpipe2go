@@ -1,0 +1,11 @@
+CTannoSeurat_vars=[
+    outdir          : RESULTS + "/CTanno",
+    project         : PROJECT,                     
+    res             : RESULTS,          
+    pathRefDataset  : "/fsimb/groups/imb-bioinfocf/projects/cfb_internal/frank/multiome500/reference_data/hcl.seurat.RDS", // path to reference dataset (Seurat object SCT normalized)
+    columnNameCelltypes : "CT", // Column name with cell type annotation in reference dataset
+    extra    : ""        //extra parms to sent to the tool
+]
+
+load PIPELINE_ROOT + "/modules/scRNAseq/CTannoSeurat.groovy"
+
