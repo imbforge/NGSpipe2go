@@ -1,0 +1,14 @@
+peaks2genes_vars=[
+    outdir          : RESULTS + "/peaks2genes",
+    project         : PROJECT,                     
+    res             : RESULTS,  
+    db              : ESSENTIAL_DB,                
+    genes2use       : "'c(\"HMCN1\", \"EVL\", \"EML1\")'", // Genes to test. If empty, determine from expression assay.  
+    genes2plot      : "HMCN1", // Genes defining the region to show in the coverage plot
+    plotUpstream    : 100000, // Number of bases to extend the plotting region upstream.
+    plotDownstream  : 100000, // Number of bases to extend the plotting region downstream.
+    extra    : ""                          //extra parms to sent to the tool
+]
+
+load PIPELINE_ROOT + "/modules/scRNAseq/peaks2genes.groovy"
+
