@@ -190,6 +190,23 @@ config {
       procs="1"
       memory="50"
     }
+    CRmotifCounts {
+      walltime="04:00:00"
+      procs="1"
+      memory="128"
+    }
+    CTannoSeurat {
+      queue=long_queue
+      walltime="16:00:00"
+      procs="1"
+      memory="256"
+    }
+    CTannoMarker {
+      queue=long_queue
+      walltime="16:00:00"
+      procs="1"
+      memory="256"
+    }
     Cutadapt {
       walltime="04:00:00"
       procs="1"
@@ -246,10 +263,21 @@ config {
       procs="8"
       memory="64"
     }
+    diffPeaks {
+      queue=long_queue
+      walltime="06:00:00"
+      procs="8"
+      memory="128"
+    }
     dupRadar {
       walltime="05:00:00"
       procs="4"
       memory="10"
+    }
+    DNAaccess {
+      walltime="04:00:00"
+      procs="4"
+      memory="128"
     }
     extend {
       walltime="01:00:00"
@@ -358,8 +386,8 @@ config {
     }
     grn {
       queue=long_queue
-      walltime="08:00:00"
-      procs="1"
+      walltime="24:00:00"
+      procs="4"
       memory="254"  
     } 
     HTseqCount {
@@ -437,7 +465,7 @@ config {
       queue=long_queue
       walltime="08:00:00"
       procs="1"
-      memory="64"  
+      memory="128"  
     } 
     MULTIQC {
       queue=long_queue
@@ -464,7 +492,7 @@ config {
       queue=long_queue
       walltime="08:00:00"
       procs="1"
-      memory="64"  
+      memory="128"  
     } 
     peak_annotation {
       walltime="02:00:00"
@@ -538,15 +566,25 @@ config {
       procs="4"
       memory="4"
     }
-    sc_qc {
-      walltime="02:00:00"
+    sc_filter {
+      walltime="03:00:00"
       procs="4"
-      memory="32"
+      memory="128"
     }
-    sc_readData {
-      walltime="02:00:00"
+    sc_qc {
+      walltime="03:00:00"
       procs="4"
-      memory="32"
+      memory="128"
+    }
+    sc_readAggrData {
+      walltime="04:00:00"
+      procs="4"
+      memory="128"
+    }
+    SCTransform {
+      walltime="04:00:00"
+      procs="4"
+      memory="128"
     }
     SelectUnMapped {
       walltime="04:00:00"
@@ -702,6 +740,12 @@ config {
       walltime="04:00:00"
       procs="1"
       memory="25"
+    }
+    wnn {
+      queue=long_queue
+      walltime="08:00:00"
+      procs="1"
+      memory="128"
     }
   }
 }
