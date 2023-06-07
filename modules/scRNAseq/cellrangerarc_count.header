@@ -2,8 +2,8 @@ cellrangerarc_count_vars=[
     outdir          : MAPPED,
     reference       : ESSENTIAL_TENX_REFERENCE, 
     fastqdir        : ESSENTIAL_TENX_FASTQDIR, 
-    cores           : 8,
-    localmem        : 64,
+    cores           : 32,
+    localmem        : 128,
     extra           : ""               // extra parms to sent to the tool
 ]
 
