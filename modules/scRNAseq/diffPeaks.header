@@ -1,0 +1,11 @@
+diffPeaks_vars=[
+    outdir          : RESULTS + "/DNAaccess",
+    project         : PROJECT,                     
+    res             : RESULTS,          
+    minCells        : 20, //   minimum number of cells to include cluster in analysis
+    CTannoSelected  : ESSENTIAL_CELLTYPE_ANNO[0],  
+    extra    : ""                          //extra parms to sent to the tool
+]
+
+load PIPELINE_ROOT + "/modules/scRNAseq/diffPeaks.groovy"
+
