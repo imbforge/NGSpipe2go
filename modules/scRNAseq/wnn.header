@@ -1,0 +1,12 @@
+wnn_vars=[
+    outdir          : RESULTS + "/wnn",
+    project         : PROJECT,                     
+    res             : RESULTS,          
+    knn             : 20,  // the number of multimodal neighbors to compute. 20 by default
+    knnRange        : 200, // The number of approximate neighbors to compute. 200 by default
+    clusterAlg      : 1, // Algorithm for modularity optimization (1 = Louvain; 2 = Louvain with multilevel refinement; 3 = SLM; 4 = Leiden).
+    extra    : ""        //extra parms to sent to the tool
+]
+
+load PIPELINE_ROOT + "/modules/scRNAseq/wnn.groovy"
+
