@@ -1,0 +1,20 @@
+sc_readAggrData_vars=[
+    outdir          : RESULTS + "/sc_readAggrData",
+    project         : PROJECT,                     
+    res             : RESULTS,          //where the results lie
+    targets         : new File(PIPELINE_ROOT + "/pipelines/scRNAseq/targets.txt").getCanonicalPath(),   //targets file. 
+    org             : ESSENTIAL_ORG,    //UCSC organism
+    db              : ESSENTIAL_DB,        
+    gtf             : ESSENTIAL_GENESGTF,           
+    mtgenes         : ESSENTIAL_MTGENES,
+    selgenes        : "", 
+    cellranger_aggr_id: (binding.variables.containsKey("cellranger_aggr_vars") ? cellranger_aggr_vars.id : (binding.variables.containsKey("cellrangeratac_aggr_vars") ? cellrangeratac_aggr_vars.id : (binding.variables.containsKey("cellrangerarc_aggr_vars") ? cellrangerarc_aggr_vars.id : "aggr"))), // folder name for results from cellranger / cellranger-atac / cellranger-arc aggr
+    run_demux       : RUN_DEMUX, //run sample de-multiplexing step
+    demux_out       : (RUN_DEMUX=="demux_HTO" ? (binding.variables.containsKey("demux_hto_vars") ? demux_hto_vars.outdir : "") : (RUN_DEMUX=="demux_GT" ? (binding.variables.containsKey("demux_gt_vars") ? demux_gt_vars.outdir : "") : "") ),  //where the demux output lie
+    demuxCluster_out : (binding.variables.containsKey("assignSouporcellCluster_vars") ? assignSouporcellCluster_vars.outdir : ""), //output assignSouporcellCluster
+    colorByFactor   : "", // variables for grouping and plotting (if empty, default value selected depending on seqtype)
+    extra    : ""                          //extra parms to sent to the tool
+]
+
+load PIPELINE_ROOT + "/modules/scRNAseq/sc_readAggrData.groovy"
+
