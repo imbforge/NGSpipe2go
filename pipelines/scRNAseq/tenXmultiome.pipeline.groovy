@@ -9,9 +9,22 @@ load PIPELINE_ROOT + "/config/bpipe.config.groovy"
 
 load PIPELINE_ROOT + "/modules/scRNAseq/cellrangerarc_count.header"
 load PIPELINE_ROOT + "/modules/scRNAseq/cellrangerarc_aggr.header"
+load PIPELINE_ROOT + "/modules/scRNAseq/CRmotifCounts.header"
+load PIPELINE_ROOT + "/modules/scRNAseq/CTannoSeurat.header"
+load PIPELINE_ROOT + "/modules/scRNAseq/CTannoMarker.header"
 load PIPELINE_ROOT + "/modules/scRNAseq/demux_hto.header"
 load PIPELINE_ROOT + "/modules/scRNAseq/demux_gt.header"
 load PIPELINE_ROOT + "/modules/scRNAseq/assignSouporcellCluster.header"
+load PIPELINE_ROOT + "/modules/scRNAseq/DNAaccess.header"
+load PIPELINE_ROOT + "/modules/scRNAseq/diffPeaks.header"
+load PIPELINE_ROOT + "/modules/scRNAseq/grn.header"
+load PIPELINE_ROOT + "/modules/scRNAseq/motifEnrich.header"
+load PIPELINE_ROOT + "/modules/scRNAseq/peaks2genes.header"
+load PIPELINE_ROOT + "/modules/scRNAseq/sc_readAggrData.header"
+load PIPELINE_ROOT + "/modules/scRNAseq/sc_filter.header"
+load PIPELINE_ROOT + "/modules/scRNAseq/sc_qc.header"
+load PIPELINE_ROOT + "/modules/scRNAseq/SCTransform.header"
+load PIPELINE_ROOT + "/modules/scRNAseq/wnn.header"
 load PIPELINE_ROOT + "/modules/NGS/bamcoverage.header"
 load PIPELINE_ROOT + "/modules/NGS/bamindexer.header"
 load PIPELINE_ROOT + "/modules/NGS/fastqc.header"
@@ -48,7 +61,13 @@ Bpipe.run {
     ] + 
     cellrangerarc_aggr +
     (RUN_DEMUX == "demux_GT" ? assignSouporcellCluster : dontrun.using(module:"assignSouporcellCluster")) +
+    (ESSENTIAL_USE_AGGR_DATA ? sc_readAggrData : dontrun.using(module:"RunAlternativeModule")) + 
+    sc_qc + sc_filter + CRmotifCounts + SCTransform + DNAaccess + wnn +
+    (ESSENTIAL_CELLTYPE_ANNO.contains("Seurat")? CTannoSeurat : dontrun.using(module:"CTannoSeurat")) + 
+    (ESSENTIAL_CELLTYPE_ANNO.contains("Marker")? CTannoMarker : dontrun.using(module:"CTannoMarker")) + 
+    peaks2genes + diffPeaks + motifEnrich + grn +
     (RUN_TRACKHUB ? trackhub_config + trackhub : dontrun.using(module:"trackhub")) +
-    collectToolVersions + MultiQC + shinyReports
+    collectToolVersions + MultiQC + 
+    shinyReports
 }
 
