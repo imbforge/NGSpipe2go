@@ -1,0 +1,13 @@
+motifEnrich_vars=[
+    outdir          : RESULTS + "/motifEnrichment",
+    project         : PROJECT,                     
+    res             : RESULTS,          
+    db              : ESSENTIAL_DB,                
+    diffPeaks_dir   : (binding.variables.containsKey("diffPeaks_vars") ? diffPeaks_vars.outdir : ""),                
+    pval_thresh     : 0.05, //   p-value threshold of differential accessible peaks to include
+    min_peaks       : 5,  // skip enrichment if less peaks available in comparison
+    extra    : ""                          //extra parms to sent to the tool
+]
+
+load PIPELINE_ROOT + "/modules/scRNAseq/motifEnrich.groovy"
+

@@ -1,0 +1,10 @@
+CRmotifCounts_vars=[
+    outdir          : RESULTS + "/CRmotifCounts",
+    project         : PROJECT,                     
+    res             : RESULTS,   
+    cellranger_aggr_id : (binding.variables.containsKey("cellranger_aggr_vars") ? cellranger_aggr_vars.id : (binding.variables.containsKey("cellrangeratac_aggr_vars") ? cellrangeratac_aggr_vars.id : (binding.variables.containsKey("cellrangerarc_aggr_vars") ? cellrangerarc_aggr_vars.id : "aggr"))), // folder name for results from cellranger / cellranger-atac / cellranger-arc aggr
+    extra              : ""                //extra parms to sent to the tool
+]
+
+load PIPELINE_ROOT + "/modules/scRNAseq/CRmotifCounts.groovy"
+
