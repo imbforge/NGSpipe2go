@@ -97,7 +97,7 @@ switch(SHINYREPS_SEQTYPE,
       colorByFactor2 <- if(!is.na(SHINYREPS_COLORBYFACTOR)) {SHINYREPS_COLORBYFACTOR} else {"group"} # default for downstream plots (up to 2 categories)
     },
     tenX={
-      aggrcsv <- read.delim(file.path(SHINYREPS_PROJECT, "aggr.csv"), sep=",") # aggr.csv contains the order of GEM wells
+      aggrcsv <- read.delim(file.path(SHINYREPS_RES, "aggr.csv"), sep=",") # aggr.csv contains the order of GEM wells
       # load targets.txt (data per fastq file). Columns required: "sample", "file", "group", "replicate"
       targets_pools <- read.delim(SHINYREPS_TARGET, sep="\t", comment.char = "#")
       # create targets on cell level
