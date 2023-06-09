@@ -89,7 +89,7 @@ qcfilt <- cbind(
               nucleosome_sig_max = paste("nucleosome signal <", nucleosome_sig_max),
               TSS_enrich_min = paste("TSS enrichment >", TSS_enrich_min)
   ))
-write.table(qcfilt, file= file.path("/fsimb/groups/imb-bioinfocf/projects/cfb_internal/frank/multiome500/qc/sc_qc/", "qc_filtering.txt"), sep="\t", quote=F, row.names = F)              
+write.table(qcfilt, file= file.path(out, "qc_filtering.txt"), sep="\t", quote=F, row.names = F)              
 
 
 # load sobj from previous module
