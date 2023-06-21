@@ -13,6 +13,15 @@ CTannoSeurat = {
         (CTannoSeurat_vars.res                 ? " res="                 + CTannoSeurat_vars.res                 : "") +
         (CTannoSeurat_vars.pathRefDataset      ? " pathRefDataset="      + CTannoSeurat_vars.pathRefDataset      : "") +
         (CTannoSeurat_vars.columnNameCelltypes ? " columnNameCelltypes=" + CTannoSeurat_vars.columnNameCelltypes : "") +        
+        (CTannoSeurat_vars.assay               ? " assay="               + CTannoSeurat_vars.assay               : "") +
+        (CTannoSeurat_vars.norm_method         ? " norm_method="         + CTannoSeurat_vars.norm_method         : "") +
+        (CTannoSeurat_vars.dimReduction        ? " dimReduction="        + CTannoSeurat_vars.dimReduction        : "") +
+        (CTannoSeurat_vars.project_query       ? " project_query="       + CTannoSeurat_vars.project_query       : "") +
+        (CTannoSeurat_vars.features2use        ? " features2use="        + CTannoSeurat_vars.features2use        : "") +
+        (CTannoSeurat_vars.l2_norm             ? " l2_norm="             + CTannoSeurat_vars.l2_norm             : "") +
+        (CTannoSeurat_vars.k_anchor            ? " k_anchor="            + CTannoSeurat_vars.k_anchor            : "") +
+        (CTannoSeurat_vars.k_filter            ? " k_filter="            + CTannoSeurat_vars.k_filter            : "") +
+        (CTannoSeurat_vars.k_score             ? " k_score="             + CTannoSeurat_vars.k_score             : "") +
         (CTannoSeurat_vars.extra               ? " "                     + CTannoSeurat_vars.extra               : "") 
 
     def TOOL_ENV = prepare_tool_env("R", tools["R"]["version"], tools["R"]["runenv"])
