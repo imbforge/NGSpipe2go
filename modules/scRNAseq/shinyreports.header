@@ -16,6 +16,7 @@ shinyReports_vars=[
     star_log        : (binding.variables.containsKey("STAR_vars") ? STAR_vars.logdir : ""),  //where the STAR logs lie
     star_suffix     : "Log.final.out",         //extension given to the STAR log files
     starparms_suffix: "Log.out",               //extension given to the STAR log files
+    diffExpr_out    : (binding.variables.containsKey("diffExprSeurat_vars") ? diffExprSeurat_vars.outdir : ""),  
     diffPeaks_out   : (binding.variables.containsKey("diffPeaks_vars") ? diffPeaks_vars.outdir : ""),  
     motifEnrich_out : (binding.variables.containsKey("motifEnrich_vars") ? motifEnrich_vars.outdir : ""),  
     grn_out         : (binding.variables.containsKey("grn_vars") ? grn_vars.outdir : ""),  

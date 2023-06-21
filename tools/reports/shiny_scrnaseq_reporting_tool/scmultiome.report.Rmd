@@ -371,10 +371,12 @@ knitr::include_graphics(file.path(SHINYREPS_SC_QC_OUT, "qc_filt_violin_plot.png"
 
 ## Gene expression data processing
 
-We can normalize the gene expression data using SCTransform, and reduce the dimensionality using PCA.
+We can normalize the gene expression data using SCTransform as described in [Hafemeister and Satija, 2019](https://genomebiology.biomedcentral.com/articles/10.1186/s13059-019-1874-1). This procedure omits the need for heuristic steps including pseudocount addition or log-transformation and improves common downstream analytical tasks such as variable gene selection, dimensional reduction, and differential expression.
 
 ```{r process_RNA, results=FALSE, echo=F, message=FALSE, error=TRUE, warning=TRUE}
 
+load(file.path(SHINYREPS_SCTRANSFORM_OUT, "SCTransform.RData"))
+patchwork::wrap_plots(sctUmapCluster, sctUmapSample, ncol = 2)
 
 ```
 
@@ -442,9 +444,18 @@ WNNumap
 
 ### Annotate with Seurat
 
-To annotate cell types in the dataset we can transfer cell labels from an existing reference dataset using tools in the Seurat package. See the Seurat reference mapping vignette for more information.
+To annotate cell types in the dataset we can transfer cell labels from an existing reference dataset using tools in the Seurat package. The main steps of this procedure are outlined below. For a more detailed description of the methodology, please see the Seurat reference mapping vignette and Stuart, Butler, et al Cell 2019. doi: 10.1016/j.cell.2019.05.031; doi: 10.1101/460147
 
-```{r cell_types, fig.height=10, echo=F, message=FALSE, error=TRUE, warning=TRUE}
+* Perform dimensional reduction. 
+
+* Identify anchors between the reference and query-pairs of cells from each dataset that are contained within each other's neighborhoods (also known as mutual nearest neighbors).
+
+* Filter low confidence anchors to ensure anchors in the low dimension space are in broad agreement with the high dimensional measurements. This is done by looking at the neighbors of each query cell in the reference dataset using max.features to define this space. If the reference cell isn't found within the first k.filter neighbors, remove the anchor.
+
+* Assign each remaining anchor a score. For each anchor cell, determine the nearest k.score anchors within its own dataset and within its pair's dataset. Based on these neighborhoods, construct an overall neighbor graph and then compute the shared neighbor overlap between anchor and query cells (analogous to an SNN graph). We use the 0.01 and 0.90 quantiles on these scores to dampen outlier effects and rescale to range between 0-1.
+
+
+```{r cell_types, echo=F, message=FALSE, error=TRUE, warning=TRUE}
 
 if(file.exists(file.path(SHINYREPS_CTANNOSEURAT_OUT, "umap_anno_Seurat_celltypeanno.png"))) {
 knitr::include_graphics(file.path(SHINYREPS_CTANNOSEURAT_OUT, "umap_anno_Seurat_celltypeanno.png"))
@@ -459,7 +470,7 @@ knitr::include_graphics(file.path(SHINYREPS_CTANNOSEURAT_OUT, "umap_anno_Seurat_
 
 Using the [scType](https://github.com/IanevskiAleksandr/sc-type) tool we could perform the celltype annotation. This tool uses positive and negative marker genes to annotate a cluster to a specific celltype. The marker gene set includes data from the CellMarkerDB, PangaloDB and some additional manually curated gene (especially negative markers) from literature. This method currently seems to be better than any other competing tool, in terms of flexibility to use, speed, and accuracy (good performance even up-to 80% dropout rates on simulations) especially in identifying rare (but known) celltypes and distinguishing closely related celltypes. When a cluster contains scType score (which is used to annotate clusters) lower than one-fourth of the number of cells in the cluster the cluster is labelled as unknown. 
 
-```{r cell_types_markerbased, fig.height=10, echo=F, message=FALSE, error=TRUE, warning=TRUE}
+```{r cell_types_markerbased, echo=F, message=FALSE, error=TRUE, warning=TRUE}
 
 if(file.exists(file.path(SHINYREPS_CTANNOMARKER_OUT, "umap_anno_scType_WNNcluster_celltypeanno.png"))) {
 knitr::include_graphics(file.path(SHINYREPS_CTANNOMARKER_OUT, "umap_anno_scType_WNNcluster_celltypeanno.png"))
@@ -598,11 +609,12 @@ Cicero gene activities. From [Cicero website vignette](https://cole-trapnell-lab
 
 ## Differentially accessible peaks
 
-Identify differentially accessible peaks between all pairs of groups for each cluster (see full results in 'peaks_diffacces_clusters.xlsx').
+### Identify differentially accessible peaks between all pairs of groups for each cluster 
+See full results in 'peaks_diffacces_clusters.xlsx'.
 
 ```{r atac_differentially_accessible_peaks, results='asis', echo=F, message=FALSE, error=F, warning=F}
 
-# differential accessibility between pairs of samples per calculated per cluster
+# differential accessibility between pairs of samples calculated per cluster
 
 load(file.path(SHINYREPS_DIFFPEAKS_OUT, "diffPeaks.RData"))
 for (i in names(da_groups_atac)) {
@@ -612,11 +624,12 @@ for (i in names(da_groups_atac)) {
 
 ```
 
-Identify differentially accessible peaks between all pairs of groups for each celltype (see full results in 'peaks_diffacces_celltypes.xlsx').
+### Identify differentially accessible peaks between all pairs of groups for each celltype
+See full results in 'peaks_diffacces_celltypes.xlsx'.
 
 ```{r atac_differentially_accessible_peaks_by_celltype, results='asis', echo=F, message=FALSE, error=F, warning=F}
 
-## differential accessibility between pairs of samples per calculated per celltype
+## differential accessibility between pairs of samples calculated per celltype
 for (i in names(da_groups_atac_ct)) {
   cat(paste("\nComparison", i, "\n"))
   print(kbl(da_groups_atac_ct[[i]][1:min(10,nrow(da_groups_atac_ct[[i]])), ], caption=paste("Top differentially accessible peaks between pairs of groups per celltype:", i), format="simple", align = "l", row.names=T) %>% kable_styling(full_width = F))
@@ -629,7 +642,8 @@ for (i in names(da_groups_atac_ct)) {
 
 List of motifs is obtained from Bioconductors `JASPAR2020` package. This code is implemented for human and mouse.
 
-Identify enriched motifs in differentially accessible peaks per cluster (see full results in 'motif_enriched_clusters.xlsx').
+### Identify enriched motifs in differentially accessible peaks per cluster
+See full results in 'motif_enriched_clusters.xlsx'.
 
 ```{r atac_motifs_da_peaks, results='asis', echo=F, message=FALSE, error=F, warning=F}
 
@@ -641,7 +655,8 @@ for (i in names(da_enriched_motifs)) {
 
 ```
 
-Identify enriched motifs in differentially accessible peaks per celltype (see full results in 'motif_enriched_celltypes.xlsx').
+### Identify enriched motifs in differentially accessible peaks per celltype 
+See full results in 'motif_enriched_celltypes.xlsx'.
 
 ```{r atac_motifs_da_peaks_by_celltype, results='asis', echo=F, message=FALSE, error=F, warning=F}
 
@@ -726,6 +741,37 @@ DefaultAssay(sobj) <- "ATAC"
 
 
 ```
+
+
+## Differentially expressed genes
+
+### Identify differentially expressed genes between all pairs of groups for each cluster 
+See full results in 'diffExpr_clusters.xlsx'.
+
+```{r diff_expr, results='asis', echo=F, message=FALSE, error=F, warning=F}
+
+# differentially expressed genes between pairs of samples calculated per cluster
+load(file.path(SHINYREPS_DIFFEXPR_OUT, "diffExprSeurat.RData"))
+for (i in names(diffExpr_groups)) {
+  cat(paste("\nComparison", i, "\n"))
+  print(kbl(diffExpr_groups[[i]][1:min(10,nrow(diffExpr_groups[[i]])), ], caption=paste("Top differentially expressed genes between pairs of groups per cluster:", i), format="simple", align = "l", row.names=T) %>% kable_styling(full_width = F))
+}
+
+```
+
+### Identify differentially expressed genes between all pairs of groups for each celltype 
+See full results in 'diffExpr_celltypes.xlsx'.
+
+```{r diff_expr_by_celltype, results='asis', echo=F, message=FALSE, error=F, warning=F}
+
+## differentially expressed genes between pairs of samples calculated per celltype
+for (i in names(diffExpr_groups_ct)) {
+  cat(paste("\nComparison", i, "\n"))
+  print(kbl(diffExpr_groups_ct[[i]][1:min(10,nrow(diffExpr_groups_ct[[i]])), ], caption=paste("Top differentially expressed genes between pairs of groups per celltype:", i), format="simple", align = "l", row.names=T) %>% kable_styling(full_width = F))
+}
+
+```
+
 
 
 ## Gene Regulatory Networks

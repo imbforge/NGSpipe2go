@@ -1,0 +1,15 @@
+diffExprSeurat_vars=[
+    outdir          : RESULTS + "/diffExprSeurat",
+    project         : PROJECT,                     
+    res             : RESULTS,          
+    assay           : "SCT",
+    minCells        : 20, //   minimum number of cells to include cluster in analysis
+    clusterVar      : "clusters_wnn",  // variable name with clustering info for comparison by group and cluster ("clusters_rna" or "clusters_wnn")
+    CTannoSelected  : ESSENTIAL_CELLTYPE_ANNO[0],  // select celltype annotation column for comparison by group and celltype
+    test            : "wilcox",  // statistical test to use. One of "wilcox", "bimod", "roc" , "t", "negbinom", "poisson", "LR", "MAST" and "DESeq2".
+    latentVars      : "",  // Variables to test, used only when test is one of 'LR', 'negbinom', 'poisson' or 'MAST'.
+    extra    : ""          //extra parms to sent to the tool
+]
+
+load PIPELINE_ROOT + "/modules/scRNAseq/diffExprSeurat.groovy"
+

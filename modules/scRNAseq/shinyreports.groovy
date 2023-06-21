@@ -48,6 +48,7 @@ shinyReports = {
             echo "SHINYREPS_STAR_LOG=${shinyReports_vars.star_log}"       >> $output &&
             echo "SHINYREPS_STAR_SUFFIX=${shinyReports_vars.star_suffix}" >> $output &&
             echo "SHINYREPS_STARparms_SUFFIX=${shinyReports_vars.starparms_suffix}" >> $output &&
+            echo "SHINYREPS_DIFFEXPR_OUT=${shinyReports_vars.diffExpr_out}"     >> $output &&
             echo "SHINYREPS_DIFFPEAKS_OUT=${shinyReports_vars.diffPeaks_out}"     >> $output &&
             echo "SHINYREPS_MOTIFENRICH_OUT=${shinyReports_vars.motifEnrich_out}"     >> $output &&
             echo "SHINYREPS_GRN_OUT=${shinyReports_vars.grn_out}"     >> $output &&
