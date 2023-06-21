@@ -11,8 +11,12 @@ diffPeaks = {
         (diffPeaks_vars.outdir             ? " outdir="             + diffPeaks_vars.outdir             : "") +
         (diffPeaks_vars.project            ? " project="            + diffPeaks_vars.project            : "") +
         (diffPeaks_vars.res                ? " res="                + diffPeaks_vars.res                : "") +
+        (diffPeaks_vars.assay              ? " assay="              + diffPeaks_vars.assay              : "") +
         (diffPeaks_vars.minCells           ? " minCells="           + diffPeaks_vars.minCells           : "") +
+        (diffPeaks_vars.clusterVar         ? " clusterVar="         + diffPeaks_vars.clusterVar         : "") +
         (diffPeaks_vars.CTannoSelected     ? " CTannoSelected="     + diffPeaks_vars.CTannoSelected     : "") +
+        (diffPeaks_vars.test               ? " test="               + diffPeaks_vars.test               : "") +
+        (diffPeaks_vars.latentVars         ? " latentVars="         + diffPeaks_vars.latentVars         : "") +
         (diffPeaks_vars.extra              ? " "                    + diffPeaks_vars.extra              : "") 
 
     def TOOL_ENV = prepare_tool_env("R", tools["R"]["version"], tools["R"]["runenv"])
