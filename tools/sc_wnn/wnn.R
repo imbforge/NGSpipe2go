@@ -8,34 +8,10 @@
 ##
 ## Args:
 ## -----
-## targets=targets.txt      # file describing the targets 
+## projectdir      # project directory
 ##
 ##
 ######################################
-
-renv::use(lockfile='NGSpipe2go/tools/sc_wnn/renv.lock')
-print(.libPaths())
-
-options(stringsAsFactors=FALSE)
-library(tidyverse)
-library(AnnotationDbi)
-library(Biobase)
-library(data.table)
-library(ggplot2)
-library(ggrepel)
-library(Matrix)
-library(reshape2)
-library(scater)
-library(scran)
-library(scuttle)
-library(Seurat)
-library(Signac)
-library(uwot)
-
-# set options
-options(stringsAsFactors=FALSE)
-CORES <- 2
-
 
 ##
 ## get arguments from the command line
@@ -58,6 +34,29 @@ clusterAlg    <- parseArgs(args,"clusterAlg=", convert="as.numeric")
 
 runstr <- "Rscript wnn.R [projectdir=projectdir]"
 
+# load R environment
+renv::use(lockfile=file.path(projectdir, "NGSpipe2go/tools/sc_wnn/renv.lock"))
+print(.libPaths())
+
+library(tidyverse)
+library(AnnotationDbi)
+library(Biobase)
+library(data.table)
+library(ggplot2)
+library(ggrepel)
+library(Matrix)
+library(reshape2)
+library(scater)
+library(scran)
+library(scuttle)
+library(Seurat)
+library(Signac)
+library(uwot)
+
+# set options
+options(stringsAsFactors=FALSE)
+
+# check parameter
 print(paste("projectdir:", projectdir))
 print(paste("resultsdir:", resultsdir))
 print(paste("out:", out))
@@ -78,31 +77,39 @@ sobj <- readRDS(file = file.path(resultsdir, "sobj.RDS"))
 # and the SNN graph used for clustering at sobj[["wsnn"]]
 # Cell-specific modality weights can be accessed at sobj$RNA.weight
 
+set.seed(100)
 sobj <- FindMultiModalNeighbors(
   object = sobj,
+  reduction.list = list("pca.sct", "lsi"), 
+  dims.list = list(1:5, 2:40), 
   k.nn = knn, 
   knn.range= knnRange, 
-  reduction.list = list("pca", "lsi"), 
-  dims.list = list(1:5, 2:40), 
+  knn.graph.name = "wknn",
+  snn.graph.name = "wsnn",
+  weighted.nn.name = "weighted.nn",
   modality.weight.name = "RNA.weight",
   verbose = TRUE
 )
 
 # build a joint UMAP visualization
+set.seed(100)
 sobj <- RunUMAP(
   object = sobj,
   nn.name = "weighted.nn",
-  assay = "RNA",
+  assay = "SCT",
+  reduction = "pca.sct", 
   reduction.name = "umap.wnn",
   verbose = TRUE
 )
 
 
 # build a joint TSNE visualization
+set.seed(100)
 sobj <- RunTSNE(
   object = sobj,
   nn.name = "weighted.nn",
-  assay = "RNA",
+  assay = "SCT",
+  reduction = "pca.sct", 
   reduction.name = "tsne.wnn",
   verbose = TRUE
 )
@@ -117,6 +124,7 @@ ggsave(plot=tsneSample, filename=file.path(out, "tsne_anno_sample.pdf"))
 
 
 ### WNN clustering
+set.seed(100)
 sobj <- FindClusters(sobj, graph.name = "wsnn", algorithm = clusterAlg, verbose = FALSE)
 
 # Save clusters in a different metadata column, because it gets overwritten every time FindClusters is called
