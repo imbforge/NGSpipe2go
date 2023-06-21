@@ -8,15 +8,63 @@
 ##
 ## Args:
 ## -----
-## targets=targets.txt      # file describing the targets 
+## projectdir      # project directory
 ##
 ##
 ######################################
 
-renv::use(lockfile='NGSpipe2go/tools/sc_grn/renv.lock')
+##
+## get arguments from the command line
+##
+parseArgs <- function(args,string,default=NULL,convert="as.character") {
+  
+  if(length(i <- grep(string,args,fixed=T)) == 1)
+    return(do.call(convert,list(gsub(string,"",args[i]))))
+  
+  if(!is.null(default)) default else do.call(convert,list(NA))
+}
+run_custom_code <- function(x) {
+  eval(parse(text=x))
+}
+
+args <- commandArgs(T)
+projectdir    <- parseArgs(args,"project=") 
+resultsdir    <- parseArgs(args,"res=")   
+out           <- parseArgs(args,"outdir=") # output folder
+peak_assay    <- parseArgs(args,"peak_assay=")     
+rna_assay     <- parseArgs(args,"rna_assay=")     
+db            <- parseArgs(args,"db=")     
+methodModel   <- parseArgs(args,"methodModel=")     
+genes2use     <- parseArgs(args,"genes2use=", convert="as.character")
+pval_thresh   <- parseArgs(args,"pval_thresh=", convert="as.numeric")
+min_genes     <- parseArgs(args,"min_genes=", convert="as.numeric")
+features4graph <- parseArgs(args,"features4graph=", convert="as.character")
+umap_method   <- parseArgs(args,"umap_method=")     
+n_neighbors   <- parseArgs(args,"n_neighbors=", convert="as.numeric")   
+
+runstr <- "Rscript grn.R [projectdir=projectdir]"
+
+if(length(genes2use)==1) {
+  if(is.na(genes2use)) {genes2use <- NULL} else {
+    if(file.exists(genes2use)) {genes2use <- read.delim(genes2use, header=F)[,1]} else {
+      cat("\npath in genes2use not found. genes2use is set to NULL\n")
+      genes2use <- NULL
+    }
+  }
+}
+if(length(features4graph)==1) {
+  if(is.na(features4graph)) {features4graph <- NULL} else {
+    if(file.exists(features4graph)) {features4graph <- read.delim(features4graph, header=F)[,1]} else {
+      cat("\npath in features4graph not found. features4graph is set to NULL\n")
+      features4graph <- NULL
+    }
+  }
+}
+
+# load R environment
+renv::use(lockfile=file.path(projectdir, "NGSpipe2go/tools/sc_grn/renv.lock"))
 print(.libPaths())
 
-options(stringsAsFactors=FALSE)
 library(tidyverse)
 library(AnnotationDbi)
 library(Biobase)
@@ -39,56 +87,26 @@ library(grr)
 
 # set options
 options(stringsAsFactors=FALSE)
-CORES <- 2
 
-
-##
-## get arguments from the command line
-##
-parseArgs <- function(args,string,default=NULL,convert="as.character") {
-  
-  if(length(i <- grep(string,args,fixed=T)) == 1)
-    return(do.call(convert,list(gsub(string,"",args[i]))))
-  
-  if(!is.null(default)) default else do.call(convert,list(NA))
-}
-run_custom_code <- function(x) {
-  eval(parse(text=x))
-}
-
-
-args <- commandArgs(T)
-projectdir    <- parseArgs(args,"project=") 
-resultsdir    <- parseArgs(args,"res=")   
-out           <- parseArgs(args,"outdir=") # output folder
-db            <- parseArgs(args,"db=")     
-methodModel   <- parseArgs(args,"methodModel=")     
-genes2use     <- parseArgs(args,"genes2use=", convert="run_custom_code")
-pval_thresh   <- parseArgs(args,"pval_thresh=", convert="as.numeric")
-min_genes     <- parseArgs(args,"min_genes=", convert="as.numeric")
-features4graph <- parseArgs(args,"features4graph=", convert="run_custom_code")
-umap_method   <- parseArgs(args,"umap_method=")     
-
-runstr <- "Rscript grn.R [projectdir=projectdir]"
-
-if(length(genes2use)==1 && is.na(genes2use)) {genes2use <- NULL}
-if(length(features4graph)==1 && is.na(features4graph)) {features4graph <- NULL}
-
+# check parameter
 print(paste("projectdir:", projectdir))
 print(paste("resultsdir:", resultsdir))
 print(paste("out:", out))
+print(paste("peak_assay:", peak_assay))
+print(paste("rna_assay:", rna_assay))
 print(paste("db:", db))
 print(paste("methodModel:", methodModel))
 print(paste("genes2use:", paste(genes2use, collapse=" ")))
 print(paste("pval_thresh:", pval_thresh))
 print(paste("min_genes:", min_genes))
-print(paste("features4graph:", features4graph))
+print(paste("features4graph:", paste(features4graph, collapse=" ")))
 print(paste("umap_method:", umap_method))
+print(paste("n_neighbors:", n_neighbors))
 
 
 # load sobj from previous module
 sobj <- readRDS(file = file.path(resultsdir, "sobj.RDS"))
-DefaultAssay(sobj) <- "ATAC"
+DefaultAssay(sobj) <- peak_assay
 
 
 # load relevant BSgenome package (needed by Signac for motif analysis)
@@ -113,7 +131,7 @@ pfm <- TFBSTools::getMatrixSet(
 
 
 # Select variable features
-sobj <- Seurat::FindVariableFeatures(sobj, assay='SCT')
+sobj <- Seurat::FindVariableFeatures(sobj, assay=rna_assay)
 
 # Initiate GRN object and select candidate regions. 
 # This will create a RegulatoryNetwork object inside the Seurat object 
@@ -133,8 +151,8 @@ sobj <- Seurat::FindVariableFeatures(sobj, assay='SCT')
 # regions = StringToGRanges(Links(sobj[["ATAC"]])$peak)
 sobj <- initiate_grn(sobj,
                      regions = NULL, # if specified, intersections with peak ranges from peak_assay are used
-                     peak_assay = "ATAC",
-                     rna_assay = "SCT",
+                     peak_assay = peak_assay,
+                     rna_assay = rna_assay,
                      exclude_exons = TRUE) # new object is now called SeuratPlus
 # GetGRN(sobj) # get RegulatoryNetwork object 
 # regions <- NetworkRegions(sobj) # We can also inspect the candidate regulatory regions that we have selected:
@@ -164,6 +182,7 @@ sobj <- find_motifs(
 # Here, we first select regions near genes, either by simply considering a distance 
 # upstream and/or downstream of the gene (peak_to_gene_method='Signac') or by also 
 # considering overlapping regulatory regions as is done by GREAT (peak_to_gene_method='GREAT')
+set.seed(100)
 sobj <- infer_grn(sobj,
                   peak_to_gene_method = 'Signac', # One of 'Signac' or 'GREAT'
                   method = methodModel,
@@ -204,9 +223,12 @@ ggsave(plot=pmm, filename=file.path(out, "GRN_module_metrics.png"))
 
 # create the graph to be visualized and optionally a UMAP embedding for the nodes 
 sobj <- get_network_graph(sobj, 
-                          rna_assay = "SCT", 
+                          rna_assay = rna_assay, 
                           graph_name = "module_graph", # we can access the graph with this name later
                           umap_method = umap_method, # method to compute edge weights for UMAP
+                          n_neighbors = n_neighbors, # The size of local neighborhood (in terms of number of neighboring sample points) used for manifold
+                          # approximation. Larger values result in more global views of the manifold, while smaller values 
+                          # result in more local data being preserved. In general values should be in the range 2 to 100 (default 15).
                           features = features4graph) # plot a smaller subgraph of the GRN by selecting a set of genes as features
 cat("Visualization of the network graph. The nodes are colored and sized based on their centrality in the graph and the edges are colored by the direction of the regulation (inhibitory: grey; activating: orange)")
 pnetg <- plot_network_graph(sobj, 
@@ -229,10 +251,9 @@ ggsave(plot=pnetg, filename=file.path(out, "GRN_network_graph.png"))
 #     theme_void()
 
 
-
 #############################
 # save the sessionInformation and R image
 writeLines(capture.output(sessionInfo()),paste0(out, "/grn_info.txt"))
-saveRDS(sobj, file = file.path(resultsdir, "sobj.RDS"))
+saveRDS(sobj, file = file.path(resultsdir, "sobj_grn.RDS"))
 save(modules_df, pgof, pmm, pnetg, file=paste0(out,"/grn.RData"))
 

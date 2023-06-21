@@ -11,6 +11,8 @@ grn = {
         (grn_vars.outdir             ? " outdir="             + grn_vars.outdir             : "") +
         (grn_vars.project            ? " project="            + grn_vars.project            : "") +
         (grn_vars.res                ? " res="                + grn_vars.res                : "") +
+        (grn_vars.peak_assay         ? " peak_assay="         + grn_vars.peak_assay         : "") +
+        (grn_vars.rna_assay          ? " rna_assay="          + grn_vars.rna_assay          : "") +
         (grn_vars.db                 ? " db="                 + grn_vars.db                 : "") +
         (grn_vars.methodModel        ? " methodModel="        + grn_vars.methodModel        : "") +
         (grn_vars.genes2use          ? " genes2use="          + grn_vars.genes2use          : "") +
@@ -18,6 +20,7 @@ grn = {
         (grn_vars.min_genes          ? " min_genes="          + grn_vars.min_genes          : "") +
         (grn_vars.features4graph     ? " features4graph="     + grn_vars.features4graph     : "") +
         (grn_vars.umap_method        ? " umap_method="        + grn_vars.umap_method        : "") +
+        (grn_vars.n_neighbors        ? " n_neighbors="        + grn_vars.n_neighbors        : "") +
         (grn_vars.extra              ? " "                    + grn_vars.extra              : "") 
 
     def TOOL_ENV = prepare_tool_env("R", tools["R"]["version"], tools["R"]["runenv"])

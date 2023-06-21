@@ -2,14 +2,17 @@ grn_vars=[
     outdir           : RESULTS + "/Gene_regulatory_network",
     project          : PROJECT,                     
     res              : RESULTS,          
+    peak_assay       : "ATAC",          
+    rna_assay        : "SCT",          
     db               : ESSENTIAL_DB,                
     methodModel      : "glm",  // method to fit the model
-    genes2use        : "", //"'c(\"HMCN1\", \"EVL\", \"EML1\")'", // Target genes to consider for GRN inference (takes all VariableFeatures in the object per default).
+    genes2use        : "",  // path to txt file (no header) with target genes to consider for GRN inference (takes all VariableFeatures in the object per default).
     pval_thresh      : 0.05, // adjusted p-value threshold for module extraction
     min_genes        : 5,  // minimum number of genes in a module
-    features4graph   : "", // Features to use to create the graph. If empty uses all features in the network
+    features4graph   : "", // path to txt file (no header) with features to use to create the graph. If empty uses all features in the network
     umap_method      : "weighted", // Method to compute edge weights for UMAP (one of "weighted", "corr", "coef", "none")
-    extra    : ""                          //extra parms to sent to the tool
+    n_neighbors      : 15, // The size of local neighborhood (in terms of number of neighboring sample points) used for manifold approximation.   
+    extra            : ""  //extra parms to sent to the tool
 ]
 
 load PIPELINE_ROOT + "/modules/scRNAseq/grn.groovy"
