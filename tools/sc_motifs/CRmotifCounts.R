@@ -9,34 +9,10 @@
 ##
 ## Args:
 ## -----
-## targets=targets.txt      # file describing the targets 
+## projectdir      # project directory
 ##
 ##
 ######################################
-
-renv::use(lockfile='NGSpipe2go/tools/sc_motifs/renv.lock')
-print(.libPaths())
-
-options(stringsAsFactors=FALSE)
-library(tidyverse)
-library(AnnotationDbi)
-library(Biobase)
-library(data.table)
-library(ggplot2)
-library(ggrepel)
-library(Matrix)
-library(reshape2)
-library(scater)
-library(scran)
-library(scuttle)
-library(Seurat)
-library(Signac)
-library(uwot)
-
-# set options
-options(stringsAsFactors=FALSE)
-CORES <- 2
-
 
 ##
 ## get arguments from the command line
@@ -57,6 +33,29 @@ cellranger_aggr_id <- parseArgs(args, "cellranger_aggr_id=")
 
 runstr <- "Rscript CRmotifCounts.R [projectdir=projectdir]"
 
+# load R environment
+renv::use(lockfile=file.path(projectdir, "NGSpipe2go/tools/sc_motifs/renv.lock"))
+print(.libPaths())
+
+library(tidyverse)
+library(AnnotationDbi)
+library(Biobase)
+library(data.table)
+library(ggplot2)
+library(ggrepel)
+library(Matrix)
+library(reshape2)
+library(scater)
+library(scran)
+library(scuttle)
+library(Seurat)
+library(Signac)
+library(uwot)
+
+# set options
+options(stringsAsFactors=FALSE)
+
+# check parameter
 print(paste("projectdir:", projectdir))
 print(paste("resultsdir:", resultsdir))
 print(paste("out:", out))

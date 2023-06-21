@@ -8,36 +8,10 @@
 ##
 ## Args:
 ## -----
-## targets=targets.txt      # file describing the targets 
+## projectdir      # project directory
 ##
 ##
 ######################################
-
-renv::use(lockfile='NGSpipe2go/tools/sc_motifs/renv.lock')
-print(.libPaths())
-
-options(stringsAsFactors=FALSE)
-library(tidyverse)
-library(AnnotationDbi)
-library(Biobase)
-library(data.table)
-library(ggplot2)
-library(ggrepel)
-library(Matrix)
-library(reshape2)
-library(scater)
-library(scran)
-library(scuttle)
-library(Seurat)
-library(Signac)
-library(uwot)
-library(openxlsx)
-library(JASPAR2020)
-
-# set options
-options(stringsAsFactors=FALSE)
-CORES <- 2
-
 
 ##
 ## get arguments from the command line
@@ -61,6 +35,31 @@ min_peaks     <- parseArgs(args,"min_peaks=", convert="as.numeric")
 
 runstr <- "Rscript motifEnrich.R [projectdir=projectdir]"
 
+# load R environment
+renv::use(lockfile=file.path(projectdir, "NGSpipe2go/tools/sc_motifs/renv.lock"))
+print(.libPaths())
+
+library(tidyverse)
+library(AnnotationDbi)
+library(Biobase)
+library(data.table)
+library(ggplot2)
+library(ggrepel)
+library(Matrix)
+library(reshape2)
+library(scater)
+library(scran)
+library(scuttle)
+library(Seurat)
+library(Signac)
+library(uwot)
+library(openxlsx)
+library(JASPAR2020)
+
+# set options
+options(stringsAsFactors=FALSE)
+
+# check parameter
 print(paste("projectdir:", projectdir))
 print(paste("resultsdir:", resultsdir))
 print(paste("out:", out))
@@ -114,20 +113,13 @@ sobj[["SCT"]] <- subset(sobj[["SCT"]], features = rownames(sobj[["SCT"]])[keep.g
 # add motif information
 # Construct a Motif object containing DNA sequence motif information and add it to an existing Seurat object or ChromatinAssay. 
 # If running on a Seurat object, AddMotifs will also run RegionStats to compute the GC content of each peak and store the results in the feature metadata. 
+set.seed(100)
 sobj <- AddMotifs(
   object = sobj,
   genome = BSgenome,     # org-specific
   pfm = pfm,
   assay = "ATAC"
 )
-
-# sobj <- AddMotifs(
-#   object = sobj,
-#   genome = getSeq(BSgenome, standardChromosomes(BSgenome)),   # not working
-#   pfm = pfm,
-#   assay = "ATAC"
-# )
-
 
 ## Identify enriched motifs in differentially accessible peaks per cluster
 # FindMotifs function: Find motifs over-represented in a given set of genomic features. 
@@ -148,6 +140,7 @@ for (gp in names(da_groups_atac)) {
 
 # Save results
 if(length(da_enriched_motifs)>0) {
+  names(da_enriched_motifs) <- substr(names(da_enriched_motifs), 1, apply(data.frame(nchar(names(da_enriched_motifs)),31), 1, min))
   openxlsx::write.xlsx(da_enriched_motifs, file = file.path(out, "motif_enriched_clusters.xlsx"))
 }
 gc()
@@ -172,6 +165,7 @@ for (gp in names(da_groups_atac_ct)) {
 
 # Save results
 if(length(da_enriched_motifs_ct)>0) {
+  names(da_enriched_motifs_ct) <- substr(names(da_enriched_motifs_ct), 1, apply(data.frame(nchar(names(da_enriched_motifs_ct)),31), 1, min))
   openxlsx::write.xlsx(da_enriched_motifs_ct, file = file.path(out, "motif_enriched_celltypes.xlsx"))
 }
 gc()

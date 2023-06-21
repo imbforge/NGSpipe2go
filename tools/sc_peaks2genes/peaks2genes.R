@@ -8,35 +8,10 @@
 ##
 ## Args:
 ## -----
-## targets=targets.txt      # file describing the targets 
+## projectdir      # project directory
 ##
 ##
 ######################################
-
-renv::use(lockfile='NGSpipe2go/tools/sc_peaks2genes/renv.lock')
-print(.libPaths())
-
-options(stringsAsFactors=FALSE)
-library(tidyverse)
-library(AnnotationDbi)
-library(Biobase)
-library(data.table)
-library(ggplot2)
-library(ggrepel)
-library(Matrix)
-library(reshape2)
-library(scater)
-library(scran)
-library(scuttle)
-library(Seurat)
-library(Signac)
-library(uwot)
-
-
-# set options
-options(stringsAsFactors=FALSE)
-CORES <- 2
-
 
 ##
 ## get arguments from the command line
@@ -61,12 +36,34 @@ genes2use      <- parseArgs(args,"genes2use=", convert="run_custom_code")
 genes2plot     <- parseArgs(args,"genes2plot=", convert="as.character")
 plotUpstream   <- parseArgs(args,"plotUpstream=", default=0, convert="as.numeric")
 plotDownstream <- parseArgs(args,"plotDownstream=", default=0, convert="as.numeric")
-
-runstr <- "Rscript peaks2genes.R [projectdir=projectdir]"
-
 if(length(genes2use)==1 && is.na(genes2use)) {genes2use <- NULL}
 if(length(genes2plot)==1 && is.na(genes2plot)) {genes2plot <- NULL}
 
+runstr <- "Rscript peaks2genes.R [projectdir=projectdir]"
+
+# load R environment
+renv::use(lockfile=file.path(projectdir, "NGSpipe2go/tools/sc_peaks2genes/renv.lock"))
+print(.libPaths())
+
+library(tidyverse)
+library(AnnotationDbi)
+library(Biobase)
+library(data.table)
+library(ggplot2)
+library(ggrepel)
+library(Matrix)
+library(reshape2)
+library(scater)
+library(scran)
+library(scuttle)
+library(Seurat)
+library(Signac)
+library(uwot)
+
+# set options
+options(stringsAsFactors=FALSE)
+
+# check parameter
 print(paste("projectdir:", projectdir))
 print(paste("resultsdir:", resultsdir))
 print(paste("out:", out))
@@ -95,8 +92,10 @@ load(file.path(resultsdir, "/gtf.RData"))
 
 
 # first compute the GC content for each peak
+set.seed(100)
 sobj <- RegionStats(sobj, assay = "ATAC", genome = BSgenome)
 
+set.seed(100)
 sobj <- LinkPeaks(
   object = sobj,
   peak.assay = "ATAC",

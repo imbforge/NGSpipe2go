@@ -13,10 +13,42 @@
 ##
 ######################################
 
-renv::use(lockfile='NGSpipe2go/tools/sc_readData/renv.lock')
+##
+## get arguments from the command line
+##
+parseArgs <- function(args,string,default=NULL,convert="as.character") {
+  
+  if(length(i <- grep(string,args,fixed=T)) == 1)
+    return(do.call(convert,list(gsub(string,"",args[i]))))
+  
+  if(!is.null(default)) default else do.call(convert,list(NA))
+}
+
+args               <- commandArgs(T)
+projectdir         <- parseArgs(args,"project=") 
+ftargets           <- parseArgs(args,"targets=","targets.txt")     # file describing the targets
+gene.model         <- parseArgs(args,"gtf=","")       # gtf gene model
+resultsdir         <- parseArgs(args,"res=")   
+out                <- parseArgs(args,"outdir=") # output folder
+org                <- parseArgs(args,"org=")   # organism name needed for cell cycle and GO enrichment 
+db                 <- parseArgs(args,"db=")     
+MTgenes            <- parseArgs(args,"mtgenes=",NA) 
+selgenes           <- parseArgs(args,"selgenes=","") 
+cellranger_aggr_id <- parseArgs(args, "cellranger_aggr_id=") 
+run_demux          <- parseArgs(args, "run_demux=") 
+demux_out          <- parseArgs(args, "demux_out=") 
+demuxcluster_out   <- parseArgs(args, "demuxCluster_out=") 
+colorbyfactor      <- parseArgs(args, "colorByFactor=", "") 
+
+if(!file.exists(ftargets))   stop(paste("File",ftargets,"does NOT exist. Run with:\n",runstr))
+if(!file.exists(gene.model)) stop(paste("File",gene.model,"does NOT exist. Run with:\n",runstr))
+
+runstr <- "Rscript sc_readAggrData.R [targets=targets.txt] [gtf=]"
+
+# load R environment
+renv::use(lockfile=file.path(projectdir, "NGSpipe2go/tools/sc_readData/renv.lock"))
 print(.libPaths())
 
-options(stringsAsFactors=FALSE)
 library(tidyverse)
 library(AnnotationDbi)
 library(Biobase)
@@ -34,51 +66,8 @@ library(uwot)
 
 # set options
 options(stringsAsFactors=FALSE)
-CORES <- 2
 
-##
-## get arguments from the command line
-##
-parseArgs <- function(args,string,default=NULL,convert="as.character") {
-  
-  if(length(i <- grep(string,args,fixed=T)) == 1)
-    return(do.call(convert,list(gsub(string,"",args[i]))))
-  
-  if(!is.null(default)) default else do.call(convert,list(NA))
-}
-
-args               <- commandArgs(T)
-ftargets           <- parseArgs(args,"targets=","targets.txt")     # file describing the targets
-gene.model         <- parseArgs(args,"gtf=","")       # gtf gene model
-projectdir         <- parseArgs(args,"project=") 
-resultsdir         <- parseArgs(args,"res=")   
-out                <- parseArgs(args,"outdir=") # output folder
-org                <- parseArgs(args,"org=")   # organism name needed for cell cycle and GO enrichment 
-db                 <- parseArgs(args,"db=")     
-MTgenes            <- parseArgs(args,"mtgenes=",NA) 
-selgenes           <- parseArgs(args,"selgenes=","") 
-cellranger_aggr_id <- parseArgs(args, "cellranger_aggr_id=") 
-run_demux          <- parseArgs(args, "run_demux=") 
-demux_out          <- parseArgs(args, "demux_out=") 
-demuxcluster_out   <- parseArgs(args, "demuxCluster_out=") 
-colorbyfactor      <- parseArgs(args, "colorByFactor=", "") 
-
-runstr <- "Rscript sc_readAggrData.R [targets=targets.txt] [gtf=]"
-if(!file.exists(ftargets))   stop(paste("File",ftargets,"does NOT exist. Run with:\n",runstr))
-if(!file.exists(gene.model)) stop(paste("File",gene.model,"does NOT exist. Run with:\n",runstr))
-
-# load list of mitochondrial genes (if not given, we will use all genes starting with "MT-")
-mito.genes <- if(file.exists(file.path(projectdir,MTgenes))) {
-  read.delim(file.path(projectdir,MTgenes))[, 1]
-} else {NA}
-
-# load relevant BSgenome package (needed by Signac for motif analysis)
-switch(db,
-       hg38={ failed_BSgenome <- library("BSgenome.Hsapiens.UCSC.hg38") },
-       mm10={ failed_BSgenome <- library("BSgenome.Mmusculus.UCSC.mm10") },
-       stop(c("Don't find genome:", db))   
-)
-
+# check parameter
 print(paste("projectdir:", projectdir))
 print(paste("resultsdir:", resultsdir))
 print(paste("out:", out))
@@ -94,6 +83,18 @@ print(paste("demux_out:", demux_out))
 print(paste("demuxcluster_out:", demuxcluster_out))
 print(paste("colorbyfactor:", colorbyfactor))
 
+
+# load list of mitochondrial genes (if not given, we will use all genes starting with "MT-")
+mito.genes <- if(file.exists(file.path(projectdir,MTgenes))) {
+  read.delim(file.path(projectdir,MTgenes))[, 1]
+} else {NA}
+
+# load relevant BSgenome package (needed by Signac for motif analysis)
+switch(db,
+       hg38={ failed_BSgenome <- library("BSgenome.Hsapiens.UCSC.hg38") },
+       mm10={ failed_BSgenome <- library("BSgenome.Mmusculus.UCSC.mm10") },
+       stop(c("Don't find genome:", db))   
+)
 
 
 aggrcsv <- read.delim(file.path(resultsdir, "aggr.csv"), sep=",") # aggr.csv contains the order of GEM wells
