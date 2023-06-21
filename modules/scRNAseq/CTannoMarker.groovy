@@ -11,6 +11,8 @@ CTannoMarker = {
         (CTannoMarker_vars.outdir              ? " outdir="              + CTannoMarker_vars.outdir              : "") +
         (CTannoMarker_vars.project             ? " project="             + CTannoMarker_vars.project             : "") +
         (CTannoMarker_vars.res                 ? " res="                 + CTannoMarker_vars.res                 : "") +
+        (CTannoMarker_vars.assay               ? " assay="               + CTannoMarker_vars.assay               : "") +
+        (CTannoMarker_vars.clusterVar          ? " clusterVar="          + CTannoMarker_vars.clusterVar          : "") +
         (CTannoMarker_vars.dbfile              ? " dbfile="              + CTannoMarker_vars.dbfile              : "") +
         (CTannoMarker_vars.tissue              ? " tissue="              + CTannoMarker_vars.tissue              : "") +        
         (CTannoMarker_vars.extra               ? " "                     + CTannoMarker_vars.extra               : "") 

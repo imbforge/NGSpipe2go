@@ -8,15 +8,37 @@
 ##
 ## Args:
 ## -----
-## targets=targets.txt      # file describing the targets 
+## projectdir      # project directory
 ##
 ##
 ######################################
 
-renv::use(lockfile='NGSpipe2go/tools/CTanno/renv.lock')
+##
+## get arguments from the command line
+##
+parseArgs <- function(args,string,default=NULL,convert="as.character") {
+  
+  if(length(i <- grep(string,args,fixed=T)) == 1)
+    return(do.call(convert,list(gsub(string,"",args[i]))))
+  
+  if(!is.null(default)) default else do.call(convert,list(NA))
+}
+
+args <- commandArgs(T)
+projectdir    <- parseArgs(args,"project=") 
+resultsdir    <- parseArgs(args,"res=")   
+out           <- parseArgs(args,"outdir=") # output folder
+assay2use     <- parseArgs(args,"assay=")   
+clusterVar    <- parseArgs(args,"clusterVar=")   
+dbfile        <- parseArgs(args,"dbfile=")
+tissue        <- parseArgs(args,"tissue=")
+
+runstr <- "Rscript CTannoMarker.R [projectdir=projectdir]"
+
+# load R environment
+renv::use(lockfile=file.path(projectdir, "NGSpipe2go/tools/CTanno/renv.lock"))
 print(.libPaths())
 
-options(stringsAsFactors=FALSE)
 library(tidyverse)
 library(AnnotationDbi)
 library(Biobase)
@@ -35,39 +57,20 @@ library(HGNChelper)
 
 # set options
 options(stringsAsFactors=FALSE)
-CORES <- 2
 
-
-##
-## get arguments from the command line
-##
-parseArgs <- function(args,string,default=NULL,convert="as.character") {
-  
-  if(length(i <- grep(string,args,fixed=T)) == 1)
-    return(do.call(convert,list(gsub(string,"",args[i]))))
-  
-  if(!is.null(default)) default else do.call(convert,list(NA))
-}
-
-args <- commandArgs(T)
-projectdir    <- parseArgs(args,"project=") 
-resultsdir    <- parseArgs(args,"res=")   
-out           <- parseArgs(args,"outdir=") # output folder
-dbfile        <- parseArgs(args,"dbfile=")
-tissue        <- parseArgs(args,"tissue=")
-
-runstr <- "Rscript CTannoMarker.R [projectdir=projectdir]"
-
+# check parameter
 print(paste("projectdir:", projectdir))
 print(paste("resultsdir:", resultsdir))
 print(paste("out:", out))
+print(paste("assay2use:", assay2use))
+print(paste("clusterVar:", clusterVar))
 print(paste("dbfile:", dbfile))
 print(paste("tissue:", tissue))
 
 
 # load sobj from previous module
 sobj <- readRDS(file = file.path(resultsdir, "sobj.RDS"))
-DefaultAssay(sobj) <- "SCT"
+DefaultAssay(sobj) <- assay2use
 
 set.seed(100)
 
@@ -87,7 +90,7 @@ source("https://raw.githubusercontent.com/IanevskiAleksandr/sc-type/master/R/sct
 gs_list = gene_sets_prepare(dbfile, tissue)
 
 # get cell-type by cell matrix
-es.max = sctype_score(scRNAseqData = sobj[["SCT"]]@scale.data, scaled = TRUE, 
+es.max = sctype_score(scRNAseqData = sobj[[assay2use]]@scale.data, scaled = TRUE, 
                       gs = gs_list$gs_positive, gs2 = gs_list$gs_negative) 
 
 # NOTE: scRNAseqData parameter should correspond to your input scRNA-seq matrix. 
@@ -95,9 +98,9 @@ es.max = sctype_score(scRNAseqData = sobj[["SCT"]]@scale.data, scaled = TRUE,
 # or pbmc[["integrated"]]@scale.data, in case a joint analysis of multiple single-cell datasets is performed.
 
 # merge by cluster
-cL_resutls = do.call("rbind", lapply(unique(sobj@meta.data$clusters_wnn), function(cl){
-  es.max.cl = sort(rowSums(es.max[ ,rownames(sobj@meta.data[sobj@meta.data$clusters_wnn==cl, ])]), decreasing = !0)
-  head(data.frame(cluster = cl, type = names(es.max.cl), scores = es.max.cl, ncells = sum(sobj@meta.data$clusters_wnn==cl)), 10)
+cL_resutls = do.call("rbind", lapply(unique(sobj@meta.data[,clusterVar]), function(cl){
+  es.max.cl = sort(rowSums(es.max[ ,rownames(sobj@meta.data[sobj@meta.data[,clusterVar]==cl, ])]), decreasing = !0)
+  head(data.frame(cluster = cl, type = names(es.max.cl), scores = es.max.cl, ncells = sum(sobj@meta.data[,clusterVar]==cl)), 10)
 }))
 sctype_scores = cL_resutls %>% group_by(cluster) %>% top_n(n = 1, wt = scores)  
 
@@ -108,12 +111,18 @@ print(sctype_scores[,1:3])
 sobj@meta.data$CTAnnotationSCType = "" # cell annotation is stored in column 'CTAnnotationSCType'
 for(j in unique(sctype_scores$cluster)){
   cl_type = sctype_scores[sctype_scores$cluster==j,]; 
-  sobj@meta.data$CTAnnotationSCType[sobj@meta.data$clusters_wnn == j] = as.character(cl_type$type[1])
+  sobj@meta.data$CTAnnotationSCType[sobj@meta.data[,clusterVar] == j] = as.character(cl_type$type[1])
 }
 
 WNNumap_scType_celltypeannot <- DimPlot(sobj, reduction = "umap.wnn", label = TRUE, repel = TRUE, group.by = 'CTAnnotationSCType') + ggtitle("Celltype anno based on WNN clustering")
 ggsave(plot=WNNumap_scType_celltypeannot, filename=file.path(out, "umap_anno_scType_WNNcluster_celltypeanno.pdf"))
 ggsave(plot=WNNumap_scType_celltypeannot, filename=file.path(out, "umap_anno_scType_WNNcluster_celltypeanno.png"))
+
+
+WNNumap_scType_celltypeannot_split_by_group <- DimPlot(sobj, reduction = "umap.wnn", label = TRUE, repel = TRUE, split.by="group", group.by = 'CTAnnotationSCType') + 
+  ggtitle("Celltype anno based on WNN clustering")
+ggsave(plot=WNNumap_scType_celltypeannot_split_by_group, width = 10, height = 8, filename = file.path(out, "umap_anno_scType_WNNcluster_celltypeanno_split_by_group.pdf"))
+ggsave(plot=WNNumap_scType_celltypeannot_split_by_group, width = 10, height = 8, filename = file.path(out, "umap_anno_scType_WNNcluster_celltypeanno_split_by_group.png"))
 
 
 
