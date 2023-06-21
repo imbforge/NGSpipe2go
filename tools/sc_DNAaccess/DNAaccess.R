@@ -8,15 +8,39 @@
 ##
 ## Args:
 ## -----
-## targets=targets.txt      # file describing the targets 
+## projectdir      # project directory
 ##
 ##
 ######################################
 
-renv::use(lockfile='NGSpipe2go/tools/sc_DNAaccess/renv.lock')
+##
+## get arguments from the command line
+##
+parseArgs <- function(args,string,default=NULL,convert="as.character") {
+  
+  if(length(i <- grep(string,args,fixed=T)) == 1)
+    return(do.call(convert,list(gsub(string,"",args[i]))))
+  
+  if(!is.null(default)) default else do.call(convert,list(NA))
+}
+
+args <- commandArgs(T)
+projectdir       <- parseArgs(args,"project=") 
+resultsdir       <- parseArgs(args,"res=")   
+out              <- parseArgs(args,"outdir=") # output folder
+featureCutoff    <- parseArgs(args,"featureCutoff=")
+skipFirstLSIcomp <- parseArgs(args,"skipFirstLSIcomp=", default=0, convert="as.numeric")
+
+# featureCutoff for feature to be included in the VariableFeatures: either percentile specified as 'q' followed by the minimum percentile 
+# or integer specifying the  for the feature to be included in the set of VariableFeatures.
+if(!is.na(as.numeric(featureCutoff))) {featureCutoff <- as.numeric(featureCutoff)} 
+
+runstr <- "Rscript DNAaccess.R [projectdir=projectdir]"
+
+# load R environment
+renv::use(lockfile=file.path(projectdir, "NGSpipe2go/tools/sc_DNAaccess/renv.lock"))
 print(.libPaths())
 
-options(stringsAsFactors=FALSE)
 library(tidyverse)
 library(AnnotationDbi)
 library(Biobase)
@@ -34,44 +58,24 @@ library(uwot)
 
 # set options
 options(stringsAsFactors=FALSE)
-CORES <- 2
 
-
-##
-## get arguments from the command line
-##
-parseArgs <- function(args,string,default=NULL,convert="as.character") {
-  
-  if(length(i <- grep(string,args,fixed=T)) == 1)
-    return(do.call(convert,list(gsub(string,"",args[i]))))
-  
-  if(!is.null(default)) default else do.call(convert,list(NA))
-}
-
-args <- commandArgs(T)
-projectdir    <- parseArgs(args,"project=") 
-resultsdir    <- parseArgs(args,"res=")   
-out           <- parseArgs(args,"outdir=") # output folder
-featureCutoff <- parseArgs(args,"featureCutoff=")
-
-# featureCutoff for feature to be included in the VariableFeatures: either percentile specified as 'q' followed by the minimum percentile 
-# or integer specifying the  for the feature to be included in the set of VariableFeatures.
-if(!is.na(as.numeric(featureCutoff))) {featureCutoff <- as.numeric(featureCutoff)} 
-
-runstr <- "Rscript DNAaccess.R [projectdir=projectdir]"
-
+# check parameter
 print(paste("projectdir:", projectdir))
 print(paste("resultsdir:", resultsdir))
 print(paste("out:", out))
 print(paste("featureCutoff:", featureCutoff))
+print(paste("skipFirstLSIcomp :", skipFirstLSIcomp ))
 
 
 # load sobj from previous module
 sobj <- readRDS(file = file.path(resultsdir, "sobj.RDS"))
 DefaultAssay(sobj) <- "ATAC"
 
+set.seed(100)
 sobj <- RunTFIDF(sobj)                        # normalization
+set.seed(100)
 sobj <- FindTopFeatures(sobj, min.cutoff = featureCutoff) # feature selection (default 'q5')
+set.seed(100)
 sobj <- RunSVD(sobj)                          # dimensionality reduction (default n = 50)
 
 
@@ -82,13 +86,17 @@ depthCorPlot <- DepthCor(sobj) +
 ggsave(plot=depthCorPlot, filename = file.path(out, "atac_lsi_depth_corr_plot.pdf"))
 ggsave(plot=depthCorPlot, filename = file.path(out, "atac_lsi_depth_corr_plot.png"))
 
-sobj <- RunUMAP(sobj, reduction = 'lsi', dims = 2:50, reduction.name = "umap.atac", reduction.key = "atacUMAP_")
-sobj <- RunTSNE(sobj, reduction = 'lsi', dims = 2:50, reduction.name = "tsne.atac", reduction.key = "atacTSNE_")
+set.seed(100)
+sobj <- RunUMAP(sobj, reduction = 'lsi', dims = (1+skipFirstLSIcomp):50, reduction.name = "umap.atac", reduction.key = "atacUMAP_")
+set.seed(100)
+sobj <- RunTSNE(sobj, reduction = 'lsi', dims = (1+skipFirstLSIcomp):50, reduction.name = "tsne.atac", reduction.key = "atacTSNE_")
 
 
 
 ### ATAC data clustering
-sobj <- FindNeighbors(object = sobj, reduction = 'lsi', dims = 2:50)
+set.seed(100)
+sobj <- FindNeighbors(object = sobj, reduction = 'lsi', dims = (1+skipFirstLSIcomp):50)
+set.seed(100)
 sobj <- FindClusters(object = sobj, verbose = FALSE, algorithm = 3)
 
 # Save clusters in a different metadata column, because it gets overwritten every time FindClusters is called

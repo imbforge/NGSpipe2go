@@ -12,6 +12,7 @@ DNAaccess = {
         (DNAaccess_vars.project            ? " project="            + DNAaccess_vars.project            : "") +
         (DNAaccess_vars.res                ? " res="                + DNAaccess_vars.res                : "") +
         (DNAaccess_vars.featureCutoff      ? " featureCutoff="      + DNAaccess_vars.featureCutoff      : "") +
+        (DNAaccess_vars.skipFirstLSIcomp   ? " skipFirstLSIcomp="   + DNAaccess_vars.skipFirstLSIcomp   : "") +
         (DNAaccess_vars.extra              ? " "                    + DNAaccess_vars.extra              : "") 
 
     def TOOL_ENV = prepare_tool_env("R", tools["R"]["version"], tools["R"]["runenv"])
