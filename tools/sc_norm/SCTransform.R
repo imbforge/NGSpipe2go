@@ -49,6 +49,7 @@ library(glmGamPoi)
 
 # set options
 options(stringsAsFactors=FALSE)
+addTaskCallback(function(...) {set.seed(100);TRUE})
 
 # check parameter
 print(paste("projectdir:", projectdir))
@@ -68,11 +69,8 @@ DefaultAssay(sobj) <- "RNA"
 # Here we apply the updated version (‘v2’) of SCTransform. This update improves speed and memory consumption, 
 # the stability of parameter estimates, the identification of variable features, and the the ability to perform 
 # downstream differential expression analyses.
-set.seed(100)
 sobj <- SCTransform(sobj, assay = "RNA", new.assay.name = "SCT", vst.flavor = "v2") # 
-set.seed(100)
 sobj <- RunPCA(sobj, assay="SCT", dims = 1:50, reduction.name = 'pca.sct', reduction.key = 'PC_')
-set.seed(100)
 sobj <- RunUMAP(sobj, assay="SCT", dims = 1:50, reduction = "pca.sct", reduction.name = 'umap.sct', reduction.key = 'sctUMAP_')
 
 # By default, cells are colored by their identity class (can be changed with the group.by parameter). 
@@ -84,9 +82,7 @@ ggsave(plot=umap_sct, filename=file.path(out, "umap_sct_anno_sample.pdf"))
 
 
 ### SCT data clustering
-set.seed(100)
 sobj <- FindNeighbors(object = sobj, assay="SCT", reduction = 'pca.sct', dims = 1:50)
-set.seed(100)
 sobj <- FindClusters(object = sobj, verbose = FALSE, algorithm = 1)
 
 # Save clusters in a different metadata column, because it gets overwritten every time FindClusters is called

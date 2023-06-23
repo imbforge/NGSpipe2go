@@ -67,6 +67,7 @@ library(uwot)
 
 # set options
 options(stringsAsFactors=FALSE)
+addTaskCallback(function(...) {set.seed(100);TRUE})
 
 # check parameter
 print(paste("projectdir:", projectdir))
@@ -101,7 +102,6 @@ DefaultAssay(ref) <- assay2use
 
 # Find a set of anchors between a reference and query object. 
 # These anchors can later be used to transfer data from the reference to query object using the TransferData object. 
-set.seed(100)
 transfer_anchors <- FindTransferAnchors(
   reference = ref,
   query = sobj,
@@ -118,7 +118,6 @@ transfer_anchors <- FindTransferAnchors(
   )
 
 # Transfer categorical or continuous data across single-cell datasets.
-set.seed(100)
 predictions <- TransferData(
   anchorset = transfer_anchors, 
   refdata = ref[[]][columnNameCelltypes][,],

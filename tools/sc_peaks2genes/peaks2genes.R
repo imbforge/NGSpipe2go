@@ -62,6 +62,7 @@ library(uwot)
 
 # set options
 options(stringsAsFactors=FALSE)
+addTaskCallback(function(...) {set.seed(100);TRUE})
 
 # check parameter
 print(paste("projectdir:", projectdir))
@@ -92,10 +93,8 @@ load(file.path(resultsdir, "/gtf.RData"))
 
 
 # first compute the GC content for each peak
-set.seed(100)
 sobj <- RegionStats(sobj, assay = "ATAC", genome = BSgenome)
 
-set.seed(100)
 sobj <- LinkPeaks(
   object = sobj,
   peak.assay = "ATAC",

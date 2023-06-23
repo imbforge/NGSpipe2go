@@ -58,6 +58,7 @@ library(uwot)
 
 # set options
 options(stringsAsFactors=FALSE)
+addTaskCallback(function(...) {set.seed(100);TRUE})
 
 # check parameter
 print(paste("projectdir:", projectdir))
@@ -71,11 +72,8 @@ print(paste("skipFirstLSIcomp :", skipFirstLSIcomp ))
 sobj <- readRDS(file = file.path(resultsdir, "sobj.RDS"))
 DefaultAssay(sobj) <- "ATAC"
 
-set.seed(100)
 sobj <- RunTFIDF(sobj)                        # normalization
-set.seed(100)
 sobj <- FindTopFeatures(sobj, min.cutoff = featureCutoff) # feature selection (default 'q5')
-set.seed(100)
 sobj <- RunSVD(sobj)                          # dimensionality reduction (default n = 50)
 
 
@@ -86,17 +84,13 @@ depthCorPlot <- DepthCor(sobj) +
 ggsave(plot=depthCorPlot, filename = file.path(out, "atac_lsi_depth_corr_plot.pdf"))
 ggsave(plot=depthCorPlot, filename = file.path(out, "atac_lsi_depth_corr_plot.png"))
 
-set.seed(100)
 sobj <- RunUMAP(sobj, reduction = 'lsi', dims = (1+skipFirstLSIcomp):50, reduction.name = "umap.atac", reduction.key = "atacUMAP_")
-set.seed(100)
 sobj <- RunTSNE(sobj, reduction = 'lsi', dims = (1+skipFirstLSIcomp):50, reduction.name = "tsne.atac", reduction.key = "atacTSNE_")
 
 
 
 ### ATAC data clustering
-set.seed(100)
 sobj <- FindNeighbors(object = sobj, reduction = 'lsi', dims = (1+skipFirstLSIcomp):50)
-set.seed(100)
 sobj <- FindClusters(object = sobj, verbose = FALSE, algorithm = 3)
 
 # Save clusters in a different metadata column, because it gets overwritten every time FindClusters is called

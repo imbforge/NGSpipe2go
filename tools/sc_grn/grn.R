@@ -87,6 +87,7 @@ library(grr)
 
 # set options
 options(stringsAsFactors=FALSE)
+addTaskCallback(function(...) {set.seed(100);TRUE})
 
 # check parameter
 print(paste("projectdir:", projectdir))
@@ -182,7 +183,6 @@ sobj <- find_motifs(
 # Here, we first select regions near genes, either by simply considering a distance 
 # upstream and/or downstream of the gene (peak_to_gene_method='Signac') or by also 
 # considering overlapping regulatory regions as is done by GREAT (peak_to_gene_method='GREAT')
-set.seed(100)
 sobj <- infer_grn(sobj,
                   peak_to_gene_method = 'Signac', # One of 'Signac' or 'GREAT'
                   method = methodModel,

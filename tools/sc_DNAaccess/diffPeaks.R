@@ -60,6 +60,7 @@ library(openxlsx)
 
 # set options
 options(stringsAsFactors=FALSE)
+addTaskCallback(function(...) {set.seed(100);TRUE})
 
 # check parameter
 print(paste("projectdir:", projectdir))
@@ -95,7 +96,6 @@ for (cl in sort(unique(sobj[[clusterVar]][,1]))) {
         grp2 %in% names(grp_counts) && grp_counts[grp2] >= minCells) {
       group_pair <- paste(grp1, grp2, sep = ".")
       cat("Processing pair: ", group_pair)
-      set.seed(100)
       da_groups_atac[[group_pair]] <- FindMarkers(
         object = sobj,
         assay = assay2use,
@@ -148,7 +148,6 @@ if(!is.null(CTannoSelected) && !is.na(CTannoSelected)) {
           grp2 %in% names(grp_counts) && grp_counts[grp2] >= minCells) {
         group_pair <- paste(grp1, grp2, sep = ".")
         cat("Processing pair: ", group_pair)
-        set.seed(100)
         da_groups_atac_ct[[group_pair]] <- FindMarkers(
           object = sobj,
           assay = assay2use,

@@ -57,6 +57,7 @@ library(HGNChelper)
 
 # set options
 options(stringsAsFactors=FALSE)
+addTaskCallback(function(...) {set.seed(100);TRUE})
 
 # check parameter
 print(paste("projectdir:", projectdir))
@@ -72,7 +73,6 @@ print(paste("tissue:", tissue))
 sobj <- readRDS(file = file.path(resultsdir, "sobj.RDS"))
 DefaultAssay(sobj) <- assay2use
 
-set.seed(100)
 
 # load gene set preparation function
 source("https://raw.githubusercontent.com/IanevskiAleksandr/sc-type/master/R/gene_sets_prepare.R")

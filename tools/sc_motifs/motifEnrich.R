@@ -58,6 +58,7 @@ library(JASPAR2020)
 
 # set options
 options(stringsAsFactors=FALSE)
+addTaskCallback(function(...) {set.seed(100);TRUE})
 
 # check parameter
 print(paste("projectdir:", projectdir))
@@ -113,7 +114,6 @@ sobj[["SCT"]] <- subset(sobj[["SCT"]], features = rownames(sobj[["SCT"]])[keep.g
 # add motif information
 # Construct a Motif object containing DNA sequence motif information and add it to an existing Seurat object or ChromatinAssay. 
 # If running on a Seurat object, AddMotifs will also run RegionStats to compute the GC content of each peak and store the results in the feature metadata. 
-set.seed(100)
 sobj <- AddMotifs(
   object = sobj,
   genome = BSgenome,     # org-specific

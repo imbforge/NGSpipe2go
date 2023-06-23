@@ -55,6 +55,7 @@ library(uwot)
 
 # set options
 options(stringsAsFactors=FALSE)
+addTaskCallback(function(...) {set.seed(100);TRUE})
 
 # check parameter
 print(paste("projectdir:", projectdir))
@@ -77,7 +78,6 @@ sobj <- readRDS(file = file.path(resultsdir, "sobj.RDS"))
 # and the SNN graph used for clustering at sobj[["wsnn"]]
 # Cell-specific modality weights can be accessed at sobj$RNA.weight
 
-set.seed(100)
 sobj <- FindMultiModalNeighbors(
   object = sobj,
   reduction.list = list("pca.sct", "lsi"), 
@@ -92,7 +92,6 @@ sobj <- FindMultiModalNeighbors(
 )
 
 # build a joint UMAP visualization
-set.seed(100)
 sobj <- RunUMAP(
   object = sobj,
   nn.name = "weighted.nn",
@@ -104,7 +103,6 @@ sobj <- RunUMAP(
 
 
 # build a joint TSNE visualization
-set.seed(100)
 sobj <- RunTSNE(
   object = sobj,
   nn.name = "weighted.nn",
@@ -124,7 +122,6 @@ ggsave(plot=tsneSample, filename=file.path(out, "tsne_anno_sample.pdf"))
 
 
 ### WNN clustering
-set.seed(100)
 sobj <- FindClusters(sobj, graph.name = "wsnn", algorithm = clusterAlg, verbose = FALSE)
 
 # Save clusters in a different metadata column, because it gets overwritten every time FindClusters is called
