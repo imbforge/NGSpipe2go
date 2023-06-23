@@ -10,7 +10,8 @@ sc_filter_vars=[
     FRiBLmax           : 0.05,     // Fraction of reads in blacklisted regions (max treshold)    
     nucleosome_sig_max : 2,        // nucleosome signal (max threshold)
     TSS_enrich_min     : 1,        // TSS enrichment (min threshold) 
-    extra              : ""                //extra parms to sent to the tool
+    MT_perc_max        : 20,       // mitochondrial RNA count percentage (max threshold) 
+    extra              : ""        // extra parms to sent to the tool
 ]
 
 load PIPELINE_ROOT + "/modules/scRNAseq/sc_filter.groovy"

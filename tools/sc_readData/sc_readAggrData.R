@@ -84,10 +84,6 @@ print(paste("demuxcluster_out:", demuxcluster_out))
 print(paste("colorbyfactor:", colorbyfactor))
 
 
-# load list of mitochondrial genes (if not given, we will use all genes starting with "MT-")
-mito.genes <- if(file.exists(file.path(projectdir,MTgenes))) {
-  read.delim(file.path(projectdir,MTgenes))[, 1]
-} else {NA}
 
 # load relevant BSgenome package (needed by Signac for motif analysis)
 switch(db,
@@ -277,7 +273,17 @@ rownames(total_fragments) <- total_fragments$CB
 sobj$fragments <- total_fragments[colnames(sobj), "frequency_count"]
 
 
-
+# Calculate the percentage of mitochondrial counts (either load MT gene list or match feature pattern (e.g. "MT-"))
+if(!is.na(MTgenes)) {
+  if(file.exists(file.path(projectdir,MTgenes))) {
+    mito.genes <- read.delim(file.path(projectdir,MTgenes))[, 1]
+    # store mitochondrial percentage in object meta data
+    sobj <- PercentageFeatureSet(sobj, assay = "RNA", features=mito.genes, col.name = "percent.mt")
+  } else {
+    # store mitochondrial percentage in object meta data
+    sobj <- PercentageFeatureSet(sobj, assay = "RNA", pattern = paste0("^", MTgenes), col.name = "percent.mt")
+  }
+}
 
 
 #############################

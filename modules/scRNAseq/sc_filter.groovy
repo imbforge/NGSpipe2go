@@ -20,6 +20,7 @@ sc_filter = {
         (sc_filter_vars.FRiBLmax           ? " FRiBLmax="           + sc_filter_vars.FRiBLmax           : "") +
         (sc_filter_vars.nucleosome_sig_max ? " nucleosome_sig_max=" + sc_filter_vars.nucleosome_sig_max : "") +
         (sc_filter_vars.TSS_enrich_min     ? " TSS_enrich_min="     + sc_filter_vars.TSS_enrich_min     : "") +
+        (sc_filter_vars.MT_perc_max        ? " MT_perc_max="        + sc_filter_vars.MT_perc_max        : "") +
         (sc_filter_vars.extra              ? " "                    + sc_filter_vars.extra              : "") 
 
     def TOOL_ENV = prepare_tool_env("R", tools["R"]["version"], tools["R"]["runenv"])

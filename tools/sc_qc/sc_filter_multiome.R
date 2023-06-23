@@ -36,6 +36,7 @@ FRiPmin            <- parseArgs(args,"FRiPmin=", convert="as.numeric")
 FRiBLmax           <- parseArgs(args,"FRiBLmax=", convert="as.numeric")     
 nucleosome_sig_max <- parseArgs(args,"nucleosome_sig_max=", convert="as.numeric")     
 TSS_enrich_min     <- parseArgs(args,"TSS_enrich_min=", convert="as.numeric")     
+MT_perc_max        <- parseArgs(args,"MT_perc_max=", convert="as.numeric")     
 
 runstr <- "Rscript sc_filter_multiome.R [projectdir=projectdir] "
 
@@ -73,6 +74,7 @@ print(paste("FRiPmin:", FRiPmin))
 print(paste("FRiBLmax:", FRiBLmax))
 print(paste("nucleosome_sig_max:", nucleosome_sig_max))
 print(paste("TSS_enrich_min:", TSS_enrich_min))
+print(paste("MT_perc_max:", MT_perc_max))
 
 
 # overview table with thresholds:
@@ -84,7 +86,8 @@ qcfilt <- cbind(
               FRiPmin         = paste("Fraction of reads in peaks >", FRiPmin),
               FRiBLmax        = paste("Fraction of reads in blacklisted regions <", FRiBLmax),
               nucleosome_sig_max = paste("nucleosome signal <", nucleosome_sig_max),
-              TSS_enrich_min = paste("TSS enrichment >", TSS_enrich_min)
+              TSS_enrich_min = paste("TSS enrichment >", TSS_enrich_min),
+              MT_perc_max = paste("MT count perc <", MT_perc_max)
   ))
 write.table(qcfilt, file= file.path(out, "qc_filtering.txt"), sep="\t", quote=F, row.names = F)              
 
@@ -115,10 +118,19 @@ if("blacklist_fraction" %in% colnames(sobj[[]])) {
 } else {
   warning("blacklist_fraction was not found in sobj and therefore the FRiBLmax criterion could not be applied!")
 }
+if("percent.mt" %in% colnames(sobj[[]])) {
+  sobj <- subset(
+    sobj,
+    subset = percent.mt < MT_perc_max 
+  )
+} else {
+  warning("percent.mt was not found in sobj and therefore the MT count perc criterion could not be applied!")
+}
+
 
 
 # Plot qc metrics after filtering
-features2plot <- c("nCount_RNA", "nCount_ATAC", "FRiP", "blacklist_fraction", "TSS.enrichment", "nucleosome_signal") 
+features2plot <- c("nCount_RNA", "nCount_ATAC", "FRiP", "blacklist_fraction", "TSS.enrichment", "nucleosome_signal", "percent.mt") 
 features2plot <- features2plot[features2plot %in% colnames(sobj[[]])]
 vlnFilt <- VlnPlot(
     object = sobj,

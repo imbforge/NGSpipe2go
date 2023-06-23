@@ -65,9 +65,6 @@ print(paste("db:", db))
 sobj <- readRDS(file = file.path(resultsdir, "sobj.RDS"))
 DefaultAssay(sobj) <- "ATAC"
 
-# store mitochondrial percentage in object meta data
-# sobj <- PercentageFeatureSet(sobj, pattern = "^MT-", col.name = "percent.mt")
-
 # compute nucleosome signal score per cell
 sobj <- NucleosomeSignal(sobj)
 # compute TSS enrichment score per cell
@@ -117,7 +114,7 @@ ggsave(plot=tss, filename = file.path(out, "atac_qc_tss_enrich_profiles.png"))
 
 
 # qc measures
-features2plot <- c("nCount_RNA", "nCount_ATAC", "FRiP", "blacklist_fraction", "TSS.enrichment", "nucleosome_signal") 
+features2plot <- c("nCount_RNA", "nCount_ATAC", "FRiP", "blacklist_fraction", "TSS.enrichment", "nucleosome_signal", "percent.mt") 
 features2plot <- features2plot[features2plot %in% colnames(sobj[[]])]
 vln <- VlnPlot(
   object = sobj,
