@@ -53,7 +53,7 @@ ESSENTIAL_NEXTSEQTRIM=true     // accounts for terminal G bases during base qual
 ESSENTIAL_MACS2_BROAD=false    // use "true" for broad peak calling in MACS2 (default: "false")
 ESSENTIAL_DUP="auto"           // how MACS2 deals with duplicated reads or fragments: "auto" (default), "all" or 1
 ESSENTIAL_MACS2_GSIZE="10000000"  // mapable genome size for MACS2 (approx. size in bp or use "hs" for human, "mm" for mouse, "ce" for worm, "dm" for fly)
-ESSENTIAL_MIN_PEAKLENGTH = 100  // MACS2 minimum peak length. Default (empty string) uses predicted fragment size. Could be increased if broad option is used. For ATAC-Seq reduce to 100.
+ESSENTIAL_MIN_PEAKLENGTH=""  // MACS2 minimum peak length. Default (empty string) uses predicted fragment size. Could be increased if broad option is used. For ATAC-Seq reduce to 100.
 
 // Differential binding analysis with DiffBind
 // Note that DiffBind3 works with "default" parameters which depend on the 
