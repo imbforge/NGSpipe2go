@@ -15,6 +15,7 @@ CTannoMarker = {
         (CTannoMarker_vars.clusterVar          ? " clusterVar="          + CTannoMarker_vars.clusterVar          : "") +
         (CTannoMarker_vars.dbfile              ? " dbfile="              + CTannoMarker_vars.dbfile              : "") +
         (CTannoMarker_vars.tissue              ? " tissue="              + CTannoMarker_vars.tissue              : "") +        
+        (CTannoMarker_vars.ctcolumn            ? " ctcolumn="            + CTannoMarker_vars.ctcolumn            : "") +        
         (CTannoMarker_vars.extra               ? " "                     + CTannoMarker_vars.extra               : "") 
 
     def TOOL_ENV = prepare_tool_env("R", tools["R"]["version"], tools["R"]["runenv"])

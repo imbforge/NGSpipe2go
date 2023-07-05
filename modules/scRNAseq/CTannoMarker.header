@@ -4,8 +4,9 @@ CTannoMarker_vars=[
     res        : RESULTS,          
     assay      : "SCT",          
     clusterVar : "clusters_wnn",          
-    dbfile     : "https://raw.githubusercontent.com/IanevskiAleksandr/sc-type/master/ScTypeDB_full.xlsx", // file should contain four columns (tissueType - tissue type, cellName - cell type, geneSymbolmore1 - positive marker genes, geneSymbolmore2 - marker genes not expected to be expressed by a cell type)
+    dbfile     : "https://raw.githubusercontent.com/IanevskiAleksandr/sc-type/master/ScTypeDB_full.xlsx", // file should contain four columns (tissueType - tissue type, cellName - cell type, geneSymbolmore1 - positive marker genes, geneSymbolmore2 - marker genes not expected to be expressed by a cell type, shortName - short form of cell type)
     tissue     : "Brain", // e.g. Immune system, Pancreas, Liver, Eye, Kidney, Brain, Lung, Adrenal, Heart, Intestine, Muscle, Placenta, Spleen, Stomach, Thymus          
+    ctcolumn   : "shortName" // Can be any column-name available in the dbfile, which should contain the celltype names in full form or as an abbreviation.
     extra      : ""        //extra parms to sent to the tool
 ]
 

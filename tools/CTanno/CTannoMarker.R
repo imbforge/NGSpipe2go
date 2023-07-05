@@ -32,6 +32,7 @@ assay2use     <- parseArgs(args,"assay=")
 clusterVar    <- parseArgs(args,"clusterVar=")   
 dbfile        <- parseArgs(args,"dbfile=")
 tissue        <- parseArgs(args,"tissue=")
+ctcolumn      <- parseArgs(args,"ctcolumn=")
 
 runstr <- "Rscript CTannoMarker.R [projectdir=projectdir]"
 
@@ -67,6 +68,7 @@ print(paste("assay2use:", assay2use))
 print(paste("clusterVar:", clusterVar))
 print(paste("dbfile:", dbfile))
 print(paste("tissue:", tissue))
+print(paste("ctcolumn:", ctcolumn))
 
 
 # load sobj from previous module
@@ -75,19 +77,66 @@ DefaultAssay(sobj) <- assay2use
 
 
 # load gene set preparation function
-source("https://raw.githubusercontent.com/IanevskiAleksandr/sc-type/master/R/gene_sets_prepare.R")
+# source("https://raw.githubusercontent.com/IanevskiAleksandr/sc-type/master/R/gene_sets_prepare.R")
+# The gene_sets_prepare function from the above link is slightly modified below to let us be flexible with the use of abbreviations for cell type names
+
+gene_sets_prepare <- function(path_to_db_file, tissue_type, name_type="cellName"){
+
+    cell_markers = openxlsx::read.xlsx(path_to_db_file)
+    cell_markers = cell_markers[cell_markers$tissueType == tissue_type,]
+    cell_markers$geneSymbolmore1 = gsub(" ","",cell_markers$geneSymbolmore1); cell_markers$geneSymbolmore2 = gsub(" ","",cell_markers$geneSymbolmore2)
+
+    # correct gene symbols from the given DB (up-genes)
+    cell_markers$geneSymbolmore1 = sapply(1:nrow(cell_markers), function(i){
+
+        markers_all = gsub(" ", "", unlist(strsplit(cell_markers$geneSymbolmore1[i],",")))
+        markers_all = toupper(markers_all[markers_all != "NA" & markers_all != ""])
+        markers_all = sort(markers_all)
+
+        if(length(markers_all) > 0){
+            suppressMessages({markers_all = unique(na.omit(checkGeneSymbols(markers_all)$Suggested.Symbol))})
+            paste0(markers_all, collapse=",")
+        } else {
+            ""
+        }
+    })
+
+    # correct gene symbols from the given DB (down-genes)
+    cell_markers$geneSymbolmore2 = sapply(1:nrow(cell_markers), function(i){
+
+        markers_all = gsub(" ", "", unlist(strsplit(cell_markers$geneSymbolmore2[i],",")))
+        markers_all = toupper(markers_all[markers_all != "NA" & markers_all != ""])
+        markers_all = sort(markers_all)
+
+        if(length(markers_all) > 0){
+            suppressMessages({markers_all = unique(na.omit(checkGeneSymbols(markers_all)$Suggested.Symbol))})
+            paste0(markers_all, collapse=",")
+        } else {
+            ""
+        }
+    })
+
+    cell_markers$geneSymbolmore1 = gsub("///",",",cell_markers$geneSymbolmore1);cell_markers$geneSymbolmore1 = gsub(" ","",cell_markers$geneSymbolmore1)
+    cell_markers$geneSymbolmore2 = gsub("///",",",cell_markers$geneSymbolmore2);cell_markers$geneSymbolmore2 = gsub(" ","",cell_markers$geneSymbolmore2)
+
+    gs = lapply(1:nrow(cell_markers), function(j) gsub(" ","",unlist(strsplit(toString(cell_markers$geneSymbolmore1[j]),",")))); names(gs) = cell_markers[,name_type]
+    gs2 = lapply(1:nrow(cell_markers), function(j) gsub(" ","",unlist(strsplit(toString(cell_markers$geneSymbolmore2[j]),",")))); names(gs2) = cell_markers[,name_type]
+
+    list(gs_positive = gs, gs_negative = gs2)
+}
+
 # load cell type annotation function
 source("https://raw.githubusercontent.com/IanevskiAleksandr/sc-type/master/R/sctype_score_.R")
 
 # DB file 
 # TODO: This file can be provided in custom format, if we need to provide a different list of marker genes
-# DB file should contain four columns (tissueType - tissue type, cellName - cell type, geneSymbolmore1 - positive marker genes, geneSymbolmore2 - marker genes not expected to be expressed by a cell type)
+# DB file should contain four columns (tissueType - tissue type, cellName - cell type, geneSymbolmore1 - positive marker genes, geneSymbolmore2 - marker genes not expected to be expressed by a cell type, shortName - short form of cell type)
 
 # TODO: Set this as a variable - an autodetect function is also available, perhaps it is safer to name it
 
 
 # prepare gene sets
-gs_list = gene_sets_prepare(dbfile, tissue)
+gs_list = gene_sets_prepare(path_to_db_file=dbfile, tissue_type=tissue, name_type=ctcolumn)
 
 # get cell-type by cell matrix
 es.max = sctype_score(scRNAseqData = sobj[[assay2use]]@scale.data, scaled = TRUE, 
