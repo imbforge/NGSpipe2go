@@ -2366,17 +2366,22 @@ DEhelper.cutadapt.plot <- function(data, color.value, labelOutliers=T, outlierIQ
   # prepare palette of appropriate length according to the different factors given in colorByFactor
   colourCount = length(unique(data[,color.value]))
   getPalette = colorRampPalette(brewer.pal(9, "Set1"))
-  
-  p <- ggplot(data, aes_string(x="reads",
-                               y="value",
-                               color=color.value ))+
+
+  names(data)[names(data)==color.value] <- "color.value" 
+ 
+  p <- ggplot(data, aes(x=reads,
+                        y=value,
+                        color=color.value ))+
     geom_quasirandom(groupOnX=TRUE) +
     geom_boxplot(color = "darkgrey", alpha = 0.2, outlier.shape = NA)  
+
     if(labelOutliers) {p <- p + ggrepel::geom_text_repel(data=. %>% filter(!is.na(outlier)), aes(label=filename), show.legend=F)}
+
   p <- p + scale_color_manual(values=getPalette(colourCount)) + # creates as many colors as needed
            ylab(ylab) +
            xlab("") +
-           theme(axis.text.x=element_text(angle=30, vjust=1, hjust=1)) 
+           theme(axis.text.x=element_text(angle=30, vjust=1, hjust=1)) +
+           guides(color=guide_legend(title=color.value))
   
   return(p)
 }
