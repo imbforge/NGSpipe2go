@@ -5,7 +5,8 @@ STAR_vars=[
     mm_abs          : "999",           // max. permitted mismatches in the alignment, absolute number 
                                        // (whichever one is more strict, mm or mm_abs, determines the limit)
     unmapped_bam    : "Within",        // report unmapped reads to bam file? (choices: Within, None)
-    attributes      : "NH HI AS nM MD",// reported SAM attributes, standard: NH HI AS nM, extra: MD (mismatched and deleted reference bases)
+    attributes      : "NH HI AS nM MD NM",// reported SAM attributes, standard: NH HI AS nM, extra: MD (mismatched and deleted reference bases), 
+                                          // NM (edit distance to the reference (number of mismatched + inserted + deleted bases) for each mate)
 
     // settings imported from essential vars
     threads         : "1",             // for faster results (but non-deterministic multimapper assignment) use: Integer.toString(ESSENTIAL_THREADS),
