@@ -31,6 +31,7 @@ out           <- parseArgs(args,"outdir=") # output folder
 knn           <- parseArgs(args,"knn=", convert="as.numeric")
 knnRange      <- parseArgs(args,"knnRange=", convert="as.numeric")
 clusterAlg    <- parseArgs(args,"clusterAlg=", convert="as.numeric")
+skipFirstLSIcomp <- parseArgs(args,"skipFirstLSIcomp=", default=0, convert="as.numeric")
 
 runstr <- "Rscript wnn.R [projectdir=projectdir]"
 
@@ -64,6 +65,7 @@ print(paste("out:", out))
 print(paste("knn:", knn))
 print(paste("knnRange:", knnRange))
 print(paste("clusterAlg:", clusterAlg))
+print(paste("skipFirstLSIcomp :", skipFirstLSIcomp ))
 
 
 # load sobj from previous module
@@ -81,7 +83,7 @@ sobj <- readRDS(file = file.path(resultsdir, "sobj.RDS"))
 sobj <- FindMultiModalNeighbors(
   object = sobj,
   reduction.list = list("pca.sct", "lsi"), 
-  dims.list = list(1:5, 2:40), 
+  dims.list = list(1:50, (1+skipFirstLSIcomp):50), 
   k.nn = knn, 
   knn.range= knnRange, 
   knn.graph.name = "wknn",
