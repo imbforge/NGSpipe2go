@@ -140,6 +140,13 @@ ggsave(plot=WNNumap_Seurat_CT_split_by_group, width = 10, height = 8, filename =
 ggsave(plot=WNNumap_Seurat_CT_split_by_group, width = 10, height = 8, filename = file.path(out, "umap_anno_Seurat_celltypeanno_split_by_group.png"))
 
 
+# write overview of cell annotations
+metadat <- sobj[[]]
+annotable <- as.data.frame.matrix(table(metadat$sample, metadat$predicted.id))
+write.table(data.frame(sample=rownames(annotable), annotable), file=paste0(out, "/anno_seurat_overview.txt"), quote=F, row.names = F, sep="\t")
+# store metadata
+write.table(sobj[[]][, !sapply(sobj[[]], is.numeric)], file=paste0(out, "/anno_seurat_cells.csv"), sep=",", quote = F, row.names = F)
+
 
 #############################
 # save the sessionInformation and R image
