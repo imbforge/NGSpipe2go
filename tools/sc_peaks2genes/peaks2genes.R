@@ -34,6 +34,7 @@ out            <- parseArgs(args,"outdir=") # output folder
 db             <- parseArgs(args,"db=")     
 genes2use      <- parseArgs(args,"genes2use=", convert="run_custom_code")
 genes2plot     <- parseArgs(args,"genes2plot=", convert="as.character")
+groupCellsInPlot <- parseArgs(args,"groupCellsInPlot=", convert="as.character")
 plotUpstream   <- parseArgs(args,"plotUpstream=", default=0, convert="as.numeric")
 plotDownstream <- parseArgs(args,"plotDownstream=", default=0, convert="as.numeric")
 if(length(genes2use)==1 && is.na(genes2use)) {genes2use <- NULL}
@@ -68,9 +69,9 @@ addTaskCallback(function(...) {set.seed(100);TRUE})
 print(paste("projectdir:", projectdir))
 print(paste("resultsdir:", resultsdir))
 print(paste("out:", out))
-print(paste("db:", db))
-print(paste("genes2use:", paste(genes2use, collapse=" ")))
 print(paste("genes2plot:", paste(genes2plot, collapse=" ")))
+print(paste("genes2use:", paste(genes2use, collapse=" ")))
+print(paste("groupCellsInPlot:", groupCellsInPlot))
 print(paste("plotUpstream:", plotUpstream))
 print(paste("plotDownstream:", plotDownstream))
 
@@ -126,6 +127,7 @@ if(!is.null(genes2plot)) {
     split.assays = T,
     links = T,
     annotation = "gene", 
+    group.by = groupCellsInPlot,
     #region.highlight =StringToGRanges(gtf["ACAP3"]) ,
     # expression.assay = "RNA",
     # expression.slot     = "data",

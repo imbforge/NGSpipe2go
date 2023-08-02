@@ -14,6 +14,7 @@ peaks2genes = {
         (peaks2genes_vars.db                 ? " db="                 + peaks2genes_vars.db                 : "") +
         (peaks2genes_vars.genes2use          ? " genes2use="          + peaks2genes_vars.genes2use          : "") +
         (peaks2genes_vars.genes2plot         ? " genes2plot="         + peaks2genes_vars.genes2plot         : "") +
+        (peaks2genes_vars.groupCellsInPlot   ? " groupCellsInPlot="   + peaks2genes_vars.groupCellsInPlot   : "") +
         (peaks2genes_vars.plotUpstream       ? " plotUpstream="       + peaks2genes_vars.plotUpstream       : "") +
         (peaks2genes_vars.plotDownstream     ? " plotDownstream="     + peaks2genes_vars.plotDownstream     : "") +
         (peaks2genes_vars.extra              ? " "                    + peaks2genes_vars.extra              : "") 
