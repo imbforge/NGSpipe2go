@@ -90,12 +90,15 @@ switch(db,
        stop(c("Don't find genome:", db))   
 )
 
-
-# Get a list of motif position frequency matrices from the JASPAR database
-pfm <- TFBSTools::getMatrixSet(
-  x = JASPAR2020,
-  opts = list(collection = "CORE", tax_group = JasparTaxGroup, all_versions = FALSE)
-)
+# subset BSgenome object for standard chromosomes
+keepBSgenomeSequences <- function(genome, seqnames)
+{
+  stopifnot(all(seqnames %in% seqnames(genome)))
+  genome@user_seqnames <- setNames(seqnames, seqnames)
+  genome@seqinfo <- genome@seqinfo[seqnames]
+  genome
+}
+BSgenome_standard <-  keepBSgenomeSequences(BSgenome, standardChromosomes(BSgenome))
 
 
 # sobj has data mapped to scaffolds named differently to the BSgenome. 
@@ -111,15 +114,27 @@ keep.genes2 <- which(rownames(sobj[["SCT"]]) %in% names(gtf))
 sobj[["SCT"]] <- subset(sobj[["SCT"]], features = rownames(sobj[["SCT"]])[keep.genes2])
 
 
-# add motif information
-# Construct a Motif object containing DNA sequence motif information and add it to an existing Seurat object or ChromatinAssay. 
-# If running on a Seurat object, AddMotifs will also run RegionStats to compute the GC content of each peak and store the results in the feature metadata. 
-sobj <- AddMotifs(
-  object = sobj,
-  genome = BSgenome,     # org-specific
-  pfm = pfm,
-  assay = "ATAC"
-)
+# create motif object if not done before
+if(is.null(attr(sobj[['ATAC']], "motifs"))) {
+  cat("\nCreate motifs object with JASPAR2020.\n")
+  # Get a list of motif position frequency matrices from the JASPAR database
+  pfm <- TFBSTools::getMatrixSet(
+    x = JASPAR2020,
+    opts = list(collection = "CORE", tax_group = JasparTaxGroup, all_versions = FALSE)
+  )
+  
+  # add motif information
+  # Construct a Motif object containing DNA sequence motif information and add it to an existing Seurat object or ChromatinAssay. 
+  # If running on a Seurat object, AddMotifs will also run RegionStats to compute the GC content of each peak and store the results in the feature metadata. 
+  sobj <- AddMotifs(
+    object = sobj,
+    genome = BSgenome_standard,     # org-specific
+    pfm = pfm,
+    assay = "ATAC"
+  )
+} else {
+  cat("\nuse existing motifs object.\n")
+}
 
 ## Identify enriched motifs in differentially accessible peaks per cluster
 # FindMotifs function: Find motifs over-represented in a given set of genomic features. 
@@ -135,6 +150,8 @@ for (gp in names(da_groups_atac)) {
   cat("Finding motifs for:", gp, "(contains", length(top_da_peaks), "differentially accessible peaks after filtering)\n")
   if(length(top_da_peaks)>= min_peaks) {
     da_enriched_motifs[[gp]] <- FindMotifs(object = sobj, features = top_da_peaks)
+    mplot <- MotifPlot(object = sobj, motifs = head(rownames(da_enriched_motifs[[gp]])))
+    ggsave(plot=mplot, filename=file.path(out, paste0("Motif_position_weight_matrices_top_enriched_cluster_", gp, ".pdf")), width = 7, height = 7)
   }
 }
 
@@ -160,6 +177,8 @@ for (gp in names(da_groups_atac_ct)) {
   cat("Finding motifs for:", gp, "(contains", length(top_da_peaks_ct), "differentially accessible peaks after filtering)\n")
   if(length(top_da_peaks_ct)>= min_peaks) {
     da_enriched_motifs_ct[[gp]] <- FindMotifs(object = sobj, features = top_da_peaks_ct)
+    mplot <- MotifPlot(object = sobj, motifs = head(rownames(da_enriched_motifs_ct[[gp]])))
+    ggsave(plot=mplot, filename=file.path(out, paste0("Motif_position_weight_matrices_top_enriched_celltype_", gp, ".pdf")), width = 7, height = 7)
   }
 }
 
