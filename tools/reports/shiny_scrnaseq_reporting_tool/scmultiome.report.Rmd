@@ -834,6 +834,26 @@ knitr::include_graphics(file.path(SHINYREPS_GRN_OUT, "GRN_network_graph.png"))
 # store colData in report_files folder (csv file without numerical columns for compatibility with Loupe import)
 write.table(sobj[[]][, !sapply(sobj[[]], is.numeric)], file="report_files/cells.csv", sep=",", quote = F, row.names = F)
 
+# store projections (csv file for compatibility with Loupe import)
+dir_projections <- file.path("report_files", "projections")
+if (!file.exists(dir_projections)) {dir.create(dir_projections, recursive = T)}
+
+for (p in names(sobj@reductions)) {
+  projection <- data.frame(
+    Barcode=rownames(Embeddings(sobj, reduction = p)),
+    X=Embeddings(sobj, reduction = p)[,1],
+    Y=Embeddings(sobj, reduction = p)[,2]
+  )
+  write.table(projection, file =file.path(dir_projections, paste0(p, ".csv")), sep=",", quote = F, row.names = F)
+  }
+
+# store pruned Seurat object in h5ad format
+DefaultAssay(sobj) <- "RNA"
+if("ATAC" %in% names(sobj)) {sobj[["ATAC"]] <- NULL} # some objects in this slot are not compatible with conversion
+if("SCT" %in% names(sobj)) {sobj[["SCT"]] <- NULL}
+SaveH5Seurat(sobj, filename = file.path("report_files", "sobj.h5Seurat"))
+Convert(file.path("report_files", "sobj.h5Seurat"), dest = "h5ad")
+
 ```
 
 
