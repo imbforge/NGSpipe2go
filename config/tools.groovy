@@ -41,7 +41,7 @@ tools_defaults = [
     gatk       : [ runenv: "lmod", version: "4.2.5.0"           ],
     htseq      : [ runenv: "lmod", version: "0.6.1"             ],
     java       : [ runenv: "lmod", version: "1.8"               ],
-    kentutils  : [ runenv: "lmod", version: "v365"              ],
+    kentutils  : [ runenv: "lmod", version: "v385"              ],
     macs2      : [ runenv: "lmod", version: "2.1.2"             ],
     mirdeep2   : [ runenv: "lmod", version: "2.0.0.8"           ],
     multiqc    : [ runenv: "lmod", version: "1.9"               ],
@@ -59,7 +59,7 @@ tools_defaults = [
     star       : [ runenv: "lmod", version: "2.7"               ],
     starrpeaker: [ runenv: "lmod", version: "1.0_imb_r1"        ],
     stringtie  : [ runenv: "lmod", version: "1.3.5"             ],
-    subread    : [ runenv: "conda", version: "1.6"              ],
+    subread    : [ runenv: "lmod", version: "2.0"               ],
     trimgalore : [ runenv: "lmod", version: "0.5.0"             ],
     umitools   : [ runenv: "lmod", version: "1.0.0"             ]
 ]
@@ -225,8 +225,8 @@ tools_envs = [
         "v302": [
             lmod: "module load kentUtils/v302"
         ],
-        "v365": [
-            lmod: "module load kentUtils/v365"
+        "v385": [
+            lmod: "module load kentUtils/v385"
         ]
     ],
     macs2: [
