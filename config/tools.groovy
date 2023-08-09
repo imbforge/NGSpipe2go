@@ -84,7 +84,7 @@ tools_envs = [
         "Bioconductor_3.13": [
             lmod: "module load R/Bioconductor_3.13_singularity"
         ],
-        "R/Bioconductor_3.14" : [
+        "Bioconductor_3.14" : [
             lmod: "module load R/Bioconductor_3.14_singularity"
         ]
     ],
