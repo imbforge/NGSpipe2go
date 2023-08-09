@@ -638,9 +638,10 @@ for (i in names(da_groups_atac_ct)) {
 ```
 
 
-## Motif enrichment analysis
+## Motif enrichment analysis for differentially accessible peaks
+To identify potentially important cell-type-specific regulatory sequences, we can search for DNA motifs that are over-represented in a set of peaks that are differentially accessible between clusters or cell types (see above). This is done by computing the number of features containing the motif (observed) and comparing this to the total number of features containing the motif (background) using the hypergeometric test.
 
-List of motifs is obtained from Bioconductors `JASPAR2020` package. This code is implemented for human and mouse.
+The list of motif position frequency matrices is taken from the JASPAR database via Bioconductor's `JASPAR2020` package. This code is implemented for human and mouse. For more information see [Signac Motif Vignette](https://stuartlab.org/signac/articles/motif_vignette.html).
 
 ### Identify enriched motifs in differentially accessible peaks per cluster
 See full results in 'motif_enriched_clusters.xlsx'.
@@ -650,7 +651,7 @@ See full results in 'motif_enriched_clusters.xlsx'.
 load(file.path(SHINYREPS_MOTIFENRICH_OUT, "motifEnrich.RData"))
 for (i in names(da_enriched_motifs)) {
   cat(paste("\nComparison", i, "\n"))
-  print(kbl(da_enriched_motifs[[i]][max(10,nrow(da_enriched_motifs[[i]])), ], caption=paste("Enriched motifs (top 10) for differentially accessible peaks between pairs of groups per cluster:", i), format="simple", align = "l", row.names=T) %>% kable_styling(full_width = F))
+  print(kbl(da_enriched_motifs[[i]][1:min(10,nrow(da_enriched_motifs[[i]])), ], caption=paste("Enriched motifs (top 10) for differentially accessible peaks between pairs of groups per cluster:", i), format="simple", align = "l", row.names=T) %>% kable_styling(full_width = F))
 }
 
 ```
@@ -662,83 +663,40 @@ See full results in 'motif_enriched_celltypes.xlsx'.
 
 for (i in names(da_enriched_motifs_ct)) {
   cat(paste("\nComparison", i, "\n"))
-  print(kbl(da_enriched_motifs_ct[[i]][max(10,nrow(da_enriched_motifs_ct[[i]])), ], caption=paste("Enriched motifs (top 10) for differentially accessible peaks between pairs of groups per celltype:", i), format="simple", align = "l", row.names=T) %>% kable_styling(full_width = F))
+  print(kbl(da_enriched_motifs_ct[[i]][1:min(10,nrow(da_enriched_motifs_ct[[i]])), ], caption=paste("Enriched motifs (top 10) for differentially accessible peaks between pairs of groups per celltype:", i), format="simple", align = "l", row.names=T) %>% kable_styling(full_width = F))
 }
 
 ```
 
 
+## Motif activity between clusters and cell types
 
-## Motif activity between clusters (NOT YET IMPLEMENTED)
+We can also compute a per-cell motif activity score by running `chromVAR`. This allows us to visualize motif activities per cell, and also provides an alternative method of identifying differentially-active motifs between clusters and cell types. ChromVAR identifies motifs associated with variability in chromatin accessibility between cells. See the [chromVAR paper](https://www.nature.com/articles/nmeth.4401#Sec3) for a complete description of the method. Here, we test for differential activity scores between each cluster/cell type compared with all other clusters/cell types.
 
-### Per-cell motif activity (NOT YET IMPLEMENTED)
+The list of motif position frequency matrices is taken from the JASPAR database via Bioconductor's `JASPAR2020` package. This code is implemented for human and mouse. For more information see [Signac Motif Vignette](https://stuartlab.org/signac/articles/motif_vignette.html).
 
-Determine motif activity per cell, using `chromVAR` package. Can be used as an alternative method for detecting differential motif activity between clusters.
+### Calculate differential motif activity per cluster
+See full results in 'ChromVar_motif_enriched_cluster_vs_all.xlsx'.
 
-```{r atac_motif_activities, echo=F, message=FALSE, error=F, warning=F, eval=F}
+```{r atac_motif_activity_per_cluster, results='asis', echo=F, message=FALSE, error=F, warning=F}
 
-# Determine motif activity per cell, using `chromVAR` package. 
-# The package aims to identify motifs or other genomic annotations associated with variability in chromatin accessibility between individual cells or samples.
-# Can be used as an alternative method for detecting differential motif activity between clusters.
-# Note that this step can take 30-60 minutes 
-# Will return a new Seurat assay with the motif activities (the deviations in chromatin accessibility across the set of regions) as a new assay.
-
-sobj <- RunChromVAR(
-  object = sobj,
-  genome = BSgenome.Hsapiens.UCSC.hg38,
-  assay = "ATAC"
-)
+load(file.path(SHINYREPS_MOTIFACTIVITY_OUT, "motifActivity.RData"))
+for (i in sort(names(diffAct_cluster))) {
+  cat(paste("\nCluster", i, "\n"))
+  print(kbl(diffAct_cluster[[i]][1:min(10,nrow(diffAct_cluster[[i]])), ], caption=paste("Motifs with differential activity scores (top 10) for cluster:", i, "compared to all other clusters"), format="simple", align = "l", row.names=T) %>% kable_styling(full_width = F))
+}
 
 ```
 
+### Calculate differential motif activity per cell type 
+See full results in 'ChromVar_motif_enriched_celltype_vs_all.xlsx'.
 
-### Calculate differential motif activity between clusters (NOT YET IMPLEMENTED)
+```{r atac_motif_activity_per_celltype, results='asis', echo=F, message=FALSE, error=F, warning=F}
 
-Calculate differential motif activity between ATAC clusters.
-
-```{r atac_differential_motif_activities_atac_clusters, echo=F, message=FALSE, error=F, warning=F, eval=F}
-
-ATAC_DA_MINCELLS <- 20        # minimum number of cells to include cluster in analysis
-
-DefaultAssay(sobj) <- "chromvar"
-
-Idents(sobj) <- "Sample_ATACClusters"
-
-grp_counts <- table(sobj$Sample_ATACClusters)
-
-sample_pairs <- combn(sort(unique(sobj$sample)), 2)
-motifda_groups_atac <- list()
-for (ct in sort(unique(sobj$clusters_atac))) {
-  for (sp in 1:ncol(sample_pairs)) {
-    grp1 <- paste(sample_pairs[1, sp], ct, sep="_")
-    grp2 <- paste(sample_pairs[2, sp], ct, sep="_")
-    if (grp1 %in% names(grp_counts) && grp_counts[grp1] >= ATAC_DA_MINCELLS && 
-        grp2 %in% names(grp_counts) && grp_counts[grp2] >= ATAC_DA_MINCELLS) {
-      group_pair <- paste(grp1, grp2, sep = ".")
-      cat("Processing pair: ", group_pair, "\n")
-      motifda_groups_atac[[group_pair]] <- FindMarkers(
-                                             object = sobj,
-                                             ident.1 = grp1,
-                                             ident.2 = grp2,
-                                             only.pos = TRUE,
-                                             mean.fxn = rowMeans,
-                                             fc.name = "avg_diff"
-                                           )
-    }
-  }
+for (i in sort(names(diffAct_ct))) {
+  cat(paste("\nCell type", i, "\n"))
+  print(kbl(diffAct_ct[[i]][1:min(10,nrow(diffAct_ct[[i]])), ], caption=paste("Motifs with differential activity scores (top 10) for cell type:", i, "compared to all other cell types"), format="simple", align = "l", row.names=T) %>% kable_styling(full_width = F))
 }
-# Add motif names (and IDs) to data frames
-motifda_groups_atac <- lapply(motifda_groups_atac, function(x){x$motif.id <- rownames(x); x$motif.name <- unlist(sobj@assays$ATAC@motifs@motif.names)[rownames(x)]; x})
-
-# Save results
-if(length(motifda_groups_atac)>0) {
-  openxlsx::write.xlsx(motifda_groups_atac, file = file.path("report_files", "motif_diffact_clusters_atac.xlsx"))
-  saveRDS(motifda_groups_atac, file = file.path(dirs$rdata, "R_merged_atac_motifda_clusters_atac.RDS"))
-}
-gc()
-
-DefaultAssay(sobj) <- "ATAC"
-
 
 ```
 
@@ -848,11 +806,15 @@ for (p in names(sobj@reductions)) {
   }
 
 # store pruned Seurat object in h5ad format
+if(!file.exists(file.path("report_files", "sobj.h5Seurat"))) {
 DefaultAssay(sobj) <- "RNA"
 if("ATAC" %in% names(sobj)) {sobj[["ATAC"]] <- NULL} # some objects in this slot are not compatible with conversion
 if("SCT" %in% names(sobj)) {sobj[["SCT"]] <- NULL}
 SaveH5Seurat(sobj, filename = file.path("report_files", "sobj.h5Seurat"))
 Convert(file.path("report_files", "sobj.h5Seurat"), dest = "h5ad")
+} else {
+cat("\nWriting sobj.h5Seurat is omitted because file already exists.\n")  
+}
 
 ```
 

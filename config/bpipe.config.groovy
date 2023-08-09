@@ -461,6 +461,12 @@ config {
       procs="4"
       memory="8"
     }
+    motifActivity {
+      queue=long_queue
+      walltime="08:00:00"
+      procs="1"
+      memory="128"  
+    } 
     motifEnrich {
       queue=long_queue
       walltime="08:00:00"

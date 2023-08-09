@@ -20,6 +20,7 @@ load PIPELINE_ROOT + "/modules/scRNAseq/diffPeaks.header"
 load PIPELINE_ROOT + "/modules/scRNAseq/diffExprSeurat.header"
 load PIPELINE_ROOT + "/modules/scRNAseq/grn.header"
 load PIPELINE_ROOT + "/modules/scRNAseq/motifEnrich.header"
+load PIPELINE_ROOT + "/modules/scRNAseq/motifActivity.header"
 load PIPELINE_ROOT + "/modules/scRNAseq/peaks2genes.header"
 load PIPELINE_ROOT + "/modules/scRNAseq/sc_readAggrData.header"
 load PIPELINE_ROOT + "/modules/scRNAseq/sc_filter.header"
@@ -66,7 +67,7 @@ Bpipe.run {
     sc_qc + sc_filter + CRmotifCounts + SCTransform + DNAaccess + wnn + peaks2genes + 
     (ESSENTIAL_CELLTYPE_ANNO.contains("Seurat")? CTannoSeurat : dontrun.using(module:"CTannoSeurat")) + 
     (ESSENTIAL_CELLTYPE_ANNO.contains("Marker")? CTannoMarker : dontrun.using(module:"CTannoMarker")) + 
-    [diffPeaks, diffExprSeurat] + motifEnrich + grn +
+    [diffPeaks, diffExprSeurat] + motifActivity + motifEnrich + grn +
     (RUN_TRACKHUB ? trackhub_config + trackhub : dontrun.using(module:"trackhub")) +
     collectToolVersions + MultiQC + 
     shinyReports
