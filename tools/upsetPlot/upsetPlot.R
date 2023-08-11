@@ -87,7 +87,7 @@ ChIPhelper.init <- function(task, subdir="", peaks_as="data.frame") {
       return("Targets file not available")
     }
     
-    return(read.delim(TARGETS, stringsAsFactors=F))
+    return(read.delim(TARGETS, stringsAsFactors=F, comment.char = "#"))
   }
   
   # read peaks from MACS2 output
@@ -110,7 +110,7 @@ ChIPhelper.init <- function(task, subdir="", peaks_as="data.frame") {
     # remove targets which have no peaks
     peakcount <- sapply(comparisons, function(x) {
       tryCatch({
-        nrow(read.delim(x, head=TRUE, comment="#"))
+        nrow(read.delim(x, head=TRUE, comment.char = "#"))
       }, error=function(e) 0)
     })
     if(!all(peakcount > 0)) {
@@ -164,7 +164,10 @@ ChIPhelper.UpSetPlot <- function(subdir="", Mode = "intersect", peakOverlapMode=
   
   #create granges from the peaks
   peak.ranges <- ChIPhelper.init("readPeaks", subdir, peaks_as="GRanges")
-  if(length(peak.ranges)>15) {return("UpSet plots are available only for max 15 peaksets")}
+  cat(paste("number of peak sets:", length(peak.ranges), "\n"))
+  if(length(peak.ranges)>15) {
+    cat("UpSet plots are available only for max 15 peaksets")
+    return()}
   upsetReturn <- list()
   upsetReturn[["peak.ranges"]] <- peak.ranges
   
@@ -196,7 +199,7 @@ ChIPhelper.UpSetPlot <- function(subdir="", Mode = "intersect", peakOverlapMode=
     
     # plot upsetplot_peaknumber
     png(file.path(OUT, paste0("upsetplot_", Mode, "_peaknumber.png")), width = 200, height = 100, units = "mm", res=300)
-    
+
     try({
       
     intersectionSize <- HeatmapAnnotation(
@@ -245,10 +248,9 @@ ChIPhelper.UpSetPlot <- function(subdir="", Mode = "intersect", peakOverlapMode=
       }
     })
     dev.off()
-
     cat("\n", fill=T)
   }
-  
+
   if("bp" %in% peakOverlapMode) {
     cat("\n", fill=T)
     cat(paste0("#### Overlap of peaks based on bp"), fill=T)
@@ -336,12 +338,11 @@ ChIPhelper.UpSetPlot <- function(subdir="", Mode = "intersect", peakOverlapMode=
 
 # load targets file
 if(file.exists(FTARGETS)){
-  targets <- read.delim(FTARGETS, stringsAsFactors = F)
+  targets <- read.delim(FTARGETS, stringsAsFactors = F, comment.char = "#")
 } else {targets <- NULL}
 
 # run the helper function
 upsetPlotList <- ChIPhelper.UpSetPlot(Mode=MODE, peakOverlapMode=PEAKOVERLAPMODE, setsize=SETSIZE, targetsdf=targets, addBarAnnotation=ADDBARANNOTATION)
-
 
 # save the session Information
 writeLines(capture.output(sessionInfo()), paste(OUT, "/upsetPlot_session_info.txt", sep=""))

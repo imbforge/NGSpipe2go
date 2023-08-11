@@ -1,0 +1,7 @@
+samtoolscov_vars=[
+    outdir: QC + "/samtoolscov",
+    extra : " "
+]
+
+load PIPELINE_ROOT + "/modules/NGS/samtoolscov.groovy"
+

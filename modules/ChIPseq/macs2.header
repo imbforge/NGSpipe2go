@@ -2,7 +2,7 @@ macs2_vars=[
     outdir : RESULTS + "/macs2",                         // output dir
     targets: "targets.txt",                              // targets file describing the samples
     gsize  : ESSENTIAL_MACS2_GSIZE,                      // the mappable genome size
-    minlen : Integer.toString(ESSENTIAL_FRAGLEN),        // MACS2 minimum peak length (default is fragment size). Could be increased if broad option is used.
+    minlen : ESSENTIAL_MIN_PEAKLENGTH,                   // MACS2 minimum peak length (default is fragment size). Could be increased if broad option is used.
     broad  : ESSENTIAL_MACS2_BROAD,                      // use broad setting for peak calling
     mapped : MAPPED,                                     // where the bam files are stored
     paired : (ESSENTIAL_PAIRED == "yes"),                // for PE data use fragments in peak calling

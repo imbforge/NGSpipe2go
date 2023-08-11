@@ -7,11 +7,13 @@ FilterChr = {
 
     output.dir=FilterChr_vars.outdir
 
+    def TOOL_ENV = prepare_tool_env("samtools", tools["samtools"]["version"], tools["samtools"]["runenv"])
     def PREAMBLE = get_preamble(stage:stageName, outdir:output.dir, input:new File(input1.prefix).getName())
 
     transform(".bam") to (".chrOnly.bam") {
         exec """
-            ${PREAMBLE} &&
+             ${TOOL_ENV} &&
+             ${PREAMBLE} &&
 
             chroms=\$(cut -f1 ${FilterChr_vars.file}) && 
             samtools view -@ ${FilterChr_vars.threads} -b $input \$chroms > $output &&

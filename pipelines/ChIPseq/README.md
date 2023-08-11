@@ -55,6 +55,7 @@ All analysis steps are illustrated in the pipeline [flowchart](https://viewer.di
   - ESSENTIAL_DEDUPLICATION: remove duplicated reads in filtered branch (default false is strongly recommended for single end data). 
   - ESSENTIAL_DUP: how MACS2 deals with duplicated reads or fragments.
   - ESSENTIAL_MACS2_GSIZE: mapable genome size for MACS2
+  - ESSENTIAL_MIN_PEAKLENGTH: MACS2 minimum peak length. Default (empty string) uses predicted fragment size determined by Macs2. Could be increased if broad option is used. For ATAC-Seq it is recommended to use a smaller filter threshold like 100 bp.
   - ESSENTIAL_DIFFBIND_VERSION: DiffBind version to use (either 3 or 2, default 3).
   - ESSENTIAL_DIFFBIND_LIBRARY: DiffBind method to calculate library sizes. One of "full", "RiP", "background" and "default" ("default" refers to method "full", see [DiffBind documentation](http://bioconductor.org/packages/release/bioc/vignettes/DiffBind/inst/doc/DiffBind.pdf) for explanation). For DiffBind version 2, any other method than RiP refers to TRUE, i.e. use total number of reads instead of reads overlapping peaks.
   - ESSENTIAL_DIFFBIND_NORM: DiffBind method to calculate normalization factors. One of "lib", "RLE", "TMM", "native" and "default" ("default" refers to method "lib", see [DiffBind documentation](http://bioconductor.org/packages/release/bioc/vignettes/DiffBind/inst/doc/DiffBind.pdf) for explanation). Not applicable for DiffBind version 2.

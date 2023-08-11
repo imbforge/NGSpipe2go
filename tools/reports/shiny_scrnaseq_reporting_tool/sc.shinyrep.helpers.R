@@ -1324,7 +1324,6 @@ DEhelper.ngsReports.Fastqc <- function(subdir="", ...) {
 ## DEhelper.Fastqc.custom: prepare Fastqc summary plots
 ##
 DEhelper.Fastqc.custom <- function(web=FALSE, summarizedPlots=TRUE, targetsdf=targets, subdir="", ...) {
-  
   # logs folder
   if(!file.exists(file.path(SHINYREPS_FASTQC_OUT, subdir))) {
     return("Fastqc statistics not available")
@@ -1345,8 +1344,7 @@ DEhelper.Fastqc.custom <- function(web=FALSE, summarizedPlots=TRUE, targetsdf=ta
   lbls <- gsub("_fastqc.zip$", "", names(fastqc.stats))
   names(lbls) <- gsub("_fastqc.zip", ".fastq.gz", basename(names(fastqc.stats)))
   
-  if(file.exists(SHINYREPS_TARGET)){
-    
+  if(file.exists(SHINYREPS_TARGET)){ 
     # get target names
     #targets <- read.delim(SHINYREPS_TARGET, comment.char = "#")
     targets <- targetsdf
@@ -1354,9 +1352,10 @@ DEhelper.Fastqc.custom <- function(web=FALSE, summarizedPlots=TRUE, targetsdf=ta
 
     # replace files names with nicer sample names given in targets file 
     # if sample is missing in targets file, use reduced file name
+    #cat('In if - before gsub')
     lbls <- sapply(lbls, function(i) { ifelse(sum(sapply(targets$sample_ext, grepl, i))==1,
                                               targets[sapply(targets$sample_ext, grepl, i),"sample"],
-                                              gsub(paste0("^",SHINYREPS_PREFIX),"",i))})
+                                              gsub("_001.fastq.gz", "", gsub(paste0("^",SHINYREPS_PREFIX),"",basename(i))))})
     
     if(any(grepl("[\\._]R1[\\._]|[\\._]R2[\\._]", names(lbls)))) {  # SHINYREPS_PAIRED == "yes" # for scRNA-Seq we may have se mapping but still an R2 with barcode
       x <- names(lbls)
@@ -1506,6 +1505,7 @@ DEhelper.fastqscreen <- function(subdir="", targetsdf=targets, perc.to.plot = 1,
   #samples <- list.files(SHINYREPS_FASTQSCREEN_OUT, pattern="_screen.txt$", recursive=T, full.names=T) # does not exclude subdir
   samples <- list.dirs(QC, recursive=F, full.names = T)
   samples <- samples[sapply(samples, function(x) {file.exists(file.path(x, "fastqscreen.conf"))})] # exclude potential subdir which is also listed by list.dirs or recursive list.files
+  samples <- samples[sapply(samples, function(x) {any(grepl(".*screen.html", list.files(x)))})] # exclude incomplete results
   samples <- list.files(samples, pattern="_screen.txt$", recursive=F, full.names=T)
 
   # select subset of samples to plot
@@ -2207,7 +2207,8 @@ DEhelper.cutadapt <- function(targetsdf=targets, colorByFactor="group", sampleCo
     names(adapters.perc) <- gsub(" *=== *", "", system(paste("grep \"=== .*Adapter\"", f), intern=T))
     namespart1 <- gsub("First read:.*", "R1_", names(adapters.perc))
     namespart1 <- gsub("Second read:.*", "R2_", namespart1)
-    namespart2 <- gsub("^.*Adapter", "Adapter", names(adapters.perc))
+    #namespart2 <- gsub("^.*Adapter", "Adapter", names(adapters.perc)) # note: this failed when adapter is named and the name contains the word 'Adapter'
+    namespart2 <- gsub("First read: Adapter|Second read: Adapter|^Adapter", "Adapter", names(adapters.perc))
     names(adapters.perc) <- paste0(if(paired) {namespart1} else {""}, adapterprime, namespart2)
     
     ## add trimmed reads for each adapter here
@@ -2224,16 +2225,35 @@ DEhelper.cutadapt <- function(targetsdf=targets, colorByFactor="group", sampleCo
   
   # use cutadapt call from first log file for naming some of the unnamed adapters 
   cutadaptpars <- unlist(strsplit(cutadaptpars, split=" ")) 
-  indexAdapter <- grep("(^-a$)|(--adapter)|(^-g$)|(--front)|(^-A$)|(^-G$)", cutadaptpars) # index of all adapters applied
-  indexAdapterSelected <- indexAdapter[grep("[ACGT].[[:digit:]]*}", cutadaptpars[indexAdapter+1])] # select e.g. polyA, polyT
-  
-  # rename those adapters columns trimmed by -a commands 
-  if (length(indexAdapterSelected)>0) {
-    colnames(x.df)[grepl("Adapter", colnames(x.df))][match(indexAdapterSelected, indexAdapter)] <- 
-      paste0(gsub("Adapter.*$", "", colnames(x.df)[grepl("Adapter", colnames(x.df))][match(indexAdapterSelected, indexAdapter)]), cutadaptpars[indexAdapterSelected+1])
+
+  if(paired) {
+
+      indexAdapterR1 <- grep("(^-a$)|(--adapter)|(^-g$)|(--front)|(^-b$)|(--anywhere)", cutadaptpars) # index of all R1 adapters
+      indexAdapterR2 <- grep("(^-A$)|(^-G$)|(^-B$)", cutadaptpars) # index of all R2 adapters
+      indexAdapterSelectedR1 <- indexAdapterR1[grep("[ACGT].[[:digit:]]*}", cutadaptpars[indexAdapterR1+1])] # select e.g. polyA, polyT
+      indexAdapterSelectedR2 <- indexAdapterR2[grep("[ACGT].[[:digit:]]*}", cutadaptpars[indexAdapterR2+1])] # select e.g. polyA, polyT
+
+      # rename columns of trimmed polyX 
+      if (length(indexAdapterSelectedR1)>0) {
+          colnames(x.df)[grepl("Adapter", colnames(x.df)) & grepl("R1", colnames(x.df))][match(indexAdapterSelectedR1, indexAdapterR1)] <- paste0(gsub("Adapter.*$", "", colnames(x.df)[grepl("Adapter", colnames(x.df)) & grepl("R1", colnames(x.df))][match(indexAdapterSelectedR1, indexAdapterR1)]), cutadaptpars[indexAdapterSelectedR1+1])
+      }
+      if (length(indexAdapterSelectedR2)>0) {
+          colnames(x.df)[grepl("Adapter", colnames(x.df)) & grepl("R2", colnames(x.df))][match(indexAdapterSelectedR2, indexAdapterR2)] <- paste0(gsub("Adapter.*$", "", colnames(x.df)[grepl("Adapter", colnames(x.df)) & grepl("R2", colnames(x.df))][match(indexAdapterSelectedR2, indexAdapterR2)]), cutadaptpars[indexAdapterSelectedR2+1])
+      }
+
+  } else {
+
+      indexAdapter <- grep("(^-a$)|(--adapter)|(^-g$)|(--front)|(^-b$)|(--anywhere)", cutadaptpars) # index of all adapters applied
+      indexAdapterSelected <- indexAdapter[grep("[ACGT].[[:digit:]]*}", cutadaptpars[indexAdapter+1])] # select e.g. polyA, polyT
+
+      # rename columns of trimmed polyX
+      if (length(indexAdapterSelected)>0) {
+          colnames(x.df)[grepl("Adapter", colnames(x.df))][match(indexAdapterSelected, indexAdapter)] <- paste0(gsub("Adapter.*$", "", colnames(x.df)[grepl("Adapter", colnames(x.df))][match(indexAdapterSelected, indexAdapter)]), cutadaptpars[indexAdapterSelected+1])
+      }
+
   }
-  
-  #reduce length of file names 
+
+  # reduce length of file names 
   row.names(x.df) <- basename(colnames(x))
   x.df$filename_unmod <- factor(row.names(x.df))
   if(!is.na(SHINYREPS_PREFIX)) {
@@ -2346,17 +2366,22 @@ DEhelper.cutadapt.plot <- function(data, color.value, labelOutliers=T, outlierIQ
   # prepare palette of appropriate length according to the different factors given in colorByFactor
   colourCount = length(unique(data[,color.value]))
   getPalette = colorRampPalette(brewer.pal(9, "Set1"))
-  
-  p <- ggplot(data, aes_string(x="reads",
-                               y="value",
-                               color=color.value ))+
+
+  names(data)[names(data)==color.value] <- "color.value" 
+ 
+  p <- ggplot(data, aes(x=reads,
+                        y=value,
+                        color=color.value ))+
     geom_quasirandom(groupOnX=TRUE) +
     geom_boxplot(color = "darkgrey", alpha = 0.2, outlier.shape = NA)  
+
     if(labelOutliers) {p <- p + ggrepel::geom_text_repel(data=. %>% filter(!is.na(outlier)), aes(label=filename), show.legend=F)}
+
   p <- p + scale_color_manual(values=getPalette(colourCount)) + # creates as many colors as needed
            ylab(ylab) +
            xlab("") +
-           theme(axis.text.x=element_text(angle=30, vjust=1, hjust=1)) 
+           theme(axis.text.x=element_text(angle=30, vjust=1, hjust=1)) +
+           guides(color=guide_legend(title=color.value))
   
   return(p)
 }

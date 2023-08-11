@@ -57,7 +57,7 @@ ChIPhelper.init <- function(task, subdir="", peaks_as="data.frame") {
       return("Targets file not available")
     }
     
-    return(read.delim(TARGETS, stringsAsFactors=F))
+    return(read.delim(TARGETS, stringsAsFactors=F, comment.char = "#"))
   }
   
   # read peaks from MACS2 output
@@ -81,7 +81,7 @@ ChIPhelper.init <- function(task, subdir="", peaks_as="data.frame") {
     # remove targets which have no peaks
     peakcount <- sapply(comparisons, function(x) {
       tryCatch({
-        nrow(read.delim(x, head=TRUE, comment="#"))
+        nrow(read.delim(x, head=TRUE, comment.char = "#"))
       }, error=function(e) 0)
     })
     if(!all(peakcount > 0)) {
@@ -136,7 +136,7 @@ ChIPhelper.ComparisonsFromTargets <- function() {
   }
   
   # get the comparisons and clean the names
-  x <- read.delim(TARGETS)
+  x <- read.delim(TARGETS, comment.char = "#")
   
   if(file.exists(paste0(x$IPname, ".vs.", x$INPUTname,"_macs2_blacklist_filtered_peaks.xls"))[1]) {
     comparisons <- paste0(x$IPname, ".vs.", x$INPUTname, "_macs2_blacklist_filtered_peaks.xls")  
@@ -532,6 +532,35 @@ ChIPhelper.Bowtie2 <- function() {
 }
 
 
+##
+## ChIPhelper.samtoolscov: parse samtoolscov qc files and create a md table
+##
+ChIPhelper.samtoolscov <- function() {
+  
+  # qc file
+  QC <- SHINYREPS_SAMTOOLSCOV_OUT
+  if(!file.exists(QC)) {
+    return("Samtools coverage statistics not available")
+  }
+  
+  filenames <- list.files(QC)
+  x <- lapply(filenames, function(f) {
+    l <- read.delim(paste0(QC, "/", f), sep="\t", header=T)
+    rownames(l) <- l[,1]
+    l <- l[,"numreads", drop=F]
+    colnames(l) <- gsub(SHINYREPS_PREFIX, "", gsub("\\..*$", "", f))
+    return(l)
+  }) 
+  
+  y <- do.call(cbind, x)
+  chrom <- rownames(y)
+  y <- apply(y, 2, function(i) {paste0(i, " (", round((i/sum(i))*100, digits=2), "%)")})
+  y <- data.frame(chrom=chrom, y, check.names = F)
+  kable(y, align=c(rep("r",10)), output=F, format="html", row.names=F) %>% kableExtra::kable_styling()
+}
+
+
+
 #' ChIPhelper.ngsReports.Fastqc: joint FastQC report of all samples in the experiment and plot as heatmaps
 #' 
 #' @param metrics character vector with FastQC plot types to be included. Any combination of "Summary", "BaseQuals", "SeqQuals", "SeqContent", "GcContent", "DupLevels", "Overrep", "AdapterContent".
@@ -629,7 +658,7 @@ ChIPhelper.Fastqc <- function(web=FALSE, subdir="",
   if(file.exists(SHINYREPS_TARGET)){
     
     # get target names
-    targets <- read.delim(SHINYREPS_TARGET, stringsAsFactors=F)
+    targets <- read.delim(SHINYREPS_TARGET, stringsAsFactors=F, comment.char = "#")
     
     if(length(fileColumnName)>1) { # melt targets in case of multiple file name columns (as for ChIP-Seq) and create general targets format 
       targets <- targets[, colnames(targets)[colnames(targets) %in% unique(c(fileColumnName, sampleColumnName))]]
@@ -705,7 +734,7 @@ ChIPhelper.Fastqc.custom <- function(web=FALSE, summarizedPlots=TRUE, subdir="",
   if(file.exists(SHINYREPS_TARGET)){
     
     # get target names
-    targets <- read.delim(SHINYREPS_TARGET, stringsAsFactors = F)
+    targets <- read.delim(SHINYREPS_TARGET, stringsAsFactors = F, comment.char = "#")
     
     if(length(fileColumnName)>1) { # melt targets in case of multiple file name columns (as for ChIP-Seq) and create general targets format 
       targets <- targets[, colnames(targets)[colnames(targets) %in% unique(c(fileColumnName, sampleColumnName))]]
@@ -728,7 +757,7 @@ ChIPhelper.Fastqc.custom <- function(web=FALSE, summarizedPlots=TRUE, subdir="",
     
     if(SHINYREPS_PAIRED == "yes") {
       x <- names(lbls)
-      lbls <- paste0(lbls, ifelse(grepl("R1", names(lbls)), ".R1", ".R2"))
+      lbls <- paste0(lbls, ifelse(grepl("\\.R1", names(lbls)), ".R1", ".R2"))
       names(lbls) <- x
     }
   } else {
@@ -938,7 +967,7 @@ ChIPhelper.fastqscreen <- function(perc.to.plot = 1,
   if(file.exists(SHINYREPS_TARGET)){
     
     # get target names
-    targets <- read.delim(SHINYREPS_TARGET)
+    targets <- read.delim(SHINYREPS_TARGET, comment.char = "#")
     
     if(length(fileColumnName)>1) { # melt targets in case of multiple file name columns (as for ChIP-Seq) and create general targets format 
       targets <- targets[, colnames(targets)[colnames(targets) %in% unique(c(fileColumnName, sampleColumnName))]]
@@ -1219,7 +1248,7 @@ ChIPhelper.insertsize <- function(subdir="",
     if(file.exists(SHINYREPS_TARGET)){
       
       # get target names
-      targets <- read.delim(SHINYREPS_TARGET, stringsAsFactors = F)
+      targets <- read.delim(SHINYREPS_TARGET, stringsAsFactors = F, comment.char = "#")
       
       if(length(fileColumnName)>1) { # melt targets in case of multiple file name columns (as for ChIP-Seq) and create general targets format 
         targets <- targets[, colnames(targets)[colnames(targets) %in% unique(c(fileColumnName, sampleColumnName))]]
@@ -1301,7 +1330,7 @@ ChIPhelper.insertsize.helper <- function(metricsFile,
   if(file.exists(SHINYREPS_TARGET)){
     
     # get target names
-    targets <- read.delim(SHINYREPS_TARGET, stringsAsFactors = F)
+    targets <- read.delim(SHINYREPS_TARGET, stringsAsFactors = F, comment.char = "#")
     
     if(length(fileColumnName)>1) { # melt targets in case of multiple file name columns (as for ChIP-Seq) and create general targets format 
       targets <- targets[, colnames(targets)[colnames(targets) %in% unique(c(fileColumnName, sampleColumnName))]]
@@ -1544,7 +1573,7 @@ ChIPhelper.diffbind <- function(subdir="") {
                                                       "peak_width_boxplot.png", "Overlap_rate_plot.png", "venn_plot_all_contrasts.png")))
       plotsPanel1 <- plotsPanel1[file.exists(plotsPanel1)]
       
-      COLUMNS <- min(length(plotsPanel1), SHINYREPS_PLOTS_COLUMN)
+      COLUMNS <- min(length(plotsPanel1), 2) # use 2 coluns instead of SHINYREPS_PLOTS_COLUMN
       panel1 <- paste0("![diffbind img](", plotsPanel1, ")")
       while(length(panel1) %% COLUMNS != 0) panel1 <- c(panel1, "")
       panel1 <- matrix(panel1, ncol=COLUMNS, byrow=T)
@@ -1708,7 +1737,8 @@ ChIPhelper.cutadapt <- function(targetsdf=SHINYREPS_TARGET, colorByFactor="group
     names(adapters.perc) <- gsub(" *=== *", "", system(paste("grep \"=== .*Adapter\"", f), intern=T))
     namespart1 <- gsub("First read:.*", "R1_", names(adapters.perc))
     namespart1 <- gsub("Second read:.*", "R2_", namespart1)
-    namespart2 <- gsub("^.*Adapter", "Adapter", names(adapters.perc))
+    #namespart2 <- gsub("^.*Adapter", "Adapter", names(adapters.perc)) # note: this failed when adapter is named and the name contains the word 'Adapter'
+    namespart2 <- gsub("First read: Adapter|Second read: Adapter|^Adapter", "Adapter", names(adapters.perc))
     names(adapters.perc) <- paste0(if(paired) {namespart1} else {""}, adapterprime, namespart2)
     
     ## add trimmed reads for each adapter here
@@ -1725,16 +1755,35 @@ ChIPhelper.cutadapt <- function(targetsdf=SHINYREPS_TARGET, colorByFactor="group
   
   # use cutadapt call from first log file for naming some of the unnamed adapters 
   cutadaptpars <- unlist(strsplit(cutadaptpars, split=" ")) 
-  indexAdapter <- grep("(^-a$)|(--adapter)|(^-g$)|(--front)|(^-A$)|(^-G$)", cutadaptpars) # index of all adapters applied
-  indexAdapterSelected <- indexAdapter[grep("[ACGT].[[:digit:]]*}", cutadaptpars[indexAdapter+1])] # select e.g. polyA, polyT
-  
-  # rename those adapters columns trimmed by -a commands 
-  if (length(indexAdapterSelected)>0) {
-    colnames(x.df)[grepl("Adapter", colnames(x.df))][match(indexAdapterSelected, indexAdapter)] <- 
-      paste0(gsub("Adapter.*$", "", colnames(x.df)[grepl("Adapter", colnames(x.df))][match(indexAdapterSelected, indexAdapter)]), cutadaptpars[indexAdapterSelected+1])
+
+  if(paired) {
+
+      indexAdapterR1 <- grep("(^-a$)|(--adapter)|(^-g$)|(--front)|(^-b$)|(--anywhere)", cutadaptpars) # index of all R1 adapters
+      indexAdapterR2 <- grep("(^-A$)|(^-G$)|(^-B$)", cutadaptpars) # index of all R2 adapters
+      indexAdapterSelectedR1 <- indexAdapterR1[grep("[ACGT].[[:digit:]]*}", cutadaptpars[indexAdapterR1+1])] # select e.g. polyA, polyT
+      indexAdapterSelectedR2 <- indexAdapterR2[grep("[ACGT].[[:digit:]]*}", cutadaptpars[indexAdapterR2+1])] # select e.g. polyA, polyT
+
+      # rename columns of trimmed polyX 
+      if (length(indexAdapterSelectedR1)>0) {
+          colnames(x.df)[grepl("Adapter", colnames(x.df)) & grepl("R1", colnames(x.df))][match(indexAdapterSelectedR1, indexAdapterR1)] <- paste0(gsub("Adapter.*$", "", colnames(x.df)[grepl("Adapter", colnames(x.df)) & grepl("R1", colnames(x.df))][match(indexAdapterSelectedR1, indexAdapterR1)]), cutadaptpars[indexAdapterSelectedR1+1])
+      }
+      if (length(indexAdapterSelectedR2)>0) {
+          colnames(x.df)[grepl("Adapter", colnames(x.df)) & grepl("R2", colnames(x.df))][match(indexAdapterSelectedR2, indexAdapterR2)] <- paste0(gsub("Adapter.*$", "", colnames(x.df)[grepl("Adapter", colnames(x.df)) & grepl("R2", colnames(x.df))][match(indexAdapterSelectedR2, indexAdapterR2)]), cutadaptpars[indexAdapterSelectedR2+1])
+      }
+
+  } else {
+
+      indexAdapter <- grep("(^-a$)|(--adapter)|(^-g$)|(--front)|(^-b$)|(--anywhere)", cutadaptpars) # index of all adapters applied
+      indexAdapterSelected <- indexAdapter[grep("[ACGT].[[:digit:]]*}", cutadaptpars[indexAdapter+1])] # select e.g. polyA, polyT
+
+      # rename columns of trimmed polyX
+      if (length(indexAdapterSelected)>0) {
+          colnames(x.df)[grepl("Adapter", colnames(x.df))][match(indexAdapterSelected, indexAdapter)] <- paste0(gsub("Adapter.*$", "", colnames(x.df)[grepl("Adapter", colnames(x.df))][match(indexAdapterSelected, indexAdapter)]), cutadaptpars[indexAdapterSelected+1])
+      }
+
   }
-  
-  #reduce length of file names 
+
+  # reduce length of file names 
   row.names(x.df) <- basename(colnames(x))
   x.df$filename <- factor(row.names(x.df))
   if(!is.na(SHINYREPS_PREFIX)) {
@@ -1752,7 +1801,7 @@ ChIPhelper.cutadapt <- function(targetsdf=SHINYREPS_TARGET, colorByFactor="group
     if(is.null(targetsdf)) {stop("If 'colorByFactor' is given you must also provide 'targetsdf'!")}
     
     if(!is.data.frame(targetsdf) && is.character(targetsdf) && file.exists(targetsdf)){
-      targetsdf <- read.delim(targetsdf, stringsAsFactors = F)
+      targetsdf <- read.delim(targetsdf, stringsAsFactors = F, comment.char = "#")
     } 
     
     if(length(fileColumnName)>1) { # melt targets in case of multiple file name columns (as for ChIP-Seq) and create general targets format 
@@ -1850,17 +1899,22 @@ ChIPhelper.cutadapt.plot <- function(data, color.value, labelOutliers=T, outlier
   # prepare palette of appropriate length according to the different factors given in colorByFactor
   colourCount = length(unique(data[,color.value]))
   getPalette = colorRampPalette(brewer.pal(9, "Set1"))
-  
-  p <- ggplot(data, aes_string(x="reads",
-                               y="value",
-                               color=color.value ))+
+ 
+  names(data)[names(data)==color.value] <- "color.value"
+ 
+  p <- ggplot(data, aes(x=reads,
+                        y=value,
+                        color=color.value))+
     geom_quasirandom(groupOnX=TRUE) +
     geom_boxplot(color = "darkgrey", alpha = 0.2, outlier.shape = NA)  
+
   if(labelOutliers) {p <- p + ggrepel::geom_text_repel(data=. %>% filter(!is.na(outlier)), aes(label=filename), show.legend=F)}
+
   p <- p + scale_color_manual(values=getPalette(colourCount)) + # creates as many colors as needed
     ylab(ylab) +
     xlab("") +
-    theme(axis.text.x=element_text(angle=30, vjust=1, hjust=1)) 
+    theme(axis.text.x=element_text(angle=30, vjust=1, hjust=1)) +
+    guides(color=guide_legend(title=color.value))
   
   return(p)
 }
