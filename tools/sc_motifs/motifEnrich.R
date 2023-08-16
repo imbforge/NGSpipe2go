@@ -115,7 +115,7 @@ sobj[["SCT"]] <- subset(sobj[["SCT"]], features = rownames(sobj[["SCT"]])[keep.g
 
 
 # create motif object if not done before
-if(is.null(attr(sobj[['ATAC']], "motifs"))) {
+if(is.null(attr(sobj[['ATAC']], "motifs")) || is.null(sobj[['ATAC']]@motifs)) {
   cat("\nCreate motifs object with JASPAR2020.\n")
   # Get a list of motif position frequency matrices from the JASPAR database
   pfm <- TFBSTools::getMatrixSet(
