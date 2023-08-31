@@ -1,6 +1,6 @@
 GO_Enrichment_vars=[
     rdata   : DE_DESeq2_vars.outdir,
-    log2fold: Math.log(ESSENTIAL_DESEQ2_FC)/Math.log(2),
+    log2fold: Double.toString(Math.log(ESSENTIAL_DESEQ2_FC)/Math.log(2)),
     padj    : ESSENTIAL_DESEQ2_FDR,
     org     : ESSENTIAL_ORG,
     univ    : "expressed",
