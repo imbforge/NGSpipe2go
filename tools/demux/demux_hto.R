@@ -180,7 +180,7 @@ sobj.singlet <- RunPCA(sobj.singlet, features = VariableFeatures(sobj.singlet))
 # We select the top 10 PCs for clustering and tSNE based on PCElbowPlot
 sobj.singlet <- FindNeighbors(sobj.singlet, reduction = "pca", dims = 1:10)
 sobj.singlet <- FindClusters(sobj.singlet, resolution = 0.6, verbose = FALSE)
-sobj.singlet <- RunTSNE(sobj.singlet, reduction = "pca", dims = 1:10)
+sobj.singlet <- RunTSNE(sobj.singlet, reduction = "pca", dims = 1:10, check_duplicates = FALSE)
 # Projecting singlet identities on TSNE visualization
 plot6 <- DimPlot(sobj.singlet, group.by = "HTO_classification") +
   theme(legend.position="bottom") + 
