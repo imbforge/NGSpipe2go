@@ -1,7 +1,7 @@
 #####################################
 ##
 ## What: demux_hto.R
-## Who : Frank Rühle
+## Who : Frank Rühl, Sivarajan Karunanithi
 ## When: 27-04-2022
 ##
 ## Script to perform sample demultiplexing for 10X single cell experiments involving cell hashing 
@@ -33,6 +33,8 @@ hto_matrix_dir   <- parseArgs(args,"hto_matrix_dir=","umi_count") # output from 
 rna_matrix_dir   <- parseArgs(args,"rna_matrix_dir=","") # output from Cellranger
 min_cells        <- parseArgs(args,"min_cells=", 0, "as.numeric") # threshold for CreateSeuratObject
 min_features     <- parseArgs(args,"min_features=", 0, "as.numeric") # threshold for CreateSeuratObject
+# SK: Added the perplexity as a tunable parameter, as for smaller samples/cell sizes the tSNE command will fail otherwise with the hardcoded value of 100 in the earlier version of the code.
+perplexity       <- parseArgs(args,"perplexity=", 30, "as.numeric") # perplexity for the RunTSNE command
 
 runstr <- "Rscript demux_hto.R [excludeFailedHTO=] [out=Seurat] [hto_matrix_dir=umi_count] [rna_matrix_dir=] [min_cells=0] [min_features=0]"
 if(!dir.exists(hto_matrix_dir))   stop(paste("Directory",hto_matrix_dir,"does NOT exist. Run with:\n",runstr))
@@ -148,7 +150,7 @@ sobj.subset <- subset(sobj, idents = "Negative", invert = TRUE)
 # Calculate a distance matrix using HTO
 hto.dist.mtx <- as.matrix(dist(t(GetAssayData(object = sobj.subset, assay = "HTO"))))
 # Calculate tSNE embeddings with a distance matrix
-sobj.subset <- RunTSNE(sobj.subset, distance.matrix = hto.dist.mtx, perplexity = 100)
+sobj.subset <- RunTSNE(sobj.subset, distance.matrix = hto.dist.mtx, perplexity = perplexity)
 plot4 <- DimPlot(sobj.subset)
 ggsave(filename=file.path(out, "tSNE_doublets.png"), plot=plot4, device = "png", dpi=300,
        units="cm", width=15, height = 15)

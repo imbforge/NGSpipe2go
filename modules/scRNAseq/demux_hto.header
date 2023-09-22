@@ -18,6 +18,7 @@ demux_hto_vars=[
     excludeFailedHTO    : "hashtag8-TGACGCCGTTGTTGT",   // format: "name_HTO-seq_HTO", if an antibody fails completely, it may make sense to exclude the corresponding HTO from analysis
     min_cells           : 1,   // Include features detected in at least this many cells.
     min_features        : 1,   // Include cells where at least this many features are detected
+    perplexity          : 30,  // Perplexity - expected number of nearest neighbors. The default 30 in seurat is set arbitrarily, but important to decide on the resolution of the clusters - lower values lead to resolving smaller clusters.
     extra               : ""   // extra parameter to send to Cite-Seq-Count
 ]
 
