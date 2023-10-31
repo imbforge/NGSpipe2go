@@ -473,6 +473,12 @@ config {
       procs="1"
       memory="128"  
     } 
+    motifFootprinting {
+      queue=long_queue
+      walltime="24:00:00"
+      procs="1"
+      memory="128"  
+    } 
     MULTIQC {
       queue=long_queue
       walltime="12:00:00"
