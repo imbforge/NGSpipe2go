@@ -31,6 +31,7 @@ out           <- parseArgs(args,"outdir=") # output folder
 knn           <- parseArgs(args,"knn=", convert="as.numeric")
 knnRange      <- parseArgs(args,"knnRange=", convert="as.numeric")
 clusterAlg    <- parseArgs(args,"clusterAlg=", convert="as.numeric")
+clusterRes    <- parseArgs(args,"clusterRes=", convert="as.numeric")
 skipFirstLSIcomp <- parseArgs(args,"skipFirstLSIcomp=", default=0, convert="as.numeric")
 
 runstr <- "Rscript wnn.R [projectdir=projectdir]"
@@ -65,6 +66,7 @@ print(paste("out:", out))
 print(paste("knn:", knn))
 print(paste("knnRange:", knnRange))
 print(paste("clusterAlg:", clusterAlg))
+print(paste("clusterRes:", clusterRes))
 print(paste("skipFirstLSIcomp :", skipFirstLSIcomp ))
 
 
@@ -124,7 +126,7 @@ ggsave(plot=tsneSample, filename=file.path(out, "tsne_anno_sample.pdf"))
 
 
 ### WNN clustering
-sobj <- FindClusters(sobj, graph.name = "wsnn", algorithm = clusterAlg, verbose = FALSE)
+sobj <- FindClusters(sobj, graph.name = "wsnn", algorithm = clusterAlg, resolution=clusterRes, verbose = FALSE)
 
 # Save clusters in a different metadata column, because it gets overwritten every time FindClusters is called
 sobj$clusters_wnn <- sobj$seurat_clusters

@@ -14,6 +14,7 @@ wnn = {
         (wnn_vars.knn                ? " knn="                + wnn_vars.knn                : "") +
         (wnn_vars.knnRange           ? " knnRange="           + wnn_vars.knnRange           : "") +        
         (wnn_vars.clusterAlg         ? " clusterAlg="         + wnn_vars.clusterAlg         : "") +        
+        (wnn_vars.clusterRes         ? " clusterRes="         + wnn_vars.clusterRes         : "") +        
         (wnn_vars.skipFirstLSIcomp   ? " skipFirstLSIcomp="   + wnn_vars.skipFirstLSIcomp   : "") +        
         (wnn_vars.extra              ? " "                    + wnn_vars.extra              : "") 
 
