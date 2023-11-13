@@ -35,6 +35,7 @@ CTannoSelected <- parseArgs(args,"CTannoSelected=")
 test2use      <- parseArgs(args,"test=")
 latentVars    <- parseArgs(args,"latentVars=")
 if(!test2use %in% c("LR", "negbinom", "poisson", "MAST")) {latentVars <- NULL}
+batchCorrection <- parseArgs(args,"batchCorrection=", default=FALSE, convert="as.logical")
 
 runstr <- "Rscript diffExprSeurat.R [projectdir=projectdir]"
 
@@ -72,7 +73,7 @@ print(paste("clusterVar:", clusterVar))
 print(paste("CTannoSelected:", CTannoSelected))
 print(paste("test2use:", test2use))
 print(paste("latentVars:", latentVars))
-
+print(paste("batchCorrection : ", batchCorrection))
 
 # load sobj from previous module
 sobj <- readRDS(file = file.path(resultsdir, "sobj.RDS"))
@@ -80,7 +81,9 @@ DefaultAssay(sobj) <- assay2use
 
 # Prepare object to run differential expression on SCT assay with multiple models.
 # Only for merged objects with multiple SCT models.
-# sobj <- PrepSCTFindMarkers(sobj)
+if(batchCorrection==TRUE & assay2use == "SCT") {
+ sobj <- PrepSCTFindMarkers(sobj)
+}
 
 # differential accessibility between pairs of samples per calculated per cluster
 sobj$Group_Cluster <- paste(sobj$group, sobj[[clusterVar]][,1], sep = "_")

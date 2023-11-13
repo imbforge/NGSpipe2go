@@ -583,12 +583,27 @@ config {
       procs="4"
       memory="128"
     }
+    sc_integrateRNA {
+      walltime="04:00:00"
+      procs="4"
+      memory="128"
+    }
+    sc_integrateATAC {
+      walltime="04:00:00"
+      procs="4"
+      memory="128"
+    }
     sc_qc {
       walltime="03:00:00"
       procs="4"
       memory="128"
     }
     sc_readAggrData {
+      walltime="04:00:00"
+      procs="4"
+      memory="128"
+    }
+    sc_readIndivSamplesAndMerge{
       walltime="04:00:00"
       procs="4"
       memory="128"

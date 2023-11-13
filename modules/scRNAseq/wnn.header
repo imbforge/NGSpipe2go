@@ -6,7 +6,8 @@ wnn_vars=[
     knnRange        : 200, // The number of approximate neighbors to compute. 200 by default
     clusterAlg      : 1, // Algorithm for modularity optimization (1 = Louvain; 2 = Louvain with multilevel refinement; 3 = SLM; 4 = Leiden).
     clusterRes      : 0.8, // resolution parameter above (below) 1.0 for larger (smaller) number of communities (default 0.8).
-    skipFirstLSIcomp : DNAaccess_vars.skipFirstLSIcomp,  // skip first LSI component(s) if selected in DNAaccess.header    
+    skipFirstLSIcomp : DNAaccess_vars.skipFirstLSIcomp,  // skip first LSI component(s) if selected in DNAaccess.header   
+    batchCorrection : RUN_BATCHCORRECT, // We use this to determine in the WNN step which dimensionality reductions to use.
     extra    : ""        //extra parms to sent to the tool
 ]
 

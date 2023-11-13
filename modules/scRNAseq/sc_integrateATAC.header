@@ -1,0 +1,12 @@
+sc_integrateATAC_vars=[
+    outdir          : RESULTS + "/sc_integrateATAC",
+    project         : PROJECT,                     
+    res             : RESULTS,         
+    featureCutoff   : (binding.variables.containsKey("DNAaccess_vars") ? DNAaccess_vars.featureCutoff : "q5"), // either percentile specified as 'q' followed by the minimum percentile or minimum number of cells containing the feature
+    skipFirstLSIcomp: (binding.variables.containsKey("DNAaccess_vars") ? DNAaccess_vars.skipFirstLSIcomp : 1),  // If we see a very strong correlation between the first LSI component and read depth, this component should be removed.
+    extra    : ""                          //extra parms to sent to the tool
+]
+// please keep in mind that the results of batch-correction or integration is supposed to be used only to define the clusters. ALL downstream steps like DE analysis should use the RNA or SCT slots of the seurat object
+
+load PIPELINE_ROOT + "/modules/scRNAseq/sc_integrateATAC.groovy"
+

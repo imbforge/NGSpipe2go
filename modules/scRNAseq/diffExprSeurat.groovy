@@ -17,6 +17,7 @@ diffExprSeurat = {
         (diffExprSeurat_vars.CTannoSelected     ? " CTannoSelected="     + diffExprSeurat_vars.CTannoSelected     : "") +
         (diffExprSeurat_vars.test               ? " test="               + diffExprSeurat_vars.test               : "") +
         (diffExprSeurat_vars.latentVars         ? " latentVars="         + diffExprSeurat_vars.latentVars         : "") +
+        (diffExprSeurat_vars.batchCorrection    ? " batchCorrection="    + diffExprSeurat_vars.batchCorrection    : "") +
         (diffExprSeurat_vars.extra              ? " "                    + diffExprSeurat_vars.extra              : "") 
 
     def TOOL_ENV = prepare_tool_env("R", tools["R"]["version"], tools["R"]["runenv"])

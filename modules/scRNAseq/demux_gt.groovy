@@ -18,8 +18,7 @@ demux_gt = {
         (demux_gt_vars.extra               ? " "                       + demux_gt_vars.extra               : "")
 
 
-    def TOOL_ENV = prepare_tool_env("souporcell", tools["souporcell"]["version"], tools["souporcell"]["runenv"]) + " && " +
-                   prepare_tool_env("R", tools["R"]["version"], tools["R"]["runenv"])
+    def TOOL_ENV = prepare_tool_env("souporcell", tools["souporcell"]["version"], tools["souporcell"]["runenv"])
     def PREAMBLE = get_preamble(stage:stageName, outdir:output.dir, input:new File(input1.prefix).getName())
 
     produce(output.dir + "/done.txt") {

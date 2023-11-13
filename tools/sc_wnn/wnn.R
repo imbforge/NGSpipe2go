@@ -33,6 +33,7 @@ knnRange      <- parseArgs(args,"knnRange=", convert="as.numeric")
 clusterAlg    <- parseArgs(args,"clusterAlg=", convert="as.numeric")
 clusterRes    <- parseArgs(args,"clusterRes=", convert="as.numeric")
 skipFirstLSIcomp <- parseArgs(args,"skipFirstLSIcomp=", default=0, convert="as.numeric")
+batchCorrection <- parseArgs(args,"batchCorrection=", default=FALSE, convert="as.logical")
 
 runstr <- "Rscript wnn.R [projectdir=projectdir]"
 
@@ -68,7 +69,7 @@ print(paste("knnRange:", knnRange))
 print(paste("clusterAlg:", clusterAlg))
 print(paste("clusterRes:", clusterRes))
 print(paste("skipFirstLSIcomp :", skipFirstLSIcomp ))
-
+print(paste("batchCorrection : ", batchCorrection))
 
 # load sobj from previous module
 sobj <- readRDS(file = file.path(resultsdir, "sobj.RDS"))
@@ -82,9 +83,19 @@ sobj <- readRDS(file = file.path(resultsdir, "sobj.RDS"))
 # and the SNN graph used for clustering at sobj[["wsnn"]]
 # Cell-specific modality weights can be accessed at sobj$RNA.weight
 
+if(batchCorrection==TRUE) {
+	assay2use = "integrated"
+	reduction_list_to_use = list("pca.corrected", "lsi.corrected")
+	pca_reduction = "pca.corrected"
+} else {
+	assay2use = "SCT"
+	reduction_list_to_use = list("pca.sct", "lsi")
+	pca_reduction = "pca.sct"
+}
+
 sobj <- FindMultiModalNeighbors(
   object = sobj,
-  reduction.list = list("pca.sct", "lsi"), 
+  reduction.list = reduction_list_to_use, 
   dims.list = list(1:50, (1+skipFirstLSIcomp):50), 
   k.nn = knn, 
   knn.range= knnRange, 
@@ -99,8 +110,8 @@ sobj <- FindMultiModalNeighbors(
 sobj <- RunUMAP(
   object = sobj,
   nn.name = "weighted.nn",
-  assay = "SCT",
-  reduction = "pca.sct", 
+  assay = assay2use,
+  reduction = pca_reduction, 
   reduction.name = "umap.wnn",
   verbose = TRUE
 )
@@ -110,8 +121,8 @@ sobj <- RunUMAP(
 sobj <- RunTSNE(
   object = sobj,
   nn.name = "weighted.nn",
-  assay = "SCT",
-  reduction = "pca.sct", 
+  assay = assay2use,
+  reduction = pca_reduction, 
   reduction.name = "tsne.wnn",
   verbose = TRUE
 )

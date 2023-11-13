@@ -3,7 +3,7 @@ wnn = {
         desc:  "Compute a joint neighbor graph that represent both the gene expression and DNA accessibility measurements",
         constraints: "",
         bpipe_version: "tested with bpipe 0.9.9.8",
-        author: "Frank Rühle"
+        author: "Frank Rühl, Sivarajan Karunanithi"
 
     output.dir = wnn_vars.outdir
     
@@ -16,6 +16,7 @@ wnn = {
         (wnn_vars.clusterAlg         ? " clusterAlg="         + wnn_vars.clusterAlg         : "") +        
         (wnn_vars.clusterRes         ? " clusterRes="         + wnn_vars.clusterRes         : "") +        
         (wnn_vars.skipFirstLSIcomp   ? " skipFirstLSIcomp="   + wnn_vars.skipFirstLSIcomp   : "") +        
+        (wnn_vars.batchCorrection    ? " batchCorrection="    + wnn_vars.batchCorrection    : "") +        
         (wnn_vars.extra              ? " "                    + wnn_vars.extra              : "") 
 
     def TOOL_ENV = prepare_tool_env("R", tools["R"]["version"], tools["R"]["runenv"])

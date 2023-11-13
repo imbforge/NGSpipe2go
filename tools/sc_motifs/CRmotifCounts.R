@@ -1,7 +1,7 @@
 #####################################
 ##
 ## What: CRmotifCounts.R
-## Who : Frank Rühle
+## Who : Frank Rühe
 ## When: 01.06.2023
 ##
 ## Script to load motif counts and Peak-to-peak and peak-to-gene co-activity correlation data (feature linkage) from Cellranger results.
@@ -61,6 +61,7 @@ print(paste("resultsdir:", resultsdir))
 print(paste("out:", out))
 print(paste("cellranger_aggr_id:", cellranger_aggr_id))
 
+cellranger_dir <- file.path(resultsdir, cellranger_aggr_id, "outs")
 
 # load sobj from previous module
 sobj <- readRDS(file = file.path(resultsdir, "sobj.RDS"))
@@ -71,8 +72,6 @@ DefaultAssay(sobj) <- "ATAC"
 # Note that the motif detection and feature linkage can also be performed using Signac. 
 # This would be required if custom peak calling is done, rather than using Cellranger's peaks. 
 # More information on this can be found in the Signac multiomic vignette (https://satijalab.org/signac/articles/pbmc_multiomic.html).
-
-cellranger_dir <- file.path(resultsdir, cellranger_aggr_id, "outs")
 
 peaks.path <- file.path(cellranger_dir, "atac_peaks.bed")
 peak_annotation.path <- file.path(cellranger_dir, "atac_peak_annotation.tsv")

@@ -1,0 +1,13 @@
+sc_integrateRNA_vars=[
+    outdir          : RESULTS + "/sc_integrateRNA",
+    project         : PROJECT,                     
+    res             : RESULTS,         
+    batch           : "group",             // Provide a the column name from targets file. If more than one batch needs to be addressed, please create a concatenated name of both and provide that as a column in the targets file and here.
+    n_features      : 3000,                // Number of variable features to identify for integration (or batch-correcting)
+    rdtype          : "cca",               // Dimensional reduction to perform when finding anchors. Can be one of: cca, rpca, rlsi
+    extra    : ""                          //extra parms to sent to the tool
+]
+// please keep in mind that the results of batch-correction or integration is supposed to be used only to define the clusters. ALL downstream steps like DE analysis should use the RNA or SCT slots of the seurat object
+
+load PIPELINE_ROOT + "/modules/scRNAseq/sc_integrateRNA.groovy"
+

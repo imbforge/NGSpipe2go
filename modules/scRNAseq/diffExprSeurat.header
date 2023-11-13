@@ -8,6 +8,7 @@ diffExprSeurat_vars=[
     CTannoSelected  : ESSENTIAL_CELLTYPE_ANNO[0],  // select celltype annotation column for comparison by group and celltype
     test            : "wilcox",  // statistical test to use. One of "wilcox", "bimod", "roc" , "t", "negbinom", "poisson", "LR", "MAST" and "DESeq2".
     latentVars      : "",  // Variables to test, used only when test is one of 'LR', 'negbinom', 'poisson' or 'MAST'.
+    batchCorrection : RUN_BATCHCORRECT, // We use this to determine whether to use the corresponding function to prepare the SCT models if batch-correction was performed
     extra    : ""          //extra parms to sent to the tool
 ]
 
