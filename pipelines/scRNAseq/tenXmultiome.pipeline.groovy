@@ -24,9 +24,12 @@ load PIPELINE_ROOT + "/modules/scRNAseq/motifActivity.header"
 load PIPELINE_ROOT + "/modules/scRNAseq/motifFootprinting.header"
 load PIPELINE_ROOT + "/modules/scRNAseq/peaks2genes.header"
 load PIPELINE_ROOT + "/modules/scRNAseq/sc_readAggrData.header"
+load PIPELINE_ROOT + "/modules/scRNAseq/sc_readIndivSamplesAndMerge.header"
 load PIPELINE_ROOT + "/modules/scRNAseq/sc_filter.header"
 load PIPELINE_ROOT + "/modules/scRNAseq/sc_qc.header"
 load PIPELINE_ROOT + "/modules/scRNAseq/SCTransform.header"
+load PIPELINE_ROOT + "/modules/scRNAseq/sc_integrateRNA.header"
+load PIPELINE_ROOT + "/modules/scRNAseq/sc_integrateATAC.header"
 load PIPELINE_ROOT + "/modules/scRNAseq/wnn.header"
 load PIPELINE_ROOT + "/modules/NGS/bamcoverage.header"
 load PIPELINE_ROOT + "/modules/NGS/bamindexer.header"
@@ -62,10 +65,13 @@ Bpipe.run {
             geneBodyCov2
          ]
     ] + 
-    cellrangerarc_aggr +
     (RUN_DEMUX == "demux_GT" ? assignSouporcellCluster : dontrun.using(module:"assignSouporcellCluster")) +
-    (ESSENTIAL_USE_AGGR_DATA ? sc_readAggrData : dontrun.using(module:"RunAlternativeModule")) + 
-    sc_qc + sc_filter + CRmotifCounts + SCTransform + DNAaccess + wnn + peaks2genes + 
+    (ESSENTIAL_USE_AGGR_DATA ? cellrangerarc_aggr + sc_readAggrData : sc_readIndivSamplesAndMerge ) +
+    sc_qc + sc_filter +
+    (ESSENTIAL_USE_AGGR_DATA ? CRmotifCounts : dontrun.using(module:"CRmotifCounts")) + 
+    SCTransform + DNAaccess + 
+    (RUN_BATCHCORRECT ? sc_integrateRNA + sc_integrateATAC : dontrun.using(module:"No_Batch_Correction")) +
+    wnn + peaks2genes + 
     (ESSENTIAL_CELLTYPE_ANNO.contains("Seurat")? CTannoSeurat : dontrun.using(module:"CTannoSeurat")) + 
     (ESSENTIAL_CELLTYPE_ANNO.contains("Marker")? CTannoMarker : dontrun.using(module:"CTannoMarker")) + 
     [diffPeaks, diffExprSeurat] + motifActivity + motifEnrich + motifFootprinting + grn +
@@ -73,4 +79,3 @@ Bpipe.run {
     collectToolVersions + MultiQC + 
     shinyReports
 }
-
