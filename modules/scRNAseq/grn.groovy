@@ -21,6 +21,7 @@ grn = {
         (grn_vars.features4graph     ? " features4graph="     + grn_vars.features4graph     : "") +
         (grn_vars.umap_method        ? " umap_method="        + grn_vars.umap_method        : "") +
         (grn_vars.n_neighbors        ? " n_neighbors="        + grn_vars.n_neighbors        : "") +
+        (grn_vars.batchCorrection    ? " batchCorrection="    + grn_vars.batchCorrection    : "") +
         (grn_vars.extra              ? " "                    + grn_vars.extra              : "") 
 
     def TOOL_ENV = prepare_tool_env("R", tools["R"]["version"], tools["R"]["runenv"])

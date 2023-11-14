@@ -41,6 +41,7 @@ min_genes     <- parseArgs(args,"min_genes=", convert="as.numeric")
 features4graph <- parseArgs(args,"features4graph=", convert="as.character")
 umap_method   <- parseArgs(args,"umap_method=")     
 n_neighbors   <- parseArgs(args,"n_neighbors=", convert="as.numeric")   
+batchCorrection <- parseArgs(args,"batchCorrection=", default=FALSE, convert="as.logical")
 
 runstr <- "Rscript grn.R [projectdir=projectdir]"
 
@@ -103,7 +104,7 @@ print(paste("min_genes:", min_genes))
 print(paste("features4graph:", paste(features4graph, collapse=" ")))
 print(paste("umap_method:", umap_method))
 print(paste("n_neighbors:", n_neighbors))
-
+print(paste("batchCorrection:", batchCorrection))
 
 # load sobj from previous module
 sobj <- readRDS(file = file.path(resultsdir, "sobj.RDS"))
@@ -130,9 +131,21 @@ pfm <- TFBSTools::getMatrixSet(
   opts = list(collection = "CORE", tax_group = JasparTaxGroup, all_versions = FALSE)
 )
 
+# genes2use changes by SK
+# We will need a vector of genes2use to calculate the GRN with the infer_grn module later
+# Typically recommended approach is use the FindVariableFeatures function on the RNA assay of the sobj and the grn will be infered on those variable genes
+# When batch correction is performed, multiple SCT models are generated and hence we cannot directly use the FindVariableFeatures function
+# The suggested approach is to use the SelectIntegrationFeatures (https://github.com/satijalab/seurat/issues/5761). We have these already stored as part of the integration steps, which we will use here. 
 
-# Select variable features
-sobj <- Seurat::FindVariableFeatures(sobj, assay=rna_assay)
+if(is.null(genes2use)){
+  if(batchCorrection==TRUE & rna_assay == "SCT"){
+    if(!dir.exists(file.path(resultsdir, "sc_integrateRNA")))   stop(paste("Needed directory",file.path(resultsdir, "sc_integrateRNA"),"does NOT exist. Run with:\n",runstr))
+    load(file.path(resultsdir, "sc_integrateRNA" ,"sc_integrateRNA_anchors.RData"))
+    genes2use = sobj.features
+  } else {
+    genes2use <- Seurat::FindVariableFeatures(sobj, assay="RNA")
+  }
+}
 
 # Initiate GRN object and select candidate regions. 
 # This will create a RegulatoryNetwork object inside the Seurat object 
@@ -183,6 +196,10 @@ sobj <- find_motifs(
 # Here, we first select regions near genes, either by simply considering a distance 
 # upstream and/or downstream of the gene (peak_to_gene_method='Signac') or by also 
 # considering overlapping regulatory regions as is done by GREAT (peak_to_gene_method='GREAT')
+
+print(paste("Genes2Use: ", length(genes2use)))
+print(head(genes2use))
+
 sobj <- infer_grn(sobj,
                   peak_to_gene_method = 'Signac', # One of 'Signac' or 'GREAT'
                   method = methodModel,
@@ -191,6 +208,7 @@ sobj <- infer_grn(sobj,
                   downstream = 0,
                   tf_cor = 0.1,
                   peak_cor = 0) 
+
 # GetNetwork(sobj) # access the inferred Network object
 
 # Once the models are fit, model coefficients can be inspected with coef().

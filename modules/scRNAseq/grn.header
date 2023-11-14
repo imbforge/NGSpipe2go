@@ -11,7 +11,8 @@ grn_vars=[
     min_genes        : 5,  // minimum number of genes in a module
     features4graph   : "", // path to txt file (no header) with features to use to create the graph. If empty uses all features in the network
     umap_method      : "weighted", // Method to compute edge weights for UMAP (one of "weighted", "corr", "coef", "none")
-    n_neighbors      : 15, // The size of local neighborhood (in terms of number of neighboring sample points) used for manifold approximation.   
+    n_neighbors      : 15, // The size of local neighborhood (in terms of number of neighboring sample points) used for manifold approximation.  
+    batchCorrection  : RUN_BATCHCORRECT, // We use this to determine whether to use the corresponding function to prepare the SCT models if batch-correction was performed 
     extra            : ""  //extra parms to sent to the tool
 ]
 
