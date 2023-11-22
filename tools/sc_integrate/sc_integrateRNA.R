@@ -52,7 +52,7 @@ library(glmGamPoi)
 
 # set options
 options(stringsAsFactors=FALSE)
-options(future.globals.maxSize = 4e9)
+options(future.globals.maxSize = 12e9)
 addTaskCallback(function(...) {set.seed(100);TRUE})
 
 # check parameter
