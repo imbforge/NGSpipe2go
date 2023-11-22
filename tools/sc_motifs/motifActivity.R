@@ -193,6 +193,7 @@ sobj$label <- sobj[[clusterVar]][,1]
 Idents(sobj) <- "label"
 diffAct_cluster <- list()
 for (c in sort(unique(Idents(sobj)))) {
+ if(nrow(sobj[[]][sobj[[]][,clusterVar]==c,])>=3) {
   diffAct_cluster[[c]] <- FindMarkers(
     object = sobj,
     ident.1 = c,
@@ -202,6 +203,7 @@ for (c in sort(unique(Idents(sobj)))) {
     fc.name = "avg_diff"
   )
   diffAct_cluster[[c]]$motif_name <- ConvertMotifID(object = motifobj, id = rownames(diffAct_cluster[[c]]))
+ }
 }
 openxlsx::write.xlsx(diffAct_cluster, file = file.path(out, "ChromVar_motif_enriched_cluster_vs_all.xlsx"), rowNames=T)
 
@@ -221,6 +223,7 @@ if(!is.null(CTannoSelected) && !is.na(CTannoSelected)) {
   Idents(sobj) <- "label"
   diffAct_ct <- list()
   for (c in sort(unique(Idents(sobj)))) {
+   if(nrow(sobj[[]][sobj[[]][,celltype]==c,])>=3) {
     diffAct_ct[[c]] <- FindMarkers(
       object = sobj,
       ident.1 = c,
@@ -230,6 +233,7 @@ if(!is.null(CTannoSelected) && !is.na(CTannoSelected)) {
       fc.name = "avg_diff"
     )
     diffAct_ct[[c]]$motif_name <- ConvertMotifID(object = motifobj, id = rownames(diffAct_ct[[c]]))
+   }
   }
   openxlsx::write.xlsx(diffAct_ct, file = file.path(out, "ChromVar_motif_enriched_celltype_vs_all.xlsx"), rowNames=T)
 }

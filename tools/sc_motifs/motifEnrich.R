@@ -178,7 +178,7 @@ for (gp in names(da_groups_atac_ct)) {
   if(length(top_da_peaks_ct)>= min_peaks) {
     da_enriched_motifs_ct[[gp]] <- FindMotifs(object = sobj, features = top_da_peaks_ct)
     mplot <- MotifPlot(object = sobj, motifs = head(rownames(da_enriched_motifs_ct[[gp]])))
-    ggsave(plot=mplot, filename=file.path(out, paste0("Motif_position_weight_matrices_top_enriched_celltype_", gp, ".pdf")), width = 7, height = 7)
+    ggsave(plot=mplot, filename=file.path(out, paste0("Motif_position_weight_matrices_top_enriched_celltype_", gsub("[[:punct:]]","",gp), ".pdf")), width = 7, height = 7)
   }
 }
 
