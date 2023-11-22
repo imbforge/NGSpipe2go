@@ -17,7 +17,7 @@ assignSouporcellCluster = {
             ${PREAMBLE} &&
 
             headerposFile=\$(head -n1 ${assignSouporcellCluster_vars.targets} | tr "\\t" "\\n" | grep -nx file | cut -d":" -f1) &&
-            filenames=(\$(tail -n +2 ${assignSouporcellCluster_vars.targets} | cut -f\${headerposFile} | sort | uniq | sed 's/.fastq.gz*\$//' | sed 's/_S[0-9]*_L[0-9]*_R[12]*_00[1-4]*//')) &&
+            filenames=(\$(tail -n +2 ${assignSouporcellCluster_vars.targets} | cut -f\${headerposFile} | sort | uniq | sed 's/\\(_S[0-9]\\{1,\\}\\)*\\(_L[0-9]\\{1,\\}\\)*\\(_R[12]\\)*\\(_001.fastq.gz\\)*\$//')) &&
             totalFiles=\${#filenames[*]} &&
 
             for ((i=0; i<\${totalFiles}-1; i++)); do
