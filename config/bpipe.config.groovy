@@ -22,7 +22,7 @@ config {
     assignSouporcellCluster { 
       walltime="03:00:00" 
       procs="1" 
-      memory="32"
+      memory="128"
     }
     Bam2FastQ {
       walltime="1:00:00"
@@ -108,37 +108,37 @@ config {
       queue=long_queue
       walltime="20:00:00"
       procs="8"
-      memory="64"
+      memory="256"
     }
     cellranger_aggr {
       queue=long_queue
       walltime="20:00:00"
       procs="8"
-      memory="64"
+      memory="256"
     }
     cellrangeratac_count {
       queue=long_queue
       walltime="20:00:00"
       procs="8"
-      memory="64"
+      memory="256"
     }
     cellrangeratac_aggr {
       queue=long_queue
       walltime="20:00:00"
       procs="8"
-      memory="64"
+      memory="256"
     }
     cellrangerarc_count {
       queue=long_queue
       walltime="20:00:00"
       procs="8"
-      memory="64"
+      memory="256"
     }
     cellrangerarc_aggr {
       queue=long_queue
       walltime="20:00:00"
       procs="8"
-      memory="64"
+      memory="256"
     }
     CollectPlots {
       walltime="01:00:00"
@@ -263,9 +263,15 @@ config {
       procs="8"
       memory="64"
     }
+    diffExprSeurat {
+      queue=long_queue
+      walltime="12:00:00"
+      procs="8"
+      memory="128"
+    }
     diffPeaks {
       queue=long_queue
-      walltime="06:00:00"
+      walltime="15:00:00"
       procs="8"
       memory="128"
     }
