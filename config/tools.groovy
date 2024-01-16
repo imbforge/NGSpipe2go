@@ -21,6 +21,7 @@
 def conda_tools       = "/fsimb/common/conda_tools"
 def conda_call        = "module try-load conda &&"  
 def singularity_tools = "/fsimb/common/singularity_tools"
+def shpc_call         = "module try-load shpc &&"
 
 // default runenvs and versions for each tools.
 // Names should match those of tools_envs
@@ -90,6 +91,18 @@ tools_envs = [
         ],
         "R/Bioconductor_3.14_singularity" : [
             lmod: "module load R/Bioconductor_3.14_singularity"
+        ],
+        "R/Bioconductor_3.15_singularity" : [
+            lmod: "module load R/Bioconductor_3.15_singularity"
+        ],
+        "R/Bioconductor_3.16_singularity" : [
+            lmod: "module load R/Bioconductor_3.16_singularity"
+        ],
+        "bioconductor/3.17" : [
+            shpc: "${shpc_call} module load bioconductor/3.17"
+        ],
+        "bioconductor/3.18" : [
+            shpc: "${shpc_call} module load bioconductor/3.18"
         ]
     ],
     bamqc: [
