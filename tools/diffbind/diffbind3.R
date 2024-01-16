@@ -252,11 +252,19 @@ for (sub in unique(contsAll$sub_experiment)) {
     if(BLACKLIST){blacklist_generated <- try(dba.blacklist(db, Retrieve=DBA_BLACKLIST))}
     if(GREYLIST) {greylist_generated  <- try(dba.blacklist(db, Retrieve=DBA_GREYLIST))}
   
+    cat("\nSUBSTRACTCONTROL_FINAL: ", SUBSTRACTCONTROL_FINAL)
+    print(class(SUBSTRACTCONTROL_FINAL))
+    if(SUBSTRACTCONTROL_FINAL) {cat("subtract control")} else {cat("don't subtract")}
+    cat("\nBLACKLIST: ", BLACKLIST)    
+    cat("\nGREYLIST: ", GREYLIST)
+    cat("\ndb$config$doBlacklist: ", db$config$doBlacklist)    
+    cat("\ndb$config$doGreylist: ", db$config$doGreylist)
+    cat("\n\n")    
       
     # identify all overlapping peaks and derives a consensus peakset for the experiment. 
     # Then count how many reads overlap each interval for each unique sample.
     db <- dba.count(db, minOverlap=MINOVERLAP, score=DBA_SCORE_NORMALIZED, summits=SUMMITS, filter=FILTER, 
-                    bScaleControl=TRUE, minCount=0, bUseSummarizeOverlaps=TRUE) 
+                    bScaleControl=TRUE, bSubControl = SUBSTRACTCONTROL_FINAL, minCount=0, bUseSummarizeOverlaps=TRUE) 
     # score: which score to use in the binding affinity matrix. Note that all raw read counts are maintained for use by dba.analyze, 
     # regardless of how the score is set here. 
     # DBA_SCORE_NORMALIZED: normalized reads, as set by dba.normalize
@@ -270,7 +278,7 @@ for (sub in unique(contsAll$sub_experiment)) {
     
     # Normalizing the data
     db <- dba.normalize(db, method = db$config$AnalysisMethod, normalize = NORMALIZATION, library = LIBRARYSIZE, 
-                        offsets = FALSE, bSubControl = SUBSTRACTCONTROL_FINAL, background = BACKGROUND) 
+                        offsets = FALSE, background = BACKGROUND) 
     # The major change in DiffBind version 3.0 is in how the data are modeled. In previous versions, a separate model was derived for each contrast, 
     # including data only for those samples present in the contrast. Model design options were implicit and limited to either a single factor, or 
     # a subset of two-factor "blocked" designs. Starting in version 3.0, the default mode is to include all the data in a single model, allowing 
@@ -473,4 +481,4 @@ result <- lapply(result, function(x) {
 })
 write.xlsx(result, file=paste0(OUT, "/diffbind.xlsx"))
 saveRDS(result,  file=paste0(OUT, "/diffbind.rds"))
-
+print(warnings())
