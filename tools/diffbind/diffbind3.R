@@ -64,7 +64,7 @@ LIBRARYSIZE     <- parseArgs(args,"librarySize=", "default", "as.character")   #
 NORMALIZATION   <- parseArgs(args,"normalization=", "default", "as.character")   # use total number of reads in bam for normalization (FALSE=only peaks)
 BACKGROUND      <- parseArgs(args,"background=", FALSE, "as.logical") # background may either be logical (default binsize 15000) or numeric with custom binsize.
 if(is.na(BACKGROUND)) {BACKGROUND <- parseArgs(args,"background=", "15000", "as.numeric")}
-SUBSTRACTCONTROL<- parseArgs(args,"substractControl=", "default", "as.character")  # subtract input
+SUBSTRACTCONTROL<- parseArgs(args,"substractControl=", "FALSE", "as.character")  # subtract input
 CONDITIONCOLUMN <- parseArgs(args,"conditionColumn=", "group", "as.character") # this targets column is interpreted as 'Condition' and is used as for defining the default design
 FDR_TRESHOLD    <- parseArgs(args,"fdr_threshold=", 0.05, "as.numeric") # summits for re-centering consensus peaks
 FOLD       <- parseArgs(args,"fold=", 0, "as.numeric") # summits for re-centering consensus peaks
