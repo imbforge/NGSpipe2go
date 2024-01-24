@@ -155,8 +155,10 @@ targetsAll <- data.frame(
     targetsAll <- data.frame(targetsAll, targets_raw[,f, drop=F])
   }
  
-  if(isInputNone) {
+if(isInputNone | (!is.na(as.logical(SUBSTRACTCONTROL)) & !as.logical(SUBSTRACTCONTROL))) {
   warning("You are running the DiffBind analysis without input control samples!\n")
+  # if SUBSTRACTCONTROL=FALSE controls are set to NULL as well because the bSubControl parameter
+  # in dba.count seems to be of no effect.
     targetsAll$ControlID <- NULL
     targetsAll$bamControl <- NULL
     SUBSTRACTCONTROL <- FALSE
