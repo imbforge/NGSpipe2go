@@ -128,10 +128,14 @@ donefiles <- list.files(PEAKS,pattern=".done$")
 bam_suffix <- sub("^[^\\.]*\\.*", "", gsub("_macs2.done$", "", donefiles[1]))
 bam_suffix <- ifelse(bam_suffix == "", paste0(bam_suffix, "bam"), paste0(bam_suffix, ".bam"))
 
-# check if blacklist filtering was applied
-peakfiles <- list.files(PEAKS,pattern=".xls")
+# check if blacklist filtering was applied and if broad peak files are available
+peakfiles <- list.files(PEAKS,pattern="(\\.xls$)|(Peak$)")
 isBlacklistFilt <- any(grepl("blacklist_filtered", peakfiles)) 
-peak_suffix <- if(isBlacklistFilt) {"_macs2_blacklist_filtered_peaks.xls"} else {"_macs2_peaks.xls"}
+isBroad <- any(grepl("broadPeak$", peakfiles)) 
+peak_suffix <- sapply(targets_raw$PeakCaller, function(x) {switch(x,
+                                                                  macs=if(isBlacklistFilt) {"_macs2_blacklist_filtered_peaks.xls"} else {"_macs2_peaks.xls"},
+                                                                  bed= paste0("_macs2_peaks", if(isBlacklistFilt) {"_blacklist_filtered"}, if(isBroad) {".broadPeak"} else {".narrowPeak"})
+)})
 
 # check if any targets_raw$INPUT is indicated as "none". If so, Peak calling was done without Input samples.
 isInputNone <- any(tolower(targets_raw$INPUT) == "none")
@@ -252,15 +256,7 @@ for (sub in unique(contsAll$sub_experiment)) {
     if(BLACKLIST){blacklist_generated <- try(dba.blacklist(db, Retrieve=DBA_BLACKLIST))}
     if(GREYLIST) {greylist_generated  <- try(dba.blacklist(db, Retrieve=DBA_GREYLIST))}
   
-    cat("\nSUBSTRACTCONTROL_FINAL: ", SUBSTRACTCONTROL_FINAL)
-    print(class(SUBSTRACTCONTROL_FINAL))
-    if(SUBSTRACTCONTROL_FINAL) {cat("subtract control")} else {cat("don't subtract")}
-    cat("\nBLACKLIST: ", BLACKLIST)    
-    cat("\nGREYLIST: ", GREYLIST)
-    cat("\ndb$config$doBlacklist: ", db$config$doBlacklist)    
-    cat("\ndb$config$doGreylist: ", db$config$doGreylist)
-    cat("\n\n")    
-      
+
     # identify all overlapping peaks and derives a consensus peakset for the experiment. 
     # Then count how many reads overlap each interval for each unique sample.
     db <- dba.count(db, minOverlap=MINOVERLAP, score=DBA_SCORE_NORMALIZED, summits=SUMMITS, filter=FILTER, 
@@ -451,6 +447,7 @@ write.table(infodb, file=file.path(OUT, paste0(subexpPrefix, "info_dba_object.tx
                             c("external blacklist applied", isBlacklistFilt, if(isBlacklistFilt) {"MACS2 peak files have already been blacklist or greylist filtered"} else {""}),
                             c("Apply auto-generated blacklist", BLACKLIST, if(BLACKLIST){if(class(blacklist_generated)=="try-error") {"Skipped because blacklist not available."} else {"Blacklist successfully generatedand applied."}} else {""}),
                             c("Apply auto-generated greylist", GREYLIST, if(GREYLIST){if(class(greylist_generated)=="try-error") {"Skipped because greylist not available."} else {"Greylist successfully generated and applied."}} else {""}),
+                            c("Broad peaks used", isBroad, paste("loaded peak files with suffix:", unique(peak_suffix), collapse = ", ")),
                             c("Fragment size", FRAGSIZE, ""),
                             c("Summits", SUMMITS, if(SUMMITS==0) {"no re-centering of peaks."} else {paste0("re-center peaks around consensus summit with peak width 2x", SUMMITS, ".")}),
                             c("Filter threshold", FILTER, "threshold for filtering intervals with low read counts."),
