@@ -19,6 +19,7 @@ library("tidyr")
 library("forcats")
 library("ngsReports")
 library("ggbeeswarm")
+library("R.utils")
 
 ##
 ## loadGlobalVars: read configuration from bpipe vars
@@ -605,7 +606,12 @@ smallRNAhelper.subread.type <- function(subdir="",maindir="all") {
     
     # create vector of total counts
     x.type <- sapply(list.files(FOLDER, pattern=SUFFIX), function(f) {
-        counts <- sum(read.table(paste0(FOLDER, '/', f))[,2])
+        # check if count files is empty
+        if (countLines(paste0(FOLDER, '/', f))!=0) {
+            counts <- sum(read.table(paste0(FOLDER, '/', f))[,2])
+        } else {
+            counts <- 0
+        }
         return(counts)
     })
     
@@ -1103,7 +1109,7 @@ smallRNAhelper.bowtie <- function() {
 
         # extract information
         all <- gsub(".+: (.+)", "\\1", l[grep("reads processed", l)])
-        unique <- gsub(".+: (.+) (\\(.*\\))", "\\1", l[grep("reads with at least one reported alignment", l)])
+        unique <- gsub(".+: (.+) (\\(.*\\))", "\\1", l[grep("reads with at least one", l)])
         multi  <- gsub(".+: (.+) (\\(.*\\))", "\\1", l[grep("reads with alignments sampled due to -M", l)])
         unmapped <- gsub(".+: (.+) (\\(.*\\))", "\\1", l[grep("reads that failed to align", l)])
 
