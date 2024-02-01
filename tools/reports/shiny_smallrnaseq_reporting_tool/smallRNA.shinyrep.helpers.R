@@ -19,7 +19,6 @@ library("tidyr")
 library("forcats")
 library("ngsReports")
 library("ggbeeswarm")
-library("R.utils")
 
 ##
 ## loadGlobalVars: read configuration from bpipe vars
@@ -606,12 +605,7 @@ smallRNAhelper.subread.type <- function(subdir="",maindir="all") {
     
     # create vector of total counts
     x.type <- sapply(list.files(FOLDER, pattern=SUFFIX), function(f) {
-        # check if count files is empty
-        if (countLines(paste0(FOLDER, '/', f))!=0) {
-            counts <- sum(read.table(paste0(FOLDER, '/', f))[,2])
-        } else {
-            counts <- 0
-        }
+        counts <- sum(read.table(paste0(FOLDER, '/', f))[,2])
         return(counts)
     })
     
