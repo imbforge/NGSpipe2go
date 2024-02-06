@@ -1666,7 +1666,7 @@ smallRNAhelper.fractionSign.pairwise <- function(i=1,fdr=.01) {
                     rnatypes.sign  = nrow(rnatypes.sign.df)))
     } else {
         #cat("NO SIGNIFICANT GENES FOUND.\n")
-        return(rnatypes.sign = nrow(rnatypes.sign.df))
+        return(list(rnatypes.sign = nrow(rnatypes.sign.df)))
     }
 
 }
