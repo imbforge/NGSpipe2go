@@ -38,7 +38,7 @@ run {
     "%.fastq.gz" * 
     [
         FastQC.using(subdir:"raw") ,
-        Cutadapt + FastQQualityFilter + (REMOVE_DUPLICATES ? FilterDuplicates : dontrun.using(module: "FilterDuplicates")) + TrimUMIs +
+        Cutadapt + FastQQualityFilter + (REMOVE_DUPLICATES ? FilterDuplicates : dontrun.using(module: "FilterDuplicates")) + (TRIM_UMIS ? TrimUMIs : dontrun.using(module: "TrimUMIs")) +
         [
             FastQC.using(subdir:"trimmed"),
             (RUN_FASTQSCREEN ? FastqScreen : dontrun.using(module: "FastqScreen")),

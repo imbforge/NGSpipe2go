@@ -67,6 +67,7 @@ TRACKS=PROJECT + "/tracks"
 
 // optional pipeline stages to include
 REMOVE_DUPLICATES=false    // remove duplicate reads
+TRIM_UMIS=true             // trim UMIs from read starts and ends
 RUN_FASTQSCREEN=true       // check for contaminations using FastQ Screen
 RUN_MATUREMIRNA_ANALYSIS=true // set to false if no mature miRNAs should be analyzed
 RUN_IN_PAIRED_END_MODE=(ESSENTIAL_PAIRED == "yes") // no need to change this line
