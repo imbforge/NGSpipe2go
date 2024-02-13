@@ -7,7 +7,8 @@
 ESSENTIAL_PROJECT="/project/"
 ESSENTIAL_THREADS=4
 ESSENTIAL_SAMPLE_PREFIX=""
-ESSENTIAL_SMALLRNA="miRNA"     // type of smallRNA to be analyzed
+ESSENTIAL_SMALLRNA="miRNA"     // type of smallRNA to be analyzed (types of smallRNA with only few instances should not be analyzed separately
+                               //                                  since no proper normalization might be possible)
 
 // Mapping and annotation parameters
 ESSENTIAL_BOWTIE_REF="..../bowtie/1.1.2/..."
