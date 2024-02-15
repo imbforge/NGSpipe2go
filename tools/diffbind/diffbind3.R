@@ -45,7 +45,6 @@ run_custom_code <- function(x) {
 }
 
 args <- commandArgs(T)
-DIFFBINDVERSION  <- parseArgs(args,"diffbindversion=", 3, "as.numeric") # selected DiffBind version
 FTARGETS   <- parseArgs(args,"targets=","targets.txt")     # file describing the targets
 FCONTRASTS <- parseArgs(args,"contrasts=","contrasts_diffbind.txt") # file describing the contrasts
 CWD        <- parseArgs(args,"cwd=","./")     # current working directory
@@ -67,7 +66,7 @@ if(is.na(BACKGROUND)) {BACKGROUND <- parseArgs(args,"background=", "15000", "as.
 SUBSTRACTCONTROL<- parseArgs(args,"substractControl=", "FALSE", "as.character")  # subtract input
 CONDITIONCOLUMN <- parseArgs(args,"conditionColumn=", "group", "as.character") # this targets column is interpreted as 'Condition' and is used as for defining the default design
 FDR_TRESHOLD    <- parseArgs(args,"fdr_threshold=", 0.05, "as.numeric") # summits for re-centering consensus peaks
-FOLD       <- parseArgs(args,"fold=", 0, "as.numeric") # summits for re-centering consensus peaks
+LFC       <- parseArgs(args,"lfc=", 0, "as.numeric") # summits for re-centering consensus peaks
 ANNOTATE   <- parseArgs(args,"annotate=", FALSE, "as.logical") # annotate after DB analysis?
 PE         <- parseArgs(args,"pe=", FALSE, "as.logical")      # paired end experiment?
 TSS        <- parseArgs(args,"tss=", "c(-3000,3000)", "run_custom_code") # region around the tss
@@ -89,7 +88,7 @@ if(!is.numeric(SUMMITS))     stop("Summits is not numeric. Run with:\n",runstr)
 if(!is.numeric(FILTER))      stop("Filter threshold is not numeric. Run with:\n",runstr)
 if(!is.numeric(MINOVERLAP))  stop("minOverlap threshold is not numeric. Run with:\n",runstr)
 if(!is.numeric(FDR_TRESHOLD))      stop("FDR threshold is not numeric. Run with:\n",runstr)
-if(!is.numeric(FOLD))        stop("Fold threshold is not numeric. Run with:\n",runstr)
+if(!is.numeric(LFC))         stop("Log2 fold change threshold is not numeric. Run with:\n",runstr)
 if(!is.logical(ANNOTATE))    stop("Annotate not logical. Run with:\n",runstr)
 if(!is.logical(PE))          stop("Paired end (pe) not logical. Run with:\n",runstr)
 if(ANNOTATE & !is.numeric(TSS)) stop("Region around TSS not numeric. Run with:\n",runstr)
@@ -357,14 +356,14 @@ for (sub in unique(contsAll$sub_experiment)) {
       cont.name <- conts[cont,1]
   
       png(file.path(OUT, paste0(subexpPrefix, cont.name, "_ma_plot.png")), width = 150, height = 150, units = "mm", res=300)
-        try(dba.plotMA(db, contrast=cont, fold=FOLD))
+        try(dba.plotMA(db, contrast=cont, fold=LFC))
       dev.off()
       png(file.path(OUT, paste0(subexpPrefix, cont.name, "_boxplot_diff_sites.png")), width = 150, height = 150, units = "mm", res=300)
         try(dba.plotBox(db, contrast=cont))   # try, in case there are no significant peaks
       dev.off()
       png(file.path(OUT, paste0(subexpPrefix, cont.name, "_volcano_plot.png")), width = 150, height = 150, units = "mm", res=300)
         rep <- try(dba.report(db, contrast=cont, th=1)) # scale dot size by Conc (max dot size set to 4)
-        try(dba.plotVolcano(db, contrast=cont, fold=FOLD, dotSize=4*rep$Conc/max(rep$Conc)))
+        try(dba.plotVolcano(db, contrast=cont, fold=LFC, dotSize=4*rep$Conc/max(rep$Conc)))
       dev.off()
       png(file.path(OUT, paste0(subexpPrefix, cont.name, "_correlation_heatmap.png")), width = 150, height = 150, units = "mm", res=300)
         try(dba.plotHeatmap(db, contrast=cont))   # try, in case there are no significant peaks
@@ -390,8 +389,12 @@ for (sub in unique(contsAll$sub_experiment)) {
         }
       }
   
-      tryCatch(dba.report(db, contrast=cont, bCalled=T, bUsePval=F, th=1, fold=0), # th=db$config$th, fold=FOLD # filtering is done later
-                      error=function(e) NULL) # dba.report crashes if there is exactly 1 significant hit to report
+      tryCatch({
+        x=dba.report(db, contrast=cont, bCalled=T, bUsePval=F, th=1, fold=0) # th=db$config$th, fold=LFC # filtering is done later
+        colnames(mcols(x)) <- plyr::revalue(colnames(mcols(x)), c("Fold" = paste0("lfc_", cont.name), "FDR" = "BHadj_pvalue")) # rename column names
+        x <- x[,!colnames(mcols(x)) %in% c("p-value")] # remove column with unadjusted p-value
+        return(x)
+      }, error=function(e) NULL) # dba.report crashes if there is exactly 1 significant hit to report
       
     })
   
@@ -445,7 +448,7 @@ write.table(infodb, file=file.path(OUT, paste0(subexpPrefix, "info_dba_object.tx
   
 
   # create overview table with diffbind settings
-  diffbindSettings <- rbind(c(Parameter="DiffBind package version", Value=as.character(currentDiffbindVersion), Comment= paste(if(currentDiffbindVersion$major != floor(DIFFBINDVERSION)) {paste0("Major version not concordant with intended DiffBind v", DIFFBINDVERSION, ". Please check R module." )} else {""}, DiffBindWarningText)),
+  diffbindSettings <- rbind(c(Parameter="DiffBind package version", Value=as.character(currentDiffbindVersion), Comment=DiffBindWarningText),
                             c("external blacklist applied", isBlacklistFilt, if(isBlacklistFilt) {"MACS2 peak files have already been blacklist or greylist filtered"} else {""}),
                             c("Apply auto-generated blacklist", BLACKLIST, if(BLACKLIST){if(class(blacklist_generated)=="try-error") {"Skipped because blacklist not available."} else {"Blacklist successfully generatedand applied."}} else {""}),
                             c("Apply auto-generated greylist", GREYLIST, if(GREYLIST){if(class(greylist_generated)=="try-error") {"Skipped because greylist not available."} else {"Greylist successfully generated and applied."}} else {""}),
@@ -461,7 +464,7 @@ write.table(infodb, file=file.path(OUT, paste0(subexpPrefix, "info_dba_object.tx
                             c("Subtract control read counts", SUBSTRACTCONTROL, if(SUBSTRACTCONTROL=="default") {paste("set to", SUBSTRACTCONTROL_FINAL, "because greylist is", if(SUBSTRACTCONTROL_FINAL){"not"} else {""}, "available.")} else {""}),
                             c("Design", "contrast_diffbind.txt", paste(db$design, "(with", CONDITIONCOLUMN, "as Condition column).")),
                             c("FDR threshold", FDR_TRESHOLD, "significance threshold for differential binding analysis."),
-                            c("Fold threshold", FOLD, "log Fold threshold for differential binding analysis.")
+                            c("LFC threshold", LFC, "log2 fold change threshold for differential binding analysis.")
   )
   
 
@@ -471,11 +474,11 @@ result <- unlist(result, recursive = F) # flatten the nested list
 result <- lapply(result, as.data.frame)
 names(result) <- if(length(unique(contsAll$sub_experiment))>1) {paste0("SubExp_", contsAll$sub_experiment, "_", contsAll$contrast.name)} else {
   paste0(contsAll$contrast.name)
-} 
+}
 write.xlsx(result, file=paste0(OUT, "/diffbind_all_sites.xlsx"))
 result <- lapply(result, function(x) {
   tryCatch({
-    x[x$FDR<=db$config$th & abs(x$Fold)>=FOLD, ]   # filter result tables for significance
+    x[x$BHadj_pvalue<=db$config$th & abs(x[,grep("^lfc_", colnames(x))])>=LFC, ]   # filter result tables for significance
   }, error=function(e) x)
 })
 write.xlsx(result, file=paste0(OUT, "/diffbind.xlsx"))

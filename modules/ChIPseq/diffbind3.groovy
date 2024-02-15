@@ -9,7 +9,6 @@ diffbind3 = {
     output.dir = diffbind3_vars.outdir + "/$subdir"
 
     def DIFFBIND_FLAGS =
-        (diffbind3_vars.diffbindversion   ? " diffbindversion="   + diffbind3_vars.diffbindversion     : "") +
         (diffbind3_vars.targets           ? " targets="           + diffbind3_vars.targets             : "") +
         (diffbind3_vars.contrasts         ? " contrasts="         + diffbind3_vars.contrasts           : "") +
         (diffbind3_vars.cwd               ? " cwd="               + diffbind3_vars.cwd                 : "") +
@@ -30,7 +29,7 @@ diffbind3 = {
         (diffbind3_vars.substractControl  ? " substractControl="  + diffbind3_vars.substractControl    : "") +
         (diffbind3_vars.conditionColumn   ? " conditionColumn="   + diffbind3_vars.conditionColumn     : "") +
         (diffbind3_vars.fdr_threshold     ? " fdr_threshold="     + diffbind3_vars.fdr_threshold       : "") +
-        (diffbind3_vars.fold              ? " fold="              + diffbind3_vars.fold                : "") +
+        (diffbind3_vars.lfc               ? " lfc="               + diffbind3_vars.lfc                 : "") +
         (diffbind3_vars.annotate          ? " annotate="          + diffbind3_vars.annotate            : "") +
         (diffbind3_vars.tss               ? " tss="               + diffbind3_vars.tss                 : "") +
         (diffbind3_vars.txdb              ? " txdb="              + diffbind3_vars.txdb                : "") +
