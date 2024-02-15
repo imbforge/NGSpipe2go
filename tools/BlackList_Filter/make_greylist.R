@@ -67,10 +67,10 @@ MAXGAP     <- parseArgs(args,"maxgap=","10000", convert="as.numeric")
   for(i in control_files) { 
     cname <- gsub("\\..*$", "", basename(i))
     print(cname)
-    gl <- new("GreyList",karyoFile=KAR)
-    gl <- countReads(gl,bamFile=i)
-    gl <- calcThreshold(gl,reps=10,sampleSize=1000,p=0.99,cores=1)
-    gl <- makeGreyList(gl,maxGap=MAXGAP)
+    gl <- new("GreyList",karyoFile=KAR) # generating a tiling of the genome
+    gl <- countReads(gl,bamFile=i) # counting reads from a BAM file for the tiling
+    gl <- calcThreshold(gl,reps=100,sampleSize=30000,p=0.99,cores=1) # sampling from the counts and fitting the samples to the negative binomial distribution to calculate the read count threshold
+    gl <- makeGreyList(gl,maxGap=MAXGAP) # filtering the tiling to identify regions of high signal and create the greylist
     gl_controls[[cname]] <- gl@regions # extract the region GRanges from the greylist object
   }
   
