@@ -13,6 +13,9 @@
 ## PEAKS       # directory with peak caller output
 ## OUT         # prefix filename for output
 ## KAR         # file containing chromosome sizes for the reference genome of interest, one per line, as "chromName chromLength" pairs
+## REPS        # The number of times to sample bins and estimate the parameters of the negative binomial distribution
+## SAMPLESIZE  # The number of bins to sample on each repetition
+## pTHRESHOLD  # The p-value threshold for marking bins as “grey”
 ## MAXGAP      # If the distance between neighbouring grey regions is less than or equal to maxGap, the regions will be merged into one big region
 ##
 ######################################
@@ -41,7 +44,22 @@ PEAKS      <- parseArgs(args,"peaks=",paste0(CWD, "/results/macs2"))  # director
 BAMS       <- parseArgs(args,"bams=",paste0(CWD, "/mapped"))  # directory with the bam files
 OUT        <- parseArgs(args,"out=", paste0(CWD, "/results")) # directory where the output files will go
 KAR        <- parseArgs(args,"kar=","genome.fa.fai")
-MAXGAP     <- parseArgs(args,"maxgap=","10000", convert="as.numeric")
+REPS       <- parseArgs(args,"reps=",100, convert="as.numeric")
+SAMPLESIZE <- parseArgs(args,"sampleSize=",30000, convert="as.numeric")
+pTHRESHOLD <- parseArgs(args,"pThreshold=",0.99, convert="as.numeric")
+MAXGAP     <- parseArgs(args,"maxgap=",10000, convert="as.numeric")
+
+# check parameter
+print(paste("targets:", FTARGETS))
+print(paste("peaks:", PEAKS))
+print(paste("bams:", BAMS))
+print(paste("out:", OUT))
+print(paste("kar:", KAR))
+print(paste("reps:", REPS))
+print(paste("sampleSize:", SAMPLESIZE))
+print(paste("pThreshold:", pTHRESHOLD))
+print(paste("maxgap:", MAXGAP))
+cat("\n\n")
 
 
 #### pre-calculate greylist ###
@@ -54,7 +72,6 @@ MAXGAP     <- parseArgs(args,"maxgap=","10000", convert="as.numeric")
   # contains the full greylist to be applied. The other element, greylist$controls,
   # is a GRangesList containing the individual greylists computed for each of the control tracks  
 
-  
   targets <- read.delim(FTARGETS, head=T, colClasses="character", comment.char="#")
   # determine file suffixes for targets 
   donefiles <- list.files(PEAKS,pattern=".done$")
@@ -69,7 +86,7 @@ MAXGAP     <- parseArgs(args,"maxgap=","10000", convert="as.numeric")
     print(cname)
     gl <- new("GreyList",karyoFile=KAR) # generating a tiling of the genome
     gl <- countReads(gl,bamFile=i) # counting reads from a BAM file for the tiling
-    gl <- calcThreshold(gl,reps=100,sampleSize=30000,p=0.99,cores=1) # sampling from the counts and fitting the samples to the negative binomial distribution to calculate the read count threshold
+    gl <- calcThreshold(gl,reps=REPS, sampleSize=SAMPLESIZE, p=pTHRESHOLD, cores=1) # sampling from the counts and fitting the samples to the negative binomial distribution to calculate the read count threshold
     gl <- makeGreyList(gl,maxGap=MAXGAP) # filtering the tiling to identify regions of high signal and create the greylist
     gl_controls[[cname]] <- gl@regions # extract the region GRanges from the greylist object
   }

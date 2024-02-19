@@ -14,6 +14,9 @@ make_greylist = {
         (make_greylist_vars.bams              ? " bams="              + make_greylist_vars.bams                : "") +
         (make_greylist_vars.peaks             ? " peaks="             + make_greylist_vars.peaks + "/$subdir"  : "") +
         (make_greylist_vars.karyoFile         ? " kar="               + make_greylist_vars.karyoFile           : "") +
+        (make_greylist_vars.reps              ? " reps="              + make_greylist_vars.reps                : "") +
+        (make_greylist_vars.sampleSize        ? " sampleSize="        + make_greylist_vars.sampleSize          : "") +
+        (make_greylist_vars.pThreshold        ? " pThreshold="        + make_greylist_vars.pThreshold          : "") +
         (make_greylist_vars.maxgap            ? " maxgap="            + make_greylist_vars.maxgap              : "") +
         (make_greylist_vars.extra             ? " "                   + make_greylist_vars.extra               : "")
 
