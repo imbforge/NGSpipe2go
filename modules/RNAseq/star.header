@@ -23,3 +23,28 @@ STAR_vars=[
 
 load PIPELINE_ROOT + "/modules/RNAseq/star.groovy"
 
+// expected parameter types
+@TypeChecked
+class STAR_vars_schema {
+    String outdir          
+    String logdir          
+    String mm              
+    String mm_abs          
+    String unmapped_bam    
+    String attributes      
+    String threads         
+    String ref             
+    String overhang        
+    String gtf             
+    String paired          
+    Boolean filter_sec      
+    String samtools_threads
+    String extra           
+
+    // check for the presence of mandatory params
+    boolean asBoolean() {
+      outdir && ref
+    }
+}
+
+validate_schema(STAR_vars_schema, STAR_vars, "RNAseq:STAR")

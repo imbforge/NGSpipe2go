@@ -15,3 +15,26 @@ DE_DESeq2_vars=[
 
 load PIPELINE_ROOT + "/modules/smallRNAseq_BCF/deseq2.groovy"
 
+// expected parameter types
+@TypeChecked
+class DE_DESeq2_vars_schema {
+    String targets  
+    String contrasts
+    String filter   
+    String prefix   
+    String suffix   
+    String cwd      
+    String outdir   
+    String genes    
+    String pattern  
+    BigDecimal FDR      
+    Integer FC       
+    String extra    
+
+    // check for the presence of mandatory params
+    boolean asBoolean() {
+      targets && contrasts && FDR >= 0 && FDR <= 1 && FC > 0
+    }
+}
+
+validate_schema(DE_DESeq2_vars_schema, DE_DESeq2_vars, "smallRNAseq_BCF:DE_DESeq2")

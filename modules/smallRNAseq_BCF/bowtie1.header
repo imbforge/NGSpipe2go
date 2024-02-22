@@ -13,3 +13,24 @@ bowtie1_sRNA_vars=[
 
 load PIPELINE_ROOT + "/modules/smallRNAseq_BCF/bowtie1.groovy"
 
+// expected parameter types
+@TypeChecked
+class bowtie1_vars_schema {
+    String mapped
+    String logdir
+    String threads
+    String samtools_threads
+    String ref
+    String mm
+    String multireport
+    Boolean best
+    String quals
+    String extra
+
+    // check for the presence of mandatory params
+    boolean asBoolean() {
+      mapped && ref
+    }
+}
+
+validate_schema(bowtie1_vars_schema, bowtie1_vars, "smallRNAseq_BCF:bowtie1")

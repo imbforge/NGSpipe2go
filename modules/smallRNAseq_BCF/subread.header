@@ -12,3 +12,23 @@ subread_count_vars=[
 
 load PIPELINE_ROOT + "/modules/smallRNAseq_BCF/subread.groovy"
 
+// expected parameter types
+@TypeChecked
+class subread_count_vars_schema {
+    String outdir  
+    String stranded
+    Boolean count_multimapping   
+    Boolean count_ambiguous   
+    String feature   
+    String attribute      
+    String genesgtf   
+    String threads    
+    String extra    
+
+    // check for the presence of mandatory params
+    boolean asBoolean() {
+      outdir && genesgtf && stranded
+    }
+}
+
+validate_schema(subread_count_vars_schema, subread_count_vars, "smallRNAseq_BCF:subread_count")

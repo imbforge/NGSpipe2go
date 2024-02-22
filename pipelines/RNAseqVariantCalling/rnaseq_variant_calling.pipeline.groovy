@@ -6,6 +6,7 @@ load PIPELINE_ROOT + "/pipelines/RNAseqVariantCalling/essential.vars.groovy"
 load PIPELINE_ROOT + "/pipelines/RNAseqVariantCalling/tools.groovy"
 load PIPELINE_ROOT + "/config/preambles.groovy"
 load PIPELINE_ROOT + "/config/bpipe.config.groovy"
+load PIPELINE_ROOT + "/config/validate_module_params.groovy"
 
 load PIPELINE_ROOT + "/modules/NGS/bamindexer.header"
 load PIPELINE_ROOT + "/modules/RNAseqVariantCalling/star1pass.header"

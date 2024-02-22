@@ -11,3 +11,22 @@ macs2_vars=[
 
 load PIPELINE_ROOT + "/modules/ChIPseq/macs2.groovy"
 
+// expected parameter types
+@TypeChecked
+class macs2_vars_schema {
+    String outdir 
+    String targets
+    String gsize  
+    String minlen 
+    Boolean broad  
+    String mapped 
+    Boolean paired 
+    String extra  
+
+    // check for the presence of mandatory params
+    boolean asBoolean() {
+      outdir && targets && mapped
+    }
+}
+
+validate_schema(macs2_vars_schema, macs2_vars, "ChIPseq:macs2")

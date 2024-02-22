@@ -5,7 +5,7 @@ Cutadapt_vars=[
     adapter_sequence   : ESSENTIAL_ADAPTER_SEQUENCE,   // adapter to be trimmed off the 3' end (paired data: of the first read)
     minimum_overlap    : ESSENTIAL_MINADAPTEROVERLAP,  // minimal overlap of the read and the adapter for an adapter to be found (default 3)
     minimum_length_keep: ESSENTIAL_MINREADLENGTH,      // minimal length of reads to be kept
-    maximum_length_keep: (binding.hasVariable('ESSENTIAL_MAXREADLENGTH') ? ESSENTIAL_MAXREADLENGTH : ""),  // maximal length of reads to be kept
+    maximum_length_keep: (binding.hasVariable('ESSENTIAL_MAXREADLENGTH') ? Integer.toString(ESSENTIAL_MAXREADLENGTH) : ""),  // maximal length of reads to be kept
     qualitycutoff      : Integer.toString(ESSENTIAL_BASEQUALCUTOFF),  // threshold to trim low-quality ends from reads 
     nextseqtrim        : ESSENTIAL_NEXTSEQTRIM,        // accounts for terminal G bases during base quality trimming incorporated by faulty dark cycles observed with two-color chemistry (as in NextSeq) 
     errorrate          : "0.1",                        // maximum allowed error rate as value between 0 and 1 (default 0.1 =10%)
@@ -24,5 +24,25 @@ load PIPELINE_ROOT + "/modules/NGS/cutadapt.groovy"
 // --cut n        // Remove n bases from each read (first read only if paired). If n is positive, remove bases from the beginning; from the end otherwise. This is applied before adapter trimming.
 // -U 1           // Remove n bases from second read in a pair
 
+// expected parameter types
+@TypeChecked
+class Cutadapt_vars_schema {
+    String outdir             
+    String statsdir           
+    Boolean paired             
+    String adapter_sequence   
+    Integer minimum_overlap    
+    Integer minimum_length_keep
+    Integer maximum_length_keep
+    String qualitycutoff      
+    Boolean nextseqtrim        
+    String errorrate          
+    String extra              
 
+    // check for the presence of mandatory params
+    boolean asBoolean() {
+      outdir
+    }
+}
 
+validate_schema(Cutadapt_vars_schema, Cutadapt_vars, "NGS:Cutadapt")

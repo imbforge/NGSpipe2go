@@ -31,3 +31,43 @@ diffbind3_vars=[
 
 load PIPELINE_ROOT + "/modules/ChIPseq/diffbind3.groovy"
 
+// expected parameter types
+@TypeChecked
+class diffbind3_vars_schema {
+    Integer diffbindversion  
+    String targets          
+    String contrasts        
+    String cwd              
+    String outdir           
+    String bams             
+    String peaks            
+    String fragsize         
+    String cores            
+    Boolean blacklist        
+    Boolean greylist         
+    String summits          
+    String filter           
+    String minOverlap       
+    String analysisMethod   
+    String librarySize      
+    String normalization    
+    String background       
+    String substractControl 
+    String conditionColumn  
+    BigDecimal fdr_threshold    
+    Integer fold             
+    Boolean annotate         
+    String tss              
+    String txdb             
+    String annodb           
+    String genomedb         
+    Boolean paired           
+    String extra            
+
+    // check for the presence of mandatory params
+    boolean asBoolean() {
+      targets && contrasts && cwd && outdir && bams && peaks && fold >= 0 && fdr_threshold >= 0 && fdr_threshold <= 1
+    }
+}
+
+validate_schema(diffbind3_vars_schema, diffbind3_vars, "ChIPseq:diffbind3")

@@ -17,3 +17,28 @@ bowtie1_vars=[
 
 load PIPELINE_ROOT + "/modules/ChIPseq/bowtie1.groovy"
 
+// expected parameter types
+@TypeChecked
+class bowtie1_vars_schema {
+    String mapped
+    Boolean paired
+    String threads
+    String samtools_threads
+    String ref
+    String insert
+    String mm_seed
+    String maqerr
+    String multimap_mode
+    String multimap
+    Boolean best
+    String quals
+    String pe_vars
+    String extra
+
+    // check for the presence of mandatory params
+    boolean asBoolean() {
+      mapped && ref
+    }
+}
+
+validate_schema(bowtie1_vars_schema, bowtie1_vars, "ChIPseq:bowtie1")
