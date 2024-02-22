@@ -43,7 +43,7 @@ class diffbind3_vars_schema {
     String peaks            
     String fragsize         
     String cores            
-    Boolean blacklist        
+    String blacklist        
     Boolean greylist         
     String summits          
     String filter           
