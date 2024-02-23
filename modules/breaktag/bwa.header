@@ -22,7 +22,7 @@ class BWA_vars_schema {
 
     // check for the presence of mandatory params
     boolean asBoolean() {
-      outdir && ref
+      outdir && ref && minqual.toInteger() >= 0
     }
 }
 
