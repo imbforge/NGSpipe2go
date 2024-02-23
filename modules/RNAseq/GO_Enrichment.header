@@ -32,4 +32,4 @@ class GO_Enrichment_vars_schema {
     }
 }
 
-validate_schema(GO_Enrichment_vars_schema, GO_Enrichment_vars, "RNAseq:GO_Enrichment")
+validate_schema(GO_Enrichment_vars_schema, GO_Enrichment_vars)

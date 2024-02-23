@@ -30,4 +30,4 @@ class subread_count_vars_schema {
     }
 }
 
-validate_schema(subread_count_vars_schema, subread_count_vars, "smallRNAseq_BCF:subread_count")
+validate_schema(subread_count_vars_schema, subread_count_vars)

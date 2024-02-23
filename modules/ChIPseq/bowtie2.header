@@ -40,4 +40,4 @@ class bowtie2_vars_schema {
     }
 }
 
-validate_schema(bowtie2_vars_schema, bowtie2_vars, "ChIPseq:bowtie2")
+validate_schema(bowtie2_vars_schema, bowtie2_vars)

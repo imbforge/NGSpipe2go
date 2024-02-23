@@ -36,4 +36,4 @@ class DE_DESeq2_miRNAmature_vars_schema {
     }
 }
 
-validate_schema(DE_DESeq2_miRNAmature_vars_schema, DE_DESeq2_miRNAmature_vars, "smallRNAseq_BCF:DE_DESeq2_miRNAmature")
+validate_schema(DE_DESeq2_miRNAmature_vars_schema, DE_DESeq2_miRNAmature_vars)

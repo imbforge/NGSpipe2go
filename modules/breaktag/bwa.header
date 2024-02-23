@@ -26,4 +26,4 @@ class BWA_vars_schema {
     }
 }
 
-validate_schema(BWA_vars_schema, BWA_vars, "breaktag:bwa")
+validate_schema(BWA_vars_schema, BWA_vars)

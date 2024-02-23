@@ -44,4 +44,4 @@ class Cutadapt_vars_schema {
     }
 }
 
-validate_schema(Cutadapt_vars_schema, Cutadapt_vars, "NGS:Cutadapt")
+validate_schema(Cutadapt_vars_schema, Cutadapt_vars)

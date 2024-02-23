@@ -69,4 +69,4 @@ class diffbind3_vars_schema {
     }
 }
 
-validate_schema(diffbind3_vars_schema, diffbind3_vars, "ChIPseq:diffbind3")
+validate_schema(diffbind3_vars_schema, diffbind3_vars)

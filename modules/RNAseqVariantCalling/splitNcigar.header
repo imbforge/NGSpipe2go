@@ -28,4 +28,4 @@ class SplitNCigarReads_vars_schema {
     }
 }
 
-validate_schema(SplitNCigarReads_vars_schema, SplitNCigarReads_vars, "RNAseqVariantCalling:SplitNCigarReads")
+validate_schema(SplitNCigarReads_vars_schema, SplitNCigarReads_vars)

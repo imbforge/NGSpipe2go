@@ -18,4 +18,4 @@ class count_breaks_vars_schema {
     }
 }
 
-validate_schema(count_breaks_vars_schema, count_breaks_vars, "breaktag:count_breaks")
+validate_schema(count_breaks_vars_schema, count_breaks_vars)

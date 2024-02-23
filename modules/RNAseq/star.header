@@ -46,4 +46,4 @@ class STAR_vars_schema {
     }
 }
 
-validate_schema(STAR_vars_schema, STAR_vars, "RNAseq:STAR")
+validate_schema(STAR_vars_schema, STAR_vars)

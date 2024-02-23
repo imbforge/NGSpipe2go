@@ -29,4 +29,4 @@ class bamCoverage_vars_schema {
     }
 }
 
-validate_schema(bamCoverage_vars_schema, bamCoverage_vars, "NGS:bamCoverage")
+validate_schema(bamCoverage_vars_schema, bamCoverage_vars)

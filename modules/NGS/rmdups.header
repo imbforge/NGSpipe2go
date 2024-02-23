@@ -22,4 +22,4 @@ class RmDups_vars_schema {
     }
 }
 
-validate_schema(RmDups_vars_schema, RmDups_vars, "NGS:RmDups")
+validate_schema(RmDups_vars_schema, RmDups_vars)

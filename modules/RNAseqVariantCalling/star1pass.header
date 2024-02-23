@@ -34,4 +34,4 @@ class STAR_pe_vars_schema {
     }
 }
 
-validate_schema(STAR_pe_vars_schema, STAR_pe_vars, "RNAseqVariantCalling:STAR_pe")
+validate_schema(STAR_pe_vars_schema, STAR_pe_vars)

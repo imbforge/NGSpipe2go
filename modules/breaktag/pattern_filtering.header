@@ -18,4 +18,4 @@ class pattern_filtering_vars_schema {
     }
 }
 
-validate_schema(pattern_filtering_vars_schema, pattern_filtering_vars, "breaktag:pattern_filtering")
+validate_schema(pattern_filtering_vars_schema, pattern_filtering_vars)

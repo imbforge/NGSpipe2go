@@ -18,4 +18,4 @@ class extend_vars_schema {
     }
 }
 
-validate_schema(extend_vars_schema, extend_vars, "NGS:extend")
+validate_schema(extend_vars_schema, extend_vars)

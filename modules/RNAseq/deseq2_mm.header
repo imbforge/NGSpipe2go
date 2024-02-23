@@ -38,4 +38,4 @@ class DE_DESeq2_MM_vars_schema {
     }
 }
 
-validate_schema(DE_DESeq2_MM_vars_schema, DE_DESeq2_MM_vars, "RNAseq:DE_DESeq2_MM")
+validate_schema(DE_DESeq2_MM_vars_schema, DE_DESeq2_MM_vars)

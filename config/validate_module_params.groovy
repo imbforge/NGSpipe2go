@@ -4,7 +4,7 @@ class Ngspipe2goWrongTypeException extends Exception {
   }
 }
 
-Boolean validate_schema(Class Params, Map params, String module) {
+Boolean validate_schema(Class Params, Map params) {
   try {
     // validate parameter types against the schema
     p = Params.newInstance(params)
@@ -17,9 +17,9 @@ Boolean validate_schema(Class Params, Map params, String module) {
     // validate presence of mandatory parameters
     assert true == !!p
   } catch(Ngspipe2goWrongTypeException e) {
-    throw new RuntimeException("invalid parameter types in module ${module}\n${e}")
+    throw new RuntimeException("invalid parameter types\n${e}")
   } catch(AssertionError e) {
-    throw new RuntimeException("mandatory arguments missing or invalid in module ${module}")
+    throw new RuntimeException("mandatory arguments missing or invalid")
   }
   return true
 }

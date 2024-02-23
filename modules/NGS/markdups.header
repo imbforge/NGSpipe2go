@@ -22,4 +22,4 @@ class MarkDups_vars_schema {
     }
 }
 
-validate_schema(MarkDups_vars_schema, MarkDups_vars, "NGS:MarkDups")
+validate_schema(MarkDups_vars_schema, MarkDups_vars)

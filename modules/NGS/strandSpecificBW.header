@@ -28,4 +28,4 @@ class strandBigWig_vars_schema {
     }
 }
 
-validate_schema(strandBigWig_vars_schema, strandBigWig_vars, "NGS:strandBigWig")
+validate_schema(strandBigWig_vars_schema, strandBigWig_vars)

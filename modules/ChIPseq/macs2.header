@@ -28,4 +28,4 @@ class macs2_vars_schema {
     }
 }
 
-validate_schema(macs2_vars_schema, macs2_vars, "ChIPseq:macs2")
+validate_schema(macs2_vars_schema, macs2_vars)

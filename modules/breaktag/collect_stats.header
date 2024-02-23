@@ -14,4 +14,4 @@ class collect_stats_vars_schema {
     }
 }
 
-validate_schema(collect_stats_vars_schema, collect_stats_vars, "breaktag:collect_stats")
+validate_schema(collect_stats_vars_schema, collect_stats_vars)

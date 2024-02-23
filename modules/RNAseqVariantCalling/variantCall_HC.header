@@ -26,4 +26,4 @@ class VariantCallHC_vars_schema {
     }
 }
 
-validate_schema(VariantCallHC_vars_schema, VariantCallHC_vars, "RNAseqVariantCalling:VariantCallHC")
+validate_schema(VariantCallHC_vars_schema, VariantCallHC_vars)

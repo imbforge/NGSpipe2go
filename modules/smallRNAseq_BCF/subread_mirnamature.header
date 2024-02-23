@@ -28,4 +28,4 @@ class subread_miRNAmature_count_vars_schema {
     }
 }
 
-validate_schema(subread_miRNAmature_count_vars_schema, subread_miRNAmature_count_vars, "smallRNAseq_BCF:subread_miRNAmature_count")
+validate_schema(subread_miRNAmature_count_vars_schema, subread_miRNAmature_count_vars)
