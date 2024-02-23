@@ -19,7 +19,7 @@ Boolean validate_schema(Class Params, Map params, String module) {
   } catch(Ngspipe2goWrongTypeException e) {
     throw new RuntimeException("invalid parameter types in module ${module}\n${e}")
   } catch(AssertionError e) {
-    throw new RuntimeException("mandatory arguments missing in module ${module}")
+    throw new RuntimeException("mandatory arguments missing or invalid in module ${module}")
   }
   return true
 }
