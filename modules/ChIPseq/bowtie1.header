@@ -18,7 +18,6 @@ bowtie1_vars=[
 load PIPELINE_ROOT + "/modules/ChIPseq/bowtie1.groovy"
 
 // expected parameter types
-@TypeChecked
 class bowtie1_vars_schema {
     String mapped
     Boolean paired

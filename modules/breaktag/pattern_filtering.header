@@ -7,7 +7,6 @@ pattern_filtering_vars=[
 load  PIPELINE_ROOT + "/modules/breaktag/pattern_filtering.groovy"
 
 // expected parameter types
-@TypeChecked
 class pattern_filtering_vars_schema {
     String outdir
     Boolean paired

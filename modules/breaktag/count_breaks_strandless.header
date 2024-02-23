@@ -5,7 +5,6 @@ count_breaks_strandless_vars=[
 load  PIPELINE_ROOT + "/modules/breaktag/count_breaks_strandless.groovy"
 
 // expected parameter types
-@TypeChecked
 class count_breaks_strandless_vars_schema {
     String outdir
 

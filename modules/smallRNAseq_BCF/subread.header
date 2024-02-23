@@ -13,7 +13,6 @@ subread_count_vars=[
 load PIPELINE_ROOT + "/modules/smallRNAseq_BCF/subread.groovy"
 
 // expected parameter types
-@TypeChecked
 class subread_count_vars_schema {
     String outdir  
     String stranded

@@ -12,7 +12,6 @@ strandBigWig_vars=[
 load PIPELINE_ROOT + "/modules/NGS/strandSpecificBW.groovy"
 
 // expected parameter types
-@TypeChecked
 class strandBigWig_vars_schema {
     String outdir               
     String threads              

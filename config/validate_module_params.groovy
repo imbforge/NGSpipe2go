@@ -1,5 +1,3 @@
-import groovy.transform.*
-
 class Ngspipe2goWrongTypeException extends Exception {
   Ngspipe2goWrongTypeException(String message) {
     super(message)
@@ -9,7 +7,7 @@ class Ngspipe2goWrongTypeException extends Exception {
 Boolean validate_schema(Class Params, Map params, String module) {
   try {
     // validate parameter types against the schema
-    Params p = Params.newInstance(params)
+    p = Params.newInstance(params)
     params.each{ k, v -> 
       if(p[k].getClass() != params[k].getClass()) {
         String message = "param ${k} is ${params[k].getClass()} instead of ${p[k].getClass()}"

@@ -11,7 +11,6 @@ MarkDups_vars=[
 load PIPELINE_ROOT + "/modules/RNAseqVariantCalling/mark_dups.groovy"
 
 // expected parameter types
-@TypeChecked
 class MarkDups_vars_schema {
     String outdir
     String java_flags

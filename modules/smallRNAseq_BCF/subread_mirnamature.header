@@ -12,7 +12,6 @@ subread_miRNAmature_count_vars=[
 load PIPELINE_ROOT + "/modules/smallRNAseq_BCF/subread_mirnamature.groovy"
 
 // expected parameter types
-@TypeChecked
 class subread_miRNAmature_count_vars_schema {
     String outdir  
     String stranded

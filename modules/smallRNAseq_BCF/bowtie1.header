@@ -14,7 +14,6 @@ bowtie1_sRNA_vars=[
 load PIPELINE_ROOT + "/modules/smallRNAseq_BCF/bowtie1.groovy"
 
 // expected parameter types
-@TypeChecked
 class bowtie1_vars_schema {
     String mapped
     String logdir

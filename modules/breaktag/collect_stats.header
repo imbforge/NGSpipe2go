@@ -5,7 +5,6 @@ collect_stats_vars=[
 load  PIPELINE_ROOT + "/modules/breaktag/collect_stats.groovy"
 
 // expected parameter types
-@TypeChecked
 class collect_stats_vars_schema {
     String outdir
 

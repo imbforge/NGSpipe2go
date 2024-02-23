@@ -16,7 +16,6 @@ DE_DESeq2_miRNAmature_vars=[
 load PIPELINE_ROOT + "/modules/smallRNAseq_BCF/deseq2_mirnamature.groovy"
 
 // expected parameter types
-@TypeChecked
 class DE_DESeq2_miRNAmature_vars_schema {
     String targets  
     String contrasts
