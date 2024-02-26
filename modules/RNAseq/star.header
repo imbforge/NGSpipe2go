@@ -35,7 +35,7 @@ class STAR_vars_schema {
     String ref             
     String overhang        
     String gtf             
-    String paired          
+    Boolean paired          
     Boolean filter_sec      
     String samtools_threads
     String extra           

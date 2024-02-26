@@ -32,7 +32,7 @@ class Cutadapt_vars_schema {
     String adapter_sequence   
     Integer minimum_overlap    
     Integer minimum_length_keep
-    Integer maximum_length_keep
+    String maximum_length_keep
     String qualitycutoff      
     Boolean nextseqtrim        
     String errorrate          
