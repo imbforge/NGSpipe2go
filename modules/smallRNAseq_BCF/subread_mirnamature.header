@@ -11,3 +11,21 @@ subread_miRNAmature_count_vars=[
 
 load PIPELINE_ROOT + "/modules/smallRNAseq_BCF/subread_mirnamature.groovy"
 
+// expected parameter types
+class subread_miRNAmature_count_vars_schema {
+    String outdir  
+    String stranded
+    Boolean count_multimapping   
+    String feature   
+    String attribute      
+    String genesgff   
+    String threads    
+    String extra    
+
+    // check for the presence of mandatory params
+    boolean asBoolean() {
+      outdir && genesgff && stranded
+    }
+}
+
+validate_schema(subread_miRNAmature_count_vars_schema, subread_miRNAmature_count_vars)

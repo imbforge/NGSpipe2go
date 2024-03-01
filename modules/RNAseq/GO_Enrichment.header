@@ -12,3 +12,24 @@ GO_Enrichment_vars=[
 ]
 
 load PIPELINE_ROOT + "/modules/RNAseq/GO_Enrichment.groovy"
+
+// expected parameter types
+class GO_Enrichment_vars_schema {
+    String rdata   
+    String log2fold
+    BigDecimal padj    
+    String org     
+    String univ    
+    String type    
+    String category
+    String outdir  
+    String cores   
+    String extra   
+
+    // check for the presence of mandatory params
+    boolean asBoolean() {
+      outdir && padj >= 0 && padj <= 1
+    }
+}
+
+validate_schema(GO_Enrichment_vars_schema, GO_Enrichment_vars)
