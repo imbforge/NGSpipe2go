@@ -6,3 +6,16 @@ count_breaks_vars=[
 
 load  PIPELINE_ROOT + "/modules/breaktag/count_breaks.groovy"
 
+// expected parameter types
+class count_breaks_vars_schema {
+    String outdir
+    Boolean paired
+    String threads
+
+    // check for the presence of mandatory params
+    boolean asBoolean() {
+      outdir
+    }
+}
+
+validate_schema(count_breaks_vars_schema, count_breaks_vars)

@@ -28,9 +28,9 @@ ESSENTIAL_READLENGTH="75"             // actual read length in original raw data
 ESSENTIAL_UMI_LENGTH_LEFT="4"         // length (bp) of left UMI (in case of no UMIs, please set TRIM_UMIS=false and do NOT set ESSENTIAL_UMI_LENGTH_LEFT="0")
 ESSENTIAL_UMI_LENGTH_RIGHT="4"        // length (bp) of right UMI (in case of no UMIs, please set TRIM_UMIS=false and do NOT set ESSENTIAL_UMI_LENGTH_RIGHT="0")
 ESSENTIAL_MINREADLENGTH_EXCL_UMI="18" // remaining read length excl UMIs
-ESSENTIAL_MINREADLENGTH=Integer.toString(ESSENTIAL_MINREADLENGTH_EXCL_UMI.toInteger() + ESSENTIAL_UMI_LENGTH_LEFT.toInteger() + ESSENTIAL_UMI_LENGTH_RIGHT.toInteger()) // remaining read length plus UMIs 
-ESSENTIAL_MINADAPTEROVERLAP="5"       // minimal overlap with adapter
-ESSENTIAL_MAXREADLENGTH=Integer.toString(ESSENTIAL_READLENGTH.toInteger() - ESSENTIAL_MINADAPTEROVERLAP.toInteger()) // maximal read length to keep (all w/o adapter are discarded)
+ESSENTIAL_MINREADLENGTH=ESSENTIAL_MINREADLENGTH_EXCL_UMI.toInteger() + ESSENTIAL_UMI_LENGTH_LEFT.toInteger() + ESSENTIAL_UMI_LENGTH_RIGHT.toInteger() // remaining read length plus UMIs
+ESSENTIAL_MINADAPTEROVERLAP=5       // minimal overlap with adapter
+ESSENTIAL_MAXREADLENGTH=ESSENTIAL_READLENGTH.toInteger() - ESSENTIAL_MINADAPTEROVERLAP.toInteger() // maximal read length to keep (all w/o adapter are discarded)
                                                                                                                      // this parameter needs to changed in case of long smallRNAs, 
                                                                                                                      // which might not reach the adapter or second UMIs
 // Cutadapt recommends using full length adapter sequences since adapter fragments might occur in the genome
@@ -43,8 +43,8 @@ ESSENTIAL_MINIMAL_QUAL="20"    // all reads with any base quality below this val
                                // (this parameter needs to adjusted in case of long smallRNAs, which can tolerate few bases with low sequence quality)
 
 // DESeq2 specific parameters 
-ESSENTIAL_DESEQ2_FDR="0.01"    // FDR significance cutoff in the DESeq2 model (may be increased for noisy or underpowered datasets) 
-ESSENTIAL_DESEQ2_FC="1"        // optional Fold-Change cutoff to incorporate into the DESeq2 model (default "FC=1" means no Fold-Change filter is used) 
+ESSENTIAL_DESEQ2_FDR=0.01    // FDR significance cutoff in the DESeq2 model (may be increased for noisy or underpowered datasets) 
+ESSENTIAL_DESEQ2_FC=1        // optional Fold-Change cutoff to incorporate into the DESeq2 model (default "FC=1" means no Fold-Change filter is used) 
 // Using FC threshold in the DESeq2 model is usually more conservative than post-hoc gene filtering by FC (which should anyway be avoided, see https://doi.org/10.1093/bib/bbab053) 
 
 // FASTQ-Screen parameters
