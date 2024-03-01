@@ -20,6 +20,8 @@ Boolean validate_schema(Class Params, Map params) {
     throw new RuntimeException("invalid parameter types\n${e}")
   } catch(AssertionError e) {
     throw new RuntimeException("mandatory arguments missing or invalid")
+  } catch(Exception e) {
+    throw new RuntimeException("invalid parameter types\n${e}")
   }
   return true
 }
