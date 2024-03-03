@@ -6,6 +6,7 @@ load PIPELINE_ROOT + "/pipelines/breaktag/essential.vars.groovy"
 load PIPELINE_ROOT + "/pipelines/breaktag/tools.groovy"
 load PIPELINE_ROOT + "/config/preambles.groovy"
 load PIPELINE_ROOT + "/config/bpipe.config.groovy"
+load PIPELINE_ROOT + "/config/validate_module_params.groovy"
 
 load PIPELINE_ROOT + "/modules/breaktag/pattern_filtering.header"
 load PIPELINE_ROOT + "/modules/breaktag/bwa.header"
@@ -15,7 +16,6 @@ load PIPELINE_ROOT + "/modules/breaktag/collect_stats.header"
 load PIPELINE_ROOT + "/modules/NGS/fastqc.header"
 load PIPELINE_ROOT + "/modules/NGS/multiqc.header"
 load PIPELINE_ROOT + "/modules/miscellaneous/collect_tool_versions.header"
-
 
 //MAIN PIPELINE TASK
 dontrun = { println "didn't run $module" }

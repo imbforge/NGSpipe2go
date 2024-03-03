@@ -1,6 +1,6 @@
 GO_Enrichment_vars=[
     rdata   : DE_DESeq2_vars.outdir,
-    log2fold: Math.log(ESSENTIAL_DESEQ2_FC)/Math.log(2),
+    log2fold: Double.toString(Math.log(ESSENTIAL_DESEQ2_FC)/Math.log(2)),
     padj    : ESSENTIAL_DESEQ2_FDR,
     org     : ESSENTIAL_ORG,
     univ    : "expressed",
@@ -12,3 +12,24 @@ GO_Enrichment_vars=[
 ]
 
 load PIPELINE_ROOT + "/modules/RNAseq/GO_Enrichment.groovy"
+
+// expected parameter types
+class GO_Enrichment_vars_schema {
+    String rdata   
+    String log2fold
+    BigDecimal padj    
+    String org     
+    String univ    
+    String type    
+    String category
+    String outdir  
+    String cores   
+    String extra   
+
+    // check for the presence of mandatory params
+    boolean asBoolean() {
+      outdir && padj >= 0 && padj <= 1
+    }
+}
+
+validate_schema(GO_Enrichment_vars_schema, GO_Enrichment_vars)

@@ -7,11 +7,16 @@ shinyReports = {
 
     output.dir = REPORTS
 
+    // bowtie needed here to extract the version (which might differ from how it is referred to in tools.groovy)
+    def TOOL_ENV = prepare_tool_env("bowtie", tools["bowtie"]["version"], tools["bowtie"]["runenv"])
     def PREAMBLE = get_preamble(stage:stageName, outdir:output.dir, input:new File(input1.prefix).getName())
 
     produce("shinyReports.txt") {
         exec """
+            ${TOOL_ENV} &&
             ${PREAMBLE} &&
+
+            BOWTIE_VERSION=\$(bowtie --version | head -n1 | awk 'BEGIN{FS=" "}{print \$NF}') &&
 
             cp ${PIPELINE_ROOT}/tools/reports/shiny_smallrnaseq_reporting_tool/smallRNA.shinyrep.helpers.R ${output.dir}   &&
             cp ${PIPELINE_ROOT}/tools/reports/shiny_smallrnaseq_reporting_tool/styles.css ${output.dir}              &&
@@ -77,7 +82,8 @@ shinyReports = {
             echo "SHINYREPS_DE_DESEQ_FDR=${shinyReports_vars.de_deseq_FDR}"       >> $output &&
             echo "SHINYREPS_DE_DESEQ_FC=${shinyReports_vars.de_deseq_FC}"         >> $output &&
             echo "SHINYREPS_GENETYPE=${shinyReports_vars.feature_type}"           >> $output &&
-            echo "SHINYREPS_SMALLRNATYPE=${shinyReports_vars.smallrna_type}"      >> $output 
+            echo "SHINYREPS_SMALLRNATYPE=${shinyReports_vars.smallrna_type}"      >> $output &&
+            echo "SHINYREPS_BOWTIE_VERSION=\${BOWTIE_VERSION}"                    >> $output
         ""","shinyReports"
     }
 }

@@ -21,6 +21,7 @@
 def conda_tools       = "/fsimb/common/conda_tools"
 def conda_call        = "module try-load conda &&"  
 def singularity_tools = "/fsimb/common/singularity_tools"
+def shpc_call         = "module try-load shpc &&"
 
 // default runenvs and versions for each tools.
 // Names should match those of tools_envs
@@ -45,7 +46,7 @@ tools_defaults = [
     gatk           : [ runenv: "lmod", version: "4.2.5.0"           ],
     htseq          : [ runenv: "lmod", version: "0.6.1"             ],
     java           : [ runenv: "lmod", version: "1.8"               ],
-    kentutils      : [ runenv: "lmod", version: "v365"              ],
+    kentutils      : [ runenv: "lmod", version: "v385"              ],
     macs2          : [ runenv: "lmod", version: "2.1.2"             ],
     mirdeep2       : [ runenv: "lmod", version: "2.0.0.8"           ],
     multiqc        : [ runenv: "lmod", version: "1.9"               ],
@@ -90,6 +91,18 @@ tools_envs = [
         ],
         "R/Bioconductor_3.14_singularity" : [
             lmod: "module load R/Bioconductor_3.14_singularity"
+        ],
+        "R/Bioconductor_3.15_singularity" : [
+            lmod: "module load R/Bioconductor_3.15_singularity"
+        ],
+        "R/Bioconductor_3.16_singularity" : [
+            lmod: "module load R/Bioconductor_3.16_singularity"
+        ],
+        "bioconductor/3.17" : [
+            shpc: "${shpc_call} module load bioconductor/3.17"
+        ],
+        "bioconductor/3.18" : [
+            shpc: "${shpc_call} module load bioconductor/3.18"
         ]
     ],
     bamqc: [
@@ -244,6 +257,9 @@ tools_envs = [
         ],
         "v365": [
             lmod: "module load kentUtils/v365"
+        ],
+        "v385": [
+            lmod: "module load kentUtils/v385"
         ]
     ],
     macs2: [

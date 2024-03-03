@@ -3,10 +3,27 @@ VariantCallHC_vars=[
     java_flags    : "-Xmx2400m",
     gatk_ref      : ESSENTIAL_GENOME_REF,
     vcf_ref       : ESSENTIAL_VCF_REF,
-    threads       : ESSENTIAL_THREADS,
+    threads       : Integer.toString(ESSENTIAL_THREADS),
     min_score_call: 20,
     min_score_emit: 20
 ]
 
 load PIPELINE_ROOT + "/modules/RNAseqVariantCalling/variantCall_HC.groovy"
 
+// expected parameter types
+class VariantCallHC_vars_schema {
+    String outdir
+    String java_flags
+    String gatk_ref      
+    String vcf_ref       
+    String threads       
+    Integer min_score_call
+    Integer min_score_emit
+
+    // check for the presence of mandatory params
+    boolean asBoolean() {
+      outdir && min_score_call >= 0 && min_score_emit >= 0
+    }
+}
+
+validate_schema(VariantCallHC_vars_schema, VariantCallHC_vars)

@@ -6,6 +6,7 @@ load PIPELINE_ROOT + "/pipelines/smallRNAseq_BCF/smallrnaseq.essential.vars.groo
 load PIPELINE_ROOT + "/pipelines/smallRNAseq_BCF/tools.groovy"
 load PIPELINE_ROOT + "/config/preambles.groovy"
 load PIPELINE_ROOT + "/config/bpipe.config.groovy"
+load PIPELINE_ROOT + "/config/validate_module_params.groovy"
 
 load PIPELINE_ROOT + "/modules/NGS/bamcoverage.header"
 load PIPELINE_ROOT + "/modules/NGS/bamindexer.header"
@@ -38,7 +39,7 @@ run {
     "%.fastq.gz" * 
     [
         FastQC.using(subdir:"raw") ,
-        Cutadapt + FastQQualityFilter + (REMOVE_DUPLICATES ? FilterDuplicates : dontrun.using(module: "FilterDuplicates")) + TrimUMIs +
+        Cutadapt + FastQQualityFilter + (REMOVE_DUPLICATES ? FilterDuplicates : dontrun.using(module: "FilterDuplicates")) + (TRIM_UMIS ? TrimUMIs : dontrun.using(module: "TrimUMIs")) +
         [
             FastQC.using(subdir:"trimmed"),
             (RUN_FASTQSCREEN ? FastqScreen : dontrun.using(module: "FastqScreen")),

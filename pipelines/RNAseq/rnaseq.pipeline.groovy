@@ -6,6 +6,7 @@ load PIPELINE_ROOT + "/pipelines/RNAseq/essential.vars.groovy"
 load PIPELINE_ROOT + "/pipelines/RNAseq/tools.groovy"
 load PIPELINE_ROOT + "/config/preambles.groovy"
 load PIPELINE_ROOT + "/config/bpipe.config.groovy"
+load PIPELINE_ROOT + "/config/validate_module_params.groovy"
 
 load PIPELINE_ROOT + "/modules/NGS/bam2bw.header"
 load PIPELINE_ROOT + "/modules/NGS/bamcoverage.header"

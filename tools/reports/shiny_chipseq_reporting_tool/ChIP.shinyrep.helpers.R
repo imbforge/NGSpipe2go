@@ -1513,6 +1513,7 @@ ChIPhelper.Trackhub <- function() {
   }
 }
 
+
 ##
 ## ChIPhelper.diffbind
 ##
@@ -1524,7 +1525,7 @@ ChIPhelper.diffbind <- function(subdir="") {
     resContrasts <- names(resAll)
     diffbindSettings <- read.table(file.path(SHINYREPS_DIFFBIND, subdir, "diffbind_settings.txt"), header=T, sep="\t", stringsAsFactors = F)
     fdr_threshold  <- diffbindSettings[diffbindSettings$Parameter=="FDR threshold", "Value"]
-    fold_threshold <- diffbindSettings[diffbindSettings$Parameter=="Fold threshold", "Value"]
+    fold_threshold <- diffbindSettings[diffbindSettings$Parameter=="LFC threshold", "Value"]
     
     SHINYREPS_PLOTS_COLUMN <- tryCatch(as.integer(SHINYREPS_PLOTS_COLUMN),error=function(e){3})
     if(SHINYREPS_PLOTS_COLUMN > 3) {
@@ -1598,18 +1599,17 @@ ChIPhelper.diffbind <- function(subdir="") {
         if(nrow(res[[cont]])>=1) {
           
           res_table <- res[[cont]][,names(res[[cont]]) %in% c("seqnames",	"start", "end", "width", "strand", "Conc",
-                                                              "Fold", "p.value", "FDR", "annotation", "geneId", "distanceToTSS")]
+                                                              paste0("lfc_", names(res)[cont]), "BHadj_pvalue", "annotation", "geneId", "distanceToTSS")]
           
           cat(knitr::kable(res_table[1:min(nrow(res[[cont]]), maxTableEntries),], format="html") %>% kableExtra::kable_styling(),sep="\n")
           # DT::datatable(res_table)
           
           cat("\nThe 'Conc' column of the result table shows the mean read concentration over all the samples 
                (the default calculation uses log2 normalized ChIP read counts with control read counts subtracted).
-               The 'Fold' column indicates the difference in mean concentrations between the two groups of the contrast,
+               The 'lfc_contrast.name' column indicates the log fold changes between the two groups of the contrast,
                with a positive value indicating increased binding affinity in group1 and a negative value indicating 
                increased binding affinity in group2. The additional columns give gene annotation data and confidence 
-               measures for identifying these sites as differentially bound, with a raw p-value and a multiple testing 
-               corrected FDR.\n")
+               measures for identifying these sites as differentially bound, with a p-value corrected for multiple testing.\n")
           
           # plots for 2nd panel 
           cat("\n\n")   
@@ -1634,7 +1634,7 @@ ChIPhelper.diffbind <- function(subdir="") {
           opar <- par(mfrow=c(ceiling(numberOfPlots/COLUMNS), COLUMNS))
           try(dba.plotMA(db, contrast=cont, cex.main=0.8))  # col.main="white"  
           
-          hist(res[[cont]]$Fold, main="", xlab="log fold change", ylab="number of significant peaks", col="grey")
+          hist(res[[cont]][,paste0("lfc_", names(res)[cont])], main="", xlab="log2 fold change", ylab="number of significant peaks", col="grey")
           abline(v=0, lty=2, col="blue")
           
           if(tolower(SHINYREPS_DB) %in% registered_UCSC_genomes()$genome) {
@@ -1647,7 +1647,7 @@ ChIPhelper.diffbind <- function(subdir="") {
             # barplot(freq, horiz=TRUE, las=1, xlab="number of significant peaks") # absolute sign peaks count instead of normalized count
           }
           
-          # plot(res[[cont]]$Conc, res[[cont]]$Fold, main="", xlab="log read concentration", ylab="log fold change") 
+          # plot(res[[cont]]$Conc, res[[cont]][,paste0("lfc_", names(res)[cont])], main="", xlab="log read concentration", ylab="log fold change") 
           # abline(h=0, lty=2, col="blue") # is basically a MA plot showing significant peaks only. Replaced by regular MA plot.
           par(opar)
           
@@ -1665,7 +1665,6 @@ ChIPhelper.diffbind <- function(subdir="") {
     } # end loop subexpPrefix  
   }, error=function(e) cat("Differential binding analysis not available.\n", fill=TRUE))
 }
-
 
 
 ##

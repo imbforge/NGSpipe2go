@@ -11,7 +11,7 @@
 //     studying some types of repetitive regions (keep ESSENTIAL_DUP="auto" for MACS2 peak calling).
 
 // General parameters
-ESSENTIAL_PROJECT="/fsimb/groups/imb-bioinfocf/projects/cfb_internal/bpipe/chipseq_test"
+ESSENTIAL_PROJECT="/project"   // full project directory path
 ESSENTIAL_THREADS=4            // number of threads for parallel tasks
 ESSENTIAL_SAMPLE_PREFIX=""     // sample name prefix to be trimmed in the results and reports
 
@@ -27,7 +27,6 @@ ESSENTIAL_FRAGMENT_USAGE="yes" // should fragments be reconstituted for generati
 ESSENTIAL_DEDUPLICATION=(ESSENTIAL_PAIRED == "yes") // remove duplicated reads in the filtered branch of the pipeline for paired-end but not for single-end data (may need to be changed in case of ultra-deep PE sequencing of small genomes).  
 ESSENTIAL_BAMCOVERAGE="--binSize 10 --normalizeUsing CPM"  // deepTools options for making normalised bigWig tracks
 
-
 // Annotation parameters
 ESSENTIAL_BSGENOME="BSgenome.Mmusculus.UCSC.mm10"  // Bioconductor genome reference used by some modules
 ESSENTIAL_TXDB="TxDb.Mmusculus.UCSC.mm10.knownGene" // needed for peak annotation
@@ -35,28 +34,43 @@ ESSENTIAL_ANNODB="org.Mm.eg.db"                    // needed for peak annotation
 ESSENTIAL_DB="mm10"            // UCSC assembly version for GREAT analysis (only for UCSC hg19, hg38, mm9 and mm10)
 ESSENTIAL_BLACKLIST="/fsimb/common/genomes/mus_musculus/ucsc/mm10/full/annotation/mm10.blacklist.bed"
 
+// FASTQ-Screen parameters
+ESSENTIAL_FASTQSCREEN_PERC=1    // contaminant filter, if a contaminant is consuming at least this percentage of reads in at least one sample, contaminant will be shown in report
+ESSENTIAL_FASTQSCREEN_GENOME="Mouse::/fsimb/common/genomes/mus_musculus/ensembl/grcm38/canonical/index/bowtie2/Mus_musculus.GRCm38.dna.primary_assembly"  //bowtie2 reference for the genome the samples are from, this is used for the fastqscreen
+ESSENTIAL_FASTQSCREEN=ESSENTIAL_FASTQSCREEN_GENOME + ",PHIX::/fsimb/common/genomes/phix/19930428/NCBI/index/bowtie2/2.3.4.3/ncbi_phix,ERCC::/fsimb/common/genomes/ERCC/index/bowtie2/2.3.4.3/ERCC92,rRNA::/fsimb/common/genomes/contaminants/fastqscreen_references/rrna/v1/index/bowtie2/2.3.4.3/hs_mm_ce_dm_rn_dr_xt_rRNA,Mycoplasma::/fsimb/common/genomes/contaminants/fastqscreen_references/mycoplasma/v1/index/bowtie2/2.3.4.3/mycoplasma_all_ref,E.coli::/fsimb/common/genomes/Escherichia_coli/ensembl/full/index/bowtie2/Escherichia_coli_str_k_12_substr_dh10b.ASM1942v1.31.dna.genome,B.taurus::/fsimb/common/genomes/bos_taurus/ensembl/3.1/full/index/bowtie2/2.2.9/UMD3.1" //references for fastqscreen to use if run, this are our standard references please include yours 
+
 
 // Adapter trimming with Cutadapt (optional). Usually not needed when the reads are much shorter than the library inserts.
+// Cutadapt recommends using full length adapter sequences since adapter fragments might occur in the genome
 RUN_CUTADAPT=false
 ESSENTIAL_ADAPTER_SEQUENCE="Illumina=CTGTCTCTTATACACATCT" // standard sequence to trim illumina reads 
 ESSENTIAL_MINADAPTEROVERLAP=3  // minimal overlap of the read and the adapter for an adapter to be found (default 3)
 ESSENTIAL_MINREADLENGTH=20     // minimal length of reads to be kept
+ESSENTIAL_BASEQUALCUTOFF=20    // trim low-quality ends from reads (if nextseqtrim is true, qualities of terminal G bases are ignored)  
+ESSENTIAL_NEXTSEQTRIM=true     // accounts for terminal G bases during base quality trimming incorporated by faulty dark cycles observed with two-color chemistry (as in NextSeq) 
 
 // Peak calling with MACS2
 ESSENTIAL_MACS2_BROAD=false    // use "true" for broad peak calling in MACS2 (default: "false")
 ESSENTIAL_DUP="auto"           // how MACS2 deals with duplicated reads or fragments: "auto" (default), "all" or 1
 ESSENTIAL_MACS2_GSIZE="mm"  // mapable genome size for MACS2 (approx. size in bp or use "hs" for human, "mm" for mouse, "ce" for worm, "dm" for fly)
+ESSENTIAL_MIN_PEAKLENGTH=""  // MACS2 minimum peak length. Default (empty string) uses predicted fragment size. Could be increased if broad option is used. For ATAC-Seq reduce to 100.
 
 // Differential binding analysis with DiffBind
-// Note that DiffBind3 works with "default" parameters which depend on the context of other parameter settings (see DiffBind documentation for explanation).
+// Note that DiffBind works with "default" parameters which depend on the 
+// context of other parameter settings (see DiffBind documentation for 
+// explanation). Since version 3, DiffBind includes the data from ALL samples in 
+// a single model. 
+// In this pipeline, you can specify sub_experiments in contrasts_diffbind.txt
+// to define those sample groups which shall be combined in a model.
 RUN_DIFFBIND=true
-ESSENTIAL_DIFFBIND_VERSION=3         // Beginning with version 3, DiffBind has included new functionalities and modified default settings. Earlier versions are also supported here.
 ESSENTIAL_DIFFBIND_LIBRARY="default" // DiffBind method to calculate library sizes. One of "full", "RiP", "background" and "default"  
-ESSENTIAL_DIFFBIND_NORM="default"    // DiffBind method to calculate normalization factors. One of "lib", "RLE", "TMM", "native" and "default". Not applicable for DiffBind2.
-
+ESSENTIAL_DIFFBIND_NORM="default"    // DiffBind method to calculate normalization factors. One of "lib", "RLE", "TMM", "native" and "default". 
+ESSENTIAL_SUMMITS=200                // Re-center peaks around consensus summit with peak width 2x ESSENTIAL_SUMMITS (0 means no re-centering)
 
 // further optional pipeline stages to include
 RUN_IN_PAIRED_END_MODE=(ESSENTIAL_PAIRED == "yes")
+RUN_FASTQSCREEN=true            // check for contaminations using FastQ Screen
+RUN_MAKE_GREYLIST=true          // greylist is generated from all Control files and is then applied to MACS2 peak files like a blacklist (default: true). IMPORTANT NOTE: If true, a bed file given in ESSENTIAL_BLACKLIST is ignored! 
 RUN_PEAK_ANNOTATION=true
 RUN_ENRICHMENT=true
 RUN_TRACKHUB=false
@@ -72,5 +86,4 @@ REPORTS=PROJECT + "/reports"
 RESULTS=PROJECT + "/results"
 TMP=PROJECT + "/tmp"
 TRACKS=PROJECT + "/tracks"
-
 
