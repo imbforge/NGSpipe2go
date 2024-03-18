@@ -1,7 +1,7 @@
 SplitNCigarReads_vars=[
     outdir          : STAR_pe_2nd_vars.outdir,
     gatk_ref        : ESSENTIAL_GENOME_REF,
-    gatk_threads    : ESSENTIAL_THREADS,
+    gatk_threads    : Integer.toString(ESSENTIAL_THREADS),
     java_flags      : "2400m",
     read_filter_flag: "ReassignOneMappingQuality",
     map_q_from_flag : 255,
@@ -11,3 +11,21 @@ SplitNCigarReads_vars=[
 
 load PIPELINE_ROOT + "/modules/RNAseqVariantCalling/splitNcigar.groovy"
 
+// expected parameter types
+class SplitNCigarReads_vars_schema {
+    String outdir          
+    String gatk_ref        
+    String gatk_threads    
+    String java_flags      
+    String read_filter_flag
+    Integer String map_q_from_flag 
+    Integer String map_q_to_flag   
+    String unsafe_flag     
+
+    // check for the presence of mandatory params
+    boolean asBoolean() {
+      outdir && gatk_ref && map_q_from_flag >= 0 && map_q_to_flag >= 0
+    }
+}
+
+validate_schema(SplitNCigarReads_vars_schema, SplitNCigarReads_vars)

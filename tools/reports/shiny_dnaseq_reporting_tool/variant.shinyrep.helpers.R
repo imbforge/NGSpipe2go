@@ -447,7 +447,8 @@ VARhelper.cutadapt <- function(targetsdf=SHINYREPS_TARGET, colorByFactor="group"
     names(adapters.perc) <- gsub(" *=== *", "", system(paste("grep \"=== .*Adapter\"", f), intern=T))
     namespart1 <- gsub("First read:.*", "R1_", names(adapters.perc))
     namespart1 <- gsub("Second read:.*", "R2_", namespart1)
-    namespart2 <- gsub("^.*Adapter", "Adapter", names(adapters.perc))
+    #namespart2 <- gsub("^.*Adapter", "Adapter", names(adapters.perc)) # note: this failed when adapter is named and the name contains the word 'Adapter'
+    namespart2 <- gsub("First read: Adapter|Second read: Adapter|^Adapter", "Adapter", names(adapters.perc))
     names(adapters.perc) <- paste0(if(paired) {namespart1} else {""}, adapterprime, namespart2)
     
     ## add trimmed reads for each adapter here
@@ -464,16 +465,35 @@ VARhelper.cutadapt <- function(targetsdf=SHINYREPS_TARGET, colorByFactor="group"
   
   # use cutadapt call from first log file for naming some of the unnamed adapters 
   cutadaptpars <- unlist(strsplit(cutadaptpars, split=" ")) 
-  indexAdapter <- grep("(^-a$)|(--adapter)|(^-g$)|(--front)|(^-A$)|(^-G$)", cutadaptpars) # index of all adapters applied
-  indexAdapterSelected <- indexAdapter[grep("[ACGT].[[:digit:]]*}", cutadaptpars[indexAdapter+1])] # select e.g. polyA, polyT
-  
-  # rename those adapters columns trimmed by -a commands 
-  if (length(indexAdapterSelected)>0) {
-    colnames(x.df)[grepl("Adapter", colnames(x.df))][match(indexAdapterSelected, indexAdapter)] <- 
-      paste0(gsub("Adapter.*$", "", colnames(x.df)[grepl("Adapter", colnames(x.df))][match(indexAdapterSelected, indexAdapter)]), cutadaptpars[indexAdapterSelected+1])
+
+  if(paired) {
+
+      indexAdapterR1 <- grep("(^-a$)|(--adapter)|(^-g$)|(--front)|(^-b$)|(--anywhere)", cutadaptpars) # index of all R1 adapters
+      indexAdapterR2 <- grep("(^-A$)|(^-G$)|(^-B$)", cutadaptpars) # index of all R2 adapters
+      indexAdapterSelectedR1 <- indexAdapterR1[grep("[ACGT].[[:digit:]]*}", cutadaptpars[indexAdapterR1+1])] # select e.g. polyA, polyT
+      indexAdapterSelectedR2 <- indexAdapterR2[grep("[ACGT].[[:digit:]]*}", cutadaptpars[indexAdapterR2+1])] # select e.g. polyA, polyT
+
+      # rename columns of trimmed polyX 
+      if (length(indexAdapterSelectedR1)>0) {
+          colnames(x.df)[grepl("Adapter", colnames(x.df)) & grepl("R1", colnames(x.df))][match(indexAdapterSelectedR1, indexAdapterR1)] <- paste0(gsub("Adapter.*$", "", colnames(x.df)[grepl("Adapter", colnames(x.df)) & grepl("R1", colnames(x.df))][match(indexAdapterSelectedR1, indexAdapterR1)]), cutadaptpars[indexAdapterSelectedR1+1])
+      }
+      if (length(indexAdapterSelectedR2)>0) {
+          colnames(x.df)[grepl("Adapter", colnames(x.df)) & grepl("R2", colnames(x.df))][match(indexAdapterSelectedR2, indexAdapterR2)] <- paste0(gsub("Adapter.*$", "", colnames(x.df)[grepl("Adapter", colnames(x.df)) & grepl("R2", colnames(x.df))][match(indexAdapterSelectedR2, indexAdapterR2)]), cutadaptpars[indexAdapterSelectedR2+1])
+      }
+
+  } else {
+
+      indexAdapter <- grep("(^-a$)|(--adapter)|(^-g$)|(--front)|(^-b$)|(--anywhere)", cutadaptpars) # index of all adapters applied
+      indexAdapterSelected <- indexAdapter[grep("[ACGT].[[:digit:]]*}", cutadaptpars[indexAdapter+1])] # select e.g. polyA, polyT
+
+      # rename columns of trimmed polyX
+      if (length(indexAdapterSelected)>0) {
+          colnames(x.df)[grepl("Adapter", colnames(x.df))][match(indexAdapterSelected, indexAdapter)] <- paste0(gsub("Adapter.*$", "", colnames(x.df)[grepl("Adapter", colnames(x.df))][match(indexAdapterSelected, indexAdapter)]), cutadaptpars[indexAdapterSelected+1])
+      }
+
   }
-  
-  #reduce length of file names 
+
+  # reduce length of file names 
   row.names(x.df) <- basename(colnames(x))
   x.df$filename_unmod <- factor(row.names(x.df))
   if(!is.na(SHINYREPS_PREFIX)) {
@@ -588,17 +608,22 @@ VARhelper.cutadapt.plot <- function(data, color.value, labelOutliers=T, outlierI
   # prepare palette of appropriate length according to the different factors given in colorByFactor
   colourCount = length(unique(data[,color.value]))
   getPalette = colorRampPalette(brewer.pal(9, "Set1"))
-  
-  p <- ggplot(data, aes_string(x="reads",
-                               y="value",
-                               color=color.value ))+
+ 
+  names(data)[names(data)==color.value] <- "color.value"
+ 
+  p <- ggplot(data, aes(x=reads,
+                        y=value,
+                        color=color.value))+
     geom_quasirandom(groupOnX=TRUE) +
     geom_boxplot(color = "darkgrey", alpha = 0.2, outlier.shape = NA)  
+
   if(labelOutliers) {p <- p + ggrepel::geom_text_repel(data=. %>% filter(!is.na(outlier)), aes(label=filename), show.legend=F)}
+
   p <- p + scale_color_manual(values=getPalette(colourCount)) + # creates as many colors as needed
     ylab(ylab) +
     xlab("") +
-    theme(axis.text.x=element_text(angle=30, vjust=1, hjust=1)) 
+    theme(axis.text.x=element_text(angle=30, vjust=1, hjust=1)) +
+    guides(color=guide_legend(title=color.value))
   
   return(p)
 }

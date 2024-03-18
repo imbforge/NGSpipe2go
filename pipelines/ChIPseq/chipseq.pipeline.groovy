@@ -6,6 +6,7 @@ load PIPELINE_ROOT + "/pipelines/ChIPseq/essential.vars.groovy"
 load PIPELINE_ROOT + "/pipelines/ChIPseq/tools.groovy"
 load PIPELINE_ROOT + "/config/preambles.groovy"
 load PIPELINE_ROOT + "/config/bpipe.config.groovy"
+load PIPELINE_ROOT + "/config/validate_module_params.groovy"
 
 load PIPELINE_ROOT + "/modules/ChIPseq/GREAT.header"
 load PIPELINE_ROOT + "/modules/ChIPseq/blacklist_filter.header"
@@ -13,7 +14,6 @@ load PIPELINE_ROOT + "/modules/ChIPseq/make_greylist.header"
 load PIPELINE_ROOT + "/modules/ChIPseq/bowtie1.header"
 load PIPELINE_ROOT + "/modules/ChIPseq/bowtie2.header"
 load PIPELINE_ROOT + "/modules/ChIPseq/diffbind3.header" 
-load PIPELINE_ROOT + "/modules/ChIPseq/diffbind2.header" 
 load PIPELINE_ROOT + "/modules/ChIPseq/filbowtie2unique.header"
 load PIPELINE_ROOT + "/modules/ChIPseq/ipstrength.header"
 load PIPELINE_ROOT + "/modules/ChIPseq/macs2.header"
@@ -24,13 +24,15 @@ load PIPELINE_ROOT + "/modules/ChIPseq/upsetPlot.header"
 load PIPELINE_ROOT + "/modules/NGS/cutadapt.header"
 load PIPELINE_ROOT + "/modules/NGS/bamcoverage.header"
 load PIPELINE_ROOT + "/modules/NGS/bamindexer.header"
-load PIPELINE_ROOT + "/modules/NGS/extend.header"
 load PIPELINE_ROOT + "/modules/NGS/bamqc.header"
+load PIPELINE_ROOT + "/modules/NGS/extend.header"
 load PIPELINE_ROOT + "/modules/NGS/fastqc.header"
 load PIPELINE_ROOT + "/modules/NGS/fastqscreen.header"
+load PIPELINE_ROOT + "/modules/NGS/filterchromosomes.header"
 load PIPELINE_ROOT + "/modules/NGS/insertsize.header"
 load PIPELINE_ROOT + "/modules/NGS/markdups.header"
 load PIPELINE_ROOT + "/modules/NGS/rmdups.header"
+load PIPELINE_ROOT + "/modules/NGS/samtoolscov.header"
 load PIPELINE_ROOT + "/modules/NGS/trackhub.header"
 load PIPELINE_ROOT + "/modules/NGS/trackhub_config.header"
 load PIPELINE_ROOT + "/modules/NGS/multiqc.header"
@@ -47,7 +49,7 @@ Bpipe.run {
 		FastQC, 
 		(RUN_FASTQSCREEN ? FastqScreen : dontrun.using(module: "FastqScreen")), 
 		(RUN_CUTADAPT ? Cutadapt + FastQC.using(subdir:"trimmed") : dontrun.using(module:"Cutadapt")) +
-		bowtie2 + BAMindexer + BamQC ] + collect_bams +   
+		bowtie2 + BAMindexer + BamQC] + collect_bams +   
 
          [ // parallel branches with and without multi mappers
 
@@ -78,14 +80,14 @@ Bpipe.run {
      blacklist_filter.using(subdir:"unfiltered") +
      (RUN_PEAK_ANNOTATION ? peak_annotation.using(subdir:"unfiltered") : dontrun.using(module:"peak_annotation")) +
      (RUN_UPSETPLOT ? upsetPlot.using(subdir:"unfiltered") : dontrun.using(module:"upsetPlot")) + 
-     (RUN_DIFFBIND ? (ESSENTIAL_DIFFBIND_VERSION >= 3 ? diffbind3.using(subdir:"unfiltered") : diffbind2.using(subdir:"unfiltered")) : dontrun.using(module:"diffbind")) +
+     (RUN_DIFFBIND ? diffbind3.using(subdir:"unfiltered") : dontrun.using(module:"diffbind")) +
      (RUN_ENRICHMENT ? GREAT.using(subdir:"unfiltered") : dontrun.using(module:"GREAT")),
 
       (RUN_MAKE_GREYLIST ? make_greylist.using(subdir:"filtered") + blacklist_filter.using(subdir:"filtered", blacklist:RESULTS+"/greylist/filtered/masterGreyList.bed") : dontrun.using(module:"make_greylist")) +
      blacklist_filter.using(subdir:"filtered") +
      (RUN_PEAK_ANNOTATION ? peak_annotation.using(subdir:"filtered") : dontrun.using(module:"peak_annotation")) +
      (RUN_UPSETPLOT ? upsetPlot.using(subdir:"filtered") : dontrun.using(module:"upsetPlot")) +
-     (RUN_DIFFBIND ? (ESSENTIAL_DIFFBIND_VERSION >= 3 ? diffbind3.using(subdir:"filtered") : diffbind2.using(subdir:"filtered")) : dontrun.using(module:"diffbind")) +
+     (RUN_DIFFBIND ? diffbind3.using(subdir:"filtered") : dontrun.using(module:"diffbind")) +
      (RUN_ENRICHMENT ? GREAT.using(subdir:"filtered") : dontrun.using(module:"GREAT"))
     ] +
     (RUN_TRACKHUB ? trackhub_config + trackhub : dontrun.using(module:"trackhub")) +

@@ -10,7 +10,8 @@ shinyReports_vars=[
     run_peakanno    : RUN_PEAK_ANNOTATION,    
     run_diffbind    : RUN_DIFFBIND,    
     run_enrich      : RUN_ENRICHMENT,
-    cutadapt_stats  : Cutadapt_vars.statsdir,              // cutadapt stat files
+    cutadapt_stats  : (binding.variables.containsKey("Cutadapt_vars") ? Cutadapt_vars.statsdir : ""),    // cutadapt stat files
+    samtoolscov_out : (binding.variables.containsKey("samtoolscov_vars") ? samtoolscov_vars.outdir : ""),   // samtoolscov coverage files
     bowtie_log      : LOGS + "/bowtie2",  //where the Bowtie logs lie
     bamindex_log    : LOGS + "/BAMindexer", //where the Samtools/BamIndexer logs lie
     markdups_log    : LOGS + "/MarkDups",   //where the MarkDups logs lie
@@ -35,7 +36,7 @@ shinyReports_vars=[
     peak_annotation : peak_annotation_vars.outdir, // where the peak annotation results lie
     db              : ESSENTIAL_DB, // 
     great           : GREAT_vars.outdir,    // where the GO enrichment results lie
-    diffbind        : (ESSENTIAL_DIFFBIND_VERSION >= 3 ? diffbind3_vars.outdir : diffbind2_vars.outdir), // results folder with diffbind.rds results file
+    diffbind        : diffbind3_vars.outdir, // results folder with diffbind.rds results file
     trackhub_done   : TRACKS + "/trackhub.done",   // contains trackhub URL
     tool_versions   : collectToolVersions_vars.outdir + "/tool_versions.txt" //where the tool versions listed
 ]

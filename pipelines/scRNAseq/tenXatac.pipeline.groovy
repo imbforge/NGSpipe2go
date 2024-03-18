@@ -6,6 +6,7 @@ load PIPELINE_ROOT + "/pipelines/scRNAseq/essential.vars.groovy"
 load PIPELINE_ROOT + "/pipelines/scRNAseq/tools.groovy"
 load PIPELINE_ROOT + "/config/preambles.groovy"
 load PIPELINE_ROOT + "/config/bpipe.config.groovy"
+load PIPELINE_ROOT + "/config/validate_module_params.groovy"
 
 load PIPELINE_ROOT + "/modules/scRNAseq/cellrangeratac_count.header"
 load PIPELINE_ROOT + "/modules/scRNAseq/cellrangeratac_aggr.header"

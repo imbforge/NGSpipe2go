@@ -11,6 +11,7 @@ TMP=PROJECT + "/tmp"
 // load external things
 load PIPELINE_ROOT + "/config/preambles.groovy"
 load PIPELINE_ROOT + "/config/bpipe.config.groovy"
+load PIPELINE_ROOT + "/config/validate_module_params.groovy"
 
 //MAIN PIPELINE TASK
 test = { 

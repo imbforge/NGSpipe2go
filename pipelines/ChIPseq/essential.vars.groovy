@@ -32,7 +32,7 @@ ESSENTIAL_BSGENOME="BSgenome.Scerevisiae.UCSC.sacCer3"  // Bioconductor genome r
 ESSENTIAL_TXDB="TxDb.Scerevisiae.UCSC.sacCer3.sgdGene"  // needed for peak annotation
 ESSENTIAL_ANNODB="org.Sc.sgd.db"  // needed for peak annotation
 ESSENTIAL_DB="sacCer3"            // UCSC assembly version for GREAT analysis (only for UCSC hg19, hg38, mm9 and mm10)
-ESSENTIAL_BLACKLIST=""           // path to a BED file with blacklisted regions (default: empty string). Peaks in these regions will be removed from the peakset (skipped if greylist is selected below). 
+ESSENTIAL_BLACKLIST=""           // path to a BED file with blacklisted regions (default: empty string). Peaks in these regions will be removed from the peakset. IMPORTANT NOTE: blacklist is skipped if RUN_MAKE_GREYLIST is set to true below! 
 
 // FASTQ-Screen parameters
 ESSENTIAL_FASTQSCREEN_PERC=1    // contaminant filter, if a contaminant is consuming at least this percentage of reads in at least one sample, contaminant will be shown in report
@@ -53,24 +53,24 @@ ESSENTIAL_NEXTSEQTRIM=true     // accounts for terminal G bases during base qual
 ESSENTIAL_MACS2_BROAD=false    // use "true" for broad peak calling in MACS2 (default: "false")
 ESSENTIAL_DUP="auto"           // how MACS2 deals with duplicated reads or fragments: "auto" (default), "all" or 1
 ESSENTIAL_MACS2_GSIZE="10000000"  // mapable genome size for MACS2 (approx. size in bp or use "hs" for human, "mm" for mouse, "ce" for worm, "dm" for fly)
+ESSENTIAL_MIN_PEAKLENGTH=""  // MACS2 minimum peak length. Default (empty string) uses predicted fragment size. Could be increased if broad option is used. For ATAC-Seq reduce to 100.
 
 // Differential binding analysis with DiffBind
-// Note that DiffBind3 works with "default" parameters which depend on the 
+// Note that DiffBind works with "default" parameters which depend on the 
 // context of other parameter settings (see DiffBind documentation for 
-// explanation). Unlike DiffBind2, DiffBind3 includes the data from ALL samples in 
+// explanation). Since version 3, DiffBind includes the data from ALL samples in 
 // a single model. 
 // In this pipeline, you can specify sub_experiments in contrasts_diffbind.txt
 // to define those sample groups which shall be combined in a model.
 RUN_DIFFBIND=true
-ESSENTIAL_DIFFBIND_VERSION=3         // Beginning with version 3, DiffBind has included new functionalities and modified default settings. Earlier versions are also supported here.
 ESSENTIAL_DIFFBIND_LIBRARY="default" // DiffBind method to calculate library sizes. One of "full", "RiP", "background" and "default"  
-ESSENTIAL_DIFFBIND_NORM="default"    // DiffBind method to calculate normalization factors. One of "lib", "RLE", "TMM", "native" and "default". Not applicable for DiffBind2.
+ESSENTIAL_DIFFBIND_NORM="default"    // DiffBind method to calculate normalization factors. One of "lib", "RLE", "TMM", "native" and "default". 
 ESSENTIAL_SUMMITS=200                // Re-center peaks around consensus summit with peak width 2x ESSENTIAL_SUMMITS (0 means no re-centering)
 
 // further optional pipeline stages to include
 RUN_IN_PAIRED_END_MODE=(ESSENTIAL_PAIRED == "yes")
 RUN_FASTQSCREEN=true            // check for contaminations using FastQ Screen
-RUN_MAKE_GREYLIST=false          // greylist is generated from all Control files and is then applied to MACS2 peak files like a blacklist
+RUN_MAKE_GREYLIST=true          // greylist is generated from all Control files and is then applied to MACS2 peak files like a blacklist (default: true). IMPORTANT NOTE: If true, a bed file given in ESSENTIAL_BLACKLIST is ignored! 
 RUN_PEAK_ANNOTATION=true
 RUN_ENRICHMENT=true
 RUN_TRACKHUB=false

@@ -5,9 +5,27 @@ strandBigWig_vars=[
     binSize              : "10",
     normalizeUsing       : "CPM",
     skipNonCoveredRegions: true,
-    outFileFormat: "bedgraph",
+    outFileFormat        : "bedgraph",
     extra                : ""
 ]
 
 load PIPELINE_ROOT + "/modules/NGS/strandSpecificBW.groovy"
 
+// expected parameter types
+class strandBigWig_vars_schema {
+    String outdir               
+    String threads              
+    String stranded             
+    String binSize              
+    String normalizeUsing       
+    Boolean skipNonCoveredRegions
+    String outFileFormat        
+    String extra                
+
+    // check for the presence of mandatory params
+    boolean asBoolean() {
+      outdir && stranded
+    }
+}
+
+validate_schema(strandBigWig_vars_schema, strandBigWig_vars)

@@ -9,9 +9,32 @@ plotTranscriptsMod <- function (events, type = c("A3SS", "A5SS", "SE", "RI", "MX
   if (!class(gtf) == "GRanges") {
     stop(cat("\"gtf\" should be a GRanges class."))
   }
-  if (any(!grepl("chr", GenomeInfoDb::seqlevels(gtf)))) {
-    GenomeInfoDb::seqlevels(gtf) <- paste0("chr", GenomeInfoDb::seqlevels(gtf))
-  }
+  # modAB: rMATS attaches "chr" to all chromosome names, which do not start with "chr" anyway.
+  #        With the code below, it was intended to fix this and attached "chr" to all chromosome
+  #        names if there is at least one chromosome name without "chr". However, if some chromosome
+  #        names start with "chr", but others do not (e.g. non-canonical chromosomes/scaffolds), 
+  #        this will lead to incorrect attachments of "chr" in chromosomes like e.g. "chr1" which 
+  #        will then be called "chrchr1".
+  #if (any(!grepl("chr", GenomeInfoDb::seqlevels(gtf)))) {
+  #  GenomeInfoDb::seqlevels(gtf) <- paste0("chr", GenomeInfoDb::seqlevels(gtf))
+  #}
+
+  # modAB: Thus, if we wanted to modify chromosome names in the gtf and make them the same as 
+  #        used in rMATS, we would have to selectively do it on each chromosome. Only if the
+  #        chromosome names does not start with "chr", it should be added (see code below).
+  #        GenomeInfoDb::seqlevels(gtf)[!grepl("^chr", GenomeInfoDb::seqlevels(gtf))] <- paste0("chr",GenomeInfoDb::seqlevels(gtf)[!grepl("^chr", GenomeInfoDb::seqlevels(gtf))])
+
+  # modAB: However, the above fix is not necessary, since we are following a different strategy. We
+  #        corrected the chromosome names in the rMATS results by removing the added "chr" from them
+  #        (done in createMaserPlots.R after rMATS results were read in). This is done selectively
+  #        only for chromosomes for which rMATS added the "chr".
+  #        As a consequence, options(ucscChromosomeNames=FALSE) has to be set to allow for arbitrary 
+  #        chromosome identifiers. Otherwise, function createAnnotationTrack_event() -> createAnnotationTrackA3SS_event() -> Gviz::AnnotationTrack()
+  #        will throw an error: 
+  #               Error in FUN(X[[i]], ...) : Invalid chromosome identifier 'GL000194.1'
+  #               Please consider setting options(ucscChromosomeNames=FALSE) to allow for arbitrary chromosome identifiers.
+  options(ucscChromosomeNames=FALSE)
+
   # std_chr <- c(paste0("chr", seq(1:22)), "chrX", "chrY") # modFR outcomment chromosome filtering
   # if (any(!seqlevels(gtf) %in% std_chr)) {
   #   GenomeInfoDb::seqlevels(gtf, pruning.mode = "coarse") <- std_chr
@@ -865,12 +888,34 @@ mapTranscriptsToEvents <- function(events, gtf, ncores = 1){
     ncores = 1
   }
   
+  # modAB: rMATS attaches "chr" to all chromosome names, which do not start with "chr" anyway.
+  #        With the code below, it was intended to fix this and attached "chr" to all chromosome
+  #        names if there is at least one chromosome name without "chr". However, if some chromosome
+  #        names start with "chr", but others do not (e.g. non-canonical chromosomes/scaffolds), 
+  #        this will lead to incorrect attachments of "chr" in chromosomes like e.g. "chr1" which 
+  #        will then be called "chrchr1".
   #Add chr to seqnames - necessary for Gviz plots and compatible with maser()
-  if(any(!grepl("chr", GenomeInfoDb::seqlevels(gtf)))){
-    GenomeInfoDb::seqlevels(gtf) <- paste0("chr", 
-                                           GenomeInfoDb::seqlevels(gtf)) 
-  }
+  #if(any(!grepl("chr", GenomeInfoDb::seqlevels(gtf)))){
+  #  GenomeInfoDb::seqlevels(gtf) <- paste0("chr", 
+  #                                         GenomeInfoDb::seqlevels(gtf)) 
+  #}
   
+  # modAB: Thus, if we wanted to modify chromosome names in the gtf and make them the same as 
+  #        used in rMATS, we would have to selectively do it on each chromosome. Only if the
+  #        chromosome names does not start with "chr", it should be added (see code below).
+  #        GenomeInfoDb::seqlevels(gtf)[!grepl("^chr", GenomeInfoDb::seqlevels(gtf))] <- paste0("chr",GenomeInfoDb::seqlevels(gtf)[!grepl("^chr", GenomeInfoDb::seqlevels(gtf))])
+
+  # modAB: However, the above fix is not necessary, since we are following a different strategy. We
+  #        corrected the chromosome names in the rMATS results by removing the added "chr" from them
+  #        (done in createMaserPlots.R after rMATS results were read in). This is done selectively
+  #        only for chromosomes for which rMATS added the "chr".
+  #        As a consequence, options(ucscChromosomeNames=FALSE) has to be set to allow for arbitrary 
+  #        chromosome identifiers. Otherwise, function createAnnotationTrack_event() -> createAnnotationTrackA3SS_event() -> Gviz::AnnotationTrack()
+  #        will throw an error: 
+  #               Error in FUN(X[[i]], ...) : Invalid chromosome identifier 'GL000194.1'
+  #               Please consider setting options(ucscChromosomeNames=FALSE) to allow for arbitrary chromosome identifiers.
+  # modAB: options(ucscChromosomeNames=FALSE) is a global option and was set in main function plotTranscriptsMod()
+
   gtf_exons <- gtf[gtf$type=="exon",]
   
   as_types <- c("A3SS", "A5SS", "SE", "RI", "MXE")

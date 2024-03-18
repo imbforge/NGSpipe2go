@@ -8,5 +8,22 @@ BWA_vars=[
     extra           : "-v 1" // output only errors to stderr
 ]
 
-load  PIPELINE_ROOT + "/modules/breaktag/bwa.groovy"
+load PIPELINE_ROOT + "/modules/breaktag/bwa.groovy"
 
+// expected parameter types
+class BWA_vars_schema {
+    String outdir
+    Boolean paired
+    String ref
+    String threads
+    String minqual
+    String samtools_threads
+    String extra
+
+    // check for the presence of mandatory params
+    boolean asBoolean() {
+      outdir && ref && minqual.toInteger() >= 0
+    }
+}
+
+validate_schema(BWA_vars_schema, BWA_vars)

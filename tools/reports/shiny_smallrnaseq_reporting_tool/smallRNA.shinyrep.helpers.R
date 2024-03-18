@@ -1103,9 +1103,18 @@ smallRNAhelper.bowtie <- function() {
 
         # extract information
         all <- gsub(".+: (.+)", "\\1", l[grep("reads processed", l)])
-        unique <- gsub(".+: (.+) (\\(.*\\))", "\\1", l[grep("reads with at least one reported alignment", l)])
+        atleastone <- gsub(".+: (.+) (\\(.*\\))", "\\1", l[grep("reads with at least one", l)])
         multi  <- gsub(".+: (.+) (\\(.*\\))", "\\1", l[grep("reads with alignments sampled due to -M", l)])
         unmapped <- gsub(".+: (.+) (\\(.*\\))", "\\1", l[grep("reads that failed to align", l)])
+
+        # get uniquely mapped (depends on Bowtie version)
+        if (SHINYREPS_BOWTIE_VERSION <= "1.2.2") {
+            unique <- atleastone
+        } else if (SHINYREPS_BOWTIE_VERSION >= "1.3.1") {
+            unique <- as.integer(atleastone)-as.integer(multi)
+        } else {
+            stop(paste0("Bowtie version ",SHINYREPS_BOWTIE_VERSION," is not supported due to incorrect output values.\n  Please repeat the mapping with a version <=1.2.2 or >=1.3.1."))
+        }
 
         # return
         c(samplename,unmapped,multi,unique,all)
@@ -1666,7 +1675,7 @@ smallRNAhelper.fractionSign.pairwise <- function(i=1,fdr=.01) {
                     rnatypes.sign  = nrow(rnatypes.sign.df)))
     } else {
         #cat("NO SIGNIFICANT GENES FOUND.\n")
-        return(rnatypes.sign = nrow(rnatypes.sign.df))
+        return(list(rnatypes.sign = nrow(rnatypes.sign.df)))
     }
 
 }

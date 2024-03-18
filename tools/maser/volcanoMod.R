@@ -18,11 +18,16 @@ volcanoMod <- function (events, type = c("A3SS", "A5SS", "SE", "RI", "MXE"),
   #status[stats$ID %in% cond2$ID] <- "down"  # events$conditions[2] # mod
   status[stats$ID %in% cond1$ID] <- events$conditions[1]
   status[stats$ID %in% cond2$ID] <- events$conditions[2]
-  FDR <- stats$FDR
-  idx_zero <- which(stats$FDR == 0)
-  idx_min_nonzero <- max(which(stats$FDR == 0)) + 1
-  FDR[idx_zero] <- FDR[idx_min_nonzero]
-  log10pval <- -1 * log10(FDR)
+  # modAB: stats is NOT sorted based on FDR column, i.e. extracting the row number
+  #        after the last occurrence of FDR==0 and setting all FDR of 0 to the FDR seen
+  #        in this row, will set them to a random value and NOT the next largest one after 0
+  #        --> keep FDRs of 0, they will result in Inf values when -log10(FDR) and be plotted
+  #            at the very top of the plot
+  #FDR <- stats$FDR
+  #idx_zero <- which(stats$FDR == 0)
+  #idx_min_nonzero <- max(which(stats$FDR == 0)) + 1
+  #FDR[idx_zero] <- FDR[idx_min_nonzero]
+  log10pval <- -log10(stats$FDR)
   #Ignored the up/down change made by FR, as we want to show the sample names directly
   #plot.df <- data.frame(ID = stats$ID, deltaPSI = stats$IncLevelDifference, 
   #                      log10pval = log10pval, Status = factor(status, levels = c("Not significant", "up", "down" # mod: up and down instead groups
@@ -45,7 +50,7 @@ volcanoMod <- function (events, type = c("A3SS", "A5SS", "SE", "RI", "MXE"),
     #scale_colour_manual(values = colors) + # modAB: use colors as given below
     scale_colour_manual(values = c("grey",brewer.pal(9,"Set1")[1:2]),
                         breaks = c("Not significant",events$conditions[2],events$conditions[1]),
-                        labels = c("Not significant",events$conditions[2],events$conditions[1])) +
+                        labels = c("not significant",events$conditions[2],events$conditions[1])) +
     theme_bw() + 
     theme(axis.text.x = element_text(size = 12),
           axis.text.y = element_text(size = 12),
@@ -53,5 +58,5 @@ volcanoMod <- function (events, type = c("A3SS", "A5SS", "SE", "RI", "MXE"),
           axis.title.y = element_text(face = "plain", colour = "black", size = 12), 
           panel.grid.minor = element_blank(), 
           plot.background = element_blank()) + 
-    labs(title = title, y = "Log10 Adj. Pvalue", x = "Delta PSI") # mod: switched axis labels
+    labs(title = title, y = "-log10 adj. p-value", x = "delta PSI") # mod: switched axis labels
 }

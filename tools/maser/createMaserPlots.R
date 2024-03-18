@@ -49,7 +49,6 @@ group2 <- parseArgs(args,"group2=","") # Contrast groups
 ## to make it work for all organisms
 ##
 
-source(file.path(scripts_dir,"plotTranscriptsMod.R"))
 source(file.path(scripts_dir,"volcanoMod.R"))
 
 # print(c(group1,group2))
@@ -76,9 +75,29 @@ if(!error_status) {
 	slot(rmats, e)$geneSymbol <- ifelse(is.na(slot(rmats, e)$geneSymbol), slot(rmats, e)$GeneID, slot(rmats, e)$geneSymbol)
   }
 
+  # modAB: rMATS attaches "chr" to all chromosome names, which do not start with "chr" anyway.
+  #        we could either do the same in the gtf annotation or remove the added "chr" from the
+  #        rMATS results. let's try the second option here:
+  rmats_mod <- rmats
+  for(e in c("A3SS_gr", "A5SS_gr", "SE_gr", "RI_gr", "MXE_gr")) {
+
+      # modify chromosome names in each GRanges object in e's slot
+      slot(rmats_mod,e) <- GRangesList(lapply(slot(rmats,e),
+                                              function(gr) {
+                                                  seqlevels(gr)[!seqlevels(gr) %in% seqlevels(ens_gtf)] <- 
+                                                          seqlevels(ens_gtf)[match(seqlevels(gr),paste0("chr",seqlevels(ens_gtf)),nomatch=0)]
+                                                  return(gr)
+                                              }))
+  }
+  # modAB: as a consequence, options(ucscChromosomeNames=FALSE) has to be set to allow for arbitrary chromosome identifiers
+  #        when plotting (in plotTranscriptsMod.R). otherwise, functions createAnnotationTrack_event() -> 
+  #        createAnnotationTrackA3SS_event() -> Gviz::AnnotationTrack() in plotTranscriptsMod.R will through an error
+
   # Filtering events: Low coverage splicing junctions are commonly found in RNA-seq data and lead to low confidence PSI levels.
   # We can remove low coverage events using filterByCoverage(), which may significantly reduced the number of splicing events.
-  rmats_filt <- maser::filterByCoverage(rmats, avg_reads = mincov)
+  # modAB: use modified rmats object
+  #rmats_filt <- maser::filterByCoverage(rmats, avg_reads = mincov)
+  rmats_filt <- maser::filterByCoverage(rmats_mod, avg_reads = mincov)
 
   # The function topEvents() allows to select statistically significant events given a FDR cutoff and minimum PSI change.
   rmats_top <- maser::topEvents(rmats_filt, fdr = fdr, deltaPSI = dpsi)

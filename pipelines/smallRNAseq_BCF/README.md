@@ -1,6 +1,8 @@
 # smallRNA-Seq pipeline
 Here we provide the tools to perform a single read smallRNA-Seq analysis including raw data quality control, adapter and unique molecular identifier (UMI) trimming, read filtering and differential expression (DE) analysis. A DE analysis is run on all detected genes as well as only based on genes of a selected type of smallRNA (see variable ESSENTIAL_SMALLRNA below). Optionally, it is run only using counts of mature miRNAs. The pipeline requires zipped fastq-files (.fastq.gz) as input.
 
+The pipeline is optimized for smallRNAs in the range of 18-30 nt (e.g. miRNAs, piRNAs). It can be used for other types of smallRNAs as well, but needs adjustment of several parameters.
+
 
 ## Pipeline Workflow
 Specify the desired analysis details for your data in file *smallrnaseq.essential.vars.groovy* (see below) and run the pipeline *smallrnaseq.pipeline.groovy* similarly as described [here](https://gitlab.rlp.net/imbforge/NGSpipe2go/-/blob/master/README.md). A markdown file *smallRNAreport.Rmd* will be generated in the output reports folder after running the pipeline. Additionally, a markdown file *smallRNAreport.TYPE.Rmd* will be generated in the same folder. It reports on DE results of just your selected type of smallRNA (see variable ESSENTIAL_SMALLRNA below). In case you choose to analyze mature miRNAs, a markdown file *smallRNAreport.miRNAmature.Rmd will be generated, reporting DE results of mature miRNAs. Subsequently, all markdown files can be converted to HTML reports using the *knitr* R-package.
@@ -11,7 +13,7 @@ Specify the desired analysis details for your data in file *smallrnaseq.essentia
 - adapter trimming with Cutadapt
 - quality filtering using the FASTX-Toolkit
 - duplicate removal (optional)
-- UMI trimming on both ends of the reads using seqtk
+- UMI trimming on both ends of the reads using seqtk (optional)
 - quality control of trimmed reads with FastQC
 - competitive mapping to rRNAs and other contaminants (optional)
 - read mapping to the reference genome using Bowtie
@@ -51,6 +53,7 @@ Specify the desired analysis details for your data in file *smallrnaseq.essentia
   - ESSENTIAL_UMI_LENGTH_RIGHT: length (bp) of the right UMI
   - ESSENTIAL_MINREADLENGTH_EXCL_UMI: minimal read length (bp) after adapter and UMI trimming
   - ESSENTIAL_MINADAPTEROVERLAP: minimal overlap of read and adapter (used for adapter trimming)
+  - ESSENTIAL_MAXREADLENGTH: maximal read length to keep (default: all reads without detected adapter are discarded)
   - ESSENTIAL_ADAPTER_SEQUENCE: adapter sequence to be trimmed by Cutadapt
   - ESSENTIAL_BASEQUALCUTOFF: base quality threshold to trim low-quality ends from reads with Cutadapt. If *ESSENTIAL_NEXTSEQTRIM* is true, qualities of terminal G bases are ignored. To switch off base quality trimming in Cutadapt entirely, set *ESSENTIAL_BASEQUALCUTOFF=0* and *ESSENTIAL_NEXTSEQTRIM=false*.
   - ESSENTIAL_NEXTSEQTRIM: most Illumina instruments use a two-color chemistry like the NextSeq (exceptions: MiSeq, HiSeq). This option accounts for terminal high quality G bases incorporated by faulty dark cycles during base quality trimming with Cutadapt.
@@ -59,12 +62,16 @@ Specify the desired analysis details for your data in file *smallrnaseq.essentia
   - ESSENTIAL_DESEQ2_FC: optional fold change cutoff used for the DESeq2 model
   - ESSENTIAL_FASTQSCREEN_PERC: contaminant filter, if a contaminant is consuming at least this percentage of reads in at least one sample, contaminant will be shown in report 
   - ESSENTIAL_FASTQSCREEN_GENOME: genome names and indexes used by FastQScreen for the competitive mapping
+  - REMOVE_DUPLICATES: should duplicate reads be removed? (default: false)
+  - TRIM_UMIS: should UMIs be trimmed from read ends? (depends on the kit used to prepare the libraries, default: true)
+  - RUN_FASTQSCREEN: should a check for contaminants be run? (default: true)
+  - RUN_MATUREMIRNA_ANALYSIS: should mature miRNAs be analyzed (in addition to e.g. precursors)? (default: true)
   - additional (more specialized) parameters can be given in the header files of individual pipeline modules 
 
 
 ## Programs required
-- Bowtie
-- Cutadapt (optional)
+- Bowtie (please do not use versions 1.2.3 and 1.3.0, they produce an incorrect mapping summary)
+- Cutadapt
 - deepTools
 - FastQC
 - FastQScreen (optional)
@@ -79,5 +86,5 @@ Specify the desired analysis details for your data in file *smallrnaseq.essentia
 
 - As e.g. miRNAs are highly similar to each other, reads often map to multiple highly similar or even identical locations and, thus, multi-mapping reads need to be used when analyzing smallRNA sequencing data. One of the best hits is randomly picked. When running featureCounts, parameter -M is set. This can be changed by setting variable *count_multimapping* to *false* in module header files *subread.header* and/or *subread_mirnamature.header*.
 - Various types of smallRNA are annotated at overlapping locations, e.g. miRNAs can be found as part of snoRNAs or overlapping intronic regions of protein coding genes. In order to not miss any smallRNA, which (partially) shares its location with another smallRNA or gene, ambiguous reads are used for quantification. When running featureCounts on all genes or on the selected TYPE of smallRNA, parameter -O is set. This can be changed by setting variable *count_ambiguous* to *false* in module header file *subread.header*. When ambiguous reads are used to quantify genes, they are counted on all overlapping genes and, thus, are counted more than once. This leads to "over-counting" of these reads and the total quantification might be larger than the total read count. If this is unfavorable, parameter *--fraction* can be used when running featureCounts in order to only count *1/n* for each of *n* overlapping genes.
-
+- The NEXTflex Small RNA-Seq Kit v3 adds unique molecular identifiers (UMIs) to both ends of the smallRNA (between smallRNA insert and adapter sequences). They can be used to de-duplicate reads and need to be trimmed. For trimming, set variable TRIM_UMIS to true. To remove duplicates, set variable REMOVE_DUPLICATES to true. In case of very abundant e.g. miRNAs, there might be more reads then available UMIs mapping to the same locus. In this case, duplicates can no longer be removed correctly.
 

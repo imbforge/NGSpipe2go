@@ -10,3 +10,20 @@ MarkDups_vars=[
 
 load PIPELINE_ROOT + "/modules/RNAseqVariantCalling/mark_dups.groovy"
 
+// expected parameter types
+class MarkDups_vars_schema {
+    String outdir
+    String java_flags
+    Boolean remove_dups
+    Boolean index
+    Boolean assume_sorted
+    String validation
+    String extra
+
+    // check for the presence of mandatory params
+    boolean asBoolean() {
+      outdir
+    }
+}
+
+validate_schema(MarkDups_vars_schema, MarkDups_vars)

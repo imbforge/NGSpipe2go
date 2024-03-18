@@ -45,7 +45,6 @@ run_custom_code <- function(x) {
 }
 
 args <- commandArgs(T)
-DIFFBINDVERSION  <- parseArgs(args,"diffbindversion=", 3, "as.numeric") # selected DiffBind version
 FTARGETS   <- parseArgs(args,"targets=","targets.txt")     # file describing the targets
 FCONTRASTS <- parseArgs(args,"contrasts=","contrasts_diffbind.txt") # file describing the contrasts
 CWD        <- parseArgs(args,"cwd=","./")     # current working directory
@@ -64,10 +63,10 @@ LIBRARYSIZE     <- parseArgs(args,"librarySize=", "default", "as.character")   #
 NORMALIZATION   <- parseArgs(args,"normalization=", "default", "as.character")   # use total number of reads in bam for normalization (FALSE=only peaks)
 BACKGROUND      <- parseArgs(args,"background=", FALSE, "as.logical") # background may either be logical (default binsize 15000) or numeric with custom binsize.
 if(is.na(BACKGROUND)) {BACKGROUND <- parseArgs(args,"background=", "15000", "as.numeric")}
-SUBSTRACTCONTROL<- parseArgs(args,"substractControl=", "default", "as.character")  # subtract input
+SUBSTRACTCONTROL<- parseArgs(args,"substractControl=", "FALSE", "as.character")  # subtract input
 CONDITIONCOLUMN <- parseArgs(args,"conditionColumn=", "group", "as.character") # this targets column is interpreted as 'Condition' and is used as for defining the default design
 FDR_TRESHOLD    <- parseArgs(args,"fdr_threshold=", 0.05, "as.numeric") # summits for re-centering consensus peaks
-FOLD       <- parseArgs(args,"fold=", 0, "as.numeric") # summits for re-centering consensus peaks
+LFC       <- parseArgs(args,"lfc=", 0, "as.numeric") # summits for re-centering consensus peaks
 ANNOTATE   <- parseArgs(args,"annotate=", FALSE, "as.logical") # annotate after DB analysis?
 PE         <- parseArgs(args,"pe=", FALSE, "as.logical")      # paired end experiment?
 TSS        <- parseArgs(args,"tss=", "c(-3000,3000)", "run_custom_code") # region around the tss
@@ -89,7 +88,7 @@ if(!is.numeric(SUMMITS))     stop("Summits is not numeric. Run with:\n",runstr)
 if(!is.numeric(FILTER))      stop("Filter threshold is not numeric. Run with:\n",runstr)
 if(!is.numeric(MINOVERLAP))  stop("minOverlap threshold is not numeric. Run with:\n",runstr)
 if(!is.numeric(FDR_TRESHOLD))      stop("FDR threshold is not numeric. Run with:\n",runstr)
-if(!is.numeric(FOLD))        stop("Fold threshold is not numeric. Run with:\n",runstr)
+if(!is.numeric(LFC))         stop("Log2 fold change threshold is not numeric. Run with:\n",runstr)
 if(!is.logical(ANNOTATE))    stop("Annotate not logical. Run with:\n",runstr)
 if(!is.logical(PE))          stop("Paired end (pe) not logical. Run with:\n",runstr)
 if(ANNOTATE & !is.numeric(TSS)) stop("Region around TSS not numeric. Run with:\n",runstr)
@@ -128,10 +127,14 @@ donefiles <- list.files(PEAKS,pattern=".done$")
 bam_suffix <- sub("^[^\\.]*\\.*", "", gsub("_macs2.done$", "", donefiles[1]))
 bam_suffix <- ifelse(bam_suffix == "", paste0(bam_suffix, "bam"), paste0(bam_suffix, ".bam"))
 
-# check if blacklist filtering was applied
-peakfiles <- list.files(PEAKS,pattern=".xls")
+# check if blacklist filtering was applied and if broad peak files are available
+peakfiles <- list.files(PEAKS,pattern="(\\.xls$)|(Peak$)")
 isBlacklistFilt <- any(grepl("blacklist_filtered", peakfiles)) 
-peak_suffix <- if(isBlacklistFilt) {"_macs2_blacklist_filtered_peaks.xls"} else {"_macs2_peaks.xls"}
+isBroad <- any(grepl("broadPeak$", peakfiles)) 
+peak_suffix <- sapply(targets_raw$PeakCaller, function(x) {switch(x,
+                                                                  macs=if(isBlacklistFilt) {"_macs2_blacklist_filtered_peaks.xls"} else {"_macs2_peaks.xls"},
+                                                                  bed= paste0("_macs2_peaks", if(isBlacklistFilt) {"_blacklist_filtered"}, if(isBroad) {".broadPeak"} else {".narrowPeak"})
+)})
 
 # check if any targets_raw$INPUT is indicated as "none". If so, Peak calling was done without Input samples.
 isInputNone <- any(tolower(targets_raw$INPUT) == "none")
@@ -151,8 +154,10 @@ targetsAll <- data.frame(
     targetsAll <- data.frame(targetsAll, targets_raw[,f, drop=F])
   }
  
-  if(isInputNone) {
+if(isInputNone | (!is.na(as.logical(SUBSTRACTCONTROL)) & !as.logical(SUBSTRACTCONTROL))) {
   warning("You are running the DiffBind analysis without input control samples!\n")
+  # if SUBSTRACTCONTROL=FALSE controls are set to NULL as well because the bSubControl parameter
+  # in dba.count seems to be of no effect.
     targetsAll$ControlID <- NULL
     targetsAll$bamControl <- NULL
     SUBSTRACTCONTROL <- FALSE
@@ -252,11 +257,11 @@ for (sub in unique(contsAll$sub_experiment)) {
     if(BLACKLIST){blacklist_generated <- try(dba.blacklist(db, Retrieve=DBA_BLACKLIST))}
     if(GREYLIST) {greylist_generated  <- try(dba.blacklist(db, Retrieve=DBA_GREYLIST))}
   
-      
+
     # identify all overlapping peaks and derives a consensus peakset for the experiment. 
     # Then count how many reads overlap each interval for each unique sample.
     db <- dba.count(db, minOverlap=MINOVERLAP, score=DBA_SCORE_NORMALIZED, summits=SUMMITS, filter=FILTER, 
-                    bScaleControl=TRUE, minCount=0, bUseSummarizeOverlaps=TRUE) 
+                    bScaleControl=TRUE, bSubControl = SUBSTRACTCONTROL_FINAL, minCount=0, bUseSummarizeOverlaps=TRUE) 
     # score: which score to use in the binding affinity matrix. Note that all raw read counts are maintained for use by dba.analyze, 
     # regardless of how the score is set here. 
     # DBA_SCORE_NORMALIZED: normalized reads, as set by dba.normalize
@@ -270,7 +275,7 @@ for (sub in unique(contsAll$sub_experiment)) {
     
     # Normalizing the data
     db <- dba.normalize(db, method = db$config$AnalysisMethod, normalize = NORMALIZATION, library = LIBRARYSIZE, 
-                        offsets = FALSE, bSubControl = SUBSTRACTCONTROL_FINAL, background = BACKGROUND) 
+                        offsets = FALSE, background = BACKGROUND) 
     # The major change in DiffBind version 3.0 is in how the data are modeled. In previous versions, a separate model was derived for each contrast, 
     # including data only for those samples present in the contrast. Model design options were implicit and limited to either a single factor, or 
     # a subset of two-factor "blocked" designs. Starting in version 3.0, the default mode is to include all the data in a single model, allowing 
@@ -351,14 +356,14 @@ for (sub in unique(contsAll$sub_experiment)) {
       cont.name <- conts[cont,1]
   
       png(file.path(OUT, paste0(subexpPrefix, cont.name, "_ma_plot.png")), width = 150, height = 150, units = "mm", res=300)
-        try(dba.plotMA(db, contrast=cont, fold=FOLD))
+        try(dba.plotMA(db, contrast=cont, fold=LFC))
       dev.off()
       png(file.path(OUT, paste0(subexpPrefix, cont.name, "_boxplot_diff_sites.png")), width = 150, height = 150, units = "mm", res=300)
         try(dba.plotBox(db, contrast=cont))   # try, in case there are no significant peaks
       dev.off()
       png(file.path(OUT, paste0(subexpPrefix, cont.name, "_volcano_plot.png")), width = 150, height = 150, units = "mm", res=300)
         rep <- try(dba.report(db, contrast=cont, th=1)) # scale dot size by Conc (max dot size set to 4)
-        try(dba.plotVolcano(db, contrast=cont, fold=FOLD, dotSize=4*rep$Conc/max(rep$Conc)))
+        try(dba.plotVolcano(db, contrast=cont, fold=LFC, dotSize=4*rep$Conc/max(rep$Conc)))
       dev.off()
       png(file.path(OUT, paste0(subexpPrefix, cont.name, "_correlation_heatmap.png")), width = 150, height = 150, units = "mm", res=300)
         try(dba.plotHeatmap(db, contrast=cont))   # try, in case there are no significant peaks
@@ -384,8 +389,12 @@ for (sub in unique(contsAll$sub_experiment)) {
         }
       }
   
-      tryCatch(dba.report(db, contrast=cont, bCalled=T, bUsePval=F, th=1, fold=0), # th=db$config$th, fold=FOLD # filtering is done later
-                      error=function(e) NULL) # dba.report crashes if there is exactly 1 significant hit to report
+      tryCatch({
+        x=dba.report(db, contrast=cont, bCalled=T, bUsePval=F, th=1, fold=0) # th=db$config$th, fold=LFC # filtering is done later
+        colnames(mcols(x)) <- plyr::revalue(colnames(mcols(x)), c("Fold" = paste0("lfc_", cont.name), "FDR" = "BHadj_pvalue")) # rename column names
+        x <- x[,!colnames(mcols(x)) %in% c("p-value")] # remove column with unadjusted p-value
+        return(x)
+      }, error=function(e) NULL) # dba.report crashes if there is exactly 1 significant hit to report
       
     })
   
@@ -439,10 +448,11 @@ write.table(infodb, file=file.path(OUT, paste0(subexpPrefix, "info_dba_object.tx
   
 
   # create overview table with diffbind settings
-  diffbindSettings <- rbind(c(Parameter="DiffBind package version", Value=as.character(currentDiffbindVersion), Comment= paste(if(currentDiffbindVersion$major != floor(DIFFBINDVERSION)) {paste0("Major version not concordant with intended DiffBind v", DIFFBINDVERSION, ". Please check R module." )} else {""}, DiffBindWarningText)),
+  diffbindSettings <- rbind(c(Parameter="DiffBind package version", Value=as.character(currentDiffbindVersion), Comment=DiffBindWarningText),
                             c("external blacklist applied", isBlacklistFilt, if(isBlacklistFilt) {"MACS2 peak files have already been blacklist or greylist filtered"} else {""}),
                             c("Apply auto-generated blacklist", BLACKLIST, if(BLACKLIST){if(class(blacklist_generated)=="try-error") {"Skipped because blacklist not available."} else {"Blacklist successfully generatedand applied."}} else {""}),
                             c("Apply auto-generated greylist", GREYLIST, if(GREYLIST){if(class(greylist_generated)=="try-error") {"Skipped because greylist not available."} else {"Greylist successfully generated and applied."}} else {""}),
+                            c("Broad peaks used", isBroad, paste("loaded peak files with suffix:", unique(peak_suffix), collapse = ", ")),
                             c("Fragment size", FRAGSIZE, ""),
                             c("Summits", SUMMITS, if(SUMMITS==0) {"no re-centering of peaks."} else {paste0("re-center peaks around consensus summit with peak width 2x", SUMMITS, ".")}),
                             c("Filter threshold", FILTER, "threshold for filtering intervals with low read counts."),
@@ -454,7 +464,7 @@ write.table(infodb, file=file.path(OUT, paste0(subexpPrefix, "info_dba_object.tx
                             c("Subtract control read counts", SUBSTRACTCONTROL, if(SUBSTRACTCONTROL=="default") {paste("set to", SUBSTRACTCONTROL_FINAL, "because greylist is", if(SUBSTRACTCONTROL_FINAL){"not"} else {""}, "available.")} else {""}),
                             c("Design", "contrast_diffbind.txt", paste(db$design, "(with", CONDITIONCOLUMN, "as Condition column).")),
                             c("FDR threshold", FDR_TRESHOLD, "significance threshold for differential binding analysis."),
-                            c("Fold threshold", FOLD, "log Fold threshold for differential binding analysis.")
+                            c("LFC threshold", LFC, "log2 fold change threshold for differential binding analysis.")
   )
   
 
@@ -464,13 +474,13 @@ result <- unlist(result, recursive = F) # flatten the nested list
 result <- lapply(result, as.data.frame)
 names(result) <- if(length(unique(contsAll$sub_experiment))>1) {paste0("SubExp_", contsAll$sub_experiment, "_", contsAll$contrast.name)} else {
   paste0(contsAll$contrast.name)
-} 
+}
 write.xlsx(result, file=paste0(OUT, "/diffbind_all_sites.xlsx"))
 result <- lapply(result, function(x) {
   tryCatch({
-    x[x$FDR<=db$config$th & abs(x$Fold)>=FOLD, ]   # filter result tables for significance
+    x[x$BHadj_pvalue<=db$config$th & abs(x[,grep("^lfc_", colnames(x))])>=LFC, ]   # filter result tables for significance
   }, error=function(e) x)
 })
 write.xlsx(result, file=paste0(OUT, "/diffbind.xlsx"))
 saveRDS(result,  file=paste0(OUT, "/diffbind.rds"))
-
+print(warnings())
