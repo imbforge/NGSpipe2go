@@ -8,3 +8,18 @@ sc_qc_vars=[
 
 load PIPELINE_ROOT + "/modules/scRNAseq/sc_qc.groovy"
 
+// expected parameter types
+class sc_qc_vars_schema {
+    String outdir             
+    String project           
+    String res             
+    String db   
+    String extra              
+
+    // check for the presence of mandatory params
+    boolean asBoolean() {
+      outdir && project && res
+    }
+}
+
+validate_schema(sc_qc_vars_schema, sc_qc_vars)

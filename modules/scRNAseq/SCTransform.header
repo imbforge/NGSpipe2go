@@ -7,3 +7,17 @@ SCTransform_vars=[
 
 load PIPELINE_ROOT + "/modules/scRNAseq/SCTransform.groovy"
 
+// expected parameter types
+class SCTransform_vars_schema {
+    String outdir             
+    String project           
+    String res             
+    String extra              
+
+    // check for the presence of mandatory params
+    boolean asBoolean() {
+      outdir && project && res
+    }
+}
+
+validate_schema(SCTransform_vars_schema, SCTransform_vars)

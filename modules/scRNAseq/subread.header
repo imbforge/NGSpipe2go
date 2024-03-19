@@ -3,9 +3,25 @@ subread_count_vars=[
     stranded: ESSENTIAL_STRANDED,           //whether the data is from a strand-specific assay (illumina SR: always reverse)
     paired  : (ESSENTIAL_PAIRED == "yes"),  //paired end design
     genesgtf: ESSENTIAL_GENESGTF,
-    threads : Integer.toString(ESSENTIAL_THREADS),
+    threads : ESSENTIAL_THREADS,
     extra   : ""                            // extra parms to sent to the tool
 ]
 
 load PIPELINE_ROOT + "/modules/scRNAseq/subread.groovy"
 
+// expected parameter types
+class subread_count_vars_schema {
+    String outdir             
+    String stranded           
+    Boolean paired           
+    String genesgtf             
+    Integer threads             
+    String extra              
+
+    // check for the presence of mandatory params
+    boolean asBoolean() {
+      outdir
+    }
+}
+
+validate_schema(subread_count_vars_schema, subread_count_vars)

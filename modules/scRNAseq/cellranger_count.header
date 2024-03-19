@@ -3,11 +3,27 @@ cellranger_count_vars=[
     transcriptome   : ESSENTIAL_TENX_TRANSCRIPTOME, 
     expect_cells    : ESSENTIAL_TENX_EXPECTED_CELLS,
     nuclei          : (ESSENTIAL_TENX_NUCLEI == "yes"),
-    cores           : 8,
-    localmem        : 64,
+    cores           : "8",
+    localmem        : "64",
     extra           : " --chemistry=SC3Pv3"               // extra parms to sent to the tool
 ]
 
 load PIPELINE_ROOT + "/modules/scRNAseq/cellranger_count.groovy"
 
+// expected parameter types
+class cellranger_count_vars_schema {
+    String outdir             
+    String transcriptome           
+    Integer expect_cells           
+    Boolean nuclei           
+    String cores
+    String localmem      
+    String extra              
 
+    // check for the presence of mandatory params
+    boolean asBoolean() {
+      outdir && transcriptome
+    }
+}
+
+validate_schema(cellranger_count_vars_schema, cellranger_count_vars)

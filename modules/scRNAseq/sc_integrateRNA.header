@@ -3,7 +3,7 @@ sc_integrateRNA_vars=[
     project         : PROJECT,                     
     res             : RESULTS,         
     batch           : "group",             // Provide a the column name from targets file. If more than one batch needs to be addressed, please create a concatenated name of both and provide that as a column in the targets file and here.
-    n_features      : 3000,                // Number of variable features to identify for integration (or batch-correcting)
+    n_features      : "3000",                // Number of variable features to identify for integration (or batch-correcting)
     rdtype          : "cca",               // Dimensional reduction to perform when finding anchors. Can be one of: cca, rpca, rlsi
     extra    : ""                          //extra parms to sent to the tool
 ]
@@ -11,3 +11,20 @@ sc_integrateRNA_vars=[
 
 load PIPELINE_ROOT + "/modules/scRNAseq/sc_integrateRNA.groovy"
 
+// expected parameter types
+class sc_integrateRNA_vars_schema {
+    String outdir             
+    String project           
+    String res             
+    String batch   
+    String n_features
+    String rdtype
+    String extra              
+
+    // check for the presence of mandatory params
+    boolean asBoolean() {
+      outdir && project && res && batch
+    }
+}
+
+validate_schema(sc_integrateRNA_vars_schema, sc_integrateRNA_vars)

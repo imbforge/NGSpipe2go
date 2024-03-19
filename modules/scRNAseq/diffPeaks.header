@@ -3,7 +3,7 @@ diffPeaks_vars=[
     project         : PROJECT,                     
     res             : RESULTS,          
     assay           : "ATAC",
-    minCells        : 20, //   minimum number of cells to include cluster in analysis
+    minCells        : "20", //   minimum number of cells to include cluster in analysis
     clusterVar      : "clusters_wnn",   // variable name with clustering info for comparison by group and cluster ("clusters_atac" or "clusters_wnn")
     CTannoSelected  : ESSENTIAL_CELLTYPE_ANNO[0],  // select celltype annotation column for comparison by group and celltype
     test            : "LR",  // statistical test to use. One of "wilcox", "bimod", "roc" , "t", "negbinom", "poisson", "LR", "MAST" and "DESeq2".
@@ -12,4 +12,25 @@ diffPeaks_vars=[
 ]
 
 load PIPELINE_ROOT + "/modules/scRNAseq/diffPeaks.groovy"
+
+// expected parameter types
+class diffPeaks_vars_schema {
+    String outdir             
+    String project           
+    String res           
+    String assay           
+    String minCells           
+    String clusterVar           
+    String CTannoSelected
+    String test      
+    String latentVars      
+    String extra              
+
+    // check for the presence of mandatory params
+    boolean asBoolean() {
+      outdir && project && res && CTannoSelected
+    }
+}
+
+validate_schema(diffPeaks_vars_schema, diffPeaks_vars)
 

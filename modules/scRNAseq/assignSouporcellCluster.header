@@ -7,4 +7,17 @@ assignSouporcellCluster_vars=[
 
 load PIPELINE_ROOT + "/modules/scRNAseq/assignSouporcellCluster.groovy"
 
+// expected parameter types
+class assignSouporcellCluster_vars_schema {
+    String outdir             
+    String souporcelldir           
+    String targets   
+    String extra              
 
+    // check for the presence of mandatory params
+    boolean asBoolean() {
+      outdir && souporcelldir && targets
+    }
+}
+
+validate_schema(assignSouporcellCluster_vars_schema, assignSouporcellCluster_vars)

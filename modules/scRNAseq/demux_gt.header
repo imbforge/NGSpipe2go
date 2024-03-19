@@ -3,10 +3,26 @@ demux_gt_vars=[
     targets             : "targets.txt",  //targets file
     ref                 : ESSENTIAL_TENX_TRANSCRIPTOME + "/fasta/genome.fa", // reference genome    
     cellranger_output   : MAPPED, // result files from cellranger to demultiplex 
-    threads             : 30,
+    threads             : "30",
     extra               : ""   // extra parameter to send to Cite-Seq-Count
 ]
 
 load PIPELINE_ROOT + "/modules/scRNAseq/demux_gt.groovy"
 
+// expected parameter types
+class demux_gt_vars_schema {
+    String outdir             
+    String targets           
+    String ref           
+    String cellranger_output           
+    String threads           
+    String extra              
+
+    // check for the presence of mandatory params
+    boolean asBoolean() {
+      outdir && targets && ref && cellranger_output
+    }
+}
+
+validate_schema(demux_gt_vars_schema, demux_gt_vars)
 

@@ -18,3 +18,28 @@ sc_readIndivSamplesAndMerge_vars=[
 
 load PIPELINE_ROOT + "/modules/scRNAseq/sc_readIndivSamplesAndMerge.groovy"
 
+// expected parameter types
+class sc_readIndivSamplesAndMerge_vars_schema {
+    String outdir             
+    String project           
+    String res             
+    String targets   
+    String org
+    String db
+    String gtf             
+    String mtgenes           
+    String selgenes             
+    String cellranger_output   
+    String run_demux
+    String demux_out
+    String demuxCluster_out             
+    String colorByFactor           
+    String extra              
+
+    // check for the presence of mandatory params
+    boolean asBoolean() {
+      outdir && project && res && targets
+    }
+}
+
+validate_schema(sc_readIndivSamplesAndMerge_vars_schema, sc_readIndivSamplesAndMerge_vars)

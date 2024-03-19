@@ -3,9 +3,26 @@ DNAaccess_vars=[
     project          : PROJECT,                     
     res              : RESULTS,          
     featureCutoff    : "q5", // either percentile specified as 'q' followed by the minimum percentile or minimum number of cells containing the feature    
-    skipFirstLSIcomp : 1,  // If we see a very strong correlation between the first LSI component and read depth, this component should be removed.    
+    skipFirstLSIcomp : "1",  // If we see a very strong correlation between the first LSI component and read depth, this component should be removed.    
     extra    : ""          //extra parms to sent to the tool
 ]
 
 load PIPELINE_ROOT + "/modules/scRNAseq/DNAaccess.groovy"
+
+// expected parameter types
+class DNAaccess_vars_schema {
+    String outdir             
+    String project           
+    String res           
+    String featureCutoff           
+    String skipFirstLSIcomp           
+    String extra              
+
+    // check for the presence of mandatory params
+    boolean asBoolean() {
+      outdir && project && res
+    }
+}
+
+validate_schema(DNAaccess_vars_schema, DNAaccess_vars)
 

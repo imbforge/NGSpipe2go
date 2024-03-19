@@ -5,11 +5,11 @@ motifFootprinting_vars=[
     db              : ESSENTIAL_DB,                
     motifEnrich_dir : (binding.variables.containsKey("motifEnrich_vars") ? motifEnrich_vars.outdir : ""),                
     assay           : "ATAC", // name of assay to use
-    motifsPerContrast : 1,  // number of top enriched motifs per contrast to be used in footprinting.
+    motifsPerContrast : "1",  // number of top enriched motifs per contrast to be used in footprinting.
     motifsByName    : "", // name of txt file containing motifs names to be used in footprinting (one per line, no header).   
     inPeaks         : "TRUE", // Restrict motifs to those that fall in peaks    
-    upstream        : 250, // number of bases to extend upstream    
-    downstream      : 250, // number of bases to extend downstream    
+    upstream        : "250", // number of bases to extend upstream    
+    downstream      : "250", // number of bases to extend downstream    
     groupPlotBy     : "sample", // grouping variable for footprinting plot   
     splitPlotBy     : "", // splitting variable for footprinting plot   
     extra    : ""                          //extra parms to sent to the tool
@@ -17,3 +17,27 @@ motifFootprinting_vars=[
 
 load PIPELINE_ROOT + "/modules/scRNAseq/motifFootprinting.groovy"
 
+// expected parameter types
+class motifFootprinting_vars_schema {
+    String outdir             
+    String project           
+    String res             
+    String db   
+    String motifEnrich_dir
+    String assay      
+    String motifsPerContrast          
+    String motifsByName             
+    String inPeaks           
+    String upstream             
+    String downstream   
+    String groupPlotBy
+    String splitPlotBy      
+    String extra              
+
+    // check for the presence of mandatory params
+    boolean asBoolean() {
+      outdir && project && res
+    }
+}
+
+validate_schema(motifFootprinting_vars_schema, motifFootprinting_vars)
