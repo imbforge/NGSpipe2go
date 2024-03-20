@@ -7,5 +7,5 @@ FastQQualityFilter_vars=[
     extra      : "-v -z"
 ]
 
-load PIPELINE_ROOT + "/modules/smallRNAseq_BCF/fastq_quality_filter.groovy"
+load PIPELINE_ROOT + "/modules/smallRNAseq/fastq_quality_filter.groovy"
 

@@ -5,6 +5,6 @@ filter_smallRNA_counts_vars=[
     smallrna          : ESSENTIAL_SMALLRNA          // type of smallRNA to be analyzed 
 ]
 
-load PIPELINE_ROOT + "/modules/smallRNAseq_BCF/filter_smallrna_counts.groovy"
+load PIPELINE_ROOT + "/modules/smallRNAseq/filter_smallrna_counts.groovy"
 
 

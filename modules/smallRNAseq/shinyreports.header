@@ -26,7 +26,7 @@ shinyReports_vars=[
     subread_suf_type  : "\"\\.readcounts.tsv\"",       // file ending of subread count files 
     plots_column      : "3"                 ,          // number of columns to splits the plot grids (dupradar, genebodycov...)
     tool_versions     : collectToolVersions_vars.outdir + "/tool_versions.txt", // where the tool versions listed
-    target            : new File(PIPELINE_ROOT + "/pipelines/smallRNAseq_BCF/targets.txt").getCanonicalPath(),
+    target            : new File(PIPELINE_ROOT + "/pipelines/smallRNAseq/targets.txt").getCanonicalPath(),
     de_deseq_dir      : DE_DESeq2_vars.outdir,         // DESeq2 main output dir
     de_deseq_file     : "DE_DESeq2.RData",             // DESeq2 output file name
     de_deseq_FDR      : DE_DESeq2_vars.FDR,            // which FDR threshold was used for the DESeq2 analysis     
@@ -36,5 +36,5 @@ shinyReports_vars=[
     maturemirna       : (RUN_MATUREMIRNA_ANALYSIS ? "TRUE" : "FALSE") // was a separate analysis on mature miRNA run?
 ]
 
-load PIPELINE_ROOT + "/modules/smallRNAseq_BCF/shinyreports.groovy"
+load PIPELINE_ROOT + "/modules/smallRNAseq/shinyreports.groovy"
 

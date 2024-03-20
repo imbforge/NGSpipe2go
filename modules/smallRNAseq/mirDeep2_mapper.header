@@ -9,5 +9,5 @@ miRDeep2Mapper_vars=[
                 "-o 8"  // please, add a description for this parm
 ]
 
-load PIPELINE_ROOT + "/modules/smallRNAseq_BCF/mirDeep2_mapper.groovy"
+load PIPELINE_ROOT + "/modules/smallRNAseq/mirDeep2_mapper.groovy"
 

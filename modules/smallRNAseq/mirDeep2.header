@@ -6,5 +6,5 @@ miRDeep2_vars=[
     species      : ESSENTIAL_SPECIES
 ]
 
-load PIPELINE_ROOT + "/modules/smallRNAseq_BCF/mirDeep2.groovy"
+load PIPELINE_ROOT + "/modules/smallRNAseq/mirDeep2.groovy"
 

@@ -4,5 +4,5 @@ TrimUMIs_vars=[
     right_trim: ESSENTIAL_UMI_LENGTH_RIGHT
 ]
 
-load PIPELINE_ROOT + "/modules/smallRNAseq_BCF/trim_umis.groovy"
+load PIPELINE_ROOT + "/modules/smallRNAseq/trim_umis.groovy"
 

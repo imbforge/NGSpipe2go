@@ -11,7 +11,7 @@ bowtie1_sRNA_vars=[
     extra           : ""
 ]
 
-load PIPELINE_ROOT + "/modules/smallRNAseq_BCF/bowtie1.groovy"
+load PIPELINE_ROOT + "/modules/smallRNAseq/bowtie1.groovy"
 
 // expected parameter types
 class bowtie1_vars_schema {
