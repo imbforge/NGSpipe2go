@@ -1634,7 +1634,7 @@ ChIPhelper.diffbind <- function(subdir="") {
           opar <- par(mfrow=c(ceiling(numberOfPlots/COLUMNS), COLUMNS))
           try(dba.plotMA(db, contrast=cont, cex.main=0.8))  # col.main="white"  
           
-          hist(res[[cont]][,paste0("lfc_", names(res)[cont])], main="", xlab="log2 fold change", ylab="number of significant peaks", col="grey")
+          hist(res[[cont]][,paste0("lfc_", gsub(subexpPrefix, "", names(res)[cont]))], main="", xlab="log2 fold change", ylab="number of significant peaks", col="grey")
           abline(v=0, lty=2, col="blue")
           
           if(tolower(SHINYREPS_DB) %in% registered_UCSC_genomes()$genome) {
