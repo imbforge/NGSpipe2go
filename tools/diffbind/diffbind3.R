@@ -374,14 +374,14 @@ for (sub in unique(contsAll$sub_experiment)) {
       
       # plot consensus peaks
       # 1st group name between diffbind versions
-      vennmask <- dba.mask(db, DBA_CONDITION, factor(dba.show(db, bContrast=T)[cont, grep("group", names(dba.show(db, bContrast=T)), ignore.case = T)])) 
+      vennmask <- dba.mask(db, DBA_CONDITION, factor(as.character(dba.show(db, bContrast=T)[cont, grep("group", names(dba.show(db, bContrast=T)), ignore.case = T)])))
       if(sum(vennmask) <= 4) {   # if less than 2 replicates per group (or 4 replicates in total)
         png(file.path(OUT, paste0(subexpPrefix, cont.name, "_venn_plot.png")), width = 150, height = 150, units = "mm", res=300)
           try(dba.plotVenn(db, mask=vennmask, main="Binding Site Overlaps Per Sample"))    # plot all relevant samples together
         dev.off()
       } else {  # generate a consensus peakset otherwise
         if(class(tryConsensus)=="DBA") { # check if db2 was successfully created
-           vennmask2 <- dba.mask(db2, DBA_CONDITION, factor(dba.show(db2, bContrast=T)[cont, grep("group", names(dba.show(db2, bContrast=T)), ignore.case = T)])) # db2 see above
+          vennmask2 <- dba.mask(db2, DBA_CONDITION, factor(as.character(dba.show(db2, bContrast=T)[cont, grep("group", names(dba.show(db2, bContrast=T)), ignore.case = T)]))) # db2 see above
            png(file.path(OUT, paste0(subexpPrefix, cont.name, "_venn_plot.png")), width = 150, height = 150, units = "mm", res=300)
               try(dba.plotVenn(db2, main="Binding Site Overlaps Per Group",
                             mask=db2$masks$Consensus & names(db2$masks$Consensus) %in% factor(dba.show(db, bContrast=T)[cont, grep("group", names(dba.show(db, bContrast=T)), ignore.case = T)]) ))
