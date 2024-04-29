@@ -98,6 +98,9 @@ tools_envs = [
         "R/Bioconductor_3.16_singularity" : [
             lmod: "module load R/Bioconductor_3.16_singularity"
         ],
+        "R/Bioconductor_3.18_singularity" : [
+            lmod: "module load R/Bioconductor_3.18_singularity"
+        ],
         "bioconductor/3.17" : [
             shpc: "${shpc_call} module load bioconductor/3.17"
         ],
