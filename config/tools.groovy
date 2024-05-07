@@ -68,7 +68,7 @@ tools_defaults = [
     stringtie      : [ runenv: "lmod", version: "2.2.1"                           ],
     subread        : [ runenv: "lmod", version: "2.0.0"                           ],
     trimgalore     : [ runenv: "lmod", version: "0.5.0"                           ],
-    umitools       : [ runenv: "lmod", version: "1.0.0"                           ],
+    umitools       : [ runenv: "lmod", version: "1.1.2"                           ],
     vcftools       : [ runenv: "lmod", version: "1.16"                            ]
 ]
 
