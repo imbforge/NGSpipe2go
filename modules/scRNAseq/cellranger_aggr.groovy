@@ -31,6 +31,7 @@ cellranger_aggr = {
 
             cellranger aggr --csv=aggr.csv $CELLRANGER_AGGR_FLAGS &&
             mv $cellranger_aggr_vars.id $output.dir &&
+            mv aggr.csv $output.dir &&
             touch $output
 
         ""","cellranger_aggr"

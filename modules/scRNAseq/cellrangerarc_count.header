@@ -2,11 +2,26 @@ cellrangerarc_count_vars=[
     outdir          : MAPPED,
     reference       : ESSENTIAL_TENX_REFERENCE, 
     fastqdir        : ESSENTIAL_TENX_FASTQDIR, 
-    cores           : 8,
-    localmem        : 64,
+    cores           : "32",
+    localmem        : "128",
     extra           : ""               // extra parms to sent to the tool
 ]
 
 load PIPELINE_ROOT + "/modules/scRNAseq/cellrangerarc_count.groovy"
 
+// expected parameter types
+class cellrangerarc_count_vars_schema {
+    String outdir             
+    String reference           
+    String fastqdir           
+    String cores
+    String localmem      
+    String extra              
 
+    // check for the presence of mandatory params
+    boolean asBoolean() {
+      outdir && reference && fastqdir
+    }
+}
+
+validate_schema(cellrangerarc_count_vars_schema, cellrangerarc_count_vars)

@@ -14,6 +14,7 @@ NGSpipe2go is a software framework to facilitate the development, customization 
 - [smallRNA-Seq](https://gitlab.rlp.net/imbforge/NGSpipe2go/-/blob/master/pipelines/smallRNAseq_BCF/README.md)
 - [single cell RNA-Seq](https://gitlab.rlp.net/imbforge/NGSpipe2go/-/blob/master/pipelines/scRNAseq/README.md)
 - [(s)BLISS and BreakTag](https://gitlab.rlp.net/imbforge/NGSpipe2go/-/blob/master/pipelines/breaktag/README.md)
+- [GLOE-Seq](https://gitlab.com/GPetrosino/GLOE-Pipe)
 
 ## NGSpipe2go preparations ##
 

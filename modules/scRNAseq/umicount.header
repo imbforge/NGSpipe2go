@@ -15,3 +15,20 @@ umicount_vars=[
 
 load PIPELINE_ROOT + "/modules/scRNAseq/umicount.groovy"
 
+// expected parameter types
+class umicount_vars_schema {
+    String outdir             
+    String logdir           
+    Boolean log           
+    Boolean paired           
+    String param             
+    String extra              
+
+    // check for the presence of mandatory params
+    boolean asBoolean() {
+      outdir && logdir
+    }
+}
+
+validate_schema(umicount_vars_schema, umicount_vars)
+

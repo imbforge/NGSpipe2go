@@ -1,0 +1,31 @@
+motifEnrich_vars=[
+    outdir          : RESULTS + "/motifEnrichment",
+    project         : PROJECT,                     
+    res             : RESULTS,          
+    db              : ESSENTIAL_DB,                
+    diffPeaks_dir   : (binding.variables.containsKey("diffPeaks_vars") ? diffPeaks_vars.outdir : ""),                
+    pval_thresh     : "0.05", //   p-value threshold of differential accessible peaks to include
+    min_peaks       : "5",  // skip enrichment if less peaks available in comparison
+    extra    : ""                          //extra parms to sent to the tool
+]
+
+load PIPELINE_ROOT + "/modules/scRNAseq/motifEnrich.groovy"
+
+// expected parameter types
+class motifEnrich_vars_schema {
+    String outdir             
+    String project           
+    String res             
+    String db   
+    String diffPeaks_dir
+    String pval_thresh      
+    String min_peaks          
+    String extra              
+
+    // check for the presence of mandatory params
+    boolean asBoolean() {
+      outdir && project && res
+    }
+}
+
+validate_schema(motifEnrich_vars_schema, motifEnrich_vars)

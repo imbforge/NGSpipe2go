@@ -1,0 +1,31 @@
+motifActivity_vars=[
+    outdir          : RESULTS + "/motifActivity",
+    project         : PROJECT,                     
+    res             : RESULTS,          
+    db              : ESSENTIAL_DB,
+    clusterVar      : "clusters_wnn",  // variable name with clustering info for comparison by group and cluster ("clusters_rna" or "clusters_wnn")
+    CTannoSelected  : ESSENTIAL_CELLTYPE_ANNO[0],  // select celltype annotation column for comparison by group and celltype
+    motif2plot      : "MA0497.1", // optional motifs for activity plots. Give either a single motif name or a path to a txt file with multiple motifs one per line.              
+    extra    : ""                          //extra parms to sent to the tool
+]
+
+load PIPELINE_ROOT + "/modules/scRNAseq/motifActivity.groovy"
+
+// expected parameter types
+class motifActivity_vars_schema {
+    String outdir             
+    String project           
+    String res             
+    String db   
+    String clusterVar
+    String CTannoSelected      
+    String motif2plot          
+    String extra              
+
+    // check for the presence of mandatory params
+    boolean asBoolean() {
+      outdir && project && res && CTannoSelected
+    }
+}
+
+validate_schema(motifActivity_vars_schema, motifActivity_vars)

@@ -1,0 +1,41 @@
+sc_filter_vars=[
+    outdir             : QC + "/sc_qc",
+    project            : PROJECT,                     
+    res                : RESULTS,         
+    nCount_ATAC_min    : "1000",          
+    nCount_ATAC_max    : "50000",     
+    nCount_RNA_min     : "1000",          
+    nCount_RNA_max     : "30000",         
+    FRiPmin            : "0.3",      // Fraction of reads in peaks (min threshold)
+    FRiBLmax           : "0.05",     // Fraction of reads in blacklisted regions (max treshold)    
+    nucleosome_sig_max : "2",        // nucleosome signal (max threshold)
+    TSS_enrich_min     : "1",        // TSS enrichment (min threshold) 
+    MT_perc_max        : "20",       // mitochondrial RNA count percentage (max threshold) 
+    extra              : ""        // extra parms to sent to the tool
+]
+
+load PIPELINE_ROOT + "/modules/scRNAseq/sc_filter.groovy"
+
+// expected parameter types
+class sc_filter_vars_schema {
+    String outdir             
+    String project           
+    String res             
+    String nCount_ATAC_min   
+    String nCount_ATAC_max
+    String nCount_RNA_min      
+    String nCount_RNA_max          
+    String FRiPmin             
+    String FRiBLmax           
+    String nucleosome_sig_max           
+    String TSS_enrich_min             
+    String MT_perc_max   
+    String extra              
+
+    // check for the presence of mandatory params
+    boolean asBoolean() {
+      outdir && project && res
+    }
+}
+
+validate_schema(sc_filter_vars_schema, sc_filter_vars)

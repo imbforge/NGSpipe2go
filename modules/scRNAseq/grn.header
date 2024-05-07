@@ -1,0 +1,46 @@
+grn_vars=[
+    outdir           : RESULTS + "/Gene_regulatory_network",
+    project          : PROJECT,                     
+    res              : RESULTS,          
+    peak_assay       : "ATAC",          
+    rna_assay        : "SCT",          
+    db               : ESSENTIAL_DB,                
+    methodModel      : "glm",  // method to fit the model
+    genes2use        : "",  // path to txt file (no header) with target genes to consider for GRN inference (takes all VariableFeatures in the object per default).
+    pval_thresh      : "0.05", // adjusted p-value threshold for module extraction
+    min_genes        : "5",  // minimum number of genes in a module
+    features4graph   : "", // path to txt file (no header) with features to use to create the graph. If empty uses all features in the network
+    umap_method      : "weighted", // Method to compute edge weights for UMAP (one of "weighted", "corr", "coef", "none")
+    n_neighbors      : "15", // The size of local neighborhood (in terms of number of neighboring sample points) used for manifold approximation.  
+    batchCorrection  : RUN_BATCHCORRECT, // We use this to determine whether to use the corresponding function to prepare the SCT models if batch-correction was performed 
+    extra            : ""  //extra parms to sent to the tool
+]
+
+load PIPELINE_ROOT + "/modules/scRNAseq/grn.groovy"
+
+// expected parameter types
+class grn_vars_schema {
+    String outdir             
+    String project           
+    String res           
+    String peak_assay           
+    String rna_assay           
+    String db           
+    String methodModel
+    String genes2use      
+    String pval_thresh      
+    String min_genes           
+    String features4graph           
+    String umap_method           
+    String n_neighbors           
+    Boolean batchCorrection           
+    String extra              
+
+    // check for the presence of mandatory params
+    boolean asBoolean() {
+      outdir && project && res && db
+    }
+}
+
+validate_schema(grn_vars_schema, grn_vars)
+

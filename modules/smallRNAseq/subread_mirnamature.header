@@ -1,0 +1,31 @@
+subread_miRNAmature_count_vars=[
+    outdir            : RESULTS + "/subread-count",
+    stranded          : ESSENTIAL_STRANDED, // whether the data is from a strand-specific assay (illumina SR: always reverse)
+    count_multimapping: true,               // also count multi-mapping reads
+    feature           : "miRNA",            // annotation feature to count mapped reads ("exon" by default)
+    attribute         : "Name",             // annotation attribute type used to group features ("gene_id" by default)
+    genesgff          : ESSENTIAL_MIRNAGFF,
+    threads           : Integer.toString(ESSENTIAL_THREADS),
+    extra             : " "            // extra params to sent to the tool
+]
+
+load PIPELINE_ROOT + "/modules/smallRNAseq/subread_mirnamature.groovy"
+
+// expected parameter types
+class subread_miRNAmature_count_vars_schema {
+    String outdir  
+    String stranded
+    Boolean count_multimapping   
+    String feature   
+    String attribute      
+    String genesgff   
+    String threads    
+    String extra    
+
+    // check for the presence of mandatory params
+    boolean asBoolean() {
+      outdir && genesgff && stranded
+    }
+}
+
+validate_schema(subread_miRNAmature_count_vars_schema, subread_miRNAmature_count_vars)

@@ -168,6 +168,16 @@ ChIPhelper.UpSetPlot <- function(subdir="", Mode = "intersect", peakOverlapMode=
   if(length(peak.ranges)>15) {
     cat("UpSet plots are available only for max 15 peaksets")
     return()}
+  
+  if(!is.null(targetsdf)) { # sort targetsdf and peak.ranges into the same order
+    targetsdf <- targetsdf[paste0(targetsdf$IPname, " vs. ", targetsdf$INPUTname) %in% names(peak.ranges),] # remove samples without peaks
+    targetsdf <- targetsdf[order(targetsdf$group, targetsdf$IPname), ]
+    mypalette <- define.group.palette(length(levels(factor(targetsdf$group))))
+    legend_colors <- setNames(mypalette, levels(factor(targetsdf$group)))
+    peaksetsOrderByTargetsdf <- match(targetsdf$IPname, gsub(".vs.*$", "", names(peak.ranges)))
+    peak.ranges <- peak.ranges[peaksetsOrderByTargetsdf]
+  }
+  
   upsetReturn <- list()
   upsetReturn[["peak.ranges"]] <- peak.ranges
   
@@ -183,12 +193,6 @@ ChIPhelper.UpSetPlot <- function(subdir="", Mode = "intersect", peakOverlapMode=
     combColors <- fillColors <- "steelblue" # default color
     
     if(!is.null(targetsdf)) { # coloring setnames and respective combinations by group from targets file
-      targetsdf <- targetsdf[paste0(targetsdf$IPname, " vs. ", targetsdf$INPUTname) %in% names(peak.ranges),] # remove samples without peaks
-      targetsdf <- targetsdf[order(targetsdf$group, targetsdf$IPname), ]
-      mypalette <- define.group.palette(length(levels(factor(targetsdf$group))))
-      legend_colors <- setNames(mypalette, levels(factor(targetsdf$group)))
-      
-      setnamesOrderByTargetsdf <- match(targetsdf$IPname, gsub(".vs.*$", "", set_name(upset_matrix)))
       fillColors <- legend_colors[targetsdf$group]
       combColors <- rep("grey40", length.out=length(comb_name(upset_matrix))) 
       for(i in targetsdf$group) { # assign color for all combinations involving a single group
@@ -218,12 +222,12 @@ ChIPhelper.UpSetPlot <- function(subdir="", Mode = "intersect", peakOverlapMode=
                        comb_order = order(comb_size(upset_matrix), decreasing = T),
                        comb_col = combColors,
                        bg_col = "#F0F0FF",
-                       set_order = if(is.null(targetsdf)) {order(set_size(upset_matrix), decreasing = TRUE)} else {setnamesOrderByTargetsdf},
+                       set_order = if(is.null(targetsdf)) {order(set_size(upset_matrix), decreasing = TRUE)} else {NULL},
                        column_title=paste("# of", Mode, "peaks for each set (max", setsize, "sets shown)"),
                        left_annotation = if(is.null(targetsdf)) {NULL} else {
                          rowAnnotation(group = targetsdf$group, col=list(group=legend_colors), show_legend = T,
-                                       annotation_legend_param = list(title_position = "leftcenter", legend_direction = "horizontal", ncol=1)
-                                       )},  
+                                       annotation_legend_param = list(title_position = "leftcenter", legend_direction = "horizontal", ncol=2)
+                                       )},
                        right_annotation = upset_right_annotation(upset_matrix, gp = gpar(fill = fillColors)),
                        column_title_gp = gpar(fontsize = 11),
                        row_names_gp = gpar(fontsize = 8),
@@ -264,12 +268,6 @@ ChIPhelper.UpSetPlot <- function(subdir="", Mode = "intersect", peakOverlapMode=
     upsetReturn[["matrix_bp"]] <- upset_matrix
     
     if(!is.null(targetsdf)) { # coloring setnames and respective combinations by group from targets file
-      targetsdf <- targetsdf[paste0(targetsdf$IPname, " vs. ", targetsdf$INPUTname) %in% names(peak.ranges),] # remove samples without peaks
-      targetsdf <- targetsdf[order(targetsdf$group, targetsdf$IPname), ]
-      mypalette <- define.group.palette(length(levels(factor(targetsdf$group))))
-      legend_colors <- setNames(mypalette, levels(factor(targetsdf$group)))
-      
-      setnamesOrderByTargetsdf <- match(targetsdf$IPname, gsub(".vs.*$", "", set_name(upset_matrix)))
       fillColors <- legend_colors[targetsdf$group]
       combColors <- rep("grey40", length.out=length(comb_name(upset_matrix))) 
       for(i in targetsdf$group) { # assign color for all combinations involving a single group
@@ -299,11 +297,11 @@ ChIPhelper.UpSetPlot <- function(subdir="", Mode = "intersect", peakOverlapMode=
                        comb_order = order(comb_size(upset_matrix), decreasing = T),
                        comb_col = combColors,
                        bg_col = "#F0F0FF",
-                       set_order = if(is.null(targetsdf)) {order(set_size(upset_matrix), decreasing = TRUE)} else {setnamesOrderByTargetsdf},
+                       set_order = if(is.null(targetsdf)) {order(set_size(upset_matrix), decreasing = TRUE)} else {NULL},
                        column_title=paste("# of", Mode, "bp for each set (max", setsize, "sets shown)"),
                        left_annotation = if(is.null(targetsdf)) {NULL} else {
                          rowAnnotation(group = targetsdf$group, col=list(group=legend_colors), show_legend = T,
-                                       annotation_legend_param = list(title_position = "leftcenter", legend_direction = "horizontal", ncol=1)
+                                       annotation_legend_param = list(title_position = "leftcenter", legend_direction = "horizontal", ncol=2)
                          )},  
                        right_annotation = upset_right_annotation(upset_matrix, gp = gpar(fill = fillColors)),
                        column_title_gp = gpar(fontsize = 11),

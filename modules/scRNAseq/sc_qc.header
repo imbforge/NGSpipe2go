@@ -1,0 +1,25 @@
+sc_qc_vars=[
+    outdir          : QC + "/sc_qc",
+    project         : PROJECT,                     
+    res             : RESULTS,          //where the results lie
+    db              : ESSENTIAL_DB,        
+    extra    : ""                          //extra parms to sent to the tool
+]
+
+load PIPELINE_ROOT + "/modules/scRNAseq/sc_qc.groovy"
+
+// expected parameter types
+class sc_qc_vars_schema {
+    String outdir             
+    String project           
+    String res             
+    String db   
+    String extra              
+
+    // check for the presence of mandatory params
+    boolean asBoolean() {
+      outdir && project && res
+    }
+}
+
+validate_schema(sc_qc_vars_schema, sc_qc_vars)

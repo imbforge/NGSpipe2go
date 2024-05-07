@@ -1,12 +1,12 @@
 // Essential Variables
 
 // General
-ESSENTIAL_PROJECT="/your/project/folder/"
+ESSENTIAL_PROJECT="/fsimb/groups/imb-bioinfocf/projects/cfb_internal/siva/alternate_module_aggr"
 ESSENTIAL_SAMPLE_PREFIX=""
 ESSENTIAL_PAIRED="no"           // paired end design ("no" for MARS-Seq and 10X, because R2 in MARS_Seq and R1 in 10X contain UMI and barcodes only)
 ESSENTIAL_STRANDED="yes"         // strandness: no|yes|reverse // defaults per pipeline: "yes" for tenX
 ESSENTIAL_READLENGTH=130        // added for STAR version > 2.4.1a
-ESSENTIAL_THREADS=4             // number of threads for parallel tasks
+ESSENTIAL_THREADS=16             // number of threads for parallel tasks
 ESSENTIAL_FRAGMENT_USAGE="no"   //should fragments be reconstituted? should always be no for rnaseq
 ESSENTIAL_FILTER_CHR=""         //chromosomes to include in post-mapping analysis.
 ESSENTIAL_FRAGLEN=200          // mean length of library inserts (default 200)
@@ -22,13 +22,14 @@ ESSENTIAL_TENX_REFERENCE="/fsimb/common/genomes/homo_sapiens/10X/grch38_ensembl9
 ESSENTIAL_TENX_EXPECTED_CELLS=7000 // cellranger default 
 ESSENTIAL_TENX_FASTQDIR=ESSENTIAL_PROJECT + "/rawdata"
 ESSENTIAL_TENX_AGGRCSV="aggregation.csv"
+ESSENTIAL_USE_AGGR_DATA = false // if true load cellranger aggr results. Otherwise, load individual sample data and aggregate in Seurat
 ESSENTIAL_TENX_NORMALIZED="mapped"
-ESSENTIAL_TENX_NUCLEI="no"         // set to "yes" if 10X run with nuclei instead of cells
+ESSENTIAL_TENX_NUCLEI="yes"         // set to "yes" if 10X run with nuclei instead of cells
 
 // Optional sample demultiplexing if sample pooling per GEM well was applied in 10X pipelines (specify one line per demultiplexed sample in targets.txt)
 // Either "demux_HTO" for cell hashing, "demux_GT" for demultiplexing by genetic variance or empty string (no demultiplexing)
 // if "demux_HTO" provide "file_HTO" (fastq file with corresponding HTO sequences), "seq_HTO" (HTO sequence) and "name_HTO" (HTO name) in targets.txt 
-RUN_DEMUX=""  
+RUN_DEMUX="demux_GT"  
 
 // Reference genomes for FastqScreen
 ESSENTIAL_FASTQSCREEN_PERC=1    // contaminant filter, if a contaminant is consuming at least this percentage of reads in at least one sample, contaminant will be shown in report
@@ -42,7 +43,9 @@ ESSENTIAL_CHROMSIZES="/fsimb/common/genomes/homo_sapiens/10X/grch38_ensembl98/re
 ESSENTIAL_FEATURETYPE="gene_type" //gencode (also 10X Genomics) uses gene_type; ensemble uses gene_biotype
 ESSENTIAL_ORG="human"           // UCSC organism
 ESSENTIAL_DB="hg38"              // UCSC assembly version
-ESSENTIAL_MTGENES=""  // list with gene_id of mitochondrial genes (give path within ESSENTIAL_PROJECT)
+ESSENTIAL_MTGENES="MT-"  // list with gene_id of mitochondrial genes (give path within ESSENTIAL_PROJECT)
+ESSENTIAL_CELLTYPE_ANNO = ["Marker"] // select celltype annotation method (one or more of "Seurat", "Marker"). The first in the list is used for downstream processing. 
+// if "Seurat" selected, specify reference dataset in CTannoSeurat.header. For "Marker" specify marker table in CTannoMarker.header.
 
 
 // Barcodes (used for UMI and barcode extraction in MARS-Seq)
@@ -77,5 +80,5 @@ FUSION=PROJECT + "/fusion"
 // optional pipeline stages to include
 RUN_TRACKHUB=false
 RUN_IN_PAIRED_END_MODE=(ESSENTIAL_PAIRED == "yes")
-
+RUN_BATCHCORRECT=true // if true, please remember to set a batch-variable in the sc_integrateRNA.header file. The batch-variable has to be a column name from targets file.
 

@@ -1,0 +1,45 @@
+sc_readIndivSamplesAndMerge_vars=[
+    outdir              : RESULTS + "/sc_readIndivSamplesAndMerge",
+    project             : PROJECT,                     
+    res                 : RESULTS,          //where the results lie
+    targets             : new File(PIPELINE_ROOT + "/pipelines/scRNAseq/targets.txt").getCanonicalPath(),   //targets file. 
+    org                 : ESSENTIAL_ORG,    //UCSC organism
+    db                  : ESSENTIAL_DB,        
+    gtf                 : ESSENTIAL_GENESGTF,           
+    mtgenes             : ESSENTIAL_MTGENES,
+    selgenes            : "", 
+    cellranger_output   : MAPPED, // result files from cellranger to read in the filtered matrices
+    run_demux           : RUN_DEMUX, //run sample de-multiplexing step
+    demux_out           : (RUN_DEMUX=="demux_HTO" ? (binding.variables.containsKey("demux_hto_vars") ? demux_hto_vars.outdir : "") : (RUN_DEMUX=="demux_GT" ? (binding.variables.containsKey("demux_gt_vars") ? demux_gt_vars.outdir : "") : "") ),  //where the demux output lie
+    demuxCluster_out    : (binding.variables.containsKey("assignSouporcellCluster_vars") ? assignSouporcellCluster_vars.outdir : ""), //output assignSouporcellCluster
+    colorByFactor       : "", // variables for grouping and plotting (if empty, default value selected depending on seqtype)
+    extra               : ""                          //extra parms to sent to the tool
+]
+
+load PIPELINE_ROOT + "/modules/scRNAseq/sc_readIndivSamplesAndMerge.groovy"
+
+// expected parameter types
+class sc_readIndivSamplesAndMerge_vars_schema {
+    String outdir             
+    String project           
+    String res             
+    String targets   
+    String org
+    String db
+    String gtf             
+    String mtgenes           
+    String selgenes             
+    String cellranger_output   
+    String run_demux
+    String demux_out
+    String demuxCluster_out             
+    String colorByFactor           
+    String extra              
+
+    // check for the presence of mandatory params
+    boolean asBoolean() {
+      outdir && project && res && targets
+    }
+}
+
+validate_schema(sc_readIndivSamplesAndMerge_vars_schema, sc_readIndivSamplesAndMerge_vars)

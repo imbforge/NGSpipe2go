@@ -1,0 +1,52 @@
+CTannoSeurat_vars=[
+    outdir          : RESULTS + "/CTanno",
+    project         : PROJECT,                     
+    res             : RESULTS,          
+    pathRefDataset  : "/fsimb/groups/imb-bioinfocf/projects/cfb_internal/frank/multiome500/reference_data/hcl.seurat.RDS", // path to reference dataset (Seurat object SCT normalized)
+    columnNameCelltypes : "CT", // Column name with cell type annotation in reference dataset
+    assay           : "SCT",    // assay to use
+    norm_method     : "SCT",    // Name of normalization method used: "LogNormalize" or "SCT"
+    dimReduction    : "pcaproject", // dim reduction to perform when finding anchors ("pcaproject", "lsiproject", "rpca", "cca")
+    project_query   : "FALSE", // Project the PCA from the query dataset onto the ref. Use only in rare cases where the query dataset has a much larger cell number, but the ref dataset has a unique assay for transfer.
+    features2use    : "", // Features to use for dim reduction. If empty, set as variable features of the ref object which are also present in the query.    
+    l2_norm         : "TRUE", // Perform L2 normalization on the cell embeddings after dimensional reduction
+    k_anchor        : "5", // How many neighbors (k) to use when finding anchors    
+    k_filter        : "200", // How many neighbors (k) to use when filtering anchors. Set to NA to turn off filtering.   
+    k_score         : "30", // How many neighbors (k) to use when scoring anchors
+    extra           : ""        //extra parms to sent to the tool
+]
+
+load PIPELINE_ROOT + "/modules/scRNAseq/CTannoSeurat.groovy"
+
+// expected parameter types
+class CTannoSeurat_vars_schema {
+    String outdir             
+    String project           
+    String res           
+    String pathRefDataset           
+    String columnNameCelltypes           
+    String assay           
+    String norm_method
+    String dimReduction      
+    String project_query      
+    String features2use      
+    String l2_norm      
+    String k_anchor      
+    String k_filter      
+    String k_score      
+    String extra              
+
+    // check for the presence of mandatory params
+    boolean asBoolean() {
+      outdir && pathRefDataset
+    }
+}
+
+validate_schema(CTannoSeurat_vars_schema, CTannoSeurat_vars)
+
+// Perform dimensional reduction: Exactly what is done here depends on the values set for the reduction and project.query parameters. 
+// If reduction = "pcaproject", a PCA is performed on either the reference (if project.query = FALSE) or the query (if project.query = TRUE), 
+// using the features specified. The data from the other dataset is then projected onto this learned PCA structure. If reduction = "cca", 
+// then CCA is performed on the reference and query for this dimensional reduction step. If reduction = "lsiproject", the stored LSI dimension 
+// reduction in the reference object is used to project the query dataset onto the reference. 
+// If l2.norm is set to TRUE, perform L2 normalization of the embedding vectors.

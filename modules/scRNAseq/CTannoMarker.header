@@ -1,0 +1,33 @@
+CTannoMarker_vars=[
+    outdir     : RESULTS + "/CTanno",
+    project    : PROJECT,                     
+    res        : RESULTS,          
+    assay      : (RUN_BATCHCORRECT ? "integrated" : "SCT"),          
+    clusterVar : "clusters_wnn",          
+    dbfile     : "https://raw.githubusercontent.com/IanevskiAleksandr/sc-type/master/ScTypeDB_full.xlsx", // file should contain four columns (tissueType - tissue type, cellName - cell type, geneSymbolmore1 - positive marker genes, geneSymbolmore2 - marker genes not expected to be expressed by a cell type, shortName - short form of cell type)
+    tissue     : "Brain", // e.g. Immune system, Pancreas, Liver, Eye, Kidney, Brain, Lung, Adrenal, Heart, Intestine, Muscle, Placenta, Spleen, Stomach, Thymus          
+    ctcolumn   : "shortName", // Can be any column-name available in the dbfile, which should contain the celltype names in full form or as an abbreviation.
+    extra      : ""        //extra parms to sent to the tool
+]
+
+load PIPELINE_ROOT + "/modules/scRNAseq/CTannoMarker.groovy"
+
+// expected parameter types
+class CTannoMarker_vars_schema {
+    String outdir             
+    String project           
+    String res           
+    String assay           
+    String clusterVar
+    String dbfile      
+    String tissue      
+    String ctcolumn      
+    String extra              
+
+    // check for the presence of mandatory params
+    boolean asBoolean() {
+      outdir
+    }
+}
+
+validate_schema(CTannoMarker_vars_schema, CTannoMarker_vars)

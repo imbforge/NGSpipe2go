@@ -8,8 +8,7 @@ assignSouporcellCluster = {
     output.dir = assignSouporcellCluster_vars.outdir + "/" 
 
 
-    def TOOL_ENV = prepare_tool_env("souporcell", tools["souporcell"]["version"], tools["souporcell"]["runenv"]) + " && " +
-                   prepare_tool_env("R", tools["R"]["version"], tools["R"]["runenv"])
+    def TOOL_ENV = prepare_tool_env("souporcell", tools["souporcell"]["version"], tools["souporcell"]["runenv"])
     def PREAMBLE = get_preamble(stage:stageName, outdir:output.dir, input:new File(input1.prefix).getName())
 
     produce(output.dir + "/assignSouporcellCluster.done") {
@@ -27,6 +26,8 @@ assignSouporcellCluster = {
                     echo \${filenames[\$i]}_vs_\${filenames[\$j]};
                     sample1=${assignSouporcellCluster_vars.souporcelldir}/\${filenames[\$i]};
                     sample2=${assignSouporcellCluster_vars.souporcelldir}/\${filenames[\$j]};
+                    echo \$sample1;
+                    echo \$sample2;
 
                     clusterS1=\$(cat ${assignSouporcellCluster_vars.targets} | cut -f\${headerposFile} | grep \${filenames[\$i]} | wc -l);
                     clusterS2=\$(cat ${assignSouporcellCluster_vars.targets} | cut -f\${headerposFile} | grep \${filenames[\$j]} | wc -l);

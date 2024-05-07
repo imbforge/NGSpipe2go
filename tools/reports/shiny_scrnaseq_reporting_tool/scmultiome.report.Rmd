@@ -1,5 +1,5 @@
 ---
-title: "multiome"
+title: "SHINYREPS_PROJECT"
 output:
   html_document:
     toc: true
@@ -8,39 +8,6 @@ output:
 ---
 
 <div class="contentbox">
-
-
-
-
-
-
-
-
-
-############################################################################################
-############################################################################################
-############################################################################################
-############################################################################################
-##
-#   NOTE: WORK IN PROGRESS. THIS SCRIPT IS NOT RUNNABLE AS IS.
-#         THIS IS CURRENTLY JUST A COPY OF A W.I.P. SNAPSHOT OF 'scatac.report.Rmd'
-##
-############################################################################################
-############################################################################################
-############################################################################################
-############################################################################################
-
-
-
-
-
-
-
-
-
-
-
-
 
 
 
@@ -63,18 +30,12 @@ source("sc.shinyrep.helpers.R")
 
 
 # load required packages
-not_yet_attached <- attach_packages(c("tidyverse", "AnnotationDbi", "batchelor", "Biobase", "BiocSingular", "bluster", "Cairo", "circlize",
-          "chromVAR", "cluster", "ComplexHeatmap", "corrplot", "dendextend", "DropletUtils", "GeneOverlap", "ggbeeswarm",
-          "ggrepel", "gplots", "grid", "gridExtra", "igraph", "knitr", "kableExtra", "limma", "M3Drop", "Matrix", "parallel", 
-          "pheatmap", "pkgmaker", "plotly", "png", "RColorBrewer", "reshape2", "rmarkdown", "rtracklayer", "Rtsne", "scales", 
-          "scater", "scDblFinder", "scran", "scuttle", "Seurat", "Signac", "shinydashboard", "TFBSTools", "uwot", "VennDiagram", "vipor", "viridis", "JASPAR2020"))
-
-
-library(zellkonverter)
-library(data.table)
-library(future)
-library(pbapply)
-library(SeuratDisk)
+not_yet_attached <- attach_packages(c("tidyverse", "AnnotationDbi", "batchelor", "Biobase", "BiocSingular", "bluster", 
+          "Cairo", "circlize", "chromVAR", "cluster", "ComplexHeatmap", "corrplot", "data.table", "dendextend", "DropletUtils", 
+          "future", "GeneOverlap", "ggbeeswarm", "ggrepel", "gplots", "grid", "gridExtra", "igraph", "JASPAR2020", 
+          "knitr", "kableExtra", "limma", "M3Drop", "Matrix", "parallel", "pbapply", "pheatmap", "pkgmaker", "plotly", "png", 
+          "RColorBrewer", "reshape2", "rmarkdown", "rtracklayer", "Rtsne", "scales", "scater", "scDblFinder", "scran", "scuttle", 
+          "Seurat", "SeuratDisk", "Signac", "shinydashboard", "TFBSTools", "uwot", "VennDiagram", "vipor", "viridis", "zellkonverter"))
 
 
 
@@ -114,164 +75,18 @@ theme_set(theme_bw() + theme(axis.text=element_text(colour="grey30",size=12),
 									legend.text=element_text(size=12,colour="grey30"),
 									legend.title=element_text(size=12,colour="grey30")))
 
-# load list of mitochondrial genes (if not given, we will use all genes starting with "MT-")
-mito.genes <- if(file.exists(file.path(SHINYREPS_PROJECT,SHINYREPS_MTGENES))) {
-  read.delim(file.path(SHINYREPS_PROJECT,SHINYREPS_MTGENES))[, 1]
-} else {NA}
 
 runCutadapt <- SHINYREPS_RUN_CUTADAPT=="true" # check for selected pipeline modules 
-org <- SHINYREPS_ORG # organism name needed for cell cycle and GO enrichment 
-selgenes <- c("") # selected genes (symbols) for expression plots
 
-if (F) { # old part
-## load or create specific targets file for all cells. Accomodates both 10X ATAC-seq & 10X Multiome ATAC component
-#Columns required: "sample_id", "molecule_h5"
-targets_pools <- read.delim(SHINYREPS_TARGET, sep="\t")
-cellranger_dir <- file.path(SHINYREPS_RES, SHINYREPS_CELLRANGERAGGR_ID, "outs")
-matrix_dir <- file.path(cellranger_dir, "filtered_peak_bc_matrix")                                    # 10X ATAC
-if (!dir.exists(matrix_dir)) {matrix_dir <- file.path(cellranger_dir, "filtered_feature_bc_matrix")}  # 10X Multiome
-targets = read.delim(file.path(matrix_dir, "barcodes.tsv.gz"), header = FALSE, stringsAsFactors = FALSE)
-names(targets) = "cell_id"
-targets <- cbind(targets, targets_pools[as.numeric(gsub("^.*-", "", targets$cell_id)),])
-rownames(targets) <- targets$cell_id
-
-group.vars <- colnames(targets)[!colnames(targets) %in% c("cell_id", "sample", "file")] 
-targets[,group.vars] <- lapply(targets[,group.vars], factor)
-group.vars <- group.vars[sapply(group.vars, function(x) {length(unique(targets[,x]))>1})] # remove group vars with single value
-targets4plots <- targets_pools
-colorByFactor <- "sample" # default for pipeline overview plots
-colorByFactor2 <- if(!is.na(SHINYREPS_COLORBYFACTOR)) {SHINYREPS_COLORBYFACTOR} else {"sample"} # default for downstream plots (up to 2 categories)
-}
-
-      aggrcsv <- read.delim(file.path(SHINYREPS_RES, "aggr.csv"), sep=",") # aggr.csv contains the order of GEM wells
-      # load targets.txt (data per fastq file). Columns required: "sample", "file", "group", "replicate"
-      targets_pools <- read.delim(SHINYREPS_TARGET, sep="\t", comment.char = "#")
-      # create targets on cell level
-      cellranger_dir <- file.path(SHINYREPS_RES, SHINYREPS_CELLRANGERAGGR_ID, "outs")
-      matrix_dir <- file.path(cellranger_dir, "filtered_peak_bc_matrix")                                    # 10X ATAC
-      # matrix_dir = file.path(SHINYREPS_RES, SHINYREPS_CELLRANGERAGGR_ID, "outs/count/filtered_feature_bc_matrix/") # 10X GEX
-      if (!dir.exists(matrix_dir)) {matrix_dir <- file.path(cellranger_dir, "filtered_feature_bc_matrix")}  # 10X Multiome
-      targets = read.delim(file.path(matrix_dir, "barcodes.tsv.gz"), header = FALSE, stringsAsFactors = FALSE)
-      names(targets) = "cell_id"
-      
-      if(!is.na(SHINYREPS_RUN_DEMUX)) { # sample multiplexing applied?
-        
-        if(SHINYREPS_RUN_DEMUX=="demux_HTO") { # add HTO information if cell hashing applied
-          demuxfiles <- lapply(1:nrow(aggrcsv), function(x) {
-            read.delim(file.path(SHINYREPS_DEMUX_OUT, gsub("_S._L..._R._001", "", aggrcsv$library_id)[x], "Seurat", "demux.txt"), sep="\t")
-          })
-          demuxfiles <- dplyr::bind_rows(demuxfiles, .id = "GEMwell")
-          demuxfiles$cell_id <- paste(demuxfiles$cell_id, demuxfiles$GEMwell, sep="-")
-          targets <- merge(targets, demuxfiles[, c("cell_id", "GEMwell", "HTO_maxID", "HTO_classification.global", 
-                                                    "nCount_HTO", "nFeature_HTO", "HTO_secondID", "HTO_margin")], by="cell_id")
-          targets$name_HTO <- gsub("-.*$", "", targets$HTO_maxID)
-        }
-        
-        if(SHINYREPS_RUN_DEMUX=="demux_GT") { # add information if sample multiplexing by genetic variance is applied
-
-          # load assignSouporcellCluster files to correlate cluster among samples
-          clusterassignFilenames <- list.files(SHINYREPS_DEMUXCLUSTER_OUT, pattern = "\\.txt$", full.names=T)
-          clusterassign <- lapply(clusterassignFilenames, read.delim, sep="\t", skip=5)
-          clustercount  <- as.numeric(gsub("clusters for experiment1 ", "", sapply(clusterassignFilenames, read.delim, skip=2, nrows=1)))
-          names(clusterassign) <- names(clustercount) <- gsub("\\.txt$", "", basename(clusterassignFilenames))
-          for (i in names(clusterassign)) {
-            colnames(clusterassign[[i]])[1:2] <- unlist(strsplit(i, split="_vs_"))
-            clusterassign[[i]] <- clusterassign[[i]][1:clustercount[i],1:2]
-          }
-
-          # load demux_GT files in order defined in aggrcsv
-          aggrcsvPrunedSampleId <- gsub("_S._L..._R._001", "", aggrcsv$library_id)
-          demuxfiles <- lapply(1:nrow(aggrcsv), function(x) { # files loaded in order defined in aggrcsv
-            read.delim(file.path(SHINYREPS_DEMUX_OUT, aggrcsvPrunedSampleId[x], "clusters.tsv"), sep="\t")
-          })
-          
-          # print table with status column later
-          overviewStatus <- sapply(demuxfiles, function(x) table(x$status))
-          colnames(overviewStatus) <- aggrcsvPrunedSampleId
-          overviewStatus <- as.data.frame(dplyr::bind_rows(as.data.frame(overviewStatus), .id = "file")) ########### CHECK WHAT's WRONG
-
-          # continue with singlets only
-          demuxfiles <- lapply(demuxfiles, function(x) {
-             x <- x[x$status=="singlet",]
-             x$subsample <- x$assignment # column used for re-assignment of souporcell clusters
-             return(x)})
-
-          # Replace cluster assignments for all samples in demuxfiles except for the first one which is used as reference
-          for (j in 2:length(aggrcsvPrunedSampleId)) {
-            clusterassignCurrent <- names(clusterassign)[grepl(aggrcsvPrunedSampleId[1], names(clusterassign)) & grepl(aggrcsvPrunedSampleId[j], names(clusterassign))]
-            newValues <- clusterassign[[clusterassignCurrent]][,aggrcsvPrunedSampleId[1]]
-            oldValues <- clusterassign[[clusterassignCurrent]][,aggrcsvPrunedSampleId[j]]
-            demuxfiles[[j]]$subsample <- plyr::mapvalues(demuxfiles[[j]]$assignment, from=oldValues, to=newValues) # new column with adjusted assignment
-          }
-
-          # bind rows to single dataframe and filter cell ids by merging with targets
-          demuxfiles <- dplyr::bind_rows(demuxfiles, .id = "GEMwell")
-          demuxfiles$cell_id <- paste(gsub("-.$", "", demuxfiles$barcode), demuxfiles$GEMwell, sep="-")
-          targets <- merge(targets, demuxfiles[, c("cell_id", "GEMwell", "subsample", "assignment", "status", "log_prob_singleton", "log_prob_doublet")], by="cell_id")
-          
-          # If subsample column in targets.txt is not pre-defined by user, it is automatically generated.
-          # This is used for merging targets with targets_pools to link the cell barcodes with sample names
-          # but note that in that case the assignment of subsamples to the sample ids in targets_pools is arbitrary 
-          # (need external genetic information for specific assignment).
-          if(is.null(targets_pools$subsample) || all(is.na(targets_pools$subsample))) {
-            targets_pools <- targets_pools %>% dplyr::group_by(file)  %>%
-                dplyr::mutate(subsample = 0:(dplyr::n_distinct(sample)-1)) %>% # enumerate samples per file (start with 0)
-                dplyr::ungroup() %>%
-                as.data.frame()
-          }
-        }
-    }
-     
-      # merge targets with targets_pools and sort 
-      # ensure that GEM wells merged in aggr module are assigned the sample names from targets.txt in correct order
-      # the -digit suffix of the cell barcode reflects the order that the GEM wells were provided in the aggr.csv
-      targets$file <- gsub("_S._L..._R._001", "", aggrcsv[as.numeric(gsub("^.*-", "", targets$cell_id)), "library_id"])
-      targets_pools$file <- gsub("(_S.)*(_L...)*(_R.)*(_001)*", "", targets_pools$file) # in case file name was partly pruned in targets_pools
-      targets <- merge(targets, targets_pools) # if "name_HTO" column is present in targets, it is used for merging as well (unmapped cells discarded)
-      rownames(targets) <- targets$cell_id
-      StartingColumnNames <- c("cell_id", "sample", "file", "group", "replicate")
-      targets <- targets[order(targets$sample, targets$cell_id), c(StartingColumnNames, colnames(targets)[!colnames(targets) %in% StartingColumnNames])]
-      
-      # define group.vars
-      demux_columns <- c("assignment", "status", "log_prob_singleton", "log_prob_doublet",
-                         "GEMwell","HTO_maxID","nCount_HTO","HTO_secondID", "HTO_margin", "file_HTO","seq_HTO")
-      group.vars <- colnames(targets)[!colnames(targets) %in% c("cell_id", "sample", "file", demux_columns)] 
-      targets[,group.vars] <- lapply(targets[,group.vars], factor)
-      group.vars <- group.vars[sapply(group.vars, function(x) {length(unique(targets[,x]))>1})] # remove group vars with single value
-      # in case of hto multiplexing targets_pools is collapsed to (not de-multiplexed) fastq files for the fastq-file level QC plots (targets4plots).
-      # But 'group' and 'replicate' columns are not kept if they show multiple values per file (e.g. multiplexed samples belong to different groups). 
-      # This is only relevant for the gene body coverage plots per group or per replicate, which would be misleading in that case.
-      collapsedColumns <- sapply(c("sample", "group", "replicate"), function(x) {
-          all(sapply(unique(targets_pools$file), function(y) {length(unique(targets_pools[targets_pools$file==y, x]))==1}))
-          })
-      targets4plots <- targets_pools[!duplicated(targets_pools$file), c("file", names(collapsedColumns)[collapsedColumns])] 
-      if(!"sample" %in% colnames(targets4plots)) {targets4plots$sample <- targets4plots$file} # "sample" column is needed. Same as "file" if ambiguous.
-      colorByFactor <- "sample" # default for pipeline overview plots on file level
-      colorByFactor2 <- if(!is.na(SHINYREPS_COLORBYFACTOR)) {SHINYREPS_COLORBYFACTOR} else {"sample"} # default for downstream plots on cell level (up to 2 categories)
+## load pre-processed sc data
+load(file.path(SHINYREPS_SC_READAGGRDATA_OUT, "sc_readAggrData.RData"))
+load(file.path(SHINYREPS_RES, "gtf.RData"))
+sobj <- readRDS(file = file.path(SHINYREPS_RES, "sobj.RDS"))
 
 
 # print targets file
 DT::datatable(targets, caption="targets file (sample sheet) used for analysis")
 ```
-
-```{r read_annotation}
-# load gene annotation provided in essential.vars.groovy
-gtf <- import.gff(SHINYREPS_GTF, format="gtf") # , feature.type="exon"
-
-# Signac requires 'gene_biotype' field in annotation GTF, 10X (GENCODE) uses 'gene_type'
-if ("gene_type" %in% colnames(mcols(gtf))) {
-  gtf$gene_biotype <- gtf$gene_type
-}
-
-# Other changes necessary for Signac to properly parse the 10X GTF
-genome(gtf) <- SHINYREPS_DB
-seqlevelsStyle(gtf) <- "UCSC"
-gtf <- keepStandardChromosomes(gtf, pruning.mode = "coarse")
-
-names(gtf) <- gtf$gene_name
-
-```
-
 
 # Raw reads QC #
 
@@ -470,69 +285,7 @@ Also useful is the main `Seurat` vignettes overview page, as Signac builds on Se
 
 
 
-
-```{r Seurat_object, echo=F, message=FALSE, error=TRUE, warning=TRUE}
-
-#############################
-# load the RNA and ATAC data
-counts <- Read10X_h5(file.path(cellranger_dir, "filtered_feature_bc_matrix.h5"))
-fragpath <- file.path(cellranger_dir, "atac_fragments.tsv.gz")
-
-# library(EnsDb.Hsapiens.v86)
-# anno <- GetGRangesFromEnsDb(ensdb = EnsDb.Hsapiens.v86)
-# seqlevelsStyle(annotation) <- "UCSC"
-
-# create a Seurat object containing the RNA adata
-sobj <- CreateSeuratObject(
-  counts = counts$`Gene Expression`,
-#  annotation = gtf, # why no effect? Can't I load different anno for ATAC peaks?
-  assay = "RNA"
-)
-
-
-# create ATAC assay and add it to the object
-# blacklist_hg38_unified comes with Signac package
-# we'll only use peaks in standard chromosomes and not overlapping with blacklisted regions
-grange.counts <- StringToGRanges(rownames(counts$Peaks), sep = c(":", "-"))
-grange.counts <- subsetByOverlaps(grange.counts, ranges = blacklist_hg38_unified, invert = TRUE) 
-grange.use <- seqnames(grange.counts) %in% standardChromosomes(grange.counts)
-counts$Peaks <- counts$Peaks[as.vector(grange.use), ]
-
-sobj[["ATAC"]] <- CreateChromatinAssay(
-  counts = counts$Peaks, # creates matrix with read counts not fragments
-  sep = c(":", "-"),
-  fragments = fragpath,
-  annotation = gtf # 
-)
-
-
-if(!all(rownames(targets) %in% colnames(sobj))) {stop("There are cells in your targets list which are not in the Seurat object!")}
-#table(colnames(sobj) %in% rownames(targets))
-
-sobj <- sobj[,colnames(sobj) %in% rownames(targets)]
-targets <- targets[match(colnames(sobj), rownames(targets)),]
-
-#sobj <- AddMetaData(object = sobj, metadata = targets$sample, col.name = 'sample')
-sobj <- AddMetaData(
-  object = sobj,
-  metadata = targets
-)
-
-
-# Add fragment counts (e.g. for counting reads in peaks)
-total_fragments <- CountFragments(fragpath)
-rownames(total_fragments) <- total_fragments$CB
-sobj$fragments <- total_fragments[colnames(sobj), "frequency_count"]
-
-# The previous commands create large temporary objects, give memory back to OS
-gc()
-
-
-```
-
-
-
-
+## Call peaks in Seurat (NOT YET IMPLEMENTED)
 
 ```{r new_peak_calling, echo=F, message=FALSE, error=TRUE, warning=TRUE, eval=F}
 if(F) {
@@ -566,47 +319,18 @@ sobj[["peaks"]] <- CreateChromatinAssay(
 ```
 
 
-
-
 ## Quality control
 
 We can compute per-cell quality control metrics using the DNA accessibility data and remove cells that are outliers for these metrics, as well as cells with low or unusually high counts for either the RNA or ATAC assay.
-
-```{r qc, echo=F, message=FALSE, error=TRUE, warning=TRUE}
-
-DefaultAssay(sobj) <- "ATAC"
-
-# compute nucleosome signal score per cell
-sobj <- NucleosomeSignal(sobj)
-# compute TSS enrichment score per cell
-sobj <- TSSEnrichment(sobj, fast = FALSE)
-
-# count reads in peaks
-sobj <- FRiP(sobj, assay = 'ATAC', total.fragments = 'fragments')
-
-# count reads in blacklisted regions
-sobj$blacklist_fraction <- FractionCountsInRegion(sobj, assay = 'ATAC', regions = blacklist_hg38_unified)
-
-# add blacklist ratio and fraction of reads in peaks
-#sobj$pct_reads_in_peaks <- sobj$peak_region_fragments / sobj$passed_filters * 100
-#sobj$blacklist_ratio <- sobj$blacklist_region_fragments / sobj$peak_region_fragments
-
-```
 
 
 ### Nucleosome signal
 
 The histogram of DNA fragment sizes (determined from the paired-end sequencing reads) should exhibit a strong nucleosome banding pattern corresponding to the length of DNA wrapped around a single nucleosome. We calculate this per single cell, and quantify the approximate ratio of mononucleosomal to nucleosome-free fragments.
 
-```{r atac_qc_nucleosome_signal}
+```{r atac_qc_nucleosome_signal, echo=F, message=FALSE, error=FALSE, warning=FALSE}
 
-
-p <- FragmentHistogram(object = sobj, group.by = 'sample', region = 'chr1-1-10000000') +
-     theme(plot.title=element_text(face="bold", hjust=0.5)) +
-     ggtitle("Fragment size histograms") +
-     NoLegend()
-ggsave(plot=p, filename = "report_files/atac_qc_fragmentsizes_hist.pdf", height = 6, width = 6)
-print(p)
+knitr::include_graphics(file.path(SHINYREPS_SC_QC_OUT, "atac_qc_fragmentsizes_hist.png"))
 
 ```
 
@@ -615,158 +339,44 @@ print(p)
 
 Transcriptional start site (TSS) enrichment score. The ENCODE project has defined an ATAC-seq targeting score based on the ratio of fragments centered at the TSS to fragments in TSS-flanking regions (see https://www.encodeproject.org/data-standards/terms/). Poor ATAC-seq experiments typically will have a low TSS enrichment score.
 
-```{r atac_qc_tss_enrichment}
+```{r atac_qc_tss_enrichment, echo=F, message=FALSE, error=FALSE, warning=FALSE}
 
-p <- TSSPlot(sobj, group.by = 'sample') +
-     theme(plot.title=element_text(face="bold", hjust=0.5)) +
-     ggtitle("Fragment enrichment at TSS") +
-     NoLegend()
-ggsave(plot=p, filename = "report_files/atac_qc_tss_enrich_profiles.pdf", height = 6, width = 6)
-print(p)
-
-if(F) {
-## Split according to score threshold; compare different thresholds
-
-sobj$high.tss <- ifelse(sobj$TSS.enrichment > 2, 'High', 'Low')
-p <- TSSPlot(sobj, group.by = 'high.tss') +
-     theme(plot.title=element_text(face="bold", hjust=0.5)) +
-     ggtitle("Fragment enrichment at TSS (threshold = 2)") +
-     NoLegend()
-ggsave(plot=p, filename = "report_files/atac_qc_tss_enrich_profiles_hightss20.pdf", height = 6, width = 6)
-print(p)
-
-sobj$high.tss <- ifelse(sobj$TSS.enrichment > 2.5, 'High', 'Low')
-p <- TSSPlot(sobj, group.by = 'high.tss') +
-     theme(plot.title=element_text(face="bold", hjust=0.5)) +
-     ggtitle("Fragment enrichment at TSS (threshold = 2.5)") +
-     NoLegend()
-ggsave(plot=p, filename = "report_files/atac_qc_tss_enrich_profiles_hightss25.pdf", height = 6, width = 6)
-print(p)
-
-sobj$high.tss <- ifelse(sobj$TSS.enrichment > 3, 'High', 'Low')
-p <- TSSPlot(sobj, group.by = 'high.tss') +
-     theme(plot.title=element_text(face="bold", hjust=0.5)) +
-     ggtitle("Fragment enrichment at TSS (threshold = 3)") +
-     NoLegend()
-ggsave(plot=p, filename = "report_files/atac_qc_tss_enrich_profiles_hightss30.pdf", height = 6, width = 6)
-print(p)
-}
+knitr::include_graphics(file.path(SHINYREPS_SC_QC_OUT, "atac_qc_tss_enrich_profiles.png"))
 
 ```
 
 Read counts per cell in RNA and ATAC experiment (nCount_RNA, nCount_ATAC): A measure of cellular sequencing depth / complexity. Cells with very few reads may need to be excluded due to low sequencing depth. Cells with extremely high levels may represent doublets, nuclei clumps, or other artefacts.
 
 
-```{r qc_vlnplot, echo=F, message=FALSE, error=TRUE, warning=TRUE}
+```{r qcVlnplot, echo=F, message=FALSE, error=FALSE, warning=FALSE}
 
-VlnPlot(
-  object = sobj,
-  features = c("nCount_RNA", "nCount_ATAC", "FRiP", "blacklist_fraction", "TSS.enrichment", "nucleosome_signal"),
-  ncol = 3,
-  pt.size = 0,
-  group.by="sample"
-)
-
+knitr::include_graphics(file.path(SHINYREPS_SC_QC_OUT, "qc_violin_plot.png"))
 
 ```
 
 
 ### Filter for QC thresholds
 
-Applied filter criteria:
-
-* nCount_ATAC > 1000 & nCount_ATAC < 50000 and 
-
-* nCount_RNA > 1000 & nCount_RNA < 30000 and 
-
-* Fraction of reads in peaks > 0.3 and
-
-* Fraction of reads in blacklisted regions < 0.05 and
-
-* nucleosome_signal < 2 and
-
-* TSS.enrichment > 1
-
-
+The following criteria are applied for QC filtering.
 
 ```{r qc_filter, echo=F, message=FALSE, error=TRUE, warning=TRUE}
 
-sobj <- subset(
-  sobj,
-  subset = nCount_ATAC > 1000 & nCount_ATAC < 50000 & 
-    nCount_RNA > 1000 & nCount_RNA < 30000 &
-    FRiP > 0.3 & blacklist_fraction < 0.05 &
-    nucleosome_signal < 2 & TSS.enrichment > 1
-)
+qcFilt <- read.table(file.path(SHINYREPS_SC_QC_OUT, "qc_filtering.txt"), sep="\t", header=T)
+kbl(qcFilt, caption="QC filtering", row.names=F) %>% kable_styling()
 
-VlnPlot(
-  object = sobj,
-  features = c("nCount_RNA", "nCount_ATAC", "FRiP", "blacklist_fraction", "TSS.enrichment", "nucleosome_signal"),
-  ncol = 3,
-  pt.size = 0,
-  group.by="sample"
-)
-
+knitr::include_graphics(file.path(SHINYREPS_SC_QC_OUT, "qc_filt_violin_plot.png"))
 
 ```
-
-
-
-Read Peak motifs and Peak-to-peak and peak-to-gene co-activity correlation data (feature linkage).
-
-Note that the motif detection and feature linkage can also be performed using `Signac`. This would be required if custom peak calling is done, rather than using Cell Ranger's peaks. More information on this can be found in the [Signac multiomic vignette](https://satijalab.org/signac/articles/pbmc_multiomic.html).
-
-
-```{r motifs, echo=F, message=FALSE, error=TRUE, warning=TRUE, eval=T}
-
-  peaks.path <- file.path(cellranger_dir, "atac_peaks.bed")
-  peak_annotation.path <- file.path(cellranger_dir, "atac_peak_annotation.tsv")
-  tf_barcodes.path <- file.path(cellranger_dir, "analysis/tf_analysis/filtered_tf_bc_matrix/barcodes.tsv.gz")
-  tf_motifs.path <- file.path(cellranger_dir, "analysis/tf_analysis/filtered_tf_bc_matrix/motifs.tsv")
-  tf_matrix.path <- file.path(cellranger_dir, "analysis/tf_analysis/filtered_tf_bc_matrix/matrix.mtx.gz")
-
-## Cell-to-motif score matrix
-
-motif_counts <- readMM(file = tf_matrix.path)
-colnames(motif_counts) <- read.delim(tf_barcodes.path, header = FALSE, stringsAsFactors = FALSE)$V1
-motifs <- read.delim(tf_motifs.path, header = FALSE, stringsAsFactors = FALSE)
-rownames(motif_counts) <- motifs$V1
-
-# Filter for cells in both (previously processed & filtered) RNA & ATAC
-shared_barcodes <- intersect(colnames(motif_counts), colnames(sobj))
-motif_counts <- motif_counts[,shared_barcodes]
-
-
-## Peak-to-motif mapping (10X Multiome only, even though it only uses ATAC data)
-peaks2motifs.path <- file.path(cellranger_dir, "analysis/tf_analysis/peak_motif_mapping.bed")
-peaks2motifs <- rtracklayer::import(peaks2motifs.path, format = "BED")
-
-
-## Feature linkage data
-feature_linkage.path <- file.path(cellranger_dir, "analysis/feature_linkage/feature_linkage.bedpe")
-feature_linkage <- rtracklayer::import(feature_linkage.path, format = "BEDPE")
-colnames(mcols(feature_linkage))[3:5] <- c("significance", "distance", "linkage_type")
-
-write.table(as.data.frame(feature_linkage), file = file.path("report_files","Cellranger_feature_linkage.txt"), quote=F, sep = "\t", row.names = F)
-
-```
-
-
-
-
 
 
 ## Gene expression data processing
 
-We can normalize the gene expression data using SCTransform, and reduce the dimensionality using PCA.
+We can normalize the gene expression data using SCTransform as described in [Hafemeister and Satija, 2019](https://genomebiology.biomedcentral.com/articles/10.1186/s13059-019-1874-1). This procedure omits the need for heuristic steps including pseudocount addition or log-transformation and improves common downstream analytical tasks such as variable gene selection, dimensional reduction, and differential expression.
 
+```{r process_RNA, results=FALSE, echo=F, message=FALSE, error=TRUE, warning=TRUE}
 
-```{r process_RNA, echo=F, message=FALSE, error=TRUE, warning=TRUE}
-
-DefaultAssay(sobj) <- "RNA"
-sobj <- SCTransform(sobj)
-sobj <- RunPCA(sobj)
-sobj <- RunUMAP(sobj, dims = 1:50, reduction.name = 'umap.rna', reduction.key = 'rnaUMAP_')
+load(file.path(SHINYREPS_SCTRANSFORM_OUT, "SCTransform.RData"))
+patchwork::wrap_plots(sctUmapCluster, sctUmapSample, ncol = 2)
 
 ```
 
@@ -782,87 +392,37 @@ Here we process the DNA accessibility assay the same way we would process a scAT
 * Dimension reduction: We next run singular value decomposition (SVD) on the TD-IDF matrix, using the features (peaks) selected above. This returns a reduced dimension representation of the object (for users who are more familiar with scRNA-seq, you can think of this as analogous to the output of PCA).
 
 
-```{r DNA_accessibility, echo=F, message=FALSE, error=TRUE, warning=TRUE}
-
-#DefaultAssay(sobj) <- "peaks"
-DefaultAssay(sobj) <- "ATAC"
-
-sobj <- RunTFIDF(sobj)                        # normalization
-sobj <- FindTopFeatures(sobj, min.cutoff = 5) # feature selection (default 'q5')
-sobj <- RunSVD(sobj)                          # dimensionality reduction (default n = 50)
-
-```
-
-
 Plot correlations of LSI components with read depth. The first LSI component often captures sequencing depth (technical variation) rather than biological variation. If we see a very strong correlation between the first LSI component and the total number of counts for the cell, this component should be removed from downstream analysis. 
 
-```{r atac_plot_lsi_depth_corr}
+```{r atac_plot_lsi_depth_corr, echo=F, message=F, error=F, warning=T}
 
-p <- DepthCor(sobj) +
-     theme(plot.title=element_text(face="bold", hjust=0.5)) +
-     theme(plot.subtitle=element_text(hjust=0.5)) +
-     NoLegend()
-ggsave(plot=p, filename = "report_files/atac_lsi_depth_corr_plot.pdf", height = 6, width = 6)
-print(p)
-
-sobj <- RunUMAP(sobj, reduction = 'lsi', dims = 2:50, reduction.name = "umap.atac", reduction.key = "atacUMAP_")
-sobj <- RunTSNE(sobj, reduction = 'lsi', reduction.name = "tsne.atac", dims = 2:50)
+knitr::include_graphics(file.path(SHINYREPS_DNAACCESS_OUT, "atac_lsi_depth_corr_plot.png"))
 
 ```
 
 
+### ATAC data clustering
+
+Cluster using the `FindNeighbors()` and `FindClusters()` functions from the `Seurat` package. Seurat's [FindClusters](https://satijalab.org/seurat/reference/findclusters) uses a graph clustering algorithm operating on the shared nearest neighbors (SNN) graph, with modularity detection.
+The first LSI component is omitted, which is anti-correlated with the read depth per nucleus.
+
+Plot UMAP colored by cluster and by sample.
+
+```{r atac_umap_clusters}
+
+load(file.path(SHINYREPS_DNAACCESS_OUT, "DNAaccess.RData"))
+patchwork::wrap_plots(atacUmapCluster, atacUmapSample, ncol = 2)
+
+```
 
 
 ## Joint UMAP visualization
 
 Using the weighted nearest neighbor (WNN) methods in Seurat v4, we can compute a joint neighbor graph that represent both the gene expression and DNA accessibility measurements.
 
-```{r wnn, echo=F, message=FALSE, error=TRUE, warning=TRUE}
-
-# We calculate a WNN graph (Weighted Nearest Neighbor), representing a weighted combination of RNA and ATAC-seq modalities. 
-# We use this graph for UMAP visualization and clustering
-sobj <- FindMultiModalNeighbors(
-  object = sobj,
-  k.nn =5, ###
-  knn.range=5, ###
-  reduction.list = list("pca", "lsi"), 
-  dims.list = list(1:5, 2:40), ###
-  modality.weight.name = "RNA.weight",
-  verbose = TRUE
-)
-
-# build a joint UMAP visualization
-sobj <- RunUMAP(
-  object = sobj,
-  nn.name = "weighted.nn",
-  assay = "RNA",
-  reduction.name = "umap.wnn",
-  verbose = TRUE
-)
-
-
-# build a joint TSNE visualization
-sobj <- RunTSNE(
-  object = sobj,
-  nn.name = "weighted.nn",
-  assay = "RNA",
-  reduction.name = "tsne.wnn",
-  verbose = TRUE
-)
-
-
-# By default, cells are colored by their identity class (can be changed with the group.by parameter). 
-umapSample <- DimPlot(sobj, label = TRUE, repel = TRUE, reduction = "umap.wnn", group.by = "sample") + ggtitle("WNN UMAP")
-tsneSample <- DimPlot(sobj, label = TRUE, repel = TRUE, reduction = "tsne.wnn", group.by = "sample") + ggtitle("WNN TSNE")
-
-ggsave(plot=umapSample, filename="report_files/umap_anno_sample.pdf")
-ggsave(plot=tsneSample, filename="report_files/tsne_anno_sample.pdf")
-
-```
-
-
 ```{r wnn_plot, echo=F, message=FALSE, error=F, warning=F}
 
+load(file.path(SHINYREPS_SCWNN_OUT, "wnn.RData"))
 patchwork::wrap_plots(umapSample, tsneSample, ncol = 2)
 
 ```
@@ -874,63 +434,7 @@ The calculated WNN graph is now used for clustering.
 
 ```{r WNNclustering, echo=F, message=FALSE, error=TRUE, warning=TRUE}
 
-sobj <- FindClusters(sobj, graph.name = "wsnn", algorithm = 3, verbose = FALSE)
-
-# Save clusters in a different metadata column, because it gets overwritten every time FindClusters is called
-sobj$clusters_wnn <- sobj$seurat_clusters
-# Also annotate nuclei with per-sample clusters
-sobj$Sample_WNNClusters <- paste(sobj$sample, sobj$clusters_wnn, sep = "_")
-
-WNNumap <- DimPlot(sobj, reduction = "umap.wnn", group.by = "clusters_wnn", label = TRUE, repel = TRUE) + ggtitle("WNN clustering")
-ggsave(plot=WNNumap, filename="report_files/umap_anno_WNNcluster.pdf")
 WNNumap
-
-```
-
-
-### ATAC data clustering
-
-Cluster using the `FindNeighbors()` and `FindClusters()` functions from the `Seurat` package. Seurat's [FindClusters](https://satijalab.org/seurat/reference/findclusters) uses a graph clustering algorithm operating on the shared nearest neighbors (SNN) graph, with modularity detection.
-
-Omit the first LSI component, which is anti-correlated with the read depth per nucleus.
-
-```{r atac_clustering}
-
-#DefaultAssay(sobj) <- "peaks"
-DefaultAssay(sobj) <- "ATAC"
-
-sobj <- FindNeighbors(object = sobj, reduction = 'lsi', dims = 2:50)
-sobj <- FindClusters(object = sobj, verbose = FALSE, algorithm = 3)
-
-# Save clusters in a different metadata column, because it gets overwritten every time FindClusters is called
-sobj$clusters_atac <- sobj$seurat_clusters
-# Also annotate nuclei with per-sample clusters
-sobj$Sample_ATACClusters <- paste(sobj$sample, sobj$clusters_atac, sep = "_")
-sobj$Group_ATACClusters <- paste(sobj$group, sobj$clusters_atac, sep = "_")
-
-```
-
-Plot UMAP colored by cluster and by sample.
-
-```{r atac_umap_clusters}
-
-Idents(sobj) <- "clusters_atac"
-
-atacUmapCluster <- DimPlot(object = sobj, label = TRUE, reduction = "umap.atac") +
-     theme(plot.title=element_text(face="bold", hjust=0.5)) +
-     ggtitle("ATAC UMAP by cluster") 
-ggsave(plot=atacUmapCluster, filename = "report_files/atac_umap_plot_clusters.pdf", height = 9, width = 9)
-#print(p)
-
-Idents(sobj) <- "sample"
-
-atacUmapSample <- DimPlot(object = sobj, label = FALSE, reduction = "umap.atac") +
-     theme(plot.title=element_text(face="bold", hjust=0.5)) +
-     ggtitle("ATAC UMAP by sample")
-ggsave(plot=atacUmapSample, filename = "report_files/atac_umap_plot_samples.pdf", height = 9, width = 9)
-#print(p)
-
-patchwork::wrap_plots(atacUmapCluster, atacUmapSample, ncol = 2)
 
 ```
 
@@ -938,55 +442,26 @@ patchwork::wrap_plots(atacUmapCluster, atacUmapSample, ncol = 2)
 ## Annotating cell types
 
 
-### Anntotate with Seurat
+### Annotate with Seurat
 
-To annotate cell types in the dataset we can transfer cell labels from an existing reference dataset using tools in the Seurat package. See the Seurat reference mapping vignette for more information.
+To annotate cell types in the dataset we can transfer cell labels from an existing reference dataset using tools in the Seurat package. The main steps of this procedure are outlined below. For a more detailed description of the methodology, please see the Seurat reference mapping vignette and Stuart, Butler, et al Cell 2019. doi: 10.1016/j.cell.2019.05.031; doi: 10.1101/460147
+
+* Perform dimensional reduction. 
+
+* Identify anchors between the reference and query-pairs of cells from each dataset that are contained within each other's neighborhoods (also known as mutual nearest neighbors).
+
+* Filter low confidence anchors to ensure anchors in the low dimension space are in broad agreement with the high dimensional measurements. This is done by looking at the neighbors of each query cell in the reference dataset using max.features to define this space. If the reference cell isn't found within the first k.filter neighbors, remove the anchor.
+
+* Assign each remaining anchor a score. For each anchor cell, determine the nearest k.score anchors within its own dataset and within its pair's dataset. Based on these neighborhoods, construct an overall neighbor graph and then compute the shared neighbor overlap between anchor and query cells (analogous to an SNN graph). We use the 0.01 and 0.90 quantiles on these scores to dampen outlier effects and rescale to range between 0-1.
+
 
 ```{r cell_types, echo=F, message=FALSE, error=TRUE, warning=TRUE}
 
-
-pathRefDataset <- file.path("/fsimb/groups/imb-bioinfocf/projects/cfb_internal/frank/multiome500/reference_data", "hcl.seurat.RDS") 
-columnNameCelltypes <- "CT"
-  
-##################
-
-# load reference data (must be SeuratObject)
-cat("\nLoad reference dataset from", pathRefDataset, "with", columnNameCelltypes, "as cell type annotation column name.\n")
-ref <- readRDS(file = file.path(pathRefDataset))
-ref <- SCTransform(ref)
-DefaultAssay(ref) <- "SCT"
-
-
-DefaultAssay(sobj) <- "SCT"
-# transfer cell type labels from reference to query
-transfer_anchors <- FindTransferAnchors(
-  reference = ref,
-  query = sobj,
-  normalization.method = "SCT",
-  #reference.reduction = "spca",
-  recompute.residuals = FALSE,
-  dims = 1:30
-)
-
-predictions <- TransferData(
-  anchorset = transfer_anchors, 
-  refdata = ref[[]][columnNameCelltypes][,],
-  weight.reduction = sobj[['pca']],
-  dims = 1:30
-)
-
-sobj <- AddMetaData(
-  object = sobj,
-  metadata = predictions
-)
-
-# set the cell identities to the cell type predictions
-Idents(sobj) <- "predicted.id"
-
-WNNumap_CT <- DimPlot(sobj, reduction = "umap.wnn", label = TRUE, repel = TRUE, group.by = 'predicted.id') + ggtitle("Celltype annotation")
-ggsave(plot=WNNumap_CT, filename="report_files/umap_anno_CT.pdf")
-
-patchwork::wrap_plots(WNNumap_CT, WNNumap, ncol = 2)
+if(file.exists(file.path(SHINYREPS_CTANNOSEURAT_OUT, "umap_anno_Seurat_celltypeanno.png"))) {
+knitr::include_graphics(file.path(SHINYREPS_CTANNOSEURAT_OUT, "umap_anno_Seurat_celltypeanno.png"))
+} else {
+  cat("Celltype annotation with Seurat was not applied")
+}
 
 ```
 
@@ -995,68 +470,33 @@ patchwork::wrap_plots(WNNumap_CT, WNNumap, ncol = 2)
 
 Using the [scType](https://github.com/IanevskiAleksandr/sc-type) tool we could perform the celltype annotation. This tool uses positive and negative marker genes to annotate a cluster to a specific celltype. The marker gene set includes data from the CellMarkerDB, PangaloDB and some additional manually curated gene (especially negative markers) from literature. This method currently seems to be better than any other competing tool, in terms of flexibility to use, speed, and accuracy (good performance even up-to 80% dropout rates on simulations) especially in identifying rare (but known) celltypes and distinguishing closely related celltypes. When a cluster contains scType score (which is used to annotate clusters) lower than one-fourth of the number of cells in the cluster the cluster is labelled as unknown. 
 
-```{r cell_types_markerbased, echo=F, message=FALSE, error=TRUE, warning=TRUE, eval=TRUE}
+```{r cell_types_markerbased, echo=F, message=FALSE, error=TRUE, warning=TRUE}
 
-set.seed(100)
-library(HGNChelper)
-# load gene set preparation function
-source("https://raw.githubusercontent.com/IanevskiAleksandr/sc-type/master/R/gene_sets_prepare.R")
-# load cell type annotation function
-source("https://raw.githubusercontent.com/IanevskiAleksandr/sc-type/master/R/sctype_score_.R")
-
-# DB file 
-# TODO: This file can be provided in custom format, if we need to provide a different list of marker genes
-# DB file should contain four columns (tissueType - tissue type, cellName - cell type, geneSymbolmore1 - positive marker genes, geneSymbolmore2 - marker genes not expected to be expressed by a cell type)
-db_ = "https://raw.githubusercontent.com/IanevskiAleksandr/sc-type/master/ScTypeDB_full.xlsx";
-
-# TODO: Set this as a variable - an autodetect function is also available, perhaps it is safer to name it
-
-tissue = "Brain" # e.g. Immune system,Pancreas,Liver,Eye,Kidney,Brain,Lung,Adrenal,Heart,Intestine,Muscle,Placenta,Spleen,Stomach,Thymus 
-
-##################
-
-
-
-
-# prepare gene sets
-gs_list = gene_sets_prepare(db_, tissue)
-
-# get cell-type by cell matrix
-es.max = sctype_score(scRNAseqData = sobj[["SCT"]]@scale.data, scaled = TRUE, 
-                      gs = gs_list$gs_positive, gs2 = gs_list$gs_negative) 
-
-# NOTE: scRNAseqData parameter should correspond to your input scRNA-seq matrix. 
-# In case Seurat is used, it is either pbmc[["RNA"]]@scale.data (default), pbmc[["SCT"]]@scale.data, in case sctransform is used for normalization,
-# or pbmc[["integrated"]]@scale.data, in case a joint analysis of multiple single-cell datasets is performed.
-
-# merge by cluster
-cL_resutls = do.call("rbind", lapply(unique(sobj@meta.data$clusters_wnn), function(cl){
-    es.max.cl = sort(rowSums(es.max[ ,rownames(sobj@meta.data[sobj@meta.data$clusters_wnn==cl, ])]), decreasing = !0)
-    head(data.frame(cluster = cl, type = names(es.max.cl), scores = es.max.cl, ncells = sum(sobj@meta.data$clusters_wnn==cl)), 10)
-}))
-sctype_scores = cL_resutls %>% group_by(cluster) %>% top_n(n = 1, wt = scores)  
-
-# set low-confident (low ScType score) clusters to "unknown"
-sctype_scores$type[as.numeric(as.character(sctype_scores$scores)) < sctype_scores$ncells/4] = "Unknown"
-print(sctype_scores[,1:3])
-
-sobj@meta.data$CTAnnotationSCType = ""
-for(j in unique(sctype_scores$cluster)){
-  cl_type = sctype_scores[sctype_scores$cluster==j,]; 
-  sobj@meta.data$CTAnnotationSCType[sobj@meta.data$clusters_wnn == j] = as.character(cl_type$type[1])
+if(file.exists(file.path(SHINYREPS_CTANNOMARKER_OUT, "umap_anno_scType_WNNcluster_celltypeanno.png"))) {
+knitr::include_graphics(file.path(SHINYREPS_CTANNOMARKER_OUT, "umap_anno_scType_WNNcluster_celltypeanno.png"))
+} else {
+  cat("Celltype annotation with scType was not applied")
 }
-
-WNNumap_celltypeannot <- DimPlot(sobj, reduction = "umap.wnn", label = TRUE, repel = TRUE, group.by = 'CTAnnotationSCType') + ggtitle("WNN clustering (celltype)")
-ggsave(plot=WNNumap_celltypeannot, filename="report_files/umap_anno_WNNcluster_celltypeannotated.pdf")
-
-patchwork::wrap_plots(WNNumap_celltypeannot, WNNumap, ncol = 2)
-
 
 ```
 
 
+```{r pickCTanno, echo=F, message=FALSE, error=TRUE, warning=TRUE}
 
+# select the cell type annotation to be used in downstream analysis
+if(!is.null(SHINYREPS_CTANNOSELECTED) && !is.na(SHINYREPS_CTANNOSELECTED)) {
+  switch(SHINYREPS_CTANNOSELECTED,
+       Seurat={ celltype <- "predicted.id" },
+       Marker={ celltype <- "CTAnnotationSCType" },
+       stop(c("Don't find cell type annotation"))   
+  )
+  cat(paste0("We used the cell type annotation option '", SHINYREPS_CTANNOSELECTED, "' for downstream analysis (i.e. annotation column '", celltype, "').\n"))  
 
+} else {
+  cat("no cell type annotation selected")
+}
+
+```
 
 
 ## Linking peaks to genes
@@ -1066,77 +506,40 @@ For each gene, we can find the set of peaks that may regulate the gene by by com
 Running this step on the whole genome can be time consuming, so here we demonstrate peak-gene links for a subset of genes as an example. The same function can be used to find links for all genes by omitting the genes.use parameter:
 
 
-
 ```{r link_peaks2genes, echo=F, message=FALSE, error=TRUE, warning=TRUE}
-
-#DefaultAssay(sobj) <- "peaks"
-DefaultAssay(sobj) <- "ATAC"
-
-# set the cell identities to the cell type predictions
-Idents(sobj) <- "predicted.id"
-
-# first compute the GC content for each peak
-library(BSgenome.Hsapiens.UCSC.hg38)
-sobj <- RegionStats(sobj, assay = "ATAC", genome = BSgenome.Hsapiens.UCSC.hg38)
-
-
-sobj <- LinkPeaks(
-  object = sobj,
-  peak.assay = "ATAC",
-  expression.assay = "SCT",
-  genes.use = c("ACAP3", "HMCN1", "EVL", "EML1")
-)
-
-# access with Links(sobj)
-write.table(as.data.frame(Links(sobj)), file="report_files/link_peaks2genes.txt", sep="\t", quote = F, row.names = F)
-
-sobj@assays$ATAC@annotation$tx_id <- sobj@assays$ATAC@annotation$transcript_id
-
 
 # We can visualize these links using the CoveragePlot() function, or alternatively we could use the CoverageBrowser() function in an interactive analysis.
 
-# Plot frequency of Tn5 insertion events (accessibility) for different groups of cells within given regions of the genome. Tracks are normalized using a per-group scaling factor computed as the number of cells in the group multiplied by the mean sequencing depth for that group of cells. This accounts for differences in number of cells and potential differences in sequencing depth between groups. 
+# Plot frequency of Tn5 insertion events (accessibility) for different groups of cells within given regions of the genome. 
+# Tracks are normalized using a per-group scaling factor computed as the number of cells in the group multiplied by the
+# mean sequencing depth for that group of cells. This accounts for differences in number of cells and potential differences 
+# in sequencing depth between groups. 
  
-gene2plot <- "EVL"
-p1 <- CoveragePlot(
-  object = sobj,
-  assay = "ATAC",
-  region = gtf[gene2plot],
-  features = gene2plot,
-  expression.assay = "SCT",
-  split.assays = T,
-  links = T,
-  annotation = "gene", 
-  #region.highlight =StringToGRanges(gtf["ACAP3"]) ,
-  # expression.assay = "RNA",
-  # expression.slot     = "data",
-  #idents = idents.plot,
-  extend.upstream = 100000,
-  extend.downstream = 100000
-)
+if(file.exists(file.path(SHINYREPS_PEAKS2GENES_OUT, "peaks2genes_CoveragePlot.png"))) {
+knitr::include_graphics(file.path(SHINYREPS_PEAKS2GENES_OUT, "peaks2genes_CoveragePlot.png"))
+} else {
+  cat("no peaks2genes coverage plot found")
+}
 
-p2 <- CoveragePlot(
-  object = sobj,
-  region = gtf["HMCN1"],
-  features = "HMCN1",
-  expression.assay = "SCT",
-  #idents = idents.plot,
-  extend.upstream = 8000,
-  extend.downstream = 5000
-)
+```
 
-patchwork::wrap_plots(p1, p2, ncol = 1)
 
-# Note that Cell Ranger ARC already does such peak-to-gene linking based on correlating peak accessibility to gene expression 
-# (read in above into the `feature_linkage` object). This is the `Signac` version of the algorithm.
+Note that Cell Ranger ARC already does such peak-to-gene linking based on correlating peak accessibility to gene expression. However, this data is based on the Cell Ranger Arc output and does not consider the filtering and processing routines applied here. An excerpt of this feature linkage data is given below. For full results see table 'Cellranger_feature_linkage.txt'. 
+
+```{r cellrangerMotifCount, echo=F, message=FALSE, error=TRUE, warning=TRUE}
+
+if(file.exists(file.path(SHINYREPS_CRMOTIFCOUNTS_OUT, "Cellranger_feature_linkage.txt"))) {
+CR_featureLinkage <- read.table(file=file.path(SHINYREPS_CRMOTIFCOUNTS_OUT, "Cellranger_feature_linkage.txt"), header=T, sep="\t")
+kbl(CR_featureLinkage[1:min(10,nrow(CR_featureLinkage)), ], caption="Excerpt of Cellranger feature linkage results", row.names=F) %>% kable_styling()
+} else {
+  cat("Cellranger feature linkage table not found")
+}
+
 ```
 
 
 
-
-
-
-## Gene activity and peak co-accessibility network
+## Gene activity and peak co-accessibility network (NOT YET IMPLEMENTED)
 
 Gene activity is the sum of the open chromatin signal associated with a particular gene. It allows converting the peak-level ATAC dat to gene-level ATAC data. This allows plotting gene-associated chromatin accessibility levels in the UMAP or t-SNE plots, and also mapping and/or merging different datasets (like scRNA-seq with scATAC-seq).
 
@@ -1206,296 +609,214 @@ Cicero gene activities. From [Cicero website vignette](https://cole-trapnell-lab
 
 ## Differentially accessible peaks
 
-Identify differentially accessible peaks between all pairs of groups for each cluster (see results in 'peaks_diffacces_clusters_atac.xlsx').
+### Identify differentially accessible peaks between all pairs of groups for each cluster 
+See full results in 'peaks_diffacces_clusters.xlsx'.
 
-```{r atac_differentially_accessible_peaks}
+```{r atac_differentially_accessible_peaks, results='asis', echo=F, message=FALSE, error=F, warning=F}
 
-# differential accessibility between pairs of samples per calculated per cluster
+# differential accessibility between pairs of samples calculated per cluster
+
+load(file.path(SHINYREPS_DIFFPEAKS_OUT, "diffPeaks.RData"))
+for (i in names(da_groups_atac)) {
+  cat(paste("\nComparison", i, "\n"))
+  print(kbl(da_groups_atac[[i]][1:min(10,nrow(da_groups_atac[[i]])), ], caption=paste("Top differentially accessible peaks between pairs of groups per cluster:", i), format="simple", align = "l", row.names=T) %>% kable_styling(full_width = F))
+}
+
+```
+
+### Identify differentially accessible peaks between all pairs of groups for each celltype
+See full results in 'peaks_diffacces_celltypes.xlsx'.
+
+```{r atac_differentially_accessible_peaks_by_celltype, results='asis', echo=F, message=FALSE, error=F, warning=F}
+
+## differential accessibility between pairs of samples calculated per celltype
+for (i in names(da_groups_atac_ct)) {
+  cat(paste("\nComparison", i, "\n"))
+  print(kbl(da_groups_atac_ct[[i]][1:min(10,nrow(da_groups_atac_ct[[i]])), ], caption=paste("Top differentially accessible peaks between pairs of groups per celltype:", i), format="simple", align = "l", row.names=T) %>% kable_styling(full_width = F))
+}
+
+```
 
 
-ATAC_DA_MINCELLS <- 20        # minimum number of cells to include cluster in analysis
+## Motif enrichment analysis for differentially accessible peaks
+To identify potentially important cell-type-specific regulatory sequences, we can search for DNA motifs that are over-represented in a set of peaks that are differentially accessible between clusters or cell types (see above). This is done by computing the number of features containing the motif (observed) and comparing this to the total number of features containing the motif (background) using the hypergeometric test.
 
-sobj$label <- sobj$Group_ATACClusters
-Idents(sobj) <- "label"
+The list of motif position frequency matrices is taken from the JASPAR database via Bioconductor's `JASPAR2020` package. This code is implemented for human and mouse. For more information see [Signac Motif Vignette](https://stuartlab.org/signac/articles/motif_vignette.html).
 
-grp_counts <- table(sobj$Group_ATACClusters)
+### Identify enriched motifs in differentially accessible peaks per cluster
+See full results in 'motif_enriched_clusters.xlsx'.
 
-sample_pairs <- combn(sort(unique(sobj$group)), 2)
-da_groups_atac <- list()
-for (cl in sort(unique(sobj$clusters_atac))) {
-  for (sp in 1:ncol(sample_pairs)) {
-    grp1 <- paste(sample_pairs[1, sp], cl, sep="_")
-    grp2 <- paste(sample_pairs[2, sp], cl, sep="_")
-    if (grp1 %in% names(grp_counts) && grp_counts[grp1] >= ATAC_DA_MINCELLS && 
-        grp2 %in% names(grp_counts) && grp_counts[grp2] >= ATAC_DA_MINCELLS) {
-      group_pair <- paste(grp1, grp2, sep = ".")
-      cat("Processing pair: ", group_pair, "\n")
-      da_groups_atac[[group_pair]] <- FindMarkers(
-                                   object = sobj,
-                                   ident.1 = grp1,
-                                   ident.2 = grp2,
-                                   min.pct = 0.05,
-                                   test.use = 'LR',
-                                   latent.vars = 'nFeature_ATAC'
-                                 )
-    }
+```{r atac_motifs_da_peaks, results='asis', echo=F, message=FALSE, error=F, warning=F}
+
+load(file.path(SHINYREPS_MOTIFENRICH_OUT, "motifEnrich.RData"))
+for (i in names(da_enriched_motifs)) {
+  cat(paste("\nComparison", i, "\n"))
+  print(kbl(da_enriched_motifs[[i]][1:min(10,nrow(da_enriched_motifs[[i]])), ], caption=paste("Enriched motifs (top 10) for differentially accessible peaks between pairs of groups per cluster:", i), format="simple", align = "l", row.names=T) %>% kable_styling(full_width = F))
+}
+
+```
+
+### Identify enriched motifs in differentially accessible peaks per celltype 
+See full results in 'motif_enriched_celltypes.xlsx'.
+
+```{r atac_motifs_da_peaks_by_celltype, results='asis', echo=F, message=FALSE, error=F, warning=F}
+
+for (i in names(da_enriched_motifs_ct)) {
+  cat(paste("\nComparison", i, "\n"))
+  print(kbl(da_enriched_motifs_ct[[i]][1:min(10,nrow(da_enriched_motifs_ct[[i]])), ], caption=paste("Enriched motifs (top 10) for differentially accessible peaks between pairs of groups per celltype:", i), format="simple", align = "l", row.names=T) %>% kable_styling(full_width = F))
+}
+
+```
+
+
+## Motif activity between clusters and cell types
+
+We can also compute a per-cell motif activity score by running `chromVAR`. This allows us to visualize motif activities per cell, and also provides an alternative method of identifying differentially-active motifs between clusters and cell types. ChromVAR identifies motifs associated with variability in chromatin accessibility between cells. See the [chromVAR paper](https://www.nature.com/articles/nmeth.4401#Sec3) for a complete description of the method. Here, we test for differential activity scores between each cluster/cell type compared with all other clusters/cell types.
+
+The list of motif position frequency matrices is taken from the JASPAR database via Bioconductor's `JASPAR2020` package. This code is implemented for human and mouse. For more information see [Signac Motif Vignette](https://stuartlab.org/signac/articles/motif_vignette.html).
+
+### Calculate differential motif activity per cluster
+See full results in 'ChromVar_motif_enriched_cluster_vs_all.xlsx'.
+
+```{r atac_motif_activity_per_cluster, results='asis', echo=F, message=FALSE, error=F, warning=F}
+
+load(file.path(SHINYREPS_MOTIFACTIVITY_OUT, "motifActivity.RData"))
+for (i in sort(names(diffAct_cluster))) {
+  cat(paste("\nCluster", i, "\n"))
+  print(kbl(diffAct_cluster[[i]][1:min(10,nrow(diffAct_cluster[[i]])), ], caption=paste("Motifs with differential activity scores (top 10) for cluster:", i, "compared to all other clusters"), format="simple", align = "l", row.names=T) %>% kable_styling(full_width = F))
+}
+
+```
+
+### Calculate differential motif activity per cell type 
+See full results in 'ChromVar_motif_enriched_celltype_vs_all.xlsx'.
+
+```{r atac_motif_activity_per_celltype, results='asis', echo=F, message=FALSE, error=F, warning=F}
+
+for (i in sort(names(diffAct_ct))) {
+  cat(paste("\nCell type", i, "\n"))
+  print(kbl(diffAct_ct[[i]][1:min(10,nrow(diffAct_ct[[i]])), ], caption=paste("Motifs with differential activity scores (top 10) for cell type:", i, "compared to all other cell types"), format="simple", align = "l", row.names=T) %>% kable_styling(full_width = F))
+}
+
+```
+
+
+## Differentially expressed genes
+
+### Identify differentially expressed genes between all pairs of groups for each cluster 
+See full results in 'diffExpr_clusters.xlsx'.
+
+```{r diff_expr, results='asis', echo=F, message=FALSE, error=F, warning=F}
+
+# differentially expressed genes between pairs of samples calculated per cluster
+load(file.path(SHINYREPS_DIFFEXPR_OUT, "diffExprSeurat.RData"))
+for (i in names(diffExpr_groups)) {
+  cat(paste("\nComparison", i, "\n"))
+  print(kbl(diffExpr_groups[[i]][1:min(10,nrow(diffExpr_groups[[i]])), ], caption=paste("Top differentially expressed genes between pairs of groups per cluster:", i), format="simple", align = "l", row.names=T) %>% kable_styling(full_width = F))
+}
+
+```
+
+### Identify differentially expressed genes between all pairs of groups for each celltype 
+See full results in 'diffExpr_celltypes.xlsx'.
+
+```{r diff_expr_by_celltype, results='asis', echo=F, message=FALSE, error=F, warning=F}
+
+## differentially expressed genes between pairs of samples calculated per celltype
+for (i in names(diffExpr_groups_ct)) {
+  cat(paste("\nComparison", i, "\n"))
+  print(kbl(diffExpr_groups_ct[[i]][1:min(10,nrow(diffExpr_groups_ct[[i]])), ], caption=paste("Top differentially expressed genes between pairs of groups per celltype:", i), format="simple", align = "l", row.names=T) %>% kable_styling(full_width = F))
+}
+
+```
+
+
+
+## Gene Regulatory Networks
+
+Pando leverages multi-modal single-cell measurements to infer gene regulatory networks using a flexible linear model-based framework. By modeling the relationship between TF-binding site pairs with the expression of target genes, Pando simultaneously infers gene modules and sets of regulatory regions for each transcription factor.
+
+The fate and state of a cell is regulated through complex circuits of transcription factors (TFs) converging at regulatory elements to enable precise control of gene expression. Modern single-cell genomic approaches allow the simultaneous profiling of gene expression and chromatin accessibility in individual cells, which opens up new opportunities for the inference of gene regulatory networks (GRNs). Pando jointly utilizes scRNA-seq and scATAC-seq data to infer regulatory relationships between TFs and target genes.
+
+The unifying idea behind many modern GRN inference methods is to model the expression of each gene as a function of TF abundances. The weights or coefficients of this model can then be interpreted as a measure of the regulatory interaction between TF and target gene. Pando tries to generalize this concept to make use of the multi-modal nature of modern single-cell technologies by incorporating TF binding information directly into the model. By utilizing jointly measured or integrated scRNA-seq and scATAC-seq data, Pando models the expression of genes based on the interaction of TF expression with the accessibility of their putative binding site.
+
+Module extraction (see full results in 'GRN_TF_modules.txt'):
+```{r pando1, echo=F, message=FALSE, error=F, warning=F}
+
+load(file.path(SHINYREPS_GRN_OUT, "grn.RData"))
+kbl(modules_df[1:min(20,nrow(modules_df)),], align = "l", format="simple", caption="Identified TF modules (i.e. the set of genes that are regulated by each transcription factor, first 20 entries)") %>% kable_styling(full_width = F)
+
+```
+
+Plot goodness-of-fit metrics of the fitted models. This shows us the explained variance of the model, as well as the number of variables in each model. We can observe that with more variables, the models will have a better fit. The dashed lines show the applied thresholds for in the find_modules function.
+
+```{r pando2, echo=F, message=FALSE, error=F, warning=F}
+
+if(file.exists(file.path(SHINYREPS_GRN_OUT, "GRN_goodness_of_fit_metrics.pdf"))) {
+knitr::include_graphics(file.path(SHINYREPS_GRN_OUT, "GRN_goodness_of_fit_metrics.png"))
+} else {
+  cat("no plot found")
+}
+
+```
+
+Plot size of the modules with respect to the number of target genes as well as the number of peaks and regulating TFs per target gene.
+
+```{r pando3, echo=F, message=FALSE, error=F, warning=F}
+
+if(file.exists(file.path(SHINYREPS_GRN_OUT, "GRN_module_metrics.png"))) {
+knitr::include_graphics(file.path(SHINYREPS_GRN_OUT, "GRN_module_metrics.png"))
+} else {
+  cat("no plot found")
+}
+
+```
+
+Visualization of the network graph. The nodes are colored and sized based on their centrality in the graph and the edges are colored by the direction of the regulation (inhibitory: grey; activating: orange)
+
+```{r pando4, echo=F, message=FALSE, error=F, warning=F}
+
+if(file.exists(file.path(SHINYREPS_GRN_OUT, "GRN_network_graph.pdf"))) {
+knitr::include_graphics(file.path(SHINYREPS_GRN_OUT, "GRN_network_graph.png"))
+} else {
+  cat("no plot found")
+}
+
+```
+
+
+
+
+```{r store_data, echo=F, message=FALSE, error=F, warning=F, eval=T}
+
+# store colData in report_files folder (csv file without numerical columns for compatibility with Loupe import)
+write.table(sobj[[]][, !sapply(sobj[[]], is.numeric)], file="report_files/cells.csv", sep=",", quote = F, row.names = F)
+
+# store projections (csv file for compatibility with Loupe import)
+dir_projections <- file.path("report_files", "projections")
+if (!file.exists(dir_projections)) {dir.create(dir_projections, recursive = T)}
+
+for (p in names(sobj@reductions)) {
+  projection <- data.frame(
+    Barcode=rownames(Embeddings(sobj, reduction = p)),
+    X=Embeddings(sobj, reduction = p)[,1],
+    Y=Embeddings(sobj, reduction = p)[,2]
+  )
+  write.table(projection, file =file.path(dir_projections, paste0(p, ".csv")), sep=",", quote = F, row.names = F)
   }
+
+# store pruned Seurat object in h5ad format
+if(!file.exists(file.path("report_files", "sobj.h5Seurat"))) {
+DefaultAssay(sobj) <- "RNA"
+if("ATAC" %in% names(sobj)) {sobj[["ATAC"]] <- NULL} # some objects in this slot are not compatible with conversion
+if("SCT" %in% names(sobj)) {sobj[["SCT"]] <- NULL}
+SaveH5Seurat(sobj, filename = file.path("report_files", "sobj.h5Seurat"))
+Convert(file.path("report_files", "sobj.h5Seurat"), dest = "h5ad")
+} else {
+cat("\nWriting sobj.h5Seurat is omitted because file already exists.\n")  
 }
-
-# Save results
-library(openxlsx)
-if(length(da_groups_atac)>0) {
-  openxlsx::write.xlsx(da_groups_atac, file = file.path("report_files", "peaks_diffacces_clusters_atac.xlsx"), rowNames=T)
-  saveRDS(da_groups_atac, file = file.path("report_files", "R_merged_atac_da_clusters_atac.RDS"))
-}
-gc()
-
-
 
 ```
-
-
-
-Identify differentially accessible peaks between all pairs of groups for each celltype (see results in 'peaks_diffacces_celltypes.xlsx').
-
-```{r atac_differentially_accessible_peaks_by_celltype, echo=F, message=FALSE, error=F, warning=F, eval=F}
-
-## differential accessibility between pairs of samples per calculated per cluster
-
-ATAC_DA_MINCELLS <- 20        # minimum number of cells to include cluster in analysis
-
-sobj$Group_Celltypes <- paste(sobj$group, sobj$predicted.id, sep = "_")
-
-sobj$label <- sobj$Group_Celltypes
-Idents(sobj) <- "label"
-
-grp_counts <- table(sobj$Group_Celltypes)
-
-sample_pairs <- combn(sort(unique(sobj$group)), 2)
-da_groups_atac_ct <- list()
-for (cl in sort(unique(sobj$predicted.id))) {
-  for (sp in 1:ncol(sample_pairs)) {
-    grp1 <- paste(sample_pairs[1, sp], cl, sep="_")
-    grp2 <- paste(sample_pairs[2, sp], cl, sep="_")
-    if (grp1 %in% names(grp_counts) && grp_counts[grp1] >= ATAC_DA_MINCELLS && 
-        grp2 %in% names(grp_counts) && grp_counts[grp2] >= ATAC_DA_MINCELLS) {
-      group_pair <- paste(grp1, grp2, sep = ".")
-      cat("Processing pair: ", group_pair, "\n")
-      da_groups_atac_ct[[group_pair]] <- FindMarkers(
-                                   object = sobj,
-                                   ident.1 = grp1,
-                                   ident.2 = grp2,
-                                   min.pct = 0.05,
-                                   test.use = 'LR',
-                                   latent.vars = 'nFeature_ATAC'
-                                 )
-    }
-  }
-}
-
-# Save results
-library(openxlsx)
-if(length(da_groups_atac_ct)>0) {
-  names(da_groups_atac_ct) <- gsub("Proliferating cell", "Prolif", names(da_groups_atac_ct)) # sheetNames too long! Max length is 31 characters.
-  names(da_groups_atac_ct) <- gsub("Oligodendrocyte", "ODC", names(da_groups_atac_ct))
-  names(da_groups_atac_ct) <- gsub("Proliferating radial glia", "PRG", names(da_groups_atac_ct))
-  names(da_groups_atac_ct) <- gsub("Radial glia", "RG", names(da_groups_atac_ct))
-  openxlsx::write.xlsx(da_groups_atac_ct, file = file.path("report_files", "peaks_diffacces_celltypes.xlsx"), rowNames=T)
-  saveRDS(da_groups_atac_ct, file = file.path("report_files", "R_merged_atac_da_celltypes.RDS"))
-}
-gc()
-
-
-```
-
-
-
-
-## Motif enrichment analysis
-
-First get motifs and attach to Seurat object. Get motifs from Bioconductors `JASPAR2020` package.
-
-*Note: this code is human-specific, as it uses the `BSgenome.Hsapiens.UCSC.hg38` Bioconductor package*
-
-```{r atac_motifs_setup, echo=F, message=FALSE, error=F, warning=F}
-
-# Get a list of motif position frequency matrices from the JASPAR database
-pfm <- TFBSTools::getMatrixSet(
-  x = JASPAR2020,
-  opts = list(collection = "CORE", tax_group = "vertebrates", all_versions = FALSE)
-)
-
-# sobj has data mapped to scaffolds named differently to the BSgenome. The scaffolds aren't that useful for analysis, so you could solve this by removing peaks that are on scaffolds.
-main.chroms <- standardChromosomes(BSgenome.Hsapiens.UCSC.hg38)
-keep.peaks <- which(as.character(seqnames(granges(sobj))) %in% main.chroms)
-sobj[["ATAC"]] <- subset(sobj[["ATAC"]], features = rownames(sobj[["ATAC"]])[keep.peaks])
-
-# add motif information
-# Construct a Motif object containing DNA sequence motif information and add it to an existing Seurat object or ChromatinAssay. 
-# If running on a Seurat object, AddMotifs will also run RegionStats to compute the GC content of each peak and store the results in the feature metadata. 
-sobj <- AddMotifs(
-  object = sobj,
-  genome = BSgenome.Hsapiens.UCSC.hg38,        # org-specific
-  pfm = pfm,
-  assay = "ATAC"
-)
-
-# sobj <- AddMotifs(
-#   object = sobj,
-#   genome = getSeq(BSgenome.Hsapiens.UCSC.hg38, standardChromosomes(BSgenome.Hsapiens.UCSC.hg38)),        # not working
-#   pfm = pfm,
-#   assay = "ATAC"
-# )
-
-
-```
-
-
-Identify enriched motifs in differentially accessible peaks per cluster (see results in 'motif_enriched_clusters_atac.xlsx').
-
-```{r atac_motifs_da_peaks, echo=F, message=FALSE, error=F, warning=F}
-
-# FindMotifs function: Find motifs over-represented in a given set of genomic features. 
-# Computes the number of features containing the motif (observed) and compares this to the 
-# total number of features containing the motif (background) using the hypergeometric test. 
-
-ATAC_DA_PLIM <- 0.05        # p-value threshold
-cat(paste("\nLook for enriched motifs in differentially accessible peaks filtered for p_val_adj <", ATAC_DA_PLIM, "(motif enrichment is skipped if less than 3 peaks)\t"))
-
-da_enriched_motifs <- list()
-
-for (gp in names(da_groups_atac)) {
-  top_da_peaks <- rownames(da_groups_atac[[gp]][da_groups_atac[[gp]]$p_val_adj < ATAC_DA_PLIM, ]) # filter regions by significance
-  cat("Finding motifs for: ", gp, "(contains", length(top_da_peaks), "differentially accessible peaks after filtering)\n")
-  if(length(top_da_peaks)>=3) {
-  da_enriched_motifs[[gp]] <- FindMotifs(object = sobj, features = top_da_peaks)
-  }
-}
-
-# Save results
-if(length(da_enriched_motifs)>0) {
-  openxlsx::write.xlsx(da_enriched_motifs, file = file.path("report_files", "motif_enriched_clusters_atac.xlsx"))
-  saveRDS(da_enriched_motifs, file = file.path("report_files", "R_merged_atac_da_enriched_motifs.RDS"))
-}
-gc()
-
-```
-
-
-Identify enriched motifs in differentially accessible peaks per celltype (see results in 'motif_enriched_clusters_atac_celltypes.xlsx').
-
-
-```{r atac_motifs_da_peaks_by_celltype, echo=F, message=FALSE, error=F, warning=F}
-
-# FindMotifs function: Find motifs over-represented in a given set of genomic features. 
-# Computes the number of features containing the motif (observed) and compares this to the 
-# total number of features containing the motif (background) using the hypergeometric test. 
-
-ATAC_DA_PLIM <- 0.05        # p-value threshold
-cat(paste("\nLook for enriched motifs in differentially accessible peaks filtered for p_val_adj <", ATAC_DA_PLIM, "(motif enrichment is skipped if less than 3 peaks)\t"))
-
-da_enriched_motifs_ct <- list()
-
-for (gp in names(da_groups_atac_ct)) {
-  top_da_peaks_ct <- rownames(da_groups_atac_ct[[gp]][da_groups_atac_ct[[gp]]$p_val_adj < ATAC_DA_PLIM, ]) # filter regions by significance
-  cat("Finding motifs for: ", gp, "(contains", length(top_da_peaks_ct), "differentially accessible peaks after filtering)\n")
-  if(length(top_da_peaks_ct)>=3) {
-    da_enriched_motifs_ct[[gp]] <- FindMotifs(object = sobj, features = top_da_peaks_ct)
-  }
-}
-
-# Save results
-if(length(da_enriched_motifs_ct)>0) {
-  openxlsx::write.xlsx(da_enriched_motifs_ct, file = file.path("report_files", "motif_enriched_clusters_atac_celltypes.xlsx"))
-  saveRDS(da_enriched_motifs_ct, file = file.path("report_files", "R_merged_atac_da_enriched_motifs_celltypes.RDS"))
-}
-gc()
-
-```
-
-
-
-
-
-## Motif activity between clusters
-
-### Per-cell motif activity
-
-Determine motif activity per cell, using `chromVAR` package. Can be used as an alternative method for detecting differential motif activity between clusters.
-
-```{r atac_motif_activities, echo=F, message=FALSE, error=F, warning=F, eval=F}
-
-# Determine motif activity per cell, using `chromVAR` package. 
-# The package aims to identify motifs or other genomic annotations associated with variability in chromatin accessibility between individual cells or samples.
-# Can be used as an alternative method for detecting differential motif activity between clusters.
-# Note that this step can take 30-60 minutes 
-# Will return a new Seurat assay with the motif activities (the deviations in chromatin accessibility across the set of regions) as a new assay.
-
-sobj <- RunChromVAR(
-  object = sobj,
-  genome = BSgenome.Hsapiens.UCSC.hg38,
-  assay = "ATAC"
-)
-
-```
-
-
-### Calculate differential motif activity between clusters
-
-Calculate differential motif activity between ATAC clusters.
-
-```{r atac_differential_motif_activities_atac_clusters, echo=F, message=FALSE, error=F, warning=F, eval=F}
-
-ATAC_DA_MINCELLS <- 20        # minimum number of cells to include cluster in analysis
-
-DefaultAssay(sobj) <- "chromvar"
-
-Idents(sobj) <- "Sample_ATACClusters"
-
-grp_counts <- table(sobj$Sample_ATACClusters)
-
-sample_pairs <- combn(sort(unique(sobj$sample)), 2)
-motifda_groups_atac <- list()
-for (ct in sort(unique(sobj$clusters_atac))) {
-  for (sp in 1:ncol(sample_pairs)) {
-    grp1 <- paste(sample_pairs[1, sp], ct, sep="_")
-    grp2 <- paste(sample_pairs[2, sp], ct, sep="_")
-    if (grp1 %in% names(grp_counts) && grp_counts[grp1] >= ATAC_DA_MINCELLS && 
-        grp2 %in% names(grp_counts) && grp_counts[grp2] >= ATAC_DA_MINCELLS) {
-      group_pair <- paste(grp1, grp2, sep = ".")
-      cat("Processing pair: ", group_pair, "\n")
-      motifda_groups_atac[[group_pair]] <- FindMarkers(
-                                             object = sobj,
-                                             ident.1 = grp1,
-                                             ident.2 = grp2,
-                                             only.pos = TRUE,
-                                             mean.fxn = rowMeans,
-                                             fc.name = "avg_diff"
-                                           )
-    }
-  }
-}
-# Add motif names (and IDs) to data frames
-motifda_groups_atac <- lapply(motifda_groups_atac, function(x){x$motif.id <- rownames(x); x$motif.name <- unlist(sobj@assays$ATAC@motifs@motif.names)[rownames(x)]; x})
-
-# Save results
-if(length(motifda_groups_atac)>0) {
-  openxlsx::write.xlsx(motifda_groups_atac, file = file.path("report_files", "motif_diffact_clusters_atac.xlsx"))
-  saveRDS(motifda_groups_atac, file = file.path(dirs$rdata, "R_merged_atac_motifda_clusters_atac.RDS"))
-}
-gc()
-
-DefaultAssay(sobj) <- "ATAC"
-
-saveRDS(sobj, file = file.path("report_files", "R_sobj_merged.RDS"))
-##sobj <- readRDS(file = file.path("report_files", "R_sobj_merged.RDS"))
-
-```
-
-
-
-
-
 
 
 # Used tools and versions for this analysis ##

@@ -22,7 +22,7 @@ config {
     assignSouporcellCluster { 
       walltime="03:00:00" 
       procs="1" 
-      memory="32"
+      memory="128"
     }
     Bam2FastQ {
       walltime="1:00:00"
@@ -108,37 +108,37 @@ config {
       queue=long_queue
       walltime="20:00:00"
       procs="8"
-      memory="64"
+      memory="256"
     }
     cellranger_aggr {
       queue=long_queue
       walltime="20:00:00"
       procs="8"
-      memory="64"
+      memory="256"
     }
     cellrangeratac_count {
       queue=long_queue
       walltime="20:00:00"
       procs="8"
-      memory="64"
+      memory="256"
     }
     cellrangeratac_aggr {
       queue=long_queue
       walltime="20:00:00"
       procs="8"
-      memory="64"
+      memory="256"
     }
     cellrangerarc_count {
       queue=long_queue
       walltime="20:00:00"
       procs="8"
-      memory="64"
+      memory="256"
     }
     cellrangerarc_aggr {
       queue=long_queue
       walltime="20:00:00"
       procs="8"
-      memory="64"
+      memory="256"
     }
     CollectPlots {
       walltime="01:00:00"
@@ -189,6 +189,23 @@ config {
       walltime="04:00:00"
       procs="1"
       memory="50"
+    }
+    CRmotifCounts {
+      walltime="04:00:00"
+      procs="1"
+      memory="128"
+    }
+    CTannoSeurat {
+      queue=long_queue
+      walltime="16:00:00"
+      procs="1"
+      memory="256"
+    }
+    CTannoMarker {
+      queue=long_queue
+      walltime="16:00:00"
+      procs="1"
+      memory="256"
     }
     Cutadapt {
       walltime="04:00:00"
@@ -246,10 +263,27 @@ config {
       procs="8"
       memory="64"
     }
+    diffExprSeurat {
+      queue=long_queue
+      walltime="12:00:00"
+      procs="8"
+      memory="128"
+    }
+    diffPeaks {
+      queue=long_queue
+      walltime="15:00:00"
+      procs="8"
+      memory="128"
+    }
     dupRadar {
       walltime="05:00:00"
       procs="4"
       memory="10"
+    }
+    DNAaccess {
+      walltime="04:00:00"
+      procs="4"
+      memory="128"
     }
     extend {
       walltime="01:00:00"
@@ -356,6 +390,12 @@ config {
       procs="1"
       memory="1"
     }
+    grn {
+      queue=long_queue
+      walltime="24:00:00"
+      procs="4"
+      memory="254"  
+    } 
     HTseqCount {
       walltime="04:00:00"
       procs="1"
@@ -427,6 +467,24 @@ config {
       procs="4"
       memory="8"
     }
+    motifActivity {
+      queue=long_queue
+      walltime="08:00:00"
+      procs="1"
+      memory="128"  
+    } 
+    motifEnrich {
+      queue=long_queue
+      walltime="08:00:00"
+      procs="1"
+      memory="128"  
+    } 
+    motifFootprinting {
+      queue=long_queue
+      walltime="24:00:00"
+      procs="1"
+      memory="128"  
+    } 
     MULTIQC {
       queue=long_queue
       walltime="12:00:00"
@@ -448,6 +506,12 @@ config {
       procs="1"
       memory="24"
     }
+    peaks2genes {
+      queue=long_queue
+      walltime="08:00:00"
+      procs="1"
+      memory="128"  
+    } 
     peak_annotation {
       walltime="02:00:00"
       procs="1"
@@ -519,6 +583,41 @@ config {
       walltime="0:10:00"
       procs="4"
       memory="4"
+    }
+    sc_filter {
+      walltime="03:00:00"
+      procs="4"
+      memory="128"
+    }
+    sc_integrateRNA {
+      walltime="04:00:00"
+      procs="4"
+      memory="128"
+    }
+    sc_integrateATAC {
+      walltime="04:00:00"
+      procs="4"
+      memory="128"
+    }
+    sc_qc {
+      walltime="03:00:00"
+      procs="4"
+      memory="128"
+    }
+    sc_readAggrData {
+      walltime="04:00:00"
+      procs="4"
+      memory="128"
+    }
+    sc_readIndivSamplesAndMerge{
+      walltime="04:00:00"
+      procs="4"
+      memory="128"
+    }
+    SCTransform {
+      walltime="04:00:00"
+      procs="4"
+      memory="128"
     }
     SelectUnMapped {
       walltime="04:00:00"
@@ -674,6 +773,12 @@ config {
       walltime="04:00:00"
       procs="1"
       memory="25"
+    }
+    wnn {
+      queue=long_queue
+      walltime="08:00:00"
+      procs="1"
+      memory="128"
     }
   }
 }

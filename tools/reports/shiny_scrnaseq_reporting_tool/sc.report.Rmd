@@ -97,7 +97,7 @@ switch(SHINYREPS_SEQTYPE,
       colorByFactor2 <- if(!is.na(SHINYREPS_COLORBYFACTOR)) {SHINYREPS_COLORBYFACTOR} else {"group"} # default for downstream plots (up to 2 categories)
     },
     tenX={
-      aggrcsv <- read.delim(file.path(SHINYREPS_PROJECT, "aggr.csv"), sep=",") # aggr.csv contains the order of GEM wells
+      aggrcsv <- read.delim(file.path(SHINYREPS_RES, "aggr.csv"), sep=",") # aggr.csv contains the order of GEM wells
       # load targets.txt (data per fastq file). Columns required: "sample", "file", "group", "replicate"
       targets_pools <- read.delim(SHINYREPS_TARGET, sep="\t", comment.char = "#")
       # create targets on cell level
@@ -138,9 +138,10 @@ switch(SHINYREPS_SEQTYPE,
           })
           
           # print table with status column later
-          overviewStatus <- sapply(demuxfiles, function(x) table(x$status))
-          names(overviewStatus) <- aggrcsvPrunedSampleId
-          overviewStatus <- as.data.frame(dplyr::bind_rows(overviewStatus, .id = "file"))
+          overviewStatus <- as.data.frame(sapply(demuxfiles, function(x) table(x$status)))
+          colnames(overviewStatus) <- gsub(SHINYREPS_PREFIX, "", aggrcsvPrunedSampleId)
+          overviewStatus <- data.frame(status=rownames(overviewStatus), overviewStatus)
+          write.table(overviewStatus, file="report_files/demuxGT_overviewStatus.csv", sep="\t", quote = F, row.names = F)
 
           # continue with singlets only
           demuxfiles <- lapply(demuxfiles, function(x) {
@@ -178,7 +179,7 @@ switch(SHINYREPS_SEQTYPE,
       # ensure that GEM wells merged in aggr module are assigned the sample names from targets.txt in correct order
       # the -digit suffix of the cell barcode reflects the order that the GEM wells were provided in the aggr.csv
       targets$file <- gsub("_S._L..._R._001", "", aggrcsv[as.numeric(gsub("^.*-", "", targets$cell_id)), "sample_id"])
-      targets_pools$file <- gsub("(_S.)*(_L...)*(_R.)*(_001)*", "", targets_pools$file) # in case file name was pruned in targets_pools
+      targets_pools$file <- gsub("(_S[0-9])*(_L...)*(_R.)*(_001)*", "", targets_pools$file) # in case file name was pruned in targets_pools
       targets <- merge(targets, targets_pools) # if "name_HTO" column is present in targets, it is used for merging as well (unmapped cells discarded)
       rownames(targets) <- targets$cell_id
       StartingColumnNames <- c("cell_id", "sample", "file", "group", "replicate")
@@ -828,7 +829,6 @@ qc.plots <- lapply(c("Lib.size", "detected", "subsets_Mito_percent"), function(t
             # geom_vline(aes(xintercept = median(na.omit(qc.frame[,to.plot])), col="median"), linetype=2)  +
             # geom_vline(aes(xintercept = MAD(na.omit(qc.frame[,to.plot]), as.numeric(SHINYREPS_NMADS))[[madOrient]], col=madOrient), linetype=2) +
             # scale_color_manual(name = "Statistics", values = c(median = "blue", high="red")) +
-            scale_fill_brewer(palette = "Set1") +
             xlab(xlabel) +
             ylab(paste0("# cells")) + 
             theme(legend.position="top") + 
@@ -1629,7 +1629,7 @@ if(length(hvg) == 0) {
         theme(axis.text.x=element_text(angle=45, vjust=1, hjust=1), legend.position = "none")
   })
   maxViolPerRow = 10 # i.e. #genes x #groups
-  nGridCol <- floor(maxViolPerRow/nlevels(factor(colData(sce)[,annoFactors[1]])))
+  nGridCol <- max(1,floor(maxViolPerRow/nlevels(factor(colData(sce)[,annoFactors[1]]))))
   splitGridList <- split(HVGplot, ceiling(seq_along(HVGplot)/nGridCol))
   
   plot_splitGridList <- lapply(splitGridList, function(gl) { 
@@ -2322,6 +2322,8 @@ selgenes_ensembl <- rowData(sce)$ENSEMBL[match(selgenes, rowData(sce)$SYMBOL)]
 
 ```{r doublet_detection_with_clusters, results='asis', eval=SHINYREPS_SEQTYPE %in% c("tenX")}
 library(scDblFinder)
+clustervar <- selected_clustering_method
+
 cat("# Doublet detection\n\n")
 
 cat("\nThe methods applied here are complementary to doublets identified via cell hashes and SNPs in multiplexed samples: while hashing/genotypes can identify doublets formed by cells of the same type (homotypic doublets) from two samples loaded to the same GEM well, which are often nearly undistinguishable from real cells transcriptionally (and hence generally unidentifiable through the present package), it cannot identify doublets made by cells of the same sample, even if they are heterotypic (formed by different cell types). Instead, the methods presented here are primarily geared towards the identification of heterotypic doublets, which for most purposes are also the most critical ones.\n\n")

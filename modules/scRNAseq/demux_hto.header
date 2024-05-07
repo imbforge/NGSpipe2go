@@ -10,17 +10,46 @@ demux_hto_vars=[
     bc_collapsing_dist  : "1",  // how many errors are allowed between two cell barcodes to collapse them onto one cell
     umi_collapsing_dist : "2",  // how many errors are allowed between two umi within the same cell and TAG to collapse
     expect_cells        : ESSENTIAL_TENX_EXPECTED_CELLS,
-    // cb_whitelist        : "/fsimb/common/tools/cellranger/6.0.0/lib/python/cellranger/barcodes/737K-arc-v1.txt.gz", // optional whitelist of cell barcodes (must not be zipped). CITE-seq-Count will search for those barcodes in the data and correct other barcodes based on this list. Will force the output to provide all the barcodes from the whitelist.
-    cb_whitelist        : "/fsimb/groups/imb-bioinfocf/projects/schick/imb_schick_2021_01_schick_10x_multiome_test_RNA/misc/multiome_GEX_barcodes/737K-arc-v1.txt", 
+    cb_whitelist        : "/fsimb/common/tools/cellranger/6.0.0/lib/python/cellranger/barcodes/737K-arc-v1.txt.gz", // optional whitelist of cell barcodes (must not be zipped). CITE-seq-Count will search for those barcodes in the data and correct other barcodes based on this list. Will force the output to provide all the barcodes from the whitelist.
     max_error_hto       : "3",  // max Levenshtein distance allowed for HTOs
     threads             : ESSENTIAL_THREADS,
     cellranger_output   : MAPPED, // result files from cellranger to demultiplex 
-    excludeFailedHTO    : "hashtag8-TGACGCCGTTGTTGT",   // format: "name_HTO-seq_HTO", if an antibody fails completely, it may make sense to exclude the corresponding HTO from analysis
-    min_cells           : 1,   // Include features detected in at least this many cells.
-    min_features        : 1,   // Include cells where at least this many features are detected
+    excludeFailedHTO    : "",   // format: "name_HTO-seq_HTO", if an antibody fails completely, it may make sense to exclude the corresponding HTO from analysis
+    min_cells           : "1",   // Include features detected in at least this many cells.
+    min_features        : "1",   // Include cells where at least this many features are detected
+    perplexity          : "30",  // Perplexity - expected number of nearest neighbors. The default 30 in seurat is set arbitrarily, but important to decide on the resolution of the clusters - lower values lead to resolving smaller clusters.
     extra               : ""   // extra parameter to send to Cite-Seq-Count
 ]
 
 load PIPELINE_ROOT + "/modules/scRNAseq/demux_hto.groovy"
 
+// expected parameter types
+class demux_hto_vars_schema {
+    String outdir             
+    String targets           
+    String hto_rawdata_dir           
+    String cb_first           
+    String cb_last           
+    String umi_first           
+    String umi_last
+    String bc_collapsing_dist      
+    String umi_collapsing_dist      
+    Integer expect_cells      
+    String cb_whitelist      
+    String max_error_hto      
+    Integer threads      
+    String cellranger_output      
+    String excludeFailedHTO      
+    String min_cells      
+    String min_features      
+    String perplexity      
+    String extra              
+
+    // check for the presence of mandatory params
+    boolean asBoolean() {
+      outdir && targets && hto_rawdata_dir && cellranger_output
+    }
+}
+
+validate_schema(demux_hto_vars_schema, demux_hto_vars)
 

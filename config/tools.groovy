@@ -26,50 +26,50 @@ def shpc_call         = "module try-load shpc &&"
 // default runenvs and versions for each tools.
 // Names should match those of tools_envs
 tools_defaults = [
-    R              : [ runenv: "lmod", version: "R/Bioconductor_3.14_singularity" ],
-    bamqc          : [ runenv: "lmod", version: "0.1.25_devel"      ],
-    bamutil        : [ runenv: "lmod", version: "1.0.14"            ],
-    bedtools       : [ runenv: "lmod", version: "2.27"              ],
-    bowtie         : [ runenv: "lmod", version: "1.3.1"             ],
-    bowtie2        : [ runenv: "lmod", version: "2.4.5"             ],
-    cellranger     : [ runenv: "lmod", version: "6.0.0"             ],
-    cellrangerarc  : [ runenv: "lmod", version: "2.0.0"             ],
-    cellrangeratac : [ runenv: "lmod", version: "2.0.0"             ],
-    cite_seq_count : [ runenv: "conda", version: "1.4.5"            ],
-    bwa            : [ runenv: "lmod", version: "0.7.17"            ],
-    conda          : [ runenv: "lmod", version: "4.8.3"             ],
-    cutadapt       : [ runenv: "lmod", version: "4.0"               ],
-    deeptools      : [ runenv: "lmod", version: "3.5.1"             ],
-    fastqc         : [ runenv: "lmod", version: "0.11.9"            ],
-    fastqscreen    : [ runenv: "lmod", version: "0.15.2"            ],
-    fastx          : [ runenv: "lmod", version: "0.0.14"            ],
-    gatk           : [ runenv: "lmod", version: "4.2.5.0"           ],
-    htseq          : [ runenv: "lmod", version: "0.6.1"             ],
-    java           : [ runenv: "lmod", version: "1.8"               ],
-    kentutils      : [ runenv: "lmod", version: "v385"              ],
-    macs2          : [ runenv: "lmod", version: "2.1.2"             ],
-    mirdeep2       : [ runenv: "lmod", version: "2.0.0.8"           ],
-    multiqc        : [ runenv: "lmod", version: "1.9"               ],
-    pear           : [ runenv: "lmod", version: "0.9.11"            ],
-    picard         : [ runenv: "lmod", version: "2.20"              ],
-    pingpongpro    : [ runenv: "lmod", version: "1.0"               ],
-    python         : [ runenv: "lmod", version: "3.10"              ],
-    qualimap       : [ runenv: "lmod", version: "2.2.1"             ],
-    repenrich      : [ runenv: "lmod", version: "1.2"               ],
-    rmats          : [ runenv: "lmod", version: "4.1.2"             ],
-    rnaseqc        : [ runenv: "lmod", version: "2.4.2"             ],
-    rseqc          : [ runenv: "lmod", version: "4.0.0"             ],
-    samtools       : [ runenv: "lmod", version: "1.10"              ],
-    seqtk          : [ runenv: "lmod", version: "1.3"               ],
-    snpEff         : [ runenv: "lmod", version: "5.0e"              ],
-    souporcell     : [ runenv: "lmod", version: "2.0_singularity"   ],
-    starfusion     : [ runenv: "lmod", version: "0.8.0"             ],
-    star           : [ runenv: "lmod", version: "2.7"               ],
-    stringtie      : [ runenv: "lmod", version: "1.3.5"             ],
-    subread        : [ runenv: "lmod", version: "2.0.0"             ],
-    trimgalore     : [ runenv: "lmod", version: "0.5.0"             ],
-    umitools       : [ runenv: "lmod", version: "1.0.0"             ],
-    vcftools       : [ runenv: "lmod", version: "1.16"              ]
+    R              : [ runenv: "lmod", version: "R/Bioconductor_3.16_singularity" ],
+    bamqc          : [ runenv: "lmod", version: "0.1.25_devel"                    ],
+    bamutil        : [ runenv: "lmod", version: "1.0.14"                          ],
+    bedtools       : [ runenv: "lmod", version: "2.27"                            ],
+    bowtie         : [ runenv: "lmod", version: "1.3.1"                           ],
+    bowtie2        : [ runenv: "lmod", version: "2.4.5"                           ],
+    cellranger     : [ runenv: "lmod", version: "6.0.0"                           ],
+    cellrangerarc  : [ runenv: "lmod", version: "2.0.0"                           ],
+    cellrangeratac : [ runenv: "lmod", version: "2.0.0"                           ],
+    cite_seq_count : [ runenv: "conda", version: "1.4.5"                          ],
+    bwa            : [ runenv: "lmod", version: "0.7.17"                          ],
+    conda          : [ runenv: "lmod", version: "4.9.2"                           ],
+    cutadapt       : [ runenv: "lmod", version: "4.0"                             ],
+    deeptools      : [ runenv: "lmod", version: "3.5.1"                           ],
+    fastqc         : [ runenv: "lmod", version: "0.11.9"                          ],
+    fastqscreen    : [ runenv: "lmod", version: "0.15.2"                          ],
+    fastx          : [ runenv: "lmod", version: "0.0.14"                          ],
+    gatk           : [ runenv: "lmod", version: "4.2.6.1"                         ],
+    htseq          : [ runenv: "lmod", version: "2.0.2"                           ],
+    java           : [ runenv: "lmod", version: "1.8"                             ],
+    kentutils      : [ runenv: "lmod", version: "v385"                            ],
+    macs2          : [ runenv: "lmod", version: "2.1.2"                           ],
+    mirdeep2       : [ runenv: "lmod", version: "2.0.1.3"                         ],
+    multiqc        : [ runenv: "lmod", version: "1.9"                             ],
+    pear           : [ runenv: "lmod", version: "0.9.11"                          ],
+    picard         : [ runenv: "lmod", version: "2.20"                            ],
+    pingpongpro    : [ runenv: "lmod", version: "1.0"                             ],
+    python         : [ runenv: "lmod", version: "3.10"                            ],
+    qualimap       : [ runenv: "lmod", version: "2.2.1"                           ],
+    repenrich      : [ runenv: "lmod", version: "1.2"                             ],
+    rmats          : [ runenv: "lmod", version: "4.1.2"                           ],
+    rnaseqc        : [ runenv: "lmod", version: "2.4.2"                           ],
+    rseqc          : [ runenv: "lmod", version: "4.0.0"                           ],
+    samtools       : [ runenv: "lmod", version: "1.10"                            ],
+    seqtk          : [ runenv: "lmod", version: "1.3"                             ],
+    snpEff         : [ runenv: "lmod", version: "5.0e"                            ],
+    souporcell     : [ runenv: "lmod", version: "2.0_singularity"                 ],
+    starfusion     : [ runenv: "lmod", version: "0.8.0"                           ],
+    star           : [ runenv: "lmod", version: "2.7"                             ],
+    stringtie      : [ runenv: "lmod", version: "2.2.1"                           ],
+    subread        : [ runenv: "lmod", version: "2.0.0"                           ],
+    trimgalore     : [ runenv: "lmod", version: "0.5.0"                           ],
+    umitools       : [ runenv: "lmod", version: "1.1.2"                           ],
+    vcftools       : [ runenv: "lmod", version: "1.16"                            ]
 ]
 
 // This map defines how to prepare the environment in order to have in PATH all
@@ -78,33 +78,6 @@ tools_defaults = [
 //   * 2nd level: version --> version *string*
 //   * 3rd level: runenv  --> one of [lmod|singularity|conda]
 tools_envs = [
-    R: [
-        "3.6.0": [
-            lmod: "module load R/3.6.0",
-            singularity: "alias Rscript=\"singularity run --app Rscript ${singularity_tools}/R/3.6.0r0/R.simg\""
-        ],
-        "4.0.3": [
-            lmod: "module load R/4.0.3"
-        ],
-        "Bioconductor_3.13": [
-            lmod: "module load R/Bioconductor_3.13_singularity"
-        ],
-        "R/Bioconductor_3.14_singularity" : [
-            lmod: "module load R/Bioconductor_3.14_singularity"
-        ],
-        "R/Bioconductor_3.15_singularity" : [
-            lmod: "module load R/Bioconductor_3.15_singularity"
-        ],
-        "R/Bioconductor_3.16_singularity" : [
-            lmod: "module load R/Bioconductor_3.16_singularity"
-        ],
-        "bioconductor/3.17" : [
-            shpc: "${shpc_call} module load bioconductor/3.17"
-        ],
-        "bioconductor/3.18" : [
-            shpc: "${shpc_call} module load bioconductor/3.18"
-        ]
-    ],
     bamqc: [
         "0.1.25_devel": [
             lmod: "module load BamQC/0.1.25_devel"
@@ -155,11 +128,6 @@ tools_envs = [
             lmod: "module load bwa/0.7.17"
         ]
     ],
-    conda: [
-        "4.8.3": [
-            lmod: "module load conda/4.8.3"
-        ]
-    ],
     cellranger: [
         "6.0.0": [
             lmod: "module load cellranger/6.0.0"
@@ -180,11 +148,22 @@ tools_envs = [
             conda: "${conda_call} source activate ${conda_tools}/CITE-seq-Count/1.4.5"
         ]
     ],
+    conda: [
+        "4.8.3": [
+            lmod: "module load conda/4.8.3"
+        ],
+        "4.9.2": [
+            lmod: "module load conda/4.9.2_python3.8"
+        ],
+        "24.3.0": [
+            lmod: "module load conda/24.3.0_python3.10.14"
+        ]
+    ],
     cutadapt: [
         "1.18": [
             lmod: "module load cutadapt/1.18",
             conda: "${conda_call} source activate ${conda_tools}/cutadapt/1.18",
-            singularity :"alias cutadapt=\"singularity run --app cutadapt ${singularity_tools}/cutadapt/1.18r0/cutadapt.simg\""
+            singularity: "alias cutadapt=\"singularity run --app cutadapt ${singularity_tools}/cutadapt/1.18r0/cutadapt.simg\""
         ],
         "2.4": [
             lmod: "module load cutadapt/2.4"
@@ -238,11 +217,17 @@ tools_envs = [
         ],
         "4.2.5.0": [
             lmod: "module load GATK/4.2.5.0"
+        ],
+        "4.2.6.1": [
+            lmod: "module load GATK/4.2.6.1_singularity"
         ]
     ],
     htseq: [
         "0.6.1": [
             lmod: "module load htseq/0.6.1"
+        ],
+        "2.0.2": [
+            lmod: "module load htseq/2.0.2"
         ]
     ],
     java: [
@@ -273,6 +258,10 @@ tools_envs = [
         "2.0.0.8": [
             lmod: "module load mirdeep2/2.0.0.8",
             conda: "${conda_call} source activate ${conda_tools}/mirdeep2/2.0.0.8"
+        ],
+        "2.0.1.3": [
+            lmod: "module load mirdeep2/2.0.1.3",
+            conda: "${conda_call} source activate ${conda_tools}/mirdeep2/2.0.1.3"
         ]
     ],
     multiqc: [
@@ -317,6 +306,36 @@ tools_envs = [
             lmod: "module load qualimap/2.2.1"
         ]
     ],
+    R: [
+        "3.6.0": [
+            lmod: "module load R/3.6.0",
+            singularity: "alias Rscript=\"singularity run --app Rscript ${singularity_tools}/R/3.6.0r0/R.simg\""
+        ],
+        "4.0.3": [
+            lmod: "module load R/4.0.3"
+        ],
+        "Bioconductor_3.13": [
+            lmod: "module load R/Bioconductor_3.13_singularity"
+        ],
+        "R/Bioconductor_3.14_singularity": [
+            lmod: "module load R/Bioconductor_3.14_singularity"
+        ],
+        "R/Bioconductor_3.15_singularity": [
+            lmod: "module load R/Bioconductor_3.15_singularity"
+        ],
+        "R/Bioconductor_3.16_singularity": [
+            lmod: "module load R/Bioconductor_3.16_singularity"
+        ],
+        "R/Bioconductor_3.18_singularity": [
+            lmod: "module load R/Bioconductor_3.18_singularity"
+        ],
+        "bioconductor/3.17": [
+            shpc: "${shpc_call} module load bioconductor/3.17"
+        ],
+        "bioconductor/3.18": [
+            shpc: "${shpc_call} module load bioconductor/3.18"
+        ]
+    ],
     repenrich: [
         "1.2": [
             conda: "${conda_call} source activate ${conda_tools}/repenrich/1.2"
@@ -335,7 +354,7 @@ tools_envs = [
     rseqc: [
         "3.0.0": [
             lmod: "module load RSeQC/3.0.0",
-            conda: "${conda_call} source activate ${conda_tools}/rseqc/3.0.0",
+            conda: "${conda_call} source activate ${conda_tools}/rseqc/3.0.0"
         ],
         "4.0.0": [
             lmod: "module load RSeQC/4.0.0"
@@ -367,11 +386,6 @@ tools_envs = [
             lmod: "module load souporcell/2.0_singularity"
         ]
     ],
-    starfusion: [
-        "0.8.0": [
-            lmod: "module load STAR-Fusion/0.8.0"
-        ]
-    ],
     star: [
         "2.7": [
             lmod: "module load star/2.7.3a",
@@ -382,9 +396,17 @@ tools_envs = [
             lmod: "module load star/2.7.10a"
         ]
     ],
+    starfusion: [
+        "0.8.0": [
+            lmod: "module load STAR-Fusion/0.8.0"
+        ]
+    ],
     stringtie: [
         "1.3.5": [
             lmod: "module load stringtie/1.3.5"
+        ],
+        "2.2.1": [
+            lmod: "module load stringtie/2.2.1"
         ]
     ],
     subread: [
@@ -396,7 +418,7 @@ tools_envs = [
                 alias subjunc=\"singularity run --app subjunc ${singularity_tools}/subread/1.6.3r0/subread.simg\";
                 alias sublong=\"singularity run --app sublong ${singularity_tools}/subread/1.6.3r0/subread.simg\";
                 alias subread-align=\"singularity run --app subread-align ${singularity_tools}/subread/1.6.3r0/subread.simg\";
-                alias subread-buildindex=\"singularity run --app subread-buildindex${singularity_tools}/subread/1.6.3r0/subread.simg\"
+                alias subread-buildindex=\"singularity run --app subread-buildindex ${singularity_tools}/subread/1.6.3r0/subread.simg\"
             """
         ],
         "2.0.0": [
@@ -416,6 +438,10 @@ tools_envs = [
         "1.0.0": [
             lmod: "module load umitools/1.0.0",
             conda: "${conda_call} source activate ${conda_tools}/umitools/1.0.0"
+        ],
+        "1.1.2": [
+            lmod: "module load umitools/1.1.2_singularity",
+            conda: "${conda_call} source activate ${conda_tools}/umitools/1.1.2"
         ]
     ],
     vcftools: [

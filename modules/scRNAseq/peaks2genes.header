@@ -1,0 +1,35 @@
+peaks2genes_vars=[
+    outdir          : RESULTS + "/peaks2genes",
+    project         : PROJECT,                     
+    res             : RESULTS,  
+    db              : ESSENTIAL_DB,                
+    genes2use       : "'c(\"HMCN1\", \"EVL\", \"EML1\")'", // Genes to test. If empty, use all genes from expression assay.  
+    genes2plot      : "HMCN1", // Genes defining the region to show in the coverage plot
+    groupCellsInPlot : "clusters_wnn",  // name of metadata columns to group (color) the cells by in the Coverage plot (e.g. "clusters_wnn")
+    plotUpstream    : "100000", // Number of bases to extend the plotting region upstream.
+    plotDownstream  : "100000", // Number of bases to extend the plotting region downstream.
+    extra    : ""                          //extra parms to sent to the tool
+]
+
+load PIPELINE_ROOT + "/modules/scRNAseq/peaks2genes.groovy"
+
+// expected parameter types
+class peaks2genes_vars_schema {
+    String outdir             
+    String project           
+    String res             
+    String db   
+    String genes2use
+    String genes2plot      
+    String groupCellsInPlot          
+    String plotUpstream             
+    String plotDownstream           
+    String extra              
+
+    // check for the presence of mandatory params
+    boolean asBoolean() {
+      outdir && project && res
+    }
+}
+
+validate_schema(peaks2genes_vars_schema, peaks2genes_vars)

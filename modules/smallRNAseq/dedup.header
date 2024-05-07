@@ -1,0 +1,7 @@
+FilterDuplicates_vars=[
+    outdir: TRIMMED,
+    logdir: LOGS_MY + "/removeDup"
+]
+
+load PIPELINE_ROOT + "/modules/smallRNAseq/dedup.groovy"
+
