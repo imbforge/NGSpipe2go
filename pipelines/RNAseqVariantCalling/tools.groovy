@@ -12,7 +12,9 @@
 // Tips:
 //   * Indentation is important in this file. Please, use 4 spaces for indent. *NO TABS*.
 load PIPELINE_ROOT + "/config/tools.groovy" // tools_defaults are specified here
-tools_custom = [ ] 
+tools_custom = [
+  gatk: [ runenv: "lmod", version: "3.4-46" ]
+]
 
 tools = new LinkedHashMap(tools_defaults)   // create new tools map based on defaults
 tools.putAll(tools_custom)                  // override with users custom versions/runenvs
