@@ -13,14 +13,14 @@ load PIPELINE_ROOT + "/modules/RNAseqVariantCalling/splitNcigar.groovy"
 
 // expected parameter types
 class SplitNCigarReads_vars_schema {
-    String outdir          
-    String gatk_ref        
-    String gatk_threads    
-    String java_flags      
+    String outdir
+    String gatk_ref
+    String gatk_threads
+    String java_flags
     String read_filter_flag
-    Integer String map_q_from_flag 
-    Integer String map_q_to_flag   
-    String unsafe_flag     
+    Integer map_q_from_flag
+    Integer map_q_to_flag
+    String unsafe_flag
 
     // check for the presence of mandatory params
     boolean asBoolean() {
