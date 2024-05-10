@@ -1,6 +1,6 @@
-# SNP calling on RNAseq data pipeline
-
 **Important NOTE: this is a legacy pipeline using GATK3, which is now obsolete. There's no plans to upgrade the pipeline to GATK4, and it is actually unsupported by BCF. Use the pipeline at your own risk.**
+
+# SNP calling on RNAseq data pipeline
 
 ### What it will it do
 
