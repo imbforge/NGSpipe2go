@@ -43,7 +43,7 @@ ESSENTIAL_FASTQSCREEN=ESSENTIAL_FASTQSCREEN_GENOME + ",PHIX::/fsimb/common/genom
 // Adapter trimming with Cutadapt (optional). Usually not needed when the reads are much shorter than the library inserts.
 // Cutadapt recommends using full length adapter sequences since adapter fragments might occur in the genome
 RUN_CUTADAPT=false
-ESSENTIAL_ADAPTER_SEQUENCE="Illumina=AGATCGGAAGAG"
+ESSENTIAL_ADAPTER_SEQUENCE="Illumina=CTGTCTCTTATACACATCT" // standard sequence to trim illumina reads 
 ESSENTIAL_ADAPTER_SEQUENCE_R2="" // in case of paired end sequencing the R2 adapter sequence (which will be trimmed from the 3' end of R2, -A argument in Cutadapt), by default the same sequence as defined in ESSENTIAL_ADAPTER_SEQUENCE is used
 ESSENTIAL_MINADAPTEROVERLAP=3  // minimal overlap of the read and the adapter for an adapter to be found (default 3)
 ESSENTIAL_MINREADLENGTH=20     // minimal length of reads to be kept

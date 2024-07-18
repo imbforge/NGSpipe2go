@@ -35,6 +35,7 @@ ESSENTIAL_MAXREADLENGTH=ESSENTIAL_READLENGTH.toInteger() - ESSENTIAL_MINADAPTERO
                                                                                                                      // which might not reach the adapter or second UMIs
 // Cutadapt recommends using full length adapter sequences since adapter fragments might occur in the genome
 ESSENTIAL_ADAPTER_SEQUENCE="TruSeqSmallRNA=TGGAATTCTCGGGTGCCAAGG" // needed for cutadapt adapter trimming
+ESSENTIAL_ADAPTER_SEQUENCE_R2="" // in case of paired end sequencing the R2 adapter sequence (which will be trimmed from the 3' end of R2, -A argument in Cutadapt), by default the same sequence as defined in ESSENTIAL_ADAPTER_SEQUENCE is used
 ESSENTIAL_BASEQUALCUTOFF=0     // trim low-quality ends from reads (if nextseqtrim is true, qualities of terminal G bases are ignored)  
                                // keep this parameter at 0 to switch off low-quality base pair trimming at the ends of reads
                                // (smallRNAseq reads often have UMIs at the end, which should not be removed)
