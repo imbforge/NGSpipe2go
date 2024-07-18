@@ -3,6 +3,7 @@ Cutadapt_vars=[
     statsdir           : QC + "/Cutadapt",
     paired             : RUN_IN_PAIRED_END_MODE,       // run in se or pe mode    
     adapter_sequence   : ESSENTIAL_ADAPTER_SEQUENCE,   // adapter to be trimmed off the 3' end (paired data: of the first read)
+    adapter_sequence_R2: ESSENTIAL_ADAPTER_SEQUENCE_R2,   // adapter to be trimmed off the 3' end (paired data: of the first read)
     minimum_overlap    : ESSENTIAL_MINADAPTEROVERLAP,  // minimal overlap of the read and the adapter for an adapter to be found (default 3)
     minimum_length_keep: ESSENTIAL_MINREADLENGTH,      // minimal length of reads to be kept
     maximum_length_keep: (binding.hasVariable('ESSENTIAL_MAXREADLENGTH') ? Integer.toString(ESSENTIAL_MAXREADLENGTH) : ""),  // maximal length of reads to be kept
@@ -30,6 +31,7 @@ class Cutadapt_vars_schema {
     String statsdir           
     Boolean paired             
     String adapter_sequence   
+    String adapter_sequence_R2   
     Integer minimum_overlap    
     Integer minimum_length_keep
     String maximum_length_keep
