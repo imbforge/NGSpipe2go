@@ -36,7 +36,8 @@ Cutadapt = {
     def CUTADAPT_FLAGS_PAIRED = 
         (Cutadapt_vars.paired ?  " --too-short-paired-output \${TMP}/${SAMPLENAME_BASE_R2}.cutadapt_discarded.fastq.gz" +
                                  " -p \${TMP}/${SAMPLENAME_BASE_R2}.cutadapt.fastq.gz" : "")
-
+    // we check if we have to add the standard adapter or a specific one for R2
+    def  CUTADAPT_FLAGS_ADAPTER2 = Cutadapt_vars.paired ? (Cutadapt_vars.adapter_sequence_R2 ? "-A " + Cutadapt_vars.adapter_sequence_R2 : "-A " + Cutadapt_vars.adapter_sequence) : ""
     def CUTADAPT_FLAGS_TOOLONG =
         (Cutadapt_vars.maximum_length_keep ? " --too-long-output \${TMP}/${SAMPLENAME_BASE}.cutadapt_discardedTooLong.fastq.gz" : "")
 
@@ -50,8 +51,7 @@ Cutadapt = {
         exec """
             ${TOOL_ENV} &&
             ${PREAMBLE} &&
-
-            cutadapt $CUTADAPT_FLAGS $CUTADAPT_FLAGS_PAIRED $CUTADAPT_FLAGS_TOOLONG --too-short-output=\${TMP}/${SAMPLENAME_BASE}.cutadapt_discarded.fastq.gz --output=\${TMP}/${SAMPLENAME_BASE}.cutadapt.fastq.gz $input1 $CUTADAPT_INPUT_SECOND 1> ${CUTADAPT_STATSDIR}/${SAMPLENAME_BASE_PRUNED}.cutadapt.log &&
+            cutadapt $CUTADAPT_FLAGS $CUTADAPT_FLAGS_PAIRED $CUTADAPT_FLAGS_ADAPTER2 $CUTADAPT_FLAGS_TOOLONG --too-short-output=\${TMP}/${SAMPLENAME_BASE}.cutadapt_discarded.fastq.gz --output=\${TMP}/${SAMPLENAME_BASE}.cutadapt.fastq.gz $input1 $CUTADAPT_INPUT_SECOND 1> ${CUTADAPT_STATSDIR}/${SAMPLENAME_BASE_PRUNED}.cutadapt.log &&
 		
             mv -t ${CUTADAPT_DISCARDED_DIR}/ \${TMP}/${SAMPLENAME_BASE_PRUNED}*cutadapt_discarded*.fastq.gz &&
             mv -t $output.dir \${TMP}/${SAMPLENAME_BASE_PRUNED}*cutadapt.fastq.gz
