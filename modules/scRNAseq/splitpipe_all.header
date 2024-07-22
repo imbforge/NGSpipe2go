@@ -1,0 +1,31 @@
+splitpipe_all_vars=[
+    outdir          : MAPPED,
+    logdir          : LOGS + "/splitpipe_all",
+    targets         : "targets.txt",                 // targets file describing the samples
+    genome          : ESSENTIAL_TENX_REFERENCE, 
+    chemistry       : "v2",
+    expect_cells    : ESSENTIAL_TENX_EXPECTED_CELLS,
+    threads         : "8",
+    extra           : " "               // extra parms to sent to the tool
+]
+
+load PIPELINE_ROOT + "/modules/scRNAseq/splitpipe_all.groovy"
+
+// expected parameter types
+class splitpipe_all_vars_schema {
+    String outdir             
+    String logdir             
+    String targets             
+    String genome           
+    String chemistry           
+    Integer expect_cells           
+    String threads
+    String extra              
+
+    // check for the presence of mandatory params
+    boolean asBoolean() {
+      outdir && genome
+    }
+}
+
+validate_schema(splitpipe_all_vars_schema, splitpipe_all_vars)

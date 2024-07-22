@@ -8,6 +8,7 @@ shinyReports_vars=[
     res             : RESULTS,          //where the results lie
     report          : (binding.variables.containsKey("cellrangerarc_aggr_vars") ? "scmultiome.report.Rmd" : (binding.variables.containsKey("cellrangeratac_aggr_vars") ? "scatac.report.Rmd" : "sc.report.Rmd")), // folder name for results from cellranger / cellranger-atac / cellranger-arc aggr
     cellranger_aggr_id: (binding.variables.containsKey("cellranger_aggr_vars") ? cellranger_aggr_vars.id : (binding.variables.containsKey("cellrangeratac_aggr_vars") ? cellrangeratac_aggr_vars.id : (binding.variables.containsKey("cellrangerarc_aggr_vars") ? cellrangerarc_aggr_vars.id : "aggr"))), // folder name for results from cellranger / cellranger-atac / cellranger-arc aggr
+    splitpipeComb_out : (binding.variables.containsKey("splitpipe_comb_vars") ? splitpipe_comb_vars.outdir : ""), //output split-pipe comb
     run_demux       : RUN_DEMUX, //run sample de-multiplexing step
     demux_out       : (RUN_DEMUX=="demux_HTO" ? (binding.variables.containsKey("demux_hto_vars") ? demux_hto_vars.outdir : "") : (RUN_DEMUX=="demux_GT" ? (binding.variables.containsKey("demux_gt_vars") ? demux_gt_vars.outdir : "") : "") ),  //where the demux output lie
     demuxCluster_out : (binding.variables.containsKey("assignSouporcellCluster_vars") ? assignSouporcellCluster_vars.outdir : ""), //output assignSouporcellCluster

@@ -40,6 +40,7 @@ shinyReports = {
             echo "SHINYREPS_QC=${shinyReports_vars.qc}"           >> $output &&
             echo "SHINYREPS_RES=${shinyReports_vars.res}"         >> $output &&
             echo "SHINYREPS_CELLRANGERAGGR_ID=${shinyReports_vars.cellranger_aggr_id}"  >> $output &&
+            echo "SHINYREPS_SPLITPIPECOMB_OUT=${shinyReports_vars.splitpipeComb_out}"  >> $output &&
             echo "SHINYREPS_RUN_DEMUX=${shinyReports_vars.run_demux}" >> $output &&
             echo "SHINYREPS_DEMUX_OUT=${shinyReports_vars.demux_out}" >> $output &&
             echo "SHINYREPS_DEMUXCLUSTER_OUT=${shinyReports_vars.demuxCluster_out}" >> $output &&

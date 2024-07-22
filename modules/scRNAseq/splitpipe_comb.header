@@ -1,0 +1,21 @@
+splitpipe_comb_vars=[
+    outdir       : RESULTS + "/aggr/",
+    indir        : MAPPED,
+    extra        : ""     // extra parms to sent to the tool
+]
+
+load PIPELINE_ROOT + "/modules/scRNAseq/splitpipe_comb.groovy"
+
+// expected parameter types
+class splitpipe_comb_vars_schema {
+    String outdir             
+    String indir             
+    String extra              
+
+    // check for the presence of mandatory params
+    boolean asBoolean() {
+      outdir && indir
+    }
+}
+
+validate_schema(splitpipe_comb_vars_schema, splitpipe_comb_vars)
