@@ -63,6 +63,7 @@ tools_defaults = [
     seqtk          : [ runenv: "lmod", version: "1.3"                             ],
     snpEff         : [ runenv: "lmod", version: "5.0e"                            ],
     souporcell     : [ runenv: "lmod", version: "2.0_singularity"                 ],
+    split_pipe     : [ runenv: "shpc", version: "1.3.1r0"                         ],
     starfusion     : [ runenv: "lmod", version: "0.8.0"                           ],
     star           : [ runenv: "lmod", version: "2.7"                             ],
     stringtie      : [ runenv: "lmod", version: "2.2.1"                           ],
@@ -384,6 +385,14 @@ tools_envs = [
     souporcell: [
         "2.0_singularity": [
             lmod: "module load souporcell/2.0_singularity"
+        ]
+    ],
+    split_pipe: [
+        "1.2.1r0": [
+            shpc: "${shpc_call} module load split-pipe/1.2.1r0"
+        ],
+        "1.3.1r0": [
+            shpc: "${shpc_call} module load split-pipe/1.3.1r0"
         ]
     ],
     star: [
