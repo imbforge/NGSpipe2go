@@ -47,7 +47,7 @@ CORES <- 2
 pal   <- brewer.pal(9, "Set1")
 pal_rb <- colorRampPalette(c(pal[1], "white", pal[2]))(20)
 pal_y  <- colorRampPalette(c("black", "yellow"))(100)
-plot_pointsize <- 1 # point size for plotReducedDim plots
+plot_pointsize <- 0.2 # point size for plotReducedDim plots
 
 knitr::opts_chunk$set(cache=F,
                       echo=F,
@@ -164,7 +164,7 @@ switch(SHINYREPS_SEQTYPE,
           
           # If subsample column in targets.txt is not pre-defined by user, it is automatically generated.
           # This is used for merging targets with targets_pools to link the cell barcodes with sample names
-          # but note that in that case the assignment of subsamples to the sample ids in targets_pools is arbitrary 
+          # but note that in case the assignment of subsamples to the sample ids in targets_pools is arbitrary 
           # (need external genetic information for specific assignment).
           if(is.null(targets_pools$subsample) || all(is.na(targets_pools$subsample))) {
             targets_pools <- targets_pools %>% dplyr::group_by(file)  %>%
@@ -199,6 +199,34 @@ switch(SHINYREPS_SEQTYPE,
           })
       targets4plots <- targets_pools[!duplicated(targets_pools$file), c("file", names(collapsedColumns)[collapsedColumns])] 
       if(!"sample" %in% colnames(targets4plots)) {targets4plots$sample <- targets4plots$file} # "sample" column is needed. Same as "file" if ambiguous.
+      colorByFactor <- "sample" # default for pipeline overview plots on file level
+      colorByFactor2 <- if(!is.na(SHINYREPS_COLORBYFACTOR)) {SHINYREPS_COLORBYFACTOR} else {"sample"} # default for downstream plots on cell level (up to 2 categories)
+   },
+   ParseBio= { # Demux not necessary because this is already implemented in the assay.
+      # define matrix directory. DGE_filtered subdirectory contains only the cells that passed the pipeline’s minimum transcript count threshold.
+      matrix_dir = file.path(SHINYREPS_SPLITPIPECOMB_OUT, "all-sample/DGE_filtered/")
+      # load targets.txt (data per fastq file). Columns required: "sample", "file", "group", "replicate"
+      targets_pools <- read.delim(SHINYREPS_TARGET, sep="\t", comment.char = "#")
+      targets_pools_sumBySample <- targets_pools %>% # summarize multiple rows per sample induced by distribution of samples across fastq files
+        group_by(sample) %>%
+        summarise(across(everything(), ~ paste(unique(.), collapse = ", "))) %>%
+        as.data.frame()
+      # create targets on cell level 
+      targets = read.delim(file.path(matrix_dir, "cell_metadata.csv"), header = T, stringsAsFactors = FALSE, sep=",") 
+      names(targets)[1] = "cell_id" 
+      # merge targets with targets_pools_sumBySample and sort 
+      targets <- plyr::join(targets, targets_pools_sumBySample, by="sample", type="left") 
+      rownames(targets) <- targets$cell_id
+      StartingColumnNames <- c("cell_id", "sample", "file", "group", "replicate")
+      targets <- targets[order(targets$sample, targets$cell_id), c(StartingColumnNames, colnames(targets)[!colnames(targets) %in% StartingColumnNames])]
+      ParseBioColumns <- c("species", "gene_count", "tscp_count", "mread_count", colnames(targets)[grepl("(wind)|(well)$", colnames(targets))])
+      group.vars <- colnames(targets)[!colnames(targets) %in% c("cell_id", "sample", "file", ParseBioColumns)] 
+      targets[,group.vars] <- lapply(targets[,group.vars], factor)
+      group.vars <- group.vars[sapply(group.vars, function(x) {length(unique(targets[,x]))>1})] # remove group vars with single value
+      targets4plots <- targets_pools %>% # summarize multiple rows per file for fastq-centered QC plots
+        group_by(file) %>%
+        summarise(across(everything(), ~ paste(unique(.), collapse = ", "))) %>%
+        as.data.frame()
       colorByFactor <- "sample" # default for pipeline overview plots on file level
       colorByFactor2 <- if(!is.na(SHINYREPS_COLORBYFACTOR)) {SHINYREPS_COLORBYFACTOR} else {"sample"} # default for downstream plots on cell level (up to 2 categories)
    },
@@ -472,8 +500,8 @@ DEhelper.RNAtypes(targetsdf=targets4plots, samplePattern=SHINYREPS_SAMPLEPATTERN
 # information in targets.txt as in MARS-Seq, you may provide another customized targets object in 'targetsdf'. 
 # Otherwise pruned file names will be used by default.
 #####
-if (SHINYREPS_SEQTYPE=="tenX") {
-  cat("\nMapping Statistics can be found in the cellranger web summary.\n")
+if (SHINYREPS_SEQTYPE %in% c("tenX", "ParseBio")) {
+  cat("\nMapping Statistics can be found in the respective web summary.\n")
 } else {
   
   cat("\nMapping to the reference genome & transcriptome is performed with STAR (https://github.com/alexdobin/STAR). The program version, genome assembly and software parameters are described in the table at the end of the report.
@@ -497,8 +525,8 @@ The mapping statistics below show the number input raw reads and percentages of 
 
 ```{r STAR_paragraph_barplot, echo=F, results='asis', error=F, warning=F, message=F, fig.align="center", out.width="100%", fig.height=(nrow(targets)/5)+2, eval=nrow(targets)<=100}
 # plot mapping statistics as bar plot (only done if less than 100 samples)
-if (SHINYREPS_SEQTYPE=="tenX") {
-  cat("\nMapping Statistics can be found in the cellranger web summary.\n")
+if (SHINYREPS_SEQTYPE %in% c("tenX", "ParseBio")) {
+  cat("\nMapping Statistics can be found in the respective web summary.\n")
 } else {
 star_stats <- DEhelper.STAR(targetsdf=targets4plots)
 
@@ -652,6 +680,19 @@ switch(SHINYREPS_SEQTYPE,
       colnames(counts) = barcode.names$V1
       rownames(counts) = feature.names$V1
       counts <- counts[feature.names$V3 == "Gene Expression",]
+      counts <- counts[,targets$cell_id] # subset cell barcodes by targets (e.g. for successful cell hashing)
+    },
+    ParseBio={
+      # matrix_dir already defined above 
+      barcode.path <- file.path(matrix_dir, "cell_metadata.csv")
+      barcode.names <- read.delim(barcode.path, header = T, sep=",", stringsAsFactors = FALSE)
+      features.path <- file.path(matrix_dir, "all_genes.csv")
+      feature.names = read.delim(features.path, header = T, sep=",", stringsAsFactors = FALSE)
+      matrix.path <- file.path(matrix_dir, "count_matrix.mtx")
+      counts <- Matrix::readMM(file = matrix.path) # cells in rows, genes in columns!
+      counts <- t(counts)
+      colnames(counts) = barcode.names$bc_wells
+      rownames(counts) = feature.names$gene_id
       counts <- counts[,targets$cell_id] # subset cell barcodes by targets (e.g. for successful cell hashing)
     },
     stop(c("Don't find seqtype:", SHINYREPS_SEQTYPE))   
@@ -1682,6 +1723,7 @@ if(length(annoFactors)>2) {stop("\nno more than 2 categories allowed in 'annoFac
 
   }), ncol=2)
 
+  
 ```
 
 ## Identification of sub-populations with t-SNE 
@@ -2320,7 +2362,7 @@ selgenes_ensembl <- rowData(sce)$ENSEMBL[match(selgenes, rowData(sce)$SYMBOL)]
 
 
 
-```{r doublet_detection_with_clusters, results='asis', eval=SHINYREPS_SEQTYPE %in% c("tenX")}
+```{r doublet_detection_with_clusters, results='asis', eval=SHINYREPS_SEQTYPE %in% c("tenX", "ParseBio")}
 library(scDblFinder)
 clustervar <- selected_clustering_method
 
@@ -2352,7 +2394,7 @@ kbl(dbl.out, caption="Doublet detection with clusters") %>% kable_styling()
 ```
 
 
-```{r doublet_detection_by_simulation, results='asis', eval=SHINYREPS_SEQTYPE %in% c("tenX")}
+```{r doublet_detection_by_simulation, results='asis', eval=SHINYREPS_SEQTYPE %in% c("tenX", "ParseBio")}
 annoFactors <- colorByFactor2
 ######################
 

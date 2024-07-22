@@ -1093,7 +1093,7 @@ DEhelper.STAR <- function(targetsdf=targets) {
     
     # replace files names with nicer sample names given in targets file 
     # if sample is missing in targets file, use reduced file name
-    df_values$sample <- sapply(df_values$sample, function(i) { ifelse(sum(sapply(targets$sample_ext, grepl, i))==1,   
+    df_values$sample <- sapply(df_values$sample, function(i) { ifelse(sum(sapply(targets$sample_ext, grepl, i))==1 && !any(duplicated(targets$sample)),   
                                                                       targets[sapply(targets$sample_ext, grepl, i),"sample"], 
                                                                       gsub(paste0("^",SHINYREPS_PREFIX),"",i))})
   } else{
@@ -1353,7 +1353,7 @@ DEhelper.Fastqc.custom <- function(web=FALSE, summarizedPlots=TRUE, targetsdf=ta
     # replace files names with nicer sample names given in targets file 
     # if sample is missing in targets file, use reduced file name
     #cat('In if - before gsub')
-    lbls <- sapply(lbls, function(i) { ifelse(sum(sapply(targets$sample_ext, grepl, i))==1,
+    lbls <- sapply(lbls, function(i) { ifelse(sum(sapply(targets$sample_ext, grepl, i))==1 && !any(duplicated(targets$sample)),
                                               targets[sapply(targets$sample_ext, grepl, i),"sample"],
                                               gsub("_001.fastq.gz", "", gsub(paste0("^",SHINYREPS_PREFIX),"",basename(i))))})
     
@@ -1550,7 +1550,7 @@ DEhelper.fastqscreen <- function(subdir="", targetsdf=targets, perc.to.plot = 1,
 
     # replace files names with nicer sample names given in targets file
     # if sample is missing in targets file, use reduced file name
-    samples <- sapply(samples, function(i) { ifelse(sum(sapply(targets$sample_ext, grepl, i))==1,
+    samples <- sapply(samples, function(i) { ifelse(sum(sapply(targets$sample_ext, grepl, i))==1 && !any(duplicated(targets$sample)),
                                                     ifelse(sapply("R1", grepl, i), 
                                                            paste0(targets[sapply(targets$sample_ext, grepl, i),"sample"], ".R1"),
                                                            ifelse(sapply("R2", grepl, i), 
@@ -1650,7 +1650,7 @@ DEhelper.dupRadar <- function(web=F, targetsdf=targets, ...) {
     
     # replace files names with nicer sample names given in targets file
     # if sample is missing in targets file, use reduced file name
-    samples <- sapply(samples, function(i) { ifelse(sum(sapply(targets$sample_ext, grepl, i))==1,   
+    samples <- sapply(samples, function(i) { ifelse(sum(sapply(targets$sample_ext, grepl, i))==1 && !any(duplicated(targets$sample)),   
                                                     targets[sapply(targets$sample_ext, grepl, i),"sample"], 
                                                     gsub(paste0("^",SHINYREPS_PREFIX),"",i))})
   } else {
@@ -1715,7 +1715,7 @@ DEhelper.RNAtypes <- function(targetsdf=targets, ...) {
     if(file.exists(SHINYREPS_TARGET)){
       # replace files names with nicer sample names given in targets file 
       # if sample is missing in targets file, use reduced file name
-      samplename <- ifelse(sum(sapply(targets$sample_ext, grepl, samplename))==1,  
+      samplename <- ifelse(sum(sapply(targets$sample_ext, grepl, samplename))==1 && !any(duplicated(targets$sample)),  
                            targets[sapply(targets$sample_ext, grepl, samplename),"sample"],  
                            gsub(paste0("^",SHINYREPS_PREFIX),"",samplename))
     } else {
@@ -2113,7 +2113,7 @@ DEhelper.strandspecificity <- function(targetsdf=targets, ...){
 
     # replace files names with nicer sample names given in targets file
     # if sample is missing in targets file, use reduced file name
-    samplenames <- sapply(samplenames, function(i) { ifelse(sum(sapply(targets$sample_ext, grepl, i))==1,   
+    samplenames <- sapply(samplenames, function(i) { ifelse(sum(sapply(targets$sample_ext, grepl, i))==1 && !any(duplicated(targets$sample)),   
                                                             targets[sapply(targets$sample_ext, grepl, i),"sample"], 
                                                             gsub(paste0("^",SHINYREPS_PREFIX),"",i))})
   } else {
@@ -2627,7 +2627,7 @@ DEhelper.Qualimap <- function(targetsdf=targets, ...) {
 
     # replace files names with nicer sample names given in targets file
     # if sample is missing in targets file, use reduced file name
-    colnames(samples) <- sapply(colnames(samples), function(i) { ifelse(sum(sapply(targets$sample_ext, grepl, i))==1,  
+    colnames(samples) <- sapply(colnames(samples), function(i) { ifelse(sum(sapply(targets$sample_ext, grepl, i))==1 && !any(duplicated(targets$sample)),  
                                                                         targets[sapply(targets$sample_ext, grepl, i),"sample"], 
                                                                         gsub(paste0("^",SHINYREPS_PREFIX),"",i))})
   } else {
