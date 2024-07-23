@@ -47,7 +47,9 @@ CORES <- 2
 pal   <- brewer.pal(9, "Set1")
 pal_rb <- colorRampPalette(c(pal[1], "white", pal[2]))(20)
 pal_y  <- colorRampPalette(c("black", "yellow"))(100)
-plot_pointsize <- 0.2 # point size for plotReducedDim plots
+plot_pointsize <- 0.6 # point size for plotReducedDim plots
+plot_pointshape <- 16 # point shape for plotReducedDim plots (if not occupied by parameter)
+plot_pointalpha <- 0.4 # point transparency for plotReducedDim plots
 
 knitr::opts_chunk$set(cache=F,
                       echo=F,
@@ -219,7 +221,7 @@ switch(SHINYREPS_SEQTYPE,
       rownames(targets) <- targets$cell_id
       StartingColumnNames <- c("cell_id", "sample", "file", "group", "replicate")
       targets <- targets[order(targets$sample, targets$cell_id), c(StartingColumnNames, colnames(targets)[!colnames(targets) %in% StartingColumnNames])]
-      ParseBioColumns <- c("species", "gene_count", "tscp_count", "mread_count", colnames(targets)[grepl("(wind)|(well)$", colnames(targets))])
+      ParseBioColumns <- c("wells", "species", "gene_count", "tscp_count", "mread_count", colnames(targets)[grepl("(wind)|(well)$", colnames(targets))])
       group.vars <- colnames(targets)[!colnames(targets) %in% c("cell_id", "sample", "file", ParseBioColumns)] 
       targets[,group.vars] <- lapply(targets[,group.vars], factor)
       group.vars <- group.vars[sapply(group.vars, function(x) {length(unique(targets[,x]))>1})] # remove group vars with single value
@@ -841,7 +843,7 @@ if (!is.na(mito.genes)) {
  is.mito  <- row.names(sce) %in% mito.genes # use predefined list with mitochondrial genes
  cat("\n", sum(is.mito), "mitochondrial genes identified by pre-defined mitochondrial gene list.\n")
  } else {
- is.mito <- rowData(sce)$CHR %in% c("chrM", "chrMT", "M", "MT")   
+ is.mito <- gsub(".*_", "", rowData(sce)$CHR) %in% c("chrM", "chrMT", "M", "MT") # some assays have prefixes like 'mm39_' in chr names    
  cat("\n", sum(is.mito), "genes identified on mitochrondrial chromosome.\n")
  #is.mito <- grepl("^MT-", rowData(sce)$SYMBOL, ignore.case = TRUE) # use all genes starting with "MT-"
  #cat("\n", sum(is.mito), "mitochondrial genes identified by gene name starting with 'MT-'.\n")
@@ -998,8 +1000,6 @@ annoFactors <- colorByFactor2
 # name individual samples failed in raw data QC
 rawfail <- NULL
 #####
-
-# if(!exists("sce.beforeFilt")) {sce.beforeFilt <- sce}
 
 ## visualize selected thresholds
 
@@ -1349,7 +1349,8 @@ if(any(!is.na(sce$phases))) {
     
     # plot cell cycle phases
     plot(0, xlim=c(0, 1), ylim=c(0, 1), type="n", xlab="G1 score", ylab="G2/M score")
-    points(assignments$scores$G1, assignments$scores$G2M, col=scales::alpha(pal[factor(colData(sce)[,annoFactors[1]])], .5) )   # pch=16
+    points(assignments$scores$G1, assignments$scores$G2M, col=scales::alpha(pal[factor(colData(sce)[,annoFactors[1]])], .5), 
+           pch=plot_pointshape, cex=plot_pointsize )   
     # abline(h=.5, v=.5, lty=2, col="red")
     arrows(0.5,0.5,1,1, length=0, col="red", lty=2)
     arrows(0,0.5,0.5,0.5, length=0, col="red", lty=2)
@@ -1387,8 +1388,9 @@ explVar <- plotExplanatoryVariables(sce, variables=explanatoryVariables, exprs_v
 cat("\nPCA plots of top 500 genes colored by potential confounder variables\n\n")  
   sce <-scater::runPCA(sce, name = "PCA")
   explVarScatter <- lapply(explanatoryVariables, function(x) {
-                    scater::plotPCASCE(sce, ncomponents = 4, point_size=1, point_alpha=0.3, colour_by=x) + 
-                      ggtitle(paste("PCA plots colored by", x))
+                    scater::plotPCASCE(sce, ncomponents = 4, point_size=plot_pointsize, point_alpha=plot_pointalpha, colour_by=x) + 
+                      ggtitle(paste("PCA plots colored by", x)) +
+                      guides(color = guide_legend(override.aes = list(size = 2, alpha=1)))
                     })
 
   explVar2plot <- c(list(explVar), explVarScatter)
@@ -1580,8 +1582,9 @@ if(adjust_ccp | !is.null(var2adjust)) {
 cat("\nPCA plots of top 500 genes colored by potential confounder variables after correction\n\n")
   sce <-scater::runPCA(sce, name = "PCA")
   explVarScaterAdj <- lapply(explanatoryVariables, function(x) {
-                    scater::plotPCASCE(sce, ncomponents = 4, point_size=1, point_alpha=0.3, colour_by=x) +
-                          ggtitle(paste("PCA plots after adjustment colored by", x))
+                    scater::plotPCASCE(sce, ncomponents = 4, point_size=plot_pointsize, point_alpha=plot_pointalpha, colour_by=x) +
+                          ggtitle(paste("PCA plots after adjustment colored by", x)) + 
+                          guides(color = guide_legend(override.aes = list(size = 2, alpha=1)))
                     })
 
   explVar2plotAdj <- c(list(explVarAdj), explVarScaterAdj)
@@ -1602,8 +1605,8 @@ Calculation of the per-gene variance is simple but feature selection requires mo
 decVar <- modelGeneVar(sce)
 var.fit <- metadata(decVar)
 
-plot(var.fit$mean, var.fit$var, xlab="Mean of log-expression",
-    ylab="Variance of log-expression")
+plot(var.fit$mean, var.fit$var, xlab="Mean of log-expression", ylab="Variance of log-expression",
+     pch=plot_pointshape, cex=plot_pointsize)
 curve(var.fit$trend(x), col="dodgerblue", add=TRUE, lwd=2)
 ```
 
@@ -1718,9 +1721,11 @@ if(length(annoFactors)>2) {stop("\nno more than 2 categories allowed in 'annoFac
 
       scater::plotReducedDim(sce, dimred = d, 
         by_exprs_values = exprs_values,
-        colour_by=dotcol, shape_by = dotshape, point_size=plot_pointsize) +  
-        ggtitle(paste("PCA plot of", if(grepl("allgenes", d)) {"all genes"} else {"HVGs"}))
-
+        colour_by=dotcol, shape_by = dotshape, point_size=plot_pointsize, point_alpha=plot_pointalpha) +  
+        ggtitle(paste("PCA plot of", if(grepl("allgenes", d)) {"all genes"} else {"HVGs"})) + 
+        guides(color = guide_legend(override.aes = list(size=1, alpha=1)), 
+               shape = guide_legend(override.aes = list(size=1, alpha=1)))
+    
   }), ncol=2)
 
   
@@ -1772,8 +1777,10 @@ if(length(annoFactors)>2) {stop("\nno more than 2 categories allowed in 'annoFac
 
       scater::plotReducedDim(sce, dimred = d, 
         by_exprs_values = exprs_values,
-        colour_by=dotcol, shape_by = dotshape, point_size=plot_pointsize) +  
-        ggtitle(paste("TSNE plot of", if(grepl("allgenes", d)) {"all genes"} else {"HVGs"}, "with perplexity", gsub("^.*p", "", d)))
+        colour_by=dotcol, shape_by = dotshape, point_size=plot_pointsize, point_alpha=plot_pointalpha) +  
+        ggtitle(paste("TSNE plot of", if(grepl("allgenes", d)) {"all genes"} else {"HVGs"}, "with perplexity", gsub("^.*p", "", d))) +
+        guides(color = guide_legend(override.aes = list(size=1, alpha=1)), 
+               shape = guide_legend(override.aes = list(size=1, alpha=1)))
 
   }), ncol=2)
 
@@ -1818,8 +1825,10 @@ if(length(annoFactors)>2) {stop("\nno more than 2 categories allowed in 'annoFac
 
       scater::plotReducedDim(sce, dimred = d, 
         by_exprs_values = exprs_values,
-        colour_by=dotcol, shape_by = dotshape, point_size=plot_pointsize) +  
-        ggtitle(paste("UMAP plot of", if(grepl("allgenes", d)) {"all genes"} else {"HVGs"}))
+        colour_by=dotcol, shape_by = dotshape, point_size=plot_pointsize, point_alpha=plot_pointalpha) +  
+        ggtitle(paste("UMAP plot of", if(grepl("allgenes", d)) {"all genes"} else {"HVGs"})) + 
+        guides(color = guide_legend(override.aes = list(size=1, alpha=1)), 
+               shape = guide_legend(override.aes = list(size=1, alpha=1)))
 
   }), ncol=2)
 
@@ -1903,10 +1912,12 @@ cat(paste0("\nClustering is applied on the gene list filtered by SC3 (", sum(row
         plot_cluster <- mclapply(plot_Items, function(i) {
                   scater::plotReducedDim(sceSC3,  # use sceSC3 instead of sce
                     dimred = i,
-                    colour_by=dotcol, shape_by = dotshape, point_size=plot_pointsize) +
+                    colour_by=dotcol, shape_by = dotshape, point_size=plot_pointsize, point_alpha=plot_pointalpha) +
                     scale_color_discrete(name="cluster") +
-                    guides(color=guide_legend(ncol=2)) +
-                    ggtitle(paste(gsub("_", " ", i), "SC3")) + theme(aspect.ratio = 1)
+                    ggtitle(paste(gsub("_", " ", i), "SC3")) + theme(aspect.ratio = 1) +
+                    guides(color = guide_legend(ncol=2, override.aes = list(size=1, alpha=1)), 
+                           shape = guide_legend(override.aes = list(size=1, alpha=1)))
+
               }, mc.cores=1)
       
       filenamePlot <- file.path(dir_sc3, paste0("SC3_", d, "_cluster_plots.png")) 
@@ -2011,11 +2022,13 @@ for(d in data2clustext) {
                         dimred = p,
                         by_exprs_values = exprs_values,
                         colour_by= paste0("igraph_", cl), 
-                        shape_by = dotshape, point_size=plot_pointsize) +
+                        shape_by = dotshape, point_size=plot_pointsize, point_alpha=plot_pointalpha) +
               scale_color_discrete(name="cluster") +
-              guides(color=guide_legend(ncol=2)) + theme(aspect.ratio = 1) +
+              guides(color=guide_legend(ncol=2, override.aes = list(size=1, alpha=1)),
+                     shape = guide_legend(override.aes = list(size=1, alpha=1))) + 
               ggtitle(paste("Graph-based clustering on", gsub("_", " ", cl), "\nillustrated by", gsub("_", " ", p))) +
-              theme(plot.title = element_text(size = 9)))
+              theme(plot.title = element_text(size = 9), aspect.ratio = 1))
+            
         } # end cl-loop
       } # end p-loop
       filenamePlot <- file.path(dir_igraph, paste0("igraph_", d, "_cluster_plots.png"))
@@ -2186,11 +2199,12 @@ plottypes <- c("PCA", "TSNE", "UMAP")
                     dimred =p,
                     by_exprs_values = exprs_values,
                     colour_by=paste0("hclust_", cl), 
-                    shape_by = dotshape, point_size=plot_pointsize) +
+                    shape_by = dotshape, point_size=plot_pointsize,  point_alpha=plot_pointalpha) +
                     scale_color_discrete(name="cluster") +
-                    guides(color=guide_legend(ncol=2)) +
+                    guides(color=guide_legend(ncol=2, override.aes = list(size=1, alpha=1)),
+                           shape = guide_legend(override.aes = list(size=1, alpha=1))) + 
                     ggtitle(paste("Hierarchical clustering on", gsub("_", " ", cl), "\nillustrated by", gsub("_", " ", p))) +
-        theme(plot.title = element_text(size = 9)))
+                    theme(plot.title = element_text(size = 9)))
 
       } # end cl-loop
   } # end p-loop
@@ -2269,19 +2283,24 @@ annoFactors <- colorByFactor2
   plot_selected <- scater::plotReducedDim(sce, 
                       dimred = name_dimred,
                       by_exprs_values = exprs_values,
-                      colour_by=selected_clustering_method, point_size=plot_pointsize) + # shape_by = dotshape, 
+                      colour_by=selected_clustering_method, point_size=plot_pointsize, point_alpha=plot_pointalpha) +  
                       scale_color_discrete(name="cluster") +
                       #guides(color=guide_legend(ncol=2)) +
                       #ggtitle(gsub("_", " ", selected_clustering_method)) + 
-                      theme(legend.position = "top", aspect.ratio = 1)
+                      theme(legend.position = "top", aspect.ratio = 1) +
+                      guides(color = guide_legend(override.aes = list(size=1, alpha=1)), 
+                             shape = guide_legend(override.aes = list(size=1, alpha=1)))
+
    
   plot_selected_annofactor <- scater::plotReducedDim(sce, 
                       dimred = name_dimred,
                       by_exprs_values = exprs_values,
-                      colour_by=annoFactors[1], point_size=plot_pointsize) +
+                      colour_by=annoFactors[1], point_size=plot_pointsize, point_alpha=plot_pointalpha) +
+                      #guides(color=guide_legend(ncol=2)) +
                       #ggtitle(paste(gsub("_", " ", name_dimred), "colored by", annoFactors[1])) + 
-                      guides(color=guide_legend(ncol=2)) +
-                      theme(legend.position = "top", aspect.ratio = 1)
+                      theme(legend.position = "top", aspect.ratio = 1) +
+                      guides(color = guide_legend(override.aes = list(size=1, alpha=1)), 
+                             shape = guide_legend(override.aes = list(size=1, alpha=1)))
    
    ggsave(plot=plot_selected, filename= file.path("report_files", "cluster", paste0(selected_clustering_method, "_selected_cluster_plot.png")),
           width = 120, height = 120, units = c("mm"),  dpi = 300)
