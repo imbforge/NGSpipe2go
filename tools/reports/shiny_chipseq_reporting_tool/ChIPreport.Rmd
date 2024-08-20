@@ -221,7 +221,10 @@ if("AdapterContent" %in% names(fastqc_summary_plot_cutadapt)) {
   fastqc_summary_plot_cutadapt[["AdapterContent"]]
 }
 
+
+cat("\n", fill=T)
 cat("### {-}\n", fill = T)
+
 ```
 
 ## Read mapping ##
