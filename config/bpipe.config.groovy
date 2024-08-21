@@ -52,7 +52,7 @@ config {
     bamCoverage {
       walltime="20:00:00"
       queue=long_queue
-      procs="8"
+      procs="4"
       memory="32"
     }
     BAMindexer {
