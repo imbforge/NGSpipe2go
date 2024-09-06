@@ -1838,18 +1838,21 @@ if(length(annoFactors)>2) {stop("\nno more than 2 categories allowed in 'annoFac
 
 # Clustering {.tabset .tabset-pills}
 
-## Defining clusters with SC3
 
-Single-Cell Consensus Clustering (SC3) is a tool for unsupervised clustering of scRNA-seq data. SC3 achieves high accuracy and robustness by consistently integrating different clustering solutions through a consensus approach. Genes used for clustering are filtered based on gene dropout rates of the counts matrix. SC3 recommends a number of clusters to be used for clustering.
+```{r sc3, results="asis", eval=F}
+## sc3 not used by default anymore
 
-```{r sc3, results="asis", eval=TRUE}
 library(SC3)
 library(pkgmaker)
+
+cat("## Defining clusters with SC3
+
+Single-Cell Consensus Clustering (SC3) is a tool for unsupervised clustering of scRNA-seq data. SC3 achieves high accuracy and robustness by consistently integrating different clustering solutions through a consensus approach. Genes used for clustering are filtered based on gene dropout rates of the counts matrix. SC3 recommends a number of clusters to be used for clustering.")
 
 rowData(sce)$feature_symbol <- rowData(sce)$SYMBOL # column feature_symbol needed for SC3
 
 set.seed(100)
-sce <- sc3_prepare(sce, gene_filter=T, n_cores=8, rand_seed = 100) # 
+sce <- sc3_prepare(sce, gene_filter=F, n_cores=8, rand_seed = 100) # 
 set.seed(100)
 sce <- sc3_estimate_k(sce) # metadata(sce)$sc3$k_estimation 12
 nr_clusters <- metadata(sce)$sc3$k_estimation
