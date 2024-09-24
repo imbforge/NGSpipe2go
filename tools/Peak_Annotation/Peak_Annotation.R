@@ -119,12 +119,12 @@ if(ftargets != "" && orderby != "") {
 }
 
 # create barplot showing the feature distribution
-png(file=paste0(out, "/ChIPseq_Feature_Distribution_Barplot.png"), width = 700, height = 500)
+png(file=paste0(out, "/ChIPseq_Feature_Distribution_Barplot.png"), width = 700, height = 250+12.5*length(peakAnno))
 plot(plotAnnoBar(peakAnno))
 dev.off()
 
 # create barplot showing the feature distribution related to TSS
-png(file=paste0(out, "/ChIPseq_Feature_Distribution_Related_to_TSS_Barplot.png"), width = 700, height = 500)
+png(file=paste0(out, "/ChIPseq_Feature_Distribution_Related_to_TSS_Barplot.png"), width = 700, height = 250+12.5*length(peakAnno))
 plot(plotDistToTSS(peakAnno))
 dev.off()
 
@@ -146,6 +146,11 @@ for(i in 1:length(peakAnno)){
 outputData <- lapply(peakAnno, as.data.frame)
 names(outputData) <- make.names(substr(names(outputData), 1, 30), unique=TRUE)
 write.xlsx(outputData, file=paste0(out, "/Peak_Annotation.xlsx"))
+
+# save annotation tables additionally as text files (xlsx file gets quite big in case of many samples )
+for(i in names(peakAnno)) {
+  write.table(as.data.frame(peakAnno[[i]]), file=paste0(out, "/", i, "_Peak_Annotation.txt"), sep="\t", quote=F, row.names = F)
+}
 
 # save the sessionInformation
 writeLines(capture.output(sessionInfo()), paste(out, "/ChIPseq_Peak_Annotation_session_info.txt", sep=""))
