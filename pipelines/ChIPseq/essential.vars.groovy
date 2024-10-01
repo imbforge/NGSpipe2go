@@ -37,8 +37,8 @@ ESSENTIAL_BLACKLIST=""           // path to a BED file with blacklisted regions 
 // Check for contaminations using FASTQ-Screen
 RUN_FASTQSCREEN=true            
 ESSENTIAL_FASTQSCREEN_PERC=1    // contaminant filter, if a contaminant is consuming at least this percentage of reads in at least one sample, contaminant will be shown in report
-ESSENTIAL_FASTQSCREEN_GENOME=ESSENTIAL_BOWTIE_REF  //bowtie2 reference index files (base name) for the genome the samples are from
-ESSENTIAL_FASTQSCREEN=ESSENTIAL_FASTQSCREEN_GENOME + ",PHIX::/fsimb/common/genomes/phix/19930428/NCBI/index/bowtie2/2.3.4.3/ncbi_phix,ERCC::/fsimb/common/genomes/ERCC/index/bowtie2/2.3.4.3/ERCC92,rRNA::/fsimb/common/genomes/contaminants/fastqscreen_references/rrna/v1/index/bowtie2/2.3.4.3/hs_mm_ce_dm_rn_dr_xt_rRNA,Mycoplasma::/fsimb/common/genomes/contaminants/fastqscreen_references/mycoplasma/v1/index/bowtie2/2.3.4.3/mycoplasma_all_ref,E.coli::/fsimb/common/genomes/Escherichia_coli/ensembl/full/index/bowtie2/Escherichia_coli_str_k_12_substr_dh10b.ASM1942v1.31.dna.genome,B.taurus::/fsimb/common/genomes/bos_taurus/ensembl/3.1/full/index/bowtie2/2.2.9/UMD3.1" //references for fastqscreen to use if run, this are our standard references please include yours 
+ESSENTIAL_FASTQSCREEN_GENOME="Organism::Bowtie2_index"  // bowtie2 reference index files (base name) for the genome the samples are from
+ESSENTIAL_FASTQSCREEN=ESSENTIAL_FASTQSCREEN_GENOME + ",PHIX::/fsimb/common/genomes/phix/19930428/NCBI/index/bowtie2/2.3.4.3/ncbi_phix,ERCC::/fsimb/common/genomes/ERCC/index/bowtie2/2.3.4.3/ERCC92,rRNA::/fsimb/common/genomes/contaminants/fastqscreen_references/rrna/v1/index/bowtie2/2.3.4.3/hs_mm_ce_dm_rn_dr_xt_rRNA,Mycoplasma::/fsimb/common/genomes/contaminants/fastqscreen_references/mycoplasma/v1/index/bowtie2/2.3.4.3/mycoplasma_all_ref,E.coli::/fsimb/common/genomes/Escherichia_coli/ensembl/full/index/bowtie2/Escherichia_coli_str_k_12_substr_dh10b.ASM1942v1.31.dna.genome,B.taurus::/fsimb/common/genomes/bos_taurus/ensembl/3.1/full/index/bowtie2/2.2.9/UMD3.1"  // references for fastqscreen to use if run, this are our standard references please include yours 
 
 
 // Adapter trimming with Cutadapt (optional). Usually not needed when the reads are much shorter than the library inserts.
@@ -63,15 +63,15 @@ ESSENTIAL_MIN_PEAKLENGTH=""  // MACS2 minimum peak length. Default (empty string
 RUN_DIFFBIND=true
 ESSENTIAL_DIFFBIND_LIBRARY="default" // DiffBind method to calculate library sizes. One of "full", "RiP", "background" and "default"  
 ESSENTIAL_DIFFBIND_NORM="default"    // DiffBind method to calculate normalization factors. One of "lib", "RLE", "TMM", "native" and "default". 
-ESSENTIAL_SUMMITS=200                // Re-center peaks around consensus summit with peak width 2x ESSENTIAL_SUMMITS (0 means no re-centering)
+ESSENTIAL_SUMMITS=200                // re-center peaks around consensus summit with peak width 2x ESSENTIAL_SUMMITS (0 means no re-centering)
 
 // further optional pipeline stages to include
 RUN_IN_PAIRED_END_MODE=(ESSENTIAL_PAIRED == "yes")
 RUN_MAKE_GREYLIST=true   // greylist is generated from all Control files and is then applied to MACS2 peak files like a blacklist (default: true). IMPORTANT NOTE: If true, a bed file given in ESSENTIAL_BLACKLIST is ignored! 
-RUN_PEAK_ANNOTATION=true
-RUN_ENRICHMENT=true
-RUN_TRACKHUB=false
-RUN_UPSETPLOT=false   // For larger projects, the calculation of the respective combination matrix may take several hours.
+RUN_PEAK_ANNOTATION=true   // annotate the called peaks using ChIPSeeker
+RUN_ENRICHMENT=true   // perform Genomic Regions Enrichment Analysis (GREAT)
+RUN_TRACKHUB=false   // create UCSC track hub to display the generated bigWig tracks
+RUN_UPSETPLOT=false   // create UpSet plot for the called peaks. NOTE: for large projects the calculation of the respective combination matrix may take several hours.
 
 // project folders
 PROJECT=ESSENTIAL_PROJECT
