@@ -1265,9 +1265,9 @@ DEhelper.Fastqc <- function(web=FALSE, subdir="", ...) {
       # replace files names with nicer sample names given in targets file 
       # if sample is missing in targets file, use reduced file name
       rownames(df) <- sapply(rownames(df), function(i) { ifelse(sum(sapply(targets$sample_ext, grepl, i))==1,
-                                                                ifelse(sapply("R1", grepl, i), 
+                                                                ifelse(sapply("\\.R1", grepl, i), 
                                                                        paste0(targets[sapply(targets$sample_ext, grepl, i),"sample"], ".R1"),
-                                                                       ifelse(sapply("R2", grepl, i), 
+                                                                       ifelse(sapply("\\.R2", grepl, i), 
                                                                               paste0(targets[sapply(targets$sample_ext, grepl, i),"sample"], ".R2"),
                                                                               targets[sapply(targets$sample_ext, grepl, i),"sample"])),
                                                                 gsub(paste0("^",SHINYREPS_PREFIX),"",i))})                                                    
@@ -1359,7 +1359,7 @@ DEhelper.Fastqc.custom <- function(web=FALSE, summarizedPlots=TRUE, targetsdf=ta
     
     if(any(grepl("[\\._]R1[\\._]|[\\._]R2[\\._]", names(lbls)))) {  # SHINYREPS_PAIRED == "yes" # for scRNA-Seq we may have se mapping but still an R2 with barcode
       x <- names(lbls)
-      lbls <- paste0(lbls, ifelse(grepl("R1", names(lbls)), "_R1", "_R2"))
+      lbls <- paste0(lbls, ifelse(grepl("\\.R1", names(lbls)), "_R1", "_R2"))
       names(lbls) <- x
     }
   } else {
@@ -1551,9 +1551,9 @@ DEhelper.fastqscreen <- function(subdir="", targetsdf=targets, perc.to.plot = 1,
     # replace files names with nicer sample names given in targets file
     # if sample is missing in targets file, use reduced file name
     samples <- sapply(samples, function(i) { ifelse(sum(sapply(targets$sample_ext, grepl, i))==1 && !any(duplicated(targets$sample)),
-                                                    ifelse(sapply("R1", grepl, i), 
+                                                    ifelse(sapply("\\.R1", grepl, i), 
                                                            paste0(targets[sapply(targets$sample_ext, grepl, i),"sample"], ".R1"),
-                                                           ifelse(sapply("R2", grepl, i), 
+                                                           ifelse(sapply("\\.R2", grepl, i), 
                                                                   paste0(targets[sapply(targets$sample_ext, grepl, i),"sample"], ".R2"),
                                                                   targets[sapply(targets$sample_ext, grepl, i),"sample"])),
                                                     gsub(paste0("^",SHINYREPS_PREFIX),"",i))})                                                    
