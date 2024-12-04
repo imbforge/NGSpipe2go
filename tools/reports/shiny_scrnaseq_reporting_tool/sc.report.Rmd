@@ -250,7 +250,7 @@ gene.names <- unique(as.data.frame(gtf)[, c("gene_id", "gene_name")])
 ```
 
 
-# Raw reads QC #
+# Quality control of raw reads #
 
 ## FastQC of all reads
 
@@ -385,6 +385,7 @@ fastqc_summary_plot$p.gc
 cat("\n", fill = T)
 ```
 
+# Quality control of read alignment #
 
 ## Gene body coverage ##
 
@@ -822,7 +823,7 @@ cat("\nFor routine analyses, there is usually no need to remove the ambient cont
 
 
 
-## Quality control of cells and RNA sequenced
+## Quality control of cells
 
 To assess if the sequenced libraries are usable and the RNA captured represents a meaningful fraction of the RNA present in the cell, we are focussing on the following factors:
 
