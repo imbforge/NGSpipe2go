@@ -2751,9 +2751,9 @@ pairwise.de <- apply(conts,1,function(cont) {
     
     de.results <- list()
 
-  summedCont <- summed[, summed$group %in% factors] # select only samples included in the respective contrast
-  summedCont$group <- relevel(summedCont$group, factors[2]) # relevel to make sure the comparison is done in the right direction (B vs A and not A vs B)
-  summedCont$group <- factor(summedCont$group)
+  summedCont <- summed[, summed$diffgroups %in% factors] # select only samples included in the respective contrast
+  summedCont$diffgroups <- factor(summedCont$diffgroups)
+  summedCont$diffgroups <- relevel(summedCont$diffgroups, factors[2]) # relevel to make sure the comparison is done in the right direction (B vs A and not A vs B)
 
 
     for (i in levels(colData(summedCont)[,selected_clustering_method])) {
@@ -2786,6 +2786,7 @@ pairwise.de <- apply(conts,1,function(cont) {
         #limma::plotMDS(cpm(y, log=TRUE), col=y$samples$diffgroups, main=paste("MDS plot for cluster", i))
         
         # Statistical modeling
+        # The factors[2] group is selected as the reference level since factors[2] is the first level in diffgroups
         design <- try(
             if(!is.null(DE_var2adjust)) { 
                 model.matrix(~ factor(DE_var2adjust) + factor(diffgroups), y$samples)
