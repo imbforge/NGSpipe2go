@@ -221,7 +221,10 @@ if("AdapterContent" %in% names(fastqc_summary_plot_cutadapt)) {
   fastqc_summary_plot_cutadapt[["AdapterContent"]]
 }
 
+
+cat("\n", fill=T)
 cat("### {-}\n", fill = T)
+
 ```
 
 ## Read mapping ##
@@ -684,6 +687,7 @@ diffplots <- lapply(branches, function(dir) {
       cat("### Diffbind results from", if(dir=="") "default" else dir, "pipeline branch {.tabset .tabset-pills}\n")
     }
     ChIPhelper.diffbind(subdir=dir)
+    cat("\n", fill=T)
     cat("### {-}\n", fill = T)
 })
 ```

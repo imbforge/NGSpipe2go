@@ -1093,7 +1093,7 @@ DEhelper.STAR <- function(targetsdf=targets) {
     
     # replace files names with nicer sample names given in targets file 
     # if sample is missing in targets file, use reduced file name
-    df_values$sample <- sapply(df_values$sample, function(i) { ifelse(sum(sapply(targets$sample_ext, grepl, i))==1,   
+    df_values$sample <- sapply(df_values$sample, function(i) { ifelse(sum(sapply(targets$sample_ext, grepl, i))==1 && !any(duplicated(targets$sample)),   
                                                                       targets[sapply(targets$sample_ext, grepl, i),"sample"], 
                                                                       gsub(paste0("^",SHINYREPS_PREFIX),"",i))})
   } else{
@@ -1265,9 +1265,9 @@ DEhelper.Fastqc <- function(web=FALSE, subdir="", ...) {
       # replace files names with nicer sample names given in targets file 
       # if sample is missing in targets file, use reduced file name
       rownames(df) <- sapply(rownames(df), function(i) { ifelse(sum(sapply(targets$sample_ext, grepl, i))==1,
-                                                                ifelse(sapply("R1", grepl, i), 
+                                                                ifelse(sapply("\\.R1", grepl, i), 
                                                                        paste0(targets[sapply(targets$sample_ext, grepl, i),"sample"], ".R1"),
-                                                                       ifelse(sapply("R2", grepl, i), 
+                                                                       ifelse(sapply("\\.R2", grepl, i), 
                                                                               paste0(targets[sapply(targets$sample_ext, grepl, i),"sample"], ".R2"),
                                                                               targets[sapply(targets$sample_ext, grepl, i),"sample"])),
                                                                 gsub(paste0("^",SHINYREPS_PREFIX),"",i))})                                                    
@@ -1353,13 +1353,13 @@ DEhelper.Fastqc.custom <- function(web=FALSE, summarizedPlots=TRUE, targetsdf=ta
     # replace files names with nicer sample names given in targets file 
     # if sample is missing in targets file, use reduced file name
     #cat('In if - before gsub')
-    lbls <- sapply(lbls, function(i) { ifelse(sum(sapply(targets$sample_ext, grepl, i))==1,
+    lbls <- sapply(lbls, function(i) { ifelse(sum(sapply(targets$sample_ext, grepl, i))==1 && !any(duplicated(targets$sample)),
                                               targets[sapply(targets$sample_ext, grepl, i),"sample"],
                                               gsub("_001.fastq.gz", "", gsub(paste0("^",SHINYREPS_PREFIX),"",basename(i))))})
     
     if(any(grepl("[\\._]R1[\\._]|[\\._]R2[\\._]", names(lbls)))) {  # SHINYREPS_PAIRED == "yes" # for scRNA-Seq we may have se mapping but still an R2 with barcode
       x <- names(lbls)
-      lbls <- paste0(lbls, ifelse(grepl("R1", names(lbls)), "_R1", "_R2"))
+      lbls <- paste0(lbls, ifelse(grepl("\\.R1", names(lbls)), "_R1", "_R2"))
       names(lbls) <- x
     }
   } else {
@@ -1550,10 +1550,10 @@ DEhelper.fastqscreen <- function(subdir="", targetsdf=targets, perc.to.plot = 1,
 
     # replace files names with nicer sample names given in targets file
     # if sample is missing in targets file, use reduced file name
-    samples <- sapply(samples, function(i) { ifelse(sum(sapply(targets$sample_ext, grepl, i))==1,
-                                                    ifelse(sapply("R1", grepl, i), 
+    samples <- sapply(samples, function(i) { ifelse(sum(sapply(targets$sample_ext, grepl, i))==1 && !any(duplicated(targets$sample)),
+                                                    ifelse(sapply("\\.R1", grepl, i), 
                                                            paste0(targets[sapply(targets$sample_ext, grepl, i),"sample"], ".R1"),
-                                                           ifelse(sapply("R2", grepl, i), 
+                                                           ifelse(sapply("\\.R2", grepl, i), 
                                                                   paste0(targets[sapply(targets$sample_ext, grepl, i),"sample"], ".R2"),
                                                                   targets[sapply(targets$sample_ext, grepl, i),"sample"])),
                                                     gsub(paste0("^",SHINYREPS_PREFIX),"",i))})                                                    
@@ -1650,7 +1650,7 @@ DEhelper.dupRadar <- function(web=F, targetsdf=targets, ...) {
     
     # replace files names with nicer sample names given in targets file
     # if sample is missing in targets file, use reduced file name
-    samples <- sapply(samples, function(i) { ifelse(sum(sapply(targets$sample_ext, grepl, i))==1,   
+    samples <- sapply(samples, function(i) { ifelse(sum(sapply(targets$sample_ext, grepl, i))==1 && !any(duplicated(targets$sample)),   
                                                     targets[sapply(targets$sample_ext, grepl, i),"sample"], 
                                                     gsub(paste0("^",SHINYREPS_PREFIX),"",i))})
   } else {
@@ -1715,7 +1715,7 @@ DEhelper.RNAtypes <- function(targetsdf=targets, ...) {
     if(file.exists(SHINYREPS_TARGET)){
       # replace files names with nicer sample names given in targets file 
       # if sample is missing in targets file, use reduced file name
-      samplename <- ifelse(sum(sapply(targets$sample_ext, grepl, samplename))==1,  
+      samplename <- ifelse(sum(sapply(targets$sample_ext, grepl, samplename))==1 && !any(duplicated(targets$sample)),  
                            targets[sapply(targets$sample_ext, grepl, samplename),"sample"],  
                            gsub(paste0("^",SHINYREPS_PREFIX),"",samplename))
     } else {
@@ -1809,7 +1809,7 @@ DEhelper.geneBodyCov <- function(web=FALSE, targetsdf=targets, ...) {
       
       # replace files names with nicer sample names given in targets file
       # if sample is missing in targets file, use reduced file name
-      samples <- sapply(samples, function(i) { ifelse(sum(sapply(targets$sample_ext, grepl, i))==1,
+      samples <- sapply(samples, function(i) { ifelse(sum(sapply(targets$sample_ext, grepl, i))==1 && !any(duplicated(targets$sample)),
                                                       targets[sapply(targets$sample_ext, grepl, i),"sample"],
                                                       gsub(paste0("^",SHINYREPS_PREFIX),"",i))})
     } else {
@@ -1853,7 +1853,7 @@ DEhelper.geneBodyCov2 <- function(web=F, targetsdf=targets, ...) {
   
   # construct the image url from the folder contents (skip current dir .)
   samples <- list.files(QC, pattern=".csv$", full.names=T)
-
+  
   # select subset of samples for fastqc figures (e.g. merged singlecell pools) or use all samples for samplePattern=NULL
   samples <- selectSampleSubset(samples, grepInBasename=T, ...)
   
@@ -1864,11 +1864,12 @@ DEhelper.geneBodyCov2 <- function(web=F, targetsdf=targets, ...) {
     # get target names
     #targets <- read.delim(SHINYREPS_TARGET, comment.char = "#")
     targets <- targetsdf
+    targets <- targets[sapply(names(samples), grep, targets$file),] # if sample subset selected, remove spare entries from targets
     targets$sample_ext <- gsub("\\..*$", "",targets$file )
-
+    
     # replace files names with nicer sample names given in targets file
     # if sample is missing in targets file, use reduced file name
-    names(samples) <- sapply(names(samples), function(i) { ifelse(sum(sapply(targets$sample_ext, grepl, i))==1,  
+    names(samples) <- sapply(names(samples), function(i) { ifelse(sum(sapply(targets$sample_ext, grepl, i))==1 && !any(duplicated(targets$sample)),  
                                                                   targets[sapply(targets$sample_ext, grepl, i),"sample"], 
                                                                   gsub(paste0("^",SHINYREPS_PREFIX),"",i))})
   } else {
@@ -1888,7 +1889,6 @@ DEhelper.geneBodyCov2 <- function(web=F, targetsdf=targets, ...) {
   #sort the samples either by the group order of the targets file or alphabetically
   #if we do not have a targets file
   if(file.exists(SHINYREPS_TARGET)){
-    targets <- targets[targets$sample %in% df$sample,] # if sample subset selected, remove spare entries from targets
     sample_order <- targets$sample[order(paste0(targets$group, targets$sample))]
     if(all(sample_order %in% df$sample)){
       df$sample <- factor(df$sample, levels = sample_order)
@@ -1900,7 +1900,7 @@ DEhelper.geneBodyCov2 <- function(web=F, targetsdf=targets, ...) {
       }
       if("cells" %in% colnames(targets)){
         df$cells <- factor(as.character(targets$cells[match(df$sample, targets$sample)]), 
-                               levels = sort(unique(as.character(targets$cells))))
+                           levels = sort(unique(as.character(targets$cells))))
         pal_control_wells <- c("0c"  = "grey80", "1c" = "grey50", "10c" = "grey0")
       }  
     }
@@ -1908,22 +1908,22 @@ DEhelper.geneBodyCov2 <- function(web=F, targetsdf=targets, ...) {
     # sort alphabetically
     df$sample <- factor(df$sample, levels = sort(unique(df$sample)))  
   }
-
+  
   # plot
   plot_df <- highlight_key(df, ~sample) 
   
   if("cells" %in% colnames(df)) {
     p <- ggplot(plot_df, aes(x=perc, y=cov, group=sample, color= cells )) + geom_line() +
-                scale_color_manual(values = pal_control_wells, limits = names(pal_control_wells)) + labs(color = "")
+      scale_color_manual(values = pal_control_wells, limits = names(pal_control_wells)) + labs(color = "")
   } else {
     p <- ggplot(plot_df, aes(x=perc, y=cov, group=sample)) + geom_line(color="darkgrey") + scale_color_hue( c=50, l=70)
   }
   p <- p + labs(title="",
                 x = "Gene body percentile 5' -> 3'",
                 y = "Averaged normalised coverage") +
-          ylim(0,1) +
-          theme_bw() 
- 
+    ylim(0,1) +
+    theme_bw() 
+  
   gg <- ggplotly(p) # Warning message: `group_by_()` is deprecated as of dplyr 0.7.0. Please use `group_by()` instead.
   
   # since plotly might not work for everyone we should additionally create some static plots
@@ -1938,39 +1938,39 @@ DEhelper.geneBodyCov2 <- function(web=F, targetsdf=targets, ...) {
   plot_list[["plotly"]] <- gg
   
   if(!any(c("group","replicate") %in% colnames(df))){
-      p_per_sample <- ggplot(df, aes(x=perc,
-                                     y=cov,
-                                     group=sample,
-                                     color=sample)) +
+    p_per_sample <- ggplot(df, aes(x=perc,
+                                   y=cov,
+                                   group=sample,
+                                   color=sample)) +
+      geom_line() +
+      labs(title="",
+           x = "Gene body percentile 5' -> 3'",
+           y = "Averaged normalised coverage") +
+      scale_color_manual(values=sample.cols) +
+      ylim(0,1) +
+      theme_bw() +
+      theme(legend.title=element_blank()) 
+    plot_list[["p_per_sample"]] <- p_per_sample
+    
+    if("cells" %in% colnames(df) && length(unique(df$cells))>1){
+      num_cellControlTypes <- length(unique(df$cells))
+      plot_list[["num_cellControlTypes"]] <- num_cellControlTypes
+      
+      p_per_cells <- ggplot(df, aes(x=perc,
+                                    y=cov,
+                                    group=sample,
+                                    color=cells)) +
         geom_line() +
-        labs(title="",
-             x = "Gene body percentile 5' -> 3'",
+        labs(x = "Gene body percentile 5' -> 3'",
              y = "Averaged normalised coverage") +
-        scale_color_manual(values=sample.cols) +
+        scale_color_manual(values=define.group.palette(num_cellControlTypes)) +
         ylim(0,1) +
         theme_bw() +
-        theme(legend.title=element_blank()) 
-      plot_list[["p_per_sample"]] <- p_per_sample
+        theme(legend.position="top") +
+        guides(color=guide_legend(ncol=3)) 
       
-      if("cells" %in% colnames(df) && length(unique(df$cells))>1){
-          num_cellControlTypes <- length(unique(df$cells))
-          plot_list[["num_cellControlTypes"]] <- num_cellControlTypes
-          
-          p_per_cells <- ggplot(df, aes(x=perc,
-                                        y=cov,
-                                        group=sample,
-                                        color=cells)) +
-            geom_line() +
-            labs(x = "Gene body percentile 5' -> 3'",
-                 y = "Averaged normalised coverage") +
-            scale_color_manual(values=define.group.palette(num_cellControlTypes)) +
-            ylim(0,1) +
-            theme_bw() +
-            theme(legend.position="top") +
-            guides(color=guide_legend(ncol=3)) 
-          
-          plot_list[["p_per_cells"]] <- p_per_cells  
-      }
+      plot_list[["p_per_cells"]] <- p_per_cells  
+    }
   }
   
   if(("group" %in% colnames(df)) && !("replicate" %in% colnames(df) && length(unique(df$replicate))>1)) {
@@ -1978,45 +1978,45 @@ DEhelper.geneBodyCov2 <- function(web=F, targetsdf=targets, ...) {
     plot_list[["num_groups"]] <- num_groups
     
     p_per_sample_splitByGroup <- ggplot(df, aes(x=perc,
-                                                  y=cov,
-                                                  group=sample,
-                                                  color=sample)) +
+                                                y=cov,
+                                                group=sample,
+                                                color=sample)) +
+      geom_line() +
+      labs(title="",
+           x = "Gene body percentile 5' -> 3'",
+           y = "Averaged normalised coverage") +
+      scale_color_manual(values=sample.cols) +
+      ylim(0,1) +
+      theme_bw() +
+      theme(legend.title=element_blank())  + 
+      facet_wrap(~group,ncol=2) +
+      theme(legend.position="top",
+            plot.title=element_blank()) +
+      guides(color=guide_legend(ncol=3))
+    plot_list[["p_per_sample_splitByGroup"]] <- p_per_sample_splitByGroup
+    
+    if("cells" %in% colnames(df) && length(unique(df$cells))>1){
+      num_cellControlTypes <- length(unique(df$cells))
+      plot_list[["num_cellControlTypes"]] <- num_cellControlTypes
+      
+      p_per_cells_splitByGroup <- ggplot(df, aes(x=perc,
+                                                 y=cov,
+                                                 group=sample,
+                                                 color=cells)) +
         geom_line() +
-        labs(title="",
-             x = "Gene body percentile 5' -> 3'",
+        labs(x = "Gene body percentile 5' -> 3'",
              y = "Averaged normalised coverage") +
-        scale_color_manual(values=sample.cols) +
+        scale_color_manual(values=define.group.palette(num_cellControlTypes)) +
         ylim(0,1) +
         theme_bw() +
-        theme(legend.title=element_blank())  + 
-        facet_wrap(~group,ncol=2) +
-        theme(legend.position="top",
-              plot.title=element_blank()) +
-        guides(color=guide_legend(ncol=3))
-      plot_list[["p_per_sample_splitByGroup"]] <- p_per_sample_splitByGroup
-  
-      if("cells" %in% colnames(df) && length(unique(df$cells))>1){
-          num_cellControlTypes <- length(unique(df$cells))
-          plot_list[["num_cellControlTypes"]] <- num_cellControlTypes
-          
-          p_per_cells_splitByGroup <- ggplot(df, aes(x=perc,
-                                                     y=cov,
-                                                     group=sample,
-                                                     color=cells)) +
-            geom_line() +
-            labs(x = "Gene body percentile 5' -> 3'",
-                 y = "Averaged normalised coverage") +
-            scale_color_manual(values=define.group.palette(num_cellControlTypes)) +
-            ylim(0,1) +
-            theme_bw() +
-            theme(legend.position="top") +
-            guides(color=guide_legend(ncol=3)) +
-            facet_wrap(~group, ncol=2)
-          
-          plot_list[["p_per_cells_splitByGroup"]] <- p_per_cells_splitByGroup
-      }
-          
+        theme(legend.position="top") +
+        guides(color=guide_legend(ncol=3)) +
+        facet_wrap(~group, ncol=2)
+      
+      plot_list[["p_per_cells_splitByGroup"]] <- p_per_cells_splitByGroup
     }
+    
+  }
   
   if(all(c("group","replicate") %in% colnames(df)) && length(unique(df$replicate))>1){
     num_groups <- length(unique(df$group))
@@ -2041,9 +2041,9 @@ DEhelper.geneBodyCov2 <- function(web=F, targetsdf=targets, ...) {
     plot_list[["p_per_replicate_splitByGroup"]] <- p_per_replicate_splitByGroup
     
     p_per_group_splitByReplicate <- ggplot(df, aes(x=perc,
-                                                       y=cov,
-                                                       group=sample,
-                                                       color=group)) +
+                                                   y=cov,
+                                                   group=sample,
+                                                   color=group)) +
       geom_line() +
       labs(x = "Gene body percentile 5' -> 3'",
            y = "Averaged normalised coverage") +
@@ -2064,9 +2064,9 @@ DEhelper.geneBodyCov2 <- function(web=F, targetsdf=targets, ...) {
       df$groupRep <- paste("Group", df$group, "Rep", df$replicate)
       
       p_per_cells_splitByGroupReplicate <- ggplot(df, aes(x=perc,
-                                                         y=cov,
-                                                         group=sample,
-                                                         color=cells)) +
+                                                          y=cov,
+                                                          group=sample,
+                                                          color=cells)) +
         geom_line() +
         labs(x = "Gene body percentile 5' -> 3'",
              y = "Averaged normalised coverage") +
@@ -2079,7 +2079,7 @@ DEhelper.geneBodyCov2 <- function(web=F, targetsdf=targets, ...) {
       
       plot_list[["p_per_cells_splitByGroupReplicate"]] <- p_per_cells_splitByGroupReplicate
     }
-
+    
   }
   return(plot_list)
 }
@@ -2113,7 +2113,7 @@ DEhelper.strandspecificity <- function(targetsdf=targets, ...){
 
     # replace files names with nicer sample names given in targets file
     # if sample is missing in targets file, use reduced file name
-    samplenames <- sapply(samplenames, function(i) { ifelse(sum(sapply(targets$sample_ext, grepl, i))==1,   
+    samplenames <- sapply(samplenames, function(i) { ifelse(sum(sapply(targets$sample_ext, grepl, i))==1 && !any(duplicated(targets$sample)),   
                                                             targets[sapply(targets$sample_ext, grepl, i),"sample"], 
                                                             gsub(paste0("^",SHINYREPS_PREFIX),"",i))})
   } else {
@@ -2627,7 +2627,7 @@ DEhelper.Qualimap <- function(targetsdf=targets, ...) {
 
     # replace files names with nicer sample names given in targets file
     # if sample is missing in targets file, use reduced file name
-    colnames(samples) <- sapply(colnames(samples), function(i) { ifelse(sum(sapply(targets$sample_ext, grepl, i))==1,  
+    colnames(samples) <- sapply(colnames(samples), function(i) { ifelse(sum(sapply(targets$sample_ext, grepl, i))==1 && !any(duplicated(targets$sample)),  
                                                                         targets[sapply(targets$sample_ext, grepl, i),"sample"], 
                                                                         gsub(paste0("^",SHINYREPS_PREFIX),"",i))})
   } else {

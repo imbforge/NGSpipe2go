@@ -52,7 +52,7 @@ config {
     bamCoverage {
       walltime="20:00:00"
       queue=long_queue
-      procs="8"
+      procs="4"
       memory="32"
     }
     BAMindexer {
@@ -643,6 +643,18 @@ config {
       walltime="3:00:00"
       procs="1"
       memory="16"
+    }
+    splitpipe_all {
+      queue=long_queue
+      walltime="20:00:00"
+      procs="8"
+      memory="256"
+    }
+    splitpipe_comb {
+      queue=long_queue
+      walltime="20:00:00"
+      procs="8"
+      memory="256"
     }
     SplitNCigarReads {
       queue=long_queue

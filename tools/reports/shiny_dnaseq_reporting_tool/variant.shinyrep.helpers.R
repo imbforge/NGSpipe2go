@@ -65,9 +65,9 @@ VARhelper.Fastqc <- function(web=FALSE, subdir="") {
     # replace files names with nicer sample names given in targets file
     # if sample is missing in targets file, use reduced file name
     rownames(df) <- sapply(rownames(df), function(i) { ifelse(sum(sapply(targets$sample_ext, grepl, i))==1,
-                                                              ifelse(sapply("R1", grepl, i), 
+                                                              ifelse(sapply("\\.R1", grepl, i), 
                                                                      paste0(targets[sapply(targets$sample_ext, grepl, i),"sample"], ".R1"),
-                                                                     ifelse(sapply("R2", grepl, i), 
+                                                                     ifelse(sapply("\\.R2", grepl, i), 
                                                                             paste0(targets[sapply(targets$sample_ext, grepl, i),"sample"], ".R2"),
                                                                             targets[sapply(targets$sample_ext, grepl, i),"sample"])),
                                                               gsub(paste0("^",SHINYREPS_PREFIX),"",i))})                                                    
@@ -153,7 +153,7 @@ VARhelper.Fastqc.custom <- function(web=FALSE, summarizedPlots=TRUE, subdir="") 
     
     if(SHINYREPS_PAIRED == "yes") {
       x <- names(lbls)
-      lbls <- paste0(lbls, ifelse(grepl("R1", names(lbls)), ".R1", ".R2"))
+      lbls <- paste0(lbls, ifelse(grepl("\\.R1", names(lbls)), ".R1", ".R2"))
       names(lbls) <- x
     }
   } else {
@@ -336,9 +336,9 @@ VARhelper.fastqscreen <- function(perc.to.plot = 1) {
     # replace files names with nicer sample names given in targets file
     # if sample is missing in targets file, use reduced file name
     samples <- sapply(samples, function(i) { ifelse(sum(sapply(targets$sample_ext, grepl, i))==1,
-                                                    ifelse(sapply("R1", grepl, i), 
+                                                    ifelse(sapply("\\.R1", grepl, i), 
                                                            paste0(targets[sapply(targets$sample_ext, grepl, i),"sample"], ".R1"),
-                                                           ifelse(sapply("R2", grepl, i), 
+                                                           ifelse(sapply("\\.R2", grepl, i), 
                                                                   paste0(targets[sapply(targets$sample_ext, grepl, i),"sample"], ".R2"),
                                                                   targets[sapply(targets$sample_ext, grepl, i),"sample"])),
                                                     gsub(paste0("^",SHINYREPS_PREFIX),"",i))})                                                    

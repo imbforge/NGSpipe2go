@@ -100,9 +100,9 @@ if(transcriptType!="Bioconductor"){ # check the input format for the transcript 
 }
 
 if(orgDb!=""){ # check if genome wide annotation should be used
-  peakAnno <- lapply(peakFiles, annotatePeak, TxDb=txdb, tssRegion=c(-regionTSS,regionTSS), annoDb=orgDb)
+  peakAnno <- lapply(peaks, annotatePeak, TxDb=txdb, tssRegion=c(-regionTSS,regionTSS), annoDb=orgDb)
 } else {
-  peakAnno <- lapply(peakFiles, annotatePeak, TxDb=txdb, tssRegion=c(-regionTSS,regionTSS))  
+  peakAnno <- lapply(peaks, annotatePeak, TxDb=txdb, tssRegion=c(-regionTSS,regionTSS))  
 }
 
 names(peakAnno) <- filename
@@ -119,26 +119,26 @@ if(ftargets != "" && orderby != "") {
 }
 
 # create barplot showing the feature distribution
-png(file=paste0(out, "/ChIPseq_Feature_Distribution_Barplot.png"), width = 700, height = 500)
+png(file=paste0(out, "/ChIPseq_Feature_Distribution_Barplot.png"), width = 700, height = 250+12.5*length(peakAnno))
 plot(plotAnnoBar(peakAnno))
 dev.off()
 
 # create barplot showing the feature distribution related to TSS
-png(file=paste0(out, "/ChIPseq_Feature_Distribution_Related_to_TSS_Barplot.png"), width = 700, height = 500)
+png(file=paste0(out, "/ChIPseq_Feature_Distribution_Related_to_TSS_Barplot.png"), width = 700, height = 250+12.5*length(peakAnno))
 plot(plotDistToTSS(peakAnno))
 dev.off()
 
 # create upsetplot 
 for(i in 1:length(peakAnno)){
-  png(file=paste0(out, "/", filename[[i]], "_ChIPseq_UpSetplot.png"), width = 700, height = 500)
+  png(file=paste0(out, "/", names(peakAnno)[i], "_ChIPseq_UpSetplot.png"), width = 700, height = 500)
   print(upsetplot(peakAnno[[i]]))
   dev.off()
 }
 
 # create ChIP peaks coverage plot
 for(i in 1:length(peakAnno)){
-  png(file=paste0(out, "/", filename[[i]], "_ChIPseq_Peaks_Coverageplot.png"), width = 700, height = 500)
-  plot(covplot(peaks[[i]],weightCol="X.log10.pvalue."))
+  png(file=paste0(out, "/", names(peakAnno)[i], "_ChIPseq_Peaks_Coverageplot.png"), width = 700, height = 500)
+  plot(covplot(as.GRanges(peakAnno[[i]]),weightCol="X.log10.pvalue."))
   dev.off()
 }
 
@@ -146,6 +146,11 @@ for(i in 1:length(peakAnno)){
 outputData <- lapply(peakAnno, as.data.frame)
 names(outputData) <- make.names(substr(names(outputData), 1, 30), unique=TRUE)
 write.xlsx(outputData, file=paste0(out, "/Peak_Annotation.xlsx"))
+
+# save annotation tables additionally as text files (xlsx file gets quite big in case of many samples )
+for(i in names(peakAnno)) {
+  write.table(as.data.frame(peakAnno[[i]]), file=paste0(out, "/", i, "_Peak_Annotation.txt"), sep="\t", quote=F, row.names = F)
+}
 
 # save the sessionInformation
 writeLines(capture.output(sessionInfo()), paste(out, "/ChIPseq_Peak_Annotation_session_info.txt", sep=""))

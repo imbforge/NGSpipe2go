@@ -394,11 +394,13 @@ for (sub in unique(contsAll$sub_experiment)) {
         colnames(mcols(x)) <- plyr::revalue(colnames(mcols(x)), c("Fold" = paste0("lfc_", cont.name), "FDR" = "BHadj_pvalue")) # rename column names
         x <- x[,!colnames(mcols(x)) %in% c("p-value")] # remove column with unadjusted p-value
         return(x)
-      }, error=function(e) NULL) # dba.report crashes if there is exactly 1 significant hit to report
+      }, error=function(e) GRanges()) # dba.report crashes if there is exactly 1 significant hit to report
       
     })
   
-  
+    names(result[[sub]]) <- paste0(subexpPrefix, conts$contrast.name)
+    result[[sub]] <- result[[sub]][sapply(result[[sub]], length) !=0] # remove empty GRanges if present
+    
   ##
   ## Annotate peaks
   ##
@@ -472,9 +474,6 @@ writeLines(capture.output(sessionInfo()),paste(OUT, "/diffbind_session_info.txt"
 write.table(diffbindSettings, file=file.path(OUT, "diffbind_settings.txt"), row.names = F, quote = F, sep="\t")
 result <- unlist(result, recursive = F) # flatten the nested list
 result <- lapply(result, as.data.frame)
-names(result) <- if(length(unique(contsAll$sub_experiment))>1) {paste0("SubExp_", contsAll$sub_experiment, "_", contsAll$contrast.name)} else {
-  paste0(contsAll$contrast.name)
-}
 write.xlsx(result, file=paste0(OUT, "/diffbind_all_sites.xlsx"))
 result <- lapply(result, function(x) {
   tryCatch({
