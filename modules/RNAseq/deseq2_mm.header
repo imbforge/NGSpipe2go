@@ -29,7 +29,7 @@ class DE_DESeq2_MM_vars_schema {
     String genes    
     String pattern  
     BigDecimal FDR      
-    Integer FC       
+    BigDecimal FC       
     String extra    
 
     // check for the presence of mandatory params
