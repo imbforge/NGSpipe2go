@@ -31,7 +31,7 @@ shinyReports_vars=[
     de_deseq_FC         : DE_DESeq2_vars.FC,              // which FC threshold was used for the DESeq2 analysis
     maser_scripts       : new File(PIPELINE_ROOT + "/tools/maser/").getCanonicalPath(),// location of edited maser functions to accomodate other species
     maser_ftype         : maser_vars.ftype,               // which type of splicing events to consider
-    maser_mincov        : maser_vars.mincov,              // ignore splicing events with read coverage below this count
+    maser_mincov        : maser_vars.mincov,              // ignore splicing events with average read coverage (incl+excl) below this count >=1 condition
     maser_fdr           : maser_vars.fdr,                 // FDR cut-off to select statistically significant splicing events identified by rMATS
     maser_dpsi          : maser_vars.dpsi,                // minimum percentage spliced in (PSI) to include in plots
     subread             : subread_count_vars.outdir,      // location of the subread counts

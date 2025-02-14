@@ -1825,7 +1825,7 @@ DEhelper.insertsize.helper <- function(metricsFile){
 ##http://michaeljw.com/blog/post/subchunkify/
 ## to dynamically create chunks and adjust their size accordingly.
 ##
-DEhelper.subchunkify <- function(g, fig_height=7, fig_width=5) {
+DEhelper.subchunkify <- function(g, fig_height=7, fig_width=5, cntr=FALSE, out_width=FALSE, out_width_perc=90) {
   g_deparsed <- paste0(deparse(
     function() {grid.draw(g)}
   ), collapse = '')
@@ -1833,6 +1833,8 @@ DEhelper.subchunkify <- function(g, fig_height=7, fig_width=5) {
   sub_chunk <- paste0("`","``{r sub_chunk_", floor(runif(1) * 10000),
                       ", fig.height=", fig_height,
                       ", fig.width=", fig_width,
+                      if(cntr) {", fig.align=\"center\"" },
+                      if(out_width) {paste0(", out.width=\"",out_width_perc,"%\"") },
                       ", echo=FALSE}","\n(", 
                       g_deparsed, ")()",
                       "\n`","``")
@@ -2133,86 +2135,177 @@ DEhelper.cutadapt.plot <- function(data, color.value, labelOutliers=T, outlierIQ
 ## 
 #' rMATS differential splicing analysis
 #'
-#' @param No Params needed
-
-DEhelper.rmats <- function() {
+#' @param cont: contrast to be analyzed
+#' @param cont.name: contrast name
+DEhelper.rmats <- function(cont,cont.name) {
     
+    # load pre-processed rMATS data
+    load(file.path(SHINYREPS_RES, "rMATS", paste0(cont,"_rMATS"),"maser_processed.RData"))
+ 
     # source modified maser functions
     # by default, plotTranscriptsMod.R allows human chromosome annotation only. 
     # volcano plot: the axis labels are switched and the legend is messed up.
     source(file.path(SHINYREPS_MASER_SCRIPTS,"plotTranscriptsMod.R"))
     source(file.path(SHINYREPS_MASER_SCRIPTS,"volcanoMod.R"))
-    SHINYREPS_MASER_FDR = as.numeric(SHINYREPS_MASER_FDR)
-    SHINYREPS_MASER_DPSI = as.numeric(SHINYREPS_MASER_DPSI)
+    source(file.path(SHINYREPS_MASER_SCRIPTS,"distrPlotMod.R"))
+    SHINYREPS_MASER_FDR  <- as.numeric(SHINYREPS_MASER_FDR)
+    SHINYREPS_MASER_DPSI <- as.numeric(SHINYREPS_MASER_DPSI)
 
     # The function topEvents() allows to select statistically significant events given a FDR cutoff and minimum PSI change. 
     rmats_top <- maser::topEvents(rmats_filt, fdr = SHINYREPS_MASER_FDR, deltaPSI = SHINYREPS_MASER_DPSI)
 
+    # get counts for all event types
+    eventtypes <- c("A3SS", "A5SS", "SE", "RI", "MXE")
+    topcount <- do.call(rbind,
+                        lapply(eventtypes, 
+                               function(e) {
+                                   data.frame(type       = e,
+                                              top_count  = nrow(slot(rmats_top, paste0(e,"_events"))),
+                                              comparison = cont.name)
+                               }))
+    if(sum(topcount$top_count,na.rm=T) > 0) {
+        topcount$top_frac <- topcount$top_count/sum(topcount$top_count,na.rm=T)
+    } else {
+        topcount$top_frac <- 0
+    }
+
     # Plot the distribution of splicing events
-    n_splice_events=0
-    for(e in c("A3SS", "A5SS", "SE", "RI", "MXE")) {
-	    n_splice_events = n_splice_events + nrow(slot(rmats_top, paste0(e,"_events")))
-    }
+    n_splice_events <- sum(topcount$top_count,na.rm=T)
     if(n_splice_events > 0) {
-	    plotspldist <- maser::splicingDistribution(rmats_filt, fdr = SHINYREPS_MASER_FDR, deltaPSI = SHINYREPS_MASER_DPSI)
-	    print(plotspldist)
+        plotspldist <- splicingDistribution_mod(rmats_filt, fdr = SHINYREPS_MASER_FDR, deltaPSI = SHINYREPS_MASER_DPSI)
+    } else {
+        plotspldist <- NULL
     }
 
-    for(e in c("A3SS", "A5SS", "SE", "RI", "MXE")) {
+    rmats <- lapply(eventtypes,
+                    function(e) {
 
-        cat("\n\n", fill=T)
-        cat("#### ", e,"{.tabset}\n\n",fill=T)
-        cat("\n\n", fill=T)
+                        if(nrow(slot(rmats_top, paste0(e,"_events"))) > 0) {
 
-        if(nrow(slot(rmats_top, paste0(e,"_events"))) > 0) {
-                top <- summary(rmats_top, type=e)
-                top <- top[order(top$FDR), !colnames(top) %in% c("GeneID")]
-                colnames(top) <- plyr::mapvalues(colnames(top), from=c("ID", "PValue", "IncLevelDifference"), to=c("rMATS_ID", "pval", "deltaPSI"))
-                top$pval <- signif(top$pval, 3)
-                top$FDR <- signif(top$FDR, 3)
-                cat("\n##### Significant", e, "events : ", nrow(top) ,"\n\n")
-                rownames(top)=NULL
-                # escape the strand since otherwise it gets strangely formatted to a bullet point during kable/kable_styling/kableExtra
-                top$Strand <- paste0("\\",top$Strand)
-                cat(kable(top, format="html", align=c("c")) %>%
-		      kable_styling() %>%
-		      kableExtra::scroll_box(width = "100%", height = "200px")
-		      )
-		#cat("\n\n")
-		#cat("\n##### PCA plot \n\n")
-		#plotPCA<-maser::pca(rmats_filt, type = e)
-                #print(plotPCA)
-                cat("\n\n")
-                cat("\n##### Volcano plot of ", e,"events \n\n")
-                plotVolcano<-volcanoMod(rmats_filt, fdr = SHINYREPS_MASER_FDR, deltaPSI = SHINYREPS_MASER_DPSI, type = e)
-                print(plotVolcano)
-                cat("\n\n")
-                cat("\n##### Top Significant", e, "event \n\n")
-		if(e == "SE") {
-			cat("\n\n The Event track depicts location of exons involved in skipping event. The *Inclusion* track shows transcripts overlapping the cassette exon as well as both flanking exons (i.e upstream and downstream exons). On the other hand, the skipping track displays transcripts overlapping both flanking exons but missing the cassette exon. The PSI track displays the **inclusion level for the cassette exon** (a.k.a. alternative exon) from the different replicates as a box plot for each condition. A higher PSI value indicate that there is a significant increase of the cassette exon in the respective condition. \n\n")
-		}
-		if(e=="RI"){
-			cat("\n\n The Event track depicts location of introns involved in the retention event. In this case, the Retention track shows transcripts with an exact overlap of the retained intron, and the Non-retention tracks will display transcripts in which the intron is spliced out and overlap flanking exons. The PSI track displays the **inclusion level of the retained intron** from the different replicates as a box plot for each condition. A higher PSI value indicate that there is a significant increase of the retained intron in the respective condition. \n\n")
-		}
-		if(e=="A3SS"){
-			cat("\n\n Alternative 3' splicing occur due to alternative acceptor sites. The Short track shows transcripts overlapping both short and flanking exons. The PSI track displays the **inclusion level of the longest exon** from the different replicates as a box plot for each condition. A higher PSI value indicate that there is a significant increase of the longest exon in the respective condition. \n\n")
-		}
-		if(e=="A5SS"){
-			cat("\n\n Alternative 5' splicing occur due to alternative donor sites. The Long track shows transcripts overlapping both long and flanking exons. The PSI track displays the **inclusion level of the longest exon** from the different replicates as a box plot for each condition. A higher PSI value indicate that there is a significant increase of the longest exon in the respective condition. \n\n")
-		}
-		if(e=="MXE"){
-			cat("\n\n This event refers to adjacent exons that are mutually exclusive, i.e. are not expressed together. The Event tracks will display transcripts harboring the first or second mutually exclusive exons, as well as both flanking exons. The PSI track in the mutually exclusive exons event will show two sets of box plots. The first set refers to MXE Exon 1 PSI levels while the second set refers to MXE Exon 2 PSI levels in the two conditions. A higher PSI value indicate that there is a significant increase of the respective MXE Exon in the respective condition. \n\n")
-		}
-                top1 <- maser::geneEvents(rmats_filt, geneS = top$geneSymbol[1], fdr = SHINYREPS_MASER_FDR, deltaPSI = SHINYREPS_MASER_DPSI)
+                            # signif. events
+                            top <- summary(rmats_top, type=e)
+                            top <- top[order(top$FDR), !colnames(top) %in% c("GeneID")]
+                            colnames(top) <- plyr::mapvalues(colnames(top), 
+                                                             from=c("ID", "PValue", "IncLevelDifference"), 
+                                                             to=c("rMATS_ID", "pval", "deltaPSI"))
+                            top$pval <- signif(top$pval, 3)
+                            top$FDR <- signif(top$FDR, 3)
+                            num_signif <- nrow(top)
+                            rownames(top)=NULL
+                            # escape the strand since otherwise it gets strangely formatted to a 
+                            # bullet point during kable/kable_styling/kableExtra
+                            top$Strand <- paste0("\\",top$Strand)
 
-                ## Display affected transcripts and PSI levels
-                plotTranscriptsMod(events=top1, type = e, event_id = top$rMATS_ID[1], gtf = ens_gtf, zoom = F, show_PSI = TRUE, title =top$geneSymbol[1])
+                            # PCA plot
+                            #plotPCA <- maser::pca(rmats_filt, type = e)
 
-        } else {
-            cat("\n\n No significant ",e," event found.\n\n")
-        }
-    }  
+                            # volcano plot
+                            plotVolcano <- volcanoMod(rmats_filt, fdr = SHINYREPS_MASER_FDR, 
+                                                                  deltaPSI = SHINYREPS_MASER_DPSI, 
+                                                                  type = e)
+                  
+                            if(e == "SE") {
+                                desc <- "The Event track depicts location of exons involved in skipping event. The *Inclusion* track shows transcripts overlapping the cassette exon as well as both flanking exons (i.e upstream and downstream exons). On the other hand, the skipping track displays transcripts overlapping both flanking exons but missing the cassette exon. The PSI track displays the **inclusion level for the cassette exon** (a.k.a. alternative exon) from the different replicates as a box plot for each condition. A higher PSI value indicate that there is a significant increase of the cassette exon in the respective condition."
+                            }
+                            if(e=="RI"){
+                                desc <- "The Event track depicts location of introns involved in the retention event. In this case, the Retention track shows transcripts with an exact overlap of the retained intron, and the Non-retention tracks will display transcripts in which the intron is spliced out and overlap flanking exons. The PSI track displays the **inclusion level of the retained intron** from the different replicates as a box plot for each condition. A higher PSI value indicate that there is a significant increase of the retained intron in the respective condition."
+                            }
+                            if(e=="A3SS"){
+                                desc <- "Alternative 3' splicing occur due to alternative acceptor sites. The Short track shows transcripts overlapping both short and flanking exons. The PSI track displays the **inclusion level of the longest exon** from the different replicates as a box plot for each condition. A higher PSI value indicate that there is a significant increase of the longest exon in the respective condition."
+                            }
+                            if(e=="A5SS"){ 
+                                desc <- "Alternative 5' splicing occur due to alternative donor sites. The Long track shows transcripts overlapping both long and flanking exons. The PSI track displays the **inclusion level of the longest exon** from the different replicates as a box plot for each condition. A higher PSI value indicate that there is a significant increase of the longest exon in the respective condition."
+                            }
+                            if(e=="MXE"){
+                                desc <- "This event refers to adjacent exons that are mutually exclusive, i.e. are not expressed together. The Event tracks will display transcripts harboring the first or second mutually exclusive exons, as well as both flanking exons. The PSI track in the mutually exclusive exons event will show two sets of box plots. The first set refers to MXE Exon 1 PSI levels while the second set refers to MXE Exon 2 PSI levels in the two conditions. A higher PSI value indicate that there is a significant increase of the respective MXE Exon in the respective condition."
+                            }
+
+                            # top1 event
+                            top1 <- maser::geneEvents(rmats_filt, geneS = top$geneSymbol[1], 
+                                                                  fdr = SHINYREPS_MASER_FDR, 
+                                                                  deltaPSI = SHINYREPS_MASER_DPSI)
+
+                            ## Display affected transcripts and PSI levels
+                            top1_gviz_tracklist <- plotTranscriptsMod(events=top1, type = e, 
+                                                                                   event_id = top$rMATS_ID[1], 
+                                                                                   gtf = ens_gtf, 
+                                                                                   zoom = F, 
+                                                                                   show_PSI = TRUE, 
+                                                                                   title =top$geneSymbol[1],
+                                                                                   returnPlot=F)
+                            top1_gviz_title <- top$geneSymbol[1]
+
+                        } else {
+                            # no significant e event found
+                            num_signif  <- 0
+                            toptable    <- NULL
+                            plotVolcano <- NULL
+                            desc        <- NULL
+                            top1_gviz_tracklist <- NULL
+                            top1_gviz_title     <- NULL
+                        }
+
+                        return(list(num_signif=num_signif,
+                                    toptable=top,
+                                    plotVolcano=plotVolcano,
+                                    desc=desc,
+                                    top1_gviz_tracklist=top1_gviz_tracklist,
+                                    top1_gviz_title=top1_gviz_title))
+                    })
+    names(rmats) <- eventtypes
+
+    return(list(plotspldist=plotspldist,
+                topcount=topcount,
+                rmats=rmats))
 }
+
+
+## 
+#' rMATS differential splicing analysis - global plot
+#'
+DEhelper.rmats.all <- function(df,cont.names) {
+
+    if(sum(df$top_count,na.rm=T)>0) {
+
+        # fix plotting order
+        df$comparison <- factor(df$comparison, levels=rev(cont.names))
+
+        p.perc <- ggplot(df, aes(comparison,top_frac,fill=type,color=type)) + 
+          geom_bar(stat="identity", alpha=0.6) + 
+          theme_bw() + 
+          scale_y_continuous(labels = scales::percent_format()) +
+          scale_x_discrete(drop=FALSE) +
+          labs(x = "",
+               y = "% of sign. diff. events") + 
+          theme(legend.title = element_blank(),
+                legend.position = "top") + 
+          scale_fill_brewer(palette="Set2",drop=FALSE) + 
+          scale_color_brewer(palette="Set2",drop=FALSE) + 
+          guides(fill=guide_legend(nrow=1,reverse=TRUE),
+                 color=guide_legend(nrow=1,reverse=TRUE)) +
+          coord_flip()
+
+        p.count <- ggplot(df, aes(comparison,top_count,fill=type,color=type)) + 
+          geom_bar(stat="identity",alpha=0.6) + 
+          theme_bw() + 
+          scale_x_discrete(drop=FALSE) +
+          labs(x = "",
+               y = "# of sign. diff. events") + 
+          theme(legend.title = element_blank(),
+                legend.position = "top") + 
+          scale_fill_brewer(palette="Set2",drop=FALSE) + 
+          scale_color_brewer(palette="Set2",drop=FALSE) + 
+          guides(fill=guide_legend(nrow=1,reverse=TRUE),
+                 color=guide_legend(nrow=1,reverse=TRUE)) +
+          coord_flip()
+
+        return(list(p.perc  = p.perc,
+                    p.count = p.count))
+    } else {
+        return(NULL)
+    }
+}
+
 
 ##		      
 ## extract tool versions
