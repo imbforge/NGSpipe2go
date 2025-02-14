@@ -153,7 +153,7 @@ DEhelper.DESeq2.MDS <- function() {
   		ylab(paste0("PC2: ",percentVar[2],"% variance")) + 
   		coord_fixed() + 
   		scale_color_manual(values=define.group.palette(length(levels(colData(dds)[,"group"])))) +
-  		geom_text_repel(aes(label=colData(dds)[,"replicate"]), show.legend=FALSE) + 
+  		geom_text_repel(aes(label=colData(dds)[,"replicate"]), show.legend=FALSE, max.overlaps=50) + 
   		theme_bw()
 
 }
@@ -188,7 +188,7 @@ DEhelper.DESeq2.pairwisePCA <- function(i=1) {
 		   ylab(paste0("PC2: ",percentVar[2],"% variance")) + 
 		   coord_fixed() + 
 	 	   scale_color_manual(values=brewer.pal(9,"Set1")[1:2]) + 
-		   geom_text_repel(aes(label=colData(pairwise.dds[[i]])[,"replicate"]), show.legend=FALSE) +
+		   geom_text_repel(aes(label=colData(pairwise.dds[[i]])[,"replicate"]), show.legend=FALSE, max.overlaps=50) +
 	 	   theme_bw())
 }
 
@@ -424,7 +424,7 @@ DEhelper.DESeq2.VolcanoPlot <- function(i=1, fdr=.01, top=25, web=TRUE) {
     # add name of top genes
     if(top > 0) p <- p + geom_text_repel(data=d[1:min(top, nrow(d)),],
                                          mapping=aes(log2FoldChange, -log10(padj), label=gene_name),
-                                         color="black")
+                                         color="black", max.overlaps=50)
 
     # return plot
     if(web)
@@ -973,7 +973,7 @@ DEhelper.Fastqc.custom <- function(web=FALSE, summarizedPlots=TRUE, subdir="") {
     # the default value for SPECIES is "Hsapiens", thus, if you don't specify it, human will be used as a default
     p.gc <- ngsReports::plotGcContent(fastqc.stats, usePlotly=summarizedPlots, plotType="line", gcType="Genome", labels=lbls, theoreticalGC=FALSE) 
     if(!summarizedPlots) {
-      p.gc <- p.gc + guides(color=guide_legend(title="",ncol=4)) + 
+      p.gc <- p.gc + guides(color=guide_legend(title="",ncol=3)) + 
         theme(legend.position = "top", legend.text = element_text(size=8)) 
     }
     
@@ -2083,6 +2083,7 @@ DEhelper.cutadapt <- function(targetsdf=SHINYREPS_TARGET, colorByFactor="group",
   vars4table <- vars4table[vars4table %in% colnames(x.df)]
   vars4table.colnames <- vars4table
   vars4table.colnames[!vars4table.colnames %in% c(colorByFactor, "total reads")] <- paste("%", vars4table.colnames[!vars4table.colnames %in% c(colorByFactor, "total reads")])
+  x.df[,"total reads"] <- format(x.df[,"total reads"], big.mark=",")
   DT::datatable(x.df[,vars4table], 
                 options = list(pageLength= 20),
                 colnames=vars4table.colnames)

@@ -94,7 +94,7 @@ cat("\n", fill = T)
 ```
 
 
-```{r cutadapt, echo=F, results='asis', error=F, warning=F, message=F, eval=SHINYREPS_RUN_CUTADAPT=="true"}
+```{r cutadapt, echo=F, results='asis', error=F, warning=F, message=F, eval=SHINYREPS_RUN_CUTADAPT=="true",fig.align="center"}
 cat("## Adapter trimming with Cutadapt\n")
 cat("\nThe following plot shows the amount of reads trimmed (in percent) for the selected adapter sequences. The column 'tooshort' gives the percentage of reads removed due to the minimum length threshold after trimming. Additionally to the column 'trimmed' which is for all adapters combined, there are columns for every single adapter giving the percentage of reads trimmed for this adapter.\n\n")
 
@@ -102,7 +102,7 @@ DEhelper.cutadapt()
 ```
 
 ```{r FastQC_qual_summarized_trimmed, echo=F,results='asis',error=F,warning=F,message=F,fig.align='center', eval=SHINYREPS_RUN_CUTADAPT=="true"}
-cat("### FastQC of trimmed reads QC {.tabset}\n\n")
+cat("### FastQC of trimmed reads QC {.tabset .tabset-pills}\n\n")
 cat("#### Read quality\n\n")
 if (SHINYREPS_FASTQC_SUMMARIZED) {
     fastqc_summary_plot <- DEhelper.Fastqc.custom(web=F,summarizedPlots=T, subdir="trimmed")
@@ -122,7 +122,7 @@ if (SHINYREPS_FASTQC_SUMMARIZED == FALSE) {
 ```
 
 ```{r FastQC_nuc_content_summarized_trimmed, echo=F,results='asis',error=F,warning=F,message=F,fig.align='center', fig.height=min(170, ceiling(0.12*fastqc_summary_plot$no.of.samples)+1), eval=SHINYREPS_RUN_CUTADAPT=="true"}
-cat("#### Sequence bias of trimmed reads\n")
+cat("#### Sequence bias\n")
 
 if (SHINYREPS_FASTQC_SUMMARIZED) {
     plot(fastqc_summary_plot$p.content)
@@ -139,9 +139,9 @@ if (SHINYREPS_FASTQC_SUMMARIZED == F) {
 ```
 
 ```{r FastQC_GC_trimmed, echo=F,results='asis',error=F,warning=F,message=F,fig.align='center', eval=SHINYREPS_RUN_CUTADAPT=="true"}
-cat("#### GC content of trimmed reads\n")
+cat("#### GC content\n")
 fastqc_summary_plot$p.gc
-cat("### {-}\n", fill = T)
+cat("\n", fill = T)
 ```
 
 ## {-}
@@ -370,7 +370,7 @@ for(i in 1:nrow(conts)) {
 
     # subsection
     cont.name <- conts$contrast.name[i]
-    cat("### ", cont.name, " {.tabset .tabset-pills}", fill=T)
+    cat(paste0("### ", cont.name, " {.tabset .tabset-pills} \n"), fill=T)
     cat("\n", fill=T)
 
     # pairwise PCA plot 
@@ -763,7 +763,7 @@ for(i in 1:nrow(conts)) {
     
     # subsection
     cont.name <- conts$contrast.name[i]
-    cat("### ", cont.name, " {.tabset .tabset-pills}\n", fill=T)
+    cat(paste0("### ", cont.name, " {.tabset .tabset-pills}\n"), fill=T)
     cat("", fill=T)
     
     # Venn comparing DE genes w/ w/o MM
