@@ -647,7 +647,7 @@ if(is.null(rmats_summary)) {
 
 ```
 
-```{r diff_splicing_contrastplots, echo=F, results='asis', error=F, warning=F, message=F, fig.align="center", out.width="90%", fig.height=4.5}
+```{r diff_splicing_contrastplots, echo=F, results='asis', error=F, warning=F, message=F, fig.align="center", out.width="90%", fig.height=3.5}
 
 for(i in 1:length(uconts_vec)) {
 
@@ -669,42 +669,22 @@ for(i in 1:length(uconts_vec)) {
         cat("##### Summary plots {.tabset .tabset-pills}\n",fill=T)  
         cat("###### Count per condition\n",fill=T)
         cat("The plot below shows the number of events per event type with a higher inclusion per condition.\n",fill=T)
-        DEhelper.subchunkify(rmats_stats$plotspldist$p.count.cond,
-                             fig_height = 3.5,
-                             fig_width  = 7,
-                             cntr = T,
-                             out_width = T,
-                             out_width_perc = 90)
+        print(rmats_stats$plotspldist$p.count.cond)
         cat("\n",fill=T)
         cat("###### Percent per condition\n",fill=T)
         cat("The plot below shows the percentage per event type out of all events with a higher inclusion per condition. All events with higher inclusion per condition ar
 e adding up to 100%.\n",fill=T)
-        DEhelper.subchunkify(rmats_stats$plotspldist$p.perc.cond,
-                             fig_height = 3.5,
-                             fig_width  = 7,
-                             cntr = T,
-                             out_width = T,
-                             out_width_perc = 90)
+        print(rmats_stats$plotspldist$p.perc.cond)
         cat("\n",fill=T)
         cat("###### Count per type\n",fill=T)
         cat("The plot below shows the number of events (per event type) with higher inclusion in each of the two conditions. The condition is represented by a darker or l
 ighter shade of the bars.\n",fill=T)
-        DEhelper.subchunkify(rmats_stats$plotspldist$p.count.type,
-                             fig_height = 3.5,
-                             fig_width  = 7,
-                             cntr = T,
-                             out_width = T,
-                             out_width_perc = 90)
+        print(rmats_stats$plotspldist$p.count.type)
         cat("\n",fill=T)
         cat("###### Percent per type\n",fill=T)
         cat("The plot below shows the percentage of events (per event type) with higher inclusion in each of the two conditions. The condition is represented by a darker 
 or lighter shade of the bars.\n",fill=T)
-        DEhelper.subchunkify(rmats_stats$plotspldist$p.perc.type,
-                             fig_height = 3.5,
-                             fig_width  = 7,
-                             cntr = T,
-                             out_width = T,
-                             out_width_perc = 90)
+        print(rmats_stats$plotspldist$p.perc.type)
         cat("\n",fill=T)
 
         cat("##### Details per event type\n",fill=T)
@@ -727,14 +707,17 @@ or lighter shade of the bars.\n",fill=T)
                             cat("\n",fill=T)
                             cat("##### top sign. event\n",fill=T)
                             cat(rmats_stats$rmats[[e]]$desc,"\n",fill=T)
-                            Gviz::plotTracks(rmats_stats$rmats[[e]]$top1_gviz_tracklist$trackList, 
-                                             col.line = NULL, col = NULL,  
-                                             main = rmats_stats$rmats[[e]]$top1_gviz_title,
-                                             Inclusion = "orange", Skipping = "purple", Retention = "orange", 
-                                             Non_Retention = "purple", MXE_Exon1 = "orange", MXE_Exon2 = "purple", 
-                                             A5SS_Short = "orange", A5SS_Long = "purple", A3SS_Short = "orange", 
-                                             A3SS_Long = "purple")
-
+                            tryCatch({
+                                Gviz::plotTracks(rmats_stats$rmats[[e]]$top1_gviz_tracklist$trackList,
+                                                 col.line = NULL, col = NULL,  
+                                                 main = rmats_stats$rmats[[e]]$top1_gviz_title,
+                                                 Inclusion = "orange", Skipping = "purple", Retention = "orange", 
+                                                 Non_Retention = "purple", MXE_Exon1 = "orange", MXE_Exon2 = "purple",
+                                                 A5SS_Short = "orange", A5SS_Long = "purple", A3SS_Short = "orange",
+                                                 A3SS_Long = "purple")
+                            }, error = function(e) {
+                                           cat("Event cannot be visualized fully. Too many isoforms to plot.\n",fill=T)
+                            })
                             cat("\n",fill=T)
                         }
                     })        
