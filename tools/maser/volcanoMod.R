@@ -1,6 +1,6 @@
 # The scripts were taken from the maser package and modified by Frank Ruehle (see # mod) and Anke Busch (see # modAB)
 volcanoMod <- function (events, type = c("A3SS", "A5SS", "SE", "RI", "MXE"), 
-          fdr = 0.05, deltaPSI = 0.1, title = "") 
+          fdr = 0.05, deltaPSI = 0.1, title = "", top=25) 
 {
   if (!is(events, "Maser")) {
     stop("Parameter events has to be a maser object.")
@@ -10,8 +10,12 @@ volcanoMod <- function (events, type = c("A3SS", "A5SS", "SE", "RI", "MXE"),
   IncLevelDifference <- NULL
   Status <- NULL
   stats <- events[[paste0(type, "_", "stats")]]
-  cond1 <- dplyr::filter(stats, FDR < fdr, IncLevelDifference > deltaPSI)
-  cond2 <- dplyr::filter(stats, FDR < fdr, IncLevelDifference < (-1 * deltaPSI))
+  #we add the gene id and gene name to the stats to refer to it later
+  event_info <- as.data.frame(events[[paste0(type, "_events")]]) 
+  stats$geneSymbol <- event_info$geneSymbol[match(stats$ID, event_info$ID)] 
+  stats$GeneID <- events[[paste0(type, "_event")]]$GeneID[match(stats$ID, events[[paste0(type, "_events")]]$ID)] 
+  cond1 <- dplyr::filter(stats, FDR < fdr & IncLevelDifference > deltaPSI)
+  cond2 <- dplyr::filter(stats, FDR < fdr & IncLevelDifference < (-1 * deltaPSI))
   status <- rep("Not significant", times = nrow(stats))
   #Ignored the up/down change made by FR, as we want to show the sample names directly
   #status[stats$ID %in% cond1$ID] <- "up"    # events$conditions[1] # mod
@@ -35,7 +39,17 @@ volcanoMod <- function (events, type = c("A3SS", "A5SS", "SE", "RI", "MXE"),
   #                                                                               )))
   plot.df <- data.frame(ID = stats$ID, deltaPSI = stats$IncLevelDifference, 
                         log10pval = log10pval, Status = factor(status, 
-							       levels = c("Not significant", events$conditions[1], events$conditions[2])))
+							       levels = c("Not significant", events$conditions[1], events$conditions[2])),
+  
+                        geneSymbol=stats$geneSymbol)
+  #order the results according to log10pval 
+  plot.df <- plot.df[order(plot.df$log10pval, decreasing=T),]
+  #amount of significant results
+  sig_num <- sum(plot.df$Status!="Not significant")
+
+  sig.df <- plot.df %>% dplyr::filter( Status != "Not significant") %>%
+                        dplyr::arrange(log10pval, decreasing=T) %>% 
+                        dplyr::top_n(min(top, sig_num))
   # modAB: change maser color scheme:
   # modAB:   * always plot "Not significant" in grey
   # modAB:   * use the same group colors as for PCAs and heatmaps in DESeq2 section
@@ -50,7 +64,11 @@ volcanoMod <- function (events, type = c("A3SS", "A5SS", "SE", "RI", "MXE"),
     #scale_colour_manual(values = colors) + # modAB: use colors as given below
     scale_colour_manual(values = c("grey",brewer.pal(9,"Set1")[1:2]),
                         breaks = c("Not significant",events$conditions[2],events$conditions[1]),
-                        labels = c("not significant",events$conditions[2],events$conditions[1])) +
+                        labels = c("not significant",events$conditions[2],events$conditions[1])) +   
+    geom_text_repel(data=sig.df,
+                mapping=aes(deltaPSI, log10pval, label=geneSymbol),
+                max.overlaps=50,
+                show.legend=F) +
     theme_bw() + 
     theme(axis.text.x = element_text(size = 12),
           axis.text.y = element_text(size = 12),
@@ -58,5 +76,8 @@ volcanoMod <- function (events, type = c("A3SS", "A5SS", "SE", "RI", "MXE"),
           axis.title.y = element_text(face = "plain", colour = "black", size = 12), 
           panel.grid.minor = element_blank(), 
           plot.background = element_blank()) + 
-    labs(title = title, y = "-log10 adj. p-value", x = "delta PSI") # mod: switched axis labels
+    labs(title = title, y = "-log10 adj. p-value",
+         x = "delta PSI",
+         caption=paste("The gene symbol is displayed for the top", min(top,sig_num), "events")
+    ) # mod: switched axis labels
 }
