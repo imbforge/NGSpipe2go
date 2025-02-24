@@ -11,6 +11,7 @@
 
 options(stringsAsFactors=FALSE)
 library(maser)
+library(ggrepel)
 library(rtracklayer)
 library(knitr)
 library(kableExtra)
