@@ -202,11 +202,12 @@ cat(DEhelper.Trackhub(), sep="\n")
 ```
 
 
-## Insert size (for paired-end sequencing) ##
 
-The insert size is defined as the distance between the left-most mapping position of a read and the right-most mapping position of its mate. For DNA, this exactly represents the fragment length. However, in case of RNA, the estimated insert size can be a lot larger than the true insert size / fragment length, when e.g. the read pair overlaps introns or skipped exons. Thus, the insert size calculation can only be seen as a rough estimate of the true insert size / fragment length when looking at RNAseq data.
+```{r echo=F, error=F, fig.width=15, message=FALSE, warning=FALSE, results='asis', eval=SHINYREPS_PAIRED=="yes"}
 
-```{r echo=F, error=F, fig.width=15, message=FALSE, warning=FALSE, results='asis'}
+cat("## Insert size (for paired-end sequencing) ##\n",fill=T)
+
+cat("The insert size is defined as the distance between the left-most mapping position of a read and the right-most mapping position of its mate. For DNA, this exactly represents the fragment length. However, in case of RNA, the estimated insert size can be a lot larger than the true insert size / fragment length, when e.g. the read pair overlaps introns or skipped exons. Thus, the insert size calculation can only be seen as a rough estimate of the true insert size / fragment length when looking at RNAseq data.\n",fill=T)
 
 if (!file.exists(SHINYREPS_INSERTSIZE)) {
     cat("Insert size data not available.")
