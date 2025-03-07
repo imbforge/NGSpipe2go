@@ -47,6 +47,7 @@ shinyReports_vars=[
     qualimap_logs       : qualimap_vars.outdir,           //where the qualimap output files are
     go_enrichment       : GO_Enrichment_vars.outdir,      //where the GO enrichment results lie
     insertsize          : InsertSize_vars.outdir,         //where the insertsize statistics are found
+    run_trackhub        : RUN_TRACKHUB,                   // true or false if trackhubs were created
     trackhub_done       : TRACKS + "/trackhub.done",     //contains trackhub URL
     tool_versions       : collectToolVersions_vars.outdir + "/tool_versions.txt", //where the tool versions listed
     target              : new File(PIPELINE_ROOT + "/pipelines/RNAseq/targets.txt").getCanonicalPath()

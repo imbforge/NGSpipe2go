@@ -189,14 +189,15 @@ fastqscreen_plots <- DEhelper.fastqscreen(perc.to.plot=SHINYREPS_FASTQSCREEN_PER
 ```
 
 
-## UCSC genome browser tracks ##
 
-The browser tracks are generated using bamCoverage tool in [deepTools](https://deeptools.readthedocs.io/en/develop/) and they are normalized using the Counts Per Million mapped reads (CPM) method.
+```{r Trackhub, echo=F, results='asis', error=F, warning=F, message=F, eval=SHINYREPS_RUN_TRACKHUB=="true"}
 
+cat("## UCSC genome browser tracks ##\n",fill=T)
 
-To view the tracks in the UCSC Genome Browser, navigate to the [UCSC Genome Browser Track Hub page](https://genome-euro.ucsc.edu/cgi-bin/hgHubConnect) and enter the following line into the `URL` field:
+cat("The browser tracks are generated using bamCoverage tool in [deepTools](https://deeptools.readthedocs.io/en/develop/) and they are normalized using the Counts Per Million mapped reads (CPM) method.\n",fill=T)
 
-```{r Trackhub, echo=F, results='asis', error=F, warning=F, message=F}
+cat("To view the tracks in the UCSC Genome Browser, navigate to the [UCSC Genome Browser Track Hub page](https://genome-euro.ucsc.edu/cgi-bin/hgHubConnect) and enter the following line into the `URL` field:\n",fill=T)
+
 cat(DEhelper.Trackhub(), sep="\n")
 ```
 
