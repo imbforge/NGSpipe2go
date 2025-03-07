@@ -13,7 +13,7 @@ volcanoMod <- function (events, type = c("A3SS", "A5SS", "SE", "RI", "MXE"),
   #we add the gene id and gene name to the stats to refer to it later
   event_info <- as.data.frame(events[[paste0(type, "_events")]]) 
   stats$geneSymbol <- event_info$geneSymbol[match(stats$ID, event_info$ID)] 
-  stats$GeneID <- events[[paste0(type, "_event")]]$GeneID[match(stats$ID, events[[paste0(type, "_events")]]$ID)] 
+
   cond1 <- dplyr::filter(stats, FDR < fdr & IncLevelDifference > deltaPSI)
   cond2 <- dplyr::filter(stats, FDR < fdr & IncLevelDifference < (-1 * deltaPSI))
   status <- rep("Not significant", times = nrow(stats))
@@ -40,16 +40,14 @@ volcanoMod <- function (events, type = c("A3SS", "A5SS", "SE", "RI", "MXE"),
   plot.df <- data.frame(ID = stats$ID, deltaPSI = stats$IncLevelDifference, 
                         log10pval = log10pval, Status = factor(status, 
 							       levels = c("Not significant", events$conditions[1], events$conditions[2])),
-  
                         geneSymbol=stats$geneSymbol)
   #order the results according to log10pval 
   plot.df <- plot.df[order(plot.df$log10pval, decreasing=T),]
   #amount of significant results
   sig_num <- sum(plot.df$Status!="Not significant")
+  # select top sign. events
+  sig.df <- plot.df[plot.df$Status!="Not significant",][1:min(top, sig_num),]
 
-  sig.df <- plot.df %>% dplyr::filter( Status != "Not significant") %>%
-                        dplyr::arrange(log10pval, decreasing=T) %>% 
-                        dplyr::top_n(min(top, sig_num))
   # modAB: change maser color scheme:
   # modAB:   * always plot "Not significant" in grey
   # modAB:   * use the same group colors as for PCAs and heatmaps in DESeq2 section
@@ -74,6 +72,7 @@ volcanoMod <- function (events, type = c("A3SS", "A5SS", "SE", "RI", "MXE"),
           axis.text.y = element_text(size = 12),
           axis.title.x = element_text(face = "plain", colour = "black", size = 12), 
           axis.title.y = element_text(face = "plain", colour = "black", size = 12), 
+          plot.caption = element_text(hjust = 0.5),
           panel.grid.minor = element_blank(), 
           plot.background = element_blank()) + 
     labs(title = title, y = "-log10 adj. p-value",
