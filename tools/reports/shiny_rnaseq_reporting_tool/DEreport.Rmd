@@ -579,24 +579,25 @@ for(i in 1:nrow(conts)) {
 ```
 
 
-## Differential splicing analysis 
 
-Differential splicing analysis is performed using rMATS (http://rnaseq-mats.sourceforge.net/), which uses the RNA-Seq data to detect differential alternative splicing events. The statistical model of rMATS calculates the probability that the difference in the isoform ratio of a gene between two conditions exceeds an user-defined threshold (default: 0.01%). It is important to note that rMATS is designed to analyze only the basic types of alternative splicing events involving two isoforms from an alternatively spliced region. These types include exon skipping (SE), alternative 5' splice sites (A5SS), alternative 3' splice sites (A3SS), mutually exclusive exons (MXE), and retained introns (RI).
+```{r diff_splicing_create, echo=F, results='asis', error=F, warning=F, message=F, eval=SHINYREPS_RUN_RMATS=="true"}
 
-Further, the modified functions of the maser package is used to analyze the splicing events. Low coverage splicing junctions are commonly found in RNA-seq data and lead to low confidence differential percent spliced-in PSI levels. Hence, low coverage events with an average coverage per condition < `r SHINYREPS_MASER_MINCOV` reads are removed. While original functions of the maser package filter only based on inclusion coverage, here, we are using the sum of reads supporting inclusion and exclusion of an event as its coverage (as suggested [here](https://www.nature.com/articles/s41596-023-00944-2)). Further, statistically significant events are selected considering **`r if(SHINYREPS_MASER_FTYPE=="JCEC") { "junction and exonic" } else if(SHINYREPS_MASER_FTYPE=="JC") { "only junction" } else {"?"}`** reads and using an FDR cutoff of `r SHINYREPS_MASER_FDR` and a minimum PSI change of `r as.numeric(SHINYREPS_MASER_DPSI)*100`%. In summary, the following filters are applied:
+cat("## Differential splicing analysis \n",fill=T)
 
-* average read count >= `r SHINYREPS_MASER_MINCOV` in both sample groups
-* FDR cutoff `r SHINYREPS_MASER_FDR`
-* |deltaPSI| > `r SHINYREPS_MASER_DPSI`
+cat("Differential splicing analysis is performed using rMATS (http://rnaseq-mats.sourceforge.net/), which uses the RNA-Seq data to detect differential alternative splicing events. The statistical model of rMATS calculates the probability that the difference in the isoform ratio of a gene between two conditions exceeds an user-defined threshold (default: 0.01%). It is important to note that rMATS is designed to analyze only the basic types of alternative splicing events involving two isoforms from an alternatively spliced region. These types include exon skipping (SE), alternative 5' splice sites (A5SS), alternative 3' splice sites (A3SS), mutually exclusive exons (MXE), and retained introns (RI).\n",fill=T)
 
-For each pairwise analysis, a distribution of the proportion of significantly different splicing events are shown as a summary. Further, for each of the aforementioned alternative splicing events (A3SS, A5SS, SE, RI, MXE) the following global analysis plots are shown:
+cat(paste0("Further, the modified functions of the maser package is used to analyze the splicing events. Low coverage splicing junctions are commonly found in RNA-seq data and lead to low confidence differential percent spliced-in PSI levels. Hence, low coverage events with an average coverage per condition < ",SHINYREPS_MASER_MINCOV," reads are removed. While original functions of the maser package filter only based on inclusion coverage, here, we are using the sum of reads supporting inclusion and exclusion of an event as its coverage (as suggested [here](https://www.nature.com/articles/s41596-023-00944-2)). Further, statistically significant events are selected considering **",if(SHINYREPS_MASER_FTYPE=="JCEC") { "junction and exonic" } else if(SHINYREPS_MASER_FTYPE=="JC") { "only junction" } else {"?"},"** reads and using an FDR cutoff of ",SHINYREPS_MASER_FDR," and a minimum PSI change of ",as.numeric(SHINYREPS_MASER_DPSI)*100,"%. In summary, the following filters are applied:\n"),fill=T)
 
-* a table listing the top 25 significant splicing events, their exon inclusion levels in each replicate per condition (PSI_1, PSI_2), the difference in PSI between conditions (deltaPSI = average(PSI_1)-average(PSI_2)), and exon localization,
-* a volcano plot of the splicing events with only the significant events colored (blue, red).
+cat(paste0("* average read count >= ",SHINYREPS_MASER_MINCOV," in both sample groups\n"))
+cat(paste0("* FDR cutoff ",SHINYREPS_MASER_FDR,"\n"))
+cat(paste0("* |deltaPSI| > ",SHINYREPS_MASER_DPSI,"\n"),fill=T)
 
-In addition, the *top* significant splicing event is visualized as a customized genomic track of the transcripts affected by the respective splicing event. More information on interpreting that plot is provided below.
+cat("For each pairwise analysis, a distribution of the proportion of significantly different splicing events are shown as a summary. Further, for each of the aforementioned alternative splicing events (A3SS, A5SS, SE, RI, MXE) the following global analysis plots are shown:\n",fill=T)
 
-```{r diff_splicing_create, echo=F, results='asis', error=F, warning=F, message=F}
+cat("* a table listing the top 25 significant splicing events, their exon inclusion levels in each replicate per condition (PSI_1, PSI_2), the difference in PSI between conditions (deltaPSI = average(PSI_1)-average(PSI_2)), and exon localization,\n")
+cat("* a volcano plot of the splicing events with only the significant events colored (blue, red).\n",fill=T)
+
+cat("In addition, the *top* significant splicing event is visualized as a customized genomic track of the transcripts affected by the respective splicing event. More information on interpreting that plot is provided below.\n",fill=T)
 
 # load contrasts
 conts <- read.delim(file.path(SHINYREPS_PROJECT, "contrasts.txt"), header=T,comment.char="#")
@@ -627,7 +628,7 @@ rmats_summary <- DEhelper.rmats.all(do.call(rbind,lapply(rmats,function(x){retur
 
 ```
 
-```{r diff_splicing_summaryplot, echo=F, results='asis', error=F, warning=F, message=F, fig.align="center", out.width="90%", fig.height=0.6*length(uconts_vec)+1}
+```{r diff_splicing_summaryplot, echo=F, results='asis', error=F, warning=F, message=F, eval=SHINYREPS_RUN_RMATS=="true", fig.align="center", out.width="90%", fig.height=0.6*nrow(conts)+1}
 
 cat("##### Summary of all comparisons {.tabset} \n",fill=T)
 
@@ -647,7 +648,7 @@ if(is.null(rmats_summary)) {
 
 ```
 
-```{r diff_splicing_contrastplots, echo=F, results='asis', error=F, warning=F, message=F, fig.align="center", out.width="90%", fig.height=3.5}
+```{r diff_splicing_contrastplots, echo=F, results='asis', error=F, warning=F, message=F, eval=SHINYREPS_RUN_RMATS=="true", fig.align="center", out.width="90%", fig.height=3.5}
 
 for(i in 1:length(uconts_vec)) {
 

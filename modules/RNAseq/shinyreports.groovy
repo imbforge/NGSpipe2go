@@ -55,6 +55,7 @@ shinyReports = {
             echo "SHINYREPS_DE_DESEQ_MM=${shinyReports_vars.de_deseq_mm}" >> $output &&
             echo "SHINYREPS_DE_DESEQ_FDR=${shinyReports_vars.de_deseq_FDR}"       >> $output &&
             echo "SHINYREPS_DE_DESEQ_FC=${shinyReports_vars.de_deseq_FC}"       >> $output &&
+            echo "SHINYREPS_RUN_RMATS=${shinyReports_vars.run_rmats}"  >> $output &&
             echo "SHINYREPS_MASER_SCRIPTS=${shinyReports_vars.maser_scripts}" >> $output &&
             echo "SHINYREPS_MASER_FTYPE=${shinyReports_vars.maser_ftype}" >> $output &&
             echo "SHINYREPS_MASER_MINCOV=${shinyReports_vars.maser_mincov}" >> $output &&
