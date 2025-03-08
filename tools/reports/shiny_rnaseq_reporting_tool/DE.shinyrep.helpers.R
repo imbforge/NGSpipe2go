@@ -2239,7 +2239,7 @@ DEhelper.rmats <- function(cont,cont.name) {
                         } else {
                             # no significant e event found
                             num_signif  <- 0
-                            toptable    <- NULL
+                            top         <- NULL
                             plotVolcano <- NULL
                             desc        <- NULL
                             top1_gviz_tracklist <- NULL
