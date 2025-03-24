@@ -42,6 +42,8 @@ ESSENTIAL_FASTQSCREEN=ESSENTIAL_FASTQSCREEN_GENOME + ",PHIX::/fsimb/common/genom
 
 // Adapter trimming with Cutadapt (additional adapter sequences for R1 and/or R2 can be specified in the cutadapt.header file)
 // Cutadapt recommends using full length adapter sequences since adapter fragments might occur in the genome
+// The sequences to trim for specific libraries can be found here https://knowledge.illumina.com/library-preparation/general/library-preparation-general-reference_material-list/000001314
+// The one used most frequently is the Nexterra Transposase Adapter CTGTCTCTTATACACATCT
 ESSENTIAL_ADAPTER_SEQUENCE="Illumina=AGATCGGAAGAGCACACGTCTGAACTCCAGTCA" // 3'adapter sequence for R1. 
 ESSENTIAL_ADAPTER_SEQUENCE_R2="" // in case of paired end sequencing the R2 adapter sequence (which will be trimmed from the 3' end of R2, -A argument in Cutadapt), by default the same sequence as defined in ESSENTIAL_ADAPTER_SEQUENCE is used
 ESSENTIAL_MINADAPTEROVERLAP=5
