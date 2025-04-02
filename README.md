@@ -87,7 +87,7 @@ Copy the input FastQ files into the <project_dir>/rawdata folder.
 You may use GNU Screen for persistence when running the pipeline. Load the bpipe module customised for the Slurm job manager, e.g.
 
     screen
-    module load bpipe/0.9.9.3.slurm
+    module load bpipe/0.9.9.8.slurm
 
 Start running the pipeline
 
