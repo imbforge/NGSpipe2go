@@ -26,7 +26,7 @@ config {
       memory="1"
     }
     BWA_pe { 
-      queue="bcflong" 
+      queue="long_queue" 
       walltime="24:00:00" 
       procs="16" 
       memory="32"
@@ -63,7 +63,7 @@ config {
     }
     BaseRecalibration { 
       walltime="48:00:00" 
-      queue="bcflong" 
+      queue="long_queue" 
       procs="8" 
       memory="50"
     }
@@ -209,7 +209,7 @@ config {
     }
     IndelRealignment { 
       walltime="24:00:00" 
-      queue="bcflong" 
+      queue="long_queue" 
       procs="8" 
       memory="50"
     }
@@ -255,7 +255,7 @@ config {
       memory="128"
     }
     MULTIQC {
-      queue="bcflong"
+      queue="long_queue"
       walltime="12:00:00"
       procs="4"
       memory="50"
@@ -359,19 +359,19 @@ config {
     }
     VariantCallHC { 
       walltime="48:00:00" 
-      queue="bcflong" 
+      queue="long_queue" 
       procs="2" 
       memory="20"
     }
     VariantCallUG { 
       walltime="24:00:00" 
-      queue="bcflong" 
+      queue="long_queue" 
       procs="8" 
       memory="20"
     }
     VariantEval { 
       walltime="24:00:00" 
-      queue="bcflong" 
+      queue="long_queue" 
       procs="8" 
       memory="20"
     }
@@ -382,7 +382,7 @@ config {
     }
     VariantFuseHC { 
       walltime="24:00:00" 
-      queue="bcflong" 
+      queue="long_queue" 
       procs="2" 
       memory="20"
     }
