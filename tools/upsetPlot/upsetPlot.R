@@ -187,7 +187,7 @@ ChIPhelper.UpSetPlot <- function(subdir="", Mode = "intersect", peakOverlapMode=
     #this upset plot is based on the number of peaks which are overlapping (value_fun is length)
     upset_matrix <- make_comb_mat(peak.ranges, mode = Mode, value_fun = length)
     #we subset the matrix to only display the top sets
-    upset_matrix <- upset_matrix[order(comb_size(upset_matrix), decreasing = T)[1:setsize]]
+    upset_matrix <- upset_matrix[order(comb_size(upset_matrix), decreasing = T)[1:min(dim(upset_matrix)[2],setsize)]]
     upsetReturn[["matrix_peaknumber"]] <- upset_matrix
 
     combColors <- fillColors <- "steelblue" # default color
@@ -232,7 +232,7 @@ ChIPhelper.UpSetPlot <- function(subdir="", Mode = "intersect", peakOverlapMode=
                        column_title_gp = gpar(fontsize = 11),
                        row_names_gp = gpar(fontsize = 8),
                        row_names_max_width = unit(6, "cm")
-      ), heatmap_legend_side="bottom" )
+      ), heatmap_legend_side="bottom", padding = unit(c(10, 5, 5, 5), "mm"))
       if(addBarAnnotation){
         od = column_order(ht)
         cs = comb_size(upset_matrix)
@@ -264,7 +264,7 @@ ChIPhelper.UpSetPlot <- function(subdir="", Mode = "intersect", peakOverlapMode=
     #this upset plot is based on the number of bp which are overlapping 
     upset_matrix <- make_comb_mat(peak.ranges, mode = Mode)
     #we subset the matrix to only display the top sets
-    upset_matrix <- upset_matrix[order(comb_size(upset_matrix), decreasing = T)[1:setsize]]
+    upset_matrix <- upset_matrix[order(comb_size(upset_matrix), decreasing = T)[1:min(dim(upset_matrix)[2],setsize)]]
     upsetReturn[["matrix_bp"]] <- upset_matrix
     
     if(!is.null(targetsdf)) { # coloring setnames and respective combinations by group from targets file
@@ -307,7 +307,7 @@ ChIPhelper.UpSetPlot <- function(subdir="", Mode = "intersect", peakOverlapMode=
                        column_title_gp = gpar(fontsize = 11),
                        row_names_gp = gpar(fontsize = 8),
                        row_names_max_width = unit(6, "cm")
-      ), heatmap_legend_side="bottom")
+      ), heatmap_legend_side="bottom", padding = unit(c(10, 5, 5, 5), "mm"))
       if(addBarAnnotation){
         od = column_order(ht)
         cs = comb_size(upset_matrix)
