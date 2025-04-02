@@ -60,12 +60,14 @@ if(ftargets != "" && !file.exists(ftargets)) stop("targets file", ftargets, "doe
 targets <- read.delim(ftargets)
 if(ftargets != "" && orderby != "" && !(orderby %in% colnames(targets))) stop("targets file doesn't have a column named", orderby)
 
-if(length(list.files(peakData,pattern="_macs2_blacklist_filtered_peaks.xls")) > 0) {
-      peakFiles <-list.files(peakData,pattern="_macs2_blacklist_filtered_peaks.xls", full.names = TRUE)
-      filename <- strsplit(basename(peakFiles), "_macs2_blacklist_filtered_peaks.xls") # take the filenames and put it as names for the plots	
+if(length(list.files(peakData,pattern="_macs2_excludedRegions_filtered_peaks.xls")) > 0) {
+      peakFiles <-list.files(peakData,pattern="_macs2_excludedRegions_filtered_peaks.xls", full.names = TRUE)
+      filename <- strsplit(basename(peakFiles), "_macs2_excludedRegions_filtered_peaks.xls") # take the filenames and put it as names for the plots
+      print("loaded peak files with suffix: _macs2_excludedRegions_filtered_peaks.xls")
 } else {
       peakFiles <-list.files(peakData,pattern="_macs2_peaks.xls", full.names = TRUE)
-      filename <- strsplit(basename(peakFiles), "_macs2_peaks.xls") # take the filenames and put it as names for the plots     
+      filename <- strsplit(basename(peakFiles), "_macs2_peaks.xls") # take the filenames and put it as names for the plots
+      print("loaded peak files with suffix: _macs2_peaks.xls")
 }
 
 # remove targets which have no peaks

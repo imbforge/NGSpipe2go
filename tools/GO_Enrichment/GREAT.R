@@ -52,11 +52,14 @@ if (!db %in% supportedAssemblies) {
   # load targets
   targets <- read.table(ftargets,header=T)
   
-  # define peak file names depending on whether blacklist was applied and/or input control used
-  if(length(list.files(peakData,pattern="_macs2_blacklist_filtered_peaks.xls")) > 0) {
-    peakFilenames <- gsub("\\.vs\\.none", "", paste0(peakData, "/", targets$IPname, ".vs.", targets$INPUTname, "_macs2_blacklist_filtered_peaks.xls")) # remove '.vs.none' if no input control used
+  # define peak file names depending on whether excluded regions were filtered and/or input control used
+  if(length(list.files(peakData,pattern="_macs2_excludedRegions_filtered_peaks.xls")) > 0) {
+    peakFilenames <- gsub("\\.vs\\.none", "", paste0(peakData, "/", targets$IPname, ".vs.", targets$INPUTname, "_macs2_excludedRegions_filtered_peaks.xls")) # remove '.vs.none' if no input control used
+    print("loaded peak files with suffix: _macs2_excludedRegions_filtered_peaks.xls")
+    
   } else {
     peakFilenames <- gsub("\\.vs\\.none", "", paste0(peakData, "/", targets$IPname, ".vs.", targets$INPUTname, "_macs2_peaks.xls"))
+    print("loaded peak files with suffix: _macs2_peaks.xls")
   }
   
   # and return the tables

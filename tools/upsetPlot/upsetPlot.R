@@ -97,10 +97,10 @@ ChIPhelper.init <- function(task, subdir="", peaks_as="data.frame") {
     if(!file.exists(file.path(PEAKDATA,peaksSubdir))) {
       return("MACS2 results not available")
     }
-    # check is blacklist filtered peak files are available
-    if(file.exists(file.path(PEAKDATA, peaksSubdir, gsub(".vs.none", "", paste0(targets$IPname, ".vs.", targets$INPUTname,"_macs2_blacklist_filtered_peaks.xls"))))[1]) {
-      comparisons <- file.path(PEAKDATA, peaksSubdir, gsub(".vs.none", "", paste0(targets$IPname, ".vs.", targets$INPUTname,"_macs2_blacklist_filtered_peaks.xls")))
-    } else { # no blacklist filtered peak files available, read unfiltered peak files
+    # check is excludedRegions filtered peak files are available
+    if(file.exists(file.path(PEAKDATA, peaksSubdir, gsub(".vs.none", "", paste0(targets$IPname, ".vs.", targets$INPUTname,"_macs2_excludedRegions_filtered_peaks.xls"))))[1]) {
+      comparisons <- file.path(PEAKDATA, peaksSubdir, gsub(".vs.none", "", paste0(targets$IPname, ".vs.", targets$INPUTname,"_macs2_excludedRegions_filtered_peaks.xls")))
+    } else { # no excludedRegions filtered peak files available, read unfiltered peak files
       comparisons <- file.path(PEAKDATA, peaksSubdir, gsub(".vs.none", "", paste0(targets$IPname, ".vs.", targets$INPUTname,"_macs2_peaks.xls")))
     }
     exist <- sapply(comparisons, file.exists) # check if files exist for targets entries

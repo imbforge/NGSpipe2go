@@ -68,10 +68,10 @@ ChIPhelper.init <- function(task, subdir="", peaks_as="data.frame") {
       return("MACS2 results not available")
     }
     
-    # check is blacklist filtered peak files are available (".vs.none" is removed in case there were no controls samples)
-    if(file.exists(file.path(SHINYREPS_MACS2, peaksSubdir, gsub(".vs.none", "", paste0(targets$IPname, ".vs.", targets$INPUTname,"_macs2_blacklist_filtered_peaks.xls"))))[1]) {
-      comparisons <- file.path(SHINYREPS_MACS2, peaksSubdir, gsub(".vs.none", "", paste0(targets$IPname, ".vs.", targets$INPUTname,"_macs2_blacklist_filtered_peaks.xls")))
-    } else { # no blacklist filtered peak files available, read unfiltered peak files
+    # check is excludedRegions filtered peak files are available (".vs.none" is removed in case there were no controls samples)
+    if(file.exists(file.path(SHINYREPS_MACS2, peaksSubdir, gsub(".vs.none", "", paste0(targets$IPname, ".vs.", targets$INPUTname,"_macs2_excludedRegions_filtered_peaks.xls"))))[1]) {
+      comparisons <- file.path(SHINYREPS_MACS2, peaksSubdir, gsub(".vs.none", "", paste0(targets$IPname, ".vs.", targets$INPUTname,"_macs2_excludedRegions_filtered_peaks.xls")))
+    } else { # no excludedRegions filtered peak files available, read unfiltered peak files
       comparisons <- file.path(SHINYREPS_MACS2, peaksSubdir, gsub(".vs.none", "", paste0(targets$IPname, ".vs.", targets$INPUTname,"_macs2_peaks.xls")))
     }
     exist <- sapply(comparisons, file.exists) # check if files exist for targets entries
@@ -138,8 +138,8 @@ ChIPhelper.ComparisonsFromTargets <- function() {
   # get the comparisons and clean the names
   x <- read.delim(TARGETS, comment.char = "#")
   
-  if(file.exists(paste0(x$IPname, ".vs.", x$INPUTname,"_macs2_blacklist_filtered_peaks.xls"))[1]) {
-    comparisons <- paste0(x$IPname, ".vs.", x$INPUTname, "_macs2_blacklist_filtered_peaks.xls")  
+  if(file.exists(paste0(x$IPname, ".vs.", x$INPUTname,"_macs2_excludedRegions_filtered_peaks.xls"))[1]) {
+    comparisons <- paste0(x$IPname, ".vs.", x$INPUTname, "_macs2_excludedRegions_filtered_peaks.xls")  
   } else {
     comparisons <- paste0(x$IPname, ".vs.", x$INPUTname, "_macs2_peaks.xls")
   }
@@ -147,8 +147,8 @@ ChIPhelper.ComparisonsFromTargets <- function() {
   exist <- sapply(paste0(SHINYREPS_MACS2, "/", comparisons), file.exists)
   comparisons <- gsub(".vs.", " vs. ", comparisons)
   
-  if(file.exists(paste0(x$IPname, ".vs.", x$INPUTname,"_macs2_blacklist_filtered_peaks.xls"))[1]) {
-    comparisons <- gsub("_macs2_blacklist_filtered_peaks.xls", "", comparisons)  
+  if(file.exists(paste0(x$IPname, ".vs.", x$INPUTname,"_macs2_excludedRegions_filtered_peaks.xls"))[1]) {
+    comparisons <- gsub("_macs2_excludedRegions_filtered_peaks.xls", "", comparisons)  
   } else {
     comparisons <- gsub("_macs2_peaks.xls", "", comparisons)
   }
@@ -1465,19 +1465,19 @@ Toolhelper.ToolVersions <- function() {
 }
 
 ##
-## ChIPhelper.BLACKLISTFILTER: go through MACS2 output dir and show BlackList 
+## ChIPhelper.EXCLUDEDREGIONSFILTER: go through MACS2 output dir and show excluded regions 
 ##     Filter module file
 ##
-ChIPhelper.BLACKLISTFILTER <- function(subdir="") {
+ChIPhelper.EXCLUDEDREGIONSFILTER <- function(subdir="") {
   
   # logs folder
-  if(!file.exists(sub("/([^/]*)$", paste0("/",subdir,"/\\1"), SHINYREPS_BLACKLIST_FILTER))) {
-    return("Peaks overlapping blacklist regions not available")
+  if(!file.exists(sub("/([^/]*)$", paste0("/",subdir,"/\\1"), SHINYREPS_EXCLUDEDREGIONS_FILTER))) {
+    return("Peaks overlapping excluded regions not available")
   }
   
   # construct the image url from the folder contents (skip current dir .)
-  samples <- read.csv(sub("/([^/]*)$", paste0("/",subdir,"/\\1"), SHINYREPS_BLACKLIST_FILTER), row.names=1)
-  colnames(samples) <- c("# peaks with MACS2", "# peaks wo overlapping with BRs", "% peaks overlapping BRs")
+  samples <- read.csv(sub("/([^/]*)$", paste0("/",subdir,"/\\1"), SHINYREPS_EXCLUDEDREGIONS_FILTER), row.names=1)
+  colnames(samples) <- c("# peaks with MACS2", "# peaks wo overlapping with ERs", "% peaks overlapping ERs")
   kable(samples, output=F, format="html") %>% kableExtra::kable_styling()
 }
 

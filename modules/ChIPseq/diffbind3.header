@@ -7,8 +7,8 @@ diffbind3_vars=[
     peaks            : RESULTS + "/macs2",          // directory with peak caller output
     fragsize         : Integer.toString(ESSENTIAL_FRAGLEN), // average fragment size
     cores            : Integer.toString(ESSENTIAL_THREADS), // number of threads to use
-    blacklist        : ESSENTIAL_BLACKLIST,         // if "TRUE", a blacklist will be applied if available for that genome. Not necessary if a bed file is specified in ESSENTIAL_BLACKLIST to be used by the blacklist_filter module before (in this case or if "FALSE", diffbind will omit blacklist filtering).
-    greylist         : "FALSE",   // if "TRUE" and if a valid BSgenome object can be detected, a greylist will be generated for each Control (default "FALSE"). Not necessary if RUN_MAKE_GREYLIST is set to TRUE which generates a greylist externally and applies it via the blacklist_filter module.
+    excludedRegions  : ESSENTIAL_EXCLUDEDREGIONS,         // if "TRUE", DiffBind tries to obtain a predefined set of regions to exclude if available for that genome. Not necessary if a bed file is specified in ESSENTIAL_EXCLUDEDREGIONS to be used by the excludedRegions_filter module before (in this case or if "FALSE", diffbind will omit filtering).
+    greylist         : "FALSE",   // if "TRUE" and if a valid BSgenome object can be detected, a greylist will be generated for each Control (default "FALSE"). Not necessary if RUN_MAKE_GREYLIST is set to TRUE which generates a greylist externally and applies it via the excludedRegions_filter module.
     summits          : Integer.toString(ESSENTIAL_SUMMITS), // re-center peaks around consensus summit with peak width 2x summits (0 means no re-centering). 
     filter           : "0",         // value to use for filtering intervals with low read counts. 
     minOverlap       : "2",         // the minimum number of peaksets a peak must be in to be included when adding a consensus peakset (default 2). 
@@ -41,7 +41,7 @@ class diffbind3_vars_schema {
     String peaks            
     String fragsize         
     String cores            
-    String blacklist        
+    String excludedRegions        
     String greylist         
     String summits          
     String filter           

@@ -71,7 +71,7 @@ config {
       procs="8"
       memory="50"
     }
-    blacklist_filter {
+    excludedRegions_filter {
       walltime="01:00:00"
       procs="1"
       memory="32"

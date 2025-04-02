@@ -32,7 +32,7 @@ ESSENTIAL_BSGENOME="BSgenome.Mmusculus.UCSC.mm10"  // Bioconductor genome refere
 ESSENTIAL_TXDB="TxDb.Mmusculus.UCSC.mm10.knownGene" // needed for peak annotation
 ESSENTIAL_ANNODB="org.Mm.eg.db"                    // needed for peak annotation
 ESSENTIAL_DB="mm10"            // UCSC assembly version for GREAT analysis (only for UCSC hg19, hg38, mm9 and mm10)
-ESSENTIAL_BLACKLIST="/fsimb/common/genomes/mus_musculus/ucsc/mm10/full/annotation/mm10.blacklist.bed"
+ESSENTIAL_EXCLUDEDREGIONS="/fsimb/common/genomes/mus_musculus/ucsc/mm10/full/annotation/mm10.blacklist.bed"
 
 // FASTQ-Screen parameters
 ESSENTIAL_FASTQSCREEN_PERC=1    // contaminant filter, if a contaminant is consuming at least this percentage of reads in at least one sample, contaminant will be shown in report
@@ -70,7 +70,7 @@ ESSENTIAL_SUMMITS=200                // Re-center peaks around consensus summit 
 // further optional pipeline stages to include
 RUN_IN_PAIRED_END_MODE=(ESSENTIAL_PAIRED == "yes")
 RUN_FASTQSCREEN=true            // check for contaminations using FastQ Screen
-RUN_MAKE_GREYLIST=true          // greylist is generated from all Control files and is then applied to MACS2 peak files like a blacklist (default: true). IMPORTANT NOTE: If true, a bed file given in ESSENTIAL_BLACKLIST is ignored! 
+RUN_MAKE_GREYLIST=true          // greylist is generated from all Control files and is then applied to MACS2 peak files to exclude these regions (default: true). IMPORTANT NOTE: If true, a bed file given in ESSENTIAL_EXCLUDEDREGIONS is ignored! 
 RUN_PEAK_ANNOTATION=true
 RUN_ENRICHMENT=true
 RUN_TRACKHUB=false
