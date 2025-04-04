@@ -77,7 +77,7 @@ filterByCoverage_mod <- function (events, cond_labels, avg_reads = 10)
     events <- as(events, "list")
     events_new <- list()
     lapply(as_types, function(type) {
-        counts <- data.frame(events[[paste0(type, "_", "counts")]]) # data.frame() needed in case events[[paste0(type, "_", "counts")]] has only 1 row
+        counts <- events[[paste0(type, "_", "counts"),drop=F]] # drop=F needed in case events[[paste0(type, "_", "counts")]] has only 1 row
         counts_1 <- counts[,unlist(lapply(colnames(counts),function(n) {s <- unlist(strsplit(n,"_")); paste(s[1:(length(s)-1)],collapse="_") }))==cond_labels[1]]
         counts_2 <- counts[,unlist(lapply(colnames(counts),function(n) {s <- unlist(strsplit(n,"_")); paste(s[1:(length(s)-1)],collapse="_") }))==cond_labels[2]]
         res_id_1 <- rownames(counts_1)[rowMeans(counts_1) >= avg_reads]
