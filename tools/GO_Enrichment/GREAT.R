@@ -41,6 +41,7 @@ runstr <- paste0("Call with: Rscript GREAT.R [peakData=",peakData,"] [targets=",
 cat(runstr)
 cat("\n\n")
 
+
 ## check if genome assembly is supported
 supportedAssemblies <- c("hg38", "hg19", "mm9", "mm10") # supported in rGREAT version >=4
 if (!db %in% supportedAssemblies) {
@@ -51,7 +52,7 @@ if (!db %in% supportedAssemblies) {
 
   # load targets
   targets <- read.table(ftargets,header=T)
-  
+
   # define peak file names depending on whether excluded regions were filtered and/or input control used
   if(length(list.files(peakData,pattern="_macs2_excludedRegions_filtered_peaks.xls")) > 0) {
     peakFilenames <- gsub("\\.vs\\.none", "", paste0(peakData, "/", targets$IPname, ".vs.", targets$INPUTname, "_macs2_excludedRegions_filtered_peaks.xls")) # remove '.vs.none' if no input control used
@@ -61,6 +62,9 @@ if (!db %in% supportedAssemblies) {
     peakFilenames <- gsub("\\.vs\\.none", "", paste0(peakData, "/", targets$IPname, ".vs.", targets$INPUTname, "_macs2_peaks.xls"))
     print("loaded peak files with suffix: _macs2_peaks.xls")
   }
+  
+  targets <- targets[file.exists(peakFilenames),]
+  peakFilenames <- peakFilenames[file.exists(peakFilenames)]
   
   # and return the tables
   peaks <- lapply(peakFilenames, function(x) {
@@ -73,6 +77,20 @@ if (!db %in% supportedAssemblies) {
   names(peaks) <- gsub(" vs\\. none", "", paste0(targets$IPname, " vs. ", targets$INPUTname)) # remove ' vs. none' if no input control used
   
 
+  # remove entries which have no peaks
+  peak_nrow <- sapply(peakFilenames, function(x) {
+    tryCatch({
+      nrow(read.delim(x, head=TRUE, comment="#"))
+    }, error=function(e) 0)
+  })
+  
+  if(!all(peak_nrow > 0)) {
+    warning("Sample(s) ", paste(peakFilenames[!(peak_nrow > 0)], collapse=", "),
+            " excluded because didn't have any peaks called")
+    targets <- targets[peak_nrow > 0, ] 
+    peaks   <- peaks[peak_nrow > 0] 
+  }
+  
   
   groups <- unique(targets$group)
   
@@ -89,9 +107,15 @@ if (!db %in% supportedAssemblies) {
   		cat(paste0("#### ", group), fill=T)
   		cat("\n", fill=T)
   		peak <- peak.ranges[peak.groups==group]
-  		peaks.ov <- findOverlapsOfPeaks(peak)
-  		job	<- submitGreatJob(peaks.ov$peaklist[[length(peaks.ov$peaklist)]], species = db, adv_upstream = adv_upstream, adv_downstream = adv_downstream)
-  
+  		
+  		if(sum(peak.groups==group)==1) {
+  		peaks.ov <- peak[[1]] ### check if only 1 GRanges object present
+  		job	<- submitGreatJob(peaks.ov, species = db, adv_upstream = adv_upstream, adv_downstream = adv_downstream)
+  		} else {
+  		  peaks.ov <- findOverlapsOfPeaks(peak) # crashes if just 1 GRanges object
+  		  job	<- submitGreatJob(peaks.ov$peaklist[[length(peaks.ov$peaklist)]], species = db, adv_upstream = adv_upstream, adv_downstream = adv_downstream)
+  		}
+  		
           # create genomic region and gene associations graphs 
           CairoPDF(file=paste0(out, "/", group, "_Region-Gene_Association_Graph.pdf"))
           res = plotRegionGeneAssociationGraphs(job)
