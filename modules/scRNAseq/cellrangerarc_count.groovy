@@ -1,7 +1,7 @@
 cellrangerarc_count = {
     doc title: "Cell Ranger ARC (10X Multiome) alignment",
         desc:  "Align GEX & ATAC paired end reads (for ATAC, 10X barcode is in i5 index)",
-        constraints: "All FASTQ files expected to have _S1_L001_R[123]_001.fastq.gz suffix.",
+        constraints: "All GEX and ATAC FASTQ files expected to have _[Library Type]_S1_L001_R[123]_001.fastq.gz suffix and must be located in the same directory.",
         bpipe_version: "tested with bpipe 0.9.9.8",
         author: "Frank Rühle, Martin Oti"
 
@@ -10,7 +10,7 @@ cellrangerarc_count = {
     def SAMPLENAME_PRUNED = SAMPLENAME_BASE.replaceAll(~/_gex_S[\d]+_L[\d]+_.*/, "").replaceAll(~/_atac_S[\d]+_L[\d]+_.*/, "")
     def SAMPLENAME_GEX = SAMPLENAME_BASE.replaceAll("_atac_", "_gex_")
     def SAMPLENAME_ATAC = SAMPLENAME_BASE.replaceAll("_gex_", "_atac_")
-    def SAMPLEDIR = cellrangerarc_count_vars.fastqdir
+    def SAMPLEDIR = new File(input).getAbsoluteFile().getParent()
 
     output.dir = cellrangerarc_count_vars.outdir + "/" 
 

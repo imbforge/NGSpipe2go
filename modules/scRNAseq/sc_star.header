@@ -1,0 +1,52 @@
+// Alternative header of star module for single cell pipelines using ref name ESSENTIAL_GENOME_REFERENCE (e.g. SMART-Seq).
+// Also, ESSENTIAL_READLENGTH-1 in overhang was replaced by default 100, which will work as well as the ideal value In most cases.
+// Calls the same star.groovy file as the original star.header.
+STAR_vars=[
+    outdir          : MAPPED,
+    logdir          : LOGS + "/STAR",
+    mm              : "0.04",          // max. permitted mismatches in the alignment, relative to the read length (4% as used by ENCODE)
+    mm_abs          : "999",           // max. permitted mismatches in the alignment, absolute number 
+                                       // (whichever one is more strict, mm or mm_abs, determines the limit)
+    unmapped_bam    : "Within",        // report unmapped reads to bam file? (choices: Within, None)
+    attributes      : "NH HI AS nM MD NM",// reported SAM attributes, standard: NH HI AS nM, extra: MD (mismatched and deleted reference bases), 
+                                          // NM (edit distance to the reference (number of mismatched + inserted + deleted bases) for each mate)
+
+    // settings imported from essential vars
+    threads         : "1",             // for faster results (but non-deterministic multimapper assignment) use: Integer.toString(ESSENTIAL_THREADS),
+    ref             : ESSENTIAL_GENOME_REFERENCE,
+    overhang        : Integer.toString(100), // ideal value: ReadLength-1. In case of reads of varying length, the ideal value is max(ReadLength)-1
+    gtf             : ESSENTIAL_GENESGTF,   // gene model GTF file
+    paired          : (ESSENTIAL_PAIRED == "yes"),
+
+    // additional settings
+    filter_sec      : true,            // remove secondary alignments in order to keep just 1 alignment of the multi-mapping reads ?
+    samtools_threads: Integer.toString(ESSENTIAL_THREADS),
+    extra           : ""               // extra parms to sent to the tool
+]
+
+load PIPELINE_ROOT + "/modules/RNAseq/star.groovy"
+
+// expected parameter types
+class STAR_vars_schema {
+    String outdir          
+    String logdir          
+    String mm              
+    String mm_abs          
+    String unmapped_bam    
+    String attributes      
+    String threads         
+    String ref             
+    String overhang        
+    String gtf             
+    Boolean paired          
+    Boolean filter_sec      
+    String samtools_threads
+    String extra           
+
+    // check for the presence of mandatory params
+    boolean asBoolean() {
+      outdir && ref
+    }
+}
+
+validate_schema(STAR_vars_schema, STAR_vars)

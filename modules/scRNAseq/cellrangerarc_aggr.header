@@ -1,6 +1,6 @@
 cellrangerarc_aggr_vars=[
     outdir       : RESULTS,
-    reference    : ESSENTIAL_TENX_REFERENCE, 
+    reference    : ESSENTIAL_GENOME_REFERENCE, 
     id           : "aggr",
     normalize    : "depth", // "none" or "depth" (default). Equalize the average mapped read depth per cell between GEM wells by sub-sampling before merging.
     cores        : "8",

@@ -36,7 +36,7 @@ All analysis steps of the scRNA-Seq pipelines are illustrated in the following f
 - essential.vars.groovy: essential parameter describing the experiment 
   - ESSENTIAL_PROJECT: your project folder name.
   - ESSENTIAL_SAMPLE_PREFIX: common sample prefix to be removed from output plots.
-  - ESSENTIAL_STAR_REF / ESSENTIAL_TENX_TRANSCRIPTOME: path to STAR indexed /cellranger reference genome.
+  - ESSENTIAL_GENOME_REFERENCE: path to reference genome as requested for the respective assay.
   - ESSENTIAL_ORG: UCSC organism name.
   - ESSENTIAL_DB: UCSC assembly version
   - ESSENTIAL_GENESGTF: path to gtf file containing genome annotation.
@@ -47,9 +47,8 @@ All analysis steps of the scRNA-Seq pipelines are illustrated in the following f
   - ESSENTIAL_THREADS: number of threads for parallel tasks.
   - RUN_DEMUX: (10X only) specify de-multiplexing method if applied. Either "demux_HTO" for cell hashing, "demux_GT" for demultiplexing by genetic variance or empty string (no demultiplexing).
   - ESSENTIAL_CELLTYPE_ANNO: (10X only) celltype annotation method to use (one or more of "Seurat", "Marker"). The first in the list is used for downstream processing.
-  - ESSENTIAL_TENX_EXPECTED_CELLS: (10X only) number of expected cells in experiment
-  - ESSENTIAL_TENX_NORMALIZED: (10X only) cellranger normalization method
-  - ESSENTIAL_TENX_NUCLEI: (10X only) set to TRUE if assay runs with nuclei instead of cells.
+  - ESSENTIAL_EXPECTED_CELLS: number of expected cells in experiment (this info can help in detecting valid cells).
+  - ESSENTIAL_NUCLEI: (10X only) set to TRUE if assay runs with nuclei instead of cells.
   - ESSENTIAL_ADAPTER_SEQUENCE: (optional) adapter sequence to be trimmed if *RUN_CUTADAPT=true*.
   - ESSENTIAL_BASEQUALCUTOFF: base quality threshold to trim low-quality ends from reads with Cutadapt. If *ESSENTIAL_NEXTSEQTRIM* is true, qualities of terminal G bases are ignored. To switch off base quality trimming in Cutadapt entirely, set *ESSENTIAL_BASEQUALCUTOFF=0* and *ESSENTIAL_NEXTSEQTRIM=false*.
   - ESSENTIAL_NEXTSEQTRIM: most Illumina instruments use a two-color chemistry like the NextSeq (exceptions: MiSeq, HiSeq). This option accounts for terminal high quality G bases incorporated by faulty dark cycles during base quality trimming with Cutadapt.

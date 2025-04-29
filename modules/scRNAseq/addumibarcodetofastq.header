@@ -1,7 +1,7 @@
 AddUMIBarcodeToFastq_vars=[
     outdir     : PROJECT + "/rawdata_processed",
-    bcpattern  : ESSENTIAL_BCPATTERN, // pattern of the umi and the barcode in the second read. The C are the barcode bases the Ns are the UMI bases
-    barcodelist: ESSENTIAL_WHITELIST, // list of valid barcodes
+    bcpattern  : "CCCCCCCNNNNNNNN", // barcode and UMI pattern as it is present in the SECOND read of MARS-Seq data. The C refers to cell barcode bases and N to UMI bases.
+    barcodelist: "single_cell_barcodes_whitelist.csv", // list of valid barcodes separated by newline
     extra      : ""
 ]
 

@@ -2,9 +2,9 @@ splitpipe_all_vars=[
     outdir          : MAPPED,
     logdir          : LOGS + "/splitpipe_all",
     targets         : "targets.txt",                 // targets file describing the samples
-    genome          : ESSENTIAL_TENX_REFERENCE, 
+    genome          : ESSENTIAL_GENOME_REFERENCE, 
     chemistry       : "v2",
-    expect_cells    : ESSENTIAL_TENX_EXPECTED_CELLS,
+    expect_cells    : ESSENTIAL_EXPECTED_CELLS,
     threads         : "8",
     extra           : " "               // extra parms to sent to the tool
 ]

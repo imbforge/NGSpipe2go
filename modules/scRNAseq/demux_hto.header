@@ -2,14 +2,14 @@ demux_hto_vars=[
     // for further explanation see: https://hoohm.github.io/CITE-seq-Count/Running-the-script/
     outdir              : RESULTS + "/demux_hto",
     targets             : "targets.txt",  //targets file
-    hto_rawdata_dir     : ESSENTIAL_TENX_FASTQDIR, // the hto fastq files may be stored separated from sample fastq files 
+    hto_rawdata_dir     : ESSENTIAL_PROJECT + "/rawdata", // the hto fastq files may be stored separated from sample fastq files 
     cb_first            : "1",  // first nucleotide of cell barcode in read 1 (for 10x Genomics this is typically 1)
     cb_last             : "16", // last nucleotide of the cell barcode in read 1 (for 10x Genomics this is typically 16)
     umi_first           : "17", // first nucleotide of the UMI in read 1 (for 10x Genomics this is typically 17)
     umi_last            : "28", // last nucleotide of the UMI in read 1 (for 10x Genomics this is typically 26 or 28)
     bc_collapsing_dist  : "1",  // how many errors are allowed between two cell barcodes to collapse them onto one cell
     umi_collapsing_dist : "2",  // how many errors are allowed between two umi within the same cell and TAG to collapse
-    expect_cells        : ESSENTIAL_TENX_EXPECTED_CELLS,
+    expect_cells        : ESSENTIAL_EXPECTED_CELLS,
     cb_whitelist        : "/fsimb/common/tools/cellranger/6.0.0/lib/python/cellranger/barcodes/737K-arc-v1.txt.gz", // optional whitelist of cell barcodes (must not be zipped). CITE-seq-Count will search for those barcodes in the data and correct other barcodes based on this list. Will force the output to provide all the barcodes from the whitelist.
     max_error_hto       : "3",  // max Levenshtein distance allowed for HTOs
     threads             : ESSENTIAL_THREADS,
