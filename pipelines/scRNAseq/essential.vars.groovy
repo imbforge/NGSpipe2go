@@ -2,7 +2,7 @@
 
 // General
 ESSENTIAL_PROJECT="project_dir"  // full project directory path
-ESSENTIAL_SEQTYPE="tenX"         // sequencing type, one of "tenX", "tenXmultiome", ParseBio", "ScaleBio"
+ESSENTIAL_SEQTYPE="tenX"         // sequencing type, one of "tenX", "tenXmultiome", "ParseBio", "ScaleBio", "SmartSeq"
 ESSENTIAL_SAMPLE_PREFIX=""      // sample name prefix to be trimmed in the results and reports
 ESSENTIAL_THREADS=16             // number of threads for parallel tasks
 ESSENTIAL_PAIRED="no"           // paired end design ("no" for MARS-Seq and 10X, because R2 in MARS_Seq and R1 in 10X contain UMI and barcodes only)
