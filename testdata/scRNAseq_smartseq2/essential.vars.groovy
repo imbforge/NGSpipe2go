@@ -18,6 +18,9 @@ ESSENTIAL_FRAGMENT_USAGE="no"   //should fragments be reconstituted? should alwa
 ESSENTIAL_BAMCOVERAGE="--binSize 1 --skipNonCoveredRegions --normalizeUsing CPM" // NO smoothing should be done for RNAseq
 ESSENTIAL_MTGENES=""  // list of mitocondrial gene_ids (first column)
 ESSENTIAL_CELLTYPE_ANNO=["Marker"]
+ESSENTIAL_EXPECTED_CELLS=7000 // cellranger default 
+ESSENTIAL_NUCLEI="no"         // set to "yes" if 10X run with nuclei instead of cells
+ESSENTIAL_USE_AGGR_DATA = true // if true load cellranger aggr results. Otherwise, load individual sample data and aggregate in Seurat
 
 // Optional sample demultiplexing (not applicable here)
 RUN_DEMUX=""  

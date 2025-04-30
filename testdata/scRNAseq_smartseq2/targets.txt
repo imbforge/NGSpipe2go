@@ -1,97 +1,97 @@
-sample	barcode	pool	plate	row	col	cells	group
-sample_1	GGAAGAA	poolA_p01	1	A	1	1c	Neg
-sample_2	GGAAGAA	poolA_p01	1	B	2	1c	Pos
-sample_3	GGAAGAA	poolA_p01	1	C	3	1c	Neg
-sample_4	GGAAGAA	poolA_p01	1	D	4	1c	Pos
-sample_5	GGAAGAA	poolA_p01	1	E	5	1c	Neg
-sample_6	GGAAGAA	poolA_p01	1	F	6	1c	Pos
-sample_7	GGAAGAA	poolA_p01	1	G	7	1c	Neg
-sample_8	GGAAGAA	poolA_p01	1	H	8	1c	Pos
-sample_9	GGAAGAA	poolA_p01	1	A	9	1c	Neg
-sample_10	GGAAGAA	poolA_p01	1	B	10	1c	Pos
-sample_11	GGAAGAA	poolA_p01	1	C	11	1c	Neg
-sample_12	GGAAGAA	poolA_p01	1	D	12	1c	Pos
-sample_13	GGAAGAA	poolA_p01	1	E	1	1c	Neg
-sample_14	GGAAGAA	poolA_p01	1	F	2	1c	Pos
-sample_15	GGAAGAA	poolA_p01	1	G	3	1c	Neg
-sample_16	GGAAGAA	poolA_p01	1	H	4	1c	Pos
-sample_17	GGAAGAA	poolA_p01	1	A	5	1c	Neg
-sample_18	GGAAGAA	poolA_p01	1	B	6	1c	Pos
-sample_19	GGAAGAA	poolA_p01	1	C	7	1c	Neg
-sample_20	GGAAGAA	poolA_p01	1	D	8	1c	Pos
-sample_21	GGAAGAA	poolA_p01	1	E	9	1c	Neg
-sample_22	GGAAGAA	poolA_p01	1	F	10	1c	Pos
-sample_23	GGAAGAA	poolA_p01	1	G	11	1c	Neg
-sample_24	GGAAGAA	poolA_p01	1	H	12	1c	Pos
-sample_25	GGAAGAA	poolA_p01	1	A	1	1c	Neg
-sample_26	GGAAGAA	poolA_p01	1	B	2	1c	Pos
-sample_27	GGAAGAA	poolA_p01	1	C	3	1c	Neg
-sample_28	GGAAGAA	poolA_p01	1	D	4	1c	Pos
-sample_29	GGAAGAA	poolA_p01	1	E	5	1c	Neg
-sample_30	GGAAGAA	poolA_p01	1	F	6	1c	Pos
-sample_31	GGAAGAA	poolA_p01	1	G	7	1c	Neg
-sample_32	GGAAGAA	poolA_p01	1	H	8	1c	Pos
-sample_33	GGAAGAA	poolA_p01	1	A	9	1c	Neg
-sample_34	GGAAGAA	poolA_p01	1	B	10	1c	Pos
-sample_35	GGAAGAA	poolA_p01	1	C	11	1c	Neg
-sample_36	GGAAGAA	poolA_p01	1	D	12	1c	Pos
-sample_37	GGAAGAA	poolA_p01	1	E	1	1c	Neg
-sample_38	GGAAGAA	poolA_p01	1	F	2	1c	Pos
-sample_39	GGAAGAA	poolA_p01	1	G	3	1c	Neg
-sample_40	GGAAGAA	poolA_p01	1	H	4	1c	Pos
-sample_41	GGAAGAA	poolA_p01	1	A	5	1c	Neg
-sample_42	GGAAGAA	poolA_p01	1	B	6	1c	Pos
-sample_43	GGAAGAA	poolA_p01	1	C	7	1c	Neg
-sample_44	GGAAGAA	poolA_p01	1	D	8	1c	Pos
-sample_45	GGAAGAA	poolA_p01	1	E	9	1c	Neg
-sample_46	GGAAGAA	poolA_p01	1	F	10	1c	Pos
-sample_47	GGAAGAA	poolA_p01	1	G	11	1c	Neg
-sample_48	GGAAGAA	poolA_p01	1	H	12	1c	Pos
-sample_49	GGAAGAA	poolA_p01	1	A	1	1c	Neg
-sample_50	GGAAGAA	poolA_p01	1	B	2	1c	Pos
-sample_51	GGAAGAA	poolA_p01	1	C	3	1c	Neg
-sample_52	GGAAGAA	poolA_p01	1	D	4	1c	Pos
-sample_53	GGAAGAA	poolA_p01	1	E	5	1c	Neg
-sample_54	GGAAGAA	poolA_p01	1	F	6	1c	Pos
-sample_55	GGAAGAA	poolA_p01	1	G	7	1c	Neg
-sample_56	GGAAGAA	poolA_p01	1	H	8	1c	Pos
-sample_57	GGAAGAA	poolA_p01	1	A	9	1c	Neg
-sample_58	GGAAGAA	poolA_p01	1	B	10	1c	Pos
-sample_59	GGAAGAA	poolA_p01	1	C	11	1c	Neg
-sample_60	GGAAGAA	poolA_p01	1	D	12	1c	Pos
-sample_61	GGAAGAA	poolA_p01	1	E	1	1c	Neg
-sample_62	GGAAGAA	poolA_p01	1	F	2	1c	Pos
-sample_63	GGAAGAA	poolA_p01	1	G	3	1c	Neg
-sample_64	GGAAGAA	poolA_p01	1	H	4	1c	Pos
-sample_65	GGAAGAA	poolA_p01	1	A	5	1c	Neg
-sample_66	GGAAGAA	poolA_p01	1	B	6	1c	Pos
-sample_67	GGAAGAA	poolA_p01	1	C	7	1c	Neg
-sample_68	GGAAGAA	poolA_p01	1	D	8	1c	Pos
-sample_69	GGAAGAA	poolA_p01	1	E	9	1c	Neg
-sample_70	GGAAGAA	poolA_p01	1	F	10	1c	Pos
-sample_71	GGAAGAA	poolA_p01	1	G	11	1c	Neg
-sample_72	GGAAGAA	poolA_p01	1	H	12	1c	Pos
-sample_73	GGAAGAA	poolA_p01	1	A	1	1c	Neg
-sample_74	GGAAGAA	poolA_p01	1	B	2	1c	Pos
-sample_75	GGAAGAA	poolA_p01	1	C	3	1c	Neg
-sample_76	GGAAGAA	poolA_p01	1	D	4	1c	Pos
-sample_77	GGAAGAA	poolA_p01	1	E	5	1c	Neg
-sample_78	GGAAGAA	poolA_p01	1	F	6	1c	Pos
-sample_79	GGAAGAA	poolA_p01	1	G	7	1c	Neg
-sample_80	GGAAGAA	poolA_p01	1	H	8	1c	Pos
-sample_81	GGAAGAA	poolA_p01	1	A	9	1c	Neg
-sample_82	GGAAGAA	poolA_p01	1	B	10	1c	Pos
-sample_83	GGAAGAA	poolA_p01	1	C	11	1c	Neg
-sample_84	GGAAGAA	poolA_p01	1	D	12	1c	Pos
-sample_85	GGAAGAA	poolA_p01	1	E	1	1c	Neg
-sample_86	GGAAGAA	poolA_p01	1	F	2	1c	Pos
-sample_87	GGAAGAA	poolA_p01	1	G	3	1c	Neg
-sample_88	GGAAGAA	poolA_p01	1	H	4	1c	Neg
-sample_89	GGAAGAA	poolA_p01	1	A	5	1c	Pos
-sample_90	GGAAGAA	poolA_p01	1	B	6	1c	Neg
-sample_91	GGAAGAA	poolA_p01	1	C	7	1c	Neg
-sample_92	GGAAGAA	poolA_p01	1	D	8	1c	Pos
-sample_93	GGAAGAA	poolA_p01	1	E	9	1c	Neg
-sample_94	GGAAGAA	poolA_p01	1	F	10	1c	Pos
-sample_95	GGAAGAA	poolA_p01	1	G	11	1c	Neg
-sample_96	GGAAGAA	poolA_p01	1	H	12	1c	Pos
+sample	file	barcode	pool	plate	row	col	cells	group
+sample_1	sample_1	GGAAGAA	poolA_p01	1	A	1	1c	Neg
+sample_2	sample_2	GGAAGAA	poolA_p01	1	B	2	1c	Pos
+sample_3	sample_3	GGAAGAA	poolA_p01	1	C	3	1c	Neg
+sample_4	sample_4	GGAAGAA	poolA_p01	1	D	4	1c	Pos
+sample_5	sample_5	GGAAGAA	poolA_p01	1	E	5	1c	Neg
+sample_6	sample_6	GGAAGAA	poolA_p01	1	F	6	1c	Pos
+sample_7	sample_7	GGAAGAA	poolA_p01	1	G	7	1c	Neg
+sample_8	sample_8	GGAAGAA	poolA_p01	1	H	8	1c	Pos
+sample_9	sample_9	GGAAGAA	poolA_p01	1	A	9	1c	Neg
+sample_10	sample_10	GGAAGAA	poolA_p01	1	B	10	1c	Pos
+sample_11	sample_11	GGAAGAA	poolA_p01	1	C	11	1c	Neg
+sample_12	sample_12	GGAAGAA	poolA_p01	1	D	12	1c	Pos
+sample_13	sample_13	GGAAGAA	poolA_p01	1	E	1	1c	Neg
+sample_14	sample_14	GGAAGAA	poolA_p01	1	F	2	1c	Pos
+sample_15	sample_15	GGAAGAA	poolA_p01	1	G	3	1c	Neg
+sample_16	sample_16	GGAAGAA	poolA_p01	1	H	4	1c	Pos
+sample_17	sample_17	GGAAGAA	poolA_p01	1	A	5	1c	Neg
+sample_18	sample_18	GGAAGAA	poolA_p01	1	B	6	1c	Pos
+sample_19	sample_19	GGAAGAA	poolA_p01	1	C	7	1c	Neg
+sample_20	sample_20	GGAAGAA	poolA_p01	1	D	8	1c	Pos
+sample_21	sample_21	GGAAGAA	poolA_p01	1	E	9	1c	Neg
+sample_22	sample_22	GGAAGAA	poolA_p01	1	F	10	1c	Pos
+sample_23	sample_23	GGAAGAA	poolA_p01	1	G	11	1c	Neg
+sample_24	sample_24	GGAAGAA	poolA_p01	1	H	12	1c	Pos
+sample_25	sample_25	GGAAGAA	poolA_p01	1	A	1	1c	Neg
+sample_26	sample_26	GGAAGAA	poolA_p01	1	B	2	1c	Pos
+sample_27	sample_27	GGAAGAA	poolA_p01	1	C	3	1c	Neg
+sample_28	sample_28	GGAAGAA	poolA_p01	1	D	4	1c	Pos
+sample_29	sample_29	GGAAGAA	poolA_p01	1	E	5	1c	Neg
+sample_30	sample_30	GGAAGAA	poolA_p01	1	F	6	1c	Pos
+sample_31	sample_31	GGAAGAA	poolA_p01	1	G	7	1c	Neg
+sample_32	sample_32	GGAAGAA	poolA_p01	1	H	8	1c	Pos
+sample_33	sample_33	GGAAGAA	poolA_p01	1	A	9	1c	Neg
+sample_34	sample_34	GGAAGAA	poolA_p01	1	B	10	1c	Pos
+sample_35	sample_35	GGAAGAA	poolA_p01	1	C	11	1c	Neg
+sample_36	sample_36	GGAAGAA	poolA_p01	1	D	12	1c	Pos
+sample_37	sample_37	GGAAGAA	poolA_p01	1	E	1	1c	Neg
+sample_38	sample_38	GGAAGAA	poolA_p01	1	F	2	1c	Pos
+sample_39	sample_39	GGAAGAA	poolA_p01	1	G	3	1c	Neg
+sample_40	sample_40	GGAAGAA	poolA_p01	1	H	4	1c	Pos
+sample_41	sample_41	GGAAGAA	poolA_p01	1	A	5	1c	Neg
+sample_42	sample_42	GGAAGAA	poolA_p01	1	B	6	1c	Pos
+sample_43	sample_43	GGAAGAA	poolA_p01	1	C	7	1c	Neg
+sample_44	sample_44	GGAAGAA	poolA_p01	1	D	8	1c	Pos
+sample_45	sample_45	GGAAGAA	poolA_p01	1	E	9	1c	Neg
+sample_46	sample_46	GGAAGAA	poolA_p01	1	F	10	1c	Pos
+sample_47	sample_47	GGAAGAA	poolA_p01	1	G	11	1c	Neg
+sample_48	sample_48	GGAAGAA	poolA_p01	1	H	12	1c	Pos
+sample_49	sample_49	GGAAGAA	poolA_p01	1	A	1	1c	Neg
+sample_50	sample_50	GGAAGAA	poolA_p01	1	B	2	1c	Pos
+sample_51	sample_51	GGAAGAA	poolA_p01	1	C	3	1c	Neg
+sample_52	sample_52	GGAAGAA	poolA_p01	1	D	4	1c	Pos
+sample_53	sample_53	GGAAGAA	poolA_p01	1	E	5	1c	Neg
+sample_54	sample_54	GGAAGAA	poolA_p01	1	F	6	1c	Pos
+sample_55	sample_55	GGAAGAA	poolA_p01	1	G	7	1c	Neg
+sample_56	sample_56	GGAAGAA	poolA_p01	1	H	8	1c	Pos
+sample_57	sample_57	GGAAGAA	poolA_p01	1	A	9	1c	Neg
+sample_58	sample_58	GGAAGAA	poolA_p01	1	B	10	1c	Pos
+sample_59	sample_59	GGAAGAA	poolA_p01	1	C	11	1c	Neg
+sample_60	sample_60	GGAAGAA	poolA_p01	1	D	12	1c	Pos
+sample_61	sample_61	GGAAGAA	poolA_p01	1	E	1	1c	Neg
+sample_62	sample_62	GGAAGAA	poolA_p01	1	F	2	1c	Pos
+sample_63	sample_63	GGAAGAA	poolA_p01	1	G	3	1c	Neg
+sample_64	sample_64	GGAAGAA	poolA_p01	1	H	4	1c	Pos
+sample_65	sample_65	GGAAGAA	poolA_p01	1	A	5	1c	Neg
+sample_66	sample_66	GGAAGAA	poolA_p01	1	B	6	1c	Pos
+sample_67	sample_67	GGAAGAA	poolA_p01	1	C	7	1c	Neg
+sample_68	sample_68	GGAAGAA	poolA_p01	1	D	8	1c	Pos
+sample_69	sample_69	GGAAGAA	poolA_p01	1	E	9	1c	Neg
+sample_70	sample_70	GGAAGAA	poolA_p01	1	F	10	1c	Pos
+sample_71	sample_71	GGAAGAA	poolA_p01	1	G	11	1c	Neg
+sample_72	sample_72	GGAAGAA	poolA_p01	1	H	12	1c	Pos
+sample_73	sample_73	GGAAGAA	poolA_p01	1	A	1	1c	Neg
+sample_74	sample_74	GGAAGAA	poolA_p01	1	B	2	1c	Pos
+sample_75	sample_75	GGAAGAA	poolA_p01	1	C	3	1c	Neg
+sample_76	sample_76	GGAAGAA	poolA_p01	1	D	4	1c	Pos
+sample_77	sample_77	GGAAGAA	poolA_p01	1	E	5	1c	Neg
+sample_78	sample_78	GGAAGAA	poolA_p01	1	F	6	1c	Pos
+sample_79	sample_79	GGAAGAA	poolA_p01	1	G	7	1c	Neg
+sample_80	sample_80	GGAAGAA	poolA_p01	1	H	8	1c	Pos
+sample_81	sample_81	GGAAGAA	poolA_p01	1	A	9	1c	Neg
+sample_82	sample_82	GGAAGAA	poolA_p01	1	B	10	1c	Pos
+sample_83	sample_83	GGAAGAA	poolA_p01	1	C	11	1c	Neg
+sample_84	sample_84	GGAAGAA	poolA_p01	1	D	12	1c	Pos
+sample_85	sample_85	GGAAGAA	poolA_p01	1	E	1	1c	Neg
+sample_86	sample_86	GGAAGAA	poolA_p01	1	F	2	1c	Pos
+sample_87	sample_87	GGAAGAA	poolA_p01	1	G	3	1c	Neg
+sample_88	sample_88	GGAAGAA	poolA_p01	1	H	4	1c	Neg
+sample_89	sample_89	GGAAGAA	poolA_p01	1	A	5	1c	Pos
+sample_90	sample_90	GGAAGAA	poolA_p01	1	B	6	1c	Neg
+sample_91	sample_91	GGAAGAA	poolA_p01	1	C	7	1c	Neg
+sample_92	sample_92	GGAAGAA	poolA_p01	1	D	8	1c	Pos
+sample_93	sample_93	GGAAGAA	poolA_p01	1	E	9	1c	Neg
+sample_94	sample_94	GGAAGAA	poolA_p01	1	F	10	1c	Pos
+sample_95	sample_95	GGAAGAA	poolA_p01	1	G	11	1c	Neg
+sample_96	sample_96	GGAAGAA	poolA_p01	1	H	12	1c	Pos
