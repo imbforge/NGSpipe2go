@@ -5,7 +5,7 @@ cellranger_count_vars=[
     nuclei          : (ESSENTIAL_NUCLEI == "yes"),
     cores           : "8",
     localmem        : "64",
-    extra           : " --chemistry=ARC-v1"               // extra parms to sent to the tool
+    extra           : " "      // extra parms to sent to the tool, e.g. --chemistry if not detected automatically
 ]
 
 load PIPELINE_ROOT + "/modules/scRNAseq/cellranger_count.groovy"
