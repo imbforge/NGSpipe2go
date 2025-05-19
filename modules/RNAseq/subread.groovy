@@ -26,10 +26,15 @@ subread_count = {
     
             base=`basename $input` &&
             if [[ "${subread_count_vars.paired}" == "true" ]]; 
-            then
+            then 
+                ver_info=\$( featureCounts -v 2>&1 | sed 's/featureCounts//g'| tr -d '[:space:]' | sed 's/v//g' | sed 's/\\.//g' ) && 
+                if [[ "$ver_info" > 201 ]];
+                then
+                    SUBREAD_PAIRED=" --countReadPairs";
+                fi &&
                 echo "We are resorting and doing the repair\n" &&
                 repair -i $input -T ${subread_count_vars.threads} -o \${TMP}/\${base} &&
-                featureCounts $SUBREAD_FLAGS -o $output \${TMP}/\${base} 2> ${output.prefix}_subreadlog.stderr;
+                featureCounts $SUBREAD_FLAGS \$SUBREAD_PAIRED -o $output \${TMP}/\${base} 2> ${output.prefix}_subreadlog.stderr; 
             else
                 featureCounts $SUBREAD_FLAGS -o $output $input 2> ${output.prefix}_subreadlog.stderr;
             fi
