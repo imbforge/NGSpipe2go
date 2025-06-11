@@ -10,7 +10,7 @@
 ## -----
 ## pipeline_root    # pipeline directory   
 ## outdir           # output directory of this module   
-## res              # result directory of project
+## resultsdir       # result directory of project
 ## seqtype          # sequencing type     
 ## targets          # user defined sample information in targets.txt 
 ## gtf.file         # gtf file path
@@ -34,7 +34,7 @@ parseArgs <- function(args,string,default=NULL,convert="as.character") {
 
 args <- commandArgs(T)
 pipeline_root      <- parseArgs(args,"pipeline_root=") 
-out                <- parseArgs(args,"outdir=") 
+outdir             <- parseArgs(args,"outdir=") 
 resultsdir         <- parseArgs(args,"res=")   
 seqtype            <- parseArgs(args,"seqtype=")   
 gtf.file           <- parseArgs(args,"gtf=","")       
@@ -45,13 +45,13 @@ demux_out          <- parseArgs(args,"demux_out=")
 demuxcluster_out   <- parseArgs(args,"demuxCluster_out=") 
 
 # load R environment
-env.path <- file.path(getwd(), pipeline_root, "tools/sc_readData", "renv.lock")
+env.path <- file.path(getwd(), pipeline_root, "tools/sc_readData", "bioc_3.16.lock")
 print(paste("load renv:", env.path))
 renv::use(lockfile=env.path)
 
 # check parameter
 print(paste("pipeline_root:", pipeline_root))
-print(paste("out:", out))
+print(paste("outdir:", outdir))
 print(paste("resultsdir:", resultsdir))
 print(paste("seqtype:", seqtype))
 print(paste("gtf.file:", gtf.file))
@@ -326,7 +326,7 @@ if(run_demux != "" & file.exists(demux_out) ) {
 
 
 # write targets to disk
-readr::write_tsv(targets, file=file.path(out, "targets_cellwise.txt"))
+readr::write_tsv(targets, file=file.path(outdir, "targets_cellwise.txt"))
 print(paste("dim barcodes:", paste0(dim(barcodes), collapse=", ")))
 print(paste("dim targets:", paste0(dim(targets), collapse=", ")))
 
@@ -352,8 +352,8 @@ SummarizedExperiment::rowData(sce)$feature_chrom   <- features$seqnames
 
 # spill to disk
 print("Spill to disk.")
-readr::write_rds(sce,file.path(resultsdir, "sce.rds"))
-readr::write_rds(gtf, file=file.path(resultsdir,"gtf.rds"))
-save(pipeline_root, out, resultsdir, seqtype, gtf.file, ftargets, aggr_data_dir, run_demux, demux_out, demuxcluster_out, 
+readr::write_rds(sce, file=file.path(resultsdir, "sce.RDS"))
+readr::write_rds(gtf, file=file.path(resultsdir, "gtf.rds"))
+save(pipeline_root, outdir, resultsdir, seqtype, gtf.file, ftargets, aggr_data_dir, run_demux, demux_out, demuxcluster_out, 
      targets, targets_pools,
-     file=paste0(out,"/sc_bioc_readAggrData.RData"))
+     file=paste0(outdir,"/sc_bioc_readAggrData.RData"))
