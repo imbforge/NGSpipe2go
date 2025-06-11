@@ -1,0 +1,238 @@
+#####################################
+##
+## What: sc_bioc_filter.R
+## Who : Frank Rühle, Patrick Hüther
+## When: 04.06.2025
+##
+## Script to apply quality control thresholds to scRNA-Seq assay data.
+##
+## Args:
+## -----
+## pipeline_root    # pipeline directory   
+## outdir           # output directory of this module   
+## resultsdir       # result directory of project
+## samples2exclude            # string with sample names if entire samples shall be excluded from analysis before QC filtering.         
+## type_of_threshold          # "absolute" or "relative". For "relative" NMADs are calculated per category.    
+## threshold_total_counts_min # min read counts per cell (for absolute threshold only).
+## threshold_total_counts_max # max read counts per cell (for absolute threshold only).
+## threshold_total_detected   # min genes detected (for absolute threshold only).
+## threshold_pct_counts_Mt    # max percentage of mitochondrial gene counts (for absolute threshold only).
+## NMADS                      # median absolute deviations (MAD) to define outliers (for relative threshold only).     
+## category_NMADS             # grouping of cells used to calculate MAD. If empty, no grouping applied (for relative threshold only).        
+## threshold_low_abundance    # threshold cell portion to exclude low abundance genes. E.g. 0.01 means filter out genes with no expression in 99% of cells.
+## annocat_plot               # category used in plots and tables    
+##
+######################################
+
+##
+## get arguments from the command line
+##
+parseArgs <- function(args,string,default=NULL,convert="as.character") {
+  
+  if(length(i <- grep(string,args,fixed=T)) == 1)
+    return(do.call(convert,list(gsub(string,"",args[i]))))
+  
+  if(!is.null(default)) default else do.call(convert,list(NA))
+}
+
+args <- commandArgs(T)
+resultsdir                 <- parseArgs(args,"res=")   
+outdir                     <- parseArgs(args,"outdir=") # output folder
+pipeline_root              <- parseArgs(args,"pipeline_root=") 
+samples2exclude            <- parseArgs(args,string="samples2exclude=", default=NULL)
+type_of_threshold          <- parseArgs(args,string="type_of_threshold=")
+threshold_total_counts_min <- parseArgs(args,string="threshold_total_counts_min=",convert="as.numeric")
+threshold_total_counts_max <- parseArgs(args,string="threshold_total_counts_max=",convert="as.numeric")
+threshold_total_detected   <- parseArgs(args,string="threshold_total_detected=",convert="as.numeric")
+threshold_pct_counts_Mt    <- parseArgs(args,string="threshold_pct_counts_Mt=",convert="as.numeric")
+NMADS                      <- parseArgs(args,string="NMADS=",convert="as.numeric")
+category_NMADS             <- parseArgs(args,string="category_NMADS=", default=NULL)
+threshold_low_abundance    <- parseArgs(args,string="threshold_low_abundance=",convert="as.numeric")
+annocat_plot               <- parseArgs(args,"annocat_plot=", default="sample")
+
+
+# load R environment
+env.path <- file.path(getwd(), pipeline_root, "tools/sc_qc", "bioc_3.16.lock")
+print(paste("load renv:", env.path))
+renv::use(lockfile=env.path)
+
+library(ggplot2)
+
+# set options
+options(stringsAsFactors=FALSE)
+
+# check parameter
+print(paste("resultsdir:", resultsdir))
+print(paste("outdir:", outdir))
+print(paste("pipeline_root:", pipeline_root))
+print(paste("samples2exclude:", samples2exclude))
+print(paste("type_of_threshold:", type_of_threshold))
+print(paste("threshold_total_counts_min:", threshold_total_counts_min))
+print(paste("threshold_total_counts_max:", threshold_total_counts_max))
+print(paste("threshold_total_detected:", threshold_total_detected))
+print(paste("threshold_pct_counts_Mt:", threshold_pct_counts_Mt))
+print(paste("threshold_low_abundance:", threshold_low_abundance))
+print(paste("NMADS:", NMADS))
+print(paste("category_NMADS:", category_NMADS))
+print(paste("annocat_plot:", annocat_plot))
+
+# load sce from previous module
+sce <- readr::read_rds(file.path(resultsdir, "sce.RDS"))
+
+# exclude entire samples if requested
+if(!is.null(samples2exclude) && !is.na(samples2exclude)) {
+cat(paste("Sample(s)", paste(samples2exclude, collapse=", "), "with", sum(SummarizedExperiment::colData(sce)$sample %in% samples2exclude), "cells removed from dataset.\n"))
+write.table(data.frame(samples_excluded=samples2exclude,
+                       cells=sapply(samples2exclude, function(x) {sum(SummarizedExperiment::colData(sce)$sample==x)})), 
+            file= file.path(outdir, "samples_excluded.txt"), sep="\t", quote=F, row.names = F)              
+sce <- sce[, !(sce$sample %in% samples2exclude)]
+}
+
+# get colData table from sce object to store qc flags
+qc.drop <- SummarizedExperiment::colData(sce)
+
+# mark control wells if present (for SMART-Seq only, uses some plate wells with 10 cells ('10c') instead of 1 cell ('1c') in column 'cells')
+qc.drop <- tidyr::as_tibble(qc.drop) |> dplyr::mutate(controls=if('cells' %in% colnames(qc.drop)) cells!='1c' else F)
+
+## apply filtering thresholds
+if(type_of_threshold=="absolute") {
+  
+  # overview thresholds:
+  qc_thresholds <- data.frame(criterion=c(
+    paste("type of threshold:", type_of_threshold), 
+    paste("total counts >", threshold_total_counts_min), 
+    paste("total counts <", threshold_total_counts_max), 
+    paste("detected genes >", threshold_total_detected), 
+    paste("MT count perc <", threshold_pct_counts_Mt) 
+  ))
+  write.table(qc_thresholds, file= file.path(outdir, "qc_thresholds.txt"), sep="\t", quote=F, row.names = F)              
+  
+  qc.drop <- qc.drop |>
+    dplyr::mutate(libsize=!dplyr::between(sum,threshold_total_counts_min,threshold_total_counts_max)) |>
+    dplyr::mutate(features=(detected < threshold_total_detected)) |>
+    dplyr::mutate(mito=(subsets_Mito_percent > threshold_pct_counts_Mt)) |>
+    dplyr::mutate(pass = rowSums(dplyr::across(c(libsize, features, mito, controls))) == 0)
+
+} else if(type_of_threshold=="relative") {
+  
+  # ignore all cells which hardly have any counts to avoid bias for relative thresholds
+  min_readcount <- 100
+  count.drop <- (qc.drop$sum < min_readcount)
+  batch_isOutlier <- if(!is.null(category_NMADS) && !is.na(category_NMADS)) {dplyr::pull(qc.drop,category_NMADS)} else {NULL}
+  
+  # overview thresholds:
+  qc_thresholds <- data.frame(criterion=c(
+    paste("type of threshold:", type_of_threshold), 
+    paste(sum(count.drop), "cells skipped from MAD calc with counts <", min_readcount), 
+    paste("number of median absolute deviations (MAD) to define outliers per sample:", NMADS), 
+    paste("grouping of cells used to calculate MAD:", if(is.null(category_NMADS) || is.na(category_NMADS)) "none" else category_NMADS) 
+  ))
+  write.table(qc_thresholds, file= file.path(outdir, "qc_thresholds.txt"), sep="\t", quote=F, row.names = F)
+
+  qc.drop <- qc.drop |>
+    dplyr::mutate(libsize=scater::isOutlier(sum,nmads=NMADS,type="lower",log=TRUE,subset=!count.drop,batch=batch_isOutlier)) |>
+    dplyr::mutate(features=scater::isOutlier(detected,nmads=NMADS,type="lower",log=TRUE,subset=!count.drop,batch=batch_isOutlier)) |>
+    dplyr::mutate(mito=scater::isOutlier(subsets_Mito_percent,nmads=NMADS,type="higher",subset=!count.drop,batch=batch_isOutlier)) |>
+    dplyr::mutate(pass = rowSums(dplyr::across(c(libsize, features, mito, controls))) == 0)
+  
+}
+
+write.table(qc.drop, file= file.path(outdir, "qc.drop.txt"), sep="\t", quote=F, row.names = F)              
+
+
+## prepare overview table of filtered cells
+format_pct <- function(n_pass, n_total) { # define formatting function
+  paste0(n_pass, " (", scales::percent(n_pass / n_total, accuracy = 0.1), ")")
+}
+
+qcfailed <- qc.drop |>
+  dplyr::group_by(!!dplyr::sym(annocat_plot)) |>
+  dplyr::summarize(
+    "counts unfilt." = format_pct(dplyr::n(), ncol(sce)),
+    libsize          = format_pct(sum(libsize), dplyr::n()),
+    "detected genes" = format_pct(sum(features), dplyr::n()),
+    "MT count perc"  = format_pct(sum(mito), dplyr::n()),
+    controls         = format_pct(sum(controls), dplyr::n()),
+    remaining        = format_pct(sum(pass), dplyr::n()),
+    .groups = "drop"
+  ) |>
+  dplyr::add_row(
+    !!dplyr::sym(annocat_plot) := "cell count total",
+    "counts unfilt." = format_pct(nrow(qc.drop), ncol(sce)),
+    libsize          = format_pct(sum(qc.drop$libsize), nrow(qc.drop)),
+    "detected genes" = format_pct(sum(qc.drop$features), nrow(qc.drop)),
+    "MT count perc"  = format_pct(sum(qc.drop$mito), nrow(qc.drop)),
+    controls         = format_pct(sum(qc.drop$controls), nrow(qc.drop)),
+    remaining        = format_pct(sum(qc.drop$pass), nrow(qc.drop))
+  ) |>
+  tibble::column_to_rownames(annocat_plot) |>
+  t() |> 
+  as.data.frame() |>
+  tibble::rownames_to_column(var = "criterion")
+
+if(!"cells" %in% colnames(SummarizedExperiment::colData(sce))) { # exclude control wells if not applicable
+  qcfailed <- qcfailed |> dplyr::filter(criterion != "controls")
+  qc.drop$controls <- NULL
+}
+write.table(qcfailed, file= file.path(outdir, "qcfailed_overview.txt"), sep="\t", quote=F, row.names = F)              
+
+
+
+# violin plots with indicated thresholds
+qc.plots.violin <- lapply(c("sum", "detected", "subsets_Mito_percent"), function(to.plot){ 
+  column_applied_threshold <- switch(to.plot, "sum" = "libsize", "detected" = "features", "subsets_Mito_percent" = "mito")
+  
+  p <- ggplot(qc.drop, aes(!!sym(annocat_plot),!!sym(to.plot)))+ 
+    geom_violin() +
+    ggbeeswarm::geom_quasirandom(aes(color = !!sym(column_applied_threshold))) +
+    scale_color_manual(
+      values = c("FALSE" = "steelblue", "TRUE" = "orange3"),
+      labels = c("FALSE" = "kept", "TRUE" = "removed"),
+      name = element_blank()
+    ) +
+    xlab(element_blank()) +
+    theme(legend.position="bottom", axis.text.x=element_text(angle=45, vjust=1, hjust=1)) + 
+    labs(title= if(to.plot=="sum") {"Library Size"} else {if(to.plot=="detected") {"Detected Genes"} else {"Reads Mapping to Mitochondrial Genes in Percent"}})
+  
+  ggsave(plot=p, filename= file.path(outdir, paste0("qc_violin_plot_", to.plot, "_filtered.png")), device="png", bg = "white")
+  ggsave(plot=p, filename= file.path(outdir, paste0("qc_violin_plot_", to.plot, "_filtered.pdf")), device="pdf")
+  return(p)
+})
+
+
+# filter sce object for cells failing QC
+if(length(qc.drop$pass) == ncol(sce)) { # if chunk is executed multiple times
+  sce <- sce[, qc.drop$pass]
+} else {stop("length(qc.drop$pass) != ncol(sce). Check QC filtering!")}
+
+
+
+## exclude low abundance genes
+SummarizedExperiment::rowData(sce)$expressed_cells <- scater::nexprs(sce, byrow=TRUE) # Counting the number of non-zero counts in each row (per feature)
+# get genes expressed in min threshold_low_abundance of cells
+genes2keep <- SummarizedExperiment::rowData(sce)$expressed_cells > ceiling(threshold_low_abundance * ncol(sce)) 
+SummarizedExperiment::rowData(sce)$ave_count <- scater::calculateAverage(sce) 
+
+png(file=file.path(outdir, "low_abundance.png"), width=180, height = 100, units="mm", res=300) 
+smoothScatter(log10(SummarizedExperiment::rowData(sce)$ave_count), SummarizedExperiment::rowData(sce)$expressed_cells,
+              xlab=expression("Log10 average count"), ylab= "Number of expressing cells")
+# is.ercc <- isSpike(sce, type="ERCC")
+# points(log10(ave.counts[is.ercc]), numcells[is.ercc], col="red", pch=16, cex=0.5)
+dev.off()
+
+# store excluded genes and logical vector genes2keep
+write.table(SummarizedExperiment::rowData(sce)[!genes2keep,], file =file.path(outdir, "low_abundance_excluded_genes.txt"), sep="\t", quote = F, row.names = F)
+write.table(data.frame(c("total genes", "genes kept", "threshold"), 
+                       c(round(length(genes2keep),0), round(sum(genes2keep),0), threshold_low_abundance)), 
+            file =file.path(outdir, "low_abundance_count.txt"), sep="\t", quote = F, row.names = F, col.names = F)
+
+# remove low abundance genes from sce object
+sce <- sce[genes2keep, ]
+
+
+#############################
+# save the sessionInformation and R image
+writeLines(capture.output(sessionInfo()),paste0(outdir, "/sc_bioc_filter_session_info.txt"))
+readr::write_rds(sce, file = file.path(resultsdir, "sce.RDS"))
+save(qc.drop, samples2exclude, qc_thresholds, genes2keep, threshold_low_abundance, file=paste0(outdir,"/sc_bioc_filter.RData"))
+

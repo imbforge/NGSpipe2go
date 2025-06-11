@@ -1,0 +1,43 @@
+sc_bioc_filter_vars=[
+    outdir                     : QC + "/sc_qc",
+    project                    : PROJECT,                     
+    pipeline_root              : PIPELINE_ROOT,                     
+    res                        : RESULTS,         
+    samples2exclude            : "", // string with sample names if entire samples shall be excluded from analysis before QC filtering.         
+    type_of_threshold          : "absolute", // "absolute" or "relative". For "relative" NMADs are calculated per category.    
+    threshold_total_counts_min : "1000",     // min read counts per cell (for absolute threshold only).
+    threshold_total_counts_max : "50000",    // max read counts per cell (for absolute threshold only).
+    threshold_total_detected   : "500",      // min genes detected (for absolute threshold only).
+    threshold_pct_counts_Mt    : "10",       // max percentage of mitochondrial gene counts (for absolute threshold only).
+    NMADS                      : "3",        // median absolute deviations (MAD) to define outliers (for relative threshold only).     
+    category_NMADS             : "",   // grouping of cells used to calculate MAD. If empty, no grouping applied (for relative threshold only).        
+    threshold_low_abundance    : "0.005",    // threshold cell portion to exclude low abundance genes. E.g. 0.01 means filter out genes with no expression in 99% of cells.
+    annocat_plot               : "sample"    // category used in plots and tables    
+]
+
+load PIPELINE_ROOT + "/modules/scRNAseq/sc_bioc_filter.groovy"
+
+// expected parameter types
+class sc_bioc_filter_vars_schema {
+    String outdir             
+    String project           
+    String pipeline_root           
+    String res             
+    String samples2exclude             
+    String type_of_threshold   
+    String threshold_total_counts_min
+    String threshold_total_counts_max      
+    String threshold_total_detected          
+    String threshold_pct_counts_Mt
+    String threshold_low_abundance              
+    String NMADS           
+    String category_NMADS           
+    String annocat_plot             
+
+    // check for the presence of mandatory params
+    boolean asBoolean() {
+      outdir &&  res
+    }
+}
+
+validate_schema(sc_bioc_filter_vars_schema, sc_bioc_filter_vars)
