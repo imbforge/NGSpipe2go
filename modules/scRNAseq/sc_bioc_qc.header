@@ -1,0 +1,29 @@
+sc_bioc_qc_vars=[
+    outdir          : QC + "/sc_qc",
+    pipeline_root   : PIPELINE_ROOT,                     
+    seqtype         : ESSENTIAL_SEQTYPE,                     
+    res             : RESULTS,          //where the results lie
+    mito_genes      : ESSENTIAL_MTGENES,       
+    annocat_plot    : "group",    // category used in plots
+    annocat_plot2   : "sample"   // 2nd category used in plots
+]
+
+load PIPELINE_ROOT + "/modules/scRNAseq/sc_bioc_qc.groovy"
+
+// expected parameter types
+class sc_bioc_qc_vars_schema {
+    String outdir             
+    String seqtype           
+    String pipeline_root           
+    String res             
+    String mito_genes   
+    String annocat_plot   
+    String annocat_plot2   
+
+    // check for the presence of mandatory params
+    boolean asBoolean() {
+      outdir && seqtype && res
+    }
+}
+
+validate_schema(sc_bioc_qc_vars_schema, sc_bioc_qc_vars)

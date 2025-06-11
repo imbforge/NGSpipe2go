@@ -23,8 +23,9 @@ load PIPELINE_ROOT + "/modules/scRNAseq/splitpipe_comb.header"
 load PIPELINE_ROOT + "/modules/scRNAseq/demux_hto.header"
 load PIPELINE_ROOT + "/modules/scRNAseq/demux_gt.header"
 load PIPELINE_ROOT + "/modules/scRNAseq/assignSouporcellCluster.header"
-load PIPELINE_ROOT + "/modules/scRNAseq/sc_bioc_readAggrData.header"
 load PIPELINE_ROOT + "/modules/scRNAseq/sc_star.header"
+load PIPELINE_ROOT + "/modules/scRNAseq/sc_bioc_readAggrData.header"
+load PIPELINE_ROOT + "/modules/scRNAseq/sc_bioc_qc.header"
 load PIPELINE_ROOT + "/modules/NGS/bamcoverage.header"
 load PIPELINE_ROOT + "/modules/NGS/bamindexer.header"
 load PIPELINE_ROOT + "/modules/NGS/fastqc.header"
@@ -68,8 +69,9 @@ Bpipe.run {
     			    (ESSENTIAL_SEQTYPE == "SmartSeq" ? [ sc_bioc_readAggrData ] : 
     				    dontrun.using(module:"Sample aggregation. Sequencing type not found!") )))) ] :
     dontrun.using(module:"module sc_bioc_readIndivSamplesAndMerge not implemented yet!") ) +
-	
 
+    sc_bioc_qc + 
+	
     (RUN_TRACKHUB ? trackhub_config + trackhub : dontrun.using(module:"trackhub")) +
     collectToolVersions + MultiQC + 
     shinyReports
