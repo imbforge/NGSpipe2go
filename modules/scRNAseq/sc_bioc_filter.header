@@ -4,7 +4,7 @@ sc_bioc_filter_vars=[
     pipeline_root              : PIPELINE_ROOT,                     
     res                        : RESULTS,         
     samples2exclude            : "", // string with sample names if entire samples shall be excluded from analysis before QC filtering.         
-    type_of_threshold          : "absolute", // "absolute" or "relative". For "relative" NMADs are calculated per category.    
+    type_of_threshold          : "absolute", // "absolute", "relative" or "none. For "relative" NMADs are calculated per category. Skipped if "none".    
     threshold_total_counts_min : "1000",     // min read counts per cell (for absolute threshold only).
     threshold_total_counts_max : "50000",    // max read counts per cell (for absolute threshold only).
     threshold_total_detected   : "500",      // min genes detected (for absolute threshold only).
@@ -12,7 +12,9 @@ sc_bioc_filter_vars=[
     NMADS                      : "3",        // median absolute deviations (MAD) to define outliers (for relative threshold only).     
     category_NMADS             : "",   // grouping of cells used to calculate MAD. If empty, no grouping applied (for relative threshold only).        
     threshold_low_abundance    : "0.005",    // threshold cell portion to exclude low abundance genes. E.g. 0.01 means filter out genes with no expression in 99% of cells.
-    annocat_plot               : "sample"    // category used in plots and tables    
+    annocat_plot               : "sample",   // category used in plots and tables    
+    plot_pointsize             : "0.6",      // dot size used in plots
+    plot_pointalpha            : "0.6"      // dot transparency used in plots
 ]
 
 load PIPELINE_ROOT + "/modules/scRNAseq/sc_bioc_filter.groovy"
@@ -33,6 +35,8 @@ class sc_bioc_filter_vars_schema {
     String NMADS           
     String category_NMADS           
     String annocat_plot             
+    String plot_pointsize             
+    String plot_pointalpha             
 
     // check for the presence of mandatory params
     boolean asBoolean() {

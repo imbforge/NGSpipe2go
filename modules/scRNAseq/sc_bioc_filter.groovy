@@ -21,7 +21,9 @@ sc_bioc_filter = {
         (sc_bioc_filter_vars.NMADS                      ? " NMADS="                      + sc_bioc_filter_vars.NMADS                      : "") +
         (sc_bioc_filter_vars.category_NMADS             ? " category_NMADS="             + sc_bioc_filter_vars.category_NMADS             : "") +
         (sc_bioc_filter_vars.threshold_low_abundance    ? " threshold_low_abundance="    + sc_bioc_filter_vars.threshold_low_abundance    : "") +
-        (sc_bioc_filter_vars.annocat_plot               ? " annocat_plot="               + sc_bioc_filter_vars.annocat_plot               : "")
+        (sc_bioc_filter_vars.annocat_plot               ? " annocat_plot="               + sc_bioc_filter_vars.annocat_plot               : "") +
+        (sc_bioc_norm_vars.plot_pointsize               ? " plot_pointsize="             + sc_bioc_norm_vars.plot_pointsize               : "") +
+        (sc_bioc_norm_vars.plot_pointalpha              ? " plot_pointalpha="            + sc_bioc_norm_vars.plot_pointalpha              : "")
 
     def TOOL_ENV = prepare_tool_env("R", tools["R"]["version"], tools["R"]["runenv"])
     def PREAMBLE = get_preamble(stage:stageName, outdir:output.dir, input:new File(input1.prefix).getName())
