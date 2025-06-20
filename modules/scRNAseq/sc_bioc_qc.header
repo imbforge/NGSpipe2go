@@ -5,7 +5,9 @@ sc_bioc_qc_vars=[
     res             : RESULTS,          //where the results lie
     mito_genes      : ESSENTIAL_MTGENES,       
     annocat_plot    : "group",    // category used in plots
-    annocat_plot2   : "sample"   // 2nd category used in plots
+    annocat_plot2   : "sample",   // 2nd category used in plots
+    plot_pointsize  : "0.6",      // dot size used in plots
+    plot_pointalpha : "0.6"       // dot transparency used in plots
 ]
 
 load PIPELINE_ROOT + "/modules/scRNAseq/sc_bioc_qc.groovy"
@@ -19,6 +21,8 @@ class sc_bioc_qc_vars_schema {
     String mito_genes   
     String annocat_plot   
     String annocat_plot2   
+    String plot_pointsize   
+    String plot_pointalpha   
 
     // check for the presence of mandatory params
     boolean asBoolean() {

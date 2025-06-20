@@ -14,7 +14,9 @@ sc_bioc_qc = {
         (sc_bioc_qc_vars.res                ? " res="                + sc_bioc_qc_vars.res                : "") +
         (sc_bioc_qc_vars.mito_genes         ? " mito_genes="         + sc_bioc_qc_vars.mito_genes         : "") +
         (sc_bioc_qc_vars.annocat_plot       ? " annocat_plot="       + sc_bioc_qc_vars.annocat_plot       : "") +
-        (sc_bioc_qc_vars.annocat_plot2      ? " annocat_plot2="      + sc_bioc_qc_vars.annocat_plot2      : "") 
+        (sc_bioc_qc_vars.annocat_plot2      ? " annocat_plot2="      + sc_bioc_qc_vars.annocat_plot2      : "") +
+        (sc_bioc_norm_vars.plot_pointsize   ? " plot_pointsize="     + sc_bioc_norm_vars.plot_pointsize   : "") +
+        (sc_bioc_norm_vars.plot_pointalpha  ? " plot_pointalpha="    + sc_bioc_norm_vars.plot_pointalpha  : "")
 
     def TOOL_ENV = prepare_tool_env("R", tools["R"]["version"], tools["R"]["runenv"])
     def PREAMBLE = get_preamble(stage:stageName, outdir:output.dir, input:new File(input1.prefix).getName())
