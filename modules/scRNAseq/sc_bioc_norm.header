@@ -1,0 +1,45 @@
+sc_bioc_norm_vars=[
+    outdir           : RESULTS + "/normalization",
+    pipeline_root    : PIPELINE_ROOT,                     
+    seqtype          : ESSENTIAL_SEQTYPE,                     
+    res              : RESULTS,  //where the results lie
+    annocat_plot     : "group",  // category used in plots
+    annocat_plot2    : "sample", // 2nd category used in plots
+    maxgenes2plot    : "15",     // max number of genes to plot (top expressed genes and HVGs)
+    plot_pointsize   : "0.6",    // dot size used in plots
+    plot_pointalpha  : "0.6",    // dot transparency used in plots
+    org              : ESSENTIAL_ORG, // either "human" or "mouse". Organism name needed for cell cycle phase scores. Leave empty to skip.
+    explanatory_vars : "",       // any other categorical factors you may inspect for potential batch effects
+    hvg_prop         : "0.1",    // proportion of genes to report as HVGs according to biological component of variance
+    block_var        : "",       // name of block var to account for uninteresting factor when decomposing variance for HVGs. Leave empty to skip.
+    perplexity       : "50",     // perplexity for tSNE
+    n_neighbors      : "15"      // number of nearest neighbors for UMAP
+]
+
+load PIPELINE_ROOT + "/modules/scRNAseq/sc_bioc_norm.groovy"
+
+// expected parameter types
+class sc_bioc_norm_vars_schema {
+    String outdir             
+    String pipeline_root           
+    String seqtype           
+    String res             
+    String annocat_plot              
+    String annocat_plot2              
+    String maxgenes2plot              
+    String plot_pointsize              
+    String plot_pointalpha              
+    String org              
+    String explanatory_vars              
+    String hvg_prop              
+    String block_var              
+    String perplexity              
+    String n_neighbors              
+
+    // check for the presence of mandatory params
+    boolean asBoolean() {
+      outdir && res
+    }
+}
+
+validate_schema(sc_bioc_norm_vars_schema, sc_bioc_norm_vars)
