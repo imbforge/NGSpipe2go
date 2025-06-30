@@ -89,12 +89,6 @@ switch(seqtype,
     # Remark: Change in aggr CSV column headers: For Cell Ranger v6.0 (and later) and Loupe Browser v5.1.0 (and later), 
     # the header should be sample_id,molecule_h5. For prior software versions, it should be library_id,molecule_h5.
   },
-  tenXmultiome = {
-    barcodes <- readr::read_tsv(file.path(aggr_data_dir, "barcodes.tsv.gz"),col_names=c("cell_id")) |> tidyr::separate_wider_delim(cell_id,names=c("barcode","GEMwell"),delim="-",cols_remove=F)
-    features <- readr::read_tsv(file.path(aggr_data_dir, "features.tsv.gz"),col_names=c("gene_id","gene_name","feature_type"))
-    counts   <- Matrix::readMM(file=file.path(aggr_data_dir, "matrix.mtx.gz"))
-    aggrcsv <- read.delim(file.path(resultsdir, "aggr.csv"), sep=",") # aggr.csv contains the order of GEM wells
-  },
   ParseBio = {
     barcodes <- readr::read_csv(file.path(aggr_data_dir, "cell_metadata.csv")) |> dplyr::rename(cell_id = 1) 
     features <- readr::read_csv(file.path(aggr_data_dir, "all_genes.csv"))
@@ -152,7 +146,7 @@ print(paste("Create cellwise targets file from cell barcodes and targets.txt"))
 # load demux information if available
 if(run_demux != "" & file.exists(demux_out) ) {
   print(paste("Sample multiplexing has been applied:", run_demux))
-  if(!seqtype %in% c("tenX", "tenXmultiome")) {stop("Demultiplexing implemented only for 10X assays!")}
+  if(!seqtype %in% c("tenX")) {stop("Demultiplexing implemented only for 10X assays!")}
   
   switch(run_demux,
     demux_HTO= { # add HTO information if cell hashing applied
@@ -284,7 +278,9 @@ if(run_demux != "" & file.exists(demux_out) ) {
 
 } else { # no demux
 
-  print(paste("No sample multiplexing has been applied."))
+  print(paste("No sample multiplexing via genetic variance or cell hashing has been applied."))
+  if(any(duplicated(targets_pools$file))) {stop("file column in targets.txt contains duplicated entries! Can't merge unambigously to cell barcodes.")}
+  
   switch(seqtype, # prepare targets when no demultiplexing applied
          tenX = {
            targets <- barcodes |>
@@ -292,34 +288,25 @@ if(run_demux != "" & file.exists(demux_out) ) {
               file = aggrcsv[as.numeric(GEMwell), 1],
               file = gsub("(_S\\d{1,3}$)|(_S\\d{1,3}_L\\d{3}_R\\d_\\d{3}$)", "", file)
               ) |>
-              dplyr::left_join(targets_pools,by=c("file")) |> # without demux, 'file' in targets.txt should be unique!
+              dplyr::left_join(targets_pools,by=c("file")) |> # without demux, 'file' in targets.txt should be unique! Otherwise 1st match returned.
               dplyr::select(cell_id, sample, file, group, replicate, GEMwell, everything())
-         },
-         tenXmultiome = {
-           targets <- barcodes |>
-             dplyr::mutate(
-               file = aggrcsv[as.numeric(GEMwell), 1],
-               file = gsub("(_S\\d{1,3}$)|(_S\\d{1,3}_L\\d{3}_R\\d_\\d{3}$)", "", file)
-             ) |>
-             dplyr::left_join(targets_pools,by=c("file")) |> # without demux, 'file' in targets.txt should be unique
-             dplyr::select(cell_id, sample, file, group, replicate, GEMwell, everything())
          },
          ParseBio = {
            targets_pools <- targets_pools |> # summarize multiple rows per sample induced by distribution of samples across fastq files
             dplyr::group_by(sample) |>
             dplyr::summarise(across(everything(), ~ paste(unique(.), collapse = ", "))) 
-          targets <- barcodes |> # merge targets with targets_pools  
+           targets <- barcodes |> # merge targets with targets_pools  
             dplyr::left_join(targets_pools, by="sample") |>
             dplyr::relocate(cell_id, colnames(targets_pools)) |>
             dplyr::relocate(ends_with("_wind"), ends_with("_well"), file, .after = last_col()) 
          },
          ScaleBio = {
-          targets <- barcodes |> # merge targets with targets_pools  
-             dplyr::left_join(targets_pools, by="file")
+           targets <- barcodes |> # merge targets with targets_pools
+            dplyr::left_join(targets_pools, by="file")
          },
          SmartSeq = {
            targets <- barcodes |> # merge targets with targets_pools  
-             dplyr::left_join(targets_pools, by="file")
+            dplyr::left_join(targets_pools, by="file")
          }
   )
 }
@@ -338,7 +325,7 @@ rownames(counts) <- features$gene_id
 counts <- counts[,targets$cell_id]
 if("feature_type" %in% colnames(features)) {
   counts <- counts[features$feature_type=="Gene Expression",]
-  features <- features[features$feature_type=="Gene Expression",] # filter features as well for adding to rowData(sce) below
+  features <- features[features$feature_type=="Gene Expression",] 
 } 
 
 # create SingleCellExperiment object
