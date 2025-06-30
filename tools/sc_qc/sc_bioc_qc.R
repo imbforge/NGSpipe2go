@@ -72,14 +72,24 @@ if(file.exists(file.path(mito.genes))) {
   # use predefined list with mitochondrial genes
   mito.genes <- readr::read_tsv(file=file.path(mito.genes), col_names =F) |> dplyr::pull(X1)
   is.mito  <- row.names(sce) %in% mito.genes 
-  print(paste(sum(is.mito), "mitochondrial genes identified by pre-defined mitochondrial gene list."))
+  cat(paste(sum(is.mito), "mitochondrial genes identified by pre-defined mitochondrial gene list", mito.genes, ":\n", 
+              paste0(SummarizedExperiment::rowData(sce)$feature_symbol[is.mito], collapse = ", "), "\n"))
 } else {
+  if(!is.na(mito.genes) && mito.genes != "") {
+    is.mito <- grepl(paste0("^", mito.genes), SummarizedExperiment::rowData(sce)$feature_symbol)
+    cat(paste(sum(is.mito), "mitochondrial genes identified via gene symbol pattern", mito.genes, ":\n", 
+                paste0(SummarizedExperiment::rowData(sce)$feature_symbol[is.mito], collapse = ", "), "\n"))
+  } else {
     # use default chr names (mind that some assays have prefixes like 'mm39_' in chr names)
     default_mito_chr_names <- c("chrM", "chrMT", "M", "MT")
     is.mito <- gsub(".*_", "", SummarizedExperiment::rowData(sce)$feature_chrom) %in% default_mito_chr_names 
-    print(paste(sum(is.mito), "mitochondrial genes identified on default mitochrondrial chromosome names:", paste(default_mito_chr_names, collapse = ", ")))
+    cat(paste(sum(is.mito), "mitochondrial genes identified on default mitochrondrial chromosome names", paste(default_mito_chr_names, collapse = ", "), ":\n",
+                paste0(SummarizedExperiment::rowData(sce)$feature_symbol[is.mito], collapse = ", "), "\n"))
+  }
 }
 names(is.mito) <- row.names(sce)
+SummarizedExperiment::rowData(sce)[,"is.mito"] <- is.mito
+if(!any(is.mito)) {warning("No mitochondrial genes detected. Check your ESSENTIAL_MTGENES settings!")}
 write.table(is.mito, file=file.path(outdir, "is.mito.txt"), sep="\t", quote=F, row.names = T, col.names = F)
 
 # calculate QC metrics
@@ -120,7 +130,7 @@ highest.lib.size <- qc.frame |>
   dplyr::filter(sum > quantile(sum, 0.98)) |>
   dplyr::select(cell_id, sample, group, sum, detected, subsets_Mito_percent) |>
   dplyr::arrange(desc(sum)) |>
-  dplyr::mutate(dplyr::across(c(sum, subsets_Mito_percent), round, 2))
+  dplyr::mutate(dplyr::across(c(sum, subsets_Mito_percent), \(x) round(x, 2)))
 
 write.table(highest.lib.size, file=file.path(outdir, "highest.lib.size.txt"), sep="\t", quote=F)
 
@@ -172,5 +182,5 @@ print("create scatter plots")
 print("store data")
 writeLines(capture.output(sessionInfo()),paste0(outdir, "/sc_bioc_qc_session_info.txt"))
 readr::write_rds(sce, file = file.path(resultsdir, "sce.RDS"))
-save(qc.frame, highest.lib.size, file=paste0(outdir,"/sc_bioc_qc.RData"))
+save(qc.frame, is.mito, highest.lib.size, file=paste0(outdir,"/sc_bioc_qc.RData"))
 
