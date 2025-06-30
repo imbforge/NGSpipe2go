@@ -20,6 +20,7 @@ load PIPELINE_ROOT + "/modules/scRNAseq/cellranger_count.header"
 load PIPELINE_ROOT + "/modules/scRNAseq/cellranger_aggr.header"
 load PIPELINE_ROOT + "/modules/scRNAseq/splitpipe_all.header"
 load PIPELINE_ROOT + "/modules/scRNAseq/splitpipe_comb.header"
+load PIPELINE_ROOT + "/modules/scRNAseq/fwd_ext_bams.header"
 load PIPELINE_ROOT + "/modules/scRNAseq/demux_hto.header"
 load PIPELINE_ROOT + "/modules/scRNAseq/demux_gt.header"
 load PIPELINE_ROOT + "/modules/scRNAseq/assignSouporcellCluster.header"
@@ -43,13 +44,17 @@ load PIPELINE_ROOT + "/modules/NGS/multiqc.header"
 dontrun = { println "didn't run $module" }
 collect_bams = { forward inputs.bam }
 
+
 Bpipe.run { 
-    "%.fastq.gz" * [ FastQC + FastqScreen +
-    (RUN_CUTADAPT ? Cutadapt + FastQC.using(subdir:"trimmed") : dontrun.using(module:"Cutadapt")) ] + 
+    (ESSENTIAL_SEQTYPE == "ScaleBio" ? fwd_ext_dir :  
+        ("%.fastq.gz" * [ FastQC + 
+        (RUN_FASTQSCREEN ? FastqScreen : dontrun.using(module: "FastqScreen")), 
+        (RUN_CUTADAPT ? Cutadapt + FastQC.using(subdir:"trimmed") : dontrun.using(module:"Cutadapt")) ])
+        ) + 
 	  
     (ESSENTIAL_SEQTYPE == "tenX" ? "%_L*_R*_001.fastq.gz" * [ cellranger_count ] : 
 		(ESSENTIAL_SEQTYPE == "ParseBio" ? "%.R*.fastq.gz" * [ splitpipe_all ] : 
-			(ESSENTIAL_SEQTYPE == "ScaleBio" ? dontrun.using(module:"Mapping module. Run ScaleBio software independently and start at ESSENTIAL_USE_AGGR_DATA!") : 
+			(ESSENTIAL_SEQTYPE == "ScaleBio" ? fwd_ext_bams : 
 				(ESSENTIAL_SEQTYPE == "SmartSeq" ? ((RUN_IN_PAIRED_END_MODE ? "%.R*.fastq.gz" : "%.fastq.gz") * [ STAR + BAMindexer + subread_count + filter2htseq ]) : 
 					dontrun.using(module:"Mapping module. Sequencing type not found!") )))) + 
 				

@@ -24,7 +24,7 @@ ESSENTIAL_CHROMSIZES="/fsimb/common/genomes/homo_sapiens/10X/grch38_ensembl98/re
 ESSENTIAL_FEATURETYPE="gene_type" //gencode (also 10X Genomics) uses gene_type; ensemble uses gene_biotype
 ESSENTIAL_ORG="human"           // UCSC organism
 ESSENTIAL_DB="hg38"              // UCSC assembly version
-ESSENTIAL_MTGENES="MT-"  // prefix of mitochondrial gene ids or text file with gene ids (give path within ESSENTIAL_PROJECT)
+ESSENTIAL_MTGENES="MT-"  // text file with gene ids of mitochondrial genes or starting pattern of mito gene symbols. If empty, standard mito chr names used.
 ESSENTIAL_CELLTYPE_ANNO = ["Marker"] // select celltype annotation method (one or more of "Marker", "Seurat"). The first in the list is used for downstream processing. 
 // if "Marker" selected, specify marker table in CTannoMarker.header. For "Seurat" specify reference dataset in CTannoSeurat.header.
 
@@ -35,6 +35,7 @@ ESSENTIAL_CELLTYPE_ANNO = ["Marker"] // select celltype annotation method (one o
 RUN_DEMUX=""  
 
 // Reference genomes for FastqScreen
+RUN_FASTQSCREEN=true            // check for contaminations using FastQ Screen
 ESSENTIAL_FASTQSCREEN_PERC=1    // contaminant filter, if a contaminant is consuming at least this percentage of reads in at least one sample, contaminant will be shown in report
 ESSENTIAL_FASTQSCREEN_GENOME="Human::/fsimb/common/genomes/homo_sapiens/gencode/release-25_GRCh38.p7/full/index/bowtie2/GRCh38.p7.genome"  // bowtie2 reference index files (base name) for the genome the samples are from
 ESSENTIAL_FASTQSCREEN=ESSENTIAL_FASTQSCREEN_GENOME + ",PHIX::/fsimb/common/genomes/phix/19930428/NCBI/index/bowtie2/2.3.4.3/ncbi_phix,ERCC::/fsimb/common/genomes/ERCC/index/bowtie2/2.3.4.3/ERCC92,rRNA::/fsimb/common/genomes/contaminants/fastqscreen_references/rrna/v1/index/bowtie2/2.3.4.3/hs_mm_ce_dm_rn_dr_xt_rRNA,Mycoplasma::/fsimb/common/genomes/contaminants/fastqscreen_references/mycoplasma/v1/index/bowtie2/2.3.4.3/mycoplasma_all_ref,E.coli::/fsimb/common/genomes/Escherichia_coli/ensembl/full/index/bowtie2/Escherichia_coli_str_k_12_substr_dh10b.ASM1942v1.31.dna.genome,B.taurus::/fsimb/common/genomes/bos_taurus/ensembl/3.1/full/index/bowtie2/2.2.9/UMD3.1"  // bowtie2 reference index files (base name) for common sample contaminants, as well as for PhiX and ERCC library spike-ins

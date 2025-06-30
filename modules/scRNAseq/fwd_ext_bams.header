@@ -1,0 +1,19 @@
+fwd_ext_bams_vars=[
+    static_subdir   : "alignment", // static subdir name in folder structure
+    wildcard_subdir : ".star.align" // wildcard subdir name in folder structure
+]
+
+load PIPELINE_ROOT + "/modules/scRNAseq/fwd_ext_bams.groovy"
+
+// expected parameter types
+class fwd_ext_bams_vars_schema {
+    String static_subdir             
+    String wildcard_subdir           
+
+    // check for the presence of mandatory params
+    boolean asBoolean() {
+      static_subdir
+    }
+}
+
+validate_schema(fwd_ext_bams_vars_schema, fwd_ext_bams_vars)

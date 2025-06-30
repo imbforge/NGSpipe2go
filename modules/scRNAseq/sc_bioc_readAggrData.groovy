@@ -7,7 +7,10 @@ sc_bioc_readAggrData = {
 
     output.dir = sc_bioc_readAggrData_vars.outdir
     
-    println "aggr_data_dir: " + sc_bioc_readAggrData_vars.aggr_data_dir
+    // in case of ScaleBio use external result directory
+    aggr_data_dir = sc_bioc_readAggrData_vars.seqtype == "ScaleBio" ? EXTERNAL_RESULTDIR + "/" + sc_bioc_readAggrData_vars.aggr_data_dir : sc_bioc_readAggrData_vars.aggr_data_dir
+
+    println "aggr_data_dir: " + aggr_data_dir
 
     def SC_BIOC_READAGGRDATA_FLAGS =
         (sc_bioc_readAggrData_vars.targets            ? " targets="            + sc_bioc_readAggrData_vars.targets            : "") +
@@ -16,7 +19,7 @@ sc_bioc_readAggrData = {
         (sc_bioc_readAggrData_vars.res                ? " res="                + sc_bioc_readAggrData_vars.res                : "") +
         (sc_bioc_readAggrData_vars.seqtype            ? " seqtype="            + sc_bioc_readAggrData_vars.seqtype            : "") +
         (sc_bioc_readAggrData_vars.gtf                ? " gtf="                + sc_bioc_readAggrData_vars.gtf                : "") +
-        (sc_bioc_readAggrData_vars.aggr_data_dir      ? " aggr_data_dir="      + sc_bioc_readAggrData_vars.aggr_data_dir      : "") +
+        (sc_bioc_readAggrData_vars.aggr_data_dir      ? " aggr_data_dir="      + aggr_data_dir                                : "") +
         (sc_bioc_readAggrData_vars.run_demux          ? " run_demux="          + sc_bioc_readAggrData_vars.run_demux          : "") +
         (sc_bioc_readAggrData_vars.demux_out          ? " demux_out="          + sc_bioc_readAggrData_vars.demux_out          : "") +
         (sc_bioc_readAggrData_vars.demuxCluster_out   ? " demuxCluster_out="   + sc_bioc_readAggrData_vars.demuxCluster_out   : "") 
