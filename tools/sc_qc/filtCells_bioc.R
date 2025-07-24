@@ -1,6 +1,6 @@
 #####################################
 ##
-## What: sc_bioc_filter.R
+## What: filtCells_bioc.R
 ## Who : Frank Rühle, Patrick Hüther
 ## When: 04.06.2025
 ##
@@ -260,7 +260,7 @@ sce <- sce[genes2keep, ]
 #############################
 # save the sessionInformation and R image
 print("store data")
-writeLines(capture.output(sessionInfo()),paste0(outdir, "/sc_bioc_filter_session_info.txt"))
+writeLines(capture.output(sessionInfo()),paste0(outdir, "/filtCells_bioc_session_info.txt"))
 readr::write_rds(sce, file = file.path(resultsdir, "sce.RDS"))
-save(qc.drop, qcfailed, samples2exclude, qc_thresholds, genes2keep, threshold_low_abundance, file=paste0(outdir,"/sc_bioc_filter.RData"))
+save(qc.drop, qcfailed, samples2exclude, qc_thresholds, genes2keep, threshold_low_abundance, file=paste0(outdir,"/filtCells_bioc.RData"))
 

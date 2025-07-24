@@ -1,4 +1,4 @@
-sc_bioc_filter_vars=[
+filtCells_bioc_vars=[
     outdir                     : QC + "/sc_qc",
     project                    : PROJECT,                     
     pipeline_root              : PIPELINE_ROOT,                     
@@ -17,10 +17,10 @@ sc_bioc_filter_vars=[
     plot_pointalpha            : "0.6"      // dot transparency used in plots
 ]
 
-load PIPELINE_ROOT + "/modules/scRNAseq/sc_bioc_filter.groovy"
+load PIPELINE_ROOT + "/modules/scRNAseq/filtCells_bioc.groovy"
 
 // expected parameter types
-class sc_bioc_filter_vars_schema {
+class filtCells_bioc_vars_schema {
     String outdir             
     String project           
     String pipeline_root           
@@ -44,4 +44,4 @@ class sc_bioc_filter_vars_schema {
     }
 }
 
-validate_schema(sc_bioc_filter_vars_schema, sc_bioc_filter_vars)
+validate_schema(filtCells_bioc_vars_schema, filtCells_bioc_vars)
