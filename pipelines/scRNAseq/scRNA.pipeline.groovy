@@ -25,7 +25,7 @@ load PIPELINE_ROOT + "/modules/scRNAseq/demux_hto.header"
 load PIPELINE_ROOT + "/modules/scRNAseq/demux_gt.header"
 load PIPELINE_ROOT + "/modules/scRNAseq/assignSouporcellCluster.header"
 load PIPELINE_ROOT + "/modules/scRNAseq/sc_star.header"
-load PIPELINE_ROOT + "/modules/scRNAseq/sc_bioc_readAggrData.header"
+load PIPELINE_ROOT + "/modules/scRNAseq/readAggrData_bioc.header"
 load PIPELINE_ROOT + "/modules/scRNAseq/sc_bioc_qc.header"
 load PIPELINE_ROOT + "/modules/scRNAseq/sc_bioc_filter.header"
 load PIPELINE_ROOT + "/modules/scRNAseq/norm_bioc.header"
@@ -70,12 +70,12 @@ Bpipe.run {
     (RUN_DEMUX == "demux_GT" ? assignSouporcellCluster : dontrun.using(module:"assignSouporcellCluster")) +
 
 	(ESSENTIAL_USE_AGGR_DATA ? [   
-	    (ESSENTIAL_SEQTYPE == "tenX" ? [ cellranger_aggr + sc_bioc_readAggrData] : 
-		    (ESSENTIAL_SEQTYPE == "ParseBio" ? [ splitpipe_comb + sc_bioc_readAggrData] : 
-			    (ESSENTIAL_SEQTYPE == "ScaleBio" ? [ sc_bioc_readAggrData ] : 
-    			    (ESSENTIAL_SEQTYPE == "SmartSeq" ? [ sc_bioc_readAggrData ] : 
+	    (ESSENTIAL_SEQTYPE == "tenX" ? [ cellranger_aggr + readAggrData_bioc] : 
+		    (ESSENTIAL_SEQTYPE == "ParseBio" ? [ splitpipe_comb + readAggrData_bioc] : 
+			    (ESSENTIAL_SEQTYPE == "ScaleBio" ? [ readAggrData_bioc ] : 
+    			    (ESSENTIAL_SEQTYPE == "SmartSeq" ? [ readAggrData_bioc ] : 
     				    dontrun.using(module:"Sample aggregation. Sequencing type not found!") )))) ] :
-    dontrun.using(module:"module sc_bioc_readIndivSamplesAndMerge not implemented yet!") ) +
+    dontrun.using(module:"module readIndivSamplesAndMerge_bioc not implemented yet!") ) +
 
     sc_bioc_qc + sc_bioc_filter + norm_bioc + 
 	

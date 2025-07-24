@@ -1,6 +1,6 @@
 #####################################
 ##
-## What: sc_bioc_readAggrData.R
+## What: readAggrData_bioc.R
 ## Who : Frank Rühle, Patrick Hüther
 ## When: 17.04.2025
 ##
@@ -279,10 +279,10 @@ if(run_demux != "" & file.exists(demux_out) ) {
 } else { # no demux
 
   print(paste("No sample multiplexing via genetic variance or cell hashing has been applied."))
-  if(any(duplicated(targets_pools$file))) {stop("file column in targets.txt contains duplicated entries! Can't merge unambigously to cell barcodes.")}
   
   switch(seqtype, # prepare targets when no demultiplexing applied
          tenX = {
+           if(any(duplicated(targets_pools$file))) {stop("file column in targets.txt contains duplicated entries! Can't merge unambigously to cell barcodes.")}
            targets <- barcodes |>
             dplyr::mutate(
               file = aggrcsv[as.numeric(GEMwell), 1],
@@ -301,10 +301,12 @@ if(run_demux != "" & file.exists(demux_out) ) {
             dplyr::relocate(ends_with("_wind"), ends_with("_well"), file, .after = last_col()) 
          },
          ScaleBio = {
+           if(any(duplicated(targets_pools$file))) {stop("file column in targets.txt contains duplicated entries! Can't merge unambigously to cell barcodes.")}
            targets <- barcodes |> # merge targets with targets_pools
             dplyr::left_join(targets_pools, by="file")
          },
          SmartSeq = {
+           if(any(duplicated(targets_pools$file))) {stop("file column in targets.txt contains duplicated entries! Can't merge unambigously to cell barcodes.")}
            targets <- barcodes |> # merge targets with targets_pools  
             dplyr::left_join(targets_pools, by="file")
          }
@@ -343,4 +345,4 @@ readr::write_rds(sce, file=file.path(resultsdir, "sce.RDS"))
 readr::write_rds(gtf, file=file.path(resultsdir, "gtf.rds"))
 save(pipeline_root, outdir, resultsdir, seqtype, gtf.file, ftargets, aggr_data_dir, run_demux, demux_out, demuxcluster_out, 
      targets, targets_pools,
-     file=paste0(outdir,"/sc_bioc_readAggrData.RData"))
+     file=paste0(outdir,"/readAggrData_bioc.RData"))

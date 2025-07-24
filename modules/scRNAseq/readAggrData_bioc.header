@@ -1,5 +1,5 @@
-sc_bioc_readAggrData_vars=[
-    outdir          : RESULTS + "/sc_bioc_readAggrData",
+readAggrData_bioc_vars=[
+    outdir          : RESULTS + "/readAggrData_bioc",
     pipeline_root   : PIPELINE_ROOT,                     
     res             : RESULTS,          //where the results lie
     seqtype         : ESSENTIAL_SEQTYPE,
@@ -16,10 +16,10 @@ sc_bioc_readAggrData_vars=[
     demuxCluster_out : (binding.variables.containsKey("assignSouporcellCluster_vars") ? assignSouporcellCluster_vars.outdir : "") //output assignSouporcellCluster
 ]
 
-load PIPELINE_ROOT + "/modules/scRNAseq/sc_bioc_readAggrData.groovy"
+load PIPELINE_ROOT + "/modules/scRNAseq/readAggrData_bioc.groovy"
 
 // expected parameter types
-class sc_bioc_readAggrData_vars_schema {
+class readAggrData_bioc_vars_schema {
     String outdir             
     String pipeline_root           
     String res             
@@ -37,4 +37,4 @@ class sc_bioc_readAggrData_vars_schema {
     }
 }
 
-validate_schema(sc_bioc_readAggrData_vars_schema, sc_bioc_readAggrData_vars)
+validate_schema(readAggrData_bioc_vars_schema, readAggrData_bioc_vars)
