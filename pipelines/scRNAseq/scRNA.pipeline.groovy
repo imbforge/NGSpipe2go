@@ -26,7 +26,7 @@ load PIPELINE_ROOT + "/modules/scRNAseq/demux_gt.header"
 load PIPELINE_ROOT + "/modules/scRNAseq/assignSouporcellCluster.header"
 load PIPELINE_ROOT + "/modules/scRNAseq/sc_star.header"
 load PIPELINE_ROOT + "/modules/scRNAseq/readAggrData_bioc.header"
-load PIPELINE_ROOT + "/modules/scRNAseq/sc_bioc_qc.header"
+load PIPELINE_ROOT + "/modules/scRNAseq/qc_bioc.header"
 load PIPELINE_ROOT + "/modules/scRNAseq/sc_bioc_filter.header"
 load PIPELINE_ROOT + "/modules/scRNAseq/norm_bioc.header"
 load PIPELINE_ROOT + "/modules/NGS/bamcoverage.header"
@@ -77,7 +77,7 @@ Bpipe.run {
     				    dontrun.using(module:"Sample aggregation. Sequencing type not found!") )))) ] :
     dontrun.using(module:"module readIndivSamplesAndMerge_bioc not implemented yet!") ) +
 
-    sc_bioc_qc + sc_bioc_filter + norm_bioc + 
+    qc_bioc + sc_bioc_filter + norm_bioc + 
 	
     (RUN_TRACKHUB ? trackhub_config + trackhub : dontrun.using(module:"trackhub")) +
     collectToolVersions + MultiQC + 

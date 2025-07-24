@@ -1,6 +1,6 @@
 #####################################
 ##
-## What: sc_bioc_qc.R
+## What: qc_bioc.R
 ## Who : Frank Rühle, Patrick Hüther
 ## When: 04.06.2025
 ##
@@ -180,7 +180,7 @@ print("create scatter plots")
 #############################
 # save the sessionInformation and R image
 print("store data")
-writeLines(capture.output(sessionInfo()),paste0(outdir, "/sc_bioc_qc_session_info.txt"))
+writeLines(capture.output(sessionInfo()),paste0(outdir, "/qc_bioc_session_info.txt"))
 readr::write_rds(sce, file = file.path(resultsdir, "sce.RDS"))
-save(qc.frame, is.mito, highest.lib.size, file=paste0(outdir,"/sc_bioc_qc.RData"))
+save(qc.frame, is.mito, highest.lib.size, file=paste0(outdir,"/qc_bioc.RData"))
 
