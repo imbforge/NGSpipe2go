@@ -176,23 +176,6 @@
       ],
       "Hash": "3918e6b40d27984ca4a99c73b92406c3"
     },
-    "DT": {
-      "Package": "DT",
-      "Version": "0.33",
-      "Source": "Repository",
-      "Repository": "RSPM",
-      "Requirements": [
-        "crosstalk",
-        "htmltools",
-        "htmlwidgets",
-        "httpuv",
-        "jquerylib",
-        "jsonlite",
-        "magrittr",
-        "promises"
-      ],
-      "Hash": "64ff3427f559ce3f2597a4fe13255cb6"
-    },
     "DelayedArray": {
       "Package": "DelayedArray",
       "Version": "0.24.0",
@@ -296,6 +279,31 @@
         "utils"
       ],
       "Hash": "24a5b855811e94b5bd9365a11fe5b2a8"
+    },
+    "HDF5Array": {
+      "Package": "HDF5Array",
+      "Version": "1.26.0",
+      "Source": "Bioconductor",
+      "git_url": "https://git.bioconductor.org/packages/HDF5Array",
+      "git_branch": "RELEASE_3_16",
+      "git_last_commit": "38b7bd6",
+      "git_last_commit_date": "2022-11-01",
+      "Requirements": [
+        "BiocGenerics",
+        "DelayedArray",
+        "IRanges",
+        "Matrix",
+        "R",
+        "Rhdf5lib",
+        "S4Vectors",
+        "methods",
+        "rhdf5",
+        "rhdf5filters",
+        "stats",
+        "tools",
+        "utils"
+      ],
+      "Hash": "47551501a292037411c49c38d236ff24"
     },
     "IRanges": {
       "Package": "IRanges",
@@ -473,6 +481,19 @@
       "Source": "Repository",
       "Repository": "RSPM",
       "Hash": "1c0aa18b97e6aaa17f93b8b866c0ace5"
+    },
+    "Rhdf5lib": {
+      "Package": "Rhdf5lib",
+      "Version": "1.20.0",
+      "Source": "Bioconductor",
+      "git_url": "https://git.bioconductor.org/packages/Rhdf5lib",
+      "git_branch": "RELEASE_3_16",
+      "git_last_commit": "7606799",
+      "git_last_commit_date": "2022-11-01",
+      "Requirements": [
+        "R"
+      ],
+      "Hash": "66fbe0c49a27fe0a17182554f14f7fbc"
     },
     "Rtsne": {
       "Package": "Rtsne",
@@ -679,39 +700,6 @@
       ],
       "Hash": "5c698967bd2dda8f96e33333c28170e1"
     },
-    "bslib": {
-      "Package": "bslib",
-      "Version": "0.9.0",
-      "Source": "Repository",
-      "Repository": "RSPM",
-      "Requirements": [
-        "R",
-        "base64enc",
-        "cachem",
-        "fastmap",
-        "grDevices",
-        "htmltools",
-        "jquerylib",
-        "jsonlite",
-        "lifecycle",
-        "memoise",
-        "mime",
-        "rlang",
-        "sass"
-      ],
-      "Hash": "70a6489cc254171fb9b4a7f130f44dca"
-    },
-    "cachem": {
-      "Package": "cachem",
-      "Version": "1.1.0",
-      "Source": "Repository",
-      "Repository": "RSPM",
-      "Requirements": [
-        "fastmap",
-        "rlang"
-      ],
-      "Hash": "cd9a672193789068eb5a2aad65a0dedf"
-    },
     "cli": {
       "Package": "cli",
       "Version": "3.6.5",
@@ -779,30 +767,6 @@
       ],
       "Hash": "859d96e65ef198fd43e82b9628d593ef"
     },
-    "crosstalk": {
-      "Package": "crosstalk",
-      "Version": "1.2.1",
-      "Source": "Repository",
-      "Repository": "RSPM",
-      "Requirements": [
-        "R6",
-        "htmltools",
-        "jsonlite",
-        "lazyeval"
-      ],
-      "Hash": "ab12c7b080a57475248a30f4db6298c0"
-    },
-    "digest": {
-      "Package": "digest",
-      "Version": "0.6.37",
-      "Source": "Repository",
-      "Repository": "RSPM",
-      "Requirements": [
-        "R",
-        "utils"
-      ],
-      "Hash": "33698c4b3127fc9f506654607fb73676"
-    },
     "dplyr": {
       "Package": "dplyr",
       "Version": "1.1.4",
@@ -859,41 +823,12 @@
       ],
       "Hash": "e5ea1fc0a6bb6213941c8be214bf493d"
     },
-    "evaluate": {
-      "Package": "evaluate",
-      "Version": "1.0.3",
-      "Source": "Repository",
-      "Repository": "RSPM",
-      "Requirements": [
-        "R"
-      ],
-      "Hash": "e9651417729bbe7472e32b5027370e79"
-    },
     "farver": {
       "Package": "farver",
       "Version": "2.1.2",
       "Source": "Repository",
       "Repository": "RSPM",
       "Hash": "680887028577f3fa2a81e410ed0d6e42"
-    },
-    "fastmap": {
-      "Package": "fastmap",
-      "Version": "1.2.0",
-      "Source": "Repository",
-      "Repository": "RSPM",
-      "Hash": "aa5e1cd11c2d15497494c5292d7ffcc8"
-    },
-    "fontawesome": {
-      "Package": "fontawesome",
-      "Version": "0.5.3",
-      "Source": "Repository",
-      "Repository": "RSPM",
-      "Requirements": [
-        "R",
-        "htmltools",
-        "rlang"
-      ],
-      "Hash": "bd1297f9b5b1fc1372d19e2c4cd82215"
     },
     "formatR": {
       "Package": "formatR",
@@ -904,17 +839,6 @@
         "R"
       ],
       "Hash": "63cb26d12517c7863f5abb006c5e0f25"
-    },
-    "fs": {
-      "Package": "fs",
-      "Version": "1.6.6",
-      "Source": "Repository",
-      "Repository": "RSPM",
-      "Requirements": [
-        "R",
-        "methods"
-      ],
-      "Hash": "7eb1e342eee7e0a7449c49cdaa526d39"
     },
     "futile.logger": {
       "Package": "futile.logger",
@@ -1063,24 +987,6 @@
       ],
       "Hash": "de949855009e2d4d0e52a844e30617ae"
     },
-    "highr": {
-      "Package": "highr",
-      "Version": "0.11",
-      "Source": "Repository",
-      "Repository": "RSPM",
-      "RemoteType": "standard",
-      "RemotePkgRef": "highr",
-      "RemoteRef": "highr",
-      "RemoteRepos": "https://packagemanager.posit.co/cran/__linux__/jammy/latest",
-      "RemoteReposName": "CRAN",
-      "RemotePkgPlatform": "source",
-      "RemoteSha": "0.11",
-      "Requirements": [
-        "R",
-        "xfun"
-      ],
-      "Hash": "d65ba49117ca223614f71b60d85b8ab7"
-    },
     "hms": {
       "Package": "hms",
       "Version": "1.1.3",
@@ -1094,52 +1000,6 @@
         "vctrs"
       ],
       "Hash": "b59377caa7ed00fa41808342002138f9"
-    },
-    "htmltools": {
-      "Package": "htmltools",
-      "Version": "0.5.8.1",
-      "Source": "Repository",
-      "Repository": "RSPM",
-      "Requirements": [
-        "R",
-        "base64enc",
-        "digest",
-        "fastmap",
-        "grDevices",
-        "rlang",
-        "utils"
-      ],
-      "Hash": "81d371a9cc60640e74e4ab6ac46dcedc"
-    },
-    "htmlwidgets": {
-      "Package": "htmlwidgets",
-      "Version": "1.6.4",
-      "Source": "Repository",
-      "Repository": "CRAN",
-      "Requirements": [
-        "grDevices",
-        "htmltools",
-        "jsonlite",
-        "knitr",
-        "rmarkdown",
-        "yaml"
-      ],
-      "Hash": "04291cc45198225444a397606810ac37"
-    },
-    "httpuv": {
-      "Package": "httpuv",
-      "Version": "1.6.16",
-      "Source": "Repository",
-      "Repository": "RSPM",
-      "Requirements": [
-        "R",
-        "R6",
-        "Rcpp",
-        "later",
-        "promises",
-        "utils"
-      ],
-      "Hash": "6c3c8728e40326de6529a5c46e377e5c"
     },
     "igraph": {
       "Package": "igraph",
@@ -1188,16 +1048,6 @@
       ],
       "Hash": "0080607b4a1a7b28979aecef976d8bc2"
     },
-    "jquerylib": {
-      "Package": "jquerylib",
-      "Version": "0.1.4",
-      "Source": "Repository",
-      "Repository": "RSPM",
-      "Requirements": [
-        "htmltools"
-      ],
-      "Hash": "5aab57a3bd297eee1c1d862735972182"
-    },
     "jsonlite": {
       "Package": "jsonlite",
       "Version": "2.0.0",
@@ -1207,22 +1057,6 @@
         "methods"
       ],
       "Hash": "b0776f526d36d8bd4a3344a88fe165c4"
-    },
-    "knitr": {
-      "Package": "knitr",
-      "Version": "1.50",
-      "Source": "Repository",
-      "Repository": "RSPM",
-      "Requirements": [
-        "R",
-        "evaluate",
-        "highr",
-        "methods",
-        "tools",
-        "xfun",
-        "yaml"
-      ],
-      "Hash": "5a07d8ec459d7b80bd4acca5f4a6e062"
     },
     "labeling": {
       "Package": "labeling",
@@ -1246,17 +1080,6 @@
       ],
       "Hash": "b1e925c4b9ffeb901bacf812cbe9a6ad"
     },
-    "later": {
-      "Package": "later",
-      "Version": "1.4.2",
-      "Source": "Repository",
-      "Repository": "RSPM",
-      "Requirements": [
-        "Rcpp",
-        "rlang"
-      ],
-      "Hash": "9591aabef9cf988f05bde9324fd3ad99"
-    },
     "lattice": {
       "Package": "lattice",
       "Version": "0.20-45",
@@ -1271,16 +1094,6 @@
         "utils"
       ],
       "Hash": "b64cdbb2b340437c4ee047a1f4c4377b"
-    },
-    "lazyeval": {
-      "Package": "lazyeval",
-      "Version": "0.2.2",
-      "Source": "Repository",
-      "Repository": "RSPM",
-      "Requirements": [
-        "R"
-      ],
-      "Hash": "d908914ae53b04d4c0c0fd72ecc35370"
     },
     "lifecycle": {
       "Package": "lifecycle",
@@ -1344,17 +1157,6 @@
       ],
       "Hash": "57af0c3da1f1a50680b186591c3359af"
     },
-    "memoise": {
-      "Package": "memoise",
-      "Version": "2.0.1",
-      "Source": "Repository",
-      "Repository": "RSPM",
-      "Requirements": [
-        "cachem",
-        "rlang"
-      ],
-      "Hash": "e2817ccf4a065c5d9d7f2cfbe7c1d78c"
-    },
     "metapod": {
       "Package": "metapod",
       "Version": "1.6.0",
@@ -1384,16 +1186,6 @@
         "utils"
       ],
       "Hash": "3460beba7ccc8946249ba35327ba902a"
-    },
-    "mime": {
-      "Package": "mime",
-      "Version": "0.13",
-      "Source": "Repository",
-      "Repository": "RSPM",
-      "Requirements": [
-        "tools"
-      ],
-      "Hash": "0ec19f34c72fab674d8f2b4b1c6410e1"
     },
     "nlme": {
       "Package": "nlme",
@@ -1486,22 +1278,6 @@
       ],
       "Hash": "f4625e061cb2865f111b47ff163a5ca6"
     },
-    "promises": {
-      "Package": "promises",
-      "Version": "1.3.3",
-      "Source": "Repository",
-      "Repository": "RSPM",
-      "Requirements": [
-        "R6",
-        "Rcpp",
-        "fastmap",
-        "later",
-        "magrittr",
-        "rlang",
-        "stats"
-      ],
-      "Hash": "70157a4a73963da5779f9c67f4d31fd1"
-    },
     "purrr": {
       "Package": "purrr",
       "Version": "1.0.4",
@@ -1527,16 +1303,6 @@
         "textshaping"
       ],
       "Hash": "1591adde9ce8ff7de58072e4a32b66ce"
-    },
-    "rappdirs": {
-      "Package": "rappdirs",
-      "Version": "0.3.3",
-      "Source": "Repository",
-      "Repository": "RSPM",
-      "Requirements": [
-        "R"
-      ],
-      "Hash": "5e3c5dc0b071b21fa128676560dbe94d"
     },
     "readr": {
       "Package": "readr",
@@ -1571,6 +1337,35 @@
       ],
       "Hash": "4543b8cd233ae25c6aba8548be9e747e"
     },
+    "rhdf5": {
+      "Package": "rhdf5",
+      "Version": "2.42.1",
+      "Source": "Bioconductor",
+      "git_url": "https://git.bioconductor.org/packages/rhdf5",
+      "git_branch": "RELEASE_3_16",
+      "git_last_commit": "8df5fc7",
+      "git_last_commit_date": "2023-04-07",
+      "Requirements": [
+        "R",
+        "Rhdf5lib",
+        "methods",
+        "rhdf5filters"
+      ],
+      "Hash": "5c03978672acd1d85ce56f9d12f5fe5b"
+    },
+    "rhdf5filters": {
+      "Package": "rhdf5filters",
+      "Version": "1.10.1",
+      "Source": "Bioconductor",
+      "git_url": "https://git.bioconductor.org/packages/rhdf5filters",
+      "git_branch": "RELEASE_3_16",
+      "git_last_commit": "ccf950c",
+      "git_last_commit_date": "2023-03-24",
+      "Requirements": [
+        "Rhdf5lib"
+      ],
+      "Hash": "63806aa966d50f02b18aba6d0d34e3c8"
+    },
     "rlang": {
       "Package": "rlang",
       "Version": "1.1.6",
@@ -1582,36 +1377,6 @@
       ],
       "Hash": "892124978869b74935dc3934c42bfe5a"
     },
-    "rmarkdown": {
-      "Package": "rmarkdown",
-      "Version": "2.29",
-      "Source": "Repository",
-      "Repository": "RSPM",
-      "RemoteType": "standard",
-      "RemotePkgRef": "rmarkdown",
-      "RemoteRef": "rmarkdown",
-      "RemoteRepos": "https://packagemanager.posit.co/cran/__linux__/jammy/latest",
-      "RemoteReposName": "CRAN",
-      "RemotePkgPlatform": "source",
-      "RemoteSha": "2.29",
-      "Requirements": [
-        "R",
-        "bslib",
-        "evaluate",
-        "fontawesome",
-        "htmltools",
-        "jquerylib",
-        "jsonlite",
-        "knitr",
-        "methods",
-        "tinytex",
-        "tools",
-        "utils",
-        "xfun",
-        "yaml"
-      ],
-      "Hash": "df99277f63d01c34e95e3d2f06a79736"
-    },
     "rsvd": {
       "Package": "rsvd",
       "Version": "1.0.5",
@@ -1622,20 +1387,6 @@
         "R"
       ],
       "Hash": "b462187d887abc519894874486dbd6fd"
-    },
-    "sass": {
-      "Package": "sass",
-      "Version": "0.4.10",
-      "Source": "Repository",
-      "Repository": "RSPM",
-      "Requirements": [
-        "R6",
-        "fs",
-        "htmltools",
-        "rappdirs",
-        "rlang"
-      ],
-      "Hash": "3fb78d066fb92299b1d13f6a7c9a90a8"
     },
     "scales": {
       "Package": "scales",
@@ -1929,16 +1680,6 @@
       ],
       "Hash": "829f27b9c4919c16b593794a6344d6c0"
     },
-    "tinytex": {
-      "Package": "tinytex",
-      "Version": "0.57",
-      "Source": "Repository",
-      "Repository": "RSPM",
-      "Requirements": [
-        "xfun"
-      ],
-      "Hash": "02d65e0c0415bf36a7ddc0d2ba50a840"
-    },
     "tzdb": {
       "Package": "tzdb",
       "Version": "0.5.0",
@@ -2064,26 +1805,6 @@
         "graphics"
       ],
       "Hash": "cc2d62c76458d425210d1eb1478b30b4"
-    },
-    "xfun": {
-      "Package": "xfun",
-      "Version": "0.52",
-      "Source": "Repository",
-      "Repository": "RSPM",
-      "Requirements": [
-        "R",
-        "grDevices",
-        "stats",
-        "tools"
-      ],
-      "Hash": "652ce36fe7d57688e6786819b09d9190"
-    },
-    "yaml": {
-      "Package": "yaml",
-      "Version": "2.3.10",
-      "Source": "Repository",
-      "Repository": "CRAN",
-      "Hash": "51dab85c6c98e50a18d7551e9d49f76c"
     },
     "zlibbioc": {
       "Package": "zlibbioc",

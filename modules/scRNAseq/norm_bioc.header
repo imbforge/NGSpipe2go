@@ -1,4 +1,4 @@
-sc_bioc_norm_vars=[
+norm_bioc_vars=[
     outdir           : RESULTS + "/normalization",
     pipeline_root    : PIPELINE_ROOT,                     
     seqtype          : ESSENTIAL_SEQTYPE,                     
@@ -12,14 +12,14 @@ sc_bioc_norm_vars=[
     explanatory_vars : "",       // any other categorical factors you may inspect for potential batch effects
     hvg_prop         : "0.1",    // proportion of genes to report as HVGs according to biological component of variance
     block_var        : "",       // name of block var to account for uninteresting factor when decomposing variance for HVGs. Leave empty to skip.
-    perplexity       : "50",     // perplexity for tSNE
+    perplexity       : "30",     // perplexity for tSNE
     n_neighbors      : "15"      // number of nearest neighbors for UMAP
 ]
 
-load PIPELINE_ROOT + "/modules/scRNAseq/sc_bioc_norm.groovy"
+load PIPELINE_ROOT + "/modules/scRNAseq/norm_bioc.groovy"
 
 // expected parameter types
-class sc_bioc_norm_vars_schema {
+class norm_bioc_vars_schema {
     String outdir             
     String pipeline_root           
     String seqtype           
@@ -42,4 +42,4 @@ class sc_bioc_norm_vars_schema {
     }
 }
 
-validate_schema(sc_bioc_norm_vars_schema, sc_bioc_norm_vars)
+validate_schema(norm_bioc_vars_schema, norm_bioc_vars)

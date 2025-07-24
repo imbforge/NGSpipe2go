@@ -1,10 +1,11 @@
 #####################################
 ##
-## What: sc_bioc_norm.R
+## What: norm_bioc.R
 ## Who : Frank Rühle, Patrick Hüther
 ## When: 11.06.2025
 ##
-## Normalize gene expression data in singlecellexperiment object and calculate HVGs and reduced dims
+## Normalize gene expression data in singlecellexperiment object and calculate HVGs and reduced dims.
+## This module stores the sce object as HDF5 object. From now on, only metadata will be modified.
 ##
 ## Args:
 ## -----
@@ -353,7 +354,8 @@ for (i in SingleCellExperiment::reducedDimNames(sce)) {
 #############################
 # save the sessionInformation and R image
 print("store results")
-writeLines(capture.output(sessionInfo()),paste0(outdir, "/sc_bioc_norm_session_info.txt"))
+writeLines(capture.output(sessionInfo()),paste0(outdir, "/norm_bioc_session_info.txt"))
 readr::write_rds(sce, file = file.path(resultsdir, "sce.RDS"))
-save(hvg, top_hvg_data, file=paste0(outdir,"/sc_bioc_norm.RData"))
+HDF5Array::saveHDF5SummarizedExperiment(sce, dir=file.path(resultsdir, "HDF5"), prefix="sce_")
+save(hvg, top_hvg_data, file=paste0(outdir,"/norm_bioc.RData"))
 
