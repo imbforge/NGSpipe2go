@@ -1,0 +1,39 @@
+hclust_bioc_vars=[
+    outdir           : RESULTS + "/cluster",
+    pipeline_root    : PIPELINE_ROOT,                     
+    seqtype          : ESSENTIAL_SEQTYPE,                     
+    res              : RESULTS,  //where the results lie
+    data2clust       : "PCA",  //data used for clustering. CCan be any reduced dimension slot or 'logcounts'. Multiple entries allowed. Leave empty to skip.
+    hclust_method    : "ward.D2",  // clustering method ("ward.D", "ward.D2", "single", "complete", average", "mcquitty", "median" or "centroid"). Multiple entries allowed.
+    deepSplit        : "2", // control cluster splitting (range 0 to 4). The higher the value, the more and smaller clusters will be produced. Multiple entries allowed.
+    minClusterSize   : "50",        // minimum cluster size
+    annocat_plot     : "group",    // category used in plots
+    annocat_plot2    : "sample",   // 2nd category used in plots
+    plot_pointsize   : "0.6",      // dot size used in plots
+    plot_pointalpha  : "0.6"       // dot transparency used in plots
+]
+
+load PIPELINE_ROOT + "/modules/scRNAseq/hclust_bioc.groovy"
+
+// expected parameter types
+class hclust_bioc_vars_schema {
+    String outdir             
+    String pipeline_root           
+    String seqtype           
+    String res             
+    String data2clust             
+    String hclust_method             
+    String deepSplit             
+    String minClusterSize             
+    String annocat_plot              
+    String annocat_plot2              
+    String plot_pointsize              
+    String plot_pointalpha              
+
+    // check for the presence of mandatory params
+    boolean asBoolean() {
+      outdir
+    }
+}
+
+validate_schema(hclust_bioc_vars_schema, hclust_bioc_vars)
