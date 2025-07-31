@@ -29,6 +29,7 @@ load PIPELINE_ROOT + "/modules/scRNAseq/readAggrData_bioc.header"
 load PIPELINE_ROOT + "/modules/scRNAseq/qc_bioc.header"
 load PIPELINE_ROOT + "/modules/scRNAseq/filtCells_bioc.header"
 load PIPELINE_ROOT + "/modules/scRNAseq/norm_bioc.header"
+load PIPELINE_ROOT + "/modules/scRNAseq/igraph_bioc.header"
 load PIPELINE_ROOT + "/modules/NGS/bamcoverage.header"
 load PIPELINE_ROOT + "/modules/NGS/bamindexer.header"
 load PIPELINE_ROOT + "/modules/NGS/fastqc.header"
@@ -77,7 +78,7 @@ Bpipe.run {
     				    dontrun.using(module:"Sample aggregation. Sequencing type not found!") )))) ] :
     dontrun.using(module:"module readIndivSamplesAndMerge_bioc not implemented yet!") ) +
 
-    qc_bioc + filtCells_bioc + norm_bioc + 
+    qc_bioc + filtCells_bioc + norm_bioc + igraph_bioc +
 	
     (RUN_TRACKHUB ? trackhub_config + trackhub : dontrun.using(module:"trackhub")) +
     collectToolVersions + MultiQC + 

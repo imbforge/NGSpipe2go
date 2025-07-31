@@ -1,0 +1,177 @@
+#####################################
+##
+## What: igraph_bioc.R
+## Who : Frank Rühle, Patrick Hüther
+## When: 02.07.2025
+##
+## Apply graph-based clustering on singlecellexperiment object
+##
+## Args:
+## -----
+## pipeline_root    # pipeline directory   
+## outdir           # output directory of this module   
+## resultsdir       # result directory of project
+## seqtype          # sequencing type     
+## data2clust_pre   # data used for clustering. Can be any reduced dimension slot or 'logcounts'.
+## n_neighbors      # number of nearest neighbors to consider during graph construction
+## weights          # type of weighting scheme to use for shared neighbors
+## algorithm        # clustering algorithm ('walktrap', 'louvain', 'infomap', 'fast_greedy', 'label_prop', 'leading_eigen')
+## annocat_plot     # category used for plotting
+## annocat_plot2    # 2nd category used for plotting
+## plot_pointsize   # dot size used in plots
+## plot_pointalpha  # dot transparency used in plots
+##
+######################################
+
+##
+## get arguments from the command line
+##
+
+parseArgs <- function(args,string,default=NULL,convert="as.character") {
+  
+  if(length(i <- grep(string,args,fixed=T)) == 1)
+    return(do.call(convert,list(gsub(string,"",args[i]))))
+  if(!is.null(default)) default else do.call(convert,list(NA))
+}
+
+run_custom_code <- function(x) {
+  eval(parse(text=x))
+}
+
+as.char.vector <- function(x) { # allows input "c(A, B)" as well as "A, B". Avoids need to escape quotation marks in module header.
+  char.vec <- gsub("(^c\\()|(\\)$)", "", x)  
+  trimws(strsplit(char.vec, ",")[[1]])
+}
+
+args <- commandArgs(T)
+resultsdir       <- parseArgs(args,"res=")   
+seqtype          <- parseArgs(args,"seqtype=")   
+outdir           <- parseArgs(args,"outdir=") # output folder
+pipeline_root    <- parseArgs(args,"pipeline_root=") 
+data2clust_pre   <- parseArgs(args,"data2clust=", convert="as.char.vector") 
+k                <- parseArgs(args,string="n_neighbors=",convert="run_custom_code")
+weights          <- parseArgs(args,string="weighting_scheme=")
+algorithm        <- parseArgs(args,string="algorithm=", convert="as.char.vector") 
+annocat_plot     <- parseArgs(args,"annocat_plot=", default = "group")
+annocat_plot2    <- parseArgs(args,"annocat_plot2=", default = "sample")
+plot_pointsize   <- parseArgs(args,"plot_pointsize=", convert="as.numeric", default = 0.6) 
+plot_pointalpha  <- parseArgs(args,"plot_pointalpha=", convert="as.numeric", default = 0.6)  
+
+
+# load R environment
+env.path <- file.path(getwd(), pipeline_root, "tools/sc_clust", "bioc_3.16.lock")
+print(paste("load renv:", env.path))
+renv::use(lockfile=env.path)
+
+library(ggplot2)
+
+# set options
+addTaskCallback(function(...) {set.seed(100);TRUE})
+options(stringsAsFactors=FALSE)
+
+# check parameter
+print(paste("resultsdir:", resultsdir))
+print(paste("seqtype:", seqtype))
+print(paste("outdir:", outdir))
+print(paste("pipeline_root:", pipeline_root))
+print(paste("data2clust:", paste0(data2clust_pre, collapse=", ")))
+print(paste("n_neighbors:", paste0(k, collapse=", ")))
+print(paste("weighting_scheme:", paste0(weights, collapse=", ")))
+print(paste("algorithm:", paste0(algorithm, collapse=", ")))
+print(paste("annocat_plot:", annocat_plot))
+print(paste("annocat_plot2:", annocat_plot2))
+print(paste("plot_pointsize:", plot_pointsize))
+print(paste("plot_pointalpha:", plot_pointalpha))
+
+
+# load sce from previous module
+sce <- HDF5Array::loadHDF5SummarizedExperiment(dir=file.path(resultsdir, "HDF5"), prefix="sce_")
+print(sce)
+
+
+# set up combinations of clustering parameter (catch e.g. TSNE subtypes as well)
+params <- tidyr::expand_grid( 
+  data2clust = unique(data2clust_pre, unlist(sapply(data2clust_pre, grep, SingleCellExperiment::reducedDimNames(sce), value=T))), 
+  k = k,
+  clusterfun = algorithm
+)
+
+
+if(any(is.na(params))) { # skip entirely if cluster setting not specified
+  cl <- list()
+} else {
+
+  cl <- purrr::pmap(params, function(data2clust, k, clusterfun) {
+      print(paste("Process igraph clustering based on", paste0(data2clust,": k", k), clusterfun))
+      fn <- get(paste0("cluster_", clusterfun), envir = asNamespace("igraph")) # get igraph function name
+      
+      name_clustering <- paste0("cluster_igraph_", data2clust, "_k", k, "_", clusterfun)
+      
+      if(file.exists(file.path(outdir, paste0(name_clustering, ".tsv")))) {
+        
+        print(paste0(name_clustering, ".tsv already exists. Clustering for this setting is skipped"))
+        cluster <- NULL
+        
+      } else {
+        
+        cluster <- scran::buildSNNGraph(sce, k = k, type = weights, use.dimred = switch(data2clust != "logcounts",data2clust,NULL)) |>
+          fn() |>
+          with(membership) 
+
+        cluster_tsv <- data.frame(cell_id=colnames(sce), cluster=cluster) |>
+          purrr::set_names("cell_id", name_clustering) |> 
+          readr::write_tsv(file.path(outdir, paste0(name_clustering, ".tsv")))
+        
+        cells_per_cat <- data.frame(sample=SummarizedExperiment::colData(sce)[,annocat_plot2], cluster=cluster) |>
+          table() |> 
+          as.data.frame.matrix() |>
+          tibble::rownames_to_column(var=annocat_plot2) |>
+          readr::write_tsv(file.path(outdir, paste0(name_clustering, "_cellCounts_per_", annocat_plot2, ".txt")))
+
+        # create cluster plots illustrated by all reduced dimensions and incl plots split by annotation categories
+        purrr::map(SingleCellExperiment::reducedDimNames(sce), function(dimred) {
+        
+          plot_data <- SingleCellExperiment::reducedDim(sce, dimred) |>
+            as.data.frame() |>
+            dplyr::select(1:2) |> 
+            stats::setNames(c(paste0(gsub("_.*$", "", dimred), " 1"), paste0(gsub("_.*$", "", dimred), " 2"))) |>
+            dplyr::mutate(!!annocat_plot := SummarizedExperiment::colData(sce)[,annocat_plot],
+                          !!annocat_plot2 := SummarizedExperiment::colData(sce)[,annocat_plot2],
+                          cluster = factor(cluster))
+        
+          rdplot <- ggplot(plot_data, aes(x = !!dplyr::sym(names(plot_data)[1]), y = !!dplyr::sym(names(plot_data)[2]), color = cluster)) +
+            geom_point(size = plot_pointsize, alpha=plot_pointalpha) +
+            scale_fill_hue(l=55) +
+            ggtitle(paste("Cluster igraph", data2clust, paste0("k", k), clusterfun, "by", dimred)) + 
+            theme(legend.position = "bottom") + 
+            guides(color=guide_legend(override.aes = list(size=1, alpha=1)))
+          
+          rdplot_anno1 <- rdplot + 
+            facet_wrap(as.formula(paste("~", annocat_plot2)))
+          
+          rdplot_anno2 <- rdplot + 
+            facet_wrap(as.formula(paste("~", annocat_plot)))
+          
+          ggsave(plot=rdplot, filename= file.path(outdir, paste0(name_clustering, "_by_", dimred, ".png")), device="png", width=7, height=8, bg = "white")
+          ggsave(plot=rdplot, filename= file.path(outdir, paste0(name_clustering, "_by_", dimred, ".pdf")), device="pdf", width=7, height=8)
+          
+          plotlayout <- ggplot2::ggplot_build(rdplot_anno1)$layout$layout
+          ggsave(plot=rdplot_anno1, filename= file.path(outdir, paste0(name_clustering, "_by_", dimred, "_split_by_", annocat_plot2, ".png")), device="png", width=2.5*length(unique(plotlayout$COL)), height=2+2.5*length(unique(plotlayout$ROW)), bg = "white")
+          ggsave(plot=rdplot_anno1, filename= file.path(outdir, paste0(name_clustering, "_by_", dimred, "_split_by_", annocat_plot2, ".pdf")), device="pdf", width=2.5*length(unique(plotlayout$COL)), height=2+2.5*length(unique(plotlayout$ROW)))
+          
+          plotlayout <- ggplot2::ggplot_build(rdplot_anno2)$layout$layout
+          ggsave(plot=rdplot_anno2, filename= file.path(outdir, paste0(name_clustering, "_by_", dimred, "_split_by_", annocat_plot, ".png")), device="png", width=2.5*length(unique(plotlayout$COL)), height=2+2.5*length(unique(plotlayout$ROW)), bg = "white")
+          ggsave(plot=rdplot_anno2, filename= file.path(outdir, paste0(name_clustering, "_by_", dimred, "_split_by_", annocat_plot, ".pdf")), device="pdf", width=2.5*length(unique(plotlayout$COL)), height=2+2.5*length(unique(plotlayout$ROW)))
+        })
+      } 
+  return(cluster)
+  })
+  
+}
+  
+
+#############################
+# save the sessionInformation and R image (no update of sce object necessary)
+print("store results")
+writeLines(capture.output(sessionInfo()),file.path(outdir, "igraph_bioc_session_info.txt"))
+save(params, cl, file=file.path(outdir,"igraph_bioc.RData"))

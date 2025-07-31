@@ -1,0 +1,39 @@
+igraph_bioc_vars=[
+    outdir           : RESULTS + "/cluster",
+    pipeline_root    : PIPELINE_ROOT,                     
+    seqtype          : ESSENTIAL_SEQTYPE,                   
+    res              : RESULTS,  //where the results lie
+    data2clust       : "PCA", //data used for clustering. Can be any reduced dimension slot or 'logcounts'. Multiple entries allowed. Leave empty to skip.
+    n_neighbors      : "20",      // number of nearest neighbors graph construction. Smaller values will generally yield smaller, finer clusters. Multiple entries allowed.
+    weighting_scheme : "rank",    // type of weighting scheme to use for shared neighbors ("rank", "number", "jaccard")
+    algorithm        : "louvain", // clustering algorithm ('walktrap', 'louvain', 'infomap', 'fast_greedy', 'label_prop', 'leading_eigen'). Multiple entries allowed.
+    annocat_plot     : "group",   // category used in plots
+    annocat_plot2    : "sample",  // 2nd category used in plots
+    plot_pointsize   : "0.6",     // dot size used in plots
+    plot_pointalpha  : "0.6"      // dot transparency used in plots
+]
+
+load PIPELINE_ROOT + "/modules/scRNAseq/igraph_bioc.groovy"
+
+// expected parameter types
+class igraph_bioc_vars_schema {
+    String outdir             
+    String pipeline_root           
+    String seqtype           
+    String res             
+    String data2clust             
+    String n_neighbors             
+    String weighting_scheme             
+    String algorithm             
+    String annocat_plot              
+    String annocat_plot2              
+    String plot_pointsize              
+    String plot_pointalpha              
+
+    // check for the presence of mandatory params
+    boolean asBoolean() {
+      outdir && res
+    }
+}
+
+validate_schema(igraph_bioc_vars_schema, igraph_bioc_vars)
