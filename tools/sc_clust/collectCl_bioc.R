@@ -90,9 +90,12 @@ sce <- HDF5Array::loadHDF5SummarizedExperiment(dir=file.path(resultsdir, "HDF5")
 print(sce)
 
 
-# collect all cluster .tsv files
-print(paste("collect all cluster tsv files:", paste0(list.files(clustdir, pattern="cluster.*\\.tsv"), collapse=", ")))
-  merged_tsv <- list.files(clustdir, pattern="cluster.*\\.tsv", full.names=T) |>
+# collect all cluster .tsv files in clusterdir sub-directories
+files_tsv <- list.files(clustdir, pattern = "cluster.*\\.tsv$", full.names = TRUE, recursive = TRUE)
+files_tsv_subdirs <- files_tsv[dirname(files_tsv) != normalizePath(clustdir)]
+print(paste("collect all cluster tsv files:", paste0(basename(files_tsv_subdirs), collapse=", ")))
+
+merged_tsv <- files_tsv_subdirs |>
     purrr::set_names(basename) |>
     purrr::map(\(x) readr::read_tsv(x)) |>
     purrr::reduce(dplyr::left_join, by="cell_id") |>

@@ -107,12 +107,14 @@ if(any(is.na(params))) { # skip entirely if cluster setting not specified
       
       name_clustering <- paste0("cluster_igraph_", data2clust, "_k", k, "_", clusterfun)
       
-      if(file.exists(file.path(outdir, paste0(name_clustering, ".tsv")))) {
+      if(file.exists(file.path(outdir, name_clustering, paste0(name_clustering, ".tsv")))) {
         
         print(paste0(name_clustering, ".tsv already exists. Clustering for this setting is skipped"))
         cluster <- NULL
         
       } else {
+        
+        if (!file.exists(file.path(outdir, name_clustering))) {dir.create(file.path(outdir, name_clustering), recursive=T) }
         
         cluster <- scran::buildSNNGraph(sce, k = k, type = weights, use.dimred = switch(data2clust != "logcounts",data2clust,NULL)) |>
           fn() |>
@@ -120,13 +122,13 @@ if(any(is.na(params))) { # skip entirely if cluster setting not specified
 
         cluster_tsv <- data.frame(cell_id=colnames(sce), cluster=cluster) |>
           purrr::set_names("cell_id", name_clustering) |> 
-          readr::write_tsv(file.path(outdir, paste0(name_clustering, ".tsv")))
+          readr::write_tsv(file.path(outdir, name_clustering, paste0(name_clustering, ".tsv")))
         
         cells_per_cat <- data.frame(sample=SummarizedExperiment::colData(sce)[,annocat_plot2], cluster=cluster) |>
           table() |> 
           as.data.frame.matrix() |>
           tibble::rownames_to_column(var=annocat_plot2) |>
-          readr::write_tsv(file.path(outdir, paste0(name_clustering, "_cellCounts_per_", annocat_plot2, ".txt")))
+          readr::write_tsv(file.path(outdir, name_clustering, paste0(name_clustering, "_cellCounts_per_", annocat_plot2, ".txt")))
 
         # create cluster plots illustrated by all reduced dimensions and incl plots split by annotation categories
         purrr::map(SingleCellExperiment::reducedDimNames(sce), function(dimred) {
@@ -152,16 +154,16 @@ if(any(is.na(params))) { # skip entirely if cluster setting not specified
           rdplot_anno2 <- rdplot + 
             facet_wrap(as.formula(paste("~", annocat_plot)))
           
-          ggsave(plot=rdplot, filename= file.path(outdir, paste0(name_clustering, "_by_", dimred, ".png")), device="png", width=7, height=8, bg = "white")
-          ggsave(plot=rdplot, filename= file.path(outdir, paste0(name_clustering, "_by_", dimred, ".pdf")), device="pdf", width=7, height=8)
+          ggsave(plot=rdplot, filename= file.path(outdir, name_clustering, paste0(name_clustering, "_by_", dimred, ".png")), device="png", width=7, height=8, bg = "white")
+          ggsave(plot=rdplot, filename= file.path(outdir, name_clustering, paste0(name_clustering, "_by_", dimred, ".pdf")), device="pdf", width=7, height=8)
           
           plotlayout <- ggplot2::ggplot_build(rdplot_anno1)$layout$layout
-          ggsave(plot=rdplot_anno1, filename= file.path(outdir, paste0(name_clustering, "_by_", dimred, "_split_by_", annocat_plot2, ".png")), device="png", width=2.5*length(unique(plotlayout$COL)), height=2+2.5*length(unique(plotlayout$ROW)), bg = "white")
-          ggsave(plot=rdplot_anno1, filename= file.path(outdir, paste0(name_clustering, "_by_", dimred, "_split_by_", annocat_plot2, ".pdf")), device="pdf", width=2.5*length(unique(plotlayout$COL)), height=2+2.5*length(unique(plotlayout$ROW)))
+          ggsave(plot=rdplot_anno1, filename= file.path(outdir, name_clustering, paste0(name_clustering, "_by_", dimred, "_split_by_", annocat_plot2, ".png")), device="png", width=2.5*length(unique(plotlayout$COL)), height=2+2.5*length(unique(plotlayout$ROW)), bg = "white")
+          ggsave(plot=rdplot_anno1, filename= file.path(outdir, name_clustering, paste0(name_clustering, "_by_", dimred, "_split_by_", annocat_plot2, ".pdf")), device="pdf", width=2.5*length(unique(plotlayout$COL)), height=2+2.5*length(unique(plotlayout$ROW)))
           
           plotlayout <- ggplot2::ggplot_build(rdplot_anno2)$layout$layout
-          ggsave(plot=rdplot_anno2, filename= file.path(outdir, paste0(name_clustering, "_by_", dimred, "_split_by_", annocat_plot, ".png")), device="png", width=2.5*length(unique(plotlayout$COL)), height=2+2.5*length(unique(plotlayout$ROW)), bg = "white")
-          ggsave(plot=rdplot_anno2, filename= file.path(outdir, paste0(name_clustering, "_by_", dimred, "_split_by_", annocat_plot, ".pdf")), device="pdf", width=2.5*length(unique(plotlayout$COL)), height=2+2.5*length(unique(plotlayout$ROW)))
+          ggsave(plot=rdplot_anno2, filename= file.path(outdir, name_clustering, paste0(name_clustering, "_by_", dimred, "_split_by_", annocat_plot, ".png")), device="png", width=2.5*length(unique(plotlayout$COL)), height=2+2.5*length(unique(plotlayout$ROW)), bg = "white")
+          ggsave(plot=rdplot_anno2, filename= file.path(outdir, name_clustering, paste0(name_clustering, "_by_", dimred, "_split_by_", annocat_plot, ".pdf")), device="pdf", width=2.5*length(unique(plotlayout$COL)), height=2+2.5*length(unique(plotlayout$ROW)))
         })
       } 
   return(cluster)
