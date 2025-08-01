@@ -122,6 +122,7 @@ if(any(is.na(params), is.na(data2clust_ext))) { # skip entirely if cluster setti
         
       } else {
       
+        print(paste("Processing", name_clustering))
         if (!file.exists(file.path(outdir, name_clustering))) {dir.create(file.path(outdir, name_clustering), recursive=T) }
         
         cluster <- dynamicTreeCut::cutreeDynamic(hclust(dst,method=hclust_method),distM=as.matrix(dst),method="hybrid",minClusterSize=minClusterSize,deepSplit=ds,verbose=0)
@@ -171,6 +172,23 @@ if(any(is.na(params), is.na(data2clust_ext))) { # skip entirely if cluster setti
           ggsave(plot=rdplot_anno2, filename= file.path(outdir, name_clustering, paste0(name_clustering, "_by_", dimred, "_split_by_", annocat_plot, ".png")), device="png", width=2.5*length(unique(plotlayout$COL)), height=2+2.5*length(unique(plotlayout$ROW)), bg = "white")
           ggsave(plot=rdplot_anno2, filename= file.path(outdir, name_clustering, paste0(name_clustering, "_by_", dimred, "_split_by_", annocat_plot, ".pdf")), device="pdf", width=2.5*length(unique(plotlayout$COL)), height=2+2.5*length(unique(plotlayout$ROW)))
         })
+        
+        # Doublet detection by cluster (findDoubletClusters needs at least 3 clusters to detect doublet clusters)
+        if(length(unique(cluster)) >=3) {
+          print(paste("Cluster doublet detection for", name_clustering))
+          dbl.out <- scDblFinder::findDoubletClusters(sce, clusters=cluster) |>
+            as.data.frame() |> 
+            tibble::rownames_to_column("cluster") |>
+            dplyr::mutate(symbol=SummarizedExperiment::rowData(sce)[best, "feature_symbol"]) |>
+            dplyr::mutate(dplyr::across(c(p.value, lib.size1, lib.size2, prop), signif, digits=3)) |>
+            dplyr::mutate(suspicious=scater::isOutlier(num.de, nmads=3, type="lower", log=TRUE)) |>
+            dplyr::relocate(cluster, source1, source2, num.de, median.de, best, symbol) |>
+            readr::write_tsv(file.path(outdir, name_clustering, paste0(name_clustering, "_doublet_detection_by_cluster.txt")))
+        } else {
+          print(paste("No doublet detection possible for", name_clustering, "because there are only", 
+                      length(unique(cluster)), "cluster (min 3 needed)."))
+        }
+        
       }  
     return(cluster)
   }) 
