@@ -171,21 +171,41 @@ if(nrow(rdat_filt)>0) {
       # get logcounts for all boxplots    
       data_boxplot <- t(logcounts(sce)[rdat_filt$feature_id,]) |>
         as.data.frame() |>
-        dplyr::mutate(!!annocat_plot := factor(SummarizedExperiment::colData(sce)[,annocat_plot]),
-                      !!selclust     := factor(SummarizedExperiment::colData(sce)[,selclust]))
+        dplyr::mutate(!!annocat_plot  := factor(SummarizedExperiment::colData(sce)[,annocat_plot]),
+                      !!annocat_plot2 := factor(SummarizedExperiment::colData(sce)[,annocat_plot2]),
+                      !!selclust      := factor(SummarizedExperiment::colData(sce)[,selclust])) |>
+        tidyr::pivot_longer(cols=!any_of(c(selclust, annocat_plot, annocat_plot2)))
       
       # box plots of selected genes per cluster
       print(paste("Create expression boxplots for", selclust))
+      
+      # determine ideal number of panel columns in violin plots when using facet_wrap to avoid too many violin plots per row.
+      maxViolPerRow = max(nlevels(factor(SummarizedExperiment::colData(sce)[,annocat_plot])), 10) # i.e. max #genes x #groups. 
+      nGridCol <- max(1,floor(maxViolPerRow/nlevels(factor(SummarizedExperiment::colData(sce)[,annocat_plot])))) # number of cols in violin plot
+      nGridRow <- ceiling(nlevels(factor(SummarizedExperiment::colData(sce)[,selclust])) / nGridCol) # number of rows in violin plot
+      
       list_bplot <- purrr::pmap(rdat_filt , function(feature_id, feature_symbol) {
   
-        bplot <- ggplot(data_boxplot, aes(x=!!dplyr::sym(selclust), y=!!dplyr::sym(feature_id), color=!!dplyr::sym(annocat_plot))) +
-          geom_boxplot(outlier.size=plot_pointsize, outlier.alpha=plot_pointalpha) +
+        data_boxplot_current <- data_boxplot |>
+          dplyr::filter(name==feature_id)
+        
+        bplot <- ggplot(data_boxplot_current, aes(x=!!dplyr::sym(annocat_plot),y=value)) +
+          geom_violin() +
+          ggbeeswarm::geom_quasirandom(aes(color=!!dplyr::sym(annocat_plot2)), size = plot_pointsize, alpha=plot_pointalpha) +
           scale_color_hue(l=55) +
-          theme(legend.position = "bottom") + 
-          ggtitle(paste(feature_symbol, "expression (logcounts)"))
-  
-        ggsave(plot=bplot, filename= file.path(exprPlotDir, paste0(feature_symbol, "_", feature_id, "_expression_boxplot_by_", selclust, ".png")), device="png", width=7, height=8, bg = "white")
-        ggsave(plot=bplot, filename= file.path(exprPlotDir, paste0(feature_symbol, "_", feature_id, "_expression_boxplot_by_", selclust, ".pdf")), device="pdf", width=7, height=8)
+          geom_boxplot(color = "darkgrey", alpha = 0.2, outlier.shape = NA) +
+          facet_wrap(as.formula(paste("~", selclust)), ncol=nGridCol) + 
+          ylab("expression (logcounts)") +
+          xlab(element_blank()) +
+          ggtitle(paste(feature_symbol, "expression by", selclust)) + 
+          theme(axis.text.x=element_text(angle=45, vjust=1, hjust=1), legend.position = "bottom") + 
+          guides(color=guide_legend(override.aes = list(size=1, alpha=1)))
+
+        ggsave(plot=bplot, filename= file.path(exprPlotDir, paste0(feature_symbol, "_", feature_id, "_expression_boxplot_by_", selclust, ".png")), 
+               device="png", width=7, height=1+2*nGridRow, bg = "white") # legend + 2 inch per panel row
+        ggsave(plot=bplot, filename= file.path(exprPlotDir, paste0(feature_symbol, "_", feature_id, "_expression_boxplot_by_", selclust, ".pdf")), 
+               device="pdf", width=7, height=1+2*nGridRow) # legend + 2 inch per panel row
+        
         return(bplot)
       })
       return(list_bplot)
