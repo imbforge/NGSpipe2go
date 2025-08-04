@@ -144,7 +144,7 @@ top_expressed_data <- SingleCellExperiment::logcounts(sce)[top_expressed_genes$f
 top_expressed_plot <- ggplot(top_expressed_data, aes(x=!!dplyr::sym(annocat_plot),y=value)) +
   geom_violin() +
   ggbeeswarm::geom_quasirandom(aes(color=!!dplyr::sym(annocat_plot2)), size = plot_pointsize, alpha=plot_pointalpha) +
-  scale_fill_hue(l=55) +
+  scale_color_hue(l=55) +
   geom_boxplot(color = "darkgrey", alpha = 0.2, outlier.shape = NA) +
   facet_wrap(as.formula(paste("~", "symbol")), ncol=nGridCol) +
   ylab("expression (logcounts)") +
@@ -194,7 +194,7 @@ top_hvg_data <- SingleCellExperiment::logcounts(sce)[hvg[1:maxgenes2plot],] |>
 top_hvg_plot <- ggplot(top_hvg_data, aes(x=!!dplyr::sym(annocat_plot),y=value)) +
   geom_violin() +
   ggbeeswarm::geom_quasirandom(aes(color=!!dplyr::sym(annocat_plot2)), size = plot_pointsize, alpha=plot_pointalpha) +
-  scale_fill_hue(l=55) +
+  scale_color_hue(l=55) +
   geom_boxplot(color = "darkgrey", alpha = 0.2, outlier.shape = NA) +
   facet_wrap(as.formula(paste("~", "symbol")), ncol=nGridCol) +
   ylab("expression (logcounts)") +
