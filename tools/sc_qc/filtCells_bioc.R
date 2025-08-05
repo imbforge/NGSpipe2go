@@ -17,6 +17,7 @@
 ## threshold_total_counts_max # max read counts per cell (for absolute threshold only).
 ## threshold_total_detected   # min genes detected (for absolute threshold only).
 ## threshold_pct_counts_Mt    # max percentage of mitochondrial gene counts (for absolute threshold only).
+## threshold_pct_counts_spikein # max percentage of spike-in gene counts (for absolute threshold only).
 ## NMADS                      # median absolute deviations (MAD) to define outliers (for relative threshold only).     
 ## category_NMADS             # grouping of cells used to calculate MAD. If empty, no grouping applied (for relative threshold only).        
 ## threshold_low_abundance    # threshold cell portion to exclude low abundance genes. E.g. 0.01 means filter out genes with no expression in 99% of cells.
@@ -40,21 +41,22 @@ run_custom_code <- function(x) {
 }
 
 args <- commandArgs(T)
-resultsdir                 <- parseArgs(args,"res=")   
-outdir                     <- parseArgs(args,"outdir=") # output folder
-pipeline_root              <- parseArgs(args,"pipeline_root=") 
-samples2exclude            <- parseArgs(args,string="samples2exclude=", convert="run_custom_code", default=NULL)
-type_of_threshold          <- parseArgs(args,string="type_of_threshold=")
-threshold_total_counts_min <- parseArgs(args,string="threshold_total_counts_min=",convert="as.numeric")
-threshold_total_counts_max <- parseArgs(args,string="threshold_total_counts_max=",convert="as.numeric")
-threshold_total_detected   <- parseArgs(args,string="threshold_total_detected=",convert="as.numeric")
-threshold_pct_counts_Mt    <- parseArgs(args,string="threshold_pct_counts_Mt=",convert="as.numeric")
-NMADS                      <- parseArgs(args,string="NMADS=",convert="as.numeric")
-category_NMADS             <- parseArgs(args,string="category_NMADS=", default=NULL)
-threshold_low_abundance    <- parseArgs(args,string="threshold_low_abundance=",convert="as.numeric")
-annocat_plot               <- parseArgs(args,"annocat_plot=", default="sample")
-plot_pointsize             <- parseArgs(args,"plot_pointsize=", convert="as.numeric", default = 0.6) 
-plot_pointalpha            <- parseArgs(args,"plot_pointalpha=", convert="as.numeric", default = 0.6)  
+resultsdir                   <- parseArgs(args,"res=")   
+outdir                       <- parseArgs(args,"outdir=") # output folder
+pipeline_root                <- parseArgs(args,"pipeline_root=") 
+samples2exclude              <- parseArgs(args,string="samples2exclude=", convert="run_custom_code", default=NULL)
+type_of_threshold            <- parseArgs(args,string="type_of_threshold=")
+threshold_total_counts_min   <- parseArgs(args,string="threshold_total_counts_min=",convert="as.numeric")
+threshold_total_counts_max   <- parseArgs(args,string="threshold_total_counts_max=",convert="as.numeric")
+threshold_total_detected     <- parseArgs(args,string="threshold_total_detected=",convert="as.numeric")
+threshold_pct_counts_Mt      <- parseArgs(args,string="threshold_pct_counts_Mt=",convert="as.numeric")
+threshold_pct_counts_spikein <- parseArgs(args,string="threshold_pct_counts_spikein=",convert="as.numeric", default=100)
+NMADS                        <- parseArgs(args,string="NMADS=",convert="as.numeric")
+category_NMADS               <- parseArgs(args,string="category=", default=NULL)
+threshold_low_abundance      <- parseArgs(args,string="threshold_low_abundance=",convert="as.numeric")
+annocat_plot                 <- parseArgs(args,"annocat_plot=", default="sample")
+plot_pointsize               <- parseArgs(args,"plot_pointsize=", convert="as.numeric", default = 0.6) 
+plot_pointalpha              <- parseArgs(args,"plot_pointalpha=", convert="as.numeric", default = 0.6)  
 
 
 # load R environment
@@ -77,6 +79,7 @@ print(paste("threshold_total_counts_min:", threshold_total_counts_min))
 print(paste("threshold_total_counts_max:", threshold_total_counts_max))
 print(paste("threshold_total_detected:", threshold_total_detected))
 print(paste("threshold_pct_counts_Mt:", threshold_pct_counts_Mt))
+print(paste("threshold_pct_counts_spikein:", threshold_pct_counts_spikein))
 print(paste("threshold_low_abundance:", threshold_low_abundance))
 print(paste("NMADS:", NMADS))
 print(paste("category_NMADS:", category_NMADS))
@@ -116,22 +119,25 @@ if(type_of_threshold=="absolute") {
     paste("total counts >", threshold_total_counts_min), 
     paste("total counts <", threshold_total_counts_max), 
     paste("detected genes >", threshold_total_detected), 
-    paste("MT count perc <", threshold_pct_counts_Mt) 
-  ))
-  write.table(qc_thresholds, file= file.path(outdir, "qc_thresholds.txt"), sep="\t", quote=F, row.names = F)              
+    paste("MT count percent <", threshold_pct_counts_Mt), 
+    if('subsets_spikein_percent' %in% colnames(qc.drop)) {paste("spikein count percent <", threshold_pct_counts_spikein)}  
+  )) |>
+    readr::write_tsv(file.path(outdir, "qc_thresholds.txt"))
   
+
   qc.drop <- qc.drop |>
     dplyr::mutate(libsize=!dplyr::between(sum,threshold_total_counts_min,threshold_total_counts_max)) |>
     dplyr::mutate(features=(detected < threshold_total_detected)) |>
     dplyr::mutate(mito=(subsets_Mito_percent > threshold_pct_counts_Mt)) |>
-    dplyr::mutate(pass = rowSums(dplyr::across(c(libsize, features, mito, control_wells))) == 0)
+    dplyr::mutate(spikein=if('subsets_spikein_percent' %in% colnames(qc.drop)) subsets_spikein_percent > threshold_pct_counts_spikein else F) |>
+    dplyr::mutate(pass = rowSums(dplyr::across(c(libsize, features, mito, spikein, control_wells))) == 0)
 
 } else if(type_of_threshold=="relative") {
   print("apply relative thresholds")
   # ignore all cells which hardly have any counts to avoid bias for relative thresholds
   min_readcount <- 100
   count.drop <- (qc.drop$sum < min_readcount)
-  batch_isOutlier <- if(!is.null(category_NMADS) && !is.na(category_NMADS)) {dplyr::pull(qc.drop,category_NMADS)} else {NULL}
+  batch_isOutlier <- if(!is.null(category_NMADS) && !is.na(category_NMADS)) {factor(dplyr::pull(qc.drop,category_NMADS))} else {NULL}
   
   # overview thresholds:
   qc_thresholds <- data.frame(criterion=c(
@@ -139,14 +145,15 @@ if(type_of_threshold=="absolute") {
     paste(sum(count.drop), "cells skipped from MAD calc with counts <", min_readcount), 
     paste("number of median absolute deviations (MAD) to define outliers per sample:", NMADS), 
     paste("grouping of cells used to calculate MAD:", if(is.null(category_NMADS) || is.na(category_NMADS)) "none" else category_NMADS) 
-  ))
-  write.table(qc_thresholds, file= file.path(outdir, "qc_thresholds.txt"), sep="\t", quote=F, row.names = F)
-
+  )) |>
+    readr::write_tsv(file.path(outdir, "qc_thresholds.txt"))
+  
   qc.drop <- qc.drop |>
     dplyr::mutate(libsize=scater::isOutlier(sum,nmads=NMADS,type="lower",log=TRUE,subset=!count.drop,batch=batch_isOutlier)) |>
     dplyr::mutate(features=scater::isOutlier(detected,nmads=NMADS,type="lower",log=TRUE,subset=!count.drop,batch=batch_isOutlier)) |>
     dplyr::mutate(mito=scater::isOutlier(subsets_Mito_percent,nmads=NMADS,type="higher",subset=!count.drop,batch=batch_isOutlier)) |>
-    dplyr::mutate(pass = rowSums(dplyr::across(c(libsize, features, mito, control_wells))) == 0)
+    dplyr::mutate(spikein=if('subsets_spikein_percent' %in% colnames(qc.drop)) scater::isOutlier(subsets_spikein_percent,nmads=NMADS,type="higher",subset=!count.drop,batch=batch_isOutlier) else F) |>
+    dplyr::mutate(pass = rowSums(dplyr::across(c(libsize, features, mito, spikein, control_wells))) == 0)
   
 } else {
   print("Filtering is skipped because no filtering specified!")
@@ -155,6 +162,7 @@ if(type_of_threshold=="absolute") {
     dplyr::mutate(libsize=F,
                   features=F,
                   mito=F,
+                  spikein=F,
                   pass=T) 
   }
 
@@ -173,7 +181,8 @@ qcfailed <- qc.drop |>
     "counts unfilt." = format_pct(dplyr::n(), ncol(sce)),
     libsize          = format_pct(sum(libsize), dplyr::n()),
     "detected genes" = format_pct(sum(features), dplyr::n()),
-    "MT count perc"  = format_pct(sum(mito), dplyr::n()),
+    "MT count percent"  = format_pct(sum(mito), dplyr::n()),
+    "spikein count percent" = format_pct(sum(spikein), dplyr::n()),
     "control wells"  = format_pct(sum(control_wells), dplyr::n()),
     remaining        = format_pct(sum(pass), dplyr::n()),
     .groups = "drop"
@@ -183,7 +192,8 @@ qcfailed <- qc.drop |>
     "counts unfilt." = format_pct(nrow(qc.drop), ncol(sce)),
     libsize          = format_pct(sum(qc.drop$libsize), nrow(qc.drop)),
     "detected genes" = format_pct(sum(qc.drop$features), nrow(qc.drop)),
-    "MT count perc"  = format_pct(sum(qc.drop$mito), nrow(qc.drop)),
+    "MT count percent"  = format_pct(sum(qc.drop$mito), nrow(qc.drop)),
+    "spikein count percent" = format_pct(sum(qc.drop$spikein), nrow(qc.drop)),
     "control wells"  = format_pct(sum(qc.drop$control_wells), nrow(qc.drop)),
     remaining        = format_pct(sum(qc.drop$pass), nrow(qc.drop))
   ) |>
@@ -192,8 +202,12 @@ qcfailed <- qc.drop |>
   as.data.frame() |>
   tibble::rownames_to_column(var = "criterion")
 
+if(!"subsets_spikein_percent" %in% colnames(SummarizedExperiment::colData(sce))) { # exclude control wells if not applicable
+  qcfailed <- qcfailed |> dplyr::filter(criterion != "spikein count percent")
+  qc.drop$spikein <- NULL
+}
 if(!"cells" %in% colnames(SummarizedExperiment::colData(sce))) { # exclude control wells if not applicable
-  qcfailed <- qcfailed |> dplyr::filter(criterion != "control_wells")
+  qcfailed <- qcfailed |> dplyr::filter(criterion != "control wells")
   qc.drop$control_wells <- NULL
 }
 write.table(qcfailed, file= file.path(outdir, "qcfailed_overview.txt"), sep="\t", quote=F, row.names = F)              
@@ -202,8 +216,11 @@ write.table(qcfailed, file= file.path(outdir, "qcfailed_overview.txt"), sep="\t"
 
 # violin plots with indicated thresholds
 print("create violin plots with indicated thresholds")
-qc.plots.violin <- lapply(c("sum", "detected", "subsets_Mito_percent"), function(to.plot){ 
-  column_applied_threshold <- switch(to.plot, "sum" = "libsize", "detected" = "features", "subsets_Mito_percent" = "mito")
+qc_metrics <- c("sum", "detected", "subsets_Mito_percent", "subsets_spikein_percent")
+qc_metrics <- qc_metrics[qc_metrics %in% colnames(qc.drop)]
+
+qc.plots.violin <- lapply(qc_metrics, function(to.plot){ 
+  column_applied_threshold <- switch(to.plot, "sum" = "libsize", "detected" = "features", "subsets_Mito_percent" = "mito", "subsets_spikein_percent" = "spikein")
   
   p <- ggplot(qc.drop, aes(!!sym(annocat_plot),!!sym(to.plot)))+ 
     geom_violin() +
@@ -216,7 +233,10 @@ qc.plots.violin <- lapply(c("sum", "detected", "subsets_Mito_percent"), function
     xlab(element_blank()) +
     theme(legend.position="bottom", axis.text.x=element_text(angle=45, vjust=1, hjust=1)) + 
     guides(color=guide_legend(override.aes = list(size=1, alpha=1))) +
-    labs(title= if(to.plot=="sum") {"Library Size"} else {if(to.plot=="detected") {"Detected Genes"} else {"Reads Mapping to Mitochondrial Genes in Percent"}})
+    ggtitle(dplyr::case_match(to.plot, "sum" ~ "Library Size",
+                              "detected" ~ "Detected Genes",
+                              "subsets_Mito_percent" ~ "Reads Mapping to Mitochondrial Genes in Percent",
+                              "subsets_spikein_percent" ~ "Reads Mapping to spikein Genes in Percent"))
   
   ggsave(plot=p, width=7, height=5, filename= file.path(outdir, paste0("qc_violin_plot_", to.plot, "_filtered.png")), device="png", bg = "white")
   ggsave(plot=p, width=7, height=5, filename= file.path(outdir, paste0("qc_violin_plot_", to.plot, "_filtered.pdf")), device="pdf")
