@@ -341,7 +341,7 @@ SummarizedExperiment::rowData(sce)$feature_chrom   <- features$seqnames
 
 # spill to disk
 print("Spill to disk.")
-readr::write_rds(sce, file=file.path(resultsdir, "sce.RDS"))
+readr::write_rds(sce, file=file.path(resultsdir, "sce_raw.RDS"))
 readr::write_rds(gtf, file=file.path(resultsdir, "gtf.rds"))
 save(pipeline_root, outdir, resultsdir, seqtype, gtf.file, ftargets, aggr_data_dir, run_demux, demux_out, demuxcluster_out, 
      targets, targets_pools,

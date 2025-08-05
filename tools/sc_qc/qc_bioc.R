@@ -67,7 +67,7 @@ print(paste("plot_pointalpha:", plot_pointalpha))
 
 
 # load sce from previous module
-sce <- readr::read_rds(file.path(resultsdir, "sce.RDS"))
+sce <- readr::read_rds(file.path(resultsdir, "sce_raw.RDS"))
 
 # get mitochondrial genes
 print("get mitochondrial genes")
@@ -115,7 +115,7 @@ sce <- scuttle::addPerCellQCMetrics(sce,percent_top=2,subsets=subset_list)
 # get colData table from sce object to store qc flags
 qc.frame <- SummarizedExperiment::colData(sce) |>
   tidyr::as_tibble() |>
-  dplyr::mutate(controls=if('cells' %in% colnames(SummarizedExperiment::colData(sce))) cells!='1c' else F) |> # mark SMART-Seq control cells if present
+  dplyr::mutate(control_wells=if('cells' %in% colnames(SummarizedExperiment::colData(sce))) cells!='1c' else F) |> # mark SMART-Seq control cells if present
   readr::write_tsv(file.path(outdir, "qc.frame.txt"))
 
 
@@ -200,6 +200,6 @@ print("create scatter plots")
 # save the sessionInformation and R image
 print("store data")
 writeLines(capture.output(sessionInfo()),paste0(outdir, "/qc_bioc_session_info.txt"))
-#readr::write_rds(sce, file = file.path(resultsdir, "sce.RDS"))
+readr::write_rds(sce, file = file.path(resultsdir, "sce_raw.RDS"))
 save(qc.frame, is.mito, highest.lib.size, file=paste0(outdir,"/qc_bioc.RData"))
 

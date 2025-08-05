@@ -86,7 +86,7 @@ print(paste("plot_pointalpha:", plot_pointalpha))
 
 
 # load sce from previous module
-sce <- readr::read_rds(file.path(resultsdir, "sce.RDS"))
+sce <- readr::read_rds(file.path(resultsdir, "sce_raw.RDS"))
 
 
 # exclude entire samples if requested
