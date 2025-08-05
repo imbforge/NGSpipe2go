@@ -1625,13 +1625,13 @@
     },
     "matrixStats": {
       "Package": "matrixStats",
-      "Version": "1.5.0",
+      "Version": "0.63.0",
       "Source": "Repository",
       "Repository": "RSPM",
       "Requirements": [
         "R"
       ],
-      "Hash": "9fd316b52ac8c24fef4c67fdd646e965"
+      "Hash": "57af0c3da1f1a50680b186591c3359af"
     },
     "memoise": {
       "Package": "memoise",
