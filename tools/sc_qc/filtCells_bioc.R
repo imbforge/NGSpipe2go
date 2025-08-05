@@ -100,10 +100,11 @@ sce <- sce[, !(sce$sample %in% samples2exclude)]
 
 
 # get colData table from sce object to store qc flags
-qc.drop <- SummarizedExperiment::colData(sce)
+# mark SMART-Seq control wells if present (plate wells with 10 cells ('10c') instead of 1 cell ('1c') in column 'cells'))
+qc.drop <- SummarizedExperiment::colData(sce) |> 
+  tidyr::as_tibble() |>
+  dplyr::mutate(control_wells=if('cells' %in% colnames(SummarizedExperiment::colData(sce))) cells!='1c' else F) 
 
-# mark control wells if present (for SMART-Seq only, uses some plate wells with 10 cells ('10c') instead of 1 cell ('1c') in column 'cells')
-qc.drop <- tidyr::as_tibble(qc.drop) |> dplyr::mutate(controls=if('cells' %in% colnames(qc.drop)) cells!='1c' else F)
 
 ## apply filtering thresholds
 if(type_of_threshold=="absolute") {
@@ -123,7 +124,7 @@ if(type_of_threshold=="absolute") {
     dplyr::mutate(libsize=!dplyr::between(sum,threshold_total_counts_min,threshold_total_counts_max)) |>
     dplyr::mutate(features=(detected < threshold_total_detected)) |>
     dplyr::mutate(mito=(subsets_Mito_percent > threshold_pct_counts_Mt)) |>
-    dplyr::mutate(pass = rowSums(dplyr::across(c(libsize, features, mito, controls))) == 0)
+    dplyr::mutate(pass = rowSums(dplyr::across(c(libsize, features, mito, control_wells))) == 0)
 
 } else if(type_of_threshold=="relative") {
   print("apply relative thresholds")
@@ -145,7 +146,7 @@ if(type_of_threshold=="absolute") {
     dplyr::mutate(libsize=scater::isOutlier(sum,nmads=NMADS,type="lower",log=TRUE,subset=!count.drop,batch=batch_isOutlier)) |>
     dplyr::mutate(features=scater::isOutlier(detected,nmads=NMADS,type="lower",log=TRUE,subset=!count.drop,batch=batch_isOutlier)) |>
     dplyr::mutate(mito=scater::isOutlier(subsets_Mito_percent,nmads=NMADS,type="higher",subset=!count.drop,batch=batch_isOutlier)) |>
-    dplyr::mutate(pass = rowSums(dplyr::across(c(libsize, features, mito, controls))) == 0)
+    dplyr::mutate(pass = rowSums(dplyr::across(c(libsize, features, mito, control_wells))) == 0)
   
 } else {
   print("Filtering is skipped because no filtering specified!")
@@ -173,7 +174,7 @@ qcfailed <- qc.drop |>
     libsize          = format_pct(sum(libsize), dplyr::n()),
     "detected genes" = format_pct(sum(features), dplyr::n()),
     "MT count perc"  = format_pct(sum(mito), dplyr::n()),
-    controls         = format_pct(sum(controls), dplyr::n()),
+    "control wells"  = format_pct(sum(control_wells), dplyr::n()),
     remaining        = format_pct(sum(pass), dplyr::n()),
     .groups = "drop"
   ) |>
@@ -183,7 +184,7 @@ qcfailed <- qc.drop |>
     libsize          = format_pct(sum(qc.drop$libsize), nrow(qc.drop)),
     "detected genes" = format_pct(sum(qc.drop$features), nrow(qc.drop)),
     "MT count perc"  = format_pct(sum(qc.drop$mito), nrow(qc.drop)),
-    controls         = format_pct(sum(qc.drop$controls), nrow(qc.drop)),
+    "control wells"  = format_pct(sum(qc.drop$control_wells), nrow(qc.drop)),
     remaining        = format_pct(sum(qc.drop$pass), nrow(qc.drop))
   ) |>
   tibble::column_to_rownames(annocat_plot) |>
@@ -192,8 +193,8 @@ qcfailed <- qc.drop |>
   tibble::rownames_to_column(var = "criterion")
 
 if(!"cells" %in% colnames(SummarizedExperiment::colData(sce))) { # exclude control wells if not applicable
-  qcfailed <- qcfailed |> dplyr::filter(criterion != "controls")
-  qc.drop$controls <- NULL
+  qcfailed <- qcfailed |> dplyr::filter(criterion != "control_wells")
+  qc.drop$control_wells <- NULL
 }
 write.table(qcfailed, file= file.path(outdir, "qcfailed_overview.txt"), sep="\t", quote=F, row.names = F)              
 
