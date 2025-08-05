@@ -133,11 +133,11 @@ top_expressed_genes <- SummarizedExperiment::rowData(sce) |>
   dplyr::slice(1:maxgenes2plot)
 
 top_expressed_data <- SingleCellExperiment::logcounts(sce)[top_expressed_genes$feature_id,] |>
+  as.matrix() |>
   t() |>
-  tibble::as_tibble() |>
+  as.data.frame() |>
   dplyr::mutate(!!annocat_plot := SummarizedExperiment::colData(sce)[,annocat_plot]) |>
   dplyr::mutate(!!annocat_plot2 := SummarizedExperiment::colData(sce)[,annocat_plot2]) |>
-  as.data.frame() |>
   tidyr::pivot_longer(cols=!any_of(c(annocat_plot, annocat_plot2))) |>
   dplyr::mutate(symbol=SummarizedExperiment::rowData(sce)$feature_symbol[match(name, rownames(sce))])
 
@@ -183,11 +183,11 @@ write.table(decVar_ordered, file=file.path(outdir, paste0("highly_variable_genes
 # plot top HVGs (gene filter does not effect order of colData)
 # plot genes with highest expression
 top_hvg_data <- SingleCellExperiment::logcounts(sce)[hvg[1:maxgenes2plot],] |>
+  as.matrix() |>
   t() |>
-  tibble::as_tibble() |>
+  as.data.frame() |>
   dplyr::mutate(!!annocat_plot := SummarizedExperiment::colData(sce)[,annocat_plot]) |>
   dplyr::mutate(!!annocat_plot2 := SummarizedExperiment::colData(sce)[,annocat_plot2]) |>
-  as.data.frame() |>
   tidyr::pivot_longer(cols=!any_of(c(annocat_plot, annocat_plot2))) |>
   dplyr::mutate(symbol=SummarizedExperiment::rowData(sce)$feature_symbol[match(name, rownames(sce))])
 
@@ -289,7 +289,7 @@ sce <- scater::runPCA(sce, name = "PCA", ncomponents=50, subset_row=hvg, exprs_v
 
 explVarScatter <- lapply(explanatory_vars, function(x) {
   p <- scater::plotPCASCE(sce, ncomponents = 4, point_size=plot_pointsize, point_alpha=plot_pointalpha, colour_by=x) + 
-    scale_fill_hue(l=55) +
+    scale_color_hue(l=55) +
     ggtitle(paste("PCA plots colored by", x)) +
     theme(legend.position = "bottom") +
     guides(color = guide_legend(override.aes = list(size = 2, alpha=1)))  
@@ -322,7 +322,7 @@ for (i in SingleCellExperiment::reducedDimNames(sce)) {
                   !!annocat_plot2 := SummarizedExperiment::colData(sce)[,annocat_plot2])
   
   rdplot_base <- ggplot(plot_data, aes(x = !!sym(names(plot_data)[1]), y = !!sym(names(plot_data)[2]))) +
-    scale_fill_hue(l=55) +
+    scale_color_hue(l=55) +
     ggtitle(paste("Plot ", i)) + 
     theme(legend.position = "bottom") + 
     guides(color=guide_legend(override.aes = list(size=1, alpha=1)))
@@ -349,6 +349,45 @@ for (i in SingleCellExperiment::reducedDimNames(sce)) {
   ggsave(plot=rdplot_anno2, filename= file.path(outdir, paste0("dimred_plot_", i, "_split_by_", annocat_plot, ".pdf")), device="pdf", width=2.5*length(unique(plotlayout$COL)), height=2+2.5*length(unique(plotlayout$ROW)))
 
 }
+
+
+# doublet score plots illustrated by all reduced dimensions and incl plots split by annotation categories
+print("create doublet score plots")
+purrr::map(SingleCellExperiment::reducedDimNames(sce), function(dimred) {
+  
+  plot_data <- SingleCellExperiment::reducedDim(sce, dimred) |>
+    as.data.frame() |>
+    dplyr::select(1:2) |> 
+    stats::setNames(c(paste0(gsub("_.*$", "", dimred), " 1"), paste0(gsub("_.*$", "", dimred), " 2"))) |>
+    dplyr::mutate(!!annocat_plot := SummarizedExperiment::colData(sce)[,annocat_plot],
+                  !!annocat_plot2 := SummarizedExperiment::colData(sce)[,annocat_plot2],
+                  doublet_score = SummarizedExperiment::colData(sce)[,"scDblFinder.score"])
+  
+  rdplot <- ggplot(plot_data, aes(x = !!dplyr::sym(names(plot_data)[1]), y = !!dplyr::sym(names(plot_data)[2]), color = doublet_score)) +
+    geom_point(size = plot_pointsize, alpha=plot_pointalpha) +
+    viridis::scale_color_viridis() + 
+    ggtitle(paste("scDblFinder doublet score")) + 
+    theme(legend.position = "bottom") 
+  
+  rdplot_anno1 <- rdplot + 
+    facet_wrap(as.formula(paste("~", annocat_plot2)))
+  
+  rdplot_anno2 <- rdplot + 
+    facet_wrap(as.formula(paste("~", annocat_plot)))
+  
+  ggsave(plot=rdplot, filename= file.path(outdir, paste0("doublet_score_by_", dimred, ".png")), device="png", width=7, height=8, bg = "white")
+  ggsave(plot=rdplot, filename= file.path(outdir, paste0("doublet_score_by_", dimred, ".pdf")), device="pdf", width=7, height=8)
+  
+  plotlayout <- ggplot2::ggplot_build(rdplot_anno1)$layout$layout
+  ggsave(plot=rdplot_anno1, filename= file.path(outdir, paste0("doublet_score_by_", dimred, "_split_by_", annocat_plot2, ".png")), device="png", width=2.5*length(unique(plotlayout$COL)), height=2+2.5*length(unique(plotlayout$ROW)), bg = "white")
+  ggsave(plot=rdplot_anno1, filename= file.path(outdir, paste0("doublet_score_by_", dimred, "_split_by_", annocat_plot2, ".pdf")), device="pdf", width=2.5*length(unique(plotlayout$COL)), height=2+2.5*length(unique(plotlayout$ROW)))
+  
+  plotlayout <- ggplot2::ggplot_build(rdplot_anno2)$layout$layout
+  ggsave(plot=rdplot_anno2, filename= file.path(outdir, paste0("doublet_score_by_", dimred, "_split_by_", annocat_plot, ".png")), device="png", width=2.5*length(unique(plotlayout$COL)), height=2+2.5*length(unique(plotlayout$ROW)), bg = "white")
+  ggsave(plot=rdplot_anno2, filename= file.path(outdir, paste0("doublet_score_by_", dimred, "_split_by_", annocat_plot, ".pdf")), device="pdf", width=2.5*length(unique(plotlayout$COL)), height=2+2.5*length(unique(plotlayout$ROW)))
+})
+
+
 
 
 #############################

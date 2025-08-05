@@ -21,6 +21,7 @@ filtCells_bioc = {
         (filtCells_bioc_vars.threshold_pct_counts_spikein ? " threshold_pct_counts_spikein=" + filtCells_bioc_vars.threshold_pct_counts_spikein : "") +
         (filtCells_bioc_vars.NMADS                        ? " NMADS="                        + filtCells_bioc_vars.NMADS                        : "") +
         (filtCells_bioc_vars.category_NMADS               ? " category="                     + filtCells_bioc_vars.category_NMADS               : "") +
+        (filtCells_bioc_vars.threshold_doubletscore       ? " threshold_doubletscore="       + filtCells_bioc_vars.threshold_doubletscore       : "") +
         (filtCells_bioc_vars.threshold_low_abundance      ? " threshold_low_abundance="      + filtCells_bioc_vars.threshold_low_abundance      : "") +
         (filtCells_bioc_vars.annocat_plot                 ? " annocat_plot="                 + filtCells_bioc_vars.annocat_plot                 : "") +
         (filtCells_bioc_vars.plot_pointsize               ? " plot_pointsize="               + filtCells_bioc_vars.plot_pointsize               : "") +

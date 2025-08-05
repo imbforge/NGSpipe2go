@@ -12,6 +12,7 @@ filtCells_bioc_vars=[
     threshold_pct_counts_spikein : "",         // max percentage of spike-in gene counts if available (for absolute threshold only).
     NMADS                        : "3",        // median absolute deviations (MAD) to define outliers (for relative threshold only).     
     category_NMADS               : "",   // grouping of cells used to calculate MAD (batches). If empty, no grouping applied (for relative threshold only).        
+    threshold_doubletscore       : "FALSE",     // max scDblFinder doublet score. Either absolute threshold, internal classifier ("TRUE") or no filter ("FALSE"). Default: "FALSE".     
     threshold_low_abundance      : "0.005",    // threshold cell portion to exclude low abundance genes. E.g. 0.01 means filter out genes with no expression in 99% of cells.
     annocat_plot                 : "sample",   // category used in plots and tables    
     plot_pointsize               : "0.6",      // dot size used in plots
@@ -33,6 +34,7 @@ class filtCells_bioc_vars_schema {
     String threshold_total_detected          
     String threshold_pct_counts_Mt
     String threshold_pct_counts_spikein
+    String threshold_doubletscore              
     String threshold_low_abundance              
     String NMADS           
     String category_NMADS           

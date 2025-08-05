@@ -5,6 +5,7 @@ qc_bioc_vars=[
     res             : RESULTS,          //where the results lie
     mito_genes      : ESSENTIAL_MTGENES,       
     spikein_genes   : "", // prefix for spikein gene symbols if present. Skipped if empty string.      
+    doubletscore_group : "sample", // independent sample group for doublet score calculation (e.g. "GEMwell" for 10X). Default: "sample".
     annocat_plot    : "group",    // category used in plots
     annocat_plot2   : "sample",   // 2nd category used in plots
     plot_pointsize  : "0.6",      // dot size used in plots
@@ -21,6 +22,7 @@ class qc_bioc_vars_schema {
     String res             
     String mito_genes   
     String spikein_genes   
+    String doubletscore_group   
     String annocat_plot   
     String annocat_plot2   
     String plot_pointsize   

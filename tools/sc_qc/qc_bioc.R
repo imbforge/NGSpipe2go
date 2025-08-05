@@ -14,6 +14,7 @@
 ## seqtype          # sequencing type     
 ## mito.genes       # list with gene_ids of mitochondrial genes. If empty, standard mito chr names used
 ## spikein.genes    # prefix for spikein gene symbols. Skipped if empty.
+## doubletscore_group # independent sample group for doublet score calculation (e.g. "GEMwell" for 10X). Default: "sample".
 ## annocat_plot     # category used for plotting
 ## annocat_plot2    # 2nd category used for plotting
 ##
@@ -37,10 +38,11 @@ outdir        <- parseArgs(args,"outdir=") # output folder
 pipeline_root <- parseArgs(args,"pipeline_root=") 
 mito.genes    <- parseArgs(args,"mito_genes=", default = "")
 spikein.genes <- parseArgs(args,"spikein_genes=", default = "")
-annocat_plot  <- parseArgs(args,"annocat_plot=", default = "group")
-annocat_plot2 <- parseArgs(args,"annocat_plot2=", default = "group")
-plot_pointsize   <- parseArgs(args,"plot_pointsize=", convert="as.numeric", default = 0.6) 
-plot_pointalpha  <- parseArgs(args,"plot_pointalpha=", convert="as.numeric", default = 0.6)  
+doubletscore_group <- parseArgs(args,"doubletscore_group=")
+annocat_plot    <- parseArgs(args,"annocat_plot=", default = "group")
+annocat_plot2   <- parseArgs(args,"annocat_plot2=", default = "group")
+plot_pointsize  <- parseArgs(args,"plot_pointsize=", convert="as.numeric", default = 0.6) 
+plot_pointalpha <- parseArgs(args,"plot_pointalpha=", convert="as.numeric", default = 0.6)  
 
 
 # load R environment
@@ -60,6 +62,7 @@ print(paste("outdir:", outdir))
 print(paste("pipeline_root:", pipeline_root))
 print(paste("mito.genes:", mito.genes))
 print(paste("spikein.genes:", spikein.genes))
+print(paste("doubletscore_group:", doubletscore_group))
 print(paste("annocat_plot:", annocat_plot))
 print(paste("annocat_plot2:", annocat_plot2))
 print(paste("plot_pointsize:", plot_pointsize))
@@ -112,6 +115,9 @@ if(!is.na(spikein.genes) && spikein.genes != "") {
 print("calculate QC metrics") # If subsets is specified, these statistics are also computed for each subset of features.
 sce <- scuttle::addPerCellQCMetrics(sce,percent_top=2,subsets=subset_list)
 
+# Doublet detection by cluster-based simulation of artificial doublets
+sce <- scDblFinder::scDblFinder(sce, samples=if(!is.na(doubletscore_group)) doubletscore_group else NULL)
+
 # get colData table from sce object to store qc flags
 qc.frame <- SummarizedExperiment::colData(sce) |>
   tidyr::as_tibble() |>
@@ -121,7 +127,7 @@ qc.frame <- SummarizedExperiment::colData(sce) |>
 
 # violinplots
 print("create violinplots")
-qc_metrics <- c("sum", "detected", "subsets_Mito_percent", "subsets_spikein_percent")
+qc_metrics <- c("sum", "detected", "subsets_Mito_percent", "subsets_spikein_percent", "scDblFinder.score")
 qc_metrics <- qc_metrics[qc_metrics %in% colnames(qc.frame)]
 
 qc.plots.violin <- lapply(qc_metrics, function(to.plot){ 
@@ -135,13 +141,13 @@ qc.plots.violin <- lapply(qc_metrics, function(to.plot){
     ggtitle(dplyr::case_match(to.plot, "sum" ~ "Library Size",
                                  "detected" ~ "Detected Genes",
                                  "subsets_Mito_percent" ~ "Reads Mapping to Mitochondrial Genes in Percent",
-                                 "subsets_spikein_percent" ~ "Reads Mapping to spikein Genes in Percent"))
+                                 "subsets_spikein_percent" ~ "Reads Mapping to spikein Genes in Percent",
+                                 "scDblFinder.score" ~ "scDblFinder doublet score"))
 
   ggsave(plot=p, width=7, height=5, filename= file.path(outdir, paste0("qc_violin_plot_", to.plot, ".png")), device="png", bg = "white")
   ggsave(plot=p, width=7, height=5, filename= file.path(outdir, paste0("qc_violin_plot_", to.plot, ".pdf")), device="pdf")
   return(p)
 })
-
 
 
 ## Top 2% biggest libraries (based on mapped reads on features)
