@@ -13,6 +13,7 @@
 ## resultsdir       # result directory of project
 ## seqtype          # sequencing type     
 ## mito.genes       # list with gene_ids of mitochondrial genes. If empty, standard mito chr names used
+## spikein.genes    # prefix for spikein gene symbols. Skipped if empty.
 ## annocat_plot     # category used for plotting
 ## annocat_plot2    # 2nd category used for plotting
 ##
@@ -35,6 +36,7 @@ seqtype       <- parseArgs(args,"seqtype=")
 outdir        <- parseArgs(args,"outdir=") # output folder
 pipeline_root <- parseArgs(args,"pipeline_root=") 
 mito.genes    <- parseArgs(args,"mito_genes=", default = "")
+spikein.genes <- parseArgs(args,"spikein_genes=", default = "")
 annocat_plot  <- parseArgs(args,"annocat_plot=", default = "group")
 annocat_plot2 <- parseArgs(args,"annocat_plot2=", default = "group")
 plot_pointsize   <- parseArgs(args,"plot_pointsize=", convert="as.numeric", default = 0.6) 
@@ -57,6 +59,7 @@ print(paste("seqtype:", seqtype))
 print(paste("outdir:", outdir))
 print(paste("pipeline_root:", pipeline_root))
 print(paste("mito.genes:", mito.genes))
+print(paste("spikein.genes:", spikein.genes))
 print(paste("annocat_plot:", annocat_plot))
 print(paste("annocat_plot2:", annocat_plot2))
 print(paste("plot_pointsize:", plot_pointsize))
@@ -91,32 +94,49 @@ names(is.mito) <- row.names(sce)
 SummarizedExperiment::rowData(sce)[,"is.mito"] <- is.mito
 if(!any(is.mito)) {warning("No mitochondrial genes detected. Check your ESSENTIAL_MTGENES settings!")}
 write.table(is.mito, file=file.path(outdir, "is.mito.txt"), sep="\t", quote=F, row.names = T, col.names = F)
+subset_list <- list(Mito=is.mito)
+
+# add spikein gene subset if present
+if(!is.na(spikein.genes) && spikein.genes != "") {
+  is.spikein <- grepl(paste0("^", spikein.genes), SummarizedExperiment::rowData(sce)$feature_symbol)
+  cat(paste(sum(is.spikein), "Spikein genes identified via gene symbol pattern", spikein.genes, ":\n", 
+            paste0(SummarizedExperiment::rowData(sce)$feature_symbol[is.spikein], collapse = ", "), "\n"))
+  names(is.spikein) <- row.names(sce)
+  SummarizedExperiment::rowData(sce)[,"is.spikein"] <- is.spikein
+  if(!any(is.spikein)) {warning("No spikein genes detected. Check your settings!")}
+  write.table(is.spikein, file=file.path(outdir, "is.spikein.txt"), sep="\t", quote=F, row.names = T, col.names = F)
+  subset_list[["spikein"]] <- is.spikein
+}
 
 # calculate QC metrics
-print("calculate QC metrics")
-sce <- scuttle::addPerCellQCMetrics(sce,percent_top=2,subsets=list(Mito=is.mito))
+print("calculate QC metrics") # If subsets is specified, these statistics are also computed for each subset of features.
+sce <- scuttle::addPerCellQCMetrics(sce,percent_top=2,subsets=subset_list)
 
 # get colData table from sce object to store qc flags
-qc.frame <- SummarizedExperiment::colData(sce)
-
-# mark control cells if present
-qc.frame <- tidyr::as_tibble(qc.frame) |> dplyr::mutate(controls=if('cells' %in% colnames(qc.frame)) cells!='1c' else F)
-write.table(qc.frame, file=file.path(outdir, "qc.frame.txt"), sep="\t", quote=F, row.names = F)
-
+qc.frame <- SummarizedExperiment::colData(sce) |>
+  tidyr::as_tibble() |>
+  dplyr::mutate(controls=if('cells' %in% colnames(SummarizedExperiment::colData(sce))) cells!='1c' else F) |> # mark SMART-Seq control cells if present
+  readr::write_tsv(file.path(outdir, "qc.frame.txt"))
 
 
 # violinplots
 print("create violinplots")
-qc.plots.violin <- lapply(c("sum", "detected", "subsets_Mito_percent"), function(to.plot){ 
+qc_metrics <- c("sum", "detected", "subsets_Mito_percent", "subsets_spikein_percent")
+qc_metrics <- qc_metrics[qc_metrics %in% colnames(qc.frame)]
 
-  p <- ggplot(qc.frame, aes(!!sym(annocat_plot2),!!sym(to.plot)))+ 
+qc.plots.violin <- lapply(qc_metrics, function(to.plot){ 
+
+  p <- ggplot(qc.frame, aes(!!sym(annocat_plot2),!!sym(to.plot))) + 
     geom_violin() +
     ggbeeswarm::geom_quasirandom(aes(color = !!sym(annocat_plot)), size = plot_pointsize, alpha=plot_pointalpha) +
     scale_color_hue(l=55) +
     theme(legend.position="bottom", axis.text.x=element_text(angle=45, vjust=1, hjust=1)) + 
     guides(color=guide_legend(override.aes = list(size=1, alpha=1))) +
-    labs(title= if(to.plot=="sum") {"Library Size"} else {if(to.plot=="detected") {"Detected Genes"} else {"Reads Mapping to Mitochondrial Genes in Percent"}})
-  
+    ggtitle(dplyr::case_match(to.plot, "sum" ~ "Library Size",
+                                 "detected" ~ "Detected Genes",
+                                 "subsets_Mito_percent" ~ "Reads Mapping to Mitochondrial Genes in Percent",
+                                 "subsets_spikein_percent" ~ "Reads Mapping to spikein Genes in Percent"))
+
   ggsave(plot=p, width=7, height=5, filename= file.path(outdir, paste0("qc_violin_plot_", to.plot, ".png")), device="png", bg = "white")
   ggsave(plot=p, width=7, height=5, filename= file.path(outdir, paste0("qc_violin_plot_", to.plot, ".pdf")), device="pdf")
   return(p)
@@ -128,11 +148,10 @@ qc.plots.violin <- lapply(c("sum", "detected", "subsets_Mito_percent"), function
 print("Top 2% biggest libraries")
 highest.lib.size <- qc.frame |>
   dplyr::filter(sum > quantile(sum, 0.98)) |>
-  dplyr::select(cell_id, sample, group, sum, detected, subsets_Mito_percent) |>
+  dplyr::select(any_of(c("cell_id", "sample", "group", "sum", "detected", "subsets_Mito_percent", "subsets_spikein_percent"))) |>
   dplyr::arrange(desc(sum)) |>
-  dplyr::mutate(dplyr::across(c(sum, subsets_Mito_percent), \(x) round(x, 2)))
-
-write.table(highest.lib.size, file=file.path(outdir, "highest.lib.size.txt"), sep="\t", quote=F)
+  dplyr::mutate(dplyr::across(any_of(c("sum", "subsets_Mito_percent", "subsets_spikein_percent")), \(x) round(x, 2))) |>
+  readr::write_tsv(file.path(outdir, "highest.lib.size.txt"))
 
 
 ## Plot count distribution per plate position (for Smart-Seq)
@@ -141,7 +160,7 @@ if(seqtype %in% c("SmartSeq")) {
   
   sce$plate_position <- paste0(sce$row, sce$col) # column "plate_position" needed for plotPlatePosition
   
-  for (size in c("sum", "detected", "subsets_Mito_percent")) {
+  for (size in qc_metrics) {
     cat(paste("\nPlotting", size, "as spot size\n\n"))
     plates <- list()
     for (p in as.character(sort(unique(sce$plate)))) {
@@ -181,6 +200,6 @@ print("create scatter plots")
 # save the sessionInformation and R image
 print("store data")
 writeLines(capture.output(sessionInfo()),paste0(outdir, "/qc_bioc_session_info.txt"))
-readr::write_rds(sce, file = file.path(resultsdir, "sce.RDS"))
+#readr::write_rds(sce, file = file.path(resultsdir, "sce.RDS"))
 save(qc.frame, is.mito, highest.lib.size, file=paste0(outdir,"/qc_bioc.RData"))
 

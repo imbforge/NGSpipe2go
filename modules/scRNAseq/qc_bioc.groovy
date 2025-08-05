@@ -13,6 +13,7 @@ qc_bioc = {
         (qc_bioc_vars.pipeline_root      ? " pipeline_root="      + qc_bioc_vars.pipeline_root      : "") +
         (qc_bioc_vars.res                ? " res="                + qc_bioc_vars.res                : "") +
         (qc_bioc_vars.mito_genes         ? " mito_genes="         + qc_bioc_vars.mito_genes         : "") +
+        (qc_bioc_vars.spikein_genes      ? " spikein_genes="      + qc_bioc_vars.spikein_genes      : "") +
         (qc_bioc_vars.annocat_plot       ? " annocat_plot="       + qc_bioc_vars.annocat_plot       : "") +
         (qc_bioc_vars.annocat_plot2      ? " annocat_plot2="      + qc_bioc_vars.annocat_plot2      : "") +
         (qc_bioc_vars.plot_pointsize     ? " plot_pointsize="     + qc_bioc_vars.plot_pointsize     : "") +
