@@ -110,9 +110,7 @@ if(any(is.na(params), is.na(data2clust_ext))) { # skip entirely if cluster setti
     } 
 
     cl <- purrr::pmap(params, function(ds, hclust_method) {
-        print(paste0("Process hierachical clustering based on ", data2clust,": ", hclust_method, " ds", ds))
-  
-  
+
       name_clustering <- paste0("cluster_hclust_", data2clust, "_", hclust_method, "_ds", ds)
       
       if(file.exists(file.path(outdir, name_clustering, paste0(name_clustering, ".tsv")))) {
@@ -150,7 +148,7 @@ if(any(is.na(params), is.na(data2clust_ext))) { # skip entirely if cluster setti
           
           rdplot <- ggplot(plot_data, aes(x = !!dplyr::sym(names(plot_data)[1]), y = !!dplyr::sym(names(plot_data)[2]), color = cluster)) +
             geom_point(size = plot_pointsize, alpha=plot_pointalpha) +
-            scale_fill_hue(l=55) +
+            scale_color_hue(l=55) +
             ggtitle(paste("Cluster hclust", data2clust, hclust_method, paste0("ds", ds), "by", dimred)) + 
             theme(legend.position = "bottom") + 
             guides(color=guide_legend(override.aes = list(size=1, alpha=1)))
@@ -181,7 +179,7 @@ if(any(is.na(params), is.na(data2clust_ext))) { # skip entirely if cluster setti
             tibble::rownames_to_column("cluster") |>
             dplyr::mutate(symbol=SummarizedExperiment::rowData(sce)[best, "feature_symbol"]) |>
             dplyr::mutate(dplyr::across(c(p.value, lib.size1, lib.size2, prop), signif, digits=3)) |>
-            dplyr::mutate(suspicious=scater::isOutlier(num.de, nmads=3, type="lower", log=TRUE)) |>
+            dplyr::mutate(problematic=scater::isOutlier(num.de, nmads=3, type="lower", log=TRUE)) |>
             dplyr::relocate(cluster, source1, source2, num.de, median.de, best, symbol) |>
             readr::write_tsv(file.path(outdir, name_clustering, paste0(name_clustering, "_doublet_detection_by_cluster.txt")))
         } else {

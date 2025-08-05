@@ -102,7 +102,6 @@ if(any(is.na(params))) { # skip entirely if cluster setting not specified
 } else {
 
   cl <- purrr::pmap(params, function(data2clust, k, clusterfun) {
-      print(paste("Process igraph clustering based on", paste0(data2clust,": k", k), clusterfun))
       fn <- get(paste0("cluster_", clusterfun), envir = asNamespace("igraph")) # get igraph function name
       
       name_clustering <- paste0("cluster_igraph_", data2clust, "_k", k, "_", clusterfun)
@@ -144,7 +143,7 @@ if(any(is.na(params))) { # skip entirely if cluster setting not specified
         
           rdplot <- ggplot(plot_data, aes(x = !!dplyr::sym(names(plot_data)[1]), y = !!dplyr::sym(names(plot_data)[2]), color = cluster)) +
             geom_point(size = plot_pointsize, alpha=plot_pointalpha) +
-            scale_fill_hue(l=55) +
+            scale_color_hue(l=55) +
             ggtitle(paste("Cluster igraph", data2clust, paste0("k", k), clusterfun, "by", dimred)) + 
             theme(legend.position = "bottom") + 
             guides(color=guide_legend(override.aes = list(size=1, alpha=1)))
@@ -175,7 +174,7 @@ if(any(is.na(params))) { # skip entirely if cluster setting not specified
             tibble::rownames_to_column("cluster") |>
             dplyr::mutate(symbol=SummarizedExperiment::rowData(sce)[best, "feature_symbol"]) |>
             dplyr::mutate(dplyr::across(c(p.value, lib.size1, lib.size2, prop), signif, digits=3)) |>
-            dplyr::mutate(suspicious=scater::isOutlier(num.de, nmads=3, type="lower", log=TRUE)) |>
+            dplyr::mutate(problematic=scater::isOutlier(num.de, nmads=3, type="lower", log=TRUE)) |>
             dplyr::relocate(cluster, source1, source2, num.de, median.de, best, symbol) |>
             readr::write_tsv(file.path(outdir, name_clustering, paste0(name_clustering, "_doublet_detection_by_cluster.txt")))
         } else {
