@@ -6,23 +6,24 @@ norm_bioc = {
         author: "Frank Rühle"
 
     output.dir = norm_bioc_vars.outdir
-    
+
     def norm_bioc_FLAGS =
         (norm_bioc_vars.outdir             ? " outdir="             + norm_bioc_vars.outdir             : "") +
         (norm_bioc_vars.seqtype            ? " seqtype="            + norm_bioc_vars.seqtype            : "") +
         (norm_bioc_vars.pipeline_root      ? " pipeline_root="      + norm_bioc_vars.pipeline_root      : "") +
         (norm_bioc_vars.res                ? " res="                + norm_bioc_vars.res                : "") +
-        (norm_bioc_vars.annocat_plot       ? " annocat_plot="       + norm_bioc_vars.annocat_plot       : "") +
-        (norm_bioc_vars.annocat_plot2      ? " annocat_plot2="      + norm_bioc_vars.annocat_plot2      : "") +
+        (norm_bioc_vars.spikein_norm       ? " spikein_norm="       + norm_bioc_vars.spikein_norm       : "") +
         (norm_bioc_vars.maxgenes2plot      ? " maxgenes2plot="      + norm_bioc_vars.maxgenes2plot      : "") +
-        (norm_bioc_vars.plot_pointsize     ? " plot_pointsize="     + norm_bioc_vars.plot_pointsize     : "") +
-        (norm_bioc_vars.plot_pointalpha    ? " plot_pointalpha="    + norm_bioc_vars.plot_pointalpha    : "") +
         (norm_bioc_vars.org                ? " org="                + norm_bioc_vars.org                : "") +
         (norm_bioc_vars.explanatory_vars   ? " explanatory_vars="   + norm_bioc_vars.explanatory_vars   : "") +
         (norm_bioc_vars.hvg_prop           ? " hvg_prop="           + norm_bioc_vars.hvg_prop           : "") +
         (norm_bioc_vars.block_var          ? " block_var="          + norm_bioc_vars.block_var          : "") +
         (norm_bioc_vars.perplexity         ? " perplexity="         + norm_bioc_vars.perplexity         : "") +
-        (norm_bioc_vars.n_neighbors        ? " n_neighbors="        + norm_bioc_vars.n_neighbors        : "")
+        (norm_bioc_vars.n_neighbors        ? " n_neighbors="        + norm_bioc_vars.n_neighbors        : "") +
+        (norm_bioc_vars.annocat_plot       ? " annocat_plot="       + norm_bioc_vars.annocat_plot       : "") +
+        (norm_bioc_vars.annocat_plot2      ? " annocat_plot2="      + norm_bioc_vars.annocat_plot2      : "") +
+        (norm_bioc_vars.plot_pointsize     ? " plot_pointsize="     + norm_bioc_vars.plot_pointsize     : "") +
+        (norm_bioc_vars.plot_pointalpha    ? " plot_pointalpha="    + norm_bioc_vars.plot_pointalpha    : "")
 
     def TOOL_ENV = prepare_tool_env("R", tools["R"]["version"], tools["R"]["runenv"])
     def PREAMBLE = get_preamble(stage:stageName, outdir:output.dir, input:new File(input1.prefix).getName())
