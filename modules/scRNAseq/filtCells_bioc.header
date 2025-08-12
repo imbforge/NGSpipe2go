@@ -4,13 +4,14 @@ filtCells_bioc_vars=[
     pipeline_root                : PIPELINE_ROOT,                     
     res                          : RESULTS,         
     samples2exclude              : "", // string with sample names if entire samples shall be excluded from analysis before QC filtering.         
-    type_of_threshold            : "absolute", // "absolute", "relative" or "none. For "relative" NMADs are calculated per category. Skipped if "none".    
+    type_of_threshold            : "absolute", // "absolute", "relative" or "none" to skip filtering. For "relative" NMADs are applied per category.  
     threshold_total_counts_min   : "1000",     // min read counts per cell (for absolute threshold only).
     threshold_total_counts_max   : "50000",    // max read counts per cell (for absolute threshold only).
     threshold_total_detected     : "500",      // min genes detected (for absolute threshold only).
     threshold_pct_counts_Mt      : "10",       // max percentage of mitochondrial gene counts (for absolute threshold only).
     threshold_pct_counts_spikein : "",         // max percentage of spike-in gene counts if available (for absolute threshold only).
-    NMADS                        : "3",        // median absolute deviations (MAD) to define outliers (for relative threshold only).     
+    threshold_counts_spikein_min : "",         // min spike-in gene counts if available (to avoid size factors of zero, for absolute threshold only).
+    NMADS                        : "3",        // median absolute deviations (MAD) to define outliers for each category (for relative threshold only).     
     category_NMADS               : "",   // grouping of cells used to calculate MAD (batches). If empty, no grouping applied (for relative threshold only).        
     threshold_doubletscore       : "FALSE",     // max scDblFinder doublet score. Either absolute threshold, internal classifier ("TRUE") or no filter ("FALSE"). Default: "FALSE".     
     threshold_low_abundance      : "0.005",    // threshold cell portion to exclude low abundance genes. E.g. 0.01 means filter out genes with no expression in 99% of cells.
@@ -34,6 +35,7 @@ class filtCells_bioc_vars_schema {
     String threshold_total_detected          
     String threshold_pct_counts_Mt
     String threshold_pct_counts_spikein
+    String threshold_counts_spikein_min
     String threshold_doubletscore              
     String threshold_low_abundance              
     String NMADS           

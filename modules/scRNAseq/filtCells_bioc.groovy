@@ -19,6 +19,7 @@ filtCells_bioc = {
         (filtCells_bioc_vars.threshold_total_detected     ? " threshold_total_detected="     + filtCells_bioc_vars.threshold_total_detected     : "") +
         (filtCells_bioc_vars.threshold_pct_counts_Mt      ? " threshold_pct_counts_Mt="      + filtCells_bioc_vars.threshold_pct_counts_Mt      : "") +
         (filtCells_bioc_vars.threshold_pct_counts_spikein ? " threshold_pct_counts_spikein=" + filtCells_bioc_vars.threshold_pct_counts_spikein : "") +
+        (filtCells_bioc_vars.threshold_counts_spikein_min ? " threshold_counts_spikein_min=" + filtCells_bioc_vars.threshold_counts_spikein_min : "") +
         (filtCells_bioc_vars.NMADS                        ? " NMADS="                        + filtCells_bioc_vars.NMADS                        : "") +
         (filtCells_bioc_vars.category_NMADS               ? " category="                     + filtCells_bioc_vars.category_NMADS               : "") +
         (filtCells_bioc_vars.threshold_doubletscore       ? " threshold_doubletscore="       + filtCells_bioc_vars.threshold_doubletscore       : "") +

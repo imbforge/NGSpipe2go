@@ -105,14 +105,16 @@ if(!is.na(spikein.genes) && spikein.genes != "") {
   cat(paste(sum(is.spikein), "Spikein genes identified via gene symbol pattern", spikein.genes, ":\n", 
             paste0(SummarizedExperiment::rowData(sce)$feature_symbol[is.spikein], collapse = ", "), "\n"))
   names(is.spikein) <- row.names(sce)
-  SummarizedExperiment::rowData(sce)[,"is.spikein"] <- is.spikein
+  
+  SingleCellExperiment::altExp(sce, "spikein") <- sce[is.spikein, ] # move spikein genes to an altExp
+  sce <- sce[!is.spikein, ]  # remove spikein genes from main assay
+  
   if(!any(is.spikein)) {warning("No spikein genes detected. Check your settings!")}
   write.table(is.spikein, file=file.path(outdir, "is.spikein.txt"), sep="\t", quote=F, row.names = T, col.names = F)
-  subset_list[["spikein"]] <- is.spikein
 }
 
-# calculate QC metrics
-print("calculate QC metrics") # If subsets is specified, these statistics are also computed for each subset of features.
+# calculate QC metrics. If subsets is specified, these statistics are also computed for each subset of features. Stats for altExps are calculated as well.
+print("calculate QC metrics") 
 sce <- scuttle::addPerCellQCMetrics(sce,percent_top=2,subsets=subset_list)
 
 # Doublet detection by cluster-based simulation of artificial doublets
@@ -127,7 +129,7 @@ qc.frame <- SummarizedExperiment::colData(sce) |>
 
 # violinplots
 print("create violinplots")
-qc_metrics <- c("sum", "detected", "subsets_Mito_percent", "subsets_spikein_percent", "scDblFinder.score")
+qc_metrics <- c("sum", "detected", "subsets_Mito_percent", "altexps_spikein_percent", "scDblFinder.score")
 qc_metrics <- qc_metrics[qc_metrics %in% colnames(qc.frame)]
 
 qc.plots.violin <- lapply(qc_metrics, function(to.plot){ 
@@ -141,7 +143,7 @@ qc.plots.violin <- lapply(qc_metrics, function(to.plot){
     ggtitle(dplyr::case_match(to.plot, "sum" ~ "Library Size",
                                  "detected" ~ "Detected Genes",
                                  "subsets_Mito_percent" ~ "Reads Mapping to Mitochondrial Genes in Percent",
-                                 "subsets_spikein_percent" ~ "Reads Mapping to spikein Genes in Percent",
+                                 "altexps_spikein_percent" ~ "Reads Mapping to spikein Genes in Percent",
                                  "scDblFinder.score" ~ "scDblFinder doublet score"))
 
   ggsave(plot=p, width=7, height=5, filename= file.path(outdir, paste0("qc_violin_plot_", to.plot, ".png")), device="png", bg = "white")
@@ -154,9 +156,9 @@ qc.plots.violin <- lapply(qc_metrics, function(to.plot){
 print("Top 2% biggest libraries")
 highest.lib.size <- qc.frame |>
   dplyr::filter(sum > quantile(sum, 0.98)) |>
-  dplyr::select(any_of(c("cell_id", "sample", "group", "sum", "detected", "subsets_Mito_percent", "subsets_spikein_percent"))) |>
+  dplyr::select(any_of(c("cell_id", "sample", "group", "sum", "detected", "subsets_Mito_percent", "altexps_spikein_percent"))) |>
   dplyr::arrange(desc(sum)) |>
-  dplyr::mutate(dplyr::across(any_of(c("sum", "subsets_Mito_percent", "subsets_spikein_percent")), \(x) round(x, 2))) |>
+  dplyr::mutate(dplyr::across(any_of(c("sum", "subsets_Mito_percent", "altexps_spikein_percent")), \(x) round(x, 2))) |>
   readr::write_tsv(file.path(outdir, "highest.lib.size.txt"))
 
 
