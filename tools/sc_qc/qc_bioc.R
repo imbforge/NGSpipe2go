@@ -118,7 +118,9 @@ print("calculate QC metrics")
 sce <- scuttle::addPerCellQCMetrics(sce,percent_top=2,subsets=subset_list)
 
 # Doublet detection by cluster-based simulation of artificial doublets
-sce <- scDblFinder::scDblFinder(sce, samples=if(!is.na(doubletscore_group)) doubletscore_group else NULL)
+dsgroup <- if(!is.na(doubletscore_group) & doubletscore_group %in% colnames(SummarizedExperiment::colData(sce))) doubletscore_group else NULL
+print(paste("calculate doublet score", if(!is.null(dsgroup)) paste("per", dsgroup)))
+sce <- scDblFinder::scDblFinder(sce, samples=dsgroup)
 
 # get colData table from sce object to store qc flags
 qc.frame <- SummarizedExperiment::colData(sce) |>
