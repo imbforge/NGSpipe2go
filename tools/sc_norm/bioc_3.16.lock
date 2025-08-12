@@ -369,6 +369,35 @@
       ],
       "Hash": "0e510b9ce6c89e37c2ed562a624afbe0"
     },
+    "PCAtools": {
+      "Package": "PCAtools",
+      "Version": "2.10.0",
+      "Source": "Bioconductor",
+      "git_url": "https://git.bioconductor.org/packages/PCAtools",
+      "git_branch": "RELEASE_3_16",
+      "git_last_commit": "99d6841",
+      "git_last_commit_date": "2022-11-01",
+      "Requirements": [
+        "BH",
+        "BiocParallel",
+        "BiocSingular",
+        "DelayedArray",
+        "DelayedMatrixStats",
+        "Matrix",
+        "Rcpp",
+        "beachmat",
+        "cowplot",
+        "dqrng",
+        "ggplot2",
+        "ggrepel",
+        "grDevices",
+        "lattice",
+        "methods",
+        "reshape2",
+        "stats"
+      ],
+      "Hash": "cae8cfe9bbffed96f5ccbbceb74134d2"
+    },
     "R6": {
       "Package": "R6",
       "Version": "2.6.1",
@@ -744,6 +773,23 @@
         "R"
       ],
       "Hash": "c089a619a7fae175d149d89164f8c7d8"
+    },
+    "cowplot": {
+      "Package": "cowplot",
+      "Version": "1.2.0",
+      "Source": "Repository",
+      "Repository": "RSPM",
+      "Requirements": [
+        "R",
+        "ggplot2",
+        "grDevices",
+        "grid",
+        "gtable",
+        "methods",
+        "rlang",
+        "scales"
+      ],
+      "Hash": "596af504bed287f32d888a05889dcc9d"
     },
     "cpp11": {
       "Package": "cpp11",
@@ -1244,6 +1290,17 @@
       ],
       "Hash": "01f28d4278f15c76cddbea05899c5d6f"
     },
+    "plyr": {
+      "Package": "plyr",
+      "Version": "1.8.9",
+      "Source": "Repository",
+      "Repository": "RSPM",
+      "Requirements": [
+        "R",
+        "Rcpp"
+      ],
+      "Hash": "6b8177fd19982f0020743fadbfdbd933"
+    },
     "png": {
       "Package": "png",
       "Version": "0.1-8",
@@ -1336,6 +1393,19 @@
         "utils"
       ],
       "Hash": "4543b8cd233ae25c6aba8548be9e747e"
+    },
+    "reshape2": {
+      "Package": "reshape2",
+      "Version": "1.4.4",
+      "Source": "Repository",
+      "Repository": "RSPM",
+      "Requirements": [
+        "R",
+        "Rcpp",
+        "plyr",
+        "stringr"
+      ],
+      "Hash": "bb5996d0bd962d214a11140d77589917"
     },
     "rhdf5": {
       "Package": "rhdf5",

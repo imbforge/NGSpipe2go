@@ -19,6 +19,7 @@
 ## explanatory_vars # any other categorical factors you may inspect for potential batch effects
 ## hvg_n            # Number of genes to report as HVGs according to biological component of variance. Interpreted as proportion if <= 1.
 ## block_var        # name of block var to account for uninteresting factor when decomposing variance for HVGs. Leave empty to skip.
+## pca_components   # number of components for PCA. If empty, suitable number of PCs is estimated using the elbow point approach.
 ## perplexity       # perplexity for tSNE. Can have a large effect on the results. calculateTSNE: Should not be bigger than (nrow(X)-1)/3. Reasonable default value: cellcount/5, capped at a maximum of 50.
 ## n_neighbors      # number of nearest neighbors for UMAP
 ## annocat_plot     # category used for plotting
@@ -58,6 +59,7 @@ org              <- parseArgs(args,"org=")
 explanatory_vars <- parseArgs(args,"explanatory_vars=", convert="as.char.vector")
 hvg_n            <- parseArgs(args,"hvg_n=", convert="as.numeric", default = 0.1)
 block_var        <- parseArgs(args,"block_var=")
+pca_components   <- parseArgs(args,"pca_components=") 
 perplexity       <- parseArgs(args,"perplexity=", convert="run_custom_code") 
 n_neighbors      <- parseArgs(args,"n_neighbors=", convert="run_custom_code")
   if(is.na(perplexity)) {perplexity <- NULL}
@@ -89,6 +91,7 @@ print(paste("org:", org))
 print(paste("explanatory_vars:", paste0(explanatory_vars, collapse=", ")))
 print(paste("hvg_n:", hvg_n))
 print(paste("block_var:", block_var))
+print(paste("pca_components:", pca_components))
 print(paste("perplexity:", paste0(perplexity, collapse=", ")))
 print(paste("n_neighbors:", paste0(n_neighbors, collapse=", ")))
 print(paste("annocat_plot:", annocat_plot))
@@ -126,6 +129,7 @@ sce <- scater::logNormCounts(sce)
 print("plot size factors")
 plot_sf <- ggplot(SummarizedExperiment::colData(sce), aes(x=sizeFactor, y=sum/1e3, color=!!sym(annocat_plot))) +
   geom_point(size = plot_pointsize, alpha=plot_pointalpha) + 
+  xlab(paste("size factor", if(spikein_norm) "(spike-ins)")) + 
   ylab("Library size (thousands)") + 
   scale_color_hue(l=55) +
   guides(color=guide_legend(override.aes = list(size=1, alpha=1)))
@@ -185,11 +189,13 @@ if(spikein_norm) {
   print(paste("Estimate highly variable genes to be used for reduced dimensions", if(!is.na(block_var)) {paste("separately within each level of", block_var)}))
   decVar <- scran::modelGeneVar(sce, assay.type = "logcounts", block = if(!is.na(block_var)) {SummarizedExperiment::colData(sce)[,block_var]} else {NULL})
 }
+
 if(hvg_n>1) { # absolute number of top HVGs to report
 hvg <- scran::getTopHVGs(decVar, var.field = "bio", n=hvg_n) # result already ordered
 } else { # proportion of genes to report as HVGs
   hvg <- scran::getTopHVGs(decVar, var.field = "bio", prop=hvg_n) 
 }
+
 SingleCellExperiment::rowSubset(sce, field = "HVGs") <- hvg # add 'HVGs' column (logical) to rowData
 print(paste("Determined", length(hvg), "HVGs"))
 
@@ -203,9 +209,7 @@ decVar_ordered <- as.data.frame(decVar) |> # Ordering by most interesting genes 
 
 write.table(decVar_ordered, file=file.path(outdir, paste0("highly_variable_genes_bio", hvg_n, ".txt")), sep="\t", quote = F, row.names = F)
 
-
 # plot top HVGs (gene filter does not effect order of colData)
-# plot genes with highest expression
 top_hvg_data <- SingleCellExperiment::logcounts(sce)[hvg[1:maxgenes2plot],] |>
   as.matrix() |>
   t() |>
@@ -232,6 +236,23 @@ ggsave(plot=top_hvg_plot, width=7, height=1+2*nGridRow, # legend + 2 inch per pa
        filename= file.path(outdir, paste0("top_", maxgenes2plot, "_highly_variable_genes.png")), device="png", bg = "white")
 ggsave(plot=top_hvg_plot, width=7, height=1+2*nGridRow, # legend + 2 inch per panel row
        filename= file.path(outdir, paste0("top_", maxgenes2plot, "_highly_variable_genes.pdf")), device="pdf")
+
+
+# calculate PCA based on HVGs 
+print("calculate PCA based on HVGs")
+if(!is.na(pca_components)) {
+  sce <- scran::fixedPCA(sce, name = "PCA", rank = pca_components, subset.row=hvg, assay.type = "logcounts")
+} else {
+  sce <- scran::fixedPCA(sce, name = "PCA", rank = 50, subset.row=hvg, assay.type = "logcounts")
+  percent.var <- attr(SingleCellExperiment::reducedDim(sce, "PCA"), "percentVar")
+  chosen.elbow <- PCAtools::findElbowPoint(percent.var)
+  png(file=file.path(outdir, "elbow_plot_for_PC_variance.png"), width=7, height=4, units="in", res=300) 
+    plot(percent.var, xlab="PC", ylab="Variance explained (%)")
+    abline(v=chosen.elbow, col="red")
+  dev.off()
+  print(paste("Continue with", min(chosen.elbow, 50), "PCs for downstream processing."))
+  SingleCellExperiment::reducedDim(sce, "PCA") <- SingleCellExperiment::reducedDim(sce, "PCA")[,1:min(chosen.elbow, 50)]
+}
 
 
 ## Check for potential confounder variables
@@ -308,8 +329,6 @@ explVar <- scater::plotExplanatoryVariables(sce, variables=explanatory_vars, exp
 ggsave(plot=explVar, filename= file.path(outdir, paste0("explanatory_variables_density_plot.png")), device="png", width=7, height=5, bg = "white")
 ggsave(plot=explVar, filename= file.path(outdir, paste0("explanatory_variables_density_plot.pdf")), device="pdf", width=7, height=5)
 
-# calculate PCA based on hvg for scatter plots (could also be done for spike-ins with altexp = "spikein")
-sce <- scater::runPCA(sce, name = "PCA", ncomponents=50, subset_row=hvg, exprs_values="logcounts")
 
 explVarScatter <- lapply(explanatory_vars, function(x) {
   p <- scater::plotPCASCE(sce, ncomponents = 4, point_size=plot_pointsize, point_alpha=plot_pointalpha, colour_by=x) + 

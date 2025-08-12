@@ -18,6 +18,7 @@ norm_bioc = {
         (norm_bioc_vars.explanatory_vars   ? " explanatory_vars="   + norm_bioc_vars.explanatory_vars   : "") +
         (norm_bioc_vars.hvg_n              ? " hvg_n="              + norm_bioc_vars.hvg_n              : "") +
         (norm_bioc_vars.block_var          ? " block_var="          + norm_bioc_vars.block_var          : "") +
+        (norm_bioc_vars.pca_components     ? " pca_components="     + norm_bioc_vars.pca_components     : "") +
         (norm_bioc_vars.perplexity         ? " perplexity="         + norm_bioc_vars.perplexity         : "") +
         (norm_bioc_vars.n_neighbors        ? " n_neighbors="        + norm_bioc_vars.n_neighbors        : "") +
         (norm_bioc_vars.annocat_plot       ? " annocat_plot="       + norm_bioc_vars.annocat_plot       : "") +

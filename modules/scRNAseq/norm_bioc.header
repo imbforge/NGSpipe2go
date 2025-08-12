@@ -7,8 +7,9 @@ norm_bioc_vars=[
     maxgenes2plot    : "15",     // max number of genes to plot (top expressed genes and HVGs)
     org              : ESSENTIAL_ORG, // either "human" or "mouse". Organism name needed for cell cycle phase scores. Leave empty to skip cell cycle cell assignment.
     explanatory_vars : "",       // any other categorical factors you may inspect for potential batch effects
-    hvg_n            : "0.1",    // Number of genes to report as HVGs according to biological component of variance. Interpreted as proportion if <= 1.
+    hvg_n            : "0.1",    // number of genes to report as HVGs according to biological component of variance. Interpreted as proportion if <= 1.
     block_var        : "",       // name of block var to account for uninteresting factor when decomposing variance for HVGs. Leave empty to skip.
+    pca_components   : "30",     // number of components for PCA. If empty, suitable number of PCs is estimated using the elbow point approach.
     perplexity       : "30",     // perplexity for tSNE
     n_neighbors      : "15",      // number of nearest neighbors for UMAP
     annocat_plot     : "group",  // category used in plots
@@ -31,6 +32,7 @@ class norm_bioc_vars_schema {
     String explanatory_vars
     String hvg_n
     String block_var
+    String pca_components
     String perplexity
     String n_neighbors
     String annocat_plot
