@@ -17,7 +17,7 @@
 ## maxgenes2plot    # max number of genes to plot (top expressed genes and HVGs)
 ## org              # either "human" or "mouse". Organism name needed for cell cycle phase scores. Leave empty to skip.
 ## explanatory_vars # any other categorical factors you may inspect for potential batch effects
-## hvg_prop         # proportion of genes to report as HVGs according to biological component of variance
+## hvg_n            # Number of genes to report as HVGs according to biological component of variance. Interpreted as proportion if <= 1.
 ## block_var        # name of block var to account for uninteresting factor when decomposing variance for HVGs. Leave empty to skip.
 ## perplexity       # perplexity for tSNE. Can have a large effect on the results. calculateTSNE: Should not be bigger than (nrow(X)-1)/3. Reasonable default value: cellcount/5, capped at a maximum of 50.
 ## n_neighbors      # number of nearest neighbors for UMAP
@@ -56,7 +56,7 @@ spikein_norm     <- parseArgs(args,"spikein_norm=", convert="as.logical", defaul
 maxgenes2plot    <- parseArgs(args,"maxgenes2plot=", convert="as.numeric", default = 15)
 org              <- parseArgs(args,"org=")
 explanatory_vars <- parseArgs(args,"explanatory_vars=", convert="as.char.vector")
-hvg_prop         <- parseArgs(args,"hvg_prop=", convert="as.numeric", default = 0.1)
+hvg_n            <- parseArgs(args,"hvg_n=", convert="as.numeric", default = 0.1)
 block_var        <- parseArgs(args,"block_var=")
 perplexity       <- parseArgs(args,"perplexity=", convert="run_custom_code") 
 n_neighbors      <- parseArgs(args,"n_neighbors=", convert="run_custom_code")
@@ -87,7 +87,7 @@ print(paste("spikein_norm:", spikein_norm))
 print(paste("maxgenes2plot:", maxgenes2plot))
 print(paste("org:", org))
 print(paste("explanatory_vars:", paste0(explanatory_vars, collapse=", ")))
-print(paste("hvg_prop:", hvg_prop))
+print(paste("hvg_n:", hvg_n))
 print(paste("block_var:", block_var))
 print(paste("perplexity:", paste0(perplexity, collapse=", ")))
 print(paste("n_neighbors:", paste0(n_neighbors, collapse=", ")))
@@ -185,7 +185,11 @@ if(spikein_norm) {
   print(paste("Estimate highly variable genes to be used for reduced dimensions", if(!is.na(block_var)) {paste("separately within each level of", block_var)}))
   decVar <- scran::modelGeneVar(sce, assay.type = "logcounts", block = if(!is.na(block_var)) {SummarizedExperiment::colData(sce)[,block_var]} else {NULL})
 }
-hvg <- scran::getTopHVGs(decVar, var.field = "bio", prop=hvg_prop) # already ordered
+if(hvg_n>1) { # absolute number of top HVGs to report
+hvg <- scran::getTopHVGs(decVar, var.field = "bio", n=hvg_n) # result already ordered
+} else { # proportion of genes to report as HVGs
+  hvg <- scran::getTopHVGs(decVar, var.field = "bio", prop=hvg_n) 
+}
 SingleCellExperiment::rowSubset(sce, field = "HVGs") <- hvg # add 'HVGs' column (logical) to rowData
 print(paste("Determined", length(hvg), "HVGs"))
 
@@ -197,7 +201,7 @@ decVar_ordered <- as.data.frame(decVar) |> # Ordering by most interesting genes 
   dplyr::arrange(dplyr::desc(bio)) |>
   dplyr::mutate(dplyr::across(where(is.numeric), ~ signif(.x, digits = 4)))
 
-write.table(decVar_ordered, file=file.path(outdir, paste0("highly_variable_genes_bio", hvg_prop, ".txt")), sep="\t", quote = F, row.names = F)
+write.table(decVar_ordered, file=file.path(outdir, paste0("highly_variable_genes_bio", hvg_n, ".txt")), sep="\t", quote = F, row.names = F)
 
 
 # plot top HVGs (gene filter does not effect order of colData)

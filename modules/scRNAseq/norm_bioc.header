@@ -3,11 +3,11 @@ norm_bioc_vars=[
     pipeline_root    : PIPELINE_ROOT,                     
     seqtype          : ESSENTIAL_SEQTYPE,                     
     res              : RESULTS,  //where the results lie
-    spikein_norm     : "TRUE",  // use spike-in genes for normalization if applicable
+    spikein_norm     : "FALSE",  // use spike-in genes for normalization if applicable
     maxgenes2plot    : "15",     // max number of genes to plot (top expressed genes and HVGs)
     org              : ESSENTIAL_ORG, // either "human" or "mouse". Organism name needed for cell cycle phase scores. Leave empty to skip cell cycle cell assignment.
     explanatory_vars : "",       // any other categorical factors you may inspect for potential batch effects
-    hvg_prop         : "0.1",    // proportion of genes to report as HVGs according to biological component of variance
+    hvg_n            : "0.1",    // Number of genes to report as HVGs according to biological component of variance. Interpreted as proportion if <= 1.
     block_var        : "",       // name of block var to account for uninteresting factor when decomposing variance for HVGs. Leave empty to skip.
     perplexity       : "30",     // perplexity for tSNE
     n_neighbors      : "15",      // number of nearest neighbors for UMAP
@@ -29,7 +29,7 @@ class norm_bioc_vars_schema {
     String maxgenes2plot
     String org
     String explanatory_vars
-    String hvg_prop
+    String hvg_n
     String block_var
     String perplexity
     String n_neighbors
