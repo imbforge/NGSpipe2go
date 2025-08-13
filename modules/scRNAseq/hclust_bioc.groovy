@@ -13,6 +13,7 @@ hclust_bioc = {
         (hclust_bioc_vars.pipeline_root      ? " pipeline_root="      + hclust_bioc_vars.pipeline_root      : "") +
         (hclust_bioc_vars.res                ? " res="                + hclust_bioc_vars.res                : "") +
         (hclust_bioc_vars.data2clust         ? " data2clust="         + hclust_bioc_vars.data2clust         : "") +
+        (hclust_bioc_vars.pre_kmeans         ? " pre_kmeans="         + hclust_bioc_vars.pre_kmeans         : "") +
         (hclust_bioc_vars.hclust_method      ? " hclust_method="      + hclust_bioc_vars.hclust_method      : "") +
         (hclust_bioc_vars.deepSplit          ? " deepSplit="          + hclust_bioc_vars.deepSplit          : "") +
         (hclust_bioc_vars.minClusterSize     ? " minClusterSize="     + hclust_bioc_vars.minClusterSize     : "") +

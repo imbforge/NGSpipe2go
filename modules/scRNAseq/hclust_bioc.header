@@ -3,7 +3,8 @@ hclust_bioc_vars=[
     pipeline_root    : PIPELINE_ROOT,                     
     seqtype          : ESSENTIAL_SEQTYPE,                     
     res              : RESULTS,  //where the results lie
-    data2clust       : "PCA",  //data used for clustering. CCan be any reduced dimension slot or 'logcounts' (meaning HVGs). Multiple entries allowed. Leave empty to skip.
+    data2clust       : "PCA",  //data used for clustering (default "PCA"). Can be any reduced dimension slot or 'logcounts' (meaning HVGs). Multiple entries allowed. Leave empty to skip.
+    pre_kmeans       : "", //apply 2 step clustering with k-means clustering (pre_kmeans centers) as first step. Skipped if empty. Useful for huge data sets.
     hclust_method    : "ward.D2",  // clustering method ("ward.D", "ward.D2", "single", "complete", average", "mcquitty", "median" or "centroid"). Multiple entries allowed.
     deepSplit        : "2", // control cluster splitting (range 0 to 4). The higher the value, the more and smaller clusters will be produced. Multiple entries allowed.
     minClusterSize   : "50",        // minimum cluster size
@@ -22,6 +23,7 @@ class hclust_bioc_vars_schema {
     String seqtype           
     String res             
     String data2clust             
+    String pre_kmeans             
     String hclust_method             
     String deepSplit             
     String minClusterSize             

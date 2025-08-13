@@ -13,6 +13,7 @@
 ## resultsdir       # result directory of project
 ## seqtype          # sequencing type     
 ## data2clust_pre   # data used for clustering. Can be any reduced dimension slot or 'logcounts'.
+## pre_kmeans       # apply 2 step clustering with k-means clustering (pre_kmeans centers) as first step. Skipped if empty.
 ## hclust_method    # clustering method ("ward.D", "ward.D2", "single", "complete", average", "mcquitty", "median" or "centroid")
 ## ds               # deepSplit (range 0 to 4). The higher the value, the more and smaller clusters will be produced.
 ## minClusterSize   # minimum cluster size
@@ -48,6 +49,7 @@ seqtype          <- parseArgs(args,"seqtype=")
 outdir           <- parseArgs(args,"outdir=") # output folder
 pipeline_root    <- parseArgs(args,"pipeline_root=") 
 data2clust_pre   <- parseArgs(args,"data2clust=", convert="as.char.vector") 
+pre_kmeans       <- parseArgs(args,"pre_kmeans=", convert="as.numeric")
 hclust_method    <- parseArgs(args,string="hclust_method=", convert="as.char.vector") 
 ds               <- parseArgs(args,string="deepSplit=",convert="run_custom_code", default=1)
 minClusterSize   <- parseArgs(args,string="minClusterSize=", convert="as.numeric", default = 50)
@@ -74,6 +76,7 @@ print(paste("seqtype:", seqtype))
 print(paste("outdir:", outdir))
 print(paste("pipeline_root:", pipeline_root))
 print(paste("data2clust:", paste0(data2clust_pre, collapse=", ")))
+print(paste("pre_kmeans:", pre_kmeans))
 print(paste("hclust_method:", paste0(hclust_method, collapse=", ")))
 print(paste("ds:", paste0(ds, collapse=", ")))
 print(paste("minClusterSize:", paste0(minClusterSize, collapse=", ")))
@@ -89,27 +92,19 @@ print(sce)
 
 
 # set up combinations of clustering parameter (catch e.g. TSNE subtypes as well)
-data2clust_ext = unique(data2clust_pre, unlist(sapply(data2clust_pre, grep, SingleCellExperiment::reducedDimNames(sce), value=T))) 
+#data2clust_ext = unique(data2clust_pre, unlist(sapply(data2clust_pre, grep, SingleCellExperiment::reducedDimNames(sce), value=T))) 
 params <- tidyr::expand_grid( 
+  data2clust = unique(data2clust_pre, unlist(sapply(data2clust_pre, grep, SingleCellExperiment::reducedDimNames(sce), value=T))), 
   ds = ds,
   hclust_method = hclust_method
 )
 
 
-if(any(is.na(params), is.na(data2clust_ext))) { # skip entirely if cluster setting not specified
+if(any(is.na(params))) { # skip entirely if cluster setting not specified
   cl <- list()
 } else {
 
- cl <- purrr::map(data2clust_ext, function(data2clust) { 
-    # create distance matrix separately from other params to avoid unnecessary re-creation for all parameter combinations 
-    print(paste("Create dist matrix for", data2clust))
-    dst <- if(data2clust != "logcounts") {
-      SingleCellExperiment::reducedDim(sce,data2clust) |> dist()
-    } else {
-      SingleCellExperiment::logcounts(sce)[SummarizedExperiment::rowData(sce)$HVGs,] |> t() |> dist()
-    } 
-
-    cl <- purrr::pmap(params, function(ds, hclust_method) {
+    cl <- purrr::pmap(params, function(data2clust, ds, hclust_method) {
 
       name_clustering <- paste0("cluster_hclust_", data2clust, "_", hclust_method, "_ds", ds)
       
@@ -123,8 +118,16 @@ if(any(is.na(params), is.na(data2clust_ext))) { # skip entirely if cluster setti
         print(paste("Processing", name_clustering))
         if (!file.exists(file.path(outdir, name_clustering))) {dir.create(file.path(outdir, name_clustering), recursive=T) }
         
-        cluster <- dynamicTreeCut::cutreeDynamic(hclust(dst,method=hclust_method),distM=as.matrix(dst),method="hybrid",minClusterSize=minClusterSize,deepSplit=ds,verbose=0)
-        
+        cluster <- scran::clusterCells(sce[if(data2clust == "logcounts") SummarizedExperiment::rowData(sce)$HVGs else TRUE,],
+                                       use.dimred = switch(data2clust != "logcounts",data2clust,NULL),
+                                       assay.type = switch(data2clust == "logcounts",data2clust,NULL),
+                                       BLUSPARAM=if(is.na(pre_kmeans)) {bluster::HclustParam(method=hclust_method, cut.dynamic=TRUE, cut.params=list(minClusterSize=minClusterSize, deepSplit=ds))} else {
+                                         bluster::TwoStepParam(
+                                           first=bluster::KmeansParam(centers=pre_kmeans),
+                                           second=bluster::HclustParam(method=hclust_method, cut.dynamic=TRUE, cut.params=list(minClusterSize=minClusterSize, deepSplit=ds))
+                                         )
+                                       })
+
         cluster_tsv <- data.frame(cell_id=colnames(sce), cluster=cluster) |>
           purrr::set_names("cell_id", name_clustering) |> 
           readr::write_tsv(file.path(outdir, name_clustering, paste0(name_clustering, ".tsv")))
@@ -171,6 +174,30 @@ if(any(is.na(params), is.na(data2clust_ext))) { # skip entirely if cluster setti
           ggsave(plot=rdplot_anno2, filename= file.path(outdir, name_clustering, paste0(name_clustering, "_by_", dimred, "_split_by_", annocat_plot, ".pdf")), device="pdf", width=2.5*length(unique(plotlayout$COL)), height=2+2.5*length(unique(plotlayout$ROW)))
         })
         
+        
+        # Approximate silhouette width for evaluating cluster separation
+        if(length(unique(cluster))>1) {
+          print(paste("Approximate silhouette width for", name_clustering))
+          sil.approx <- bluster::approxSilhouette(x=if(data2clust != "logcounts") {SingleCellExperiment::reducedDim(sce, data2clust)} else {t(logcounts(sce)[SummarizedExperiment::rowData(sce)$HVGs,])}, 
+                                                  clusters=cluster) |>
+            as.data.frame() |>
+            dplyr::mutate(closest=factor(ifelse(width > 0, cluster, other)))
+          
+          bplot <- ggplot(sil.approx, aes(x=cluster, y=width)) +
+            geom_violin() +
+            ggbeeswarm::geom_quasirandom(aes(colour=closest), size = plot_pointsize, alpha=plot_pointalpha) +
+            scale_color_hue(l=55) +
+            ggtitle(paste("Approx. silhouette width for", name_clustering)) + 
+            theme(legend.position = "bottom") + 
+            guides(color=guide_legend(override.aes = list(size=1, alpha=1)))
+          
+          ggsave(plot=bplot, filename= file.path(outdir, name_clustering, paste0(name_clustering, "_approx_silhouette_width.png")), 
+                 device="png", width=7, height=5, bg = "white") 
+          ggsave(plot=bplot, filename= file.path(outdir, name_clustering, paste0(name_clustering, "_approx_silhouette_width.pdf")), 
+                 device="pdf", width=7, height=5)
+        } else {print(paste("skip approximate silhouette width for", name_clustering))}
+        
+
         # Doublet detection by cluster (findDoubletClusters needs at least 3 clusters to detect doublet clusters)
         if(length(unique(cluster)) >=3) {
           print(paste("Cluster doublet detection for", name_clustering))
@@ -178,7 +205,7 @@ if(any(is.na(params), is.na(data2clust_ext))) { # skip entirely if cluster setti
             as.data.frame() |> 
             tibble::rownames_to_column("cluster") |>
             dplyr::mutate(symbol=SummarizedExperiment::rowData(sce)[best, "feature_symbol"]) |>
-            dplyr::mutate(dplyr::across(c(p.value, lib.size1, lib.size2, prop), signif, digits=3)) |>
+            dplyr::mutate(dplyr::across(c(p.value, lib.size1, lib.size2, prop), \(x) signif(x, digits=3))) |>
             dplyr::mutate(problematic=scater::isOutlier(num.de, nmads=3, type="lower", log=TRUE)) |>
             dplyr::relocate(cluster, source1, source2, num.de, median.de, best, symbol) |>
             readr::write_tsv(file.path(outdir, name_clustering, paste0(name_clustering, "_doublet_detection_by_cluster.txt")))
@@ -190,7 +217,6 @@ if(any(is.na(params), is.na(data2clust_ext))) { # skip entirely if cluster setti
       }  
     return(cluster)
   }) 
- }) 
 }
   
 
