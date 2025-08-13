@@ -31,6 +31,7 @@ load PIPELINE_ROOT + "/modules/scRNAseq/filtCells_bioc.header"
 load PIPELINE_ROOT + "/modules/scRNAseq/norm_bioc.header"
 load PIPELINE_ROOT + "/modules/scRNAseq/igraph_bioc.header"
 load PIPELINE_ROOT + "/modules/scRNAseq/hclust_bioc.header"
+load PIPELINE_ROOT + "/modules/scRNAseq/kmeans_bioc.header"
 load PIPELINE_ROOT + "/modules/scRNAseq/collectCl_bioc.header"
 load PIPELINE_ROOT + "/modules/NGS/bamcoverage.header"
 load PIPELINE_ROOT + "/modules/NGS/bamindexer.header"
@@ -46,7 +47,6 @@ load PIPELINE_ROOT + "/modules/NGS/multiqc.header"
 
 dontrun = { println "didn't run $module" }
 collect_bams = { forward inputs.bam }
-
 
 Bpipe.run { 
     (ESSENTIAL_SEQTYPE == "ScaleBio" ? fwd_ext_dir :  
@@ -80,7 +80,7 @@ Bpipe.run {
     				    dontrun.using(module:"Sample aggregation. Sequencing type not found!") )))) ] :
     dontrun.using(module:"module readIndivSamplesAndMerge_bioc not implemented yet!") ) +
 
-    qc_bioc + filtCells_bioc + norm_bioc + [igraph_bioc, hclust_bioc] + collectCl_bioc +
+    qc_bioc + filtCells_bioc + norm_bioc + [igraph_bioc, hclust_bioc, kmeans_bioc] + collectCl_bioc +
 	
     (RUN_TRACKHUB ? trackhub_config + trackhub : dontrun.using(module:"trackhub")) +
     collectToolVersions + MultiQC + 
