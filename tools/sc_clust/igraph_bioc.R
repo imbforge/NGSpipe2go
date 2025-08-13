@@ -13,6 +13,7 @@
 ## resultsdir       # result directory of project
 ## seqtype          # sequencing type     
 ## data2clust_pre   # data used for clustering. Can be any reduced dimension slot or 'logcounts'.
+## pre_kmeans       # apply 2 step clustering with k-means clustering (pre_kmeans centers) as first step. Skipped if empty.
 ## n_neighbors      # number of nearest neighbors to consider during graph construction
 ## weights          # type of weighting scheme to use for shared neighbors
 ## algorithm        # clustering algorithm ('walktrap', 'louvain', 'infomap', 'fast_greedy', 'label_prop', 'leading_eigen')
@@ -49,6 +50,7 @@ seqtype          <- parseArgs(args,"seqtype=")
 outdir           <- parseArgs(args,"outdir=") # output folder
 pipeline_root    <- parseArgs(args,"pipeline_root=") 
 data2clust_pre   <- parseArgs(args,"data2clust=", convert="as.char.vector") 
+pre_kmeans       <- parseArgs(args,"pre_kmeans=", convert="as.numeric")
 k                <- parseArgs(args,string="n_neighbors=",convert="run_custom_code")
 weights          <- parseArgs(args,string="weighting_scheme=")
 algorithm        <- parseArgs(args,string="algorithm=", convert="as.char.vector") 
@@ -56,7 +58,6 @@ annocat_plot     <- parseArgs(args,"annocat_plot=", default = "group")
 annocat_plot2    <- parseArgs(args,"annocat_plot2=", default = "sample")
 plot_pointsize   <- parseArgs(args,"plot_pointsize=", convert="as.numeric", default = 0.6) 
 plot_pointalpha  <- parseArgs(args,"plot_pointalpha=", convert="as.numeric", default = 0.6)  
-
 
 # load R environment
 env.path <- file.path(getwd(), pipeline_root, "tools/sc_clust", "bioc_3.16.lock")
@@ -75,6 +76,7 @@ print(paste("seqtype:", seqtype))
 print(paste("outdir:", outdir))
 print(paste("pipeline_root:", pipeline_root))
 print(paste("data2clust:", paste0(data2clust_pre, collapse=", ")))
+print(paste("pre_kmeans:", pre_kmeans))
 print(paste("n_neighbors:", paste0(k, collapse=", ")))
 print(paste("weighting_scheme:", paste0(weights, collapse=", ")))
 print(paste("algorithm:", paste0(algorithm, collapse=", ")))
@@ -102,9 +104,8 @@ if(any(is.na(params))) { # skip entirely if cluster setting not specified
 } else {
 
   cl <- purrr::pmap(params, function(data2clust, k, clusterfun) {
-      fn <- get(paste0("cluster_", clusterfun), envir = asNamespace("igraph")) # get igraph function name
-      
-      name_clustering <- paste0("cluster_igraph_", data2clust, "_k", k, "_", clusterfun)
+
+      name_clustering <- paste0("cluster", if(!is.na(pre_kmeans)) paste0("_kmeans", pre_kmeans), "_igraph_", data2clust, "_k", k, "_", clusterfun)
       
       if(file.exists(file.path(outdir, name_clustering, paste0(name_clustering, ".tsv")))) {
         
@@ -116,10 +117,15 @@ if(any(is.na(params))) { # skip entirely if cluster setting not specified
         print(paste("Processing", name_clustering))
         if (!file.exists(file.path(outdir, name_clustering))) {dir.create(file.path(outdir, name_clustering), recursive=T) }
         
-        cluster <- scran::buildSNNGraph(sce, k = k, type = weights, use.dimred = switch(data2clust != "logcounts",data2clust,NULL),
-                                        subset.row=switch(data2clust == "logcounts",SummarizedExperiment::rowData(sce)$HVGs,NULL)) |>
-          fn() |>
-          with(membership) 
+        cluster <- scran::clusterCells(sce[if(data2clust == "logcounts") SummarizedExperiment::rowData(sce)$HVGs else TRUE,],
+                                       use.dimred = switch(data2clust != "logcounts",data2clust,NULL),
+                                       assay.type = switch(data2clust == "logcounts",data2clust,NULL),
+                                       BLUSPARAM=if(is.na(pre_kmeans)) {bluster::NNGraphParam(shared=TRUE, k=k, type=weights, cluster.fun=clusterfun)} else {
+                                         bluster::TwoStepParam(
+                                           first=bluster::KmeansParam(centers=pre_kmeans),
+                                           second=bluster::NNGraphParam(shared=TRUE, k=k, type=weights, cluster.fun=clusterfun)
+                                         )
+                                       })
 
         cluster_tsv <- data.frame(cell_id=colnames(sce), cluster=cluster) |>
           purrr::set_names("cell_id", name_clustering) |> 
@@ -130,7 +136,7 @@ if(any(is.na(params))) { # skip entirely if cluster setting not specified
           as.data.frame.matrix() |>
           tibble::rownames_to_column(var=annocat_plot2) |>
           readr::write_tsv(file.path(outdir, name_clustering, paste0(name_clustering, "_cellCounts_per_", annocat_plot2, ".txt")))
-
+        
         # create cluster plots illustrated by all reduced dimensions and incl plots split by annotation categories
         purrr::map(SingleCellExperiment::reducedDimNames(sce), function(dimred) {
         
@@ -167,6 +173,30 @@ if(any(is.na(params))) { # skip entirely if cluster setting not specified
           ggsave(plot=rdplot_anno2, filename= file.path(outdir, name_clustering, paste0(name_clustering, "_by_", dimred, "_split_by_", annocat_plot, ".pdf")), device="pdf", width=2.5*length(unique(plotlayout$COL)), height=2+2.5*length(unique(plotlayout$ROW)))
         })
         
+        
+        # Approximate silhouette width for evaluating cluster separation
+        if(length(unique(cluster))>1) {
+          print(paste("Approximate silhouette width for", name_clustering))
+          sil.approx <- bluster::approxSilhouette(x=if(data2clust != "logcounts") {SingleCellExperiment::reducedDim(sce, data2clust)} else {t(logcounts(sce)[SummarizedExperiment::rowData(sce)$HVGs,])}, 
+                                                  clusters=cluster) |>
+            as.data.frame() |>
+            dplyr::mutate(closest=factor(ifelse(width > 0, cluster, other)))
+          
+          bplot <- ggplot(sil.approx, aes(x=cluster, y=width)) +
+            geom_violin() +
+            ggbeeswarm::geom_quasirandom(aes(colour=closest), size = plot_pointsize, alpha=plot_pointalpha) +
+            scale_color_hue(l=55) +
+            ggtitle(paste("Approx. silhouette width for", name_clustering)) + 
+            theme(legend.position = "bottom") + 
+            guides(color=guide_legend(override.aes = list(size=1, alpha=1)))
+          
+          ggsave(plot=bplot, filename= file.path(outdir, name_clustering, paste0(name_clustering, "_approx_silhouette_width.png")), 
+                 device="png", width=7, height=5, bg = "white") 
+          ggsave(plot=bplot, filename= file.path(outdir, name_clustering, paste0(name_clustering, "_approx_silhouette_width.pdf")), 
+                 device="pdf", width=7, height=5)
+        } else {print(paste("skip approximate silhouette width for", name_clustering))}
+        
+        
         # Doublet detection by cluster (findDoubletClusters needs at least 3 clusters to detect doublet clusters)
         if(length(unique(cluster)) >=3) {
           print(paste("Cluster doublet detection for", name_clustering))
@@ -174,7 +204,7 @@ if(any(is.na(params))) { # skip entirely if cluster setting not specified
             as.data.frame() |> 
             tibble::rownames_to_column("cluster") |>
             dplyr::mutate(symbol=SummarizedExperiment::rowData(sce)[best, "feature_symbol"]) |>
-            dplyr::mutate(dplyr::across(c(p.value, lib.size1, lib.size2, prop), signif, digits=3)) |>
+            dplyr::mutate(dplyr::across(c(p.value, lib.size1, lib.size2, prop), \(x) signif(x, digits=3))) |>
             dplyr::mutate(problematic=scater::isOutlier(num.de, nmads=3, type="lower", log=TRUE)) |>
             dplyr::relocate(cluster, source1, source2, num.de, median.de, best, symbol) |>
             readr::write_tsv(file.path(outdir, name_clustering, paste0(name_clustering, "_doublet_detection_by_cluster.txt")))

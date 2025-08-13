@@ -13,6 +13,7 @@ igraph_bioc = {
         (igraph_bioc_vars.pipeline_root      ? " pipeline_root="      + igraph_bioc_vars.pipeline_root      : "") +
         (igraph_bioc_vars.res                ? " res="                + igraph_bioc_vars.res                : "") +
         (igraph_bioc_vars.data2clust         ? " data2clust="         + igraph_bioc_vars.data2clust         : "") +
+        (igraph_bioc_vars.pre_kmeans         ? " pre_kmeans="         + igraph_bioc_vars.pre_kmeans         : "") +
         (igraph_bioc_vars.n_neighbors        ? " n_neighbors="        + igraph_bioc_vars.n_neighbors        : "") +
         (igraph_bioc_vars.weighting_scheme   ? " weighting_scheme="   + igraph_bioc_vars.weighting_scheme   : "") +
         (igraph_bioc_vars.algorithm          ? " algorithm="          + igraph_bioc_vars.algorithm          : "") +
