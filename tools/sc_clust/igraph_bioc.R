@@ -116,7 +116,8 @@ if(any(is.na(params))) { # skip entirely if cluster setting not specified
         print(paste("Processing", name_clustering))
         if (!file.exists(file.path(outdir, name_clustering))) {dir.create(file.path(outdir, name_clustering), recursive=T) }
         
-        cluster <- scran::buildSNNGraph(sce, k = k, type = weights, use.dimred = switch(data2clust != "logcounts",data2clust,NULL)) |>
+        cluster <- scran::buildSNNGraph(sce, k = k, type = weights, use.dimred = switch(data2clust != "logcounts",data2clust,NULL),
+                                        subset.row=switch(data2clust == "logcounts",SummarizedExperiment::rowData(sce)$HVGs,NULL)) |>
           fn() |>
           with(membership) 
 

@@ -106,7 +106,7 @@ if(any(is.na(params), is.na(data2clust_ext))) { # skip entirely if cluster setti
     dst <- if(data2clust != "logcounts") {
       SingleCellExperiment::reducedDim(sce,data2clust) |> dist()
     } else {
-      SingleCellExperiment::logcounts(sce) |> t() |> dist()
+      SingleCellExperiment::logcounts(sce)[SummarizedExperiment::rowData(sce)$HVGs,] |> t() |> dist()
     } 
 
     cl <- purrr::pmap(params, function(ds, hclust_method) {

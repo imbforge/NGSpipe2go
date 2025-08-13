@@ -3,7 +3,7 @@ igraph_bioc_vars=[
     pipeline_root    : PIPELINE_ROOT,                     
     seqtype          : ESSENTIAL_SEQTYPE,                   
     res              : RESULTS,  //where the results lie
-    data2clust       : "PCA", //data used for clustering. Can be any reduced dimension slot or 'logcounts'. Multiple entries allowed. Leave empty to skip.
+    data2clust       : "PCA", //data used for clustering. Can be any reduced dimension slot or 'logcounts' (meaning HVGs). Multiple entries allowed. Leave empty to skip.
     n_neighbors      : "20",      // number of nearest neighbors graph construction. Smaller values will generally yield smaller, finer clusters. Multiple entries allowed.
     weighting_scheme : "rank",    // type of weighting scheme to use for shared neighbors ("rank", "number", "jaccard")
     algorithm        : "louvain", // clustering algorithm ('walktrap', 'louvain', 'infomap', 'fast_greedy', 'label_prop', 'leading_eigen'). Multiple entries allowed.
