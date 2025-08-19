@@ -258,7 +258,7 @@ if(!is.na(pca_components)) {
 ## Check for potential confounder variables
 
 # Determine cell cycle phase
-if(!is.null(org) && org %in% c("human", "mouse")) {
+if(!is.na(org) && org %in% c("human", "mouse")) {
   print("Determine Cell cycle phases")
   # load gene.pairs: "mouse_cycle_markers.rds" or "human_cycle_markers.rds"
   gene.pairs <- readRDS(system.file("exdata", paste0(org, "_cycle_markers.rds"), package="scran")) 
