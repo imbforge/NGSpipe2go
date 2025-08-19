@@ -1,0 +1,47 @@
+findmarkers_bioc_vars=[
+    outdir              : RESULTS + "/marker_genes",
+    pipeline_root       : PIPELINE_ROOT,                     
+    seqtype             : ESSENTIAL_SEQTYPE,                   
+    res                 : RESULTS,  //where the results lie
+    selected_clustering : collectCl_bioc_vars.selected_clustering,  // names of clustering setting to use for downstream analysis. Multiple entries allowed.
+    rank_effectsize     : "mean.AUC",  // effect size to rank marker genes per cluster (e.g. "mean.AUC", "mean.logFC.cohen")
+    block_var           : norm_bioc_vars.block_var,   // name of block var to account for uninteresting factor. Leave empty to skip.
+    maxgenes2plot       : "5",  // max number of genes to plot (expression plots)
+    maxgenes_hm         : "20", // max number of f genes to plot (heatmaps)
+    org                 : ESSENTIAL_ORG, // either "human" or "mouse". Organism name needed for GO annotation. Leave empty to skip.
+    top_genes_for_GO    : "30", // number of top marker genes to use in GO enrichment per cluster
+    p_threshold_GO      : "0.01", // p-value threshold for over-representation of the GO term in the set
+    annocat_plot        : "group",   // category used in plots
+    annocat_plot2       : "sample",  // 2nd category used in plots
+    plot_pointsize      : "0.6",     // dot size used in plots
+    plot_pointalpha     : "0.6"      // dot transparency used in plots
+]
+
+load PIPELINE_ROOT + "/modules/scRNAseq/findmarkers_bioc.groovy"
+
+// expected parameter types
+class findmarkers_bioc_vars_schema {
+    String outdir             
+    String pipeline_root           
+    String seqtype           
+    String res             
+    String selected_clustering             
+    String rank_effectsize             
+    String block_var             
+    String maxgenes2plot             
+    String maxgenes_hm             
+    String org             
+    String top_genes_for_GO             
+    String p_threshold_GO             
+    String annocat_plot              
+    String annocat_plot2              
+    String plot_pointsize              
+    String plot_pointalpha              
+
+    // check for the presence of mandatory params
+    boolean asBoolean() {
+      outdir && res && selected_clustering
+    }
+}
+
+validate_schema(findmarkers_bioc_vars_schema, findmarkers_bioc_vars)
