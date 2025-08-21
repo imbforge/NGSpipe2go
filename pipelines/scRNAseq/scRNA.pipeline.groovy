@@ -35,6 +35,7 @@ load PIPELINE_ROOT + "/modules/scRNAseq/kmeans_bioc.header"
 load PIPELINE_ROOT + "/modules/scRNAseq/collectCl_bioc.header"
 load PIPELINE_ROOT + "/modules/scRNAseq/findmarkers_bioc.header"
 load PIPELINE_ROOT + "/modules/scRNAseq/scType_bioc.header"
+load PIPELINE_ROOT + "/modules/scRNAseq/collectCT_bioc.header"
 load PIPELINE_ROOT + "/modules/NGS/bamcoverage.header"
 load PIPELINE_ROOT + "/modules/NGS/bamindexer.header"
 load PIPELINE_ROOT + "/modules/NGS/fastqc.header"
@@ -84,7 +85,7 @@ Bpipe.run {
 
     qc_bioc + filtCells_bioc + norm_bioc + 
     [igraph_bioc, hclust_bioc, kmeans_bioc] + collectCl_bioc + findmarkers_bioc + 
-    scType_bioc + 
+    [scType_bioc] + collectCT_bioc + 
 	
     (RUN_TRACKHUB ? trackhub_config + trackhub : dontrun.using(module:"trackhub")) +
     collectToolVersions + MultiQC + 
