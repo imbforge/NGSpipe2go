@@ -117,14 +117,15 @@ if(any(is.na(params))) { # skip entirely if cluster setting not specified
       name_markerlist <- paste0("marker_genes_", selclust, "_ranked_by_", es)
       SingleCellExperiment::colLabels(sce) <- SummarizedExperiment::colData(sce)[,selclust]
       
-      if(file.exists(file.path(outdir, selclust, paste0(name_markerlist, "_cluster1.txt"))) | nlevels(factor(SingleCellExperiment::colLabels(sce))) < 2) {
+      print(paste("Processing", name_markerlist))
+      
+      if(length(list.files(file.path(outdir, selclust), pattern=name_markerlist)) > 0 | !selclust %in% colnames(SummarizedExperiment::colData(sce)) | nlevels(factor(SingleCellExperiment::colLabels(sce))) < 2) {
         
-        print(paste0(selclust, " already exists or has got just one cluster. Marker gene detection for this setting is skipped"))
+        print(paste0(name_markerlist, " output already exists or is missing in sce object or has got just one level. Marker gene detection for this setting is skipped"))
         markers_l <- NULL
         
       } else {
         
-        print(paste("Processing", name_markerlist))
         if (!dir.exists(file.path(outdir, selclust))) {dir.create(file.path(outdir, selclust), recursive=T) }
         
           markers_l <- scran::scoreMarkers(sce, groups=SingleCellExperiment::colLabels(sce), 
@@ -191,7 +192,7 @@ if(any(is.na(params))) { # skip entirely if cluster setting not specified
             
             ## GO enrichment
             if(!is.na(org) && org %in% c("human", "mouse")) {
-              print(paste("GO enrichment analysis (BP) with top", top_genes_for_GO, "genes for", name_markerlist)) 
+              print(paste("GO enrichment analysis (BP) with top", top_genes_for_GO, "genes for", name_markerlist, "cluster", c)) 
                 
               switch(org,
                      human={
