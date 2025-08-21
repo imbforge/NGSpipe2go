@@ -56,8 +56,6 @@ annocat_plot2    <- parseArgs(args,"annocat_plot2=", default = "sample")
 plot_pointsize   <- parseArgs(args,"plot_pointsize=", convert="as.numeric", default = 0.6) 
 plot_pointalpha  <- parseArgs(args,"plot_pointalpha=", convert="as.numeric", default = 0.6)  
 
-#selected_clustering <- c("cluster_hclust_PCA_ward.D2_ds1", "cluster_hclust_PCA_ward.D2_ds2")
-
 
 # load R environment
 env.path <- file.path(getwd(), pipeline_root, "tools/sc_clust", "bioc_3.16.lock")
@@ -156,7 +154,7 @@ if(nrow(rdat_filt)>0) {
   list_boxplot <- purrr::map(selected_clustering, function(selclust) {
     
       # store table with mean logcounts per cluster (all genes)
-      meanLogcountsByCluster <- data.frame(cluster=SingleCellExperiment::colData(sce)[,selclust], t(logcounts(sce))) |>
+      meanLogcountsByCluster <- data.frame(cluster=SingleCellExperiment::colData(sce)[,selclust], t(SingleCellExperiment::logcounts(sce))) |>
         dplyr::group_by(cluster) |>
         dplyr::summarize_all(mean, na.rm = T) |>
         dplyr::ungroup() |>
@@ -169,7 +167,7 @@ if(nrow(rdat_filt)>0) {
         readr::write_tsv(file.path(exprPlotDir, paste0(selclust, "_mean_logcounts_all_genes.txt")))
       
       # get logcounts for all boxplots    
-      data_boxplot <- t(logcounts(sce)[rdat_filt$feature_id,]) |>
+      data_boxplot <- t(SingleCellExperiment::logcounts(sce)[rdat_filt$feature_id,]) |>
         as.data.frame() |>
         dplyr::mutate(!!annocat_plot  := factor(SummarizedExperiment::colData(sce)[,annocat_plot]),
                       !!annocat_plot2 := factor(SummarizedExperiment::colData(sce)[,annocat_plot2]),
@@ -225,7 +223,7 @@ if(nrow(rdat_filt)>0) {
         stats::setNames(c(paste0(gsub("_.*$", "", dimred), " 1"), paste0(gsub("_.*$", "", dimred), " 2"))) |>
         dplyr::mutate(!!annocat_plot := SummarizedExperiment::colData(sce)[,annocat_plot],
                       !!annocat_plot2 := SummarizedExperiment::colData(sce)[,annocat_plot2],
-                      !!feature_id := logcounts(sce)[feature_id,])
+                      !!feature_id := SingleCellExperiment::logcounts(sce)[feature_id,])
   
       rdplot <- ggplot(plot_data, aes(x = !!dplyr::sym(names(plot_data)[1]), y = !!dplyr::sym(names(plot_data)[2]), color = !!dplyr::sym(feature_id))) +
         geom_point(size = plot_pointsize, alpha=plot_pointalpha) +
