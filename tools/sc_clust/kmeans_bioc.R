@@ -1,6 +1,6 @@
 #####################################
 ##
-## What: igraph_bioc.R
+## What: kmeans_bioc.R
 ## Who : Frank Rühle, Patrick Hüther
 ## When: 13.08.2025
 ##
