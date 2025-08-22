@@ -1,0 +1,49 @@
+de_bioc_vars=[
+    outdir              : RESULTS + "/diff_expression",
+    pipeline_root       : PIPELINE_ROOT,                     
+    seqtype             : ESSENTIAL_SEQTYPE,                   
+    res                 : RESULTS,  //where the results lie
+    contrasts           : new File(PIPELINE_ROOT + "/pipelines/scRNAseq/contrasts.txt").getCanonicalPath(), // path to contrasts.txt file.
+    selected_clustering : collectCl_bioc_vars.selected_clustering,  // names of clustering setting to use. Multiple entries allowed, leave empty to skip.
+    selected_CTanno     : collectCT_bioc_vars.selected_CTanno,  // names of CT annotation setting to use. Multiple entries allowed, leave empty to skip.
+    minClusterSize      : "10",  // minimum cells per pseudo-bulk sample in DE analysis. Leave empty to skip.
+    lfc_threshold_DE    : "0",   // log-fold change threshold for hypothesis testing (not a post-hoc filter) (default: "0").
+    FDR_threshold_DE    : "0.05",  // FDR threshold for DE genes. Leave empty to skip.
+    org                 : ESSENTIAL_ORG, // either "human" or "mouse". Organism name needed for GO annotation. Leave empty to skip.
+    top_genes_for_GO    : "30", // number of top DE genes to use in GO enrichment per cluster
+    p_threshold_GO      : "0.01", // p-value threshold for over-representation of the GO term in the set
+    annocat_plot        : "group",   // category used in plots
+    annocat_plot2       : "sample",  // 2nd category used in plots
+    plot_pointsize      : "0.6",     // dot size used in plots
+    plot_pointalpha     : "0.6"      // dot transparency used in plots
+]
+
+load PIPELINE_ROOT + "/modules/scRNAseq/de_bioc.groovy"
+
+// expected parameter types
+class de_bioc_vars_schema {
+    String outdir             
+    String pipeline_root           
+    String seqtype           
+    String res             
+    String contrasts             
+    String selected_clustering             
+    String selected_CTanno             
+    String minClusterSize             
+    String lfc_threshold_DE             
+    String FDR_threshold_DE             
+    String org             
+    String top_genes_for_GO             
+    String p_threshold_GO             
+    String annocat_plot              
+    String annocat_plot2              
+    String plot_pointsize              
+    String plot_pointalpha              
+
+    // check for the presence of mandatory params
+    boolean asBoolean() {
+      outdir && res && (selected_clustering || selected_CTanno)
+    }
+}
+
+validate_schema(de_bioc_vars_schema, de_bioc_vars)
