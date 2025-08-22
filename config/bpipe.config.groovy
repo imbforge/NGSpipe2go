@@ -217,6 +217,12 @@ config {
       procs="1"
       memory="1"
     }
+    de_bioc {
+      queue=long_queue
+      walltime="6:00:00"
+      procs="4"
+      memory="128"
+    }
     DE_DESeq2 {
       walltime="01:00:00"
       procs="1"
@@ -320,6 +326,11 @@ config {
       procs="8"
       memory="12"
     }
+    filtCells_bioc {
+      walltime="03:00:00"
+      procs="4"
+      memory="128"
+    }
     Filter2HTSeq {
       walltime="01:00:00"
       procs="1"
@@ -354,6 +365,11 @@ config {
       walltime="00:30:00"
       procs="1"
       memory="1"
+    }
+    findmarkers_bioc {
+      walltime="4:00:00"
+      procs="4"
+      memory="128"
     }
     GatherBQSRReports {
       walltime="03:00:00"
@@ -396,10 +412,22 @@ config {
       procs="4"
       memory="254"  
     } 
+    hclust_bioc {
+      queue=long_queue
+      walltime="24:00:00"
+      procs="4"
+      memory="256"
+    }
     HTseqCount {
       walltime="04:00:00"
       procs="1"
       memory="4"
+    }
+    igraph_bioc {
+      queue=long_queue
+      walltime="24:00:00"
+      procs="4"
+      memory="256"
     }
     IndelRealignment {
       walltime="24:00:00"
@@ -421,6 +449,12 @@ config {
       walltime="02:00:00"
       procs="2"
       memory="16"
+    }
+    kmeans_bioc {
+      queue=long_queue
+      walltime="24:00:00"
+      procs="4"
+      memory="256"
     }
     macs2 {
       walltime="04:00:00"
@@ -491,6 +525,12 @@ config {
       procs="4"
       memory="128"
     }
+    norm_bioc {
+      queue=long_queue
+      walltime="06:00:00"
+      procs="4"
+      memory="128"
+    }
     NucleotideSignature {
       walltime="1:00:00"
       procs="1"
@@ -547,10 +587,20 @@ config {
       procs="1"
       memory="4"
     }
+    qc_bioc {
+      walltime="03:00:00"
+      procs="4"
+      memory="128"
+    }
     qualimap {
       walltime="04:00:00"
       procs="1"
       memory="10"
+    }
+    readAggrData_bioc {
+      walltime="04:00:00"
+      procs="4"
+      memory="128"
     }
     RepEnrich {
       queue=long_queue
@@ -611,6 +661,12 @@ config {
     }
     sc_readIndivSamplesAndMerge{
       walltime="04:00:00"
+      procs="4"
+      memory="128"
+    }
+    scType_bioc {
+      queue=long_queue
+      walltime="06:00:00"
       procs="4"
       memory="128"
     }
