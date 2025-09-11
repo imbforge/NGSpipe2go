@@ -253,13 +253,21 @@ if(run_demux != "" & file.exists(demux_out) ) {
       ## read cluster files from demux_gt module and combine with assigned clusters and targets_pools (targets.txt info)
       # need aggrcsv to match the file name to the respective GEMwell id.
       print(paste("Reading demux files:", run_demux))
-      targets <- readr::read_tsv(fs::dir_ls(path=demux_out, recurse=1, glob="*clusters.tsv"),id="file") |> # obtain pruned file name from Souporcell dir
+      
+      targets_demux <- readr::read_tsv(fs::dir_ls(path=demux_out, recurse=1, glob="*clusters.tsv"),id="file") |> # obtain pruned file name from Souporcell dir
+        dplyr::mutate(file=basename(stringr::str_remove(file,"/clusters.tsv")))
+      
+      overviewStatus <- targets_demux |>   
+        dplyr::count(file, status) |>
+        tidyr::pivot_wider(names_from = status, values_from = n) |>
+        readr::write_tsv(file=file.path(outdir, "demuxGT_overviewStatus.txt"))
+      
+      targets <- targets_demux |>  
         dplyr::filter(status=="singlet") |> # retain only singlets
-        dplyr::mutate(file=basename(stringr::str_remove(file,"/clusters.tsv"))) |>
         dplyr::mutate(barcode=stringr::str_remove(barcode,"-.*$")) |>
         dplyr::mutate(GEMwell=as.character(match(file, gsub("(_S\\d{1,3}$)|(_S\\d{1,3}_L\\d{3}_R\\d_\\d{3}$)", "", aggrcsv[,1])))) |>
         dplyr::inner_join(barcodes,by=c("barcode","GEMwell")) # barcode alone is not unique, it may occur in multiple GEMwells.
-        
+
         if (exists("assignCl_map")) {
           targets <- targets |>
             dplyr::left_join(assignCl_map,by=c("file", "assignment")) |> # add harmonized assignment if available
@@ -343,6 +351,4 @@ SummarizedExperiment::rowData(sce)$feature_chrom   <- features$seqnames
 print("Spill to disk.")
 readr::write_rds(sce, file=file.path(resultsdir, "sce_raw.RDS"))
 readr::write_rds(gtf, file=file.path(resultsdir, "gtf.rds"))
-save(pipeline_root, outdir, resultsdir, seqtype, gtf.file, ftargets, aggr_data_dir, run_demux, demux_out, demuxcluster_out, 
-     targets, targets_pools,
-     file=paste0(outdir,"/readAggrData_bioc.RData"))
+save(args, targets, targets_pools, file=paste0(outdir,"/readAggrData_bioc.RData"))
