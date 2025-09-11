@@ -1,5 +1,5 @@
 scType_bioc_vars=[
-    outdir           : RESULTS + "/CT_anno",
+    outdir           : CTANNO_DIR,
     pipeline_root    : PIPELINE_ROOT,                     
     seqtype          : ESSENTIAL_SEQTYPE,                   
     res              : RESULTS,  //where the results lie

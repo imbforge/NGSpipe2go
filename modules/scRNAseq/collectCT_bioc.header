@@ -2,9 +2,9 @@ collectCT_bioc_vars=[
     pipeline_root       : PIPELINE_ROOT,                     
     seqtype             : ESSENTIAL_SEQTYPE,                     
     res                 : RESULTS,  //where the results lie
-    ctanno_dir          : RESULTS + "/CT_anno",
+    ctanno_dir          : CTANNO_DIR,
     selected_CTanno     : '"c("anno_scType_cluster_igraph_PCA_k20_louvain_tissue_Heart")"',  // names of CT anno setting to use for downstream analysis. Multiple entries allowed.
-    exprPlotDir         : RESULTS + "/expression_plots",
+    exprPlotDir         : EXPRPLOT_DIR,
     selected_genes      : "",  // gene symbols or Ensembl IDs for expression plots (optional). Multiple entries allowed.
     annocat_plot        : "group",    // category used in plots
     annocat_plot2       : "sample",   // 2nd category used in plots

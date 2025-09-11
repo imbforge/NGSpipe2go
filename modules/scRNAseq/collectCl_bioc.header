@@ -2,9 +2,9 @@ collectCl_bioc_vars=[
     pipeline_root       : PIPELINE_ROOT,                     
     seqtype             : ESSENTIAL_SEQTYPE,                     
     res                 : RESULTS,  //where the results lie
-    clustdir            : RESULTS + "/cluster",
+    clustdir            : CLUSTER_DIR,
     selected_clustering : "cluster_igraph_PCA_k20_louvain",  // names of clustering setting to use for downstream analysis. Multiple entries allowed.
-    exprPlotDir         : RESULTS + "/expression_plots",
+    exprPlotDir         : EXPRPLOT_DIR,
     selected_genes      : "",  // gene symbols or Ensembl IDs for expression plots (optional). Multiple entries allowed.
     annocat_plot        : "group",    // category used in plots
     annocat_plot2       : "sample",   // 2nd category used in plots

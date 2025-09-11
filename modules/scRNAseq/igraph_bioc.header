@@ -1,5 +1,5 @@
 igraph_bioc_vars=[
-    outdir           : RESULTS + "/cluster",
+    outdir           : CLUSTER_DIR,
     pipeline_root    : PIPELINE_ROOT,                     
     seqtype          : ESSENTIAL_SEQTYPE,                   
     res              : RESULTS,  //where the results lie

@@ -40,7 +40,7 @@ ESSENTIAL_FASTQSCREEN_PERC=1    // contaminant filter, if a contaminant is consu
 ESSENTIAL_FASTQSCREEN_GENOME="Human::/fsimb/common/genomes/homo_sapiens/gencode/release-25_GRCh38.p7/full/index/bowtie2/GRCh38.p7.genome"  // bowtie2 reference index files (base name) for the genome the samples are from
 ESSENTIAL_FASTQSCREEN=ESSENTIAL_FASTQSCREEN_GENOME + ",PHIX::/fsimb/common/genomes/phix/19930428/NCBI/index/bowtie2/2.3.4.3/ncbi_phix,ERCC::/fsimb/common/genomes/ERCC/index/bowtie2/2.3.4.3/ERCC92,rRNA::/fsimb/common/genomes/contaminants/fastqscreen_references/rrna/v1/index/bowtie2/2.3.4.3/hs_mm_ce_dm_rn_dr_xt_rRNA,Mycoplasma::/fsimb/common/genomes/contaminants/fastqscreen_references/mycoplasma/v1/index/bowtie2/2.3.4.3/mycoplasma_all_ref,E.coli::/fsimb/common/genomes/Escherichia_coli/ensembl/full/index/bowtie2/Escherichia_coli_str_k_12_substr_dh10b.ASM1942v1.31.dna.genome,B.taurus::/fsimb/common/genomes/bos_taurus/ensembl/3.1/full/index/bowtie2/2.2.9/UMD3.1"  // bowtie2 reference index files (base name) for common sample contaminants, as well as for PhiX and ERCC library spike-ins
 
-// Optional Adapter trimming (usually not necessary because done by manufacturer count software) 
+// Optional Adapter trimming (usually not necessary because done by manufacturer software) 
 // Cutadapt recommends using full length adapter sequences since adapter fragments might occur in the genome
 RUN_CUTADAPT=false
 ESSENTIAL_ADAPTER_SEQUENCE="Nextera=CTGTCTCTTATACACATCT" //standard sequence to trim illumina reads
@@ -58,6 +58,9 @@ TRIMMED=PROJECT + "/trimmed"
 QC=PROJECT + "/qc"
 REPORTS=PROJECT + "/reports"
 RESULTS=PROJECT + "/results"
+CLUSTER_DIR=RESULTS + "/cluster"
+EXPRPLOT_DIR=RESULTS + "/expression_plots"
+CTANNO_DIR=RESULTS + "/CT_anno"
 TMP=PROJECT + "/tmp"
 TRACKS=PROJECT + "/tracks"
 FUSION=PROJECT + "/fusion"
