@@ -1,5 +1,3 @@
-// PIPELINE IN DEVELOPMENT. DO NOT USE YET!
-
 PIPELINE="scRNAseq"
 PIPELINE_VERSION="2.0"
 PIPELINE_ROOT="./NGSpipe2go/"    // may need adjustment for some projects
