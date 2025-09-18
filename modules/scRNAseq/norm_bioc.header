@@ -10,7 +10,6 @@ norm_bioc_vars=[
     hvg_n            : "0.1",    // number of genes to report as HVGs according to biological component of variance. Interpreted as proportion if <= 1.
     block_var        : "",       // name of block var to account for uninteresting factor when decomposing variance for HVGs. Leave empty to skip.
     pca_components   : "30",     // number of components for PCA. If empty, suitable number of PCs is estimated using the elbow point approach.
-    perplexity       : "30",     // perplexity for tSNE
     n_neighbors      : "15",      // number of nearest neighbors for UMAP
     annocat_plot     : "group",  // category used in plots
     annocat_plot2    : "sample", // 2nd category used in plots
@@ -33,7 +32,6 @@ class norm_bioc_vars_schema {
     String hvg_n
     String block_var
     String pca_components
-    String perplexity
     String n_neighbors
     String annocat_plot
     String annocat_plot2
