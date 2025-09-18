@@ -115,18 +115,20 @@ if(any(is.na(params))) { # skip entirely if cluster setting not specified
   mg <- purrr::pmap(params, function(selclust, es) {
 
       name_markerlist <- paste0("marker_genes_", selclust, "_ranked_by_", es)
+      name_markerlist_subdir <- paste0(selclust, "_ranked_by_", es)
+      
       SingleCellExperiment::colLabels(sce) <- SummarizedExperiment::colData(sce)[,selclust]
       
       print(paste("Processing", name_markerlist))
       
-      if(length(list.files(file.path(outdir, selclust), pattern=name_markerlist)) > 0 | !selclust %in% colnames(SummarizedExperiment::colData(sce)) | nlevels(factor(SingleCellExperiment::colLabels(sce))) < 2) {
+      if(length(list.files(file.path(outdir, name_markerlist_subdir), pattern=name_markerlist)) > 0 | !selclust %in% colnames(SummarizedExperiment::colData(sce)) | nlevels(factor(SingleCellExperiment::colLabels(sce))) < 2) {
         
         print(paste0(name_markerlist, " output already exists or is missing in sce object or has got just one level. Marker gene detection for this setting is skipped"))
         markers_l <- NULL
         
       } else {
         
-        if (!dir.exists(file.path(outdir, selclust))) {dir.create(file.path(outdir, selclust), recursive=T) }
+        if (!dir.exists(file.path(outdir, name_markerlist_subdir))) {dir.create(file.path(outdir, name_markerlist_subdir), recursive=T) }
         
           markers_l <- scran::scoreMarkers(sce, groups=SingleCellExperiment::colLabels(sce), 
                                            block = if(!is.na(block_var)) {SummarizedExperiment::colData(sce)[,block_var]} else {NULL},
@@ -142,7 +144,7 @@ if(any(is.na(params))) { # skip entirely if cluster setting not specified
               as.data.frame() |>
               tibble::rownames_to_column("feature_id") |>
               dplyr::arrange(dplyr::desc(!!dplyr::sym(es))) |>
-              readr::write_tsv(file.path(outdir, selclust, paste0(name_markerlist, "_cluster", c, ".txt")))
+              readr::write_tsv(file.path(outdir, name_markerlist_subdir, paste0(name_markerlist, "_cluster", c, ".txt")))
             
             print(paste("Expression plots for top marker genes for", selclust, "ranked by", es))
             maxViolPerRow = max(nlevels(factor(SingleCellExperiment::colLabels(sce))), 15) # i.e. max #genes x #cluster 
@@ -172,9 +174,9 @@ if(any(is.na(params))) { # skip entirely if cluster setting not specified
               guides(color=guide_legend(override.aes = list(size=1, alpha=1)))
             
             ggsave(plot=top_marker_plot, width=7, height=1+2*nGridRow, # legend + 2 inch per panel row
-                   filename= file.path(outdir, selclust, paste0(name_markerlist, "_expression_plot_cluster", c, ".png")), device="png", bg = "white")
+                   filename= file.path(outdir, name_markerlist_subdir, paste0(name_markerlist, "_expression_plot_cluster", c, ".png")), device="png", bg = "white")
             # ggsave(plot=top_marker_plot, width=7, height=1+2*nGridRow, # legend + 2 inch per panel row
-            #        filename= file.path(outdir, selclust, paste0(name_markerlist, "_expression_plot_cluster", c, ".pdf")), device="pdf")
+            #        filename= file.path(outdir, name_markerlist_subdir, paste0(name_markerlist, "_expression_plot_cluster", c, ".pdf")), device="pdf")
             
             
             print(paste("Expression heatmaps for top marker genes for", selclust, "ranked by", es))
@@ -185,9 +187,9 @@ if(any(is.na(params))) { # skip entirely if cluster setting not specified
                                              main=paste("Top", maxgenes_hm, "marker genes (centered mean expression) for cluster", c, "\n", selclust, "ranked by", es, ""))
               
             ggsave(plot=hm, width=7, height=1.5+0.3*maxgenes_hm, # dendrogram + 0.3 inch per gene
-                   filename= file.path(outdir, selclust, paste0(name_markerlist, "_heatmap_cluster", c, ".png")), device="png", bg = "white")
+                   filename= file.path(outdir, name_markerlist_subdir, paste0(name_markerlist, "_heatmap_cluster", c, ".png")), device="png", bg = "white")
             # ggsave(plot=hm, width=7, height=1.5+0.3*maxgenes_hm, # dendrogram + 0.3 inch per gene
-            #        filename= file.path(outdir, selclust, paste0(name_markerlist, "_heatmap_cluster", c, ".pdf")), device="pdf")
+            #        filename= file.path(outdir, name_markerlist_subdir, paste0(name_markerlist, "_heatmap_cluster", c, ".pdf")), device="pdf")
             
             
             ## GO enrichment
@@ -219,7 +221,7 @@ if(any(is.na(params))) { # skip entirely if cluster setting not specified
                 tibble::rownames_to_column("GOID") |>
                 dplyr::arrange(P.DE) |>
                 dplyr::mutate(P.DE = signif(P.DE, digits=4)) |>
-                readr::write_tsv(file.path(outdir, selclust, paste0("GOenrichment_top", top_genes_for_GO, "_", name_markerlist, "_cluster", c, ".txt")))
+                readr::write_tsv(file.path(outdir, name_markerlist_subdir, paste0("GOenrichment_top", top_genes_for_GO, "_", name_markerlist, "_cluster", c, ".txt")))
               
             }
           return(markers_per_cluster)  
