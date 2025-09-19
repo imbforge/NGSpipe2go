@@ -2,8 +2,8 @@ shinyReports_vars=[
     project         : PROJECT,          //project directory
     gtf             : ESSENTIAL_GENESGTF, 
     seqtype         : ESSENTIAL_SEQTYPE,
-    target          : new File(PIPELINE_ROOT + "/pipelines/scRNAseq/targets.txt").getCanonicalPath(),
-    contrasts       : new File(PIPELINE_ROOT + "/pipelines/scRNAseq/contrasts.txt").getCanonicalPath(),
+    target          : TARGETS, 
+    contrasts       : CONTRASTS, 
     org             : ESSENTIAL_ORG,    //UCSC organism
     db              : ESSENTIAL_DB,     //UCSC assembly version
     paired          : ESSENTIAL_PAIRED, // paired-end data [yes|no]

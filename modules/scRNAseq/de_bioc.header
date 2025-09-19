@@ -3,7 +3,7 @@ de_bioc_vars=[
     pipeline_root       : PIPELINE_ROOT,                     
     seqtype             : ESSENTIAL_SEQTYPE,                   
     res                 : RESULTS,  //where the results lie
-    contrasts           : new File(PIPELINE_ROOT + "/pipelines/scRNAseq/contrasts.txt").getCanonicalPath(), // path to contrasts.txt file.
+    contrasts           : CONTRASTS, // path to contrasts.txt file.
     selected_clustering : collectCl_bioc_vars.selected_clustering,  // names of clustering setting to use. Multiple entries allowed, leave empty to skip.
     selected_CTanno     : collectCT_bioc_vars.selected_CTanno,  // names of CT annotation setting to use. Multiple entries allowed, leave empty to skip.
     minClusterSize      : "10",  // minimum cells per pseudo-bulk sample in DE analysis. Leave empty to skip.

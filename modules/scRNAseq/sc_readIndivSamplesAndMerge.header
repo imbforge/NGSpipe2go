@@ -2,7 +2,7 @@ sc_readIndivSamplesAndMerge_vars=[
     outdir              : RESULTS + "/sc_readIndivSamplesAndMerge",
     project             : PROJECT,                     
     res                 : RESULTS,          //where the results lie
-    targets             : new File(PIPELINE_ROOT + "/pipelines/scRNAseq/targets.txt").getCanonicalPath(),   //targets file. 
+    targets             : TARGETS,   //targets file. 
     org                 : ESSENTIAL_ORG,    //UCSC organism
     db                  : ESSENTIAL_DB,        
     gtf                 : ESSENTIAL_GENESGTF,           

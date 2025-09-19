@@ -2,7 +2,7 @@
 
 // General
 ESSENTIAL_PROJECT="project_dir"  // full project directory path
-ESSENTIAL_SEQTYPE="tenX"         // sequencing type, one of "tenX", "tenXmultiome", "ParseBio", "ScaleBio", "SmartSeq"
+ESSENTIAL_SEQTYPE="tenX"         // sequencing type, one of "tenX", "ParseBio", "ScaleBio", "SmartSeq"
 ESSENTIAL_SAMPLE_PREFIX=""      // sample name prefix to be trimmed in the results and reports
 ESSENTIAL_THREADS=16             // number of threads for parallel tasks
 ESSENTIAL_PAIRED="no"           // paired end design ("no" for MARS-Seq and 10X, because R2 in MARS_Seq and R1 in 10X contain UMI and barcodes only)
@@ -25,8 +25,6 @@ ESSENTIAL_FEATURETYPE="gene_type" //gencode (also 10X Genomics) uses gene_type; 
 ESSENTIAL_ORG="human"           // UCSC organism
 ESSENTIAL_DB="hg38"              // UCSC assembly version
 ESSENTIAL_MTGENES="MT-"  // text file with gene ids of mitochondrial genes or starting pattern of mito gene symbols. If empty, standard mito chr names used.
-ESSENTIAL_CELLTYPE_ANNO = ["Marker"] // select celltype annotation method (one or more of "Marker", "Seurat"). The first in the list is used for downstream processing. 
-// if "Marker" selected, specify marker table in CTannoMarker.header. For "Seurat" specify reference dataset in CTannoSeurat.header.
 
 // Optional for 10X pipelines: sample demultiplexing if sample pooling per GEM well was applied (specify one line per demultiplexed sample in targets.txt)
 // Either "demux_GT" for demultiplexing by genetic variance, "demux_GT_noAssignment" for demultiplexing by genetic variance without subsequent assignment of corresponding individuals across files, 
@@ -64,6 +62,8 @@ CTANNO_DIR=RESULTS + "/CT_anno"
 TMP=PROJECT + "/tmp"
 TRACKS=PROJECT + "/tracks"
 FUSION=PROJECT + "/fusion"
+TARGETS= new File(PIPELINE_ROOT + "/pipelines/scRNAseq/targets.txt").getCanonicalPath()
+CONTRASTS= new File(PIPELINE_ROOT + "/pipelines/scRNAseq/contrasts.txt").getCanonicalPath()
 
 // optional pipeline stages to include
 RUN_TRACKHUB=false

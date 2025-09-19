@@ -3,7 +3,7 @@ readAggrData_bioc_vars=[
     pipeline_root   : PIPELINE_ROOT,                     
     res             : RESULTS,          //where the results lie
     seqtype         : ESSENTIAL_SEQTYPE,
-    targets         : new File(PIPELINE_ROOT + "/pipelines/scRNAseq/targets.txt").getCanonicalPath(),   //targets file. 
+    targets         : TARGETS,   //targets file. 
     gtf             : ESSENTIAL_GENESGTF,           
     aggr_data_dir   : (ESSENTIAL_SEQTYPE == "tenX" ? cellranger_aggr_vars.outdir + "/" + cellranger_aggr_vars.id + "/outs/count/filtered_feature_bc_matrix/" : 
                         (ESSENTIAL_SEQTYPE == "ParseBio" ? splitpipe_comb_vars.outdir + "/all-sample/DGE_filtered/" : 
