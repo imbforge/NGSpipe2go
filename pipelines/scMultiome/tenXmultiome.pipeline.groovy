@@ -2,8 +2,8 @@ PIPELINE="tenXmultiome"
 PIPELINE_VERSION="1.0"
 PIPELINE_ROOT="./NGSpipe2go/"    // may need adjustment for some projects
 
-load PIPELINE_ROOT + "/pipelines/scRNAseq/essential.vars.groovy"
-load PIPELINE_ROOT + "/pipelines/scRNAseq/tools.groovy"
+load PIPELINE_ROOT + "/pipelines/scMultiome/essential.vars.groovy"
+load PIPELINE_ROOT + "/pipelines/scMultiome/tools.groovy"
 load PIPELINE_ROOT + "/config/preambles.groovy"
 load PIPELINE_ROOT + "/config/bpipe.config.groovy"
 load PIPELINE_ROOT + "/config/validate_module_params.groovy"
