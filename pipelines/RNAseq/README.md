@@ -47,6 +47,7 @@ All analysis steps are illustrated in the pipeline [flowchart](https://viewer.di
   - ESSENTIAL_ADAPTER_SEQUENCE: adapter sequence to trim with Cutadapt (optional)
   - ESSENTIAL_BASEQUALCUTOFF: base quality threshold to trim low-quality ends from reads with Cutadapt. If *ESSENTIAL_NEXTSEQTRIM* is true, qualities of terminal G bases are ignored. To switch off base quality trimming in Cutadapt entirely, set *ESSENTIAL_BASEQUALCUTOFF=0* and *ESSENTIAL_NEXTSEQTRIM=false*.
   - ESSENTIAL_NEXTSEQTRIM: most Illumina instruments use a two-color chemistry like the NextSeq (exceptions: MiSeq, HiSeq). This option accounts for terminal high quality G bases incorporated by faulty dark cycles during base quality trimming with Cutadapt.
+  - ESSENTIAL_DESEQ2_FDR: threshold for Benjamini–Hochberg–corrected p-values. If set a priori (before examining the data), the expected proportion of false positives among discoveries is controlled at this level. If adjusted a posteriori (based on inspection of the data), this guarantee no longer strictly holds and the adjustment should be reported in any publication. Note that, if the dataset is anticipated to be noisy or underpowered, it is perfectly fine to choose a more relaxed threshold a priori.
 
 - additional (more specialized) parameter can be given in the header-files of the individual pipeline modules 
 
