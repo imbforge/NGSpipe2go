@@ -23,7 +23,7 @@ ESSENTIAL_FILTER_CHR=""         // chromosomes to include in post-mapping analys
 ESSENTIAL_BAMCOVERAGE="--binSize 1 --skipNonCoveredRegions --normalizeUsing CPM"  // size of bins (in bp) and normalisation method for the bigWig tracks
 
 // DESeq2 specific parameters
-ESSENTIAL_DESEQ2_FDR=0.01       // FDR significance cutoff in the DESeq2 model (may be increased for noisy or underpowered datasets)
+ESSENTIAL_DESEQ2_FDR=0.01       // FDR significance cutoff in the DESeq2 model  (may be increased a priori for noisy or underpowered datasets, e.g. to 0.05 or 0.1; should not be adjusted upon inspection of the data)
 ESSENTIAL_DESEQ2_FC=1           // optional Fold-Change cutoff to incorporate into the DESeq2 model (default "FC=1" means no Fold-Change filter is used)
 // Using FC threshold in the DESeq2 model is usually more conservative than post-hoc gene filtering by FC (which should anyway be avoided, see https://doi.org/10.1093/bib/bbab053) 
 
