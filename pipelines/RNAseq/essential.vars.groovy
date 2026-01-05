@@ -46,7 +46,7 @@ ESSENTIAL_FASTQSCREEN=ESSENTIAL_FASTQSCREEN_GENOME + ",PHIX::/fsimb/common/genom
 // The one used most frequently is the Nexterra Transposase Adapter CTGTCTCTTATACACATCT
 ESSENTIAL_ADAPTER_SEQUENCE="Illumina=AGATCGGAAGAGCACACGTCTGAACTCCAGTCA" // 3'adapter sequence for R1. 
 ESSENTIAL_ADAPTER_SEQUENCE_R2="" // in case of paired end sequencing the R2 adapter sequence (which will be trimmed from the 3' end of R2, -A argument in Cutadapt), by default the same sequence as defined in ESSENTIAL_ADAPTER_SEQUENCE is used
-ESSENTIAL_MINADAPTEROVERLAP=5
+ESSENTIAL_MINADAPTEROVERLAP=3
 ESSENTIAL_MINREADLENGTH=30
 ESSENTIAL_BASEQUALCUTOFF=20  // trim low-quality ends from reads (if nextseqtrim is true, qualities of terminal G bases are ignored)  
 ESSENTIAL_NEXTSEQTRIM=true   // accounts for terminal G bases during base quality trimming incorporated by faulty dark cycles observed with two-color chemistry (as in NextSeq) 

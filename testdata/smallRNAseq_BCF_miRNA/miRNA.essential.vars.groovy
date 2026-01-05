@@ -18,7 +18,7 @@ ESSENTIAL_STRANDED="yes"        // strandness: no|yes|reverse
 ESSENTIAL_THREADS=4             // number of threads for parallel tasks
 
 ESSENTIAL_READLENGTH=51         // actual read length in original raw data (incl. insert, UMIs, adapter)
-ESSENTIAL_MINADAPTEROVERLAP=5   // minimal overlap with adapter
+ESSENTIAL_MINADAPTEROVERLAP=3   // minimal overlap with adapter
 ESSENTIAL_MINREADLENGTH=15      // remaining read length plus UMIs (2x4) 
 ESSENTIAL_UMI_LENGTH=4          // (2x4bp)
 ESSENTIAL_ADAPTER_SEQUENCE="TGGAATTCTCGGGTGCCAAGG" // needed for cutadapt adapter trimming
