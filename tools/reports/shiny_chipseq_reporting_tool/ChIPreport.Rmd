@@ -360,14 +360,14 @@ phantompeaks <- lapply(branches, function(dir) {
 
 ## ChIP-seq peaks ##
 
-The ENCODE consortium empirically identified 'blacklist regions' (BRs) for some species and genome versions. These blacklist regions are often found at specific types of repeats (eg. centromeres, telomeres and satellite repeats) and are troublesome for high throughput sequencing aligners. These regions also confuse peak callers and result in spurious signal in both ChIP and Input. Therefore, it is suggested to check the amount of peaks overlapping these regions and remove them for the downstream analysis. The table shows total number of peaks detected by MACS2, the number of peaks without overlapping the blacklist regions and the percentage of peaks overlapping these regions.  
+The ENCODE consortium empirically identified problematic regions for some species and genome versions. These regions are often found at specific types of repeats (eg. centromeres, telomeres and satellite repeats) and are troublesome for high throughput sequencing aligners. These regions also confuse peak callers and result in spurious signal in both ChIP and Input. Therefore, it is suggested to check the amount of peaks overlapping these regions and remove them for the downstream analysis. The table shows total number of peaks detected by MACS2, the number of peaks without overlapping the problematic regions and the percentage of peaks overlapping these regions (ER='excluded regions').  
 
-Note that these blacklists are applicable to human (hg38 and hg19), mouse (mm10 and mm9), worm (ce10) and fly (dm3) genomes.
+Note that these lists of problematic regions are applicable to human (hg38 and hg19), mouse (mm10 and mm9), worm (ce10) and fly (dm3) genomes.
 
-```{r BLACKLISTFILTER_paragraph, echo=F,results='asis',error=F,warning=F,message=F}
-blacklistfilt <- lapply(branches, function(peaksdir) {
-  if(length(branches)>1) {cat(paste("\n\nBlacklist filter applied for peaks from", if(peaksdir==""){"default"} else {peaksdir}, "pipeline branch\n\n"))}
-  cat(ChIPhelper.BLACKLISTFILTER(subdir=peaksdir),sep="\n")
+```{r EXCLUDEDREGIONS_paragraph, echo=F,results='asis',error=F,warning=F,message=F}
+exclRegionsFilt <- lapply(branches, function(peaksdir) {
+  if(length(branches)>1) {cat(paste("\n\nFilter applied to exclude problematic regions for peaks from", if(peaksdir==""){"default"} else {peaksdir}, "pipeline branch\n\n"))}
+  cat(ChIPhelper.EXCLUDEDREGIONSFILTER(subdir=peaksdir),sep="\n")
 })
 ```
 

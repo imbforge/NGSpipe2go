@@ -6,7 +6,7 @@ GenomicsDBImport = {
         author: "Frank Rühle"
 
     output.dir = GenomicsDBImport_vars.outdir
-    TARGETS = PROJECT + PIPELINE_ROOT + "/pipelines/DNAseq/targets.txt"
+    TARGETS = PROJECT + "/" + PIPELINE_ROOT + "/pipelines/DNAseq/targets.txt"
 
     def GenomicsDBImport_FLAGS =
         (GenomicsDBImport_vars.sample_map     ? " --sample-name-map " + GenomicsDBImport_vars.outdir + "/" + GenomicsDBImport_vars.sample_map : "" ) +

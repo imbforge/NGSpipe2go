@@ -53,7 +53,7 @@ PEAKS      <- parseArgs(args,"peaks=",paste0(CWD, "/results/macs2"))  # director
 OUT        <- parseArgs(args,"out=", paste0(CWD, "/results/diffbind")) # directory where the output files will go
 FRAGSIZE   <- parseArgs(args,"fragsize=", 200, "as.numeric") # fragment size
 CORES      <- parseArgs(args,"cores=", 4, "as.numeric") # fragment size
-BLACKLIST  <- parseArgs(args,"blacklist=", FALSE, "as.logical") # if true, blacklist will be applied
+EXCLREG    <- parseArgs(args,"excludedRegions=", FALSE, "as.logical") # if true, list with regions to exclude will be generated and applied
 GREYLIST   <- parseArgs(args,"greylist=", FALSE, "as.logical") # if true greylist will be generated for each Control
 SUMMITS    <- parseArgs(args,"summits=", 200, "as.numeric") # summits for re-centering consensus peaks
 FILTER     <- parseArgs(args,"filter=", 1, "as.numeric") # value to use for filtering intervals with low read counts
@@ -82,7 +82,7 @@ if(!file.exists(FCONTRASTS)) stop("File",FCONTRASTS,"does NOT exist. Run with:\n
 if(!file.exists(BAMS))       stop("Dir",BAMS,"does NOT exist. Run with:\n",runstr)
 if(!file.exists(PEAKS))      stop("Dir",PEAKS,"does NOT exist. Run with:\n",runstr)
 if(!is.numeric(FRAGSIZE))    stop("Fragment size not numeric. Run with:\n",runstr)
-if(!isTRUE(BLACKLIST))       {BLACKLIST <- FALSE} # if a specific blacklist is defined in essential.vars it is applied by the blacklist_filter module and not here. If set to TRUE in diffbind3.header diffbind applies a public blacklist if available. 
+if(!isTRUE(EXCLREG))       {EXCLREG <- FALSE} # if a specific bed file is defined in essential.vars it is applied by the rexcludedRegions_filter module and not here. If set to TRUE in diffbind3.header diffbind receives a public excludedRegions list if available. 
 if(!is.logical(GREYLIST))    stop("greylist not logical. Run with:\n",runstr)
 if(!is.numeric(SUMMITS))     stop("Summits is not numeric. Run with:\n",runstr)
 if(!is.numeric(FILTER))      stop("Filter threshold is not numeric. Run with:\n",runstr)
@@ -127,13 +127,13 @@ donefiles <- list.files(PEAKS,pattern=".done$")
 bam_suffix <- sub("^[^\\.]*\\.*", "", gsub("_macs2.done$", "", donefiles[1]))
 bam_suffix <- ifelse(bam_suffix == "", paste0(bam_suffix, "bam"), paste0(bam_suffix, ".bam"))
 
-# check if blacklist filtering was applied and if broad peak files are available
+# check if excludedRegions filtering was applied and if broad peak files are available
 peakfiles <- list.files(PEAKS,pattern="(\\.xls$)|(Peak$)")
-isBlacklistFilt <- any(grepl("blacklist_filtered", peakfiles)) 
+isExclRegionsFilt <- any(grepl("excludedRegions_filtered", peakfiles)) 
 isBroad <- any(grepl("broadPeak$", peakfiles)) 
 peak_suffix <- sapply(targets_raw$PeakCaller, function(x) {switch(x,
-                                                                  macs=if(isBlacklistFilt) {"_macs2_blacklist_filtered_peaks.xls"} else {"_macs2_peaks.xls"},
-                                                                  bed= paste0("_macs2_peaks", if(isBlacklistFilt) {"_blacklist_filtered"}, if(isBroad) {".broadPeak"} else {".narrowPeak"})
+                                                                  macs=if(isExclRegionsFilt) {"_macs2_excludedRegions_filtered_peaks.xls"} else {"_macs2_peaks.xls"},
+                                                                  bed= paste0("_macs2_peaks", if(isExclRegionsFilt) {"_excludedRegions_filtered"}, if(isBroad) {".broadPeak"} else {".narrowPeak"})
 )})
 
 # check if any targets_raw$INPUT is indicated as "none". If so, Peak calling was done without Input samples.
@@ -219,7 +219,7 @@ for (sub in unique(contsAll$sub_experiment)) {
   # Construct DBA object
   db <- dba(sampleSheet=targets, config=data.frame(AnalysisMethod=ANALYSISMETHOD, th=FDR_TRESHOLD, fragmentSize=FRAGSIZE,
                                                    RunParallel=TRUE, cores=CORES,
-                                                   doBlacklist=BLACKLIST, doGreylist=GREYLIST)) 
+                                                   doBlacklist=EXCLREG, doGreylist=GREYLIST)) 
 
   # create DBA object with added consensus peak sets PER GROUP (1 consensus peakset per group, this is needed later for plots)
   tryConsensus <- try(db2 <- dba.peakset(DBA=db, consensus=DBA_CONDITION, minOverlap=MINOVERLAP))  # crashes if minOverlap is too high for a certain group
@@ -243,7 +243,7 @@ for (sub in unique(contsAll$sub_experiment)) {
    
   ## process DBA object
   
-    # apply black and grey lists and count reads
+    # apply excludedRegions list and/or greylist and count reads
     tryGL <- try(dba.blacklist(db, blacklist=db$config$doBlacklist, greylist=db$config$doGreylist))  # crashes if greylist cannot be build
     if(class(tryGL)=="try-error") {
       db <- dba.blacklist(db, blacklist=db$config$doBlacklist, greylist=F) # apply blacklist only (doesn't crash if no blacklist found)
@@ -253,8 +253,8 @@ for (sub in unique(contsAll$sub_experiment)) {
       db <- tryGL
     }
     if(SUBSTRACTCONTROL=="default") {SUBSTRACTCONTROL_FINAL <- is.null(db$greylist)} else {SUBSTRACTCONTROL_FINAL <- as.logical(SUBSTRACTCONTROL)}
-    blacklist_generated <- greylist_generated <- NULL
-    if(BLACKLIST){blacklist_generated <- try(dba.blacklist(db, Retrieve=DBA_BLACKLIST))}
+    excludedRegions_generated <- greylist_generated <- NULL
+    if(EXCLREG){excludedRegions_generated <- try(dba.blacklist(db, Retrieve=DBA_BLACKLIST))}
     if(GREYLIST) {greylist_generated  <- try(dba.blacklist(db, Retrieve=DBA_GREYLIST))}
   
 
@@ -451,9 +451,9 @@ write.table(infodb, file=file.path(OUT, paste0(subexpPrefix, "info_dba_object.tx
 
   # create overview table with diffbind settings
   diffbindSettings <- rbind(c(Parameter="DiffBind package version", Value=as.character(currentDiffbindVersion), Comment=DiffBindWarningText),
-                            c("external blacklist applied", isBlacklistFilt, if(isBlacklistFilt) {"MACS2 peak files have already been blacklist or greylist filtered"} else {""}),
-                            c("Apply auto-generated blacklist", BLACKLIST, if(BLACKLIST){if(class(blacklist_generated)=="try-error") {"Skipped because blacklist not available."} else {"Blacklist successfully generatedand applied."}} else {""}),
-                            c("Apply auto-generated greylist", GREYLIST, if(GREYLIST){if(class(greylist_generated)=="try-error") {"Skipped because greylist not available."} else {"Greylist successfully generated and applied."}} else {""}),
+                            c("External excludedRegions filtering", isExclRegionsFilt, if(isExclRegionsFilt) {"MACS2 peak files have already been filtered for problematic regions"} else {""}),
+                            c("Filter excl. Reg. obtained by DiffBind", EXCLREG, if(EXCLREG){if(class(excludedRegions_generated)=="try-error") {"Skipped because no list available."} else {"ExcludedRegions list successfully generated and applied."}} else {""}),
+                            c("Filter greylist obtained by DiffBind", GREYLIST, if(GREYLIST){if(class(greylist_generated)=="try-error") {"Skipped because no list available."} else {"Greylist successfully generated and applied."}} else {""}),
                             c("Broad peaks used", isBroad, paste("loaded peak files with suffix:", unique(peak_suffix), collapse = ", ")),
                             c("Fragment size", FRAGSIZE, ""),
                             c("Summits", SUMMITS, if(SUMMITS==0) {"no re-centering of peaks."} else {paste0("re-center peaks around consensus summit with peak width 2x", SUMMITS, ".")}),

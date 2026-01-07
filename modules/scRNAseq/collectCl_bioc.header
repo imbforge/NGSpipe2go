@@ -1,0 +1,37 @@
+collectCl_bioc_vars=[
+    pipeline_root       : PIPELINE_ROOT,                     
+    seqtype             : ESSENTIAL_SEQTYPE,                     
+    res                 : RESULTS,  //where the results lie
+    clustdir            : CLUSTER_DIR,
+    selected_clustering : "cluster_igraph_PCA_k20_louvain",  // names of clustering setting to use for downstream analysis. Multiple entries allowed.
+    exprPlotDir         : EXPRPLOT_DIR,
+    selected_genes      : "",  // gene symbols or Ensembl IDs for expression plots (optional). Multiple entries allowed.
+    annocat_plot        : "group",    // category used in plots
+    annocat_plot2       : "sample",   // 2nd category used in plots
+    plot_pointsize      : "0.6",      // dot size used in plots
+    plot_pointalpha     : "0.6"       // dot transparency used in plots
+]
+
+load PIPELINE_ROOT + "/modules/scRNAseq/collectCl_bioc.groovy"
+
+// expected parameter types
+class collectCl_bioc_vars_schema {
+    String pipeline_root           
+    String seqtype           
+    String res             
+    String clustdir             
+    String selected_clustering             
+    String exprPlotDir             
+    String selected_genes             
+    String annocat_plot              
+    String annocat_plot2              
+    String plot_pointsize              
+    String plot_pointalpha              
+
+    // check for the presence of mandatory params
+    boolean asBoolean() {
+      clustdir && selected_clustering
+    }
+}
+
+validate_schema(collectCl_bioc_vars_schema, collectCl_bioc_vars)

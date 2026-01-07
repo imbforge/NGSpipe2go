@@ -23,7 +23,7 @@ ESSENTIAL_FILTER_CHR=""         // chromosomes to include in post-mapping analys
 ESSENTIAL_BAMCOVERAGE="--binSize 1 --skipNonCoveredRegions --normalizeUsing CPM"  // size of bins (in bp) and normalisation method for the bigWig tracks
 
 // DESeq2 specific parameters
-ESSENTIAL_DESEQ2_FDR=0.01       // FDR significance cutoff in the DESeq2 model (may be increased for noisy or underpowered datasets)
+ESSENTIAL_DESEQ2_FDR=0.01       // FDR significance cutoff in the DESeq2 model  (may be increased a priori for noisy or underpowered datasets, e.g. to 0.05 or 0.1; should not be adjusted upon inspection of the data)
 ESSENTIAL_DESEQ2_FC=1           // optional Fold-Change cutoff to incorporate into the DESeq2 model (default "FC=1" means no Fold-Change filter is used)
 // Using FC threshold in the DESeq2 model is usually more conservative than post-hoc gene filtering by FC (which should anyway be avoided, see https://doi.org/10.1093/bib/bbab053) 
 
@@ -46,7 +46,7 @@ ESSENTIAL_FASTQSCREEN=ESSENTIAL_FASTQSCREEN_GENOME + ",PHIX::/fsimb/common/genom
 // The one used most frequently is the Nexterra Transposase Adapter CTGTCTCTTATACACATCT
 ESSENTIAL_ADAPTER_SEQUENCE="Illumina=AGATCGGAAGAGCACACGTCTGAACTCCAGTCA" // 3'adapter sequence for R1. 
 ESSENTIAL_ADAPTER_SEQUENCE_R2="" // in case of paired end sequencing the R2 adapter sequence (which will be trimmed from the 3' end of R2, -A argument in Cutadapt), by default the same sequence as defined in ESSENTIAL_ADAPTER_SEQUENCE is used
-ESSENTIAL_MINADAPTEROVERLAP=5
+ESSENTIAL_MINADAPTEROVERLAP=3
 ESSENTIAL_MINREADLENGTH=30
 ESSENTIAL_BASEQUALCUTOFF=20  // trim low-quality ends from reads (if nextseqtrim is true, qualities of terminal G bases are ignored)  
 ESSENTIAL_NEXTSEQTRIM=true   // accounts for terminal G bases during base quality trimming incorporated by faulty dark cycles observed with two-color chemistry (as in NextSeq) 

@@ -32,7 +32,7 @@ ESSENTIAL_BSGENOME="BSgenome.Scerevisiae.UCSC.sacCer3"  // Bioconductor genome r
 ESSENTIAL_TXDB="TxDb.Scerevisiae.UCSC.sacCer3.sgdGene"  // needed for peak annotation
 ESSENTIAL_ANNODB="org.Sc.sgd.db"  // needed for peak annotation
 ESSENTIAL_DB="sacCer3"            // UCSC assembly version for GREAT analysis (only for UCSC hg19, hg38, mm9 and mm10)
-ESSENTIAL_BLACKLIST=""           // path to a BED file with blacklisted regions (default: empty string). Peaks in these regions will be removed from the peakset. IMPORTANT NOTE: blacklist is skipped if RUN_MAKE_GREYLIST is set to true below! 
+ESSENTIAL_EXCLUDEDREGIONS=""           // path to a BED file with regions to exclude from analysis (default: empty string). Peaks in these regions will be removed from the peakset. IMPORTANT NOTE: this file is ignored if RUN_MAKE_GREYLIST is set to true below! 
 
 // Check for contaminations using FASTQ-Screen
 RUN_FASTQSCREEN=true            
@@ -66,7 +66,7 @@ ESSENTIAL_SUMMITS=200                // re-center peaks around consensus summit 
 
 // further optional pipeline stages to include
 RUN_IN_PAIRED_END_MODE=(ESSENTIAL_PAIRED == "yes")
-RUN_MAKE_GREYLIST=true   // greylist is generated from all Control files and is then applied to MACS2 peak files like a blacklist (default: true). IMPORTANT NOTE: If true, a bed file given in ESSENTIAL_BLACKLIST is ignored! 
+RUN_MAKE_GREYLIST=true   // greylist is generated from all Control files and is then applied to MACS2 peak files to exclude these regions (default: true). IMPORTANT NOTE: If true, a bed file given in ESSENTIAL_EXCLUDEDREGIONS is ignored! 
 RUN_PEAK_ANNOTATION=true   // annotate the called peaks using ChIPSeeker
 RUN_ENRICHMENT=true   // perform Genomic Regions Enrichment Analysis (GREAT)
 RUN_TRACKHUB=false   // create UCSC track hub to display the generated bigWig tracks

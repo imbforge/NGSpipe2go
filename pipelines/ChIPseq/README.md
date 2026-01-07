@@ -19,21 +19,20 @@ All analysis steps are illustrated in the pipeline [flowchart](https://viewer.di
 - characterize library complexity by PCR Bottleneck Coefficient using the GenomicAlignments R-package (for single read libraries only). 
 - characterize phantom peaks by cross correlation analysis using the spp R-package (for single read libraries only).
 - peak calling of IP samples vs. corresponding input controls (if available) using MACS2.
-- apply a pre-defined blacklist to filter out artifact regions or create and apply an individual grey list from provided control samples (optional).
+- apply a pre-defined BED file to filter out artifact regions or create and apply an individual grey list from provided control samples (optional).
 - peak annotation using the ChIPseeker R-package (optional).
 - differential binding analysis using the diffbind R-package (optional). For this, contrasts of interest must be given in *NGSpipe2go/pipelines/ChIPseq/contrasts_diffbind.txt* (see below).
 - genomic regions enrichment analysis
 
 
 ### Filtering of artifact regions
-To exclude artifact regions with with unspecific signal, you can either select blacklist or greylist filtering. Pre-defined blacklist regions for your genome of interest (e.g. identified by the ENCODE project) can be specified as *.bed* file in *ESSENTIAL_BLACKLIST* (see below). The MACS2 generated peak files will be filtered for these regions and stored with an *_blacklist_filtered* suffix within their file name. Alternatively, or when no official blacklist is available for your genome, you can generate your own "greylist" specific for your experiment based on your provided control samples as described in the [GreyListChIP](https://bioconductor.org/packages/release/bioc/vignettes/GreyListChIP/inst/doc/GreyList-demo.pdf) vignette. For this, set *RUN_MAKE_GREYLIST* in *essential.vars.groovy* to *true*. This greylist is then used lust like a blacklist to filter the peak files. IMPORTANT NOTE: if you create your own greylist, a potentially given blacklist in *ESSENTIAL_BLACKLIST* is ignored. By default, *RUN_MAKE_GREYLIST* is selected and no blacklist is specified in *ESSENTIAL_BLACKLIST*.
+Problematic artifact regions with unspecific signal can be excluded from analysis. Pre-defined BED files with problematic regions for your genome of interest (e.g. identified by the ENCODE project) can be specified as *.bed* file in *ESSENTIAL_EXCLUDEDREGIONS* (see below). The MACS2 generated peak files will be filtered for these regions and stored with an *_excludedRegions_filtered* suffix within their file name. Alternatively, or when no pre-defined BED file is available for your genome, you can generate your own "greylist" specific for your experiment based on your provided control samples as described in the [GreyListChIP](https://bioconductor.org/packages/release/bioc/vignettes/GreyListChIP/inst/doc/GreyList-demo.pdf) vignette. For this, set *RUN_MAKE_GREYLIST* in *essential.vars.groovy* to *true*. This greylist is then used to filter the peak files. IMPORTANT NOTE: if you create your own greylist, a potentially provided BED file in *ESSENTIAL_EXCLUDEDREGIONS* is ignored. By default, *RUN_MAKE_GREYLIST* is selected and no BED file is specified in *ESSENTIAL_EXCLUDEDREGIONS*.
 
 
 ### Differential binding analysis with DiffBind
 Since version 3, DiffBind includes the data from ALL samples in a single model. If you have an experiment which involves different antibody pull-downs you may want to have the samples of the respective contrasts normalized and analyzed separately. In this case specify contrasts belonging to the same antibody pull-down by assigning them the same *sub_experiment* name in *contrasts_diffbind.txt*. The sub-experiments are processed isolated from each other.
 DiffBind offers several normalization methods (given in *ESSENTIAL_DIFFBIND_NORM* below) and read sets to apply them on, e.g. full library size, reads in peaks or reads in background bins (see *ESSENTIAL_DIFFBIND_LIBRARY* and *background* parameter in *diffbind3.header*).
 Note that DiffBind works with implicit "default" parameters, which depend on the context of other parameter settings (see [DiffBind documentation](http://bioconductor.org/packages/release/bioc/vignettes/DiffBind/inst/doc/DiffBind.pdf) for explanation). But you can explicitly specify them as well in the *essential.vars.groovy* and *diffbind3.header* files, respectively. Your specified settings as well as potentially derived settings by DiffBind will be listed as an overview within the final html report.
-There are options for automatic blacklist or greylist generation and filtering in DiffBind as well. However, these functions work for certain model organisms only and are therefore disabled by default (see *diffbind3.header*).
 
 
 ### Pipeline-specific parameter settings
@@ -60,7 +59,7 @@ There are options for automatic blacklist or greylist generation and filtering i
   - ESSENTIAL_TXDB: Bioconductor transcript-related annotation package.
   - ESSENTIAL_ANNODB: Bioconductor genome annotation package.
   - ESSENTIAL_DB: UCSC assembly version for GREAT analysis (only for UCSC hg19, hg38, mm9 and mm10)
-  - ESSENTIAL_BLACKLIST: path to bed file with problematic 'blacklist regions' to be excluded from analysis (optional). IMPORTANT NOTE: blacklist filtering is skipped if a grey list is generated and applied (i.e. *RUN_MAKE_GREYLIST* is set to true). 
+  - ESSENTIAL_EXCLUDEDREGIONS: path to bed file with problematic regions to be excluded from analysis (optional). IMPORTANT NOTE: ESSENTIAL_EXCLUDEDREGIONS is ignored if a grey list is generated and applied (i.e. *RUN_MAKE_GREYLIST* is set to true). 
   - ESSENTIAL_ADAPTER_SEQUENCE: adapter sequence to trim with Cutadapt (optional)
   - ESSENTIAL_BASEQUALCUTOFF: base quality threshold to trim low-quality ends from reads with Cutadapt. If *ESSENTIAL_NEXTSEQTRIM* is true, qualities of terminal G bases are ignored. To switch off base quality trimming in Cutadapt entirely, set *ESSENTIAL_BASEQUALCUTOFF=0* and *ESSENTIAL_NEXTSEQTRIM=false*.
   - ESSENTIAL_NEXTSEQTRIM: most Illumina instruments use a two-color chemistry like the NextSeq (exceptions: MiSeq, HiSeq). This option accounts for terminal high quality G bases incorporated by faulty dark cycles during base quality trimming with Cutadapt.

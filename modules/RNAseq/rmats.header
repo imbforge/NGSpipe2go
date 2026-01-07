@@ -17,7 +17,8 @@ maser_vars=[
     gtf     : ESSENTIAL_GENESGTF,      // Needs to be an ensembl annotation for the plots to work correctly
     db      : ESSENTIAL_DB,
     ftype   : "JCEC",                  // tells which type of splicing events to consider: juncton counts (JC) or junction-exon counts (JCEC)
-    mincov  : "5",                     // ignore splicing events with read coverage below this count
+    mincov  : "10",                    // minimal coverage as suggested by rMATS developers, average incl+excl coverage of replicates
+                                       // in each condition has to be larger or equal to this value
     fdr     : "0.01",                  // FDR cut-off to select statistically significant splicing events identified by rMATS
     dpsi    : "0.1"                    // minimum percentage spliced in (PSI) to include in plots
 ]

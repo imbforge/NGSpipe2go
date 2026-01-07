@@ -160,6 +160,7 @@ if(!is.na(run_demux)) { # sample multiplexing applied?
     
     # If subsample column in targets.txt is not pre-defined by user, it is automatically generated.
     # This is used for merging targets with targets_pools to link the cell barcodes with sample names
+    # I.e. means that during merging, subsample '0' in targets_pools gets assigned all cells with subsample '0' from demuxfiles.
     # but note that in that case the assignment of subsamples to the sample ids in targets_pools is arbitrary 
     # (need external genetic information for specific assignment).
     if(is.null(targets_pools$subsample) || all(is.na(targets_pools$subsample))) {

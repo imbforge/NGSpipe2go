@@ -63,7 +63,7 @@ cat("\n\n")
 
 
 #### pre-calculate greylist ###
-# see DiffBind vignette section 6 Blacklists and Greylists:
+# see DiffBind vignette section 6 on Greylists:
 # https://bioconductor.org/packages/release/bioc/vignettes/DiffBind/inst/doc/DiffBind.pdf
 # and GreyListChIP vignette to prepare a greylist
 # https://bioconductor.org/packages/release/bioc/vignettes/GreyListChIP/inst/doc/GreyList-demo.pdf

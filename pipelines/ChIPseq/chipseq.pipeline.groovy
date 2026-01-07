@@ -1,5 +1,5 @@
 PIPELINE="ChIPseq"
-PIPELINE_VERSION="1.2.7"
+PIPELINE_VERSION="1.2.8"
 PIPELINE_ROOT="./NGSpipe2go"
 
 load PIPELINE_ROOT + "/pipelines/ChIPseq/essential.vars.groovy"
@@ -9,7 +9,7 @@ load PIPELINE_ROOT + "/config/bpipe.config.groovy"
 load PIPELINE_ROOT + "/config/validate_module_params.groovy"
 
 load PIPELINE_ROOT + "/modules/ChIPseq/GREAT.header"
-load PIPELINE_ROOT + "/modules/ChIPseq/blacklist_filter.header"
+load PIPELINE_ROOT + "/modules/ChIPseq/excludedRegions_filter.header"
 load PIPELINE_ROOT + "/modules/ChIPseq/make_greylist.header"
 load PIPELINE_ROOT + "/modules/ChIPseq/bowtie1.header"
 load PIPELINE_ROOT + "/modules/ChIPseq/bowtie2.header"
@@ -76,15 +76,15 @@ Bpipe.run {
   
         ] + // end parallel branches
 
-    [(RUN_MAKE_GREYLIST ? make_greylist.using(subdir:"unfiltered") + blacklist_filter.using(subdir:"unfiltered", blacklist:RESULTS+"/greylist/unfiltered/masterGreyList.bed") : dontrun.using(module:"make_greylist")) +
-     blacklist_filter.using(subdir:"unfiltered") +
+    [(RUN_MAKE_GREYLIST ? make_greylist.using(subdir:"unfiltered") + excludedRegions_filter.using(subdir:"unfiltered", excludedRegionsBED:RESULTS+"/greylist/unfiltered/masterGreyList.bed") : dontrun.using(module:"make_greylist")) +
+     excludedRegions_filter.using(subdir:"unfiltered") +
      (RUN_PEAK_ANNOTATION ? peak_annotation.using(subdir:"unfiltered") : dontrun.using(module:"peak_annotation")) +
      (RUN_UPSETPLOT ? upsetPlot.using(subdir:"unfiltered") : dontrun.using(module:"upsetPlot")) + 
      (RUN_DIFFBIND ? diffbind3.using(subdir:"unfiltered") : dontrun.using(module:"diffbind")) +
      (RUN_ENRICHMENT ? GREAT.using(subdir:"unfiltered") : dontrun.using(module:"GREAT")),
 
-      (RUN_MAKE_GREYLIST ? make_greylist.using(subdir:"filtered") + blacklist_filter.using(subdir:"filtered", blacklist:RESULTS+"/greylist/filtered/masterGreyList.bed") : dontrun.using(module:"make_greylist")) +
-     blacklist_filter.using(subdir:"filtered") +
+      (RUN_MAKE_GREYLIST ? make_greylist.using(subdir:"filtered") + excludedRegions_filter.using(subdir:"filtered", excludedRegionsBED:RESULTS+"/greylist/filtered/masterGreyList.bed") : dontrun.using(module:"make_greylist")) +
+     excludedRegions_filter.using(subdir:"filtered") +
      (RUN_PEAK_ANNOTATION ? peak_annotation.using(subdir:"filtered") : dontrun.using(module:"peak_annotation")) +
      (RUN_UPSETPLOT ? upsetPlot.using(subdir:"filtered") : dontrun.using(module:"upsetPlot")) +
      (RUN_DIFFBIND ? diffbind3.using(subdir:"filtered") : dontrun.using(module:"diffbind")) +

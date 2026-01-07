@@ -1,0 +1,35 @@
+kmeans_bioc_vars=[
+    outdir           : CLUSTER_DIR,
+    pipeline_root    : PIPELINE_ROOT,                     
+    seqtype          : ESSENTIAL_SEQTYPE,                   
+    res              : RESULTS,  //where the results lie
+    data2clust       : "PCA", //data used for clustering (default "PCA"). Can be any reduced dimension slot or 'logcounts' (meaning HVGs). Multiple entries allowed. Leave empty to skip.
+    kmeans           : "15", // number of centers for k-means clustering
+    annocat_plot     : "group",   // category used in plots
+    annocat_plot2    : "sample",  // 2nd category used in plots
+    plot_pointsize   : "0.6",     // dot size used in plots
+    plot_pointalpha  : "0.6"      // dot transparency used in plots
+]
+
+load PIPELINE_ROOT + "/modules/scRNAseq/kmeans_bioc.groovy"
+
+// expected parameter types
+class kmeans_bioc_vars_schema {
+    String outdir             
+    String pipeline_root           
+    String seqtype           
+    String res             
+    String data2clust             
+    String kmeans             
+    String annocat_plot              
+    String annocat_plot2              
+    String plot_pointsize              
+    String plot_pointalpha              
+
+    // check for the presence of mandatory params
+    boolean asBoolean() {
+      outdir && res
+    }
+}
+
+validate_schema(kmeans_bioc_vars_schema, kmeans_bioc_vars)

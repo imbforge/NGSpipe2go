@@ -9,7 +9,7 @@ DE_DESeq2_vars=[
     genes    : ESSENTIAL_GENESGTF,         //gtf gene annotation file needed to calculate robust FPKM values per gene
     pattern  : "\"\\.readcounts.tsv\"",    //pattern for filtering count files in cwd
     FDR      : ESSENTIAL_DESEQ2_FDR,       //Filter for the adjusted pvalue 
-    FC       : ESSENTIAL_DESEQ2_FC,        //Filter for the FC (non log2!)
+    FC       : ESSENTIAL_DESEQ2_FC.toBigDecimal(), //Filter for the FC (non log2!)
     extra    : ""                          //extra parms to sent to the tool
 ]
 
@@ -27,7 +27,7 @@ class DE_DESeq2_vars_schema {
     String genes    
     String pattern  
     BigDecimal FDR      
-    Integer FC       
+    BigDecimal FC       
     String extra    
 
     // check for the presence of mandatory params

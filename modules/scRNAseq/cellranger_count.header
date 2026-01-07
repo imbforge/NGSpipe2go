@@ -1,11 +1,11 @@
 cellranger_count_vars=[
     outdir          : MAPPED,
-    transcriptome   : ESSENTIAL_TENX_TRANSCRIPTOME, 
-    expect_cells    : ESSENTIAL_TENX_EXPECTED_CELLS,
-    nuclei          : (ESSENTIAL_TENX_NUCLEI == "yes"),
+    transcriptome   : ESSENTIAL_GENOME_REFERENCE, 
+    expect_cells    : ESSENTIAL_EXPECTED_CELLS,
+    nuclei          : (ESSENTIAL_NUCLEI == "yes"),
     cores           : "8",
     localmem        : "64",
-    extra           : " --chemistry=SC3Pv3"               // extra parms to sent to the tool
+    extra           : " "      // extra parms to sent to the tool, e.g. --chemistry if not detected automatically
 ]
 
 load PIPELINE_ROOT + "/modules/scRNAseq/cellranger_count.groovy"

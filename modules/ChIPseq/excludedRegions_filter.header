@@ -1,0 +1,9 @@
+excludedRegions_filter_vars=[
+    outdir   : RESULTS + "/macs2",
+    excludedRegionsBED: ESSENTIAL_EXCLUDEDREGIONS,
+    files    : RESULTS + "/macs2",
+    extra    : ""
+]
+
+load PIPELINE_ROOT + "/modules/ChIPseq/excludedRegions_filter.groovy"
+

@@ -1,6 +1,11 @@
 # The scripts were taken from the maser package and modified by Frank Ruehle (see # mod)
+# modAB: returnPlot = option to return plot (TRUE) or tracklist (FALSE)
+#        this option is needed when the event is not directly plotted when the rMATS
+#        results are processed for the report (e.g. when the rMATS results are processed
+#        as part of a helper function, which prepares multiple plots, and later plotted
+#        in the main rmarkdown script (not directly when the helper function is called))
 plotTranscriptsMod <- function (events, type = c("A3SS", "A5SS", "SE", "RI", "MXE"), 
-          event_id, gtf, zoom = FALSE, show_PSI = TRUE, title="")  # modFR add title
+          event_id, gtf, zoom = FALSE, show_PSI = TRUE, title="", returnPlot=TRUE)  # modFR add title 
 {
   is_strict = TRUE
   if (!is(events, "Maser")) {
@@ -46,7 +51,7 @@ plotTranscriptsMod <- function (events, type = c("A3SS", "A5SS", "SE", "RI", "MX
     stop(cat("Multiple genes found. Use geneEvents() to select \n             gene-specific AS events."))
   }
   grl <- events[[paste0(type, "_", "gr")]]
-  idx.event <- grep(as.numeric(event_id), grl[[1]]$ID)
+  idx.event <- match(as.numeric(event_id), grl[[1]]$ID)
   eventGr <- lapply(names(grl), function(exon) {
     return(grl[[exon]][idx.event])
   })
@@ -70,18 +75,29 @@ plotTranscriptsMod <- function (events, type = c("A3SS", "A5SS", "SE", "RI", "MX
                       txnTracks$skippingTrack)
   }
   if (zoom) {
-    Gviz::plotTracks(trackList, col.line = NULL, col = NULL, main = title, # modFR add title
-                     Inclusion = "orange", Skipping = "purple", Retention = "orange", 
-                     Non_Retention = "purple", MXE_Exon1 = "orange", MXE_Exon2 = "purple", 
-                     A5SS_Short = "orange", A5SS_Long = "purple", A3SS_Short = "orange", 
-                     A3SS_Long = "purple", from = start(range(unlist(eventGr))) - 
-                       500, to = end(range(unlist(eventGr))) + 500)
+    # modAB: option to return either plot or trackList
+    if (returnPlot) {
+      Gviz::plotTracks(trackList, col.line = NULL, col = NULL, main = title, # modFR add title
+                       Inclusion = "orange", Skipping = "purple", Retention = "orange", 
+                       Non_Retention = "purple", MXE_Exon1 = "orange", MXE_Exon2 = "purple", 
+                       A5SS_Short = "orange", A5SS_Long = "purple", A3SS_Short = "orange", 
+                       A3SS_Long = "purple", from = start(range(unlist(eventGr))) - 500, 
+                       to = end(range(unlist(eventGr))) + 500)
+    } else {
+      return(list(trackList=trackList,
+                  eventGr=eventGr))
+    }   
   }  else {
-    Gviz::plotTracks(trackList, col.line = NULL, col = NULL,  main = title, # modFR add title
-                     Inclusion = "orange", Skipping = "purple", Retention = "orange", 
-                     Non_Retention = "purple", MXE_Exon1 = "orange", MXE_Exon2 = "purple", 
-                     A5SS_Short = "orange", A5SS_Long = "purple", A3SS_Short = "orange", 
-                     A3SS_Long = "purple")
+    if (returnPlot) {
+      Gviz::plotTracks(trackList, col.line = NULL, col = NULL,  main = title, # modFR add title
+                       Inclusion = "orange", Skipping = "purple", Retention = "orange", 
+                       Non_Retention = "purple", MXE_Exon1 = "orange", MXE_Exon2 = "purple", 
+                       A5SS_Short = "orange", A5SS_Long = "purple", A3SS_Short = "orange", 
+                       A3SS_Long = "purple")
+    } else {
+      return(list(trackList=trackList,
+                  eventGr=NULL))
+    }
   }
 }
 

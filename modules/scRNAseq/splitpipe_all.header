@@ -2,10 +2,11 @@ splitpipe_all_vars=[
     outdir          : MAPPED,
     logdir          : LOGS + "/splitpipe_all",
     targets         : "targets.txt",                 // targets file describing the samples
-    genome          : ESSENTIAL_TENX_REFERENCE, 
+    genome          : ESSENTIAL_GENOME_REFERENCE, 
     chemistry       : "v2",
-    expect_cells    : ESSENTIAL_TENX_EXPECTED_CELLS,
+    expect_cells    : ESSENTIAL_EXPECTED_CELLS,
     threads         : "8",
+    parfile         : "",  // specify text file with additional split-pipe parameter
     extra           : " "               // extra parms to sent to the tool
 ]
 
@@ -20,6 +21,7 @@ class splitpipe_all_vars_schema {
     String chemistry           
     Integer expect_cells           
     String threads
+    String parfile
     String extra              
 
     // check for the presence of mandatory params

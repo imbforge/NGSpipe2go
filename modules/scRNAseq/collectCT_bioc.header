@@ -1,0 +1,37 @@
+collectCT_bioc_vars=[
+    pipeline_root       : PIPELINE_ROOT,                     
+    seqtype             : ESSENTIAL_SEQTYPE,                     
+    res                 : RESULTS,  //where the results lie
+    ctanno_dir          : CTANNO_DIR,
+    selected_CTanno     : '"c("anno_scType_cluster_igraph_PCA_k20_louvain_tissue_Heart")"',  // names of CT anno setting to use for downstream analysis. Multiple entries allowed.
+    exprPlotDir         : EXPRPLOT_DIR,
+    selected_genes      : "",  // gene symbols or Ensembl IDs for expression plots (optional). Multiple entries allowed.
+    annocat_plot        : "group",    // category used in plots
+    annocat_plot2       : "sample",   // 2nd category used in plots
+    plot_pointsize      : "0.6",      // dot size used in plots
+    plot_pointalpha     : "0.6"       // dot transparency used in plots
+]
+
+load PIPELINE_ROOT + "/modules/scRNAseq/collectCT_bioc.groovy"
+
+// expected parameter types
+class collectCT_bioc_vars_schema {
+    String pipeline_root           
+    String seqtype           
+    String res             
+    String ctanno_dir             
+    String selected_CTanno             
+    String exprPlotDir             
+    String selected_genes             
+    String annocat_plot              
+    String annocat_plot2              
+    String plot_pointsize              
+    String plot_pointalpha              
+
+    // check for the presence of mandatory params
+    boolean asBoolean() {
+      ctanno_dir && selected_CTanno
+    }
+}
+
+validate_schema(collectCT_bioc_vars_schema, collectCT_bioc_vars)

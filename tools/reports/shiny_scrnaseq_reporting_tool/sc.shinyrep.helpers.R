@@ -750,91 +750,6 @@ DEhelper.DESeq2.ChrOverrepresentation <- function(i=1, fdr_de_gene=0.1, fdr_fish
     return(table_fisher[c("Chromosome","TotalGenes","DEGenes","PValue","FDR","OddsRatio","JaccardIndex")])
 }
 
-##
-## edgeR DE analysis
-##
-## DEhelper.init: some time consuming tasks that can be done in advance
-DEhelper.edgeR.init <- function(task) {
-    
-    # Prepare the DE data frame
-    renderUcscGeneLinks <- function() {
-        ucsc_url <- paste0("http://genome.ucsc.edu/cgi-bin/hgGene?org=", SHINYREPS_ORG, "&db=", SHINYREPS_DB, "&hgg_gene=")
-        for(i in 1:length(lrt)) {
-            lrt[[i]]$table$gene <<- sapply(rownames(lrt[[i]]$table), function(x) {
-                paste0("<a href=\"", ucsc_url, x, "\">", x, "</a>")
-            })
-        }
-    }
-    prepareDEdataTable <- function() {
-        for(i in 1:length(lrt)) {
-            #lrt[[i]]$table$FDR    <<- p.adjust(lrt[[i]]$table$PValue, method="fdr")
-            lrt[[i]]$table$logFC  <<- round(lrt[[i]]$table$logFC, 2)
-            lrt[[i]]$table$logCPM <<- round(lrt[[i]]$table$logCPM, 2)
-            lrt[[i]]$table$LR     <<- round(lrt[[i]]$table$LR, 2)
-            lrt[[i]]$table$PValue <<- lrt[[i]]$table$PValue
-            lrt[[i]]$table$FDR    <<- lrt[[i]]$table$FDR
-            lrt[[i]]$table$gene_name <<- lrt[[i]]$table$gene_name 
-        }
-    }
-    
-    # Cluster and correlation tasks
-    prepareDistanceMatrix <- function() {
-        v <<- apply(m, 1, sd, na.rm=T)        # get top variant genes
-        dists <<- dist(t(m))
-        mat <<- as.matrix(dists)
-        hmcol <<- colorRampPalette(brewer.pal(max(length(levels(group)), 3), "Oranges"))(100)
-    }
-    
-    # dispatch tasks
-    switch(task, 
-           renderUcscGeneLinks=renderUcscGeneLinks(), 
-           prepareDEdataTable=prepareDEdataTable(), 
-           prepareDistanceMatrix=prepareDistanceMatrix())
-}
-
-## DEhelper.MDS
-DEhelper.edgeR.MDS <- function() {
-    edgeR::plotMDS.DGEList(y, col=brewer.pal(max(length(levels(group)), 3), "Accent")[group])
-}
-
-##
-## DEhelper.var: variance along log gene count-per-milion
-##
-DEhelper.edgeR.var <- function() {
-    edgeR::plotBCV(y)
-}
-
-## DEhelper.cluster: Heatmap of top variant 'n' genes of the counts-per-milion table
-DEhelper.edgeR.cluster <- function(n=50) {
-    heatmap.2(m[rev(order(v))[1:n], ], col=hmcol, trace="none", margin=c(10, 6))
-}
-
-## DEhelper.corr: Heatmap of sample to sample distances
-DEhelper.edgeR.corr <- function() {
-    heatmap.2(mat, trace="none", col=rev(hmcol), margin=c(13, 13))
-}
-
-## DEhelper.MAplot: MA plots
-DEhelper.edgeR.MAplot <- function(i=1, fdr=.05) {
-    # get DE genes (p.adjust='BH', pval<.05)
-    de <- decideTestsDGE(lrt[[i]], p.value=fdr)
-    degenes <- rownames(y)[as.logical(de)]
-    
-    # MA plot
-    plotSmear(lrt[[i]], de.tags=degenes, main=names(lrt)[i])    # MA plot
-    abline(h=c(-1, 1), col="blue")    # indicate 2-fold changes in the MA plot
-    abline(v=0, col="blue")            # indicate >1 counts-per-million
-}
-
-## DEhelper.DEgenes: show the DE results
-DEhelper.edgeR.DEgenes <- function(i=1) {
-    ord  <- order(-log(lrt[[i]]$table$FDR), 
-                   abs(lrt[[i]]$table$logFC), 
-                  decreasing=TRUE)
-#    cols <- c("gene", "logFC", "logCPM", "LR", "PValue", "FDR")
-    cols <- c("gene_name", "logFC", "logCPM", "PValue", "FDR")
-    lrt[[i]]$table[ord, cols]
-}
 
 ##
 ## DEhelper.STAR: parse STAR log files and create a md table
@@ -893,10 +808,10 @@ DEhelper.STARparms <- function() {
     # set row and column names, and output the md table
     if(all(is.na(df$warning))) {
         #kable(df[, 1, drop=F], align=c("r"), output=F)
-      kable(df[, 1, drop=F]) %>% kable_styling()
+      kable(df[, 1, drop=F]) |> kable_styling()
     } else {
         #kable(df, align=c("r", "r"), output=F)
-      kable(df) %>% kable_styling()
+      kable(df) |> kable_styling()
       }
 }
 
@@ -1337,7 +1252,7 @@ DEhelper.Fastqc.custom <- function(web=FALSE, summarizedPlots=TRUE, targetsdf=ta
   
   # select subset of samples for fastqc figures (e.g. merged singlecell pools) or use all samples for samplePattern=NULL
   f <- selectSampleSubset(f, ...)
-  
+
   fastqc.stats <- ngsReports::FastqcDataList(f)
   
   # create proper name vector as labels
@@ -1359,7 +1274,7 @@ DEhelper.Fastqc.custom <- function(web=FALSE, summarizedPlots=TRUE, targetsdf=ta
     
     if(any(grepl("[\\._]R1[\\._]|[\\._]R2[\\._]", names(lbls)))) {  # SHINYREPS_PAIRED == "yes" # for scRNA-Seq we may have se mapping but still an R2 with barcode
       x <- names(lbls)
-      lbls <- paste0(lbls, ifelse(grepl("\\.R1", names(lbls)), "_R1", "_R2"))
+      lbls <- paste0(lbls, ifelse(grepl("[_\\.]R1", names(lbls)), "_R1", "_R2"))
       names(lbls) <- x
     }
   } else {
@@ -1502,7 +1417,6 @@ DEhelper.fastqscreen <- function(subdir="", targetsdf=targets, perc.to.plot = 1,
   QC <- file.path(SHINYREPS_FASTQSCREEN_OUT, subdir)
   
   # construct the image url from the folder contents (skip current dir .)
-  #samples <- list.files(SHINYREPS_FASTQSCREEN_OUT, pattern="_screen.txt$", recursive=T, full.names=T) # does not exclude subdir
   samples <- list.dirs(QC, recursive=F, full.names = T)
   samples <- samples[sapply(samples, function(x) {file.exists(file.path(x, "fastqscreen.conf"))})] # exclude potential subdir which is also listed by list.dirs or recursive list.files
   samples <- samples[sapply(samples, function(x) {any(grepl(".*screen.html", list.files(x)))})] # exclude incomplete results
@@ -1864,7 +1778,7 @@ DEhelper.geneBodyCov2 <- function(web=F, targetsdf=targets, ...) {
     # get target names
     #targets <- read.delim(SHINYREPS_TARGET, comment.char = "#")
     targets <- targetsdf
-    targets <- targets[sapply(names(samples), grep, targets$file),] # if sample subset selected, remove spare entries from targets
+    targets <- targets[sapply(gsub("_L001_R._001", "", names(samples)), grep, targets$file),] # if sample subset selected, remove spare entries from targets
     targets$sample_ext <- gsub("\\..*$", "",targets$file )
     
     # replace files names with nicer sample names given in targets file
@@ -1910,7 +1824,7 @@ DEhelper.geneBodyCov2 <- function(web=F, targetsdf=targets, ...) {
   }
   
   # plot
-  plot_df <- highlight_key(df, ~sample) 
+  plot_df <- plotly::highlight_key(df, ~sample) 
   
   if("cells" %in% colnames(df)) {
     p <- ggplot(plot_df, aes(x=perc, y=cov, group=sample, color= cells )) + geom_line() +
@@ -1924,14 +1838,14 @@ DEhelper.geneBodyCov2 <- function(web=F, targetsdf=targets, ...) {
     ylim(0,1) +
     theme_bw() 
   
-  gg <- ggplotly(p) # Warning message: `group_by_()` is deprecated as of dplyr 0.7.0. Please use `group_by()` instead.
+  gg <- plotly::ggplotly(p) # Warning message: `group_by_()` is deprecated as of dplyr 0.7.0. Please use `group_by()` instead.
   
   # since plotly might not work for everyone we should additionally create some static plots
   num_samples <- length(unique(df$sample))
   if(num_samples < 10){ #we only have 9 colors Set1
-    sample.cols <- brewer.pal(num_samples, "Set1")
+    sample.cols <- RColorBrewer::brewer.pal(num_samples, "Set1")
   }else{
-    sample.cols <- colorRampPalette(brewer.pal(9, "Set1"))(num_samples)
+    sample.cols <- grDevices::colorRampPalette(RColorBrewer::brewer.pal(9, "Set1"))(num_samples)
   }
   
   plot_list <- list()
@@ -2354,11 +2268,11 @@ DEhelper.cutadapt.plot <- function(data, color.value, labelOutliers=T, outlierIQ
     }
   }
   
-  data <- data %>%
-    dplyr::group_by(reads) %>%
-    dplyr::mutate(outlier=is_outlier(value)) %>%
-    dplyr::ungroup() %>%
-    dplyr::mutate(outlier=ifelse(outlier,filename,as.numeric(NA))) %>%
+  data <- data |>
+    dplyr::group_by(reads) |>
+    dplyr::mutate(outlier=is_outlier(value)) |>
+    dplyr::ungroup() |>
+    dplyr::mutate(outlier=ifelse(outlier,filename,as.numeric(NA))) |>
     as.data.frame()
   
   ylab <- "% reads"
@@ -2375,7 +2289,7 @@ DEhelper.cutadapt.plot <- function(data, color.value, labelOutliers=T, outlierIQ
     geom_quasirandom(groupOnX=TRUE) +
     geom_boxplot(color = "darkgrey", alpha = 0.2, outlier.shape = NA)  
 
-    if(labelOutliers) {p <- p + ggrepel::geom_text_repel(data=. %>% filter(!is.na(outlier)), aes(label=filename), show.legend=F)}
+    if(labelOutliers) {p <- p + ggrepel::geom_text_repel(data=. |> filter(!is.na(outlier)), aes(label=filename), show.legend=F)}
 
   p <- p + scale_color_manual(values=getPalette(colourCount)) + # creates as many colors as needed
            ylab(ylab) +
@@ -2496,7 +2410,7 @@ DEhelper.umicount <- function(colorByFactor=NULL, targetsdf=targets, ...){
     plot(violin.list[[i]])
   }
   
-  #kable(x.df[,c("total.reads", "trimmed","tooshort")], output=F, format="markdown", align=c("l")) %>% kable_styling()
+  #kable(x.df[,c("total.reads", "trimmed","tooshort")], output=F, format="markdown", align=c("l")) |> kable_styling()
   colnames(x.df)[colnames(x.df)=="skipped_reads"] <- "skipped_reads_perc"
   colnames(x.df)[colnames(x.df)=="counted_reads"] <- "counted_reads_perc"
   DT::datatable(x.df[,c("input_reads_total", "skipped_reads_total","skipped_reads_perc", "counted_reads_total", "counted_reads_perc")])
@@ -2769,14 +2683,14 @@ DEhelper.insertsize.helper <- function(metricsFile){
   #accumulation level which was used.
   #the colnames of histogram are something like all.read.fr_count, all.read.rf_count etc.
   #to get the whole shebang into a wider format we have to add the information
-  hist_long <- reshape2::melt(histogram, id.var = "insert_size") %>% 
+  hist_long <- reshape2::melt(histogram, id.var = "insert_size") |> 
     extract(col=variable,
             into=c("group", "counttype" ),
-            regex='([^\\.]+)\\.([^\\.]+)') %>% 
+            regex='([^\\.]+)\\.([^\\.]+)') |> 
     dplyr::rename( amount = value)
   #we also have to add the comulative sum per group to the whole shebang
-  hist_long <- hist_long %>% group_by(group) %>% 
-    arrange( desc(insert_size)) %>% 
+  hist_long <- hist_long |> group_by(group) |> 
+    arrange( desc(insert_size)) |> 
     mutate( cumulative = (cumsum(amount)/sum(amount))*max(amount))
   #1. Create one plot per group (all_reads etc)
   #2. save the plots in a list

@@ -28,7 +28,7 @@ make_greylist = {
             ${TOOL_ENV} &&
             ${PREAMBLE} &&
 
-            Rscript ${PIPELINE_ROOT}/tools/BlackList_Filter/make_greylist.R $MAKE_GREYLIST_FLAGS;
+            Rscript ${PIPELINE_ROOT}/tools/excludedRegions_filter/make_greylist.R $MAKE_GREYLIST_FLAGS;
         ""","make_greylist"
     }
 }

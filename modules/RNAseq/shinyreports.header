@@ -29,9 +29,10 @@ shinyReports_vars=[
     de_deseq_mm         : DE_DESeq2_MM_vars.outdir + "/DE_DESeq2.RData",//where the DE_DESeq2_MM output lies
     de_deseq_FDR        : DE_DESeq2_vars.FDR,             // which FDR threshold was used for the DESeq2 analysis
     de_deseq_FC         : DE_DESeq2_vars.FC,              // which FC threshold was used for the DESeq2 analysis
+    run_rmats           : RUN_RMATS,                      // true or false if rMATS was run
     maser_scripts       : new File(PIPELINE_ROOT + "/tools/maser/").getCanonicalPath(),// location of edited maser functions to accomodate other species
     maser_ftype         : maser_vars.ftype,               // which type of splicing events to consider
-    maser_mincov        : maser_vars.mincov,              // ignore splicing events with read coverage below this count
+    maser_mincov        : maser_vars.mincov,              // ignore splicing events with average read coverage (incl+excl) below this count >=1 condition
     maser_fdr           : maser_vars.fdr,                 // FDR cut-off to select statistically significant splicing events identified by rMATS
     maser_dpsi          : maser_vars.dpsi,                // minimum percentage spliced in (PSI) to include in plots
     subread             : subread_count_vars.outdir,      // location of the subread counts
@@ -46,6 +47,7 @@ shinyReports_vars=[
     qualimap_logs       : qualimap_vars.outdir,           //where the qualimap output files are
     go_enrichment       : GO_Enrichment_vars.outdir,      //where the GO enrichment results lie
     insertsize          : InsertSize_vars.outdir,         //where the insertsize statistics are found
+    run_trackhub        : RUN_TRACKHUB,                   // true or false if trackhubs were created
     trackhub_done       : TRACKS + "/trackhub.done",     //contains trackhub URL
     tool_versions       : collectToolVersions_vars.outdir + "/tool_versions.txt", //where the tool versions listed
     target              : new File(PIPELINE_ROOT + "/pipelines/RNAseq/targets.txt").getCanonicalPath()

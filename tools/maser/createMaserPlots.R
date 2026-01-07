@@ -1,27 +1,23 @@
 #####################################
 ##
 ## What: createMaserPlots.R
-## Who : Sivarajan Karunanithi
-## When: 27-09-2021
+## Who : Sivarajan Karunanithi, Anke Busch
+## When: 2021-09-27, 2024-12-11
 ##
-## This script takes the rMATS output and creates visualizations using the MASER package
-##
-## Args:
-## -----
-## gtf = gene_model.gtf       # gene model in gtf format
-## db = ESSENTIAL_DB          # The genome DB used
-## 
-##
+## This script takes the rMATS output and creates visualizations using the functions
+## of the MASER package, some of which were adapted.
 ##
 ######################################
 
 options(stringsAsFactors=FALSE)
 library(maser)
+library(ggrepel)
 library(rtracklayer)
 library(knitr)
 library(kableExtra)
 library(openxlsx)
 library(RColorBrewer)
+
 ##
 ## get arguments from the command line
 ##
@@ -46,17 +42,26 @@ group2 <- parseArgs(args,"group2=","") # Contrast groups
 
 ##
 ## The maser package scripts had to be modified for minor bugs and
-## to make it work for all organisms
+## to make it work for all organisms.
+## Additionally:
+## -  when filtering for coverage, maser's original filters 
+##    were only based on inclusion coverage, which biases the results.
+##    Here, the read-in and filtering functions of maser were modified to
+##    accommodate an improved filtering.
+## - maser's plotting function for the summary plot was modified or rather
+##   extended to create additional summary plots
 ##
 
 source(file.path(scripts_dir,"volcanoMod.R"))
+source(file.path(scripts_dir,"filterMod.R"))
+source(file.path(scripts_dir,"distrPlotMod.R"))
 
 # print(c(group1,group2))
 # load rMATS results - set a flag variable
 error_status <- F
 
 tryCatch( { 
-	rmats <- maser(rmats_dir, cond_labels = c(group1,group2), ftype = ftype);
+	  rmats <- maser_mod(rmats_dir, cond_labels = c(group1,group2), ftype = ftype);
       }, 
       error = function(e) { 
 	      print("Error occured while reading rMATS results (possibly no splicing events were found)");
@@ -95,37 +100,53 @@ if(!error_status) {
 
   # Filtering events: Low coverage splicing junctions are commonly found in RNA-seq data and lead to low confidence PSI levels.
   # We can remove low coverage events using filterByCoverage(), which may significantly reduced the number of splicing events.
-  # modAB: use modified rmats object
-  #rmats_filt <- maser::filterByCoverage(rmats, avg_reads = mincov)
-  rmats_filt <- maser::filterByCoverage(rmats_mod, avg_reads = mincov)
-
+  # modAB: use modified rmats object, filter based on coverage
+  rmats_filt  <- filterByCoverage_mod(rmats_mod, cond_labels = c(group1,group2), avg_reads = mincov)
+    
   # The function topEvents() allows to select statistically significant events given a FDR cutoff and minimum PSI change.
   rmats_top <- maser::topEvents(rmats_filt, fdr = fdr, deltaPSI = dpsi)
   #print(rmats_top)
 
-  pdf(paste0(rmats_dir,"/Global_SplicingEvents.pdf"))
+  pdf(paste0(rmats_dir,"/global_splicingevents.pdf"))
   n_splice_events=0
   for(e in c("A3SS", "A5SS", "SE", "RI", "MXE")) {
-	  n_splice_events = n_splice_events + nrow(slot(rmats_top, paste0(e,"_events")))
+      n_splice_events = n_splice_events + nrow(slot(rmats_top, paste0(e,"_events")))
   }
   if(n_splice_events > 0) {
-	  plotspldist <- maser::splicingDistribution(rmats_filt, fdr = fdr, deltaPSI = dpsi)
-          print(plotspldist)
+      plotspldist <- splicingDistribution_mod(rmats_filt, fdr = fdr, deltaPSI = dpsi)
+      print(plotspldist$p.perc.cond)
+      print(plotspldist$p.count.cond)
   }
 
   for(e in c("A3SS", "A5SS", "SE", "RI", "MXE")) {
-	if(nrow(slot(rmats_top, paste0(e,"_events"))) > 0) {
-		#plotPCA <- maser::pca(rmats_filt, type = e)
-		#print(plotPCA)
-		plotVolcano <- volcanoMod(rmats_filt, fdr = fdr, deltaPSI = dpsi, type = e, title = e)
-		print(plotVolcano)
-		top <- summary(rmats_top, type=e)
-		#write the results for each event and contrast
-		write.csv(top, file=paste0(rmats_dir,"/","Significant_",e,"_events.csv"), row.names = F)
-		write.xlsx(top, file=paste0(rmats_dir,"/","Significant_",e,"_events.xlsx"), row.names = F, overwrite = T)	
-	}
+
+      if(nrow(slot(rmats_top, paste0(e,"_events"))) > 0) {
+
+          #plotPCA <- maser::pca(rmats_filt, type = e)
+          #print(plotPCA)
+
+          plotVolcano <- volcanoMod(rmats_filt, fdr = fdr, deltaPSI = dpsi, type = e, title = e)
+          print(plotVolcano)
+
+          # write the results for each event and contrast
+          top <- summary(rmats_top, type=e)
+          write.csv(top, file=paste0(rmats_dir,"/","significant_",ftype,"_",e,"_events.csv"), row.names = F)
+          write.xlsx(top, file=paste0(rmats_dir,"/","significant_",ftype,"_",e,"_events.xlsx"), row.names = F, overwrite = T)	
+      }
   }
   dev.off()
 
   save(rmats_filt, ens_gtf, file=paste0(rmats_dir,"/","maser_processed.RData"))
 }
+
+
+
+
+
+
+
+
+
+
+
+

@@ -94,7 +94,7 @@ cat("\n", fill = T)
 ```
 
 
-```{r cutadapt, echo=F, results='asis', error=F, warning=F, message=F, eval=SHINYREPS_RUN_CUTADAPT=="true"}
+```{r cutadapt, echo=F, results='asis', error=F, warning=F, message=F, eval=SHINYREPS_RUN_CUTADAPT=="true",fig.align="center"}
 cat("## Adapter trimming with Cutadapt\n")
 cat("\nThe following plot shows the amount of reads trimmed (in percent) for the selected adapter sequences. The column 'tooshort' gives the percentage of reads removed due to the minimum length threshold after trimming. Additionally to the column 'trimmed' which is for all adapters combined, there are columns for every single adapter giving the percentage of reads trimmed for this adapter.\n\n")
 
@@ -102,7 +102,7 @@ DEhelper.cutadapt()
 ```
 
 ```{r FastQC_qual_summarized_trimmed, echo=F,results='asis',error=F,warning=F,message=F,fig.align='center', eval=SHINYREPS_RUN_CUTADAPT=="true"}
-cat("### FastQC of trimmed reads QC {.tabset}\n\n")
+cat("### FastQC of trimmed reads QC {.tabset .tabset-pills}\n\n")
 cat("#### Read quality\n\n")
 if (SHINYREPS_FASTQC_SUMMARIZED) {
     fastqc_summary_plot <- DEhelper.Fastqc.custom(web=F,summarizedPlots=T, subdir="trimmed")
@@ -122,7 +122,7 @@ if (SHINYREPS_FASTQC_SUMMARIZED == FALSE) {
 ```
 
 ```{r FastQC_nuc_content_summarized_trimmed, echo=F,results='asis',error=F,warning=F,message=F,fig.align='center', fig.height=min(170, ceiling(0.12*fastqc_summary_plot$no.of.samples)+1), eval=SHINYREPS_RUN_CUTADAPT=="true"}
-cat("#### Sequence bias of trimmed reads\n")
+cat("#### Sequence bias\n")
 
 if (SHINYREPS_FASTQC_SUMMARIZED) {
     plot(fastqc_summary_plot$p.content)
@@ -139,9 +139,9 @@ if (SHINYREPS_FASTQC_SUMMARIZED == F) {
 ```
 
 ```{r FastQC_GC_trimmed, echo=F,results='asis',error=F,warning=F,message=F,fig.align='center', eval=SHINYREPS_RUN_CUTADAPT=="true"}
-cat("#### GC content of trimmed reads\n")
+cat("#### GC content\n")
 fastqc_summary_plot$p.gc
-cat("### {-}\n", fill = T)
+cat("\n", fill = T)
 ```
 
 ## {-}
@@ -189,23 +189,25 @@ fastqscreen_plots <- DEhelper.fastqscreen(perc.to.plot=SHINYREPS_FASTQSCREEN_PER
 ```
 
 
-## UCSC genome browser tracks ##
 
-The browser tracks are generated using bamCoverage tool in [deepTools](https://deeptools.readthedocs.io/en/develop/) and they are normalized using the Counts Per Million mapped reads (CPM) method.
+```{r Trackhub, echo=F, results='asis', error=F, warning=F, message=F, eval=SHINYREPS_RUN_TRACKHUB=="true"}
 
+cat("## UCSC genome browser tracks ##\n",fill=T)
 
-To view the tracks in the UCSC Genome Browser, navigate to the [UCSC Genome Browser Track Hub page](https://genome-euro.ucsc.edu/cgi-bin/hgHubConnect) and enter the following line into the `URL` field:
+cat("The browser tracks are generated using bamCoverage tool in [deepTools](https://deeptools.readthedocs.io/en/develop/) and they are normalized using the Counts Per Million mapped reads (CPM) method.\n",fill=T)
 
-```{r Trackhub, echo=F, results='asis', error=F, warning=F, message=F}
+cat("To view the tracks in the UCSC Genome Browser, navigate to the [UCSC Genome Browser Track Hub page](https://genome-euro.ucsc.edu/cgi-bin/hgHubConnect) and enter the following line into the `URL` field:\n",fill=T)
+
 cat(DEhelper.Trackhub(), sep="\n")
 ```
 
 
-## Insert size (for paired-end sequencing) ##
 
-The insert size is defined as the distance between the left-most mapping position of a read and the right-most mapping position of its mate. For DNA, this exactly represents the fragment length. However, in case of RNA, the estimated insert size can be a lot larger than the true insert size / fragment length, when e.g. the read pair overlaps introns or skipped exons. Thus, the insert size calculation can only be seen as a rough estimate of the true insert size / fragment length when looking at RNAseq data.
+```{r echo=F, error=F, fig.width=15, message=FALSE, warning=FALSE, results='asis', eval=SHINYREPS_PAIRED=="yes"}
 
-```{r echo=F, error=F, fig.width=15, message=FALSE, warning=FALSE, results='asis'}
+cat("## Insert size (for paired-end sequencing) ##\n",fill=T)
+
+cat("The insert size is defined as the distance between the left-most mapping position of a read and the right-most mapping position of its mate. For DNA, this exactly represents the fragment length. However, in case of RNA, the estimated insert size can be a lot larger than the true insert size / fragment length, when e.g. the read pair overlaps introns or skipped exons. Thus, the insert size calculation can only be seen as a rough estimate of the true insert size / fragment length when looking at RNAseq data.\n",fill=T)
 
 if (!file.exists(SHINYREPS_INSERTSIZE)) {
     cat("Insert size data not available.")
@@ -370,7 +372,7 @@ for(i in 1:nrow(conts)) {
 
     # subsection
     cont.name <- conts$contrast.name[i]
-    cat("### ", cont.name, " {.tabset .tabset-pills}", fill=T)
+    cat(paste0("### ", cont.name, " {.tabset .tabset-pills} \n"), fill=T)
     cat("\n", fill=T)
 
     # pairwise PCA plot 
@@ -579,41 +581,156 @@ for(i in 1:nrow(conts)) {
 ```
 
 
-## Differential splicing analysis 
 
-Differential splicing analysis is performed using rMATS (http://rnaseq-mats.sourceforge.net/), which uses the RNA-Seq data to detect differential alternative splicing events. The statistical model of rMATS calculates the probability that the difference in the isoform ratio of a gene between two conditions exceeds an user-defined threshold (default: 0.01%). It is important to note that rMATS is designed to analyze only the basic types of alternative splicing events involving two isoforms from an alternatively spliced region. These types include exon skipping (SE), alternative 5' splice sites (A5SS), alternative 3' splice sites (A3SS), mutually exclusive exons (MXE), and retained introns (RI). 
+```{r diff_splicing_create, echo=F, results='asis', error=F, warning=F, message=F, eval=SHINYREPS_RUN_RMATS=="true"}
 
-Further, the maser package is used to analyze the splicing events. Low coverage splicing junctions are commonly found in RNA-seq data and lead to low confidence differential percent spliced-in PSI levels. Hence, low coverage events with coverage < `r SHINYREPS_MASER_MINCOV` reads are removed. Further, statistically significant events are selected considering **`r if(SHINYREPS_MASER_FTYPE=="JCEC") { "junction and exonic" } else if(SHINYREPS_MASER_FTYPE=="JC") { "only junction" } else {"?"}`** reads and using an FDR cutoff of `r SHINYREPS_MASER_FDR` and a minimum PSI change of `r as.numeric(SHINYREPS_MASER_DPSI)*100`% (deltaPSI = `r SHINYREPS_MASER_DPSI`).
+cat("## Differential splicing analysis \n",fill=T)
 
-For each pairwise analysis, a distribution of the proportion of significantly different splicing events are shown as a summary. Further, for each of the aforementioned alternative splicing events (A3SS, A5SS, SE, RI, MXE) the following global analysis plots are shown, which can also be found in the 'rMATS' results folder: 
-  
-  * a table of genes with significant splicing events, their exon inclusion levels in each replicate (PSI_1, PSI_2), the difference in PSI between conditions (deltaPSI = average(PSI_1)-average(PSI_2)), and exon localization,
-  * a volcano plot of the splicing events with only the significant events colored (blue, red).
+cat("Differential splicing analysis is performed using rMATS (http://rnaseq-mats.sourceforge.net/), which uses the RNA-Seq data to detect differential alternative splicing events. The statistical model of rMATS calculates the probability that the difference in the isoform ratio of a gene between two conditions exceeds an user-defined threshold (default: 0.01%). It is important to note that rMATS is designed to analyze only the basic types of alternative splicing events involving two isoforms from an alternatively spliced region. These types include exon skipping (SE), alternative 5' splice sites (A5SS), alternative 3' splice sites (A3SS), mutually exclusive exons (MXE), and retained introns (RI).\n",fill=T)
 
-In addition, the *top* significant splicing event is visualized as a customized genomic track of the transcripts affected by the respective splicing event. More information on interpreting that plot is provided below. 
+cat(paste0("Further, the modified functions of the maser package is used to analyze the splicing events. Low coverage splicing junctions are commonly found in RNA-seq data and lead to low confidence differential percent spliced-in PSI levels. Hence, low coverage events with an average coverage per condition < ",SHINYREPS_MASER_MINCOV," reads are removed. While original functions of the maser package filter only based on inclusion coverage, here, we are using the sum of reads supporting inclusion and exclusion of an event as its coverage (as suggested [here](https://www.nature.com/articles/s41596-023-00944-2)). Further, statistically significant events are selected considering **",if(SHINYREPS_MASER_FTYPE=="JCEC") { "junction and exonic" } else if(SHINYREPS_MASER_FTYPE=="JC") { "only junction" } else {"?"},"** reads and using an FDR cutoff of ",SHINYREPS_MASER_FDR," and a minimum PSI change of ",as.numeric(SHINYREPS_MASER_DPSI)*100,"%. In summary, the following filters are applied:\n"),fill=T)
 
-```{r Diff_Splicing, echo=F, results='asis', error=F, warning=F, message=F, fig.align="center", out.width="90%", fig.height=4}
+cat(paste0("* average read count >= ",SHINYREPS_MASER_MINCOV," in both sample groups\n"))
+cat(paste0("* FDR cutoff ",SHINYREPS_MASER_FDR,"\n"))
+cat(paste0("* |deltaPSI| > ",SHINYREPS_MASER_DPSI,"\n"),fill=T)
+
+cat("For each pairwise analysis, a distribution of the proportion of significantly different splicing events are shown as a summary. Further, for each of the aforementioned alternative splicing events (A3SS, A5SS, SE, RI, MXE) the following global analysis plots are shown:\n",fill=T)
+
+cat("* a table listing the top 25 significant splicing events, their exon inclusion levels in each replicate per condition (PSI_1, PSI_2), the difference in PSI between conditions (deltaPSI = average(PSI_1)-average(PSI_2)), and exon localization,\n")
+cat("* a volcano plot of the splicing events with only the significant events colored (blue, red).\n",fill=T)
+
+cat("In addition, the *top* significant splicing event is visualized as a customized genomic track of the transcripts affected by the respective splicing event. More information on interpreting that plot is provided below.\n",fill=T)
+
 # load contrasts
 conts <- read.delim(file.path(SHINYREPS_PROJECT, "contrasts.txt"), header=T,comment.char="#")
 
 # extract only unique contrasts
 # duplicates may occur, if user tries different formula for same contrasts
 uconts <- unique(conts[,c("contrast.name","contrast")])
-for(i in 1:nrow(uconts)) {
-    # subsection
-    cont.name <- gsub("[\\(\\)]", "", uconts$contrast[i])
-    if(!dir.exists(file.path(SHINYREPS_RES, "rMATS", paste0(cont.name,"_rMATS")))) {next()}
 
-    cat("\n\n", fill=T)
-    cat("### ", uconts$contrast.name[i], "{.tabset .tabset-pills}", fill=T)
-    cat("\n\n", fill=T)
-    if(file.exists(file.path(SHINYREPS_RES, "rMATS", paste0(cont.name,"_rMATS"),"maser_processed.RData"))) {
-        load(file.path(SHINYREPS_RES, "rMATS", paste0(cont.name,"_rMATS"),"maser_processed.RData"))
-        DEhelper.rmats()
+# get contrast names
+uconts_vec <- gsub("[\\(\\)]", "", uconts$contrast)
+names(uconts_vec) <- uconts$contrast.name
+
+# read rMATS data of all contrasts, create plots per contrast 
+rmats <- lapply(names(uconts_vec),
+                function(n) {
+                    cont <- uconts_vec[n]
+                    if(file.exists(file.path(SHINYREPS_RES, "rMATS", paste0(cont,"_rMATS"),"maser_processed.RData"))) {
+                        rmats_stats <- DEhelper.rmats(cont,n)
+		        return(rmats_stats)
+                    } else {
+                        return(NULL)
+		    }
+                })
+names(rmats) <- uconts_vec
+
+# create all contrasts summary plot
+rmats_summary <- DEhelper.rmats.all(do.call(rbind,lapply(rmats,function(x){return(x$topcount)})), names(uconts_vec))
+
+```
+
+```{r diff_splicing_summaryplot, echo=F, results='asis', error=F, warning=F, message=F, eval=SHINYREPS_RUN_RMATS=="true", fig.align="center", out.width="90%", fig.height=0.6*nrow(conts)+1}
+
+cat("##### Summary of all comparisons {.tabset} \n",fill=T)
+
+cat("The plots below show a summary of the total counts or the percentage of each event type being significantly differentially spliced in each of the comparisons.\n",fill=T)
+
+if(is.null(rmats_summary)) {
+    cat("No significant splicing events found.\n",fill=T)
+    cat("\n",fill=T)
+} else {
+    cat("###### number of events \n",fill=T)
+    print(rmats_summary$p.count)
+    cat("\n",fill=T)
+    cat("###### percentage of events \n",fill=T)
+    print(rmats_summary$p.perc)
+    cat("\n",fill=T)
+}
+
+```
+
+```{r diff_splicing_contrastplots, echo=F, results='asis', error=F, warning=F, message=F, eval=SHINYREPS_RUN_RMATS=="true", fig.align="center", out.width="90%", fig.height=3.5}
+
+for(i in 1:length(uconts_vec)) {
+
+    # subsection
+    cat("### ", names(uconts_vec)[i], " {.tabset}\n", fill=T)
+    cat("\n", fill=T)
+
+    if(!dir.exists(file.path(SHINYREPS_RES, "rMATS", paste0(uconts_vec[i],"_rMATS")))) {
+        cat("No data found.\n",fill=T)
+        cat("\n",fill=T)
+        next()
+    } 
+
+    if(file.exists(file.path(SHINYREPS_RES, "rMATS", paste0(uconts_vec[i],"_rMATS"),"maser_processed.RData")) &&
+           sum(rmats[[uconts_vec[i]]]$topcount$top_count) > 0) {
+
+        rmats_stats <- rmats[[uconts_vec[i]]]
+
+        cat("##### Summary plots {.tabset .tabset-pills}\n",fill=T)  
+        cat("###### Count per condition\n",fill=T)
+        cat("The plot below shows the number of events per event type with a higher inclusion per condition.\n",fill=T)
+        print(rmats_stats$plotspldist$p.count.cond)
+        cat("\n",fill=T)
+        cat("###### Percent per condition\n",fill=T)
+        cat("The plot below shows the percentage per event type out of all events with a higher inclusion per condition. All events with higher inclusion per condition ar
+e adding up to 100%.\n",fill=T)
+        print(rmats_stats$plotspldist$p.perc.cond)
+        cat("\n",fill=T)
+        cat("###### Count per type\n",fill=T)
+        cat("The plot below shows the number of events (per event type) with higher inclusion in each of the two conditions. The condition is represented by a darker or l
+ighter shade of the bars.\n",fill=T)
+        print(rmats_stats$plotspldist$p.count.type)
+        cat("\n",fill=T)
+        cat("###### Percent per type\n",fill=T)
+        cat("The plot below shows the percentage of events (per event type) with higher inclusion in each of the two conditions. The condition is represented by a darker 
+or lighter shade of the bars.\n",fill=T)
+        print(rmats_stats$plotspldist$p.perc.type)
+        cat("\n",fill=T)
+
+        cat("##### Details per event type\n",fill=T)
+        l <- lapply(c("A3SS", "A5SS", "SE", "RI", "MXE"),
+                    function(e) {
+
+                        cat("#### sign ",e,": ",rmats_stats$rmats[[e]]$num_signif," {.tabset .tabset-pills}\n",fill=T)
+
+                        if(rmats_stats$rmats[[e]]$num_signif==0) {
+                            cat("No significant ",e," event found.\n",fill=T)
+                            cat("\n",fill=T)
+                        } else {
+                            cat("##### summary table (top hits)\n",fill=T)
+                            cat(kable(rmats_stats$rmats[[e]]$toptable[1:min(25,nrow(rmats_stats$rmats[[e]]$toptable)),],format="html",align="c") %>% 
+                                   kable_styling() %>% 
+                                   kableExtra::scroll_box(width = "100%", height = "200px"))
+                            cat("\n",fill=T)
+                            cat("##### volcano plot\n",fill=T)
+                            print(rmats_stats$rmats[[e]]$plotVolcano)
+                            cat("\n",fill=T)
+                            cat("##### top sign. event\n",fill=T)
+                            cat(rmats_stats$rmats[[e]]$desc,"\n",fill=T)
+                            tryCatch({
+                                Gviz::plotTracks(rmats_stats$rmats[[e]]$top1_gviz_tracklist$trackList,
+                                                 col.line = NULL, col = NULL,  
+                                                 main = rmats_stats$rmats[[e]]$top1_gviz_title,
+                                                 Inclusion = "orange", Skipping = "purple", Retention = "orange", 
+                                                 Non_Retention = "purple", MXE_Exon1 = "orange", MXE_Exon2 = "purple",
+                                                 A5SS_Short = "orange", A5SS_Long = "purple", A3SS_Short = "orange",
+                                                 A3SS_Long = "purple")
+                            }, error = function(e) {
+                                           cat("Event cannot be visualized fully. Too many isoforms to plot.\n",fill=T)
+                            })
+                            cat("\n",fill=T)
+                        }
+                    })        
+
     } else {
-        cat("No splicing events were found.\n")
+        cat("No significant splicing event found.\n",fill=T)
+        cat("\n",fill=T)
     }
 }
+
 ```
 
 
@@ -628,11 +745,11 @@ The Venn diagrams below compare the number of differentially expressed genes det
 ```{r DifferentialExpressionMM_paragraph, echo=F, results='asis', error=F, warning=F, message=F, fig.align="center", fig.width=3, fig.height=3}
 for(i in 1:nrow(conts)) {
 
-    fdr <- .01
+    fdr <- as.numeric(SHINYREPS_DE_DESEQ_FDR)
     
     # subsection
     cont.name <- conts$contrast.name[i]
-    cat("### ", cont.name, " {.tabset .tabset-pills}\n", fill=T)
+    cat(paste0("### ", cont.name, " {.tabset .tabset-pills}\n"), fill=T)
     cat("", fill=T)
     
     # Venn comparing DE genes w/ w/o MM

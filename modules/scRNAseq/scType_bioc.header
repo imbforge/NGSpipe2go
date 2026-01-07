@@ -1,0 +1,46 @@
+scType_bioc_vars=[
+    outdir           : CTANNO_DIR,
+    pipeline_root    : PIPELINE_ROOT,                     
+    seqtype          : ESSENTIAL_SEQTYPE,                   
+    res              : RESULTS,  //where the results lie
+    selected_clustering : collectCl_bioc_vars.selected_clustering,  // names of clustering setting to use. Multiple entries allowed.
+    dbfile           : "https://raw.githubusercontent.com/IanevskiAleksandr/sc-type/master/ScTypeDB_full.xlsx", // path to Excel file with marker genes in scType format
+    tissueType       : "Heart",   // tissue type to use in dbfile. Multiple entries allowed (for subsequent processing).
+    ctcolumn         : "cellName",   // column name in dbfile with cell type names to use for results
+    annocat_plot     : "group",   // category used in plots
+    annocat_plot2    : "sample",  // 2nd category used in plots
+    plot_pointsize   : "0.6",     // dot size used in plots
+    plot_pointalpha  : "0.6"      // dot transparency used in plots
+]
+
+// dbfile must contain the following columns
+// tissueType: only cell types of this tissue type will be considered for annotation, 
+// cellName: cell type name, 
+// geneSymbolmore1: positive marker genes, 
+// geneSymbolmore2: marker genes not expected to be expressed by a cell type, 
+// shortName: optional short form of cell type name (you can specify in ctcolumn)
+
+load PIPELINE_ROOT + "/modules/scRNAseq/scType_bioc.groovy"
+
+// expected parameter types
+class scType_bioc_vars_schema {
+    String outdir             
+    String pipeline_root           
+    String seqtype           
+    String res             
+    String selected_clustering             
+    String dbfile             
+    String tissueType             
+    String ctcolumn             
+    String annocat_plot              
+    String annocat_plot2              
+    String plot_pointsize              
+    String plot_pointalpha              
+
+    // check for the presence of mandatory params
+    boolean asBoolean() {
+      outdir && res
+    }
+}
+
+validate_schema(scType_bioc_vars_schema, scType_bioc_vars)

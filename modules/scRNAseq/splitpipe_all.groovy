@@ -22,6 +22,7 @@ splitpipe_all = {
         " --rseed 100"   + 
         (splitpipe_all_vars.expect_cells ? " --cell_est "      + splitpipe_all_vars.expect_cells : "") + 
         (splitpipe_all_vars.threads      ? " --nthreads "      + splitpipe_all_vars.threads      : "") + 
+        (splitpipe_all_vars.parfile      ? " --parfile "       + splitpipe_all_vars.parfile      : "") + 
         (splitpipe_all_vars.extra        ? " "                 + splitpipe_all_vars.extra        : "")
 
     def SAMTOOLS_SORT_FLAGS = " -O bam" +

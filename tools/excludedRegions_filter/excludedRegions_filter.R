@@ -1,8 +1,8 @@
-## What: BlackList_Filter.R
+## What: excludedRegions_filter.R
 ## Who: Giuseppe Petrosino
 ## When: 2018-02-08
 ##
-## Script to filter out peaks overlapping blacklisted genomic regions
+## Script to filter out peaks overlapping genomic regions to be excluded
 ##
 ## Args: 
 ## -----
@@ -27,14 +27,14 @@ parseArgs <- function(args,string,default=NULL,convert="as.character") {
 
 args <- commandArgs(T)
 peakData <- parseArgs(args,"peakData=") # .xls result from MACS2
-blacklistRegions <- parseArgs(args, "blacklistRegions=")
+excludedRegionsBED <- parseArgs(args, "excludedRegionsBED=")
 out <- parseArgs(args,"out=", "macs2")
 
-runstr <- paste0("Call with: Rscript BlackList_Filter.R [peakData=",peakData,"] [blacklistRegions=",blacklistRegions,"] [out=",out,"]")
+runstr <- paste0("Call with: Rscript excludedRegions_filter.R [peakData=",peakData,"] [excludedRegionsBED=",excludedRegionsBED,"] [out=",out,"]")
 cat(runstr)
 
 
-if(file.exists(blacklistRegions)) {
+if(file.exists(excludedRegionsBED)) {
 
 
 peakFiles <-list.files(peakData,pattern=".xls", full.names = TRUE) # list of the full path of the .xls file 
@@ -58,26 +58,26 @@ if(packageVersion('ChIPseeker')>0) { # bug in ChIPseeker: MACS xls files (1-base
           return(x)})
         } 
 
-blacklist <- import(blacklistRegions)
+exclRegions <- import(excludedRegionsBED)
 
-# remove peaks overlapping blacklist regions
-peaks.wo.blacklst <- lapply(peaks, function(x) {
-	m <- x[!x %over% blacklist]
+# remove peaks overlapping regions to exclude
+peaks.wo.exclReg <- lapply(peaks, function(x) {
+	m <- x[!x %over% exclRegions]
 })
 
 
 # create a summary table
 filename <- strsplit(basename(peakFiles), "_macs2_peaks.xls") # take the filenames 
 peaks.number <- sapply(peaks, function(x) { mm <-length(x) })
-peaks.wo.blacklst.number <- sapply(peaks.wo.blacklst, function(x) { mm <-length(x) })
-peaks.in.blacklst.percentage <- 100-(100/(peaks.number)*peaks.wo.blacklst.number)
-summary.table <- cbind(filename,peaks.number,peaks.wo.blacklst.number,peaks.in.blacklst.percentage)
-names(peaks.wo.blacklst) <- paste0(filename, "_macs2_blacklist_filtered_peaks")
+peaks.wo.exclReg.number <- sapply(peaks.wo.exclReg, function(x) { mm <-length(x) })
+peaks.in.exclReg.percentage <- 100-(100/(peaks.number)*peaks.wo.exclReg.number)
+summary.table <- cbind(filename,peaks.number,peaks.wo.exclReg.number,peaks.in.exclReg.percentage)
+names(peaks.wo.exclReg) <- paste0(filename, "_macs2_excludedRegions_filtered_peaks")
 
 
-# create xls output contains the peaks wo blacklist regions
+# create xls output containing the peaks wo excluded regions
 columnNames2replace <- c(seqnames="chr", X.log10.pvalue.="-log10(pvalue)", X.log10.FDR="-log10(qvalue)", X.log10.qvalue.="-log10(qvalue)")
-outputData <- lapply(peaks.wo.blacklst, function(x) {
+outputData <- lapply(peaks.wo.exclReg, function(x) {
   x <- as.data.frame(x)
   x$strand <- x$width <- NULL # the 'strand' column may cause error when read in again with ChIPseeker::readPeakFile
   colnames(x) <- dplyr::recode(colnames(x), !!!columnNames2replace) # rename column names for conformity with unfiltered peak file
@@ -100,25 +100,25 @@ for (i in bedfile_suffixes) {
   if(length(bedFiles)==0) {next}
   beds <- lapply(bedFiles, import) # read all the bed files using 'import' function
   
-  # remove peaks overlapping blacklist regions
-  bed.wo.blacklst <- lapply(beds, function(x) {
-    m <- x[!x %over% blacklist]
+  # remove peaks overlapping regions to exclude
+  bed.wo.exclReg <- lapply(beds, function(x) {
+    m <- x[!x %over% exclRegions]
   })
-  names(bed.wo.blacklst) <- gsub(i, paste0("_blacklist_filtered",i), basename(bedFiles))
+  names(bed.wo.exclReg) <- gsub(i, paste0("_excludedRegions_filtered",i), basename(bedFiles))
   
-  bed.df <- lapply(bed.wo.blacklst, as.data.frame, stringsAsFactors=F)
-  sapply(names(bed.wo.blacklst), function (x) export.bed(bed.wo.blacklst[[x]], con=paste0(out, "/", x)))
+  bed.df <- lapply(bed.wo.exclReg, as.data.frame, stringsAsFactors=F)
+  sapply(names(bed.wo.exclReg), function (x) export.bed(bed.wo.exclReg[[x]], con=paste0(out, "/", x)))
   
-  bedOutputData[[paste0("blacklist_filtered",i)]] <- bed.df
+  bedOutputData[[paste0("excludedRegions_filtered",i)]] <- bed.df
 }
 
 
 # save the sessionInformation
-writeLines(capture.output(sessionInfo()), paste(out, "/ChIPseq_BlackList_Filter_session_info.txt", sep=""))
-save(peakFiles,peaks,blacklist,filename,outputData, bedOutputData, file=paste0(out,"/BlackList_Filter.RData"))
+writeLines(capture.output(sessionInfo()), paste(out, "/ChIPseq_excludedRegions_filter_session_info.txt", sep=""))
+save(peakFiles,peaks,exclRegions,filename,outputData, bedOutputData, file=paste0(out,"/excludedRegions_filter.RData"))
 
 } else {
-  cat("\nBlacklist filtering skipped because no valid blacklist provided\n")
-  save(blacklistRegions, file=paste0(out,"/BlackList_Filter.RData"))
+  cat("\nExcludedRegions filtering skipped because no valid BED file provided\n")
+  save(excludedRegionsBED, file=paste0(out,"/excludedRegions_filter.RData"))
 }
 
