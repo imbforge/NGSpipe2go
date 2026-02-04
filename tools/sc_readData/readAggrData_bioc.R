@@ -92,7 +92,7 @@ switch(seqtype,
   ParseBio = {
     barcodes <- readr::read_csv(file.path(aggr_data_dir, "cell_metadata.csv")) |> dplyr::rename(cell_id = 1) 
     features <- readr::read_csv(file.path(aggr_data_dir, "all_genes.csv"))
-    counts <- Matrix::readMM(file=file.path(aggr_data_dir, "count_matrix.mtx")) |> t() # for WT assays, count_matrix.mtx contains cells in rows, genes in columns!
+    counts <- Matrix::readMM(file=file.path(aggr_data_dir, "count_matrix.mtx")) |> Matrix::t() # for WT assays, count_matrix.mtx contains cells in rows, genes in columns!
   },
   ScaleBio = { # one folder per sample
     barcodes <- purrr::map_dfr(fs::dir_ls(aggr_data_dir, type = "directory"), ~{
@@ -130,7 +130,7 @@ switch(seqtype,
       dplyr::mutate(cell_id=file) # naming for downstream compatibility. For SmartSeq, each fastq file refers to exactly one cell.
     features <- data.frame(gene_id=rownames(counts))
   },
-  stop(c("Don't find seqtype:", seqtype))   
+  stop(paste("Don't find seqtype:", seqtype))   
 )
 
 # merge features with gtf
