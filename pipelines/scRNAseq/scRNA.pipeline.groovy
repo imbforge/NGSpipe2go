@@ -9,7 +9,6 @@ load PIPELINE_ROOT + "/config/bpipe.config.groovy"
 load PIPELINE_ROOT + "/config/validate_module_params.groovy"
 
 load PIPELINE_ROOT + "/modules/RNAseq/genebodycov2.header"
-load PIPELINE_ROOT + "/modules/RNAseq/inferexperiment.header"
 load PIPELINE_ROOT + "/modules/RNAseq/qualimap.header"
 load PIPELINE_ROOT + "/modules/RNAseq/subread.header"
 load PIPELINE_ROOT + "/modules/RNAseq/filter2htseq.header"
@@ -66,11 +65,10 @@ Bpipe.run {
 	collect_bams + "%.bam" * [
 
             (RUN_DEMUX ? (["demux_GT","demux_GT_noAssignment"].contains(RUN_DEMUX) ? demux_gt : (RUN_DEMUX == "demux_HTO" ? demux_hto : dontrun.using(module:"demux") )) : dontrun.using(module:"demux")),
-            bamCoverage,
-            inferexperiment,
             qualimap,
+            geneBodyCov2,
             subread2rnatypes,
-            geneBodyCov2
+            bamCoverage
     ] + 
     (RUN_DEMUX == "demux_GT" ? assignSouporcellCluster : dontrun.using(module:"assignSouporcellCluster")) +
 
