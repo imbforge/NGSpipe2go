@@ -11,6 +11,8 @@ de_bioc_vars=[
     FDR_threshold_DE    : "0.05",  // FDR threshold for DE genes. Leave empty to skip.
     org                 : ESSENTIAL_ORG, // either "human" or "mouse". Organism name needed for GO annotation. Leave empty to skip.
     top_genes_for_GO    : "30", // number of top DE genes to use in GO enrichment per cluster
+    min_genes_for_GO    : "2",  // minimum number of DE genes to do GO enrichment per cluster
+    universe_for_GO     : "DEtested", // gene universe for GO enrichment. Either 'DEtested' (all DE tested genes) or 'all' (all genes in dataset)
     p_threshold_GO      : "0.01", // p-value threshold for over-representation of the GO term in the set
     annocat_plot        : "group",   // category used in plots
     annocat_plot2       : "sample",  // 2nd category used in plots
@@ -34,6 +36,8 @@ class de_bioc_vars_schema {
     String FDR_threshold_DE             
     String org             
     String top_genes_for_GO             
+    String min_genes_for_GO             
+    String universe_for_GO             
     String p_threshold_GO             
     String annocat_plot              
     String annocat_plot2              
