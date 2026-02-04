@@ -194,7 +194,6 @@ if(any(is.na(params))) { # skip entirely if cluster setting not specified
             
             ## GO enrichment
             if(!is.na(org) && org %in% c("human", "mouse")) {
-              print(paste("GO enrichment analysis (BP) with top", top_genes_for_GO, "genes for", name_markerlist, "cluster", c)) 
                 
               switch(org,
                      human={
@@ -210,11 +209,15 @@ if(any(is.na(params))) { # skip entirely if cluster setting not specified
               
               markers_per_cluster$entrez_ids <- AnnotationDbi::mapIds(orgdb, keys=gsub("\\..*$", "", markers_per_cluster$feature_id), 
                                                                       column="ENTREZID", keytype="ENSEMBL")
+              
               markers_top <- markers_per_cluster[1:top_genes_for_GO,]
+              univGenes <- unique(na.omit(markers_per_cluster$entrez_ids))
+              
+              print(paste("GO enrichment analysis (BP) with top", top_genes_for_GO, "genes for", name_markerlist, "cluster", c, 
+                    "against", length(univGenes), "genes as background.")) 
               print(paste(sum(is.na(markers_top$entrez_ids)), "marker genes skipped because no Entrez IDs found:", paste(markers_top$feature_symbol[is.na(markers_top$entrez_ids)], collapse=", ")))
               
-              go_out <- limma::goana(unique(na.omit(markers_top$entrez_ids)), species=species,
-                              universe=unique(na.omit(markers_per_cluster$entrez_ids)))
+              go_out <- limma::goana(unique(na.omit(markers_top$entrez_ids)), species=species, universe=univGenes)
               
               go_out_filt <- go_out |> # Only keeping BP terms that are not overly general and which are significantly enriched.
                 dplyr::filter(Ont=="BP" & N<=500 & P.DE < p_threshold_GO) |> # p-value for over-representation of the GO term in the set.
