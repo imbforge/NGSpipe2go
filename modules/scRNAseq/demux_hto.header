@@ -1,7 +1,7 @@
 demux_hto_vars=[
     // for further explanation see: https://hoohm.github.io/CITE-seq-Count/Running-the-script/
     outdir              : RESULTS + "/demux_hto",
-    targets             : "targets.txt",  //targets file
+    targets             : TARGETS,  //targets file
     hto_rawdata_dir     : ESSENTIAL_PROJECT + "/rawdata", // the hto fastq files may be stored separated from sample fastq files 
     cb_first            : "1",  // first nucleotide of cell barcode in read 1 (for 10x Genomics this is typically 1)
     cb_last             : "16", // last nucleotide of the cell barcode in read 1 (for 10x Genomics this is typically 16)
