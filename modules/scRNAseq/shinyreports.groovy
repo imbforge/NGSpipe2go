@@ -87,7 +87,6 @@ shinyReports = {
             echo "SHINYREPS_READAGGR_OUT=${shinyReports_vars.readAggr_out}" >> $output &&
             echo "SHINYREPS_UMICOUNT=${shinyReports_vars.umicount}"             >> $output &&
             echo "SHINYREPS_UMICOUNT_LOG=${shinyReports_vars.umicount_log}"     >> $output &&
-            echo "SHINYREPS_MAPPINGSTATS=${shinyReports_vars.mappingStats}" >> $output &&
             echo "SHINYREPS_QC_BIOC_OUT=${shinyReports_vars.qc_bioc_out}" >> $output &&
             echo "SHINYREPS_NORM_BIOC_OUT=${shinyReports_vars.norm_bioc_out}" >> $output &&
             echo "SHINYREPS_SPIKEIN_NORM=${shinyReports_vars.spikein_norm}" >> $output &&
@@ -125,9 +124,10 @@ shinyReports = {
             echo "SHINYREPS_CTANNOSEURAT_OUT=${shinyReports_vars.CTannoSeurat_out}"     >> $output &&
             echo "SHINYREPS_CTANNOMARKER_OUT=${shinyReports_vars.CTannoMarker_out}"     >> $output &&
             echo "SHINYREPS_CTANNOSELECTED=${shinyReports_vars.CTannoSelected}"     >> $output &&
-            echo "SHINYREPS_MTGENES=${shinyReports_vars.mtgenes}" >> $output
+            echo "SHINYREPS_MTGENES=${shinyReports_vars.mtgenes}" >> $output &&
+            
+            echo "SHINYREPS_EXTERNAL_RESULTDIR=${(ESSENTIAL_SEQTYPE == "ScaleBio" && binding.hasVariable("EXTERNAL_RESULTDIR") ? EXTERNAL_RESULTDIR : "")}" >> $output
 
         ""","shinyReports"
     }
 }
-

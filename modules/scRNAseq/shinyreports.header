@@ -55,7 +55,6 @@ shinyReports_vars=[
     readAggr_out    : (binding.variables.containsKey("readAggrData_bioc_vars") ? readAggrData_bioc_vars.outdir : ""), 
     umicount        : (ESSENTIAL_SEQTYPE == "MARSseq" ? umicount_vars.outdir : ""), //location of the umitools counts 
     umicount_log    : (ESSENTIAL_SEQTYPE == "MARSseq" ? umicount_vars.logdir : ""), //where the umicount/FeatureCounts logs lie
-    mappingStats    : (ESSENTIAL_SEQTYPE == "ScaleBio" ? EXTERNAL_RESULTDIR + "/reports/allSamples.reportStatistics.csv" : ""),
     qc_bioc_out     : (binding.variables.containsKey("qc_bioc_vars") ? qc_bioc_vars.outdir : ""),
     norm_bioc_out   : (binding.variables.containsKey("norm_bioc_vars") ? norm_bioc_vars.outdir : ""),
     spikein_norm    : (binding.variables.containsKey("norm_bioc_vars") ? norm_bioc_vars.spikein_norm : ""),
