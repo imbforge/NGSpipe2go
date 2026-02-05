@@ -110,7 +110,7 @@ config {
     Cutadapt { 
       walltime="02:00:00" 
       procs="1" 
-      memory="4"
+      memory="1"
     }
     CutadaptStats { 
       walltime="01:00:00" 
@@ -155,7 +155,7 @@ config {
     FastQScreen { 
       walltime="01:00:00" 
       procs="4" 
-      memory="8"
+      memory="4"
     }
     FastxTrimmer { 
       walltime="02:00:00" 
@@ -252,13 +252,13 @@ config {
       queue=long_queue 
       walltime="8:00:00" 
       procs="1" 
-      memory="128"
+      memory="32"
     }
     MULTIQC {
       queue=long_queue
       walltime="12:00:00"
       procs="4"
-      memory="50"
+      memory="1"
     }
     NucleotideSignature { 
       walltime="1:00:00" 
@@ -268,7 +268,7 @@ config {
     pear {
       walltime="2:00:00"
       procs="1"
-      memory="8"
+      memory="2"
     }
     PingPongPro { 
       walltime="1:00:00" 
