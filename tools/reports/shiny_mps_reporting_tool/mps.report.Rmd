@@ -114,7 +114,7 @@ cat("## Competetive mapping to rRNAs and other contaminants
 
 A competitive mapping to the reference genome and known rRNAs (H. sapiens, M. musculus, C. elegans, D. melanogaster, D. rerio, X. tropicalis) as well as frequently occurring Mycoplasma species (M. arginini, M. fermentans, M. hominis, M. hyorhinis, M. orale, and Acholeplasma laidlawii), PhiX and ERCC spike-in sequences, E. coli and B. taurus (bovine) was performed with FastQScreen (http://www.bioinformatics.babraham.ac.uk/projects/fastq_screen/).
 
-In the following plot only relevant contaminants are shown. A contaminant is considered relevant if it consumes `r SHINYREPS_FASTQSCREEN_PERC`% of reads or more in at least one sample. The 'one genome' label refers to the amount of reads mapping to that genome only, no matter if they are mapping uniquely or multiple times. The 'multiple genome' label refers to the amount of read mapping to this genome but also to other genomes in the screening regardless of whether they are uniquely or multi mapping.\n\n")
+In the following plot only relevant contaminants are shown. A contaminant is considered relevant if it consumes", SHINYREPS_FASTQSCREEN_PERC, "% of reads or more in at least one sample. The 'one genome' label refers to the amount of reads mapping to that genome only, no matter if they are mapping uniquely or multiple times. The 'multiple genome' label refers to the amount of read mapping to this genome but also to other genomes in the screening regardless of whether they are uniquely or multi mapping.\n\n")
 
 fastqscreen_plots <- MPShelper.fastqscreen(perc.to.plot=SHINYREPS_FASTQSCREEN_PERC, ncol=2)
 ```
