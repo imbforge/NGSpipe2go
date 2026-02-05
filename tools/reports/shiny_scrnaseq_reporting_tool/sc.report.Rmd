@@ -46,24 +46,24 @@ switch(SHINYREPS_SEQTYPE,
        },
       ScaleBio={      
         targets4plots <- targets_pools |> # summarize multiple rows per file for fastq-centered QC plots
-        group_by(file) |>
-        summarise(across(everything(), ~ paste(unique(.), collapse = ", "))) |>
+        dplyr::group_by(file) |>
+        dplyr::summarise(dplyr::across(dplyr::everything(), ~ paste(unique(.), collapse = ", "))) |>
         as.data.frame()
 },
       ParseBio={
         targets4plots <- targets_pools |> # summarize multiple rows per file for fastq-centered QC plots
-        group_by(file) |>
-        summarise(across(everything(), ~ paste(unique(.), collapse = ", "))) |>
+        dplyr::group_by(file) |>
+        dplyr::summarise(dplyr::across(dplyr::everything(), ~ paste(unique(.), collapse = ", "))) |>
         as.data.frame()
 
       },
       SmartSeq={
-        targets4plots <- targets
+        targets4plots <- targets_pools
       }
 )
 
 
-# print targets pools
+# print targets
 DT::datatable(targets4plots, caption="targets file (sample sheet) used for analysis")
 
 ```
@@ -90,53 +90,57 @@ The color on the graph shows the Phred quality scores, which are logarithmically
 # If you set argument 'maxno', the maximum sample number will be restricted accordingly to the first 'maxno' plots. 
 ##### 
 
-if (SHINYREPS_FASTQC_SUMMARIZED) {
-    fastqc_summary_plot <- DEhelper.Fastqc.custom(web=F,summarizedPlots=T, targetsdf=targets4plots, samplePattern=SHINYREPS_SAMPLEPATTERN1, excludePattern=SHINYREPS_SAMPLEPATTERN2, maxno=SHINYREPS_MAXNO)
-    plot(fastqc_summary_plot$p.qual)
-    cat("\n", fill = T)
-} else {
-    fastqc_summary_plot <- DEhelper.Fastqc.custom(web=F,summarizedPlots=F, targetsdf=targets4plots, samplePattern=SHINYREPS_SAMPLEPATTERN1, excludePattern=SHINYREPS_SAMPLEPATTERN2, maxno=SHINYREPS_MAXNO)
-}
+if(file.exists(SHINYREPS_FASTQC_OUT)) {
 
+  if (SHINYREPS_FASTQC_SUMMARIZED) {
+      fastqc_summary_plot <- DEhelper.Fastqc.custom(web=F,summarizedPlots=T, targetsdf=targets4plots, samplePattern=SHINYREPS_SAMPLEPATTERN1, excludePattern=SHINYREPS_SAMPLEPATTERN2, maxno=SHINYREPS_MAXNO)
+      plot(fastqc_summary_plot$p.qual)
+      cat("\n", fill = T)
+  } else {
+      fastqc_summary_plot <- DEhelper.Fastqc.custom(web=F,summarizedPlots=F, targetsdf=targets4plots, samplePattern=SHINYREPS_SAMPLEPATTERN1, excludePattern=SHINYREPS_SAMPLEPATTERN2, maxno=SHINYREPS_MAXNO)
+  }
+  
+  numberFastqcPlots <- fastqc_summary_plot$no.of.samples
+
+} else {
+  cat("\nNo fastqc files found.\n")
+  numberFastqcPlots <- nrow(targets4plots)
+
+}
 ```
 
-```{r FastQC_qual, echo=F,results='asis',error=F,warning=F,message=F,fig.align='center',fig.height=min(170, round((3*fastqc_summary_plot$no.of.samples)/4)+1)}
+```{r FastQC_qual, echo=F,results='asis',error=F,warning=F,message=F,fig.align='center',fig.height=min(170, round((3*numberFastqcPlots)/4)+1), eval=file.exists(SHINYREPS_FASTQC_OUT)}
 # REMARK: the maximal figure height is limited to 170 and will throw an error if exceeded ("Failed to create Cairo backend!"). For the not summarized plots you should limit the number of plots to 200 by using the maxno parameter. Otherwise the plots will be squeezed.
-
 if (SHINYREPS_FASTQC_SUMMARIZED == FALSE) {
     plot(fastqc_summary_plot$p.qual)
     cat("\n", fill = T)
 }
-
 ```
 
 #### Sequence bias
 
 The "sequence bias" plot shows the proportion of each base (% G, A, T and C) at each position. In a random library there would be little difference between the positions of a sequence run, so the lines in this plot should run parallel with each other. But most RNA-seq libraries show sequence imbalance in the first 10-12 read positions due to RT priming biases, which should however look fairly similar in all samples. In case the nucleotide content is summarized in a heatmap for all samples, gray colored fields represent a balanced nucleotide content.
 
-```{r FastQC_nuc_content_summarized, echo=F,results='asis',error=F,warning=F,message=F,fig.align='center', fig.height=min(170, ceiling(0.12*fastqc_summary_plot$no.of.samples)+1)}
-
+```{r FastQC_nuc_content_summarized, echo=F,results='asis',error=F,warning=F,message=F,fig.align='center', fig.height=min(170, ceiling(0.12*numberFastqcPlots)+1), eval=file.exists(SHINYREPS_FASTQC_OUT)}
 if (SHINYREPS_FASTQC_SUMMARIZED) {
     plot(fastqc_summary_plot$p.content)
     cat("\n", fill = T)
 } 
-
 ```
 
-```{r FastQC_nuc_content, echo=F,results='asis',error=F,warning=F,message=F,fig.align='center',fig.height=min(170, round((3*fastqc_summary_plot$no.of.samples)/4)+1)}
-
+```{r FastQC_nuc_content, echo=F,results='asis',error=F,warning=F,message=F,fig.align='center',fig.height=min(170, round((3*numberFastqcPlots)/4)+1), eval=file.exists(SHINYREPS_FASTQC_OUT)}
 if (SHINYREPS_FASTQC_SUMMARIZED == F) {
     plot(fastqc_summary_plot$p.content)
     cat("\n", fill = T)
 }
+
 ```
 
 #### GC content
 
 The "GC content" plot shows the GC% distribution of all reads and all samples. Typically, the lines should tightly overlap and look essentially the same in all samples. An unusually shaped distribution could indicate a contaminated library.
 
-```{r FastQC_GC, echo=F,results='asis',error=F,warning=F,message=F,fig.align='center'}
-
+```{r FastQC_GC, echo=F,results='asis',error=F,warning=F,message=F,fig.align='center', eval=file.exists(SHINYREPS_FASTQC_OUT)}
 fastqc_summary_plot$p.gc
 cat("\n", fill = T)
 ```
@@ -160,9 +164,11 @@ cat("\nThe following plot shows the amount of reads trimmed for the selected ada
 DEhelper.cutadapt(colorByFactor=colorByFactor, targetsdf=targets4plots)
 ```
 
-```{r FastQC_qual_summarized_trimmed, echo=F,results='asis',error=F,warning=F,message=F,fig.align='center', eval=runCutadapt}
+```{r FastQC_qual_summarized_trimmed, echo=F,results='asis',error=F,warning=F,message=F,fig.align='center', eval=runCutadapt & file.exists(file.path(SHINYREPS_FASTQC_OUT, "trimmed"))}
+
 cat("### FastQC of trimmed reads QC\n\n")
 cat("#### Read quality\n\n")
+  
 if (SHINYREPS_FASTQC_SUMMARIZED) {
     fastqc_summary_plot <- DEhelper.Fastqc.custom(web=F,summarizedPlots=T, subdir="trimmed", targetsdf=targets4plots, samplePattern=SHINYREPS_SAMPLEPATTERN1, excludePattern=SHINYREPS_SAMPLEPATTERN2, maxno=SHINYREPS_MAXNO)
     plot(fastqc_summary_plot$p.qual)
@@ -170,9 +176,11 @@ if (SHINYREPS_FASTQC_SUMMARIZED) {
 } else {
     fastqc_summary_plot <- DEhelper.Fastqc.custom(web=F,summarizedPlots=F, subdir="trimmed", targetsdf=targets4plots, samplePattern=SHINYREPS_SAMPLEPATTERN1, excludePattern=SHINYREPS_SAMPLEPATTERN2, maxno=SHINYREPS_MAXNO)
 }
+
+
 ```
 
-```{r FastQC_qual_trimmed, echo=F,results='asis',error=F,warning=F,message=F,fig.align='center',fig.height=min(170, round((3*fastqc_summary_plot$no.of.samples)/4)+1), eval=runCutadapt}
+```{r FastQC_qual_trimmed, echo=F,results='asis',error=F,warning=F,message=F,fig.align='center',fig.height=min(170, round((3*numberFastqcPlots)/4)+1), eval=runCutadapt & file.exists(file.path(SHINYREPS_FASTQC_OUT, "trimmed"))}
 
 if (SHINYREPS_FASTQC_SUMMARIZED == FALSE) {
     plot(fastqc_summary_plot$p.qual)
@@ -180,7 +188,7 @@ if (SHINYREPS_FASTQC_SUMMARIZED == FALSE) {
 }
 ```
 
-```{r FastQC_nuc_content_summarized_trimmed, echo=F,results='asis',error=F,warning=F,message=F,fig.align='center', fig.height=min(170, ceiling(0.12*fastqc_summary_plot$no.of.samples)+1), eval=runCutadapt}
+```{r FastQC_nuc_content_summarized_trimmed, echo=F,results='asis',error=F,warning=F,message=F,fig.align='center', fig.height=min(170, ceiling(0.12*numberFastqcPlots)+1), eval=runCutadapt & file.exists(file.path(SHINYREPS_FASTQC_OUT, "trimmed"))}
 cat("#### Sequence bias of trimmed reads\n")
 
 if (SHINYREPS_FASTQC_SUMMARIZED) {
@@ -189,7 +197,7 @@ if (SHINYREPS_FASTQC_SUMMARIZED) {
 } 
 ```
 
-```{r FastQC_nuc_content_trimmed, echo=F,results='asis',error=F,warning=F,message=F,fig.align='center',fig.height=min(170, round((3*fastqc_summary_plot$no.of.samples)/4)+1), eval=runCutadapt}
+```{r FastQC_nuc_content_trimmed, echo=F,results='asis',error=F,warning=F,message=F,fig.align='center',fig.height=min(170, round((3*numberFastqcPlots)/4)+1), eval=runCutadapt & file.exists(file.path(SHINYREPS_FASTQC_OUT, "trimmed"))}
 
 if (SHINYREPS_FASTQC_SUMMARIZED == F) {
     plot(fastqc_summary_plot$p.content)
@@ -197,7 +205,7 @@ if (SHINYREPS_FASTQC_SUMMARIZED == F) {
 }
 ```
 
-```{r FastQC_GC_trimmed, echo=F,results='asis',error=F,warning=F,message=F,fig.align='center', eval=runCutadapt}
+```{r FastQC_GC_trimmed, echo=F,results='asis',error=F,warning=F,message=F,fig.align='center', eval=runCutadapt & file.exists(file.path(SHINYREPS_FASTQC_OUT, "trimmed"))}
 cat("#### GC content of trimmed reads\n")
 fastqc_summary_plot$p.gc
 cat("\n", fill = T)
@@ -209,15 +217,21 @@ cat("\n", fill = T)
 
 The plots below show meta-gene profiles of 5' to 3' read coverage and can reveal biases due to RNA degradation or specific library prep protocol; polyA-selection protocols are particularly prone of producing 3' coverage bias upon RNA degradation.
 
-```{r GeneBodyCoverage_paragraph, echo=F, error=F, warning=F, message=F, results='asis', fig.align="center"}
-
+```{r GeneBodyCoverage_paragraph, echo=F, error=F, warning=F, message=F}
 plot_list <- DEhelper.geneBodyCov2(web=F, targetsdf=targets4plots, samplePattern=SHINYREPS_SAMPLEPATTERN1, excludePattern=SHINYREPS_SAMPLEPATTERN2, maxno=SHINYREPS_MAXNO)
+```
+
+```{r GeneBodyCoverage_paragraph_plotly, echo=F, error=F, warning=F, message=F, results='asis', fig.align="center", eval="plotly" %in% names(plot_list)}
 
 cat("#### Gene body coverage per sample: plotly")
 cat("\n\n", fill=T)
 plot_list$plotly |>
     plotly::highlight(dynamic=T, selectize=T, persistent=T, selected = plotly::attrs_selected(showlegend = FALSE)) 
 cat("\n\n")
+
+```
+
+```{r GeneBodyCoverage_paragraph_per_sample, echo=F, error=F, warning=F, message=F, results='asis', fig.align="center"}
 
 if("p_per_sample" %in% names(plot_list)){
    cat("#### Gene body coverage per sample: \n", fill=T)
@@ -262,7 +276,6 @@ if("p_per_cells_splitByGroup" %in% names(plot_list)){
 }
 ```
 
-
 ```{r GeneBodyCoverage_splitByReplicate, echo=F, error=F, warning=F, message=F, results='asis', fig.align="center", out.width="100%", fig.height=ceiling((no.of.replicates)/2)*3+0.5+ifelse(no.of.replicates<2,2,0)}
 if("p_per_group_splitByReplicate" %in% names(plot_list)){
   cat("#### Gene body coverage per sample split by replicate, colored by group: \n", fill=T)
@@ -270,7 +283,6 @@ if("p_per_group_splitByReplicate" %in% names(plot_list)){
   cat("\n", fill=T)
 }
 ```
-
 
 ```{r GeneBodyCoverage_splitByGroupReplicate, echo=F, error=F, warning=F, message=F, results='asis', fig.align="center", out.width="100%", fig.height=ceiling((no.of.replicates*no.of.groups)/2)*3+0.5+ifelse(no.of.replicates*no.of.groups<2,2,0)}
 if("p_per_cells_splitByGroupReplicate" %in% names(plot_list)){
@@ -282,7 +294,7 @@ if("p_per_cells_splitByGroupReplicate" %in% names(plot_list)){
 
 
 
-```{r strandspecificity,  echo=F, results='asis', error=F, warning=F, message=F}
+```{r strandspecificity,  echo=F, results='asis', error=F, warning=F, message=F, eval=file.exists(SHINYREPS_INFEREXPERIMENT_LOGS)}
 cat("## Strand specificity\n")
 
 cat("\nThe table below shows the fraction of reads mapped in sense or antisense to gene exons - around 0.5 for non-stranded library prep protocols and close to 0 or 1 for strand-specific RNA-seq protocols. The strandedness is calculated as the percentage of unambiguous reads that are on the strand, which is expected by the library preparation protocol.\n\n")
@@ -295,7 +307,7 @@ DEhelper.strandspecificity(samplePattern=SHINYREPS_SAMPLEPATTERN1, targetsdf=tar
 
 Illustrate genomic origin of reads
 
-```{r Qualimap, fig.height=min(170, ceiling(0.12*fastqc_summary_plot$no.of.samples)+1)}
+```{r Qualimap, fig.height=min(170, ceiling(0.12*nrow(targets4plots))+1)}
 DEhelper.Qualimap(targetsdf=targets4plots, samplePattern=SHINYREPS_SAMPLEPATTERN1, excludePattern=SHINYREPS_SAMPLEPATTERN2, maxno=SHINYREPS_MAXNO)
 ```
 
@@ -304,14 +316,14 @@ DEhelper.Qualimap(targetsdf=targets4plots, samplePattern=SHINYREPS_SAMPLEPATTERN
 
 The following plot shows the fraction of reads assigned to various RNA classes. These plots help in determining if the sample prep protocol worked well and may reveal issues with rRNA contamination. 
 
-```{r RNAtypes_paragraph, echo=F, results='asis', error=F, warning=F, message=F, fig.height=min(170, ceiling(0.12*fastqc_summary_plot$no.of.samples)+1)}
+```{r RNAtypes_paragraph, echo=F, results='asis', error=F, warning=F, message=F, fig.height=min(170, ceiling(0.12*nrow(targets4plots))+1)}
 DEhelper.RNAtypes(targetsdf=targets4plots, samplePattern=SHINYREPS_SAMPLEPATTERN1, excludePattern=SHINYREPS_SAMPLEPATTERN2, maxno=SHINYREPS_MAXNO)
 ```
 
 
 # Mapping Statistics
 
-```{r STAR_paragraph_violin, results='asis'}
+```{r mapping_stats, results='asis'}
 ##### parameters to set:
 # You can define columns of targets.txt to be used for dot color in the summary plot (one plot per element of colorByFactor will be created). 
 # The function will try to map the data from targets$file to the STAR log file names (for this, the unique part of 
@@ -322,23 +334,53 @@ DEhelper.RNAtypes(targetsdf=targets4plots, samplePattern=SHINYREPS_SAMPLEPATTERN
 
 switch(SHINYREPS_SEQTYPE,
        tenX={
-         # to be implemented
-         print("Mapping Statistics can be found in the respective web summary provided by manufacturer.")
+         
+         # collect all summary tables per file
+         pathMappingFiles <- list.files(file.path(SHINYREPS_CELLRANGERCOUNT_OUT), pattern = "metrics_summary.csv$", full.names = TRUE, recursive = TRUE)
+         
+         if(length(pathMappingFiles)>0) {
+           names(pathMappingFiles) <- gsub(paste(SHINYREPS_CELLRANGERCOUNT_OUT, "/outs/metrics_summary.csv", "/" , sep = "|"), "", pathMappingFiles)
+           
+           mappingStats <- readr::read_csv(pathMappingFiles)  
+           rownames(mappingStats) <- names(pathMappingFiles)
+           mappingStats <- t(mappingStats)
+           print(kableExtra::kbl(mappingStats, caption="Per sample mapping Statistics after processing with proprietary software from manufacturer", row.names=T, format="simple", align = "l") |> kableExtra::kable_styling())
+           
+           # check if stats from cellranger_aggr are available as well
+           pathMappingAggr <- file.path(SHINYREPS_CELLRANGERAGGR_OUT, SHINYREPS_CELLRANGERAGGR_ID, "outs", "count", "summary.json")
+           if(file.exists(pathMappingAggr)) {
+             
+             mappingStatsAggr <- jsonlite::fromJSON(pathMappingAggr, flatten=TRUE)
+             mappingStatsAggr[grepl("chemistry", names(mappingStatsAggr))] <- NULL
+             mappingStatsAggr[sapply(mappingStatsAggr, length)!=1] <- NULL
+             mappingStatsAggr <- tibble::enframe(unlist(mappingStatsAggr, use.names = TRUE), name = "category", value = "value") |>
+               dplyr::mutate(dplyr::across(where(is.numeric), ~ formatC(.x, format = "f", digits = 2)))
+             print(kableExtra::kbl(mappingStatsAggr, caption="Aggregated mapping Statistics after processing with proprietary software from manufacturer", row.names=F, format="simple", align = "l") |> kableExtra::kable_styling())
+           }
+         } else {
+           print("Mapping Statistics can be found in the respective web summary provided by manufacturer.")
+         }
        },
        ParseBio={
-         # to be implemented
-         print("Mapping Statistics can be found in the respective web summary provided by manufacturer.")
+         pathMappingStats <- file.path(SHINYREPS_SPLITPIPECOMB_OUT, "agg_samp_ana_summary.csv")
+         
+         if(file.exists(pathMappingStats)) {
+           mappingStats <- readr::read_csv(pathMappingStats) 
+           print(kableExtra::kbl(mappingStats, caption="Mapping Statistics after processing with proprietary software from manufacturer", row.names=F, format="simple", align = "l") |> kableExtra::kable_styling())
+          } else {
+            print("Mapping Statistics can be found in the respective web summary provided by manufacturer.")
+          }
        },
        ScaleBio={
-             pathMappingStats <- file.path(SHINYREPS_MAPPINGSTATS)
+             pathMappingStats <- file.path(SHINYREPS_EXTERNAL_RESULTDIR, "/reports/allSamples.reportStatistics.csv")
 
              if(file.exists(pathMappingStats)) {
                mappingStats <- readr::read_csv(pathMappingStats) |>
                  dplyr::filter(Category != "Extrapolated Complexity") |>
-                 dplyr::rename_with(stringr::str_remove("\\.ScaleRNA"))
+                 dplyr::rename_with(~stringr::str_remove(.x, "\\.ScaleRNA"))
                print(kableExtra::kbl(mappingStats, caption="Mapping Statistics after processing with proprietary software from manufacturer", row.names=F, format="simple", align = "l") |> kableExtra::kable_styling())
                  } else {
-                    print("Mapping Statistics can be found in the respective web summary provided by manufacturer.")
+                   print("Mapping Statistics can be found in the respective web summary provided by manufacturer.")
                  }
        },
        SmartSeq={

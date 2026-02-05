@@ -5,23 +5,6 @@
 ##################################
 
 
-#' attach_packages: load required packages
-#'
-#' @param pkg character vector with package names
-#'
-#' @return character vector with package names which have not yet been attached to workspace before yet. 
-#' This vector may be used to detach packages not needed any more.
-
-attach_packages <- function(pkg) {
-  not.yet.attached.pkg <- pkg[!(pkg %in% loadedNamespaces())]
-  for (p in pkg) { 
-    require(p, character.only = TRUE) 
-  }
-return(unique(not.yet.attached.pkg))
-}
-
-
-
 #' loadGlobalVars: read configuration from bpipe vars
 #'
 #' @param f - character containing a file name defining multiple variables for reporting to run. 
@@ -91,6 +74,46 @@ shorten <- function(x, max.len=40, ini=20, end=15) {
     if(l > max.len) paste(substr(x, 1, ini), substr(x, (l-end), l), sep="...") else x
 }
 
+
+#'
+#' Define a group color palette.
+#'
+#' @param num - number of groups
+#'
+#' @return a color vector
+#'
+#' @examples group.colors <- define.group.palette(length(levels(colData(dds)[,"group"])))
+#'           
+define.group.palette <- function(num) {
+  
+  if (num <=9) {
+    group.palette <- RColorBrewer::brewer.pal(9,"Set1")[1:num]
+  } else {
+    group.palette <- colorRampPalette(RColorBrewer::brewer.pal(9,"Set1"))(num)
+  }
+  return(group.palette)
+}
+
+#'
+#' Define a replicate color palette.
+#'
+#' @param num - number of replicates
+#'
+#' @return a color vector
+#'
+#' @examples replicate.colors <- define.replicate.palette(length(levels(colData(dds)[,"replicate"])))
+#'           
+define.replicate.palette <- function(num) {
+  
+  if (num <=9) {
+    replicate.palette <- RColorBrewer::brewer.pal(8,"Dark2")[1:num]
+  } else {
+    replicate.palette <- colorRampPalette(RColorBrewer::brewer.pal(8,"Dark2"))(num)
+  }
+  return(replicate.palette)
+}
+
+
 ##
 ## DESeq2 DE analysis
 ##
@@ -117,11 +140,18 @@ shorten <- function(x, max.len=40, ini=20, end=15) {
 #'           DEhelper.DESeq2.MDS()
 #' 
 DEhelper.DESeq2.MDS <- function() {
-    p <- plotPCA(rld, intgroup=colnames(colData(dds))[1])
-    print(p + 
-          scale_color_manual(values=brewer.pal(9,"Set1")[1:length(levels(colData(dds)[,"group"]))]) +
-          geom_text_repel(aes(label=rownames(colData(dds))), show.legend=FALSE) + 
-          theme_bw())
+  
+  pca.data <- plotPCA(rld, intgroup=colnames(colData(dds))[1], returnData=TRUE)
+  percentVar <- round(100 * attr(pca.data, "percentVar"))
+  ggplot(pca.data, aes(PC1, PC2, color=group)) +
+    geom_point(size=2,alpha=0.7) +
+    xlab(paste0("PC1: ",percentVar[1],"% variance")) +
+    ylab(paste0("PC2: ",percentVar[2],"% variance")) + 
+    coord_fixed() + 
+    scale_color_manual(values=define.group.palette(length(levels(colData(dds)[,"group"])))) +
+    geom_text_repel(aes(label=colData(dds)[,"replicate"]), show.legend=FALSE, max.overlaps=50) + 
+    theme_bw()
+  
 }
 
 
@@ -145,21 +175,35 @@ DEhelper.DESeq2.MDS <- function() {
 #'           DEhelper.DESeq2.pairwisePCA(i)
 #'
 DEhelper.DESeq2.pairwisePCA <- function(i=1) {
-    p <- plotPCA(rlog(pairwise.dds[[i]]), intgroup=colnames(colData(pairwise.dds[[i]]))[1])
-    print(p + 
+  
+  pca.data <- plotPCA(rlog(pairwise.dds[[i]]), intgroup=colnames(colData(pairwise.dds[[i]]))[1], returnData=TRUE)
+  percentVar <- round(100 * attr(pca.data, "percentVar"))
+  print(ggplot(pca.data, aes(PC1, PC2, color=group)) +
+          geom_point(size=2,alpha=0.7) +
+          xlab(paste0("PC1: ",percentVar[1],"% variance")) +
+          ylab(paste0("PC2: ",percentVar[2],"% variance")) + 
+          coord_fixed() + 
           scale_color_manual(values=brewer.pal(9,"Set1")[1:2]) + 
-          geom_text_repel(aes(label=rownames(colData(pairwise.dds[[i]]))), show.legend=FALSE) + 
+          geom_text_repel(aes(label=colData(pairwise.dds[[i]])[,"replicate"]), show.legend=FALSE, max.overlaps=50) +
           theme_bw())
 }
 
 
-## DEhelper.cluster
-#' Heatmap of top variant 'n' genes of the counts-per-milion table.
+## DEhelper.DESeq2.heatmap 
+#' Heatmap of sample to sample distances, of top variant 'n' genes of the counts-per-million table or 
+#' of top 'n' highest mean genes of the regularized log transformed counts-per-million table 
+#' with or without rlog normalization.
+#' This function replaces the helper functions DEhelper.DESeq2.corr, DEhelper.DESeq2.corr.pairwise,
+#' DEhelper.DESeq2.cluster.sd, DEhelper.DESeq2.cluster.sd.pairwise, 
+#' DEhelper.DESeq2.cluster.mean and DEhelper.DESeq2.cluster.mean.pairwise.
 #'
-#' @param n - amount of transcripts/rows to be plotted
-#'            [default = 40]
-#' @param rld - rlog transformed DESeq2 object
-#'
+#' @param i numeric index, only needed if dds is a list of objects to select a list element.
+#' @param dds - rlog transformed DESeq2 object.
+#' @param logTransform logical, if TRUE, dds will be transformed using DESeq2::rlog().
+#' @param anno_factors character vector with factors given in dds to be used for heatmap column annotation.
+#' @param type character with type of heatmap to be drawn. One of "distance", "cluster_sd" or "cluster_mean".
+#' @param n amount of transcripts/rows to be plotted (default = 40). Applies only for type "cluster_sd" and "cluster_mean".
+#' 
 #' @return A plot (base plotting) object.
 #'
 #' @examples Taken from DE_DeSeq2.R
@@ -169,430 +213,118 @@ DEhelper.DESeq2.pairwisePCA <- function(i=1) {
 #'           dds <- DESeq(dds)
 #'           rld <- rlog(dds)
 #'           # rld is taken from environment
-#'           DEhelper.cluster(n=10)
+#'           DEhelper.DESeq2.heatmap()
 #'           
-#DEhelper.DESeq2.cluster <- function(n=25) {
-#    rows <- order(apply(assay(rld), 1, sd), decreasing=TRUE)[1:n]
-#    hmcol  <- colorRampPalette(brewer.pal(9, "GnBu"))(100)
-#    heatmap.2(assay(rld)[rows, ], col=hmcol, trace="none", margin=c(10, 6), scale="none")
-#}
-DEhelper.DESeq2.cluster.sd <- function(n=40) {
-        
-        # extract assay and over-write gene_id in rownames with gene_name
-        assay.rld <- assay(rld)
-        rownames(assay.rld) <- gtf$gene_name[match(rownames(assay(rld)), gtf$gene_id)]
-
-        # pick top n most variable genes
-        select.highestSD <- order(apply(assay.rld,1,sd),decreasing=TRUE)[1:n]
-
-        # set color scheme
-        col <- colorRampPalette(brewer.pal(9,"GnBu"))(255)
-
-        # extract information for legend
-	if (length(add_factors)==0) {
-	        legend.df <- data.frame(group=colData(rld)[,c("group")],row.names=rownames(colData(rld)))
-	} else {
-        	legend.df <- as.data.frame(colData(rld)[,c("group",add_factors)])
-	}
-
-        # fix group colors for legend and possible first additional factor if available
-        if (length(add_factors)==0) {
-                legend_colors <- list(group = setNames(brewer.pal(9,"Set1")[1:length(unique(colData(rld)[,"group"]))],
-                                                       unique(colData(rld)[,"group"])))
-        } else {
-                if (length(unique(colData(rld)[,add_factors[1]])) <= 8) {
-                        mypalette <- brewer.pal(8,"Dark2")[1:length(unique(colData(rld)[,add_factors[1]]))]
-                } else {
-                        mypalette <- colorRampPalette(brewer.pal(8,"Dark2"))(length(unique(colData(rld)[,add_factors[1]])))
-                }
-                legend_colors <- list(group = setNames(brewer.pal(9,"Set1")[1:length(unique(colData(rld)[,"group"]))],
-                                                       unique(colData(rld)[,"group"])),
-                                      subject = setNames(mypalette,
-                                                         unique(colData(rld)[,add_factors[1]])))
-                names(legend_colors) <- c("group",add_factors[1])
-        }
-
-        # plot heatmap
-        pheatmap(assay.rld[select.highestSD,],         
-                 cluster_rows=TRUE,
-                 cluster_cols=TRUE,
-                 show_rownames=TRUE,
-                 annotation_col=legend.df,
-                 annotation_colors=legend_colors,
-                 color=col,
-                 border_color=NA,
-                 main=paste("Normalized expression values of",n,"most variable genes"),
-		 fontsize_row=5,
-                 fontsize=6,
-                 treeheight_row=20,
-                 treeheight_col=20,
-		 annotation_names_col=FALSE)
+DEhelper.DESeq2.heatmap <- function(i=NULL, dds=rld, logTransform=F, anno_factors = c("group","replicate"), type="distance", n=40) {
+  
+  # for pairwise object select ith element
+  if(!is.null(i)) {dds <- dds[[i]]}
+  
+  # extract assay, optionally logtransform (as for the pairwise.dds objects) and over-write gene_id in rownames with gene_name
+  if(logTransform) {
+    if(class(dds) != "DESeqTransform") {
+      dds <- DESeq2::rlog(dds)
+    } else {
+      warning("The dds object is of class DESeqTransform, which means it is already transformed. Therefore, the log transformation selected here is omitted.")
+    }
+  } 
+  assay.rld <- assay(dds)
+  
+  gene_ids <- gtf$gene_name[match(rownames(assay(dds)), gtf$gene_id)]
+  rownames(assay.rld) <- ifelse(is.na(gene_ids), rownames(assay(dds)), gene_ids)
+  
+  
+  ## set parameter specific for heatmap type
+  switch(type,
+         distance={
+           # extract sample to sample distances
+           sampleDists <- dist(t(assay.rld))
+           sampleDistMatrix <- as.matrix(sampleDists)
+           # sample to sample distance heatmap w/ 0's on diagonal set to NA
+           # since they otherwise shift the scale too much
+           sampleDistMatrix.diagNA <- sampleDistMatrix
+           sampleDistMatrix.diagNA[sampleDistMatrix.diagNA==0] <- NA
+           data2plot <- sampleDistMatrix.diagNA
+           # set color scheme
+           col <- plasma(255)
+           hmmain = NA
+           hm_fontsize_row = 8
+           hm_fontsize_col = 8
+           clustering_distance_rows = sampleDists
+           clustering_distance_cols = sampleDists
+           cluster_rows=TRUE
+         },
+         cluster_sd={
+           # pick top n most variable genes
+           select.highestSD <- order(apply(assay.rld,1,sd),decreasing=TRUE)[1:n]
+           data2plot <- assay.rld[select.highestSD,]
+           # set color scheme
+           col <- colorRampPalette(brewer.pal(9,"GnBu"))(255)
+           hmmain=paste("Normalized expression values of",n,"most variable genes") # heatmap title
+           hm_fontsize_row = 6
+           hm_fontsize_col = 8
+           clustering_distance_rows = "euclidean"
+           clustering_distance_cols = "euclidean"
+           cluster_rows=TRUE
+         },
+         cluster_mean={
+           # pick top n most variable genes
+           select.highestMean <- order(rowMeans(assay.rld),decreasing=TRUE)[1:n]
+           data2plot <- assay.rld[select.highestMean,]
+           # set color scheme
+           col <- rev(heat.colors(255))
+           hmmain=paste("Normalized expression values of",n,"genes with highest mean") # heatmap title
+           hm_fontsize_row = 6
+           hm_fontsize_col = 8
+           clustering_distance_rows = "euclidean"
+           clustering_distance_cols = "euclidean"
+           cluster_rows=FALSE
+         }
+  )
+  
+  ## extract information for legend if available
+  anno_factors <- anno_factors[anno_factors %in% colnames(colData(dds))]
+  if(length(anno_factors)>0) {
+    
+    legend.df <- data.frame(colData(dds)[,c(anno_factors),drop=F],row.names=rownames(colData(dds)))
+    
+    # fix group colors for legend additional factors if available
+    legend_colors <- list()
+    
+    for (f in anno_factors) {
+      if (f == "group") {
+        mypalette <- define.group.palette(length(levels(colData(dds)[,f])))
+        legend_colors[[f]] <- setNames(mypalette, levels(colData(dds)[,f]))
+      } else {
+        mypalette <- define.replicate.palette(length(unique(colData(dds)[,f])))
+        legend_colors[[f]] <- setNames(mypalette, sort(unique(colData(dds)[,f])))
+      }
+    }
+  } else {
+    legend.df <- NA
+    legend_colors <- NA
+  }  
+  
+  
+  # plot heatmap
+  pheatmap(data2plot,
+           cluster_rows=cluster_rows,
+           cluster_cols=TRUE,
+           clustering_distance_rows=clustering_distance_rows,
+           clustering_distance_cols=clustering_distance_cols,
+           annotation_col=legend.df,
+           annotation_colors=legend_colors,
+           col=col,
+           border_color=NA,
+           main=hmmain, 
+           fontsize_row=hm_fontsize_row,
+           fontsize_col=hm_fontsize_col,
+           treeheight_row=20,
+           treeheight_col=20,
+           annotation_names_col=T)
 }
 
 
-## DEhelper.DESeq2.cluster.sd.pairwise
-#' Heatmap of top variant 'n' genes of the regularized log transformed counts-per-milion table
-#' in a pairwise comparison of two groups
-#'
-#' @param i - iterator to select contrast from conts [default = 1]
-#' @param n - amount of transcripts/rows to be plotted
-#'            [default = 40]
-#' @param pairwise.dds - DESeq2 object
-#'
-#' @return A plot (base plotting) object.
-#'
-#' @examples Taken from DE_DeSeq2.R
-#'           dds <- DESeqDataSetFromHTSeqCount(sampleTable=targets,
-#'                                             directory=cwd, 
-#'                                             design=as.formula(mmatrix))
-#'           dds <- DESeq(dds)
-#'           DEhelper.DESeq2.cluster.sd.pairwise(i=1,n=10)
-#'           
-DEhelper.DESeq2.cluster.sd.pairwise <- function(i=1,n=40) {
-
-        # extract assay and over-write gene_id in rownames with gene_name
-        assay.rld <- assay(rlog(pairwise.dds[[i]]))
-        rownames(assay.rld) <- gtf$gene_name[match(rownames(assay(pairwise.dds[[i]])), gtf$gene_id)]
-
-        # pick top n most variable genes
-        select.highestSD <- order(apply(assay.rld,1,sd),decreasing=TRUE)[1:n]
-
-        # set color scheme
-        col <- colorRampPalette(brewer.pal(9,"GnBu"))(255)
-
-        # extract information for legend
-        if (length(add_factors)==0) {
-                legend.df <- data.frame(group=colData(pairwise.dds[[i]])[,c("group")],row.names=rownames(colData(pairwise.dds[[i]])))
-        } else {
-                legend.df <- as.data.frame(colData(pairwise.dds[[i]])[,c("group",add_factors)])
-        }
-
-        # fix group colors for legend and possible first additional factor if available
-        if (length(add_factors)==0) {
-                legend_colors <- list(group = setNames(brewer.pal(9,"Set1")[1:length(unique(colData(pairwise.dds[[i]])[,"group"]))],
-                                                       unique(colData(pairwise.dds[[1]])[,"group"])))
-        } else {
-                if (length(unique(colData(pairwise.dds[[i]])[,add_factors[1]])) <= 8) {
-                        mypalette <- brewer.pal(8,"Dark2")[1:length(unique(colData(pairwise.dds[[i]])[,add_factors[1]]))]
-                } else {
-                        mypalette <- colorRampPalette(brewer.pal(8,"Dark2"))(length(unique(colData(pairwise.dds[[i]])[,add_factors[1]])))
-                }
-                legend_colors <- list(group = setNames(brewer.pal(9,"Set1")[1:length(unique(colData(pairwise.dds[[i]])[,"group"]))],
-                                                       unique(colData(pairwise.dds[[i]])[,"group"])),
-                                      subject = setNames(mypalette,
-                                                         unique(colData(pairwise.dds[[i]])[,add_factors[1]])))
-                names(legend_colors) <- c("group",add_factors[1])
-        }
-
-        # plot heatmap
-        pheatmap(assay.rld[select.highestSD,],
-                 cluster_rows=TRUE,
-                 cluster_cols=TRUE,
-                 show_rownames=TRUE,
-                 annotation_col=legend.df,
-                 annotation_colors=legend_colors,
-                 color=col,
-                 border_color=NA,
-                 main=paste("Normalized expression values of",n,"most variable genes"),
-                 fontsize_row=5,
-                 fontsize=6,
-                 treeheight_row=20,
-                 treeheight_col=20,
-		 annotation_names_col=FALSE)
-}
-
-## DEhelper.DESeq2.cluster.mean
-#' Heatmap of top 'n' highest mean genes of the regularized log transformed counts-per-milion table.
-#'
-#' @param n - amount of transcripts/rows to be plotted
-#'            [default = 40]
-#' @param rld - rlog transformed DESeq2 object
-#'
-#' @return A plot (base plotting) object.
-#'
-#' @examples Taken from DE_DeSeq2.R
-#'           dds <- DESeqDataSetFromHTSeqCount(sampleTable=targets,
-#'                                             directory=cwd, 
-#'                                             design=as.formula(mmatrix))
-#'           dds <- DESeq(dds)
-#'           rld <- rlog(dds)
-#'           # rld is taken from environment
-#'           DEhelper.DESeq2.cluster.mean(n=10)
-#'           
-DEhelper.DESeq2.cluster.mean <- function(n=40) {
-
-        # extract assay and over-write gene_id in rownames with gene_name
-        assay.rld <- assay(rld)
-        rownames(assay.rld) <- gtf$gene_name[match(rownames(assay(rld)), gtf$gene_id)]
-
-        # pick top n most variable genes
-        select.highestMean <- order(rowMeans(assay.rld),decreasing=TRUE)[1:n]
-
-        # set color scheme
-	col <- rev(heat.colors(255))
-
-	# extract information for legend
-        if (length(add_factors)==0) {
-                legend.df <- data.frame(group=colData(rld)[,c("group")],row.names=rownames(colData(rld)))
-        } else {
-                legend.df <- as.data.frame(colData(rld)[,c("group",add_factors)])
-        }
-
-        # fix group colors for legend and possible first additional factor if available
-        if (length(add_factors)==0) {
-                legend_colors <- list(group = setNames(brewer.pal(9,"Set1")[1:length(unique(colData(rld)[,"group"]))],
-                                                       unique(colData(rld)[,"group"])))
-        } else {
-                if (length(unique(colData(rld)[,add_factors[1]])) <= 8) {
-                        mypalette <- brewer.pal(8,"Dark2")[1:length(unique(colData(rld)[,add_factors[1]]))]
-                } else {
-                        mypalette <- colorRampPalette(brewer.pal(8,"Dark2"))(length(unique(colData(rld)[,add_factors[1]])))
-                }
-                legend_colors <- list(group = setNames(brewer.pal(9,"Set1")[1:length(unique(colData(rld)[,"group"]))],
-                                                       unique(colData(rld)[,"group"])),
-                                      subject = setNames(mypalette,
-                                                         unique(colData(rld)[,add_factors[1]])))
-                names(legend_colors) <- c("group",add_factors[1])
-        }
-
-        # plot heatmap
-        pheatmap(assay.rld[select.highestMean,],
-                 cluster_rows=FALSE,
-                 cluster_cols=TRUE,
-                 show_rownames=TRUE,
-                 annotation_col=legend.df,
-                 annotation_colors=legend_colors,
-                 col=col,
-                 border_color=NA,
-                 main=paste("Normalized expression values of",n,"genes with highest mean"),
-                 fontsize_row=5,
-                 fontsize=6,
-                 treeheight_row=20,
-                 treeheight_col=20,
-		 annotation_names_col=FALSE)
-}
-
-## DEhelper.DESeq2.cluster.mean.pairwise
-#' Heatmap of top 'n' highest mean genes of the regularized log transformed counts-per-milion table
-#' in a pairwise comparison of two groups
-#'
-#' @param i - iterator to select contrast from conts [default = 1]
-#' @param n - amount of transcripts/rows to be plotted
-#'            [default = 40]
-#' @param pairwise.dds - DESeq2 object
-#'
-#' @return A plot (base plotting) object.
-#'
-#' @examples Taken from DE_DeSeq2.R
-#'           dds <- DESeqDataSetFromHTSeqCount(sampleTable=targets,
-#'                                             directory=cwd, 
-#'                                             design=as.formula(mmatrix))
-#'           dds <- DESeq(dds)
-#'           DEhelper.DESeq2.cluster.mean.pairwise(n=10)
-#'           
-DEhelper.DESeq2.cluster.mean.pairwise <- function(i=1,n=40) {
-
-        # extract assay and over-write gene_id in rownames with gene_name
-        assay.rld <- assay(rlog(pairwise.dds[[i]]))
-        rownames(assay.rld) <- gtf$gene_name[match(rownames(assay(pairwise.dds[[i]])), gtf$gene_id)]
-
-        # pick top n most variable genes
-        select.highestMean <- order(rowMeans(assay.rld),decreasing=TRUE)[1:n]
-
-        # set color scheme
-	col <- rev(heat.colors(255))
-
-        # extract information for legend
-        if (length(add_factors)==0) {
-                legend.df <- data.frame(group=colData(pairwise.dds[[i]])[,c("group")],row.names=rownames(colData(pairwise.dds[[i]])))
-        } else {
-                legend.df <- as.data.frame(colData(pairwise.dds[[i]])[,c("group",add_factors)])
-        }
-
-        # fix group colors for legend and possible first additional factor if available
-        if (length(add_factors)==0) {
-                legend_colors <- list(group = setNames(brewer.pal(9,"Set1")[1:length(unique(colData(pairwise.dds[[i]])[,"group"]))],
-                                                       unique(colData(pairwise.dds[[1]])[,"group"])))
-        } else {
-                if (length(unique(colData(pairwise.dds[[i]])[,add_factors[1]])) <= 8) {
-                        mypalette <- brewer.pal(8,"Dark2")[1:length(unique(colData(pairwise.dds[[i]])[,add_factors[1]]))]
-                } else {
-                        mypalette <- colorRampPalette(brewer.pal(8,"Dark2"))(length(unique(colData(pairwise.dds[[i]])[,add_factors[1]])))
-                }
-                legend_colors <- list(group = setNames(brewer.pal(9,"Set1")[1:length(unique(colData(pairwise.dds[[i]])[,"group"]))],
-                                                       unique(colData(pairwise.dds[[i]])[,"group"])),
-                                      subject = setNames(mypalette,
-                                                         unique(colData(pairwise.dds[[i]])[,add_factors[1]])))
-                names(legend_colors) <- c("group",add_factors[1])
-        }
-
-        # plot heatmap
-        pheatmap(assay.rld[select.highestMean,],
-                 cluster_rows=FALSE,
-                 cluster_cols=TRUE,
-                 show_rownames=TRUE,
-                 annotation_col=legend.df,
-                 annotation_colors=legend_colors,
-                 col=col,
-                 border_color=NA,
-                 main=paste("Normalized expression value of",n,"genes with highest mean"),
-                 fontsize_row=5,
-                 fontsize=6,
-                 treeheight_row=20,
-                 treeheight_col=20,
-		 annotation_names_col=FALSE)
-}
-
-
-## DEhelper.corr: 
-#' Heatmap of sample to sample distances.
-#'
-#' @param rld - rlog transformed DESeq2 object
-#' @return A plot (base plotting) object.
-#'
-#' @examples Taken from DE_DeSeq2.R
-#'           dds <- DESeqDataSetFromHTSeqCount(sampleTable=targets,
-#'                                             directory=cwd, 
-#'                                             design=as.formula(mmatrix))
-#'           dds <- DESeq(dds)
-#'           rld <- rlog(dds)
-#'           # rld is taken from environment
-#'           DEhelper.DESeq2.corr()
-#'           
-#DEhelper.DESeq2.corr <- function() {
-#    distsRL <- dist(t(assay(rld)))
-#    mat <- as.matrix(distsRL)
-#    hc  <- hclust(distsRL)
-#    hmcol <- colorRampPalette(brewer.pal(9, "GnBu"))(100)
-#    heatmap.2(mat, Rowv=as.dendrogram(hc), 
-#              symm=TRUE, trace="none", 
-#              col = rev(hmcol), margin=c(13, 13))
-#}
-DEhelper.DESeq2.corr <- function() {
-
-        # extract assay and over-write gene_id in rownames with gene_name
-        assay.rld <- assay(rld)
-        rownames(assay.rld) <- gtf$gene_name[match(rownames(assay(rld)), gtf$gene_id)]
-
-        # extract sample to sample distances
-        sampleDists <- dist(t(assay.rld))
-        sampleDistMatrix <- as.matrix(sampleDists)
-        
-        # set color scheme
-	col <- plasma(255)
-
-        # extract information for legend
-        if (length(add_factors)==0) {
-                legend.df <- data.frame(group=colData(rld)[,c("group")],row.names=rownames(colData(rld)))
-        } else {
-                legend.df <- as.data.frame(colData(rld)[,c("group",add_factors)])
-        }
-
-        # fix group colors for legend and possible first additional factor if available
-        if (length(add_factors)==0) {
-                legend_colors <- list(group = setNames(brewer.pal(9,"Set1")[1:length(unique(colData(rld)[,"group"]))],
-                                                       unique(colData(rld)[,"group"])))
-        } else {
-                if (length(unique(colData(rld)[,add_factors[1]])) <= 8) {
-                        mypalette <- brewer.pal(8,"Dark2")[1:length(unique(colData(rld)[,add_factors[1]]))]
-                } else {
-                        mypalette <- colorRampPalette(brewer.pal(8,"Dark2"))(length(unique(colData(rld)[,add_factors[1]])))
-                }
-                legend_colors <- list(group = setNames(brewer.pal(9,"Set1")[1:length(unique(colData(rld)[,"group"]))],
-                                                       unique(colData(rld)[,"group"])),
-                                      subject = setNames(mypalette,
-                                                         unique(colData(rld)[,add_factors[1]])))
-                names(legend_colors) <- c("group",add_factors[1])
-        }
-	
-	# sample to sample distance heatmap w/ 0's on diagonal set to NA
-	# since they otherwise shift the scale too much
-	sampleDistMatrix.diagNA <- sampleDistMatrix
-	sampleDistMatrix.diagNA[sampleDistMatrix.diagNA==0] <- NA
-
-        # plot heatmap
-        pheatmap(sampleDistMatrix.diagNA,
-                 clustering_distance_rows=sampleDists,
-                 clustering_distance_cols=sampleDists,
-                 annotation_col=legend.df,
-                 annotation_colors=legend_colors,
-                 col=col,
-                 border_color=NA,
-                 fontsize=6,
-                 treeheight_row=20,
-                 treeheight_col=20,
-		 annotation_names_col=FALSE)
-}
-
-## DEhelper.corr.pairwise: 
-#' Heatmap of sample to sample distances (in a pairwise comparison).
-#'
-#' @param i - iterator to select contrast from conts [default = 1]
-#' @param pairwise.dds - DESeq2 object
-#' @return A plot (base plotting) object.
-#'
-#' @examples Taken from DE_DeSeq2.R
-#'           dds <- DESeqDataSetFromHTSeqCount(sampleTable=targets,
-#'                                             directory=cwd, 
-#'                                             design=as.formula(mmatrix))
-#'           dds <- DESeq(dds)
-#'           DEhelper.DESeq2.corr.pairwise()
-#'           
-DEhelper.DESeq2.corr.pairwise <- function(i=1) {
-
-        # extract assay and over-write gene_id in rownames with gene_name
-        assay.rld <- assay(rlog(pairwise.dds[[i]]))
-        rownames(assay.rld) <- gtf$gene_name[match(rownames(assay(pairwise.dds[[i]])), gtf$gene_id)]
-
-        # extract sample to sample distances
-        sampleDists <- dist(t(assay.rld))
-        sampleDistMatrix <- as.matrix(sampleDists)
-
-        # set color scheme
-	col <- plasma(255)
-        
-        # extract information for legend
-        if (length(add_factors)==0) {
-                legend.df <- data.frame(group=colData(pairwise.dds[[i]])[,c("group")],row.names=rownames(colData(pairwise.dds[[i]])))
-        } else {
-                legend.df <- as.data.frame(colData(pairwise.dds[[i]])[,c("group",add_factors)])
-        }
-
-        # fix group colors for legend and possible first additional factor if available
-        if (length(add_factors)==0) {
-                legend_colors <- list(group = setNames(brewer.pal(9,"Set1")[1:length(unique(colData(pairwise.dds[[i]])[,"group"]))],
-                                                       unique(colData(pairwise.dds[[1]])[,"group"])))
-        } else {
-                if (length(unique(colData(pairwise.dds[[i]])[,add_factors[1]])) <= 8) {
-                        mypalette <- brewer.pal(8,"Dark2")[1:length(unique(colData(pairwise.dds[[i]])[,add_factors[1]]))]
-                } else {
-                        mypalette <- colorRampPalette(brewer.pal(8,"Dark2"))(length(unique(colData(pairwise.dds[[i]])[,add_factors[1]])))
-                }
-                legend_colors <- list(group = setNames(brewer.pal(9,"Set1")[1:length(unique(colData(pairwise.dds[[i]])[,"group"]))],
-                                                       unique(colData(pairwise.dds[[i]])[,"group"])),
-                                      subject = setNames(mypalette,
-                                                         unique(colData(pairwise.dds[[i]])[,add_factors[1]])))
-                names(legend_colors) <- c("group",add_factors[1])
-        }
-
-	# sample to sample distance heatmap w/ 0's on diagonal set to NA
-	# since they otherwise shift the scale too much
-	sampleDistMatrix.diagNA <- sampleDistMatrix
-	sampleDistMatrix.diagNA[sampleDistMatrix.diagNA==0] <- NA
-
-        # plot heatmap
-        pheatmap(sampleDistMatrix.diagNA,
-                 clustering_distance_rows=sampleDists,
-                 clustering_distance_cols=sampleDists,
-                 annotation_col=legend.df,
-                 annotation_colors=legend_colors,
-                 col=col,
-                 border_color=NA,
-                 fontsize=6,
-                 treeheight_row=20,
-                 treeheight_col=20,
-		 annotation_names_col=FALSE)
-}
 
 
 
@@ -617,7 +349,8 @@ DEhelper.DESeq2.corr.pairwise <- function(i=1) {
 #'           DEhelper.DESeq2.MAplot()
 #'           
 DEhelper.DESeq2.MAplot <- function(i=1, fdr=.01) {
-     plotMA(res[[i]], main=conts[i, 1], alpha=fdr)
+  cont.name <- gsub("(.+)=(.+)","\\1",conts[i,1])
+  plotMA(res[[i]], main=cont.name, alpha=fdr)
 }
 
 ## DEhelper.DEgenes: show the DE results
@@ -639,10 +372,10 @@ DEhelper.DESeq2.MAplot <- function(i=1, fdr=.01) {
 #'           DEhelper.DESeq2.DEgenes(i=2)
 #'           
 DEhelper.DESeq2.DEgenes <- function(i=1) {
-    ord  <- order(-log(res[[i]]$padj), 
-                   abs(res[[i]]$log2FoldChange), 
-                  decreasing=TRUE)
-    res[[i]][ord, ]
+  ord  <- order(-log(res[[i]]$padj), 
+                abs(res[[i]]$log2FoldChange), 
+                decreasing=TRUE)
+  res[[i]][ord, ]
 }
 
 ## DEhelper.DESeq2.VolcanoPlot: Volcano plots from DEseq2 results
@@ -667,31 +400,33 @@ DEhelper.DESeq2.DEgenes <- function(i=1) {
 #'           # res is taken from environment
 #'           DEhelper.DESeq2.VolcanoPlot(i = 1, fdr = 0.01, top = 20, web = FALSE)
 #'           
-DEhelper.DESeq2.VolcanoPlot <- function(i=1, fdr=.01, top=25, web=FALSE) {
-    # gather results
-    d <- as.data.frame(DEhelper.DESeq2.DEgenes(i))
-    x.limit <- max(abs(d$log2FoldChange), na.rm=T) # find the maximum spread of the x-axis
-    
-    # plotting
-    p <- ggplot(d) +
-            geom_point(mapping=aes(log2FoldChange, -log10(padj), size=log10(baseMean+1), color=padj < fdr), alpha=0.1) +
-            theme_bw() +
-            xlim(-x.limit, x.limit) +
-            ylab("-log10 adj. p-value") +
-            xlab("log2 fold change") + 
-            scale_color_manual(values=c("black", "red"), guide=FALSE) +
-            scale_size_continuous("mean norm. counts (log10)")
-
-    # add name of top genes
-    if(top > 0) p <- p + geom_text_repel(data=d[1:min(top, nrow(d)),],
-                                         mapping=aes(log2FoldChange, -log10(padj), label=gene_name),
-                                         color="black")
-
-    # return plot
-    if(web)
-        ggplotly(p)
-    else
-        print(p)
+DEhelper.DESeq2.VolcanoPlot <- function(i=1, fdr=.01, top=25, web=TRUE) {
+  # gather results
+  d <- as.data.frame(DEhelper.DESeq2.DEgenes(i))
+  x.limit <- max(abs(d$log2FoldChange), na.rm=T) # find the maximum spread of the x-axis
+  
+  # plotting
+  p <- ggplot(d) +
+    geom_point(mapping=aes(log2FoldChange, -log10(padj), size=log10(baseMean+1), color=padj < fdr), alpha=0.1) +
+    theme_bw() +
+    xlim(-x.limit, x.limit) +
+    ylab("-log10 adj. p-value") +
+    xlab("log2 fold change") + 
+    scale_color_manual(values=c("black", "red")) +
+    scale_size_continuous("mean norm. counts (log10)") +
+    guides(color="none", size=guide_legend(nrow=1)) +
+    theme(legend.position = "top")
+  
+  # add name of top genes
+  if(top > 0) p <- p + geom_text_repel(data=d[1:min(top, nrow(d)),],
+                                       mapping=aes(log2FoldChange, -log10(padj), label=gene_name),
+                                       color="black", max.overlaps=50)
+  
+  # return plot
+  if(web)
+    ggplotly(p)
+  else
+    print(p)
 }
 
 ## DEhelper.DESeq2.ChrOverrepresentation: test if there are more genes in a chromosome than expected by chance.
@@ -716,39 +451,40 @@ DEhelper.DESeq2.VolcanoPlot <- function(i=1, fdr=.01, top=25, web=FALSE) {
 #'           table_fisher <- DEhelper.DESeq2.ChrOverrepresentation(i = 1, fdr_de_gene = 0.1, fdr_fisher_test = 0.1, filter = TRUE)
 #'           
 DEhelper.DESeq2.ChrOverrepresentation <- function(i=1, fdr_de_gene=0.1, fdr_fisher_test=0.1, filter=TRUE) {
-    genes <- data.frame(res[[i]])
-    chromosomes <- unique(genes$chr)
-    universe <- length(unique(rownames(genes)))
-
-    l_res <- list()
-    for (chromosome in chromosomes){
-        de_genes <- rownames(subset(genes, padj < fdr_de_gene))
-        chr_genes <- rownames(subset(genes, chr == chromosome))
-        overl <- newGeneOverlap(
-           unique(de_genes),
-           unique(chr_genes),
-           genome.size=universe)
-
-        overl <- testGeneOverlap(overl)
-        l_res[[chromosome]] <- data.frame(
-            Chromosome=chromosome,
-            TotalGenes=length(chr_genes),
-            DEGenes=length(overl@intersection),
-            PValue=overl@pval,
-            OddsRatio=overl@odds.ratio,
-            JaccardIndex=overl@Jaccard
-            )
-    }
-
-    table_fisher <- do.call("rbind", l_res)
-
-    # correct pvalue for multiple testing
-    table_fisher$FDR <- p.adjust(table_fisher$PValue,method="fdr")
-
-    if(filter) table_fisher <- table_fisher[table_fisher$FDR < fdr_fisher_test, ]
-
-    return(table_fisher[c("Chromosome","TotalGenes","DEGenes","PValue","FDR","OddsRatio","JaccardIndex")])
+  genes <- data.frame(res[[i]])
+  chromosomes <- unique(genes$chr)
+  universe <- length(unique(rownames(genes)))
+  
+  l_res <- list()
+  for (chromosome in chromosomes){
+    de_genes <- rownames(subset(genes, padj < fdr_de_gene))
+    chr_genes <- rownames(subset(genes, chr == chromosome))
+    overl <- newGeneOverlap(
+      unique(de_genes),
+      unique(chr_genes),
+      genome.size=universe)
+    
+    overl <- testGeneOverlap(overl)
+    l_res[[chromosome]] <- data.frame(
+      Chromosome=chromosome,
+      TotalGenes=length(chr_genes),
+      DEGenes=length(overl@intersection),
+      PValue=overl@pval,
+      OddsRatio=overl@odds.ratio,
+      JaccardIndex=overl@Jaccard
+    )
+  }
+  
+  table_fisher <- do.call("rbind", l_res)
+  
+  # correct pvalue for multiple testing
+  table_fisher$FDR <- p.adjust(table_fisher$PValue,method="fdr")
+  
+  if(filter) table_fisher <- table_fisher[table_fisher$FDR < fdr_fisher_test, ]
+  
+  return(table_fisher[c("Chromosome","TotalGenes","DEGenes","PValue","FDR","OddsRatio","JaccardIndex")])
 }
+
 
 
 ##
@@ -855,8 +591,6 @@ DEhelper.STAR.violin <- function(colorByFactor=NULL, targetsdf=targets, ...) {
     
     # set row and column names, and output the md table
     colnames(x) <- basename(colnames(x))
-    #colnames(x) <- gsub(paste0("^", SHINYREPS_PREFIX), "", colnames(x))
-    #colnames(x) <- gsub(paste0(SUFFIX, "$"), "", colnames(x))
     colnames(x) <- gsub(lcSuffix(colnames(x)), "", colnames(x)) # remove longest common suffix
     colnames(x) <- gsub(lcPrefix(colnames(x)), "", colnames(x)) # remove longest common prefix
   
@@ -1137,103 +871,6 @@ DEhelper.STAR <- function(targetsdf=targets) {
 }
 
 
-
-
-
-##
-## DEhelper.Fastqc: go through Fastqc output dir and create a md table with the duplication & read quals & sequence bias plots
-##
-DEhelper.Fastqc <- function(web=FALSE, subdir="", ...) {
-    
-    # logs folder
-    if(!all(sapply(file.path(SHINYREPS_FASTQC_OUT, subdir), file.exists))) {
-        return(paste("Fastqc statistics not available for", names(which(!sapply(file.path(SHINYREPS_FASTQC_OUT, subdir), file.exists)))))
-    }
-    
-    # construct the folder name, which is different for web and noweb
-    QC <- if(web) paste0("/fastqc/", subdir) else file.path(SHINYREPS_FASTQC_OUT, subdir)
-    
-    # construct the image url from the folder contents (skip current dir .)
-    samples <- list.dirs(QC, recursive=F, full.names = T)
-    samples <- samples[sapply(samples, function(x) {file.exists(file.path(x, "fastqc_data.txt"))})] # exclude potential subdir which is also listed by list.dirs
-    
-    # select subset of samples for fastqc figures (e.g. merged single cell pools) or use all samples for samplePattern=NULL
-    samples <- selectSampleSubset(samples, ...)
-
-    df <- sapply(samples, function(f) {
-        c(paste0("![fastqc img](", f, "/Images/per_base_quality.png)"), 
-          paste0("![fastqc img](", f, "/Images/per_base_sequence_content.png)"),
-          paste0("![fastqc img](", f, "/Images/per_sequence_gc_content.png)"))
-    })
-
-    # set row and column names, and output the md table
-    df <- as.data.frame(t(df))
-    rownames(df) <-  basename(samples)
-    colnames(df) <- c("Read qualities", "Sequence bias", "GC content")
-
-    if(file.exists(SHINYREPS_TARGET)){
-      
-      # get target names
-      targets <- read.delim(SHINYREPS_TARGET)
-      targets$sample_ext <- gsub("\\..*$", "",targets$file )
-      
-      # replace files names with nicer sample names given in targets file 
-      # if sample is missing in targets file, use reduced file name
-      rownames(df) <- sapply(rownames(df), function(i) { ifelse(sum(sapply(targets$sample_ext, grepl, i))==1,
-                                                                ifelse(sapply("\\.R1", grepl, i), 
-                                                                       paste0(targets[sapply(targets$sample_ext, grepl, i),"sample"], ".R1"),
-                                                                       ifelse(sapply("\\.R2", grepl, i), 
-                                                                              paste0(targets[sapply(targets$sample_ext, grepl, i),"sample"], ".R2"),
-                                                                              targets[sapply(targets$sample_ext, grepl, i),"sample"])),
-                                                                gsub(paste0("^",SHINYREPS_PREFIX),"",i))})                                                    
-    } else {
-      if(!is.na(SHINYREPS_PREFIX)) {
-        rownames(df) <- gsub(paste0("^",SHINYREPS_PREFIX), "", rownames(df))
-      }
-      rownames(df) <- gsub("_fastqc$", "", rownames(df))
-      rownames(df) <- sapply(rownames(df), shorten)
-    }
-    
-    # add a row with the sample name (as given in the rownames) before every row
-    df.new <- do.call(rbind,lapply(1:nrow(df),function(i) {rbind(c("",rownames(df)[i],""),df[i,])}))
-    rownames(df.new) <- NULL
-    # kable(df.new, output=F, align="c", format="markdown") # print sample names in additional rows
-    kable(df, output=F, align="c") # print sample names as rownames
-}
-
-##
-## DEhelper.ngsReports.Fastqc: joint FastQC report of all samples in the experiment
-##
-DEhelper.ngsReports.Fastqc <- function(subdir="", ...) {
-  
-  # output folder
-  if(!file.exists(file.path(SHINYREPS_FASTQC_OUT, subdir))) {
-    return("Fastqc statistics not available")
-  }
-  
-  # Loading FastQC Data 
-  f <- list.files(file.path(SHINYREPS_FASTQC_OUT, subdir), pattern="fastqc.zip$", full.names=TRUE)
-  
-  # select subset of samples for fastqc figures (e.g. merged singlecell pools) or use all samples for samplePattern=NULL
-  f <- selectSampleSubset(f, ...)
-  
-  x <- ngsReports::FastqcDataList(f)
-  lbls <- gsub(paste0("(^", SHINYREPS_PREFIX, "|.fastqc.zip$)"), "", names(x))
-  names(lbls) <- gsub(".fastqc.zip", ".fastq.gz", basename(names(x)))
-  
-  print(ngsReports::plotBaseQuals(x, labels=lbls))
-  print(ngsReports::plotSeqContent(x, labels=lbls) +
-          theme(legend.position="right") +
-          guides(fill=FALSE, color="legend") +
-          geom_point(mapping=aes(x=Inf, y=Inf, color=base),
-                     data=data.frame(base=c("T", "A", "C", "G")),
-                     inherit.aes=FALSE, show.legend=TRUE) +
-          scale_color_manual("", 
-                             values=c("red", "green", "blue", "black"),
-                             breaks=c("T", "A", "C", "G"))
-  )
-  print(ngsReports::plotGcContent(x, plotType="line", gcType="Genome", theoreticalGC = F, labels=lbls))  
-}
 
 ##
 ## DEhelper.Fastqc.custom: prepare Fastqc summary plots
@@ -1520,85 +1157,10 @@ DEhelper.fastqscreen <- function(subdir="", targetsdf=targets, perc.to.plot = 1,
 
 
 
-
-##
-## DEhelper.dupRadar: go through dupRadar output dir and create a md table with
-##     the duplication plots
-##
-DEhelper.dupRadar <- function(web=F, targetsdf=targets, ...) {
-  
-  # logs folder
-  if(!file.exists(SHINYREPS_DUPRADAR_LOG)) {
-    return("DupRadar statistics not available")
-  }
-  
-  SHINYREPS_PLOTS_COLUMN <- tryCatch(as.integer(SHINYREPS_PLOTS_COLUMN),error=function(e){3})
-  if(SHINYREPS_PLOTS_COLUMN < 2) {
-    SHINYREPS_PLOTS_COLUMN <- 3L    # default to 4 columns
-  }
-  
-  # construct the folder name, which is different for web and noweb
-  QC <- if(web) "/dupRadar" else SHINYREPS_DUPRADAR_LOG
-  
-  # construct the image url from the folder contents (skip current dir .)
-  samples <- list.files(QC, pattern=".png$", full.names=T)
-  
-  # select subset of samples 
-  samples <- selectSampleSubset(samples, ...)
-  
-  df <- sapply(samples, function(f) {
-    paste0("![dupRadar img](", f, ")")
-  })
-  
-  # sample names 
-  samples <- sapply(df, function(x) {
-    gsub("_dupRadar.png)$", "", basename(x))
-  })
-  
-  if(file.exists(SHINYREPS_TARGET)){
-    
-    # get target names
-    #targets <- read.delim(SHINYREPS_TARGET, comment.char = "#")
-    targets <- targetsdf
-    targets$sample_ext <- gsub("\\..*$", "",targets$file )
-    
-    # replace files names with nicer sample names given in targets file
-    # if sample is missing in targets file, use reduced file name
-    samples <- sapply(samples, function(i) { ifelse(sum(sapply(targets$sample_ext, grepl, i))==1 && !any(duplicated(targets$sample)),   
-                                                    targets[sapply(targets$sample_ext, grepl, i),"sample"], 
-                                                    gsub(paste0("^",SHINYREPS_PREFIX),"",i))})
-  } else {
-    if(!is.na(SHINYREPS_PREFIX)) {
-      samples <- gsub(paste0("^",SHINYREPS_PREFIX), "", samples)
-    }
-  }
-  
-  # sort alphabetically
-  samples <- samples[order(samples)]
-  df <- df[names(samples)]
-  
-  # fill up additional columns if number of samples is not a multiple of SHINYREPS_PLOTS_COLUMN
-  while(length(df) %% SHINYREPS_PLOTS_COLUMN != 0) df <- c(df, "")
-  while(length(samples) %% SHINYREPS_PLOTS_COLUMN != 0) samples <- c(samples, "")
-  
-  df      <- matrix(df     , ncol=SHINYREPS_PLOTS_COLUMN, byrow=T)
-  samples <- matrix(samples, ncol=SHINYREPS_PLOTS_COLUMN, byrow=T)
-  
-  # add a row with the sample names
-  df.names <- matrix(sapply(1:nrow(df), function(i) { c(df[i, ], samples[i, ]) }), 
-                     ncol=SHINYREPS_PLOTS_COLUMN, byrow=T)
-  colnames(df.names) <- rep(" ", SHINYREPS_PLOTS_COLUMN)
-  
-  kable(as.data.frame(df.names), align="c", output=F, format="markdown") 
-}
-
-
-
-
 ##
 ## DEhelper.RNAtypes: parse Subread count results for RNAtypes usage
 ##
-DEhelper.RNAtypes <- function(targetsdf=targets, ...) {
+DEhelper.RNAtypes <- function(targetsdf=SHINYREPS_TARGET, ...) {
   
   FOLDER <- SHINYREPS_RNATYPES
   SUFFIX <- paste0(SHINYREPS_RNATYPES_SUFFIX, '$')
@@ -1608,10 +1170,14 @@ DEhelper.RNAtypes <- function(targetsdf=targets, ...) {
     return("Subread statistics not available")
   }
   
-  if(file.exists(SHINYREPS_TARGET)){
+  if(class(targetsdf)=="data.frame" || file.exists(targetsdf)){
+    
     # get target names
-    #targets <- read.delim(SHINYREPS_TARGET, comment.char = "#")
-    targets <- targetsdf
+    if(class(targetsdf)=="data.frame") {
+      targets <- targetsdf
+    } else {
+      targets <- read.delim(targetsdf, comment.char = "#")
+    }
     targets$sample_ext <- gsub("\\..*$", "", targets$file)
     add_factors <- colnames(targets)[!colnames(targets) %in% c("group", "sample", "file")]
   }
@@ -1626,7 +1192,7 @@ DEhelper.RNAtypes <- function(targetsdf=targets, ...) {
     # extract sample name and replace it with nicer sample name given in targets file (if available)
     samplename <- gsub(paste0(SUFFIX,"$"), "", basename(f))
     
-    if(file.exists(SHINYREPS_TARGET)){
+    if(exists("targets")){
       # replace files names with nicer sample names given in targets file 
       # if sample is missing in targets file, use reduced file name
       samplename <- ifelse(sum(sapply(targets$sample_ext, grepl, samplename))==1 && !any(duplicated(targets$sample)),  
@@ -1680,85 +1246,12 @@ DEhelper.RNAtypes <- function(targetsdf=targets, ...) {
 
 
 ##
-## DEhelper.geneBodyCov: go through geneBodyCov output dir and create a md table with
-##     the gene coverage plots
-##
-DEhelper.geneBodyCov <- function(web=FALSE, targetsdf=targets, ...) {
-    
-    # logs folder
-    if(!all(sapply(SHINYREPS_GENEBODYCOV_LOG, file.exists))) {
-      return(paste("geneBodyCov statistics not available for", names(which(!sapply(SHINYREPS_GENEBODYCOV_LOG, file.exists)))))
-    }
-  
-  SHINYREPS_PLOTS_COLUMN <- tryCatch(as.integer(SHINYREPS_PLOTS_COLUMN[1]),error=function(e){3})
-    if(SHINYREPS_PLOTS_COLUMN < 2) {
-      SHINYREPS_PLOTS_COLUMN <- 3L    # default to 3 columns
-    }
-    
-    # construct the folder name, which is different for web and noweb
-    QC <- if(web) "/geneBodyCov" else SHINYREPS_GENEBODYCOV_LOG
-    
-    # construct the image url from the folder contents (skip current dir .)
-    samples <- list.files(QC, pattern=".png$", full.names = T)
-    
-    # select subset of samples or use all samples for samplePattern=NULL
-    samples <- selectSampleSubset(samples, ...)
-
-    df <- sapply(samples, function(f) {
-        paste0("![geneBodyCov img](", f, ")")
-    })
-    
-    
-    # sample names
-    samples <- sapply(df, function(x) {
-      gsub("_geneBodyCov.png)$", "", basename(x))
-    })
-    
-    if(file.exists(SHINYREPS_TARGET)){
-      
-      # get target names
-      #targets <- read.delim(SHINYREPS_TARGET)
-      targets <- targetsdf
-      targets$sample_ext <- gsub("\\..*$", "",targets$file )
-      
-      # replace files names with nicer sample names given in targets file
-      # if sample is missing in targets file, use reduced file name
-      samples <- sapply(samples, function(i) { ifelse(sum(sapply(targets$sample_ext, grepl, i))==1 && !any(duplicated(targets$sample)),
-                                                      targets[sapply(targets$sample_ext, grepl, i),"sample"],
-                                                      gsub(paste0("^",SHINYREPS_PREFIX),"",i))})
-    } else {
-      if(!is.na(SHINYREPS_PREFIX)) {
-        samples <- gsub(paste0("^",SHINYREPS_PREFIX), "", samples)
-      }
-    }
-    
-    # sort alphabetically
-    samples <- samples[order(samples)]
-    df <- df[names(samples)]
-    
-    # fill up additional columns if number of samples is not a multiple of SHINYREPS_PLOTS_COLUMN
-    while(length(df) %% SHINYREPS_PLOTS_COLUMN != 0) df <- c(df, "")
-    while(length(samples) %% SHINYREPS_PLOTS_COLUMN != 0) samples <- c(samples, "")
-    
-    df      <- matrix(df     , ncol=SHINYREPS_PLOTS_COLUMN, byrow=T)
-    samples <- matrix(samples, ncol=SHINYREPS_PLOTS_COLUMN, byrow=T)
-    
-    # add a row with the sample names
-    df.names <- matrix(sapply(1:nrow(df), function(i) { c(df[i, ], samples[i, ]) }), 
-                       ncol=SHINYREPS_PLOTS_COLUMN, byrow=T)
-    colnames(df.names) <- rep(" ", SHINYREPS_PLOTS_COLUMN)
-    
-    kable(as.data.frame(df.names), align="c", output=F, format="markdown")
-}
-
-
-##
 ## DEhelper.geneBodyCov2: go through geneBodyCov output dir and plot into one plot
 ##
-DEhelper.geneBodyCov2 <- function(web=F, targetsdf=targets, ...) {
+DEhelper.geneBodyCov2 <- function(web=F, targetsdf=SHINYREPS_TARGET, ...) {
   
   # logs folder
-  if(!file.exists(SHINYREPS_GENEBODYCOV_LOG)) {
+  if(!file.exists(SHINYREPS_GENEBODYCOV_LOG) || length(list.files(SHINYREPS_GENEBODYCOV_LOG))==0) {
     return("geneBodyCov statistics not available")
   }
   
@@ -1773,11 +1266,14 @@ DEhelper.geneBodyCov2 <- function(web=F, targetsdf=targets, ...) {
   
   names(samples) <- gsub("_geneBodyCov.csv", "", basename(samples))
   
-  if(file.exists(SHINYREPS_TARGET)){
+  if(class(targetsdf)=="data.frame" || file.exists(targetsdf)){
     
     # get target names
-    #targets <- read.delim(SHINYREPS_TARGET, comment.char = "#")
-    targets <- targetsdf
+    if(class(targetsdf)=="data.frame") {
+      targets <- targetsdf
+    } else {
+      targets <- read.delim(targetsdf, comment.char = "#")
+    }
     targets <- targets[sapply(gsub("_L001_R._001", "", names(samples)), grep, targets$file),] # if sample subset selected, remove spare entries from targets
     targets$sample_ext <- gsub("\\..*$", "",targets$file )
     
@@ -1802,7 +1298,7 @@ DEhelper.geneBodyCov2 <- function(web=F, targetsdf=targets, ...) {
   df <- reshape2::melt(df, id.vars="perc", variable.name="sample", value.name="cov")
   #sort the samples either by the group order of the targets file or alphabetically
   #if we do not have a targets file
-  if(file.exists(SHINYREPS_TARGET)){
+  if(exists("targets")){
     sample_order <- targets$sample[order(paste0(targets$group, targets$sample))]
     if(all(sample_order %in% df$sample)){
       df$sample <- factor(df$sample, levels = sample_order)
@@ -2004,7 +1500,7 @@ DEhelper.geneBodyCov2 <- function(web=F, targetsdf=targets, ...) {
 ##
 ##DEhelper.strandspecificity: get the strand specificity from the qc and display them
 ##
-DEhelper.strandspecificity <- function(targetsdf=targets, ...){
+DEhelper.strandspecificity <- function(targetsdf=SHINYREPS_TARGET, ...){
   
   # logs folder
   if(!file.exists(SHINYREPS_INFEREXPERIMENT_LOGS)) {
@@ -2013,16 +1509,23 @@ DEhelper.strandspecificity <- function(targetsdf=targets, ...){
   
   filelist <- list.files(path=SHINYREPS_INFEREXPERIMENT_LOGS, full.names=TRUE)
   filelist <- selectSampleSubset(filelist, ...)
-  strandspecifity <- lapply(filelist, read.table, sep=":", skip=3, header=FALSE, row.names=1, blank.lines.skip=TRUE)
-  strandspecifity <- do.call(cbind, strandspecifity)
+  strandspecificity <- tryCatch(lapply(filelist, read.table, sep=":", skip=3, header=FALSE, row.names=1, blank.lines.skip=TRUE), 
+                                error=function(e) NULL)
+  if (is.null(strandspecificity)) {
+    return("Strand specificity statistics not readable")  # exits the function
+  }
   
+  strandspecifity <- do.call(cbind, strandspecifity)
   samplenames <- gsub("_inferexperiment.txt", "", basename(filelist))
   
-  if(file.exists(SHINYREPS_TARGET)){
+  if(class(targetsdf)=="data.frame" || file.exists(targetsdf)){
     
     # get target names
-    #targets <- read.delim(SHINYREPS_TARGET, comment.char = "#")
-    targets <- targetsdf
+    if(class(targetsdf)=="data.frame") {
+      targets <- targetsdf
+    } else {
+      targets <- read.delim(targetsdf, comment.char = "#")
+    }
     targets$sample_ext <- gsub("\\..*$", "",targets$file )
 
     # replace files names with nicer sample names given in targets file
@@ -2279,7 +1782,7 @@ DEhelper.cutadapt.plot <- function(data, color.value, labelOutliers=T, outlierIQ
   
   # prepare palette of appropriate length according to the different factors given in colorByFactor
   colourCount = length(unique(data[,color.value]))
-  getPalette = colorRampPalette(brewer.pal(9, "Set1"))
+  getPalette = colorRampPalette(RColorBrewer::brewer.pal(9, "Set1"))
 
   names(data)[names(data)==color.value] <- "color.value" 
  
@@ -2501,7 +2004,7 @@ DEhelper.Subread <- function() {
 ##
 ## extract the intron/exon and intergenic regions from the qualimap report
 ##
-DEhelper.Qualimap <- function(targetsdf=targets, ...) {
+DEhelper.Qualimap <- function(targetsdf=SHINYREPS_TARGET, ...) {
   
   # logs folder
   if(!file.exists(SHINYREPS_QUALIMAP_LOGS)) {
@@ -2532,11 +2035,14 @@ DEhelper.Qualimap <- function(targetsdf=targets, ...) {
   # but since it is not specified, which of the two, we will not display this category here.
   
   #Todo fix the naming scheme, the levels and then put it in the barplot 
-  if(file.exists(SHINYREPS_TARGET)){
+  if(class(targetsdf)=="data.frame" || file.exists(targetsdf)){
     
     # get target names
-    #targets <- read.delim(SHINYREPS_TARGET, comment.char = "#")
-    targets <- targetsdf
+    if(class(targetsdf)=="data.frame") {
+      targets <- targetsdf
+    } else {
+      targets <- read.delim(targetsdf, comment.char = "#")
+    }
     targets$sample_ext <- gsub("\\..*$", "",targets$file )
 
     # replace files names with nicer sample names given in targets file
@@ -2555,7 +2061,7 @@ DEhelper.Qualimap <- function(targetsdf=targets, ...) {
   colnames(samples) <- c("class", "sample", "perc")
   
   # sort the samples either by the group order of the targets file or alphabetically
-  if(file.exists(SHINYREPS_TARGET) & SHINYREPS_SORT_ALPHA==FALSE){
+  if(exists("targets") & SHINYREPS_SORT_ALPHA==FALSE){
     sample_order   <- targets$sample[order(paste0(targets$group, targets$sample), decreasing=TRUE)]
     samples$sample <- factor(samples$sample, levels = sample_order)
   }else{
@@ -2580,150 +2086,6 @@ DEhelper.Qualimap <- function(targetsdf=targets, ...) {
 
 
 
-##
-##DEhelper.insertsize: get the insertsize from the qc and display mean and sd 
-##
-DEhelper.insertsize <- function(){
-  
-  if (SHINYREPS_PAIRED == "yes") {
-    filelist <- list.files(path=SHINYREPS_INSERTSIZE,full.names=TRUE, pattern="insertsizemetrics.tsv$")
-    insertsizes <- lapply(filelist, read.table, sep="\t", header=TRUE, nrow=1)
-    insertsizes <- do.call(rbind, insertsizes)
-    samplenames <- basename(filelist)
-    
-    
-    
-    if(file.exists(SHINYREPS_TARGET)){
-      
-      # get target names
-      targets <- read.delim(SHINYREPS_TARGET)
-      targets$sample_ext <- gsub("\\..*$", "",targets$file)
-      
-      # replace files names with nicer sample names given in targets file
-      # if sample is missing in targets file, use reduced file name
-      samplenames <- sapply(samplenames, function(i) { ifelse(sum(sapply(targets$sample_ext, grepl, i))==1,  
-                                                              targets[sapply(targets$sample_ext, grepl, i),"sample"], 
-                                                              gsub(paste0("^",SHINYREPS_PREFIX),"",i))})
-    } else {
-      if(!is.na(SHINYREPS_PREFIX)) {
-        samplenames <- gsub(paste0("^",SHINYREPS_PREFIX), "", samplenames)
-        samplenames <- gsub("_insertsizemetrics.tsv","", samplenames)
-      }
-    }
-    
-    rownames(insertsizes) <- samplenames 
-    insertsizes <- insertsizes[,c("MEDIAN_INSERT_SIZE","MEAN_INSERT_SIZE", "STANDARD_DEVIATION")]
-    colnames(insertsizes) <- c("Median", "Mean", "SD")
-    kable(insertsizes, output=F, align=c("l"), format="markdown")
-  }
-}
-
-
-# Helper to plot the insertsize histogram equivalent to the one from picard
-# Input is the Picard generated metrics file
-DEhelper.insertsize.helper <- function(metricsFile){
-  #find the start of our metrics informatioun 
-  startFinder <- scan(metricsFile, what="character", sep="\n", quiet=TRUE, blank.lines.skip=FALSE)
-  
-  firstBlankLine=0
-  
-  for (i in 1:length(startFinder)) {
-    if (startFinder[i] == "") {
-      if (firstBlankLine == 0) {
-        firstBlankLine = i+1
-      } else {
-        secondBlankLine = i+1
-        break
-      }
-    }
-  }
-  
-  histogram <- read.table(metricsFile, header=TRUE, sep="\t", skip=secondBlankLine, comment.char="", quote='', check.names=FALSE)
-  
-  ## The histogram has a fr_count/rf_count/tandem_count for each metric "level"
-  ## This code parses out the distinct levels so we can output one graph per level
-  headers <- sapply(sub(".fr_count","",names(histogram),fixed=TRUE), "[[" ,1)
-  headers <- sapply(sub(".rf_count","",headers,fixed=TRUE), "[[" ,1)
-  headers <- sapply(sub(".tandem_count","",headers,fixed=TRUE), "[[" ,1)
-  
-  ## Duplicate header names could cause this to barf.  But it really shouldn't when we have "All_reads.fr_count" and 
-  ## "All_reads.rf_count" for example.  Not sure why this would fail, but I care.
-  if (any(duplicated(headers))) {
-    levels = unique(headers[2:length(headers)]);
-  } else {
-    levels <- c()
-    for (i in 2:length(headers)) {
-      if (!(headers[i] %in% levels)) {
-        levels[length(levels)+1] <- headers[i]
-      }
-    }
-  }
-  
-  title_info <- basename(metricsFile)  
-  
-  if(file.exists(SHINYREPS_TARGET)){
-    
-    # get target names
-    targets <- read.delim(SHINYREPS_TARGET)
-    targets$sample_ext <- gsub("\\..*$", "",targets$file )
-    
-    # replace files names with nicer sample names given in targets file
-    # if sample is missing in targets file, use reduced file name
-    title_info <- sapply(title_info, function(i) { ifelse(sum(sapply(targets$sample_ext, grepl, i))==1,   
-                                                          targets[sapply(targets$sample_ext, grepl, i),"sample"], 
-                                                          gsub(paste0("^",SHINYREPS_PREFIX),"",i))})
-  } else {
-    if(!is.na(SHINYREPS_PREFIX)) {
-      title_info <- gsub(paste0("^",SHINYREPS_PREFIX), "", title_info)
-    }
-    title_info <- gsub("_insertsizemetrics.tsv$","", title_info)
-  }
-  
-  #we get the histogram which has the names of the levels e.g. all_reads and readgroups/sample groups depending on
-  #accumulation level which was used.
-  #the colnames of histogram are something like all.read.fr_count, all.read.rf_count etc.
-  #to get the whole shebang into a wider format we have to add the information
-  hist_long <- reshape2::melt(histogram, id.var = "insert_size") |> 
-    extract(col=variable,
-            into=c("group", "counttype" ),
-            regex='([^\\.]+)\\.([^\\.]+)') |> 
-    dplyr::rename( amount = value)
-  #we also have to add the comulative sum per group to the whole shebang
-  hist_long <- hist_long |> group_by(group) |> 
-    arrange( desc(insert_size)) |> 
-    mutate( cumulative = (cumsum(amount)/sum(amount))*max(amount))
-  #1. Create one plot per group (all_reads etc)
-  #2. save the plots in a list
-  #3. use arrangeGrob to arrange
-  hist_long <- split(hist_long, hist_long$group)
-  hist_plots <- lapply(hist_long, function(hist_data){
-    p <- ggplot(hist_data, aes(x    = insert_size,
-                               y    = amount,
-                               fill = counttype)) +
-      geom_bar( stat = "identity", 
-                position = "identity",
-                alpha=0.7) +
-      scale_fill_hue( c=50, l=40) +
-      geom_line(aes(x = insert_size,
-                    y = cumulative),
-                linetype = "dashed",
-                color    = "grey") +
-      scale_y_continuous( name="# reads",
-                          sec.axis = sec_axis(~./max(hist_data$amount),
-                                              name = "Cumulative fraction of reads > insert size")) +
-      xlab("insert size in bp") +
-      theme_bw() +
-      theme(legend.justification=c(1,1), legend.position=c(1,1), 
-            legend.background = element_rect(colour = "transparent", fill = "transparent")) + 
-      facet_grid(~group)
-    return(p)
-  })
-  
-  hist_plot <- arrangeGrob(grobs = hist_plots,
-                           top = textGrob(title_info)) 
-  return(hist_plot)
-  
-}
 
 
 ## 
@@ -2746,32 +2108,6 @@ DEhelper.subchunkify <- function(g, fig_height=7, fig_width=5) {
   cat(knitr::knit(text = knitr::knit_expand(text = sub_chunk), quiet = TRUE))
 }
 
-
-##
-##DEhelper.insertsize.plot: get the insertsize histograms and display them 
-##
-DEhelper.insertsize.plot <- function(){
-  # logs folder
-  SHINYREPS_PLOTS_COLUMN <- tryCatch(as.integer(SHINYREPS_PLOTS_COLUMN),
-                                     error=function(e){3})
-  if(SHINYREPS_PLOTS_COLUMN < 2) {
-    SHINYREPS_PLOTS_COLUMN <- 3L    # default to 3 columns
-  }
-  if (SHINYREPS_PAIRED == "yes" &
-      length(list.files(path = SHINYREPS_INSERTSIZE,
-                        pattern = "insertsizemetrics.tsv$")) > 0) {
-    samples <- list.files(path = SHINYREPS_INSERTSIZE,
-                          full.names = TRUE,
-                          pattern = "insertsizemetrics.tsv$")
-    #we generate the plots
-    insert_plots <- lapply(samples, 
-                           DEhelper.insertsize.helper)
-    return(arrangeGrob(grobs = insert_plots,
-                       ncol = SHINYREPS_PLOTS_COLUMN))
-  }else{
-    return("No insertsize histograms available.")
-  }
-}
 
 
 ##
@@ -2861,7 +2197,7 @@ plotPCAfromQCmetrics <- function(sce, metrics, anno=NULL, qc.drop=NULL){
   }
   
   # prepare palette of appropriate length according
-  getPalette = colorRampPalette(brewer.pal(9, "Set1"))
+  getPalette = colorRampPalette(RColorBrewer::brewer.pal(9, "Set1"))
   
   p_allGroups <-  plotReducedDim(pca.sce, dimred="PCA_coldata", colour_by=dotcol, shape_by=dotshape, point_size=3) + 
     scale_color_manual(values=getPalette(colourCount)) + labs(color = dotcol)
@@ -2912,40 +2248,3 @@ selectSampleSubset <- function(samples, samplePattern=NULL, excludePattern=NULL,
 }
 
 
-#'
-#' Define a group color palette.
-#'
-#' @param num - number of groups
-#'
-#' @return a color vector
-#'
-#' @examples group.colors <- define.group.palette(length(levels(colData(dds)[,"group"])))
-#'           
-define.group.palette <- function(num) {
-  
-  if (num <=9) {
-    group.palette <- brewer.pal(9,"Set1")[1:num]
-  } else {
-    group.palette <- colorRampPalette(brewer.pal(9,"Set1"))(num)
-  }
-  return(group.palette)
-}
-
-#'
-#' Define a replicate color palette.
-#'
-#' @param num - number of replicates
-#'
-#' @return a color vector
-#'
-#' @examples replicate.colors <- define.replicate.palette(length(levels(colData(dds)[,"replicate"])))
-#'           
-define.replicate.palette <- function(num) {
-  
-  if (num <=9) {
-    replicate.palette <- brewer.pal(8,"Dark2")[1:num]
-  } else {
-    replicate.palette <- colorRampPalette(brewer.pal(8,"Dark2"))(num)
-  }
-  return(replicate.palette)
-}
