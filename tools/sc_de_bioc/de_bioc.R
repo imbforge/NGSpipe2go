@@ -131,14 +131,11 @@ if(any(is.na(params))) { # skip entirely if cluster setting not specified
   de <- purrr::pmap(params, function(selclust, cont_name) {
 
     name_de_results <- paste0("de_", selclust, "_contrast_", cont_name)
-    if(!selclust %in% colnames(SummarizedExperiment::colData(sce))) {stop(paste(selclust, "not in colData of sce object!"))}
-    SingleCellExperiment::colLabels(sce) <- SummarizedExperiment::colData(sce)[,selclust]
-
     print(paste("Processing", name_de_results))
     
-    if(length(list.files(file.path(outdir, selclust), pattern=name_de_results)) > 0 | !selclust %in% colnames(SummarizedExperiment::colData(sce)) | nlevels(factor(SingleCellExperiment::colLabels(sce))) < 2) {
-      
-      print(paste0(name_de_results, " output already exists or is missing in sce object or has got just one level. Differential gene expression analysis for this setting is skipped"))
+    if(length(list.files(file.path(outdir, selclust), pattern=name_de_results)) > 0 || !selclust %in% colnames(SummarizedExperiment::colData(sce))) {
+        
+      print(paste0(name_de_results, " output already exists or ", selclust, " is missing in sce object. Differential gene expression analysis for this setting is skipped"))
       de.results <- NULL
 
     } else {

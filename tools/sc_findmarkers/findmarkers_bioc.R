@@ -116,19 +116,18 @@ if(any(is.na(params))) { # skip entirely if cluster setting not specified
 
       name_markerlist <- paste0("marker_genes_", selclust, "_ranked_by_", es)
       name_markerlist_subdir <- paste0(selclust, "_ranked_by_", es)
-      
-      SingleCellExperiment::colLabels(sce) <- SummarizedExperiment::colData(sce)[,selclust]
-      
       print(paste("Processing", name_markerlist))
       
-      if(length(list.files(file.path(outdir, name_markerlist_subdir), pattern=name_markerlist)) > 0 | !selclust %in% colnames(SummarizedExperiment::colData(sce)) | nlevels(factor(SingleCellExperiment::colLabels(sce))) < 2) {
-        
-        print(paste0(name_markerlist, " output already exists or is missing in sce object or has got just one level. Marker gene detection for this setting is skipped"))
+      if(length(list.files(file.path(outdir, name_markerlist_subdir), pattern=name_markerlist)) > 0 || !selclust %in% colnames(SummarizedExperiment::colData(sce)) || nlevels(factor(SummarizedExperiment::colData(sce)[,selclust])) < 2) {
+
+        print(paste0(name_markerlist, " output already exists or ", selclust, " is missing in sce object or has got just one level. Marker gene detection for this setting is skipped"))
         markers_l <- NULL
         
       } else {
         
         if (!dir.exists(file.path(outdir, name_markerlist_subdir))) {dir.create(file.path(outdir, name_markerlist_subdir), recursive=T) }
+        
+        SingleCellExperiment::colLabels(sce) <- SummarizedExperiment::colData(sce)[,selclust]
         
           markers_l <- scran::scoreMarkers(sce, groups=SingleCellExperiment::colLabels(sce), 
                                            block = if(!is.na(block_var)) {SummarizedExperiment::colData(sce)[,block_var]} else {NULL},
