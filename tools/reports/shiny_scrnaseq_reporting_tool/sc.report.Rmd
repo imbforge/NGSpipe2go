@@ -430,7 +430,7 @@ In the following plot only relevant contaminants are shown. A contaminant is con
 fastqscreen_plots <- DEhelper.fastqscreen(perc.to.plot=SHINYREPS_FASTQSCREEN_PERC, ncol=3, targetsdf=targets4plots, samplePattern=SHINYREPS_SAMPLEPATTERN1, excludePattern=SHINYREPS_SAMPLEPATTERN2, maxno=SHINYREPS_MAXNO)
 ```
 
-```{r fastqscreen_paragraph2, echo=F,results='asis',error=F,warning=F,message=F,fig.align='center', fig.height=min(170, (round((1.5*fastqscreen_plots$no.of.rows))+1)*fastqscreen_plots$no.of.samples/8+1)}
+```{r fastqscreen_paragraph2, echo=F,results='asis',error=F,warning=F,message=F,fig.align='center', fig.height=min(170, (round(1.5*fastqscreen_plots$no.of.rows)+1)*fastqscreen_plots$no.of.samples/8+1)}
   if(is.null(fastqscreen_plots$errortext)) {
     plot(fastqscreen_plots$p.category.wrap)
     } else {
@@ -1085,27 +1085,32 @@ if(length(anno_avail)>0) {
     kableExtra::kable_styling() |> 
     print()
   
-  tab <- purrr::pmap(params, function(de, cn) {
+  tab <- purrr::pmap(params, function(cn, de) {
     
-    cat(paste("\n\n###", de, "for contrast:", cn, "\n")) 
-
-    overviewFile <- list.files(file.path(SHINYREPS_DE_OUT, de), pattern = paste0("^de_.*", cn, "_overview_sign_genes\\.txt$"), full.names = TRUE) |>
-      readr::read_tsv() |>
-      dplyr::arrange(dplyr::pick(1)) |>
-      kableExtra::kbl(caption=paste("Overview significant genes for", de, "contrast", cn), align = "l", format="simple") |> 
-      kableExtra::kable_styling() |>
-      print()
+    overviewFileName <- list.files(file.path(SHINYREPS_DE_OUT, de), pattern = paste0("^de_.*", cn, "_overview_sign_genes\\.txt$"), full.names = TRUE)
     
-    deFiles <- stringr::str_sort(list.files(file.path(SHINYREPS_DE_OUT, de), pattern = paste0("^de_.*", cn, "_cluster.*\\.txt$"), full.names = TRUE), numeric = TRUE)
-
-    tab_de <- purrr::map(deFiles, function(f) {
+    if(length(overviewFileName)==1 && file.exists(overviewFileName)) {
     
-      deFile <- readr::read_tsv(f) |>
-        dplyr::slice(1:10) |>
-        kableExtra::kbl(caption=paste("differential expressed genes for", cn, "cluster", gsub("^.*_cluster", "", gsub("\\.txt$", "", basename(f)))), align = "l", format="simple") |> 
+      cat(paste("\n\n###", de, "for contrast:", cn, "\n")) 
+  
+      overviewFile <- overviewFileName |>
+        readr::read_tsv() |>
+        dplyr::arrange(dplyr::pick(1)) |>
+        kableExtra::kbl(caption=paste("Overview significant genes for", de, "contrast", cn), align = "l", format="simple") |> 
         kableExtra::kable_styling() |>
         print()
-    })
+      
+      deFiles <- stringr::str_sort(list.files(file.path(SHINYREPS_DE_OUT, de), pattern = paste0("^de_.*", cn, "_cluster.*\\.txt$"), full.names = TRUE), numeric = TRUE)
+  
+      tab_de <- purrr::map(deFiles, function(f) {
+      
+        deFile <- readr::read_tsv(f) |>
+          dplyr::slice(1:10) |>
+          kableExtra::kbl(caption=paste("differential expressed genes for", cn, "cluster", gsub("^.*_cluster", "", gsub("\\.txt$", "", basename(f)))), align = "l", format="simple") |> 
+          kableExtra::kable_styling() |>
+          print()
+      })
+    }
   })
 }
 
@@ -1126,22 +1131,25 @@ params <- tidyr::expand_grid(
 if(length(de_avail)>0) {
   cat("\n\n## GO enrichment of DE genes per cluster\n\n")
 
-  cat("\nWe perform a gene set enrichment analysis on the DE genes defining each cluster. This identifies the pathways and processes that are (relatively) active in each cluster based on upregulation of the associated genes compared to other clusters. We will use gene sets defined by the Gene Ontology (GO) project, which describe a comprehensive range of biological processes and functions. We use the top", SHINYREPS_TOPDE4GO, "DE genes and apply the goana function from the limma package. This performs a hypergeometric test to identify GO terms that are overrepresented in our DE gene subset. We keep only biological process terms that are not overly general (<=500 genes) and which are significantly enriched", paste0("(p<", SHINYREPS_DEGO_PTHRESHOLD,")."), "\n\n")
+  cat("\nWe perform a gene set enrichment analysis on the DE genes defining each cluster. This identifies the pathways and processes that are (relatively) active in each cluster based on upregulation of the associated genes compared to other clusters. We will use gene sets defined by the Gene Ontology (GO) project, which describe a comprehensive range of biological processes and functions. We use the top", SHINYREPS_TOPDE4GO, "DE genes and apply the goana function from the limma package using", gsub("DE", "DE ", SHINYREPS_DEGO_UNIVERSE), "genes as background. This performs a hypergeometric test to identify GO terms that are overrepresented in our gene subset of significantly differentially expressed genes. We keep only biological process terms that are not overly general (<=500 genes) and which are significantly enriched", paste0("(p<", SHINYREPS_DEGO_PTHRESHOLD,")."), "\n\n")
   
   tab <- purrr::pmap(params, function(de, cn) {
-    
-    cat(paste("\n\n###", de, "for contrast:", cn, "\n")) 
-    
-    GOTables_de <- stringr::str_sort(list.files(file.path(SHINYREPS_DE_OUT, de), pattern = paste0("^GOenrichment_.*", cn, "_cluster.*\\.txt$"), full.names = TRUE), numeric = TRUE)
 
-    tab_go <- purrr::map(GOTables_de, function(f) {
-      GOTable_de <- readr::read_tsv(f)
-      if (nrow(GOTable_de) == 0) return(invisible(NULL)) # skip empties
-      GOTable_de <- dplyr::slice_head(GOTable_de, n = 10) |>
-        kableExtra::kbl(caption=paste("GO enrichment of DEGs for", cn, "cluster", gsub("^.*_cluster", "", gsub("\\.txt$", "", basename(f)))), align = "l", format="simple") |>
-        kableExtra::kable_styling() |>
-        print()
-    })
+    GOTables_de <- stringr::str_sort(list.files(file.path(SHINYREPS_DE_OUT, de), pattern = paste0("^GOenrichment_.*", cn, "_cluster.*\\.txt$"), full.names = TRUE), numeric = TRUE)
+    
+    if(length(GOTables_de)>0) {
+      
+      cat(paste("\n\n###", de, "for contrast:", cn, "\n")) 
+  
+      tab_go <- purrr::map(GOTables_de, function(f) {
+        GOTable_de <- readr::read_tsv(f)
+        if (nrow(GOTable_de) == 0) return(invisible(NULL)) # skip empties
+        GOTable_de <- dplyr::slice_head(GOTable_de, n = 10) |>
+          kableExtra::kbl(caption=paste("GO enrichment of DEGs for", cn, "cluster", gsub("^.*_cluster", "", gsub("\\.txt$", "", basename(f)))), align = "l", format="simple") |>
+          kableExtra::kable_styling() |>
+          print()
+      })
+    }
   })
 }
 

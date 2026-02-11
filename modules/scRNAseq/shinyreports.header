@@ -78,6 +78,7 @@ shinyReports_vars=[
     FDR_threshold_DE : (binding.variables.containsKey("de_bioc_vars") ? de_bioc_vars.FDR_threshold_DE : ""),  
     top_DE_for_GO    : (binding.variables.containsKey("de_bioc_vars") ? de_bioc_vars.top_genes_for_GO : ""),
     DEGO_p_threshold : (binding.variables.containsKey("de_bioc_vars") ? de_bioc_vars.p_threshold_GO : ""),
+    DEGO_universe    : (binding.variables.containsKey("de_bioc_vars") ? de_bioc_vars.universe_for_GO : ""),
 
     // scmultiome pipeline
     diffExpr_out    : (binding.variables.containsKey("diffExprSeurat_vars") ? diffExprSeurat_vars.outdir : ""),  

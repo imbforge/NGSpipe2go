@@ -110,6 +110,7 @@ shinyReports = {
             echo "SHINYREPS_FDRTHRESHOLD_DE=${shinyReports_vars.FDR_threshold_DE}"     >> $output &&
             echo "SHINYREPS_TOPDE4GO=${shinyReports_vars.top_DE_for_GO}" >> $output &&
             echo "SHINYREPS_DEGO_PTHRESHOLD=${shinyReports_vars.DEGO_p_threshold}" >> $output &&
+            echo "SHINYREPS_DEGO_UNIVERSE=${shinyReports_vars.DEGO_universe}" >> $output &&
 
             echo "SHINYREPS_DIFFEXPR_OUT=${shinyReports_vars.diffExpr_out}"     >> $output &&
             echo "SHINYREPS_DIFFPEAKS_OUT=${shinyReports_vars.diffPeaks_out}"     >> $output &&
