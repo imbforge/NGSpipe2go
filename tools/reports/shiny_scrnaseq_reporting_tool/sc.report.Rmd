@@ -49,6 +49,8 @@ switch(SHINYREPS_SEQTYPE,
         dplyr::group_by(file) |>
         dplyr::summarise(dplyr::across(dplyr::everything(), ~ paste(unique(.), collapse = ", "))) |>
         as.data.frame()
+        # include fastqc plots provided by manufacturer
+        SHINYREPS_FASTQC_OUT <- file.path(SHINYREPS_EXTERNAL_RESULTDIR, "fastq/fastqc")
 },
       ParseBio={
         targets4plots <- targets_pools |> # summarize multiple rows per file for fastq-centered QC plots
