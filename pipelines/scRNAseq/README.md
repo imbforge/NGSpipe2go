@@ -12,7 +12,7 @@ The pipeline covers scRNA-Seq assay formats of several providers. Specify the na
 
 
 ## Pipeline Workflow
-All analysis steps of the scRNA-Seq pipeline are illustrated in the following [flowchart](../../resources/NGSpipe2go_scRNAseq.drawio.svg). Specify desired analysis details for your data in the respective *essential.vars.groovy* file (see below) and run the scRNA-Seq pipeline as described [here](https://gitlab.rlp.net/imbforge/NGSpipe2go/-/blob/master/README.md). The pipeline allows further parameter fine-tuning within the header files of the respective analysis modules. Go through the parameters and modify the default settings where appropriate. When the pipeline run is finished, a *sc.report.Rmd* file has been generated in the *reports* sub-directory which can be rendered to a final html report in R (>v4.3). 
+All analysis steps of the scRNA-Seq pipeline are illustrated in the following [flowchart](https://gitlab.rlp.net/imbforge/NGSpipe2go/-/blob/devel/resources/NGSpipe2go_scRNAseq.drawio.svg). Specify desired analysis details for your data in the respective *essential.vars.groovy* file (see below) and run the scRNA-Seq pipeline as described [here](https://gitlab.rlp.net/imbforge/NGSpipe2go/-/blob/master/README.md). The pipeline allows further parameter fine-tuning within the header files of the respective analysis modules. Go through the parameters and modify the default settings where appropriate. When the pipeline run is finished, a *sc.report.Rmd* file has been generated in the *reports* sub-directory which can be rendered to a final html report in R (>v4.3). 
 
 
 ### The pipelines includes
