@@ -69,12 +69,11 @@ During exploration of your data-set, you may want to try out different settings 
   - file: (required) file name identifier. Must be a unique substring of the corresponding input sample file name, e.g. full sample name with filetype suffixes removed (the sample name itself must not contain dots). If cells of multiple samples are mixed in one raw data file (as e.g. in ParseBio sub-libraries), you need to add lines for each sample contained in this file. 
   - group: (required) default variable for cell grouping (e.g. by condition). You can provide additional grouping variables optionally.
   - replicate: (required) define sample replicates within groups.
-  - wells: (for combinatorial barcoding approach only): specify the wells each sample was loaded per sub-library (fastq file pair).
+  - wells: (for plate-based assays only): specify the wells each sample was loaded (fastq file pair).
     - ParseBio: If one sample is loaded to multiple sub-libraries, add additional lines for each sub-library specifying cells of this sample. Wells are specified row-wise in blocks, ranges, or individually like this: *A1:C6* specifies a block as [top-left]:[bottom-right]; A1-A6, B1-B6, C1-C6. *A1-B6* specifies a range as [start]-[end]; A1-A12, B1-6. Multiple selections are joined by commas (no spaces), e.g. *A1-A6,B1:D3,C4*.
     - ScaleBio: wells column not needed here but had to be specified when running ScaleBio's ScaleRNA software (in the respective samples.csv file). Mind that for ScaleBio ranges are read in column-wise order, e.g. 1A-2C, refers to 1A-1H (all of column 1) plus 2A-2C.
+    - SmartSeq: one cell (fastq file) per well.
   - plate: (for SmartSeq only) plate ID (number).
-  - row: (for SmartSeq only) plate row (letter).
-  - col: (for SmartSeq only) plate column (number).
   - cells: (for SmartSeq only) number of cells per well (one of "0c", "1c", "10c" with "0c" and "10c" being control wells containing 0 or 10 cells, respectively).
   
 <!-- -->
