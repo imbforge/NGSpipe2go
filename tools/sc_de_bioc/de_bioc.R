@@ -121,7 +121,6 @@ params <- tidyr::expand_grid(
 print("params:")
 print(params)
 
-params2 <- params
 
 if(any(is.na(params))) { # skip entirely if cluster setting not specified
   print("Parameter missing! DE analysis skipped")
@@ -160,7 +159,10 @@ if(any(is.na(params))) { # skip entirely if cluster setting not specified
     summed.filt <- summed[,SummarizedExperiment::colData(summed)[,groupvar] %in% factors] # use only samples of current contrast
     if(!is.na(minClusterSize)) {
       summed.filt <- summed.filt[,summed.filt$ncells >= minClusterSize]
-      if((dim(summed.filt)[2]==0)) {stop("no samples left after filtering for minClusterSize")}
+      if((dim(summed.filt)[2]==0)) {
+        cat(paste("no samples left after filtering for minClusterSize:", minClusterSize, "\n"))
+        return(NA)
+        }
     }
     # store number of cells per sample-cluster combination
     write.table(SummarizedExperiment::colData(summed.filt)[,c("sample", groupvar, selclust, "ncells")], 
