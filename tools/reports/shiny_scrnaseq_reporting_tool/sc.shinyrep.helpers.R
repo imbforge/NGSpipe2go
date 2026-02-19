@@ -591,8 +591,8 @@ DEhelper.STAR.violin <- function(colorByFactor=NULL, targetsdf=targets, ...) {
     
     # set row and column names, and output the md table
     colnames(x) <- basename(colnames(x))
-    colnames(x) <- gsub(lcSuffix(colnames(x)), "", colnames(x)) # remove longest common suffix
-    colnames(x) <- gsub(lcPrefix(colnames(x)), "", colnames(x)) # remove longest common prefix
+    colnames(x) <- gsub(Biobase::lcSuffix(colnames(x)), "", colnames(x)) # remove longest common suffix
+    colnames(x) <- gsub(Biobase::lcPrefix(colnames(x)), "", colnames(x)) # remove longest common prefix
   
     df.stacked <- data.frame(filename = gsub("\\.R[12]\\.*$", "", colnames(x)),
                              input = x[1, ],
@@ -611,9 +611,9 @@ DEhelper.STAR.violin <- function(colorByFactor=NULL, targetsdf=targets, ...) {
     # we have to plot per feature and then rearrange
     # we add one plot for the color value where we plot the percentages and color them according to the amount of input reads
   
-    targetsdf$samplemod <- gsub(paste0(lcSuffix(targetsdf$file ), "$"), "", targetsdf$file ) # shorten filename suffix
+    targetsdf$samplemod <- gsub(paste0(Biobase::lcSuffix(targetsdf$file ), "$"), "", targetsdf$file ) # shorten filename suffix
     #if(!is.na(SHINYREPS_PREFIX)) {targetsdf$samplemod  <- gsub(SHINYREPS_PREFIX, "", targetsdf$samplemod)}
-    targetsdf$samplemod <- gsub(paste0("^", lcPrefix(targetsdf$samplemod )), "", targetsdf$samplemod ) # shorten filename prefix
+    targetsdf$samplemod <- gsub(paste0("^", Biobase::lcPrefix(targetsdf$samplemod )), "", targetsdf$samplemod ) # shorten filename prefix
     
     index <- as.numeric(sapply(targetsdf$samplemod, function(x) grep(x, df.stacked$filename, ignore.case = T))) # grep for sample name in shortened file names
     if((nrow(df.stacked) != length(index)) || any(is.na(index))) {
@@ -643,11 +643,11 @@ DEhelper.STAR.violin <- function(colorByFactor=NULL, targetsdf=targets, ...) {
     
     
     # melt data frame for plotting
-    df.melt  <- reshape2::melt(df.stacked, id.vars=unique(c(colorByFactor, "filename", "sample")), variable.name="map_feature")
-   
+    df.melt  <- reshape2::melt(df.stacked, id.vars=unique(c(colorByFactor, "filename")), variable.name="map_feature")
+    
     map.feature.plots <- lapply(colorByFactor, function(color.value){
       p <- ggplot(df.melt[df.melt$map_feature=="input",], aes_string("map_feature", "value", color=color.value)) +
-        geom_quasirandom() +
+        ggbeeswarm::geom_quasirandom() +
         scale_color_brewer(type= "qual", palette=2)  + 
         facet_wrap(~map_feature, scales="free") +
         scale_y_log10() +
@@ -655,7 +655,7 @@ DEhelper.STAR.violin <- function(colorByFactor=NULL, targetsdf=targets, ...) {
         ylab("# Reads")
       p.perc <- ggplot(df.melt[grepl("perc", df.melt$map_feature),],
                        aes_string("map_feature", "value", color=color.value)) +
-        geom_quasirandom() +
+        ggbeeswarm::geom_quasirandom() +
         scale_color_brewer(type= "qual", palette=2)  + 
         facet_wrap(~map_feature, scales="free") +
         xlab(NULL) + theme(axis.text.x = element_text(size = 10)) +
@@ -665,7 +665,7 @@ DEhelper.STAR.violin <- function(colorByFactor=NULL, targetsdf=targets, ...) {
       return(list(p.perc,p))
     })
     
-    df.stats <- data.frame(sample=df.stacked$sample,
+    df.stats <- data.frame(sample=df.stacked$filename,
                      input_reads=format(df.stacked$input, big.mark=","), 
                      uniquely_mapped=paste0(format(df.stacked$unique, big.mark=","), " (", format(df.stacked$unique_perc, nsmall=2, digits=2), "%)"), 
                      multi_mapped=paste0(format(df.stacked$multi, big.mark=","), " (", format(df.stacked$multi_perc, nsmall=2, digits=2), "%)"), 
@@ -1265,7 +1265,7 @@ DEhelper.geneBodyCov2 <- function(web=F, targetsdf=SHINYREPS_TARGET, ...) {
   samples <- selectSampleSubset(samples, grepInBasename=T, ...)
   
   names(samples) <- gsub("_geneBodyCov.csv", "", basename(samples))
-  
+
   if(class(targetsdf)=="data.frame" || file.exists(targetsdf)){
     
     # get target names
@@ -1274,7 +1274,7 @@ DEhelper.geneBodyCov2 <- function(web=F, targetsdf=SHINYREPS_TARGET, ...) {
     } else {
       targets <- read.delim(targetsdf, comment.char = "#")
     }
-    targets <- targets[sapply(gsub("_L001_R._001", "", names(samples)), grep, targets$file),] # if sample subset selected, remove spare entries from targets
+    
     targets$sample_ext <- gsub("\\..*$", "",targets$file )
     
     # replace files names with nicer sample names given in targets file
@@ -1678,8 +1678,8 @@ DEhelper.cutadapt <- function(targetsdf=targets, colorByFactor="group", sampleCo
   }
   row.names(x.df) <- gsub("\\.cutadapt\\.log$", "", row.names(x.df))
   if(nrow(x.df)>1){
-    if(is.na(SHINYREPS_PREFIX)) {row.names(x.df)  <- gsub(lcPrefix(row.names(x.df) ), "", row.names(x.df) )}
-    row.names(x.df)  <- gsub(lcSuffix(row.names(x.df) ), "", row.names(x.df) )
+    if(is.na(SHINYREPS_PREFIX)) {row.names(x.df)  <- gsub(Biobase::lcPrefix(row.names(x.df) ), "", row.names(x.df) )}
+    row.names(x.df)  <- gsub(Biobase::lcSuffix(row.names(x.df) ), "", row.names(x.df) )
   }
   
   # passing the different factors given in targetsdf to x.df which was created from cutadapt file names 
@@ -1839,8 +1839,8 @@ DEhelper.umicount <- function(colorByFactor=NULL, targetsdf=targets, ...){
   
   # reduce size of file names 
   row.names(x.df) <- basename(colnames(x))
-  row.names(x.df)  <- gsub(lcSuffix(row.names(x.df) ), "", row.names(x.df) )
-  row.names(x.df)  <- gsub(lcPrefix(row.names(x.df) ), "", row.names(x.df) )
+  row.names(x.df)  <- gsub(Biobase::lcSuffix(row.names(x.df) ), "", row.names(x.df) )
+  row.names(x.df)  <- gsub(Biobase::lcPrefix(row.names(x.df) ), "", row.names(x.df) )
   #if(!is.na(SHINYREPS_PREFIX)) {row.names(x.df) <- gsub(SHINYREPS_PREFIX, "", row.names(x.df))}
   x.df$filename <- factor(row.names(x.df))
   
@@ -1849,9 +1849,9 @@ DEhelper.umicount <- function(colorByFactor=NULL, targetsdf=targets, ...){
   if(!is.null(colorByFactor) && nrow(x.df) == nrow(targetsdf)) { # if targets object fits in length, add information to x.df
     
     
-    targetsdf$samplemod <- gsub(lcSuffix(targetsdf$file ), "", targetsdf$file ) # shorten filename suffix
+    targetsdf$samplemod <- gsub(Biobase::lcSuffix(targetsdf$file ), "", targetsdf$file ) # shorten filename suffix
     #if(!is.na(SHINYREPS_PREFIX)) {targetsdf$samplemod  <- gsub(SHINYREPS_PREFIX, "", targetsdf$samplemod)}
-    targetsdf$samplemod <- gsub(lcPrefix(targetsdf$samplemod ), "", targetsdf$samplemod ) # shorten filename prefix
+    targetsdf$samplemod <- gsub(Biobase::lcPrefix(targetsdf$samplemod ), "", targetsdf$samplemod ) # shorten filename prefix
     
     
     index <- as.numeric(sapply(targetsdf$samplemod, function(x) grep(x, x.df$filename, ignore.case = T))) # grep for sample name in shortened file names

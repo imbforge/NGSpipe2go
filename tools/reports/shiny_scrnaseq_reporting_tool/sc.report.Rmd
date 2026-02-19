@@ -386,11 +386,11 @@ switch(SHINYREPS_SEQTYPE,
                  }
        },
        SmartSeq={
-           print("The mapping statistics below show the number input raw reads and percentages of uniquely mapped reads, multi-mapped reads aligning equally well to multiple (up to 10) positions in the genome and overall mapped reads. For the multimapped reads, one random alignment among the best mapping positions is retained.\n")
+           cat("\nThe mapping statistics below show the number input raw reads and percentages of uniquely mapped reads, multi-mapped reads aligning equally well to multiple (up to 10) positions in the genome and overall mapped reads. For the multimapped reads, one random alignment among the best mapping positions is retained.\n")
            star_stats_violin <- DEhelper.STAR.violin(targetsdf=targets4plots)
-           cat("\n#### Mapping summary\n", fill=T)
+           cat("\n#### Summary\n", fill=T)
              for(i in 1:length(star_stats_violin$p_mapped)){
-               grid.arrange(grobs=star_stats_violin$p_mapped[[i]], layout_matrix= matrix(c(1,2), nrow=1)) 
+               gridExtra::grid.arrange(grobs=star_stats_violin$p_mapped[[i]], layout_matrix= matrix(c(1,2), nrow=1)) 
              }
            cat("\n", fill = T)
            cat("\n#### Mapping statistics\n", fill=T)
@@ -557,6 +557,7 @@ if(file.exists(file.path(SHINYREPS_QC_BIOC_OUT, "highest.lib.size.txt"))) {
 ```{r total_counts_per_plate_position, results='asis', eval= (SHINYREPS_SEQTYPE %in% c("MARSseq", "SmartSeq"))}
 
 cat("\nOverview plate distribution\n")
+cat("\nQC parameter is indicated by symbol size and sample group by shape. '0C' controls are highligthed in blue, '10c' controls in red.")
 filenamePlot <- list.files(file.path(SHINYREPS_QC_BIOC_OUT), pattern="^plate_distribution_plot_by_.*\\.png$")
 if(length(filenamePlot)>0) {
   knitr::include_graphics(path=file.path(SHINYREPS_QC_BIOC_OUT, filenamePlot))
