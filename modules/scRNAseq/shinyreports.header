@@ -29,7 +29,7 @@ shinyReports_vars=[
     dupradar_log    : (binding.variables.containsKey("dupRadar_vars") ? dupRadar_vars.outdir : ""),    //where dupRadar results lie
     rnatypes_log    : LOGS + "/RNAtypes",      //where the RNAtypes logs lie
     rnatypes        : (binding.variables.containsKey("subread2rnatypes_vars") ? subread2rnatypes_vars.outdir : ""), //where the RNAtypes count results lie
-    rnatypes_suffix : "counts.tsv",            //the extension of the subread results files
+    rnatypes_suffix : "_readcounts.tsv",            //the extension of the subread results files
     genebodycov_log : (binding.variables.containsKey("geneBodyCov2_vars") ? geneBodyCov2_vars.outdir : ""),
     bustard         : QC + "/DemultiplexedBustardSummary.xml",  //where the bustard xml file lies
     subread         : (binding.variables.containsKey("subread_count_vars") ? subread_count_vars.outdir : ""),     // location of the subread counts
