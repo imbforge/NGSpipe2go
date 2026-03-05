@@ -42,7 +42,9 @@ switch(SHINYREPS_SEQTYPE,
           all(sapply(unique(targets_pools$file), function(y) {length(unique(targets_pools[targets_pools$file==y, x]))==1}))
           })
       targets4plots <- targets_pools[!duplicated(targets_pools$file), c("file", names(collapsedColumns)[collapsedColumns])] 
-      if(!"sample" %in% colnames(targets4plots)) {targets4plots$sample <- targets4plots$file} # "sample" column is needed. Same as "file" if ambiguous.
+      if(!"sample" %in% colnames(targets4plots)) {# "sample" column is needed. Use pruned "file" column if ambiguous.
+        targets4plots$sample <- gsub("(_S\\d{1,3}$)|(_S\\d{1,3}_L\\d{3}_R\\d_\\d{3}$)", "", targets4plots$file)
+        } 
        },
       ScaleBio={      
         targets4plots <- targets_pools |> # summarize multiple rows per file for fastq-centered QC plots
@@ -154,16 +156,14 @@ cat("\n", fill = T)
 # define subset of cutadapt log files if desired (samplePattern=NULL (default) includes all files).
 # define categories of targets.txt to be used for dot color in the plot (one plot per element of colorByFactor will be created). 
 # The function will try to map the data from targets$file to the cutadapt log file names (for this, the unique part of 
-# targets$file must be a substring of file name). If you have cutadapt log files from pooled fastq files but cell-wise 
-# information in targets.txt as in MARS-Seq, you may provide another customized targets object in 'targetsdf'. 
-# Otherwise pruned file names will be used by default.
+# targets$file must be a substring of file name). Otherwise pruned file names will be used by default.
 #####
 
 cat("## Adapter trimming with Cutadapt\n")
 
 cat("\nThe following plot shows the amount of reads trimmed for the selected adapter sequences including polyA/polyT sequences if specified. The column 'tooshort' gives the percentage of reads removed due to a length of less than 30 bases after trimming. Additionally to the column 'trimmed' which is for all adapters combined, there are columns for every single adapter giving the percentage of reads trimmed for this adapter.\n\n")
 
-DEhelper.cutadapt(colorByFactor=colorByFactor, targetsdf=targets4plots)
+DEhelper.cutadapt(colorByFactor="group", targetsdf=targets4plots)
 ```
 
 ```{r FastQC_qual_summarized_trimmed, echo=F,results='asis',error=F,warning=F,message=F,fig.align='center', eval=runCutadapt & file.exists(file.path(SHINYREPS_FASTQC_OUT, "trimmed"))}
@@ -220,30 +220,8 @@ cat("\n", fill = T)
 The plots below show meta-gene profiles of 5' to 3' read coverage and can reveal biases due to RNA degradation or specific library prep protocol; polyA-selection protocols are particularly prone of producing 3' coverage bias upon RNA degradation.
 
 ```{r GeneBodyCoverage_paragraph, echo=F, error=F, warning=F, message=F}
+
 plot_list <- DEhelper.geneBodyCov2(web=F, targetsdf=targets4plots, samplePattern=SHINYREPS_SAMPLEPATTERN1, excludePattern=SHINYREPS_SAMPLEPATTERN2, maxno=SHINYREPS_MAXNO)
-```
-
-```{r GeneBodyCoverage_paragraph_plotly, echo=F, error=F, warning=F, message=F, results='asis', fig.align="center", eval="plotly" %in% names(plot_list)}
-
-cat("#### Gene body coverage per sample: plotly")
-cat("\n\n", fill=T)
-plot_list$plotly |>
-    plotly::highlight(dynamic=T, selectize=T, persistent=T, selected = plotly::attrs_selected(showlegend = FALSE)) 
-cat("\n\n")
-
-```
-
-```{r GeneBodyCoverage_paragraph_per_sample, echo=F, error=F, warning=F, message=F, results='asis', fig.align="center"}
-
-if("p_per_sample" %in% names(plot_list)){
-   cat("#### Gene body coverage per sample: \n", fill=T)
-   if("p_per_cells" %in% names(plot_list)) {
-     plot(plot_list$p_per_cells) # for plate-based approaches use plot colored by cell control type if available
-   } else {
-   plot(plot_list$p_per_sample)
-   }
-   cat("\n", fill=T)
-}
 
 if("num_groups" %in% names(plot_list)) {
    no.of.groups <- plot_list$num_groups
@@ -259,49 +237,32 @@ if("num_replicates" %in% names(plot_list)) {
 
 ```
 
+```{r GeneBodyCoverage_paragraph_plotly, echo=F, error=F, warning=F, message=F, results='asis', fig.align="center", eval="plotly" %in% names(plot_list)}
+
+cat("#### Gene body coverage per file: plotly")
+cat("\n\n", fill=T)
+plot_list$plotly |>
+    plotly::highlight(dynamic=T, selectize=T, persistent=T, selected = plotly::attrs_selected(showlegend = FALSE)) 
+cat("\n\n")
+
+```
+
 ```{r GeneBodyCoverage_splitByGroup, echo=F, error=F, warning=F, message=F, results='asis', fig.align="center", out.width="100%", fig.height=ceiling((no.of.groups)/2)*3+0.5+ifelse(no.of.groups<2,2,0)}
 
-if(("p_per_sample_splitByGroup" %in% names(plot_list)) && !("p_per_cells_splitByGroup" %in% names(plot_list))){
-   cat("#### Gene body coverage per sample split by group: \n", fill=T)
-   plot(plot_list$p_per_sample_splitByGroup)
-   cat("\n", fill=T)
-}
 if("p_per_replicate_splitByGroup" %in% names(plot_list)){
-  cat("#### Gene body coverage per sample split by group, colored by replicate: \n", fill=T)
+  cat("#### Gene body coverage split by group, colored by replicate: \n", fill=T)
   plot(plot_list$p_per_replicate_splitByGroup)
   cat("\n", fill=T)
 }
-if("p_per_cells_splitByGroup" %in% names(plot_list)){
-  cat("#### Gene body coverage per sample split by group, colored by cell control type: \n", fill=T)
-  plot(plot_list$p_per_cells_splitByGroup)
-  cat("\n", fill=T)
-}
+
 ```
 
 ```{r GeneBodyCoverage_splitByReplicate, echo=F, error=F, warning=F, message=F, results='asis', fig.align="center", out.width="100%", fig.height=ceiling((no.of.replicates)/2)*3+0.5+ifelse(no.of.replicates<2,2,0)}
 if("p_per_group_splitByReplicate" %in% names(plot_list)){
-  cat("#### Gene body coverage per sample split by replicate, colored by group: \n", fill=T)
+  cat("#### Gene body coverage split by replicate, colored by group: \n", fill=T)
   plot(plot_list$p_per_group_splitByReplicate)
   cat("\n", fill=T)
 }
-```
-
-```{r GeneBodyCoverage_splitByGroupReplicate, echo=F, error=F, warning=F, message=F, results='asis', fig.align="center", out.width="100%", fig.height=ceiling((no.of.replicates*no.of.groups)/2)*3+0.5+ifelse(no.of.replicates*no.of.groups<2,2,0)}
-if("p_per_cells_splitByGroupReplicate" %in% names(plot_list)){
-  cat("#### Gene body coverage per sample split by group and replicate, colored by cell control type: \n", fill=T)
-  plot(plot_list$p_per_cells_splitByGroupReplicate)
-  cat("\n", fill=T)
-}
-```
-
-
-
-```{r strandspecificity,  echo=F, results='asis', error=F, warning=F, message=F, eval=file.exists(SHINYREPS_INFEREXPERIMENT_LOGS)}
-cat("## Strand specificity\n")
-
-cat("\nThe table below shows the fraction of reads mapped in sense or antisense to gene exons - around 0.5 for non-stranded library prep protocols and close to 0 or 1 for strand-specific RNA-seq protocols. The strandedness is calculated as the percentage of unambiguous reads that are on the strand, which is expected by the library preparation protocol.\n\n")
-
-DEhelper.strandspecificity(samplePattern=SHINYREPS_SAMPLEPATTERN1, targetsdf=targets4plots, excludePattern=SHINYREPS_SAMPLEPATTERN2, maxno=SHINYREPS_MAXNO)
 ```
 
 
@@ -750,7 +711,7 @@ Uniform manifold approximation and projection (UMAP) is a nonlinear dimensionali
 ```{r find_cell_cycle, results='asis'}
 
 
-if(file.exists(file.path(SHINYREPS_NORM_BIOC_OUT, "cell_cycle_phase_assignments.txt"))) {
+if(file.exists(file.path(SHINYREPS_NORM_BIOC_OUT, "cell_cycle_phase_summary_table.txt"))) {
   
   cat("### Classification and normalization of cell cycle phase
 
