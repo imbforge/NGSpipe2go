@@ -66,7 +66,6 @@ switch(SHINYREPS_SEQTYPE,
       }
 )
 
-
 # print targets
 DT::datatable(targets4plots, caption="targets file (sample sheet) used for analysis")
 
@@ -287,13 +286,6 @@ DEhelper.RNAtypes(targetsdf=targets4plots, samplePattern=SHINYREPS_SAMPLEPATTERN
 # Mapping Statistics
 
 ```{r mapping_stats, results='asis'}
-##### parameters to set:
-# You can define columns of targets.txt to be used for dot color in the summary plot (one plot per element of colorByFactor will be created). 
-# The function will try to map the data from targets$file to the STAR log file names (for this, the unique part of 
-# targets$file must be a substring of the file name). If you have STAR log files from pooled fastq files but cell-wise 
-# information in targets.txt as in MARS-Seq, you may provide another customized targets object in 'targetsdf'. 
-# Otherwise pruned file names will be used by default.
-#####
 
 switch(SHINYREPS_SEQTYPE,
        tenX={
@@ -348,7 +340,7 @@ switch(SHINYREPS_SEQTYPE,
        },
        SmartSeq={
            cat("\nThe mapping statistics below show the number input raw reads and percentages of uniquely mapped reads, multi-mapped reads aligning equally well to multiple (up to 10) positions in the genome and overall mapped reads. For the multimapped reads, one random alignment among the best mapping positions is retained.\n")
-           star_stats_violin <- DEhelper.STAR.violin(targetsdf=targets4plots)
+           star_stats_violin <- DEhelper.STAR.violin(colorByFactor=c("group"), targetsdf=targets4plots)
            cat("\n#### Summary\n", fill=T)
              for(i in 1:length(star_stats_violin$p_mapped)){
                gridExtra::grid.arrange(grobs=star_stats_violin$p_mapped[[i]], layout_matrix= matrix(c(1,2), nrow=1)) 
@@ -358,7 +350,6 @@ switch(SHINYREPS_SEQTYPE,
            star_stats_violin$stat
        }
 )
-
 
 ```
 

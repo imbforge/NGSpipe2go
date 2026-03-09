@@ -218,11 +218,9 @@ DEhelper.STAR.violin <- function(colorByFactor=NULL, targetsdf=targets, ...) {
                  })    
     })
     
-    # set row and column names, and output the md table
-    colnames(x) <- basename(colnames(x))
-    colnames(x) <- gsub(Biobase::lcSuffix(colnames(x)), "", colnames(x)) # remove longest common suffix
-    colnames(x) <- gsub(Biobase::lcPrefix(colnames(x)), "", colnames(x)) # remove longest common prefix
-  
+    colnames(x)  <- gsub(SHINYREPS_STAR_SUFFIX, "", basename(colnames(x)))
+    colnames(x) <-  gsub("(_S\\d{1,3}$)|(_S\\d{1,3}_L\\d{3}_R\\d_\\d{3}$)", "", colnames(x))
+    
     df.stacked <- data.frame(filename = gsub("\\.R[12]\\.*$", "", colnames(x)),
                              input = x[1, ],
                              unique = x[2, ],
@@ -233,270 +231,91 @@ DEhelper.STAR.violin <- function(colorByFactor=NULL, targetsdf=targets, ...) {
                              mapped_perc = 100*((x[4, ]+x[2, ]) / x[1, ]),
                              unmapped = x[8, ] + x[9, ] + x[10, ])
     
-## prepare groupwise plots
-  if(!is.null(colorByFactor) && nrow(df.stacked) == nrow(targetsdf)) {
-    # we want to plot the input reads and the mapped and the multi mapped reads numbers into different plots with different axises separated by one feature
-    # we want to plot the same thing as percentages of the total
-    # we have to plot per feature and then rearrange
-    # we add one plot for the color value where we plot the percentages and color them according to the amount of input reads
-  
-    targetsdf$samplemod <- gsub(paste0(Biobase::lcSuffix(targetsdf$file ), "$"), "", targetsdf$file ) # shorten filename suffix
-    #if(!is.na(SHINYREPS_PREFIX)) {targetsdf$samplemod  <- gsub(SHINYREPS_PREFIX, "", targetsdf$samplemod)}
-    targetsdf$samplemod <- gsub(paste0("^", Biobase::lcPrefix(targetsdf$samplemod )), "", targetsdf$samplemod ) # shorten filename prefix
+    stats_columns <- colnames(df.stacked)[-1]
     
-    index <- as.numeric(sapply(targetsdf$samplemod, function(x) grep(x, df.stacked$filename, ignore.case = T))) # grep for sample name in shortened file names
-    if((nrow(df.stacked) != length(index)) || any(is.na(index))) {
-      stop("\nThere seem to be ambiguous sample names in targets. Can't assign them uniquely to STAR logfile names")
+  ## add target information if available
+  if(!is.null(colorByFactor) && !is.null(targetsdf) && (class(targetsdf)=="data.frame" || file.exists(targetsdf))) {
+    
+    # get targets
+    if(class(targetsdf)=="data.frame") {
+      targets <- targetsdf
+    } else {
+      targets <- read.delim(targetsdf, comment.char = "#")
     }
     
-    if(any(!colorByFactor %in% colnames(targetsdf))) {
-      if(all(!colorByFactor %in% colnames(targetsdf))) {
-        cat("\nNone of the column names given in colorByFactor is available. Perhaps sample names are not part of fastq file names? Using filename instead.\n")
-        colorByFactor <- "filename"
-      } else { # one plot each element of colorByFactor
-        cat("\n", colorByFactor[!colorByFactor %in% colnames(targetsdf)], "not available. Using", colorByFactor[colorByFactor %in% colnames(targetsdf)], "\n")
-        colorByFactor <- colorByFactor[colorByFactor %in% colnames(targetsdf)]
-      }
+    targets$file <- gsub("(_S\\d{1,3}$)|(_S\\d{1,3}_L\\d{3}_R\\d_\\d{3}$)", "", targets$file)
+    
+    # now left_join by file name
+    df.stacked <- dplyr::left_join(df.stacked, targets, by=dplyr::join_by(filename==file))
+    
+    colorByFactor[colorByFactor %in% colnames(df.stacked)]
+    if(length(colorByFactor) == 0) {
+      colorByFactor <- "filename" # if colorByFactor not in targets or merging of targets information failed
     }
-
-    targetsdf$filename <- df.stacked$filename[index]
-    df.stacked <- merge(df.stacked, targetsdf[,unique(c("filename", "sample", colorByFactor)), drop=F], by="filename")
-    rownames(df.stacked) <- df.stacked$sample
-    df.stacked <- df.stacked[order(rownames(df.stacked)),, drop=F]
-    df.stacked <- df.stacked[,!apply(df.stacked,2, function(x) any(is.na(x))), drop=F] # remove NA columns from unsuccessful matching
     
   } else {
-    # if colorByFactor == NULL or targets does not fit to number of files
+    # if colorByFactor == NULL or no targets info given
     colorByFactor <- "filename"
-  } # end groupwise plots
-    
+  } 
     
     # melt data frame for plotting
-    df.melt  <- reshape2::melt(df.stacked, id.vars=unique(c(colorByFactor, "filename")), variable.name="map_feature")
+    id.variables <- colnames(df.stacked)[!colnames(df.stacked) %in% stats_columns]
+    df.melt  <- reshape2::melt(df.stacked, id.vars=id.variables, variable.name="map_feature")
     
     map.feature.plots <- lapply(colorByFactor, function(color.value){
       p <- ggplot(df.melt[df.melt$map_feature=="input",], aes_string("map_feature", "value", color=color.value)) +
         ggbeeswarm::geom_quasirandom() +
-        scale_color_brewer(type= "qual", palette=2)  + 
+        scale_color_manual(values=define.group.palette(length(unique(df.melt[,color.value])))) +
         facet_wrap(~map_feature, scales="free") +
         scale_y_log10() +
-        xlab(NULL) + theme(axis.text.x = element_text(size = 10)) +
+        theme(axis.title.x = element_blank(),
+              axis.text.x = element_blank(),
+              axis.ticks.x = element_blank()) +
         ylab("# Reads")
       p.perc <- ggplot(df.melt[grepl("perc", df.melt$map_feature),],
                        aes_string("map_feature", "value", color=color.value)) +
         ggbeeswarm::geom_quasirandom() +
-        scale_color_brewer(type= "qual", palette=2)  + 
-        facet_wrap(~map_feature, scales="free") +
-        xlab(NULL) + theme(axis.text.x = element_text(size = 10)) +
+        scale_color_manual(values=define.group.palette(length(unique(df.melt[,color.value])))) +
+        facet_wrap(~map_feature, scales="free", labeller = labeller(map_feature = function(x) gsub("_perc", "", x))) +
+        theme(axis.title.x = element_blank(),
+              axis.text.x = element_blank(),
+              axis.ticks.x = element_blank()) +
         guides(color="none") +
         ylab("% of input reads")  
-        # theme(axis.text.x=element_text(angle=45, vjust=1, hjust=1))
       return(list(p.perc,p))
     })
-    
-    df.stats <- data.frame(sample=df.stacked$filename,
-                     input_reads=format(df.stacked$input, big.mark=","), 
-                     uniquely_mapped=paste0(format(df.stacked$unique, big.mark=","), " (", format(df.stacked$unique_perc, nsmall=2, digits=2), "%)"), 
-                     multi_mapped=paste0(format(df.stacked$multi, big.mark=","), " (", format(df.stacked$multi_perc, nsmall=2, digits=2), "%)"), 
-                     too_many_loci=paste0(format(df.stacked$too_many_loci,nsmall=2, digits=2), "%"),
-                     unmapped=paste0(format(df.stacked$unmapped, nsmall=2, digits=2), "%")
-    )
-    
+
+    df.stats <- df.stacked |>
+      dplyr::mutate(
+        filename = filename,  
+        input_reads = format(input, big.mark = ","),
+        uniquely_mapped = paste0(
+          format(unique, big.mark = ","), 
+          " (", 
+          format(unique_perc, nsmall = 2, digits = 2), 
+          "%)"
+        ),
+        multi_mapped = paste0(
+          format(multi, big.mark = ","), 
+          " (", 
+          format(multi_perc, nsmall = 2, digits = 2), 
+          "%)"
+        ),
+        too_many_loci = paste0(
+          format(too_many_loci, nsmall = 2, digits = 2), 
+          "%"
+        ),
+        unmapped = paste0(
+          format(unmapped, nsmall = 2, digits = 2), 
+          "%"
+        )
+      ) |>
+      dplyr::select(-dplyr::any_of(c("file", "input", "unique", "unique_perc", "multi", "multi_perc", "mapped_perc"))) |> # Drop columns not needed
+      dplyr::relocate(filename, input_reads, uniquely_mapped, multi_mapped, too_many_loci, unmapped)
+      
     stat=DT::datatable(df.stats, rownames=F, options = list(pageLength= 20))
     
     return(list(p_mapped=map.feature.plots, stat=stat))
-}
-
-
-
-##
-## DEhelper.STAR: parse STAR log files and create a md table
-##
-DEhelper.STAR <- function(targetsdf=targets) {
-  
-  # log file
-  LOG <- SHINYREPS_STAR_LOG
-  SUFFIX <- paste0(SHINYREPS_STAR_SUFFIX, '$')
-  if(!file.exists(LOG)) {
-    return("STAR statistics not available")
-  }
-  
-  # look for the lines containing the strings
-  # and get the values associated with this strings
-  x <- sapply(list.files(LOG, pattern = SUFFIX), function(f) {
-    f <- file(paste0(LOG, "/", f))
-    l <- readLines(f)
-    close(f)
-    
-    sapply(c("Number of input reads",
-             "Uniquely mapped reads number",
-             "Uniquely mapped reads %",
-             "Number of reads mapped to multiple loci",
-             "% of reads mapped to multiple loci",
-             "Number of reads mapped to too many loci",
-             "% of reads mapped to too many loci",
-             "% of reads unmapped: too many mismatches",
-             "% of reads unmapped: too short",
-             "% of reads unmapped: other"), function(x) {
-               as.numeric(gsub("%", "", gsub(".+\\|\t(.+)", "\\1", l[grep(x, l)])))
-             })    
-  })
-  
-  # set row and column names, and output the md table
-  colnames(x) <- gsub(paste0(SUFFIX, "$"), "", colnames(x))
-  
-  ## row.names need to be set in case of only one sample (if more than one sample,
-  ## rownames would be set automatically, but doesnt harm to set them)
-  df_values <- as.data.frame(t(x[1:7,]),row.names=colnames(x))
-  
-  df_values["unmapped"] <- x[1, ] - x[2, ] - x[4, ] - x[6,]
-  df_values["% unmapped"] <- x[8, ] + x[9, ] + x[10, ]
-  df_values$sample <- rownames(df_values)
-  # we clean up the colnames a little to make them shorter and nicer
-  colnames(df_values) <- gsub("of reads mapped to ", "",
-                              gsub("Number of reads mapped to ", "",
-                                   gsub("Uniquely mapped reads %","% unique",
-                                        gsub("Uniquely mapped reads number","unique",
-                                             gsub("Number of input reads","input",colnames(df_values))))))
-  
-  # if we have a differential expression analysis
-  # we refactor the samples depending on group/subject or alternatively on the
-  # amount of unique_mapping reads
-  if(file.exists(SHINYREPS_TARGET)){
-    
-    #targets <- read.delim(SHINYREPS_TARGET, comment.char = "#")
-    targets <- targetsdf
-    targets$sample_ext <- gsub("\\..*$", "",targets$file )
-    add_factors <- colnames(targets)[!colnames(targets) %in% c("group", "sample", "file")]
-    
-    # replace files names with nicer sample names given in targets file 
-    # if sample is missing in targets file, use reduced file name
-    df_values$sample <- sapply(df_values$sample, function(i) { ifelse(sum(sapply(targets$sample_ext, grepl, i))==1 && !any(duplicated(targets$sample)),   
-                                                                      targets[sapply(targets$sample_ext, grepl, i),"sample"], 
-                                                                      gsub(paste0("^",SHINYREPS_PREFIX),"",i))})
-  } else{
-    
-    # remove sample prefix from sample names (suffix was already removed before)
-    df_values$sample <- gsub(paste0("^",SHINYREPS_PREFIX), "", df_values$sample)
-  }
-  
-  # sort sample alphabetically or based on number of (uniquely) mapped reads
-  if (SHINYREPS_SORT_ALPHA) {
-    df_values$sample <- fct_reorder(df_values$sample, df_values$sample, .desc=TRUE)
-  } else {
-    df_values$sample <- fct_reorder(df_values$sample, df_values$`% unique`)
-  }
-  
-  df_melt <- reshape2::melt(df_values, value.name = "reads", variable.name = "mapping_stat")
-  df_melt$value_info <- ifelse(grepl("%", df_melt$mapping_stat), "perc", "reads")
-  
-  ## melt does not work properly in case of only one sample (sample name gets lost)
-  if (nrow(df_values) == 1) {
-    df_melt$sample <- rownames(df_values)
-  }
-  
-  ## invert order for plotting
-  df_melt$mapping_stat <- fct_rev(df_melt$mapping_stat)
-  
-  ## define color scheme
-  my.palette <- rev(c("#e08a28","#dfc27d","#acd2f7","#5ea1e3"))
-  my.color   <- "#cc0e25"
-  
-  # plot showing percent mapped reads
-  p_perc <- ggplot(df_melt[df_melt$value_info == "perc",], 
-                   aes(x = sample, y = reads, fill = mapping_stat )) +
-    geom_bar(stat     = "identity", 
-             position = "stack") +
-    labs(x = "", 
-         y = "% of sequenced reads", 
-         title = "Mapping summary (percentage)") + 
-    theme(axis.text.y = element_text(size = 8),
-          plot.title = element_text(hjust = 0.5,size=12),
-          legend.position = "top") +
-    guides(fill=guide_legend(nrow=1,title="",reverse=TRUE)) +
-    scale_fill_manual(values=my.palette) +
-    coord_flip()
-  
-  # max number of reads in any sample
-  max.reads <- max(df_melt[df_melt$mapping_stat=="input","reads"])
-  
-  # plot a combination of percent mapped reads and total sequenced reads
-  p_perc_count <- ggplot() + 
-    geom_bar(data=df_melt[df_melt$value_info == "reads" & df_melt$mapping_stat!="input",], 
-             mapping=aes(x = sample, y = reads, fill = mapping_stat), 
-             stat = "identity", position = "fill", width = 0.8) + 
-    geom_point(data=df_melt[df_melt$mapping_stat=="input",], 
-               mapping=aes(x = sample, y = reads/max.reads), 
-               size=2, fill=my.color, color=my.color, shape=18) +
-    geom_line(data=df_melt[df_melt$mapping_stat=="input",],
-              mapping=aes(x = sample, y = reads/max.reads, group=1),
-              color=my.color, linetype="dashed", size=0.2) +
-    scale_y_continuous(sec.axis = sec_axis(~ . *max.reads, name="# sequenced reads"),
-                       labels = scales::percent_format()) + 
-    labs(x = "",
-         y = "% of sequenced reads") + 
-    theme(axis.text.y = element_text(size = 8),
-          axis.title.x.top=element_text(color=my.color), 
-          axis.text.x.top=element_text(color=my.color), 
-          axis.ticks.x.top=element_line(color=my.color),
-          plot.title = element_text(hjust = 0.5,size=12),
-          legend.position = "top") + 
-    guides(fill=guide_legend(nrow=1,title="",reverse=TRUE)) + 
-    scale_fill_manual(values=my.palette) + 
-    coord_flip()
-  
-  # in case of non-alphabetically sorting, re-order based on total number of reads
-  # before plotting reads counts
-  if (SHINYREPS_SORT_ALPHA == FALSE) {
-    df_melt$sample <- factor(df_melt$sample, levels=df_values$sample[order(df_values$input)])
-  }
-  
-  p_count <- p_perc %+%
-    df_melt[df_melt$value_info == "reads" & df_melt$mapping_stat != "input",] +
-    labs(x = "",
-         y = "# sequenced reads",
-         title = "Mapping summary (read counts)") 
-  
-  # prepare data for summary table  
-  rownames(df_values) <- df_values$sample
-  df_values <- df_values[, colnames(df_values) != "sample"]
-  
-  # reformat individual columns
-  df_values[, grepl("%", colnames(df_values))] <- as.data.frame(
-    lapply(
-      df_values[, grepl("%", colnames(df_values))], function(x){
-        paste0(format(x, nsmall=2), "%") 
-      }))
-  df_values[, !grepl("%", colnames(df_values))] <- as.data.frame(
-    lapply(
-      df_values[, !grepl("%", colnames(df_values))], function(x){
-        format(x, big.mark=",") 
-      }))
-  
-  # create data frame to print as table
-  df_values_print <- data.frame(all.reads     = df_values$input,
-                                unique        = paste0(df_values[,"unique"]," (",df_values[,"% unique"],")"),
-                                multiple.loci = paste0(df_values[,"multiple loci"]," (",df_values[,"% multiple loci"],")"),
-                                too.many.loci = paste0(df_values[,"too many loci"]," (",df_values[,"% too many loci"],")"),
-                                unmapped      = paste0(df_values[,"unmapped"]," (",df_values[,"% unmapped"],")"), 
-                                row.names     = rownames(df_values))
-  
-  # sort alphabetically based on sample names (=rownames) or based on % unique
-  if (SHINYREPS_SORT_ALPHA == TRUE) {
-    df_values_print <- df_values_print[order(rownames(df_values_print)),]
-  } else {
-    df_values_print <- df_values_print[rownames(df_values[order(df_values$`% unique`, decreasing=TRUE),]),]
-  }
-  colnames(df_values_print) <- gsub("\\."," ",colnames(df_values_print))
-  
-  return( list(p_perc = p_perc,
-               p_perc_count = p_perc_count,
-               p_count = p_count,
-               stat= DT::datatable(df_values_print, options = list(pageLength= 20))
-               #stat = kable(df_values_print, align=c("r", "r", "r", "r", "r"), format="markdown", output=F)
-               )
-  )
-  
 }
 
 
@@ -984,13 +803,6 @@ DEhelper.geneBodyCov2 <- function(web=F, targetsdf=SHINYREPS_TARGET, ...) {
   
   
   # create static plots as well
-  num_samples <- length(unique(df$plotfile))
-  if(num_samples < 10){ #we only have 9 colors Set1
-    sample.cols <- RColorBrewer::brewer.pal(num_samples, "Set1")
-  }else{
-    sample.cols <- grDevices::colorRampPalette(RColorBrewer::brewer.pal(9, "Set1"))(num_samples)
-  }
-
   if(all(c("group","replicate") %in% colnames(df)) && length(unique(df$group))>1){
     num_groups <- length(unique(df$group))
     num_replicates <- length(unique(df$replicate))
