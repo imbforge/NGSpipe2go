@@ -919,13 +919,13 @@ DEhelper.strandspecificity <- function(targetsdf=SHINYREPS_TARGET, ...){
 ## 
 #' @param targetsdf targets data.frame or character with file path to targets object
 #' @param colorByFactor character with column name of sample table to be used for coloring the plot. Coloring by filename if NULL. 
-#' @param sampleColumnName character with column name(s) of targets table containing file names
+#' @param fileColumnName character with column name(s) of targets table containing file names
 #' @param plotfun define function to be used for plotting
 #' @param labelOutliers logical, shall outlier samples be labeled
 #' @param outlierIQRfactor numeric, factor is multiplied by IQR to determine outlier
 #'
 #' @return plot cutadapt statistics as side effect
-DEhelper.cutadapt <- function(targetsdf=targets, colorByFactor="group", sampleColumnName =c("file"), 
+DEhelper.cutadapt <- function(targetsdf=targets4plots, colorByFactor="group", fileColumnName =c("file"), 
                               plotfun=DEhelper.cutadapt.plot, labelOutliers=T, outlierIQRfactor=1.5, 
                               ...){
   
@@ -1021,22 +1021,13 @@ DEhelper.cutadapt <- function(targetsdf=targets, colorByFactor="group", sampleCo
       if (length(indexAdapterSelected)>0) {
           colnames(x.df)[grepl("Adapter", colnames(x.df))][match(indexAdapterSelected, indexAdapter)] <- paste0(gsub("Adapter.*$", "", colnames(x.df)[grepl("Adapter", colnames(x.df))][match(indexAdapterSelected, indexAdapter)]), cutadaptpars[indexAdapterSelected+1])
       }
-
   }
 
   # reduce length of file names 
-  row.names(x.df) <- basename(colnames(x))
-  x.df$filename_unmod <- factor(row.names(x.df))
-  if(!is.na(SHINYREPS_PREFIX)) {
-    row.names(x.df) <- gsub(SHINYREPS_PREFIX, "", row.names(x.df))
-  }
-  row.names(x.df) <- gsub("\\.cutadapt\\.log$", "", row.names(x.df))
-  if(nrow(x.df)>1){
-    if(is.na(SHINYREPS_PREFIX)) {row.names(x.df)  <- gsub(Biobase::lcPrefix(row.names(x.df) ), "", row.names(x.df) )}
-    row.names(x.df)  <- gsub(Biobase::lcSuffix(row.names(x.df) ), "", row.names(x.df) )
-  }
+  x.df$plotfile <- gsub("\\.cutadapt\\.log$", "", basename(colnames(x)))
+  x.df$plotfile <-  gsub("(_S\\d{1,3}$)|(_S\\d{1,3}_L\\d{3}_R\\d_\\d{3}$)", "", x.df$plotfile)
   
-  # passing the different factors given in targetsdf to x.df which was created from cutadapt file names 
+  # merging the different factors given in targetsdf to x.df, which was created from cutadapt file names 
   if(!is.null(colorByFactor)) { # add information to x.df
     
     if(is.null(targetsdf)) {stop("If 'colorByFactor' is given you must also provide 'targetsdf'!")}
@@ -1045,46 +1036,39 @@ DEhelper.cutadapt <- function(targetsdf=targets, colorByFactor="group", sampleCo
       targetsdf <- read.delim(targetsdf)
     } 
     
-    if(length(sampleColumnName)>1) { # melt in case of multiple file name columns (as for ChIP-Seq)
-      targetsdf <- targetsdf[,unique(c(colorByFactor, sampleColumnName, "sample"))]
-      targetsdf <- reshape2::melt(targetsdf, measure.vars=sampleColumnName, value.name = "filename") 
+    if(length(fileColumnName)>1) { # melt in case of multiple file name columns (as for ChIP-Seq)
+      targetsdf <- targetsdf[,unique(c(colorByFactor, fileColumnName, "sample"))]
+      targetsdf <- reshape2::melt(targetsdf, measure.vars=fileColumnName, value.name = "filename") 
       for (i in colorByFactor) {targetsdf[, i] <- paste0(targetsdf[, i], " (", targetsdf$variable, ")")}
       targetsdf[,c(colorByFactor, "filename")] <- lapply(targetsdf[,c(colorByFactor, "filename")], factor)
       
     } else {
-      targetsdf$filename <- targetsdf[,sampleColumnName]
+      targetsdf$filename <- targetsdf[,fileColumnName]
     }
     
-    targetsdf$filename <- gsub("\\..*$", "", targetsdf$filename ) # shorten filename suffix
-    index <- sapply(targetsdf$filename, grep, x.df$filename_unmod, ignore.case = T) # grep sample name in file names
-    if(is.list(index)) {
-      #targetsdf <- targetsdf[sapply(index, length) ==1, ] # remove targetsdf entries not (uniquely) found in x.df
-      targetsdf <- targetsdf[sapply(index, length)!=0,] # remove targetsdf entries not found in x.df
-      index <- sapply(targetsdf$filename, grep, x.df$filename_unmod, ignore.case = T) # redo grep sample name in file names
-    }
-    if(!identical(sort(unname(unlist(index))), 1:nrow(x.df))) {
-      stop("There seem to be ambiguous sample names in targets. Can't assign them uniquely to cutadapt logfile names")
-    }
+    targetsdf$filename <- gsub("(_S\\d{1,3}$)|(_S\\d{1,3}_L\\d{3}_R\\d_\\d{3}$)", "", targetsdf$filename)
     
-    x.df <- data.frame(x.df[unlist(t(index)),], targetsdf, check.names =F)
-    x.df <- x.df[order(rownames(x.df)),, drop=F]
-    if("sample" %in% colnames(x.df) && !any(duplicated(x.df$sample))) { # use sample column as identifier if present and unique
-      x.df$filename <- x.df$sample
-      row.names(x.df) <- x.df$sample} 
+    # now left_join by file name
+    x.df <- dplyr::left_join(x.df, targetsdf, by=dplyr::join_by(plotfile==filename))
     
-    if(any(!colorByFactor %in% colnames(x.df))) {
-      if(all(!colorByFactor %in% colnames(x.df))) {
-        cat("\nNone of the column names given in colorByFactor is available. Perhaps sample names are not part of fastq file names? Using filename instead.")
-        colorByFactor <- "filename"
-      } else { # one plot each element of colorByFactor
-        cat("\n", colorByFactor[!colorByFactor %in% colnames(x.df)], "not available. Using", colorByFactor[colorByFactor %in% colnames(x.df)], "instead.")
-        colorByFactor <- colorByFactor[colorByFactor %in% colnames(x.df)]
-      }
+    # use sample column as plotfile if no multiple sample names per plotfile present
+    # and sample names are shorter than file names (e.g. for ParseBio the sample column 
+    # may be longer if it consist of multiple concatenated sample names)
+    if("sample" %in% colnames(x.df) && all(!is.na(x.df$sample)) && 
+       identical(x.df[!duplicated(x.df$sample),], x.df[!duplicated(x.df$plotfile),]) && 
+       max(nchar(x.df$sample)) <= max(nchar(x.df$plotfile))) {
+      x.df$plotfile <- x.df$sample
     }
-  } else {
-    x.df$filename <- row.names(x.df)
+
+
+  } else { # no colorByFactor
     colorByFactor <- "filename"
   }
+  
+  # prune prefix from plotfile if present
+  if(!is.na(SHINYREPS_PREFIX)) {
+    x.df$plotfile <- gsub(paste0("^",SHINYREPS_PREFIX), "", x.df$plotfile)
+  } 
   
   # melt data frame for plotting
   vars2plot <- c(grep("adapter trimmed", colnames(x.df), value=T), 
@@ -1094,8 +1078,8 @@ DEhelper.cutadapt <- function(targetsdf=targets, colorByFactor="group", sampleCo
   x.melt <- reshape2::melt(x.df, measure.vars=vars2plot, variable.name="reads")
   # everything which is not a value should be a factor
   
-  # one plot for each element of colorByFactor
-  violin.list <- lapply(colorByFactor, plotfun, data=x.melt, labelOutliers=labelOutliers, outlierIQRfactor=outlierIQRfactor) # "colorByFactor" is submitted as color.value
+  # one plot for each element of colorByFactor (colorByFactor is submitted as color.value)
+  violin.list <- lapply(colorByFactor, plotfun, data=x.melt, labelOutliers=labelOutliers, outlierIQRfactor=outlierIQRfactor)
   
   for(i in 1:length(violin.list)){
     plot(violin.list[[i]])
@@ -1129,26 +1113,25 @@ DEhelper.cutadapt.plot <- function(data, color.value, labelOutliers=T, outlierIQ
     dplyr::group_by(reads) |>
     dplyr::mutate(outlier=is_outlier(value)) |>
     dplyr::ungroup() |>
-    dplyr::mutate(outlier=ifelse(outlier,filename,as.numeric(NA))) |>
+    dplyr::mutate(outlier=ifelse(outlier,plotfile,as.numeric(NA))) |>
     as.data.frame()
   
   ylab <- "% reads"
   
-  # prepare palette of appropriate length according to the different factors given in colorByFactor
+  # determine the number of colors needed for the processed colorByFactor
   colourCount = length(unique(data[,color.value]))
-  getPalette = colorRampPalette(RColorBrewer::brewer.pal(9, "Set1"))
 
   names(data)[names(data)==color.value] <- "color.value" 
  
   p <- ggplot(data, aes(x=reads,
                         y=value,
                         color=color.value ))+
-    geom_quasirandom(groupOnX=TRUE) +
+    ggbeeswarm::geom_quasirandom(groupOnX=TRUE) +
     geom_boxplot(color = "darkgrey", alpha = 0.2, outlier.shape = NA)  
 
-    if(labelOutliers) {p <- p + ggrepel::geom_text_repel(data=. |> filter(!is.na(outlier)), aes(label=filename), show.legend=F)}
-
-  p <- p + scale_color_manual(values=getPalette(colourCount)) + # creates as many colors as needed
+    if(labelOutliers) {p <- p + ggrepel::geom_text_repel(data = subset(data, !is.na(outlier)), aes(label=plotfile), show.legend=F)}
+  
+  p <- p + scale_color_manual(values=define.group.palette(colourCount)) + # creates as many colors as needed
            ylab(ylab) +
            xlab("") +
            theme(axis.text.x=element_text(angle=30, vjust=1, hjust=1)) +

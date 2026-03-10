@@ -151,18 +151,14 @@ cat("\n", fill = T)
 
 
 ```{r cutadapt, echo=F, results='asis', error=F, warning=F, message=F, eval=runCutadapt}
-##### parameters to set:
-# define subset of cutadapt log files if desired (samplePattern=NULL (default) includes all files).
-# define categories of targets.txt to be used for dot color in the plot (one plot per element of colorByFactor will be created). 
-# The function will try to map the data from targets$file to the cutadapt log file names (for this, the unique part of 
-# targets$file must be a substring of file name). Otherwise pruned file names will be used by default.
-#####
 
 cat("## Adapter trimming with Cutadapt\n")
 
-cat("\nThe following plot shows the amount of reads trimmed for the selected adapter sequences including polyA/polyT sequences if specified. The column 'tooshort' gives the percentage of reads removed due to a length of less than 30 bases after trimming. Additionally to the column 'trimmed' which is for all adapters combined, there are columns for every single adapter giving the percentage of reads trimmed for this adapter.\n\n")
+cat("\nThe following plot shows the amount of reads trimmed for the selected adapter sequences including polyA/polyT sequences if specified. The column 'tooshort' gives the percentage of reads removed due to a length of less than the specified minimum after trimming. Additionally to the column 'trimmed', which is for all adapters combined, there are columns for every single adapter giving the percentage of reads trimmed for this adapter.\n\n")
 
-DEhelper.cutadapt(colorByFactor="group", targetsdf=targets4plots)
+# define categories of targets file to be used for dot color in the plot (one plot per element of colorByFactor will be created). 
+DEhelper.cutadapt(colorByFactor=c("group"), targetsdf=targets4plots)
+
 ```
 
 ```{r FastQC_qual_summarized_trimmed, echo=F,results='asis',error=F,warning=F,message=F,fig.align='center', eval=runCutadapt & file.exists(file.path(SHINYREPS_FASTQC_OUT, "trimmed"))}
