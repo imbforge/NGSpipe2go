@@ -5,23 +5,6 @@
 ##################################
 
 
-#' attach_packages: load required packages
-#'
-#' @param pkg character vector with package names
-#'
-#' @return character vector with package names which have not yet been attached to workspace before yet. 
-#' This vector may be used to detach packages not needed any more.
-
-attach_packages <- function(pkg) {
-  not.yet.attached.pkg <- pkg[!(pkg %in% loadedNamespaces())]
-  for (p in pkg) { 
-    require(p, character.only = TRUE) 
-  }
-return(unique(not.yet.attached.pkg))
-}
-
-
-
 #' loadGlobalVars: read configuration from bpipe vars
 #'
 #' @param f - character containing a file name defining multiple variables for reporting to run. 
@@ -91,664 +74,46 @@ shorten <- function(x, max.len=40, ini=20, end=15) {
     if(l > max.len) paste(substr(x, 1, ini), substr(x, (l-end), l), sep="...") else x
 }
 
-##
-## DESeq2 DE analysis
-##
 
-#' Create MDS plot from DESeq2 object. 
 #'
-#' @param dds - a DESeq2 analysis S4 object
-#' @param rld - a rlog transformed DESeq2 object
+#' Define a group color palette.
 #'
-#' @return MDS plot
+#' @param num - number of groups
 #'
-#' @description This function will use a DESeq2 differential analysis object to create an MDS plot,
-#'              which is labelled non-overlapping gene names.
-#' 
-#' @return A printed plot (ggplot2) object.
-#' 
-#' @examples Taken from DE_DeSeq2.R
-#'           dds <- DESeqDataSetFromHTSeqCount(sampleTable=targets,
-#'                                             directory=cwd, 
-#'                                             design=as.formula(mmatrix))
-#'           dds <- DESeq(dds)
-#'           rld <- rlog(dds)
-#'           # rld and dds are taken from environment
-#'           DEhelper.DESeq2.MDS()
-#' 
-DEhelper.DESeq2.MDS <- function() {
-    p <- plotPCA(rld, intgroup=colnames(colData(dds))[1])
-    print(p + 
-          scale_color_manual(values=brewer.pal(9,"Set1")[1:length(levels(colData(dds)[,"group"]))]) +
-          geom_text_repel(aes(label=rownames(colData(dds))), show.legend=FALSE) + 
-          theme_bw())
+#' @return a color vector
+#'
+#' @examples group.colors <- define.group.palette(length(levels(colData(dds)[,"group"])))
+#'           
+define.group.palette <- function(num) {
+  
+  if (num <=9) {
+    group.palette <- RColorBrewer::brewer.pal(9,"Set1")[1:num]
+  } else {
+    group.palette <- colorRampPalette(RColorBrewer::brewer.pal(9,"Set1"))(num)
+  }
+  return(group.palette)
+}
+
+#'
+#' Define a replicate color palette.
+#'
+#' @param num - number of replicates
+#'
+#' @return a color vector
+#'
+#' @examples replicate.colors <- define.replicate.palette(length(levels(colData(dds)[,"replicate"])))
+#'           
+define.replicate.palette <- function(num) {
+  
+  if (num <=9) {
+    replicate.palette <- RColorBrewer::brewer.pal(8,"Dark2")[1:num]
+  } else {
+    replicate.palette <- colorRampPalette(RColorBrewer::brewer.pal(8,"Dark2"))(num)
+  }
+  return(replicate.palette)
 }
 
 
-#' Create (pairwise) MDS plot from DESeq2 object.
-#'
-#' @param pairwise.dds - a list of DESeq2 analysis S4 objects
-#' @param i - index of the list element to be plotted
-#'
-#' @return MDS plot
-#'
-#' @description This function will use a DESeq2 differential analysis object to create an MDS plot,
-#'              which is labelled non-overlapping gene names.
-#'
-#' @return A printed plot (ggplot2) object.
-#'
-#' @examples Taken from DE_DESeq2.R
-#'           pairwise.dds <- lapply(conts[,1],function(cont) {
-#'                       ...
-#'           })
-#'           # pairwise.dds are taken from environment
-#'           DEhelper.DESeq2.pairwisePCA(i)
-#'
-DEhelper.DESeq2.pairwisePCA <- function(i=1) {
-    p <- plotPCA(rlog(pairwise.dds[[i]]), intgroup=colnames(colData(pairwise.dds[[i]]))[1])
-    print(p + 
-          scale_color_manual(values=brewer.pal(9,"Set1")[1:2]) + 
-          geom_text_repel(aes(label=rownames(colData(pairwise.dds[[i]]))), show.legend=FALSE) + 
-          theme_bw())
-}
-
-
-## DEhelper.cluster
-#' Heatmap of top variant 'n' genes of the counts-per-milion table.
-#'
-#' @param n - amount of transcripts/rows to be plotted
-#'            [default = 40]
-#' @param rld - rlog transformed DESeq2 object
-#'
-#' @return A plot (base plotting) object.
-#'
-#' @examples Taken from DE_DeSeq2.R
-#'           dds <- DESeqDataSetFromHTSeqCount(sampleTable=targets,
-#'                                             directory=cwd, 
-#'                                             design=as.formula(mmatrix))
-#'           dds <- DESeq(dds)
-#'           rld <- rlog(dds)
-#'           # rld is taken from environment
-#'           DEhelper.cluster(n=10)
-#'           
-#DEhelper.DESeq2.cluster <- function(n=25) {
-#    rows <- order(apply(assay(rld), 1, sd), decreasing=TRUE)[1:n]
-#    hmcol  <- colorRampPalette(brewer.pal(9, "GnBu"))(100)
-#    heatmap.2(assay(rld)[rows, ], col=hmcol, trace="none", margin=c(10, 6), scale="none")
-#}
-DEhelper.DESeq2.cluster.sd <- function(n=40) {
-        
-        # extract assay and over-write gene_id in rownames with gene_name
-        assay.rld <- assay(rld)
-        rownames(assay.rld) <- gtf$gene_name[match(rownames(assay(rld)), gtf$gene_id)]
-
-        # pick top n most variable genes
-        select.highestSD <- order(apply(assay.rld,1,sd),decreasing=TRUE)[1:n]
-
-        # set color scheme
-        col <- colorRampPalette(brewer.pal(9,"GnBu"))(255)
-
-        # extract information for legend
-	if (length(add_factors)==0) {
-	        legend.df <- data.frame(group=colData(rld)[,c("group")],row.names=rownames(colData(rld)))
-	} else {
-        	legend.df <- as.data.frame(colData(rld)[,c("group",add_factors)])
-	}
-
-        # fix group colors for legend and possible first additional factor if available
-        if (length(add_factors)==0) {
-                legend_colors <- list(group = setNames(brewer.pal(9,"Set1")[1:length(unique(colData(rld)[,"group"]))],
-                                                       unique(colData(rld)[,"group"])))
-        } else {
-                if (length(unique(colData(rld)[,add_factors[1]])) <= 8) {
-                        mypalette <- brewer.pal(8,"Dark2")[1:length(unique(colData(rld)[,add_factors[1]]))]
-                } else {
-                        mypalette <- colorRampPalette(brewer.pal(8,"Dark2"))(length(unique(colData(rld)[,add_factors[1]])))
-                }
-                legend_colors <- list(group = setNames(brewer.pal(9,"Set1")[1:length(unique(colData(rld)[,"group"]))],
-                                                       unique(colData(rld)[,"group"])),
-                                      subject = setNames(mypalette,
-                                                         unique(colData(rld)[,add_factors[1]])))
-                names(legend_colors) <- c("group",add_factors[1])
-        }
-
-        # plot heatmap
-        pheatmap(assay.rld[select.highestSD,],         
-                 cluster_rows=TRUE,
-                 cluster_cols=TRUE,
-                 show_rownames=TRUE,
-                 annotation_col=legend.df,
-                 annotation_colors=legend_colors,
-                 color=col,
-                 border_color=NA,
-                 main=paste("Normalized expression values of",n,"most variable genes"),
-		 fontsize_row=5,
-                 fontsize=6,
-                 treeheight_row=20,
-                 treeheight_col=20,
-		 annotation_names_col=FALSE)
-}
-
-
-## DEhelper.DESeq2.cluster.sd.pairwise
-#' Heatmap of top variant 'n' genes of the regularized log transformed counts-per-milion table
-#' in a pairwise comparison of two groups
-#'
-#' @param i - iterator to select contrast from conts [default = 1]
-#' @param n - amount of transcripts/rows to be plotted
-#'            [default = 40]
-#' @param pairwise.dds - DESeq2 object
-#'
-#' @return A plot (base plotting) object.
-#'
-#' @examples Taken from DE_DeSeq2.R
-#'           dds <- DESeqDataSetFromHTSeqCount(sampleTable=targets,
-#'                                             directory=cwd, 
-#'                                             design=as.formula(mmatrix))
-#'           dds <- DESeq(dds)
-#'           DEhelper.DESeq2.cluster.sd.pairwise(i=1,n=10)
-#'           
-DEhelper.DESeq2.cluster.sd.pairwise <- function(i=1,n=40) {
-
-        # extract assay and over-write gene_id in rownames with gene_name
-        assay.rld <- assay(rlog(pairwise.dds[[i]]))
-        rownames(assay.rld) <- gtf$gene_name[match(rownames(assay(pairwise.dds[[i]])), gtf$gene_id)]
-
-        # pick top n most variable genes
-        select.highestSD <- order(apply(assay.rld,1,sd),decreasing=TRUE)[1:n]
-
-        # set color scheme
-        col <- colorRampPalette(brewer.pal(9,"GnBu"))(255)
-
-        # extract information for legend
-        if (length(add_factors)==0) {
-                legend.df <- data.frame(group=colData(pairwise.dds[[i]])[,c("group")],row.names=rownames(colData(pairwise.dds[[i]])))
-        } else {
-                legend.df <- as.data.frame(colData(pairwise.dds[[i]])[,c("group",add_factors)])
-        }
-
-        # fix group colors for legend and possible first additional factor if available
-        if (length(add_factors)==0) {
-                legend_colors <- list(group = setNames(brewer.pal(9,"Set1")[1:length(unique(colData(pairwise.dds[[i]])[,"group"]))],
-                                                       unique(colData(pairwise.dds[[1]])[,"group"])))
-        } else {
-                if (length(unique(colData(pairwise.dds[[i]])[,add_factors[1]])) <= 8) {
-                        mypalette <- brewer.pal(8,"Dark2")[1:length(unique(colData(pairwise.dds[[i]])[,add_factors[1]]))]
-                } else {
-                        mypalette <- colorRampPalette(brewer.pal(8,"Dark2"))(length(unique(colData(pairwise.dds[[i]])[,add_factors[1]])))
-                }
-                legend_colors <- list(group = setNames(brewer.pal(9,"Set1")[1:length(unique(colData(pairwise.dds[[i]])[,"group"]))],
-                                                       unique(colData(pairwise.dds[[i]])[,"group"])),
-                                      subject = setNames(mypalette,
-                                                         unique(colData(pairwise.dds[[i]])[,add_factors[1]])))
-                names(legend_colors) <- c("group",add_factors[1])
-        }
-
-        # plot heatmap
-        pheatmap(assay.rld[select.highestSD,],
-                 cluster_rows=TRUE,
-                 cluster_cols=TRUE,
-                 show_rownames=TRUE,
-                 annotation_col=legend.df,
-                 annotation_colors=legend_colors,
-                 color=col,
-                 border_color=NA,
-                 main=paste("Normalized expression values of",n,"most variable genes"),
-                 fontsize_row=5,
-                 fontsize=6,
-                 treeheight_row=20,
-                 treeheight_col=20,
-		 annotation_names_col=FALSE)
-}
-
-## DEhelper.DESeq2.cluster.mean
-#' Heatmap of top 'n' highest mean genes of the regularized log transformed counts-per-milion table.
-#'
-#' @param n - amount of transcripts/rows to be plotted
-#'            [default = 40]
-#' @param rld - rlog transformed DESeq2 object
-#'
-#' @return A plot (base plotting) object.
-#'
-#' @examples Taken from DE_DeSeq2.R
-#'           dds <- DESeqDataSetFromHTSeqCount(sampleTable=targets,
-#'                                             directory=cwd, 
-#'                                             design=as.formula(mmatrix))
-#'           dds <- DESeq(dds)
-#'           rld <- rlog(dds)
-#'           # rld is taken from environment
-#'           DEhelper.DESeq2.cluster.mean(n=10)
-#'           
-DEhelper.DESeq2.cluster.mean <- function(n=40) {
-
-        # extract assay and over-write gene_id in rownames with gene_name
-        assay.rld <- assay(rld)
-        rownames(assay.rld) <- gtf$gene_name[match(rownames(assay(rld)), gtf$gene_id)]
-
-        # pick top n most variable genes
-        select.highestMean <- order(rowMeans(assay.rld),decreasing=TRUE)[1:n]
-
-        # set color scheme
-	col <- rev(heat.colors(255))
-
-	# extract information for legend
-        if (length(add_factors)==0) {
-                legend.df <- data.frame(group=colData(rld)[,c("group")],row.names=rownames(colData(rld)))
-        } else {
-                legend.df <- as.data.frame(colData(rld)[,c("group",add_factors)])
-        }
-
-        # fix group colors for legend and possible first additional factor if available
-        if (length(add_factors)==0) {
-                legend_colors <- list(group = setNames(brewer.pal(9,"Set1")[1:length(unique(colData(rld)[,"group"]))],
-                                                       unique(colData(rld)[,"group"])))
-        } else {
-                if (length(unique(colData(rld)[,add_factors[1]])) <= 8) {
-                        mypalette <- brewer.pal(8,"Dark2")[1:length(unique(colData(rld)[,add_factors[1]]))]
-                } else {
-                        mypalette <- colorRampPalette(brewer.pal(8,"Dark2"))(length(unique(colData(rld)[,add_factors[1]])))
-                }
-                legend_colors <- list(group = setNames(brewer.pal(9,"Set1")[1:length(unique(colData(rld)[,"group"]))],
-                                                       unique(colData(rld)[,"group"])),
-                                      subject = setNames(mypalette,
-                                                         unique(colData(rld)[,add_factors[1]])))
-                names(legend_colors) <- c("group",add_factors[1])
-        }
-
-        # plot heatmap
-        pheatmap(assay.rld[select.highestMean,],
-                 cluster_rows=FALSE,
-                 cluster_cols=TRUE,
-                 show_rownames=TRUE,
-                 annotation_col=legend.df,
-                 annotation_colors=legend_colors,
-                 col=col,
-                 border_color=NA,
-                 main=paste("Normalized expression values of",n,"genes with highest mean"),
-                 fontsize_row=5,
-                 fontsize=6,
-                 treeheight_row=20,
-                 treeheight_col=20,
-		 annotation_names_col=FALSE)
-}
-
-## DEhelper.DESeq2.cluster.mean.pairwise
-#' Heatmap of top 'n' highest mean genes of the regularized log transformed counts-per-milion table
-#' in a pairwise comparison of two groups
-#'
-#' @param i - iterator to select contrast from conts [default = 1]
-#' @param n - amount of transcripts/rows to be plotted
-#'            [default = 40]
-#' @param pairwise.dds - DESeq2 object
-#'
-#' @return A plot (base plotting) object.
-#'
-#' @examples Taken from DE_DeSeq2.R
-#'           dds <- DESeqDataSetFromHTSeqCount(sampleTable=targets,
-#'                                             directory=cwd, 
-#'                                             design=as.formula(mmatrix))
-#'           dds <- DESeq(dds)
-#'           DEhelper.DESeq2.cluster.mean.pairwise(n=10)
-#'           
-DEhelper.DESeq2.cluster.mean.pairwise <- function(i=1,n=40) {
-
-        # extract assay and over-write gene_id in rownames with gene_name
-        assay.rld <- assay(rlog(pairwise.dds[[i]]))
-        rownames(assay.rld) <- gtf$gene_name[match(rownames(assay(pairwise.dds[[i]])), gtf$gene_id)]
-
-        # pick top n most variable genes
-        select.highestMean <- order(rowMeans(assay.rld),decreasing=TRUE)[1:n]
-
-        # set color scheme
-	col <- rev(heat.colors(255))
-
-        # extract information for legend
-        if (length(add_factors)==0) {
-                legend.df <- data.frame(group=colData(pairwise.dds[[i]])[,c("group")],row.names=rownames(colData(pairwise.dds[[i]])))
-        } else {
-                legend.df <- as.data.frame(colData(pairwise.dds[[i]])[,c("group",add_factors)])
-        }
-
-        # fix group colors for legend and possible first additional factor if available
-        if (length(add_factors)==0) {
-                legend_colors <- list(group = setNames(brewer.pal(9,"Set1")[1:length(unique(colData(pairwise.dds[[i]])[,"group"]))],
-                                                       unique(colData(pairwise.dds[[1]])[,"group"])))
-        } else {
-                if (length(unique(colData(pairwise.dds[[i]])[,add_factors[1]])) <= 8) {
-                        mypalette <- brewer.pal(8,"Dark2")[1:length(unique(colData(pairwise.dds[[i]])[,add_factors[1]]))]
-                } else {
-                        mypalette <- colorRampPalette(brewer.pal(8,"Dark2"))(length(unique(colData(pairwise.dds[[i]])[,add_factors[1]])))
-                }
-                legend_colors <- list(group = setNames(brewer.pal(9,"Set1")[1:length(unique(colData(pairwise.dds[[i]])[,"group"]))],
-                                                       unique(colData(pairwise.dds[[i]])[,"group"])),
-                                      subject = setNames(mypalette,
-                                                         unique(colData(pairwise.dds[[i]])[,add_factors[1]])))
-                names(legend_colors) <- c("group",add_factors[1])
-        }
-
-        # plot heatmap
-        pheatmap(assay.rld[select.highestMean,],
-                 cluster_rows=FALSE,
-                 cluster_cols=TRUE,
-                 show_rownames=TRUE,
-                 annotation_col=legend.df,
-                 annotation_colors=legend_colors,
-                 col=col,
-                 border_color=NA,
-                 main=paste("Normalized expression value of",n,"genes with highest mean"),
-                 fontsize_row=5,
-                 fontsize=6,
-                 treeheight_row=20,
-                 treeheight_col=20,
-		 annotation_names_col=FALSE)
-}
-
-
-## DEhelper.corr: 
-#' Heatmap of sample to sample distances.
-#'
-#' @param rld - rlog transformed DESeq2 object
-#' @return A plot (base plotting) object.
-#'
-#' @examples Taken from DE_DeSeq2.R
-#'           dds <- DESeqDataSetFromHTSeqCount(sampleTable=targets,
-#'                                             directory=cwd, 
-#'                                             design=as.formula(mmatrix))
-#'           dds <- DESeq(dds)
-#'           rld <- rlog(dds)
-#'           # rld is taken from environment
-#'           DEhelper.DESeq2.corr()
-#'           
-#DEhelper.DESeq2.corr <- function() {
-#    distsRL <- dist(t(assay(rld)))
-#    mat <- as.matrix(distsRL)
-#    hc  <- hclust(distsRL)
-#    hmcol <- colorRampPalette(brewer.pal(9, "GnBu"))(100)
-#    heatmap.2(mat, Rowv=as.dendrogram(hc), 
-#              symm=TRUE, trace="none", 
-#              col = rev(hmcol), margin=c(13, 13))
-#}
-DEhelper.DESeq2.corr <- function() {
-
-        # extract assay and over-write gene_id in rownames with gene_name
-        assay.rld <- assay(rld)
-        rownames(assay.rld) <- gtf$gene_name[match(rownames(assay(rld)), gtf$gene_id)]
-
-        # extract sample to sample distances
-        sampleDists <- dist(t(assay.rld))
-        sampleDistMatrix <- as.matrix(sampleDists)
-        
-        # set color scheme
-	col <- plasma(255)
-
-        # extract information for legend
-        if (length(add_factors)==0) {
-                legend.df <- data.frame(group=colData(rld)[,c("group")],row.names=rownames(colData(rld)))
-        } else {
-                legend.df <- as.data.frame(colData(rld)[,c("group",add_factors)])
-        }
-
-        # fix group colors for legend and possible first additional factor if available
-        if (length(add_factors)==0) {
-                legend_colors <- list(group = setNames(brewer.pal(9,"Set1")[1:length(unique(colData(rld)[,"group"]))],
-                                                       unique(colData(rld)[,"group"])))
-        } else {
-                if (length(unique(colData(rld)[,add_factors[1]])) <= 8) {
-                        mypalette <- brewer.pal(8,"Dark2")[1:length(unique(colData(rld)[,add_factors[1]]))]
-                } else {
-                        mypalette <- colorRampPalette(brewer.pal(8,"Dark2"))(length(unique(colData(rld)[,add_factors[1]])))
-                }
-                legend_colors <- list(group = setNames(brewer.pal(9,"Set1")[1:length(unique(colData(rld)[,"group"]))],
-                                                       unique(colData(rld)[,"group"])),
-                                      subject = setNames(mypalette,
-                                                         unique(colData(rld)[,add_factors[1]])))
-                names(legend_colors) <- c("group",add_factors[1])
-        }
-	
-	# sample to sample distance heatmap w/ 0's on diagonal set to NA
-	# since they otherwise shift the scale too much
-	sampleDistMatrix.diagNA <- sampleDistMatrix
-	sampleDistMatrix.diagNA[sampleDistMatrix.diagNA==0] <- NA
-
-        # plot heatmap
-        pheatmap(sampleDistMatrix.diagNA,
-                 clustering_distance_rows=sampleDists,
-                 clustering_distance_cols=sampleDists,
-                 annotation_col=legend.df,
-                 annotation_colors=legend_colors,
-                 col=col,
-                 border_color=NA,
-                 fontsize=6,
-                 treeheight_row=20,
-                 treeheight_col=20,
-		 annotation_names_col=FALSE)
-}
-
-## DEhelper.corr.pairwise: 
-#' Heatmap of sample to sample distances (in a pairwise comparison).
-#'
-#' @param i - iterator to select contrast from conts [default = 1]
-#' @param pairwise.dds - DESeq2 object
-#' @return A plot (base plotting) object.
-#'
-#' @examples Taken from DE_DeSeq2.R
-#'           dds <- DESeqDataSetFromHTSeqCount(sampleTable=targets,
-#'                                             directory=cwd, 
-#'                                             design=as.formula(mmatrix))
-#'           dds <- DESeq(dds)
-#'           DEhelper.DESeq2.corr.pairwise()
-#'           
-DEhelper.DESeq2.corr.pairwise <- function(i=1) {
-
-        # extract assay and over-write gene_id in rownames with gene_name
-        assay.rld <- assay(rlog(pairwise.dds[[i]]))
-        rownames(assay.rld) <- gtf$gene_name[match(rownames(assay(pairwise.dds[[i]])), gtf$gene_id)]
-
-        # extract sample to sample distances
-        sampleDists <- dist(t(assay.rld))
-        sampleDistMatrix <- as.matrix(sampleDists)
-
-        # set color scheme
-	col <- plasma(255)
-        
-        # extract information for legend
-        if (length(add_factors)==0) {
-                legend.df <- data.frame(group=colData(pairwise.dds[[i]])[,c("group")],row.names=rownames(colData(pairwise.dds[[i]])))
-        } else {
-                legend.df <- as.data.frame(colData(pairwise.dds[[i]])[,c("group",add_factors)])
-        }
-
-        # fix group colors for legend and possible first additional factor if available
-        if (length(add_factors)==0) {
-                legend_colors <- list(group = setNames(brewer.pal(9,"Set1")[1:length(unique(colData(pairwise.dds[[i]])[,"group"]))],
-                                                       unique(colData(pairwise.dds[[1]])[,"group"])))
-        } else {
-                if (length(unique(colData(pairwise.dds[[i]])[,add_factors[1]])) <= 8) {
-                        mypalette <- brewer.pal(8,"Dark2")[1:length(unique(colData(pairwise.dds[[i]])[,add_factors[1]]))]
-                } else {
-                        mypalette <- colorRampPalette(brewer.pal(8,"Dark2"))(length(unique(colData(pairwise.dds[[i]])[,add_factors[1]])))
-                }
-                legend_colors <- list(group = setNames(brewer.pal(9,"Set1")[1:length(unique(colData(pairwise.dds[[i]])[,"group"]))],
-                                                       unique(colData(pairwise.dds[[i]])[,"group"])),
-                                      subject = setNames(mypalette,
-                                                         unique(colData(pairwise.dds[[i]])[,add_factors[1]])))
-                names(legend_colors) <- c("group",add_factors[1])
-        }
-
-	# sample to sample distance heatmap w/ 0's on diagonal set to NA
-	# since they otherwise shift the scale too much
-	sampleDistMatrix.diagNA <- sampleDistMatrix
-	sampleDistMatrix.diagNA[sampleDistMatrix.diagNA==0] <- NA
-
-        # plot heatmap
-        pheatmap(sampleDistMatrix.diagNA,
-                 clustering_distance_rows=sampleDists,
-                 clustering_distance_cols=sampleDists,
-                 annotation_col=legend.df,
-                 annotation_colors=legend_colors,
-                 col=col,
-                 border_color=NA,
-                 fontsize=6,
-                 treeheight_row=20,
-                 treeheight_col=20,
-		 annotation_names_col=FALSE)
-}
-
-
-
-## DEhelper.MAplot: MA plots
-#' MA plots of DESeq2 results
-#'
-#' @param i - iterator to select contrast from conts [default = 1]
-#' @param fdr - FDR cutoff [default = 0.01]
-#' @param conts - list of contrasts
-#' @param res - DE Seq2 result data frame containing log2FC, pvalue, padj, gene_name, ...;
-#'              rownames(res) <- ENSEMBL gene IDs
-#'
-#' @return MA plot with genes padj < fdr hichlighted
-#'
-#' @examples Taken from DE_DeSeq2.R
-#'           res <- lapply(conts, function(cont){
-#'              ...
-#'           })
-#'           
-#'           conts <- c("shMed12vsshNMC=(shMed12-shNMC)")
-#'           # res & conts are taken from environment
-#'           DEhelper.DESeq2.MAplot()
-#'           
-DEhelper.DESeq2.MAplot <- function(i=1, fdr=.01) {
-     plotMA(res[[i]], main=conts[i, 1], alpha=fdr)
-}
-
-## DEhelper.DEgenes: show the DE results
-#' Show the DE results ordered by adjusted pValue.
-#'
-#' @param i - iterator to select precalculated DESeq2 result of contrast from result list
-#'            [default = 1]
-#' @param res - DE Seq2 result data frame containing log2FC, pvalue, padj, gene_name, ...;
-#'              rownames(res) <- ENSEMBL gene IDs
-#'
-#' @return data frame ordered by adjusted pvalue
-#'
-#' @examples Taken from DE_DeSeq2.R
-#'           res <- lapply(conts, function(cont){
-#'              ...
-#'           })
-#'           
-#'           # res is taken from environment
-#'           DEhelper.DESeq2.DEgenes(i=2)
-#'           
-DEhelper.DESeq2.DEgenes <- function(i=1) {
-    ord  <- order(-log(res[[i]]$padj), 
-                   abs(res[[i]]$log2FoldChange), 
-                  decreasing=TRUE)
-    res[[i]][ord, ]
-}
-
-## DEhelper.DESeq2.VolcanoPlot: Volcano plots from DEseq2 results
-#' Produce volcano plots from DEseq2 results.
-#'
-#' @param i - integer, iterator to determine which contrast's DESeq2 result to plot
-#' @param fdr - float, FDR cut off of genes to be highlighted
-#' @param top - integer, count of genes to be labelled in Volcano plot
-#' @param web - boolean
-#' @param res - DE Seq2 result data frame containing log2FC, pvalue, padj, gene_name, ...;
-#'              rownames(res) <- ENSEMBL gene IDs
-#'
-#'
-#' @return ggplotly object, if web = TRUE
-#'         printed ggplot2 object, if web = FALSE
-#'
-#' @examples Taken from DE_DeSeq2.R
-#'           res <- lapply(conts, function(cont){
-#'              ...
-#'           })
-#'           
-#'           # res is taken from environment
-#'           DEhelper.DESeq2.VolcanoPlot(i = 1, fdr = 0.01, top = 20, web = FALSE)
-#'           
-DEhelper.DESeq2.VolcanoPlot <- function(i=1, fdr=.01, top=25, web=FALSE) {
-    # gather results
-    d <- as.data.frame(DEhelper.DESeq2.DEgenes(i))
-    x.limit <- max(abs(d$log2FoldChange), na.rm=T) # find the maximum spread of the x-axis
-    
-    # plotting
-    p <- ggplot(d) +
-            geom_point(mapping=aes(log2FoldChange, -log10(padj), size=log10(baseMean+1), color=padj < fdr), alpha=0.1) +
-            theme_bw() +
-            xlim(-x.limit, x.limit) +
-            ylab("-log10 adj. p-value") +
-            xlab("log2 fold change") + 
-            scale_color_manual(values=c("black", "red"), guide=FALSE) +
-            scale_size_continuous("mean norm. counts (log10)")
-
-    # add name of top genes
-    if(top > 0) p <- p + geom_text_repel(data=d[1:min(top, nrow(d)),],
-                                         mapping=aes(log2FoldChange, -log10(padj), label=gene_name),
-                                         color="black")
-
-    # return plot
-    if(web)
-        ggplotly(p)
-    else
-        print(p)
-}
-
-## DEhelper.DESeq2.ChrOverrepresentation: test if there are more genes in a chromosome than expected by chance.
-#' Test if there are more genes in a chromosome than expected by chance.
-#'
-#' @param i - integer, iterator to determine which contrast's DESeq2 result to select
-#' @param fdr_de_gene - FDR cut-off to determine differentially expressed genes
-#' @param fdr_fisher_test - FDR cut-off to determine significantly overrepresented genes on chromosome
-#' @param filter - boolean, apply fdr_fisher_test TRUE/FALSE
-#' @param res - DE Seq2 result data frame containing log2FC, pvalue, padj, gene_name, ...;
-#'              rownames(res) <- ENSEMBL gene IDs
-#'
-#' @return data frame - with biased chromosome, gene count, pvalue and Jaccard index
-#'                    - or empty if no bias is found
-#'
-#' @examples Taken from DE_DeSeq2.R
-#'           res <- lapply(conts, function(cont){
-#'              ...
-#'           })
-#'           
-#'           # res is taken from environment
-#'           table_fisher <- DEhelper.DESeq2.ChrOverrepresentation(i = 1, fdr_de_gene = 0.1, fdr_fisher_test = 0.1, filter = TRUE)
-#'           
-DEhelper.DESeq2.ChrOverrepresentation <- function(i=1, fdr_de_gene=0.1, fdr_fisher_test=0.1, filter=TRUE) {
-    genes <- data.frame(res[[i]])
-    chromosomes <- unique(genes$chr)
-    universe <- length(unique(rownames(genes)))
-
-    l_res <- list()
-    for (chromosome in chromosomes){
-        de_genes <- rownames(subset(genes, padj < fdr_de_gene))
-        chr_genes <- rownames(subset(genes, chr == chromosome))
-        overl <- newGeneOverlap(
-           unique(de_genes),
-           unique(chr_genes),
-           genome.size=universe)
-
-        overl <- testGeneOverlap(overl)
-        l_res[[chromosome]] <- data.frame(
-            Chromosome=chromosome,
-            TotalGenes=length(chr_genes),
-            DEGenes=length(overl@intersection),
-            PValue=overl@pval,
-            OddsRatio=overl@odds.ratio,
-            JaccardIndex=overl@Jaccard
-            )
-    }
-
-    table_fisher <- do.call("rbind", l_res)
-
-    # correct pvalue for multiple testing
-    table_fisher$FDR <- p.adjust(table_fisher$PValue,method="fdr")
-
-    if(filter) table_fisher <- table_fisher[table_fisher$FDR < fdr_fisher_test, ]
-
-    return(table_fisher[c("Chromosome","TotalGenes","DEGenes","PValue","FDR","OddsRatio","JaccardIndex")])
-}
 
 
 ##
@@ -853,13 +218,9 @@ DEhelper.STAR.violin <- function(colorByFactor=NULL, targetsdf=targets, ...) {
                  })    
     })
     
-    # set row and column names, and output the md table
-    colnames(x) <- basename(colnames(x))
-    #colnames(x) <- gsub(paste0("^", SHINYREPS_PREFIX), "", colnames(x))
-    #colnames(x) <- gsub(paste0(SUFFIX, "$"), "", colnames(x))
-    colnames(x) <- gsub(lcSuffix(colnames(x)), "", colnames(x)) # remove longest common suffix
-    colnames(x) <- gsub(lcPrefix(colnames(x)), "", colnames(x)) # remove longest common prefix
-  
+    colnames(x)  <- gsub(SHINYREPS_STAR_SUFFIX, "", basename(colnames(x)))
+    colnames(x) <-  gsub("(_S\\d{1,3}$)|(_S\\d{1,3}_L\\d{3}_R\\d_\\d{3}$)", "", colnames(x))
+    
     df.stacked <- data.frame(filename = gsub("\\.R[12]\\.*$", "", colnames(x)),
                              input = x[1, ],
                              unique = x[2, ],
@@ -870,370 +231,94 @@ DEhelper.STAR.violin <- function(colorByFactor=NULL, targetsdf=targets, ...) {
                              mapped_perc = 100*((x[4, ]+x[2, ]) / x[1, ]),
                              unmapped = x[8, ] + x[9, ] + x[10, ])
     
-## prepare groupwise plots
-  if(!is.null(colorByFactor) && nrow(df.stacked) == nrow(targetsdf)) {
-    # we want to plot the input reads and the mapped and the multi mapped reads numbers into different plots with different axises separated by one feature
-    # we want to plot the same thing as percentages of the total
-    # we have to plot per feature and then rearrange
-    # we add one plot for the color value where we plot the percentages and color them according to the amount of input reads
-  
-    targetsdf$samplemod <- gsub(paste0(lcSuffix(targetsdf$file ), "$"), "", targetsdf$file ) # shorten filename suffix
-    #if(!is.na(SHINYREPS_PREFIX)) {targetsdf$samplemod  <- gsub(SHINYREPS_PREFIX, "", targetsdf$samplemod)}
-    targetsdf$samplemod <- gsub(paste0("^", lcPrefix(targetsdf$samplemod )), "", targetsdf$samplemod ) # shorten filename prefix
+    stats_columns <- colnames(df.stacked)[-1]
     
-    index <- as.numeric(sapply(targetsdf$samplemod, function(x) grep(x, df.stacked$filename, ignore.case = T))) # grep for sample name in shortened file names
-    if((nrow(df.stacked) != length(index)) || any(is.na(index))) {
-      stop("\nThere seem to be ambiguous sample names in targets. Can't assign them uniquely to STAR logfile names")
+  ## add target information if available
+  if(!is.null(colorByFactor) && !is.null(targetsdf) && (class(targetsdf)=="data.frame" || file.exists(targetsdf))) {
+    
+    # get targets
+    if(class(targetsdf)=="data.frame") {
+      targets <- targetsdf
+    } else {
+      targets <- read.delim(targetsdf, comment.char = "#")
     }
     
-    if(any(!colorByFactor %in% colnames(targetsdf))) {
-      if(all(!colorByFactor %in% colnames(targetsdf))) {
-        cat("\nNone of the column names given in colorByFactor is available. Perhaps sample names are not part of fastq file names? Using filename instead.\n")
-        colorByFactor <- "filename"
-      } else { # one plot each element of colorByFactor
-        cat("\n", colorByFactor[!colorByFactor %in% colnames(targetsdf)], "not available. Using", colorByFactor[colorByFactor %in% colnames(targetsdf)], "\n")
-        colorByFactor <- colorByFactor[colorByFactor %in% colnames(targetsdf)]
-      }
+    targets$file <- gsub("(_S\\d{1,3}$)|(_S\\d{1,3}_L\\d{3}_R\\d_\\d{3}$)", "", targets$file)
+    
+    # now left_join by file name
+    df.stacked <- dplyr::left_join(df.stacked, targets, by=dplyr::join_by(filename==file))
+    
+    colorByFactor[colorByFactor %in% colnames(df.stacked)]
+    if(length(colorByFactor) == 0) {
+      colorByFactor <- "filename" # if colorByFactor not in targets or merging of targets information failed
     }
-
-    targetsdf$filename <- df.stacked$filename[index]
-    df.stacked <- merge(df.stacked, targetsdf[,unique(c("filename", "sample", colorByFactor)), drop=F], by="filename")
-    rownames(df.stacked) <- df.stacked$sample
-    df.stacked <- df.stacked[order(rownames(df.stacked)),, drop=F]
-    df.stacked <- df.stacked[,!apply(df.stacked,2, function(x) any(is.na(x))), drop=F] # remove NA columns from unsuccessful matching
     
   } else {
-    # if colorByFactor == NULL or targets does not fit to number of files
+    # if colorByFactor == NULL or no targets info given
     colorByFactor <- "filename"
-  } # end groupwise plots
-    
+  } 
     
     # melt data frame for plotting
-    df.melt  <- reshape2::melt(df.stacked, id.vars=unique(c(colorByFactor, "filename", "sample")), variable.name="map_feature")
-   
+    id.variables <- colnames(df.stacked)[!colnames(df.stacked) %in% stats_columns]
+    df.melt  <- reshape2::melt(df.stacked, id.vars=id.variables, variable.name="map_feature")
+    
     map.feature.plots <- lapply(colorByFactor, function(color.value){
       p <- ggplot(df.melt[df.melt$map_feature=="input",], aes_string("map_feature", "value", color=color.value)) +
-        geom_quasirandom() +
-        scale_color_brewer(type= "qual", palette=2)  + 
+        ggbeeswarm::geom_quasirandom() +
+        scale_color_manual(values=define.group.palette(length(unique(df.melt[,color.value])))) +
         facet_wrap(~map_feature, scales="free") +
         scale_y_log10() +
-        xlab(NULL) + theme(axis.text.x = element_text(size = 10)) +
+        theme(axis.title.x = element_blank(),
+              axis.text.x = element_blank(),
+              axis.ticks.x = element_blank()) +
         ylab("# Reads")
       p.perc <- ggplot(df.melt[grepl("perc", df.melt$map_feature),],
                        aes_string("map_feature", "value", color=color.value)) +
-        geom_quasirandom() +
-        scale_color_brewer(type= "qual", palette=2)  + 
-        facet_wrap(~map_feature, scales="free") +
-        xlab(NULL) + theme(axis.text.x = element_text(size = 10)) +
+        ggbeeswarm::geom_quasirandom() +
+        scale_color_manual(values=define.group.palette(length(unique(df.melt[,color.value])))) +
+        facet_wrap(~map_feature, scales="free", labeller = labeller(map_feature = function(x) gsub("_perc", "", x))) +
+        theme(axis.title.x = element_blank(),
+              axis.text.x = element_blank(),
+              axis.ticks.x = element_blank()) +
         guides(color="none") +
         ylab("% of input reads")  
-        # theme(axis.text.x=element_text(angle=45, vjust=1, hjust=1))
       return(list(p.perc,p))
     })
-    
-    df.stats <- data.frame(sample=df.stacked$sample,
-                     input_reads=format(df.stacked$input, big.mark=","), 
-                     uniquely_mapped=paste0(format(df.stacked$unique, big.mark=","), " (", format(df.stacked$unique_perc, nsmall=2, digits=2), "%)"), 
-                     multi_mapped=paste0(format(df.stacked$multi, big.mark=","), " (", format(df.stacked$multi_perc, nsmall=2, digits=2), "%)"), 
-                     too_many_loci=paste0(format(df.stacked$too_many_loci,nsmall=2, digits=2), "%"),
-                     unmapped=paste0(format(df.stacked$unmapped, nsmall=2, digits=2), "%")
-    )
-    
+
+    df.stats <- df.stacked |>
+      dplyr::mutate(
+        filename = filename,  
+        input_reads = format(input, big.mark = ","),
+        uniquely_mapped = paste0(
+          format(unique, big.mark = ","), 
+          " (", 
+          format(unique_perc, nsmall = 2, digits = 2), 
+          "%)"
+        ),
+        multi_mapped = paste0(
+          format(multi, big.mark = ","), 
+          " (", 
+          format(multi_perc, nsmall = 2, digits = 2), 
+          "%)"
+        ),
+        too_many_loci = paste0(
+          format(too_many_loci, nsmall = 2, digits = 2), 
+          "%"
+        ),
+        unmapped = paste0(
+          format(unmapped, nsmall = 2, digits = 2), 
+          "%"
+        )
+      ) |>
+      dplyr::select(-dplyr::any_of(c("file", "input", "unique", "unique_perc", "multi", "multi_perc", "mapped_perc"))) |> # Drop columns not needed
+      dplyr::relocate(filename, input_reads, uniquely_mapped, multi_mapped, too_many_loci, unmapped)
+      
     stat=DT::datatable(df.stats, rownames=F, options = list(pageLength= 20))
     
     return(list(p_mapped=map.feature.plots, stat=stat))
 }
 
 
-
-##
-## DEhelper.STAR: parse STAR log files and create a md table
-##
-DEhelper.STAR <- function(targetsdf=targets) {
-  
-  # log file
-  LOG <- SHINYREPS_STAR_LOG
-  SUFFIX <- paste0(SHINYREPS_STAR_SUFFIX, '$')
-  if(!file.exists(LOG)) {
-    return("STAR statistics not available")
-  }
-  
-  # look for the lines containing the strings
-  # and get the values associated with this strings
-  x <- sapply(list.files(LOG, pattern = SUFFIX), function(f) {
-    f <- file(paste0(LOG, "/", f))
-    l <- readLines(f)
-    close(f)
-    
-    sapply(c("Number of input reads",
-             "Uniquely mapped reads number",
-             "Uniquely mapped reads %",
-             "Number of reads mapped to multiple loci",
-             "% of reads mapped to multiple loci",
-             "Number of reads mapped to too many loci",
-             "% of reads mapped to too many loci",
-             "% of reads unmapped: too many mismatches",
-             "% of reads unmapped: too short",
-             "% of reads unmapped: other"), function(x) {
-               as.numeric(gsub("%", "", gsub(".+\\|\t(.+)", "\\1", l[grep(x, l)])))
-             })    
-  })
-  
-  # set row and column names, and output the md table
-  colnames(x) <- gsub(paste0(SUFFIX, "$"), "", colnames(x))
-  
-  ## row.names need to be set in case of only one sample (if more than one sample,
-  ## rownames would be set automatically, but doesnt harm to set them)
-  df_values <- as.data.frame(t(x[1:7,]),row.names=colnames(x))
-  
-  df_values["unmapped"] <- x[1, ] - x[2, ] - x[4, ] - x[6,]
-  df_values["% unmapped"] <- x[8, ] + x[9, ] + x[10, ]
-  df_values$sample <- rownames(df_values)
-  # we clean up the colnames a little to make them shorter and nicer
-  colnames(df_values) <- gsub("of reads mapped to ", "",
-                              gsub("Number of reads mapped to ", "",
-                                   gsub("Uniquely mapped reads %","% unique",
-                                        gsub("Uniquely mapped reads number","unique",
-                                             gsub("Number of input reads","input",colnames(df_values))))))
-  
-  # if we have a differential expression analysis
-  # we refactor the samples depending on group/subject or alternatively on the
-  # amount of unique_mapping reads
-  if(file.exists(SHINYREPS_TARGET)){
-    
-    #targets <- read.delim(SHINYREPS_TARGET, comment.char = "#")
-    targets <- targetsdf
-    targets$sample_ext <- gsub("\\..*$", "",targets$file )
-    add_factors <- colnames(targets)[!colnames(targets) %in% c("group", "sample", "file")]
-    
-    # replace files names with nicer sample names given in targets file 
-    # if sample is missing in targets file, use reduced file name
-    df_values$sample <- sapply(df_values$sample, function(i) { ifelse(sum(sapply(targets$sample_ext, grepl, i))==1 && !any(duplicated(targets$sample)),   
-                                                                      targets[sapply(targets$sample_ext, grepl, i),"sample"], 
-                                                                      gsub(paste0("^",SHINYREPS_PREFIX),"",i))})
-  } else{
-    
-    # remove sample prefix from sample names (suffix was already removed before)
-    df_values$sample <- gsub(paste0("^",SHINYREPS_PREFIX), "", df_values$sample)
-  }
-  
-  # sort sample alphabetically or based on number of (uniquely) mapped reads
-  if (SHINYREPS_SORT_ALPHA) {
-    df_values$sample <- fct_reorder(df_values$sample, df_values$sample, .desc=TRUE)
-  } else {
-    df_values$sample <- fct_reorder(df_values$sample, df_values$`% unique`)
-  }
-  
-  df_melt <- reshape2::melt(df_values, value.name = "reads", variable.name = "mapping_stat")
-  df_melt$value_info <- ifelse(grepl("%", df_melt$mapping_stat), "perc", "reads")
-  
-  ## melt does not work properly in case of only one sample (sample name gets lost)
-  if (nrow(df_values) == 1) {
-    df_melt$sample <- rownames(df_values)
-  }
-  
-  ## invert order for plotting
-  df_melt$mapping_stat <- fct_rev(df_melt$mapping_stat)
-  
-  ## define color scheme
-  my.palette <- rev(c("#e08a28","#dfc27d","#acd2f7","#5ea1e3"))
-  my.color   <- "#cc0e25"
-  
-  # plot showing percent mapped reads
-  p_perc <- ggplot(df_melt[df_melt$value_info == "perc",], 
-                   aes(x = sample, y = reads, fill = mapping_stat )) +
-    geom_bar(stat     = "identity", 
-             position = "stack") +
-    labs(x = "", 
-         y = "% of sequenced reads", 
-         title = "Mapping summary (percentage)") + 
-    theme(axis.text.y = element_text(size = 8),
-          plot.title = element_text(hjust = 0.5,size=12),
-          legend.position = "top") +
-    guides(fill=guide_legend(nrow=1,title="",reverse=TRUE)) +
-    scale_fill_manual(values=my.palette) +
-    coord_flip()
-  
-  # max number of reads in any sample
-  max.reads <- max(df_melt[df_melt$mapping_stat=="input","reads"])
-  
-  # plot a combination of percent mapped reads and total sequenced reads
-  p_perc_count <- ggplot() + 
-    geom_bar(data=df_melt[df_melt$value_info == "reads" & df_melt$mapping_stat!="input",], 
-             mapping=aes(x = sample, y = reads, fill = mapping_stat), 
-             stat = "identity", position = "fill", width = 0.8) + 
-    geom_point(data=df_melt[df_melt$mapping_stat=="input",], 
-               mapping=aes(x = sample, y = reads/max.reads), 
-               size=2, fill=my.color, color=my.color, shape=18) +
-    geom_line(data=df_melt[df_melt$mapping_stat=="input",],
-              mapping=aes(x = sample, y = reads/max.reads, group=1),
-              color=my.color, linetype="dashed", size=0.2) +
-    scale_y_continuous(sec.axis = sec_axis(~ . *max.reads, name="# sequenced reads"),
-                       labels = scales::percent_format()) + 
-    labs(x = "",
-         y = "% of sequenced reads") + 
-    theme(axis.text.y = element_text(size = 8),
-          axis.title.x.top=element_text(color=my.color), 
-          axis.text.x.top=element_text(color=my.color), 
-          axis.ticks.x.top=element_line(color=my.color),
-          plot.title = element_text(hjust = 0.5,size=12),
-          legend.position = "top") + 
-    guides(fill=guide_legend(nrow=1,title="",reverse=TRUE)) + 
-    scale_fill_manual(values=my.palette) + 
-    coord_flip()
-  
-  # in case of non-alphabetically sorting, re-order based on total number of reads
-  # before plotting reads counts
-  if (SHINYREPS_SORT_ALPHA == FALSE) {
-    df_melt$sample <- factor(df_melt$sample, levels=df_values$sample[order(df_values$input)])
-  }
-  
-  p_count <- p_perc %+%
-    df_melt[df_melt$value_info == "reads" & df_melt$mapping_stat != "input",] +
-    labs(x = "",
-         y = "# sequenced reads",
-         title = "Mapping summary (read counts)") 
-  
-  # prepare data for summary table  
-  rownames(df_values) <- df_values$sample
-  df_values <- df_values[, colnames(df_values) != "sample"]
-  
-  # reformat individual columns
-  df_values[, grepl("%", colnames(df_values))] <- as.data.frame(
-    lapply(
-      df_values[, grepl("%", colnames(df_values))], function(x){
-        paste0(format(x, nsmall=2), "%") 
-      }))
-  df_values[, !grepl("%", colnames(df_values))] <- as.data.frame(
-    lapply(
-      df_values[, !grepl("%", colnames(df_values))], function(x){
-        format(x, big.mark=",") 
-      }))
-  
-  # create data frame to print as table
-  df_values_print <- data.frame(all.reads     = df_values$input,
-                                unique        = paste0(df_values[,"unique"]," (",df_values[,"% unique"],")"),
-                                multiple.loci = paste0(df_values[,"multiple loci"]," (",df_values[,"% multiple loci"],")"),
-                                too.many.loci = paste0(df_values[,"too many loci"]," (",df_values[,"% too many loci"],")"),
-                                unmapped      = paste0(df_values[,"unmapped"]," (",df_values[,"% unmapped"],")"), 
-                                row.names     = rownames(df_values))
-  
-  # sort alphabetically based on sample names (=rownames) or based on % unique
-  if (SHINYREPS_SORT_ALPHA == TRUE) {
-    df_values_print <- df_values_print[order(rownames(df_values_print)),]
-  } else {
-    df_values_print <- df_values_print[rownames(df_values[order(df_values$`% unique`, decreasing=TRUE),]),]
-  }
-  colnames(df_values_print) <- gsub("\\."," ",colnames(df_values_print))
-  
-  return( list(p_perc = p_perc,
-               p_perc_count = p_perc_count,
-               p_count = p_count,
-               stat= DT::datatable(df_values_print, options = list(pageLength= 20))
-               #stat = kable(df_values_print, align=c("r", "r", "r", "r", "r"), format="markdown", output=F)
-               )
-  )
-  
-}
-
-
-
-
-
-##
-## DEhelper.Fastqc: go through Fastqc output dir and create a md table with the duplication & read quals & sequence bias plots
-##
-DEhelper.Fastqc <- function(web=FALSE, subdir="", ...) {
-    
-    # logs folder
-    if(!all(sapply(file.path(SHINYREPS_FASTQC_OUT, subdir), file.exists))) {
-        return(paste("Fastqc statistics not available for", names(which(!sapply(file.path(SHINYREPS_FASTQC_OUT, subdir), file.exists)))))
-    }
-    
-    # construct the folder name, which is different for web and noweb
-    QC <- if(web) paste0("/fastqc/", subdir) else file.path(SHINYREPS_FASTQC_OUT, subdir)
-    
-    # construct the image url from the folder contents (skip current dir .)
-    samples <- list.dirs(QC, recursive=F, full.names = T)
-    samples <- samples[sapply(samples, function(x) {file.exists(file.path(x, "fastqc_data.txt"))})] # exclude potential subdir which is also listed by list.dirs
-    
-    # select subset of samples for fastqc figures (e.g. merged single cell pools) or use all samples for samplePattern=NULL
-    samples <- selectSampleSubset(samples, ...)
-
-    df <- sapply(samples, function(f) {
-        c(paste0("![fastqc img](", f, "/Images/per_base_quality.png)"), 
-          paste0("![fastqc img](", f, "/Images/per_base_sequence_content.png)"),
-          paste0("![fastqc img](", f, "/Images/per_sequence_gc_content.png)"))
-    })
-
-    # set row and column names, and output the md table
-    df <- as.data.frame(t(df))
-    rownames(df) <-  basename(samples)
-    colnames(df) <- c("Read qualities", "Sequence bias", "GC content")
-
-    if(file.exists(SHINYREPS_TARGET)){
-      
-      # get target names
-      targets <- read.delim(SHINYREPS_TARGET)
-      targets$sample_ext <- gsub("\\..*$", "",targets$file )
-      
-      # replace files names with nicer sample names given in targets file 
-      # if sample is missing in targets file, use reduced file name
-      rownames(df) <- sapply(rownames(df), function(i) { ifelse(sum(sapply(targets$sample_ext, grepl, i))==1,
-                                                                ifelse(sapply("\\.R1", grepl, i), 
-                                                                       paste0(targets[sapply(targets$sample_ext, grepl, i),"sample"], ".R1"),
-                                                                       ifelse(sapply("\\.R2", grepl, i), 
-                                                                              paste0(targets[sapply(targets$sample_ext, grepl, i),"sample"], ".R2"),
-                                                                              targets[sapply(targets$sample_ext, grepl, i),"sample"])),
-                                                                gsub(paste0("^",SHINYREPS_PREFIX),"",i))})                                                    
-    } else {
-      if(!is.na(SHINYREPS_PREFIX)) {
-        rownames(df) <- gsub(paste0("^",SHINYREPS_PREFIX), "", rownames(df))
-      }
-      rownames(df) <- gsub("_fastqc$", "", rownames(df))
-      rownames(df) <- sapply(rownames(df), shorten)
-    }
-    
-    # add a row with the sample name (as given in the rownames) before every row
-    df.new <- do.call(rbind,lapply(1:nrow(df),function(i) {rbind(c("",rownames(df)[i],""),df[i,])}))
-    rownames(df.new) <- NULL
-    # kable(df.new, output=F, align="c", format="markdown") # print sample names in additional rows
-    kable(df, output=F, align="c") # print sample names as rownames
-}
-
-##
-## DEhelper.ngsReports.Fastqc: joint FastQC report of all samples in the experiment
-##
-DEhelper.ngsReports.Fastqc <- function(subdir="", ...) {
-  
-  # output folder
-  if(!file.exists(file.path(SHINYREPS_FASTQC_OUT, subdir))) {
-    return("Fastqc statistics not available")
-  }
-  
-  # Loading FastQC Data 
-  f <- list.files(file.path(SHINYREPS_FASTQC_OUT, subdir), pattern="fastqc.zip$", full.names=TRUE)
-  
-  # select subset of samples for fastqc figures (e.g. merged singlecell pools) or use all samples for samplePattern=NULL
-  f <- selectSampleSubset(f, ...)
-  
-  x <- ngsReports::FastqcDataList(f)
-  lbls <- gsub(paste0("(^", SHINYREPS_PREFIX, "|.fastqc.zip$)"), "", names(x))
-  names(lbls) <- gsub(".fastqc.zip", ".fastq.gz", basename(names(x)))
-  
-  print(ngsReports::plotBaseQuals(x, labels=lbls))
-  print(ngsReports::plotSeqContent(x, labels=lbls) +
-          theme(legend.position="right") +
-          guides(fill=FALSE, color="legend") +
-          geom_point(mapping=aes(x=Inf, y=Inf, color=base),
-                     data=data.frame(base=c("T", "A", "C", "G")),
-                     inherit.aes=FALSE, show.legend=TRUE) +
-          scale_color_manual("", 
-                             values=c("red", "green", "blue", "black"),
-                             breaks=c("T", "A", "C", "G"))
-  )
-  print(ngsReports::plotGcContent(x, plotType="line", gcType="Genome", theoreticalGC = F, labels=lbls))  
-}
 
 ##
 ## DEhelper.Fastqc.custom: prepare Fastqc summary plots
@@ -1520,132 +605,38 @@ DEhelper.fastqscreen <- function(subdir="", targetsdf=targets, perc.to.plot = 1,
 
 
 
-
-##
-## DEhelper.dupRadar: go through dupRadar output dir and create a md table with
-##     the duplication plots
-##
-DEhelper.dupRadar <- function(web=F, targetsdf=targets, ...) {
-  
-  # logs folder
-  if(!file.exists(SHINYREPS_DUPRADAR_LOG)) {
-    return("DupRadar statistics not available")
-  }
-  
-  SHINYREPS_PLOTS_COLUMN <- tryCatch(as.integer(SHINYREPS_PLOTS_COLUMN),error=function(e){3})
-  if(SHINYREPS_PLOTS_COLUMN < 2) {
-    SHINYREPS_PLOTS_COLUMN <- 3L    # default to 4 columns
-  }
-  
-  # construct the folder name, which is different for web and noweb
-  QC <- if(web) "/dupRadar" else SHINYREPS_DUPRADAR_LOG
-  
-  # construct the image url from the folder contents (skip current dir .)
-  samples <- list.files(QC, pattern=".png$", full.names=T)
-  
-  # select subset of samples 
-  samples <- selectSampleSubset(samples, ...)
-  
-  df <- sapply(samples, function(f) {
-    paste0("![dupRadar img](", f, ")")
-  })
-  
-  # sample names 
-  samples <- sapply(df, function(x) {
-    gsub("_dupRadar.png)$", "", basename(x))
-  })
-  
-  if(file.exists(SHINYREPS_TARGET)){
-    
-    # get target names
-    #targets <- read.delim(SHINYREPS_TARGET, comment.char = "#")
-    targets <- targetsdf
-    targets$sample_ext <- gsub("\\..*$", "",targets$file )
-    
-    # replace files names with nicer sample names given in targets file
-    # if sample is missing in targets file, use reduced file name
-    samples <- sapply(samples, function(i) { ifelse(sum(sapply(targets$sample_ext, grepl, i))==1 && !any(duplicated(targets$sample)),   
-                                                    targets[sapply(targets$sample_ext, grepl, i),"sample"], 
-                                                    gsub(paste0("^",SHINYREPS_PREFIX),"",i))})
-  } else {
-    if(!is.na(SHINYREPS_PREFIX)) {
-      samples <- gsub(paste0("^",SHINYREPS_PREFIX), "", samples)
-    }
-  }
-  
-  # sort alphabetically
-  samples <- samples[order(samples)]
-  df <- df[names(samples)]
-  
-  # fill up additional columns if number of samples is not a multiple of SHINYREPS_PLOTS_COLUMN
-  while(length(df) %% SHINYREPS_PLOTS_COLUMN != 0) df <- c(df, "")
-  while(length(samples) %% SHINYREPS_PLOTS_COLUMN != 0) samples <- c(samples, "")
-  
-  df      <- matrix(df     , ncol=SHINYREPS_PLOTS_COLUMN, byrow=T)
-  samples <- matrix(samples, ncol=SHINYREPS_PLOTS_COLUMN, byrow=T)
-  
-  # add a row with the sample names
-  df.names <- matrix(sapply(1:nrow(df), function(i) { c(df[i, ], samples[i, ]) }), 
-                     ncol=SHINYREPS_PLOTS_COLUMN, byrow=T)
-  colnames(df.names) <- rep(" ", SHINYREPS_PLOTS_COLUMN)
-  
-  kable(as.data.frame(df.names), align="c", output=F, format="markdown") 
-}
-
-
-
-
 ##
 ## DEhelper.RNAtypes: parse Subread count results for RNAtypes usage
 ##
-DEhelper.RNAtypes <- function(targetsdf=targets, ...) {
+DEhelper.RNAtypes <- function(targetsdf=SHINYREPS_TARGET, ...) {
   
   FOLDER <- SHINYREPS_RNATYPES
   SUFFIX <- paste0(SHINYREPS_RNATYPES_SUFFIX, '$')
   
   # check if folder exists
-  if(!file.exists(FOLDER)) {
+  if(!file.exists(FOLDER) || length(list.files(FOLDER))==0) {
     return("Subread statistics not available")
   }
   
-  if(file.exists(SHINYREPS_TARGET)){
-    # get target names
-    #targets <- read.delim(SHINYREPS_TARGET, comment.char = "#")
-    targets <- targetsdf
-    targets$sample_ext <- gsub("\\..*$", "", targets$file)
-    add_factors <- colnames(targets)[!colnames(targets) %in% c("group", "sample", "file")]
-  }
+  # list files to plot
+  plotfiles <- list.files(FOLDER, pattern=SUFFIX, full.names=T)
   
-  # create a matrix using feature names as rownames, sample names as colnames
-  l.infiles <- list.files(FOLDER, pattern=SUFFIX, full.names = T)
-  # select subset of samples for figure
-  l.infiles <- selectSampleSubset(l.infiles, ...)
+  # select subset of plotfiles in case there are too many separate files (select all by default)
+  plotfiles <- selectSampleSubset(plotfiles, grepInBasename=T, ...)
   
-  l.counts <- lapply(l.infiles, function(f) {
-    
-    # extract sample name and replace it with nicer sample name given in targets file (if available)
-    samplename <- gsub(paste0(SUFFIX,"$"), "", basename(f))
-    
-    if(file.exists(SHINYREPS_TARGET)){
-      # replace files names with nicer sample names given in targets file 
-      # if sample is missing in targets file, use reduced file name
-      samplename <- ifelse(sum(sapply(targets$sample_ext, grepl, samplename))==1 && !any(duplicated(targets$sample)),  
-                           targets[sapply(targets$sample_ext, grepl, samplename),"sample"],  
-                           gsub(paste0("^",SHINYREPS_PREFIX),"",samplename))
-    } else {
-      if(!is.na(SHINYREPS_PREFIX)) { samplename <- gsub(paste0("^",SHINYREPS_PREFIX), "", samplename) }
-    }
-    df.readcount <- read.table(f, header=T, sep='\t', comment.char = '#', col.names=c("Geneid","Length",samplename))
+  names(plotfiles)  <- gsub(SUFFIX, "", basename(plotfiles))
+  names(plotfiles)  <-  gsub("(_S\\d{1,3}$)|(_S\\d{1,3}_L\\d{3}_R\\d_\\d{3}$)", "", names(plotfiles))
+  
+  l <- lapply(1:length(plotfiles), function(i) {
+    df.readcount <- read.table(plotfiles[i], header=T, sep='\t', comment.char = '#', col.names=c("Geneid","Length",names(plotfiles)[i]))
     df.readcount$Length <- NULL
     return(df.readcount)
   })
-  
 
   # merge counts to data frame in wide format & remove "length..." columns
   f.merge <- function(x,y) {merge(x,y,by="Geneid")}
-  df.counts <- Reduce(f.merge, l.counts)
-  rm(l.counts)
-  
+  df.counts <- Reduce(f.merge, l)
+
   # eradicate biotype classes that are not present (or could be summarized as "other" being <1%)
   v.countsums <- rowSums(df.counts[-1])
   v.relsums <- v.countsums / sum(v.countsums)
@@ -1655,23 +646,58 @@ DEhelper.RNAtypes <- function(targetsdf=targets, ...) {
                          by=list(Geneid =df.counts$Geneid),
                          FUN=sum)
   
-  # plot
-  df.counts.melt <- reshape2::melt(df.counts, id.var="Geneid")
-  colnames(df.counts.melt) <- c("type","sample","count")
+  df <- reshape2::melt(df.counts, id.var="Geneid")
+  colnames(df) <- c("type","plotfile","count")
+  
+  if(class(targetsdf)=="data.frame" || file.exists(targetsdf)){
+    
+    # get targets
+    if(class(targetsdf)=="data.frame") {
+      targets <- targetsdf
+    } else {
+      targets <- read.delim(targetsdf, comment.char = "#")
+    }
+    
+    targets$file <- gsub("(_S\\d{1,3}$)|(_S\\d{1,3}_L\\d{3}_R\\d_\\d{3}$)", "", targets$file)
+    
+    # now left_join by file name
+    df <- dplyr::left_join(df, targets, by=dplyr::join_by(plotfile==file))
+    
+    # use sample column as plotfile if no multiple sample names per plotfile present
+    # and sample names are shorter than file names (e.g. for ParseBio the sample column 
+    # may be longer if it consist of multiple concatenated sample names)
+    if("sample" %in% colnames(df) && all(!is.na(df$sample)) && 
+       identical(df[!duplicated(df$sample),], df[!duplicated(df$plotfile),]) && 
+       max(nchar(df$sample)) < max(nchar(df$plotfile))) {
+      df$plotfile <- df$sample
+    }
+  }   
+  
+  # prune prefix from plotfile if present
+  if(!is.na(SHINYREPS_PREFIX)) {
+    df$plotfile <- gsub(paste0("^",SHINYREPS_PREFIX), "", df$plotfile)
+  } 
   
   # remove possible starting "X" (in case sample name starts with a number)
-  df.counts.melt$sample <- gsub("^X","",df.counts.melt$sample)
+  df$plotfile <- gsub("^X","",df$plotfile)
   
-  # get reverse order for plotting
-  samplenames <- gsub("^X","",colnames(df.counts)[-1])
-  df.counts.melt$sample <- factor(df.counts.melt$sample, levels=samplenames[order(samplenames, decreasing=TRUE)])
-  
-  plot <- ggplot() + 
-    geom_bar(data=df.counts.melt, aes(x=sample, y=count, fill=type), position="fill", stat="identity") + 
+  # check if targets.txt info is merged properly, factorize and sort.
+  df$plotfile <- factor(df$plotfile, levels = rev(sort(unique(df$plotfile))))
+  if("group" %in% colnames(df) && all(!is.na(df$group)) && SHINYREPS_SORT_ALPHA==FALSE) {
+    df$group <- factor(df$group, levels = sort(unique(df$group)))
+    df <- df[order(df$group, df$plotfile),]
+  } else {
+    df <- df[order(df$plotfile),]
+  }
+
+  plot <- ggplot() +
+    geom_bar(data=df, aes(x=plotfile, y=count, fill=type), position="fill", stat="identity") +
     labs(x="", y="", fill="") +
-    theme(axis.text.y = element_text(size=8)) +
-    guides(fill = guide_legend(reverse=TRUE)) + 
-    coord_flip() 
+    theme_bw() +
+    theme(axis.text.y = element_text(size=8), legend.position = "top") +
+    guides(fill = guide_legend(nrow=1, title="", reverse=TRUE)) +
+    scale_fill_brewer(palette = "Dark2") +
+    coord_flip()
   
   return(plot)
 }
@@ -1680,259 +706,104 @@ DEhelper.RNAtypes <- function(targetsdf=targets, ...) {
 
 
 ##
-## DEhelper.geneBodyCov: go through geneBodyCov output dir and create a md table with
-##     the gene coverage plots
-##
-DEhelper.geneBodyCov <- function(web=FALSE, targetsdf=targets, ...) {
-    
-    # logs folder
-    if(!all(sapply(SHINYREPS_GENEBODYCOV_LOG, file.exists))) {
-      return(paste("geneBodyCov statistics not available for", names(which(!sapply(SHINYREPS_GENEBODYCOV_LOG, file.exists)))))
-    }
-  
-  SHINYREPS_PLOTS_COLUMN <- tryCatch(as.integer(SHINYREPS_PLOTS_COLUMN[1]),error=function(e){3})
-    if(SHINYREPS_PLOTS_COLUMN < 2) {
-      SHINYREPS_PLOTS_COLUMN <- 3L    # default to 3 columns
-    }
-    
-    # construct the folder name, which is different for web and noweb
-    QC <- if(web) "/geneBodyCov" else SHINYREPS_GENEBODYCOV_LOG
-    
-    # construct the image url from the folder contents (skip current dir .)
-    samples <- list.files(QC, pattern=".png$", full.names = T)
-    
-    # select subset of samples or use all samples for samplePattern=NULL
-    samples <- selectSampleSubset(samples, ...)
-
-    df <- sapply(samples, function(f) {
-        paste0("![geneBodyCov img](", f, ")")
-    })
-    
-    
-    # sample names
-    samples <- sapply(df, function(x) {
-      gsub("_geneBodyCov.png)$", "", basename(x))
-    })
-    
-    if(file.exists(SHINYREPS_TARGET)){
-      
-      # get target names
-      #targets <- read.delim(SHINYREPS_TARGET)
-      targets <- targetsdf
-      targets$sample_ext <- gsub("\\..*$", "",targets$file )
-      
-      # replace files names with nicer sample names given in targets file
-      # if sample is missing in targets file, use reduced file name
-      samples <- sapply(samples, function(i) { ifelse(sum(sapply(targets$sample_ext, grepl, i))==1 && !any(duplicated(targets$sample)),
-                                                      targets[sapply(targets$sample_ext, grepl, i),"sample"],
-                                                      gsub(paste0("^",SHINYREPS_PREFIX),"",i))})
-    } else {
-      if(!is.na(SHINYREPS_PREFIX)) {
-        samples <- gsub(paste0("^",SHINYREPS_PREFIX), "", samples)
-      }
-    }
-    
-    # sort alphabetically
-    samples <- samples[order(samples)]
-    df <- df[names(samples)]
-    
-    # fill up additional columns if number of samples is not a multiple of SHINYREPS_PLOTS_COLUMN
-    while(length(df) %% SHINYREPS_PLOTS_COLUMN != 0) df <- c(df, "")
-    while(length(samples) %% SHINYREPS_PLOTS_COLUMN != 0) samples <- c(samples, "")
-    
-    df      <- matrix(df     , ncol=SHINYREPS_PLOTS_COLUMN, byrow=T)
-    samples <- matrix(samples, ncol=SHINYREPS_PLOTS_COLUMN, byrow=T)
-    
-    # add a row with the sample names
-    df.names <- matrix(sapply(1:nrow(df), function(i) { c(df[i, ], samples[i, ]) }), 
-                       ncol=SHINYREPS_PLOTS_COLUMN, byrow=T)
-    colnames(df.names) <- rep(" ", SHINYREPS_PLOTS_COLUMN)
-    
-    kable(as.data.frame(df.names), align="c", output=F, format="markdown")
-}
-
-
-##
 ## DEhelper.geneBodyCov2: go through geneBodyCov output dir and plot into one plot
 ##
-DEhelper.geneBodyCov2 <- function(web=F, targetsdf=targets, ...) {
+DEhelper.geneBodyCov2 <- function(web=F, targetsdf=SHINYREPS_TARGET, ...) {
   
   # logs folder
-  if(!file.exists(SHINYREPS_GENEBODYCOV_LOG)) {
+  if(!file.exists(SHINYREPS_GENEBODYCOV_LOG) || length(list.files(SHINYREPS_GENEBODYCOV_LOG))==0) {
     return("geneBodyCov statistics not available")
   }
   
   # construct the folder name, which is different for web and noweb
   QC <- if(web) "/geneBodyCov" else SHINYREPS_GENEBODYCOV_LOG
   
-  # construct the image url from the folder contents (skip current dir .)
-  samples <- list.files(QC, pattern=".csv$", full.names=T)
+  # list files to plot
+  plotfiles <- list.files(QC, pattern=".csv$", full.names=T)
   
-  # select subset of samples for fastqc figures (e.g. merged singlecell pools) or use all samples for samplePattern=NULL
-  samples <- selectSampleSubset(samples, grepInBasename=T, ...)
+  # select subset of plotfiles in case there are too many separate files (select all by default)
+  plotfiles <- selectSampleSubset(plotfiles, grepInBasename=T, ...)
   
-  names(samples) <- gsub("_geneBodyCov.csv", "", basename(samples))
+  names(plotfiles) <- gsub("_geneBodyCov.csv", "", basename(plotfiles)) # prune file names
+  names(plotfiles) <-  gsub("(_S\\d{1,3}$)|(_S\\d{1,3}_L\\d{3}_R\\d_\\d{3}$)", "", names(plotfiles))
   
-  if(file.exists(SHINYREPS_TARGET)){
-    
-    # get target names
-    #targets <- read.delim(SHINYREPS_TARGET, comment.char = "#")
-    targets <- targetsdf
-    targets <- targets[sapply(gsub("_L001_R._001", "", names(samples)), grep, targets$file),] # if sample subset selected, remove spare entries from targets
-    targets$sample_ext <- gsub("\\..*$", "",targets$file )
-    
-    # replace files names with nicer sample names given in targets file
-    # if sample is missing in targets file, use reduced file name
-    names(samples) <- sapply(names(samples), function(i) { ifelse(sum(sapply(targets$sample_ext, grepl, i))==1 && !any(duplicated(targets$sample)),  
-                                                                  targets[sapply(targets$sample_ext, grepl, i),"sample"], 
-                                                                  gsub(paste0("^",SHINYREPS_PREFIX),"",i))})
-  } else {
-    if(!is.na(SHINYREPS_PREFIX)) {
-      names(samples) <- gsub(paste0("^",SHINYREPS_PREFIX), "", names(samples))
-    }
-  }
-  
-  l <- lapply(1:length(samples), function(i) {
-    df <- read.csv(samples[[i]]) 
-    colnames(df) <- c("perc", names(samples)[i])
+  l <- lapply(1:length(plotfiles), function(i) {
+    df <- read.csv(plotfiles[[i]]) 
+    colnames(df) <- c("perc", names(plotfiles)[i])
     return(df[,2, drop=F])
   })
-  df <- do.call(cbind, l)
-  df$perc <- 1:nrow(df) #these are the 100 bins used in the original plot
-  df <- reshape2::melt(df, id.vars="perc", variable.name="sample", value.name="cov")
-  #sort the samples either by the group order of the targets file or alphabetically
-  #if we do not have a targets file
-  if(file.exists(SHINYREPS_TARGET)){
-    sample_order <- targets$sample[order(paste0(targets$group, targets$sample))]
-    if(all(sample_order %in% df$sample)){
-      df$sample <- factor(df$sample, levels = sample_order)
-      df$group <- factor(as.character(targets$group[match(df$sample, targets$sample)]),
-                         levels = sort(unique(targets$group)))
-      if("replicate" %in% colnames(targets)){
-        df$replicate <- factor(as.character(targets$replicate[match(df$sample, targets$sample)]), 
-                               levels = sort(unique(as.character(targets$replicate))))
-      }
-      if("cells" %in% colnames(targets)){
-        df$cells <- factor(as.character(targets$cells[match(df$sample, targets$sample)]), 
-                           levels = sort(unique(as.character(targets$cells))))
-        pal_control_wells <- c("0c"  = "grey80", "1c" = "grey50", "10c" = "grey0")
-      }  
-    }
-  }else{
-    # sort alphabetically
-    df$sample <- factor(df$sample, levels = sort(unique(df$sample)))  
-  }
+  df <- do.call(cbind, l) # coverage df with files as columns percentage as rows
   
-  # plot
-  plot_df <- plotly::highlight_key(df, ~sample) 
+  df$perc <- 1:nrow(df) #these are the 100 bins used in the original plot
+  df <- reshape2::melt(df, id.vars="perc", variable.name="plotfile", value.name="cov")
+  
+
+  if(class(targetsdf)=="data.frame" || file.exists(targetsdf)){
+    
+    # get targets
+    if(class(targetsdf)=="data.frame") {
+      targets <- targetsdf
+    } else {
+      targets <- read.delim(targetsdf, comment.char = "#")
+    }
+    
+    targets$file <- gsub("(_S\\d{1,3}$)|(_S\\d{1,3}_L\\d{3}_R\\d_\\d{3}$)", "", targets$file)
+
+    # now left_join by file name
+    df <- dplyr::left_join(df, targets, by=dplyr::join_by(plotfile==file))
+    
+    # use sample column as plotfile if no multiple sample names per plotfile present
+    # and sample names are shorter than file names (e.g. for ParseBio the sample column 
+    # may be longer if it consist of multiple concatenated sample names)
+    if("sample" %in% colnames(df) && all(!is.na(df$sample)) && 
+       identical(df[!duplicated(df$sample),], df[!duplicated(df$plotfile),]) && 
+       max(nchar(df$sample)) <= max(nchar(df$plotfile))) {
+      df$plotfile <- df$sample
+    }
+  }   
+ 
+  # prune prefix from plotfile if present
+  if(!is.na(SHINYREPS_PREFIX)) {
+         df$plotfile <- gsub(paste0("^",SHINYREPS_PREFIX), "", df$plotfile)
+  } 
+  
+  # check if targets.txt info is merged properly and factorize. Remove column if existing but NAs present.
+  df$plotfile <- factor(df$plotfile, levels = sort(unique(df$plotfile)))
+  if("group" %in% colnames(df) && all(!is.na(df$group))) {
+    df$group <- factor(df$group, levels = sort(unique(df$group)))
+  } else {df$group <- NULL}
+  if("replicate" %in% colnames(df) && all(!is.na(df$replicate))) {
+    df$replicate <- factor(df$replicate, levels = sort(unique(df$replicate)))
+  } else {df$replicate <- NULL}
+  if("cells" %in% colnames(df) && all(!is.na(df$cells))) {
+    pal_control_wells <- c("1c" = "grey70", "0c"  = "grey50", "10c" = "grey0")
+    df$cells <- factor(df$cells, levels = names(pal_control_wells))
+    df <- df[order(df$cells),]
+   } else {df$cells <- NULL}
+  
+    
+  # plotly plot per file
+  plot_df <- plotly::highlight_key(df, ~plotfile) 
   
   if("cells" %in% colnames(df)) {
-    p <- ggplot(plot_df, aes(x=perc, y=cov, group=sample, color= cells )) + geom_line() +
-      scale_color_manual(values = pal_control_wells, limits = names(pal_control_wells)) + labs(color = "")
+    p <- ggplot(plot_df, aes(x=perc, y=cov, group=plotfile, color= cells )) + geom_line() +
+      scale_color_manual(values = pal_control_wells) + labs(color = "") 
   } else {
-    p <- ggplot(plot_df, aes(x=perc, y=cov, group=sample)) + geom_line(color="darkgrey") + scale_color_hue( c=50, l=70)
+    p <- ggplot(plot_df, aes(x=perc, y=cov, group=plotfile)) + geom_line(color="darkgrey") 
   }
   p <- p + labs(title="",
                 x = "Gene body percentile 5' -> 3'",
                 y = "Averaged normalised coverage") +
-    ylim(0,1) +
-    theme_bw() 
+    ylim(0,1) + theme_bw() 
   
-  gg <- plotly::ggplotly(p) # Warning message: `group_by_()` is deprecated as of dplyr 0.7.0. Please use `group_by()` instead.
-  
-  # since plotly might not work for everyone we should additionally create some static plots
-  num_samples <- length(unique(df$sample))
-  if(num_samples < 10){ #we only have 9 colors Set1
-    sample.cols <- RColorBrewer::brewer.pal(num_samples, "Set1")
-  }else{
-    sample.cols <- grDevices::colorRampPalette(RColorBrewer::brewer.pal(9, "Set1"))(num_samples)
-  }
-  
+  gg <- plotly::ggplotly(p) 
+
   plot_list <- list()
   plot_list[["plotly"]] <- gg
   
-  if(!any(c("group","replicate") %in% colnames(df))){
-    p_per_sample <- ggplot(df, aes(x=perc,
-                                   y=cov,
-                                   group=sample,
-                                   color=sample)) +
-      geom_line() +
-      labs(title="",
-           x = "Gene body percentile 5' -> 3'",
-           y = "Averaged normalised coverage") +
-      scale_color_manual(values=sample.cols) +
-      ylim(0,1) +
-      theme_bw() +
-      theme(legend.title=element_blank()) 
-    plot_list[["p_per_sample"]] <- p_per_sample
-    
-    if("cells" %in% colnames(df) && length(unique(df$cells))>1){
-      num_cellControlTypes <- length(unique(df$cells))
-      plot_list[["num_cellControlTypes"]] <- num_cellControlTypes
-      
-      p_per_cells <- ggplot(df, aes(x=perc,
-                                    y=cov,
-                                    group=sample,
-                                    color=cells)) +
-        geom_line() +
-        labs(x = "Gene body percentile 5' -> 3'",
-             y = "Averaged normalised coverage") +
-        scale_color_manual(values=define.group.palette(num_cellControlTypes)) +
-        ylim(0,1) +
-        theme_bw() +
-        theme(legend.position="top") +
-        guides(color=guide_legend(ncol=3)) 
-      
-      plot_list[["p_per_cells"]] <- p_per_cells  
-    }
-  }
   
-  if(("group" %in% colnames(df)) && !("replicate" %in% colnames(df) && length(unique(df$replicate))>1)) {
-    num_groups <- length(unique(df$group))
-    plot_list[["num_groups"]] <- num_groups
-    
-    p_per_sample_splitByGroup <- ggplot(df, aes(x=perc,
-                                                y=cov,
-                                                group=sample,
-                                                color=sample)) +
-      geom_line() +
-      labs(title="",
-           x = "Gene body percentile 5' -> 3'",
-           y = "Averaged normalised coverage") +
-      scale_color_manual(values=sample.cols) +
-      ylim(0,1) +
-      theme_bw() +
-      theme(legend.title=element_blank())  + 
-      facet_wrap(~group,ncol=2) +
-      theme(legend.position="top",
-            plot.title=element_blank()) +
-      guides(color=guide_legend(ncol=3))
-    plot_list[["p_per_sample_splitByGroup"]] <- p_per_sample_splitByGroup
-    
-    if("cells" %in% colnames(df) && length(unique(df$cells))>1){
-      num_cellControlTypes <- length(unique(df$cells))
-      plot_list[["num_cellControlTypes"]] <- num_cellControlTypes
-      
-      p_per_cells_splitByGroup <- ggplot(df, aes(x=perc,
-                                                 y=cov,
-                                                 group=sample,
-                                                 color=cells)) +
-        geom_line() +
-        labs(x = "Gene body percentile 5' -> 3'",
-             y = "Averaged normalised coverage") +
-        scale_color_manual(values=define.group.palette(num_cellControlTypes)) +
-        ylim(0,1) +
-        theme_bw() +
-        theme(legend.position="top") +
-        guides(color=guide_legend(ncol=3)) +
-        facet_wrap(~group, ncol=2)
-      
-      plot_list[["p_per_cells_splitByGroup"]] <- p_per_cells_splitByGroup
-    }
-    
-  }
-  
-  if(all(c("group","replicate") %in% colnames(df)) && length(unique(df$replicate))>1){
+  # create static plots as well
+  if(all(c("group","replicate") %in% colnames(df)) && length(unique(df$group))>1){
     num_groups <- length(unique(df$group))
     num_replicates <- length(unique(df$replicate))
     plot_list[["num_groups"]] <- num_groups
@@ -1940,7 +811,7 @@ DEhelper.geneBodyCov2 <- function(web=F, targetsdf=targets, ...) {
     
     p_per_replicate_splitByGroup <- ggplot(df, aes(x=perc,
                                                    y=cov,
-                                                   group=sample,
+                                                   group=plotfile,
                                                    color=replicate)) +   
       geom_line() +
       labs(x = "Gene body percentile 5' -> 3'",
@@ -1954,46 +825,25 @@ DEhelper.geneBodyCov2 <- function(web=F, targetsdf=targets, ...) {
     
     plot_list[["p_per_replicate_splitByGroup"]] <- p_per_replicate_splitByGroup
     
-    p_per_group_splitByReplicate <- ggplot(df, aes(x=perc,
-                                                   y=cov,
-                                                   group=sample,
-                                                   color=group)) +
-      geom_line() +
-      labs(x = "Gene body percentile 5' -> 3'",
-           y = "Averaged normalised coverage") +
-      scale_color_manual(values=define.group.palette(num_groups)) +
-      ylim(0,1) +
-      theme_bw() +
-      theme(legend.position="top") +
-      guides(color=guide_legend(ncol=3)) +
-      facet_wrap(~replicate,ncol=2)
+    if(length(unique(df$replicate))>1) {
     
-    plot_list[["p_per_group_splitByReplicate"]] <- p_per_group_splitByReplicate
-    
-    
-    if("cells" %in% colnames(df) && length(unique(df$cells))>1){
-      num_cellControlTypes <- length(unique(df$cells))
-      plot_list[["num_cellControlTypes"]] <- num_cellControlTypes
-      
-      df$groupRep <- paste("Group", df$group, "Rep", df$replicate)
-      
-      p_per_cells_splitByGroupReplicate <- ggplot(df, aes(x=perc,
-                                                          y=cov,
-                                                          group=sample,
-                                                          color=cells)) +
+      p_per_group_splitByReplicate <- ggplot(df, aes(x=perc,
+                                                     y=cov,
+                                                     group=plotfile,
+                                                     color=group)) +
         geom_line() +
         labs(x = "Gene body percentile 5' -> 3'",
              y = "Averaged normalised coverage") +
-        scale_color_manual(values=define.group.palette(num_cellControlTypes)) +
+        scale_color_manual(values=define.group.palette(num_groups)) +
         ylim(0,1) +
         theme_bw() +
         theme(legend.position="top") +
         guides(color=guide_legend(ncol=3)) +
-        facet_wrap(~groupRep, ncol=2)
-      
-      plot_list[["p_per_cells_splitByGroupReplicate"]] <- p_per_cells_splitByGroupReplicate
-    }
+        facet_wrap(~replicate,ncol=2)
     
+    plot_list[["p_per_group_splitByReplicate"]] <- p_per_group_splitByReplicate
+    }
+ 
   }
   return(plot_list)
 }
@@ -2004,7 +854,7 @@ DEhelper.geneBodyCov2 <- function(web=F, targetsdf=targets, ...) {
 ##
 ##DEhelper.strandspecificity: get the strand specificity from the qc and display them
 ##
-DEhelper.strandspecificity <- function(targetsdf=targets, ...){
+DEhelper.strandspecificity <- function(targetsdf=SHINYREPS_TARGET, ...){
   
   # logs folder
   if(!file.exists(SHINYREPS_INFEREXPERIMENT_LOGS)) {
@@ -2013,16 +863,23 @@ DEhelper.strandspecificity <- function(targetsdf=targets, ...){
   
   filelist <- list.files(path=SHINYREPS_INFEREXPERIMENT_LOGS, full.names=TRUE)
   filelist <- selectSampleSubset(filelist, ...)
-  strandspecifity <- lapply(filelist, read.table, sep=":", skip=3, header=FALSE, row.names=1, blank.lines.skip=TRUE)
-  strandspecifity <- do.call(cbind, strandspecifity)
+  strandspecificity <- tryCatch(lapply(filelist, read.table, sep=":", skip=3, header=FALSE, row.names=1, blank.lines.skip=TRUE), 
+                                error=function(e) NULL)
+  if (is.null(strandspecificity)) {
+    return("Strand specificity statistics not readable")  # exits the function
+  }
   
+  strandspecifity <- do.call(cbind, strandspecifity)
   samplenames <- gsub("_inferexperiment.txt", "", basename(filelist))
   
-  if(file.exists(SHINYREPS_TARGET)){
+  if(class(targetsdf)=="data.frame" || file.exists(targetsdf)){
     
     # get target names
-    #targets <- read.delim(SHINYREPS_TARGET, comment.char = "#")
-    targets <- targetsdf
+    if(class(targetsdf)=="data.frame") {
+      targets <- targetsdf
+    } else {
+      targets <- read.delim(targetsdf, comment.char = "#")
+    }
     targets$sample_ext <- gsub("\\..*$", "",targets$file )
 
     # replace files names with nicer sample names given in targets file
@@ -2062,13 +919,13 @@ DEhelper.strandspecificity <- function(targetsdf=targets, ...){
 ## 
 #' @param targetsdf targets data.frame or character with file path to targets object
 #' @param colorByFactor character with column name of sample table to be used for coloring the plot. Coloring by filename if NULL. 
-#' @param sampleColumnName character with column name(s) of targets table containing file names
+#' @param fileColumnName character with column name(s) of targets table containing file names
 #' @param plotfun define function to be used for plotting
 #' @param labelOutliers logical, shall outlier samples be labeled
 #' @param outlierIQRfactor numeric, factor is multiplied by IQR to determine outlier
 #'
 #' @return plot cutadapt statistics as side effect
-DEhelper.cutadapt <- function(targetsdf=targets, colorByFactor="group", sampleColumnName =c("file"), 
+DEhelper.cutadapt <- function(targetsdf=targets4plots, colorByFactor="group", fileColumnName =c("file"), 
                               plotfun=DEhelper.cutadapt.plot, labelOutliers=T, outlierIQRfactor=1.5, 
                               ...){
   
@@ -2164,22 +1021,13 @@ DEhelper.cutadapt <- function(targetsdf=targets, colorByFactor="group", sampleCo
       if (length(indexAdapterSelected)>0) {
           colnames(x.df)[grepl("Adapter", colnames(x.df))][match(indexAdapterSelected, indexAdapter)] <- paste0(gsub("Adapter.*$", "", colnames(x.df)[grepl("Adapter", colnames(x.df))][match(indexAdapterSelected, indexAdapter)]), cutadaptpars[indexAdapterSelected+1])
       }
-
   }
 
   # reduce length of file names 
-  row.names(x.df) <- basename(colnames(x))
-  x.df$filename_unmod <- factor(row.names(x.df))
-  if(!is.na(SHINYREPS_PREFIX)) {
-    row.names(x.df) <- gsub(SHINYREPS_PREFIX, "", row.names(x.df))
-  }
-  row.names(x.df) <- gsub("\\.cutadapt\\.log$", "", row.names(x.df))
-  if(nrow(x.df)>1){
-    if(is.na(SHINYREPS_PREFIX)) {row.names(x.df)  <- gsub(lcPrefix(row.names(x.df) ), "", row.names(x.df) )}
-    row.names(x.df)  <- gsub(lcSuffix(row.names(x.df) ), "", row.names(x.df) )
-  }
+  x.df$plotfile <- gsub("\\.cutadapt\\.log$", "", basename(colnames(x)))
+  x.df$plotfile <-  gsub("(_S\\d{1,3}$)|(_S\\d{1,3}_L\\d{3}_R\\d_\\d{3}$)", "", x.df$plotfile)
   
-  # passing the different factors given in targetsdf to x.df which was created from cutadapt file names 
+  # merging the different factors given in targetsdf to x.df, which was created from cutadapt file names 
   if(!is.null(colorByFactor)) { # add information to x.df
     
     if(is.null(targetsdf)) {stop("If 'colorByFactor' is given you must also provide 'targetsdf'!")}
@@ -2188,46 +1036,39 @@ DEhelper.cutadapt <- function(targetsdf=targets, colorByFactor="group", sampleCo
       targetsdf <- read.delim(targetsdf)
     } 
     
-    if(length(sampleColumnName)>1) { # melt in case of multiple file name columns (as for ChIP-Seq)
-      targetsdf <- targetsdf[,unique(c(colorByFactor, sampleColumnName, "sample"))]
-      targetsdf <- reshape2::melt(targetsdf, measure.vars=sampleColumnName, value.name = "filename") 
+    if(length(fileColumnName)>1) { # melt in case of multiple file name columns (as for ChIP-Seq)
+      targetsdf <- targetsdf[,unique(c(colorByFactor, fileColumnName, "sample"))]
+      targetsdf <- reshape2::melt(targetsdf, measure.vars=fileColumnName, value.name = "filename") 
       for (i in colorByFactor) {targetsdf[, i] <- paste0(targetsdf[, i], " (", targetsdf$variable, ")")}
       targetsdf[,c(colorByFactor, "filename")] <- lapply(targetsdf[,c(colorByFactor, "filename")], factor)
       
     } else {
-      targetsdf$filename <- targetsdf[,sampleColumnName]
+      targetsdf$filename <- targetsdf[,fileColumnName]
     }
     
-    targetsdf$filename <- gsub("\\..*$", "", targetsdf$filename ) # shorten filename suffix
-    index <- sapply(targetsdf$filename, grep, x.df$filename_unmod, ignore.case = T) # grep sample name in file names
-    if(is.list(index)) {
-      #targetsdf <- targetsdf[sapply(index, length) ==1, ] # remove targetsdf entries not (uniquely) found in x.df
-      targetsdf <- targetsdf[sapply(index, length)!=0,] # remove targetsdf entries not found in x.df
-      index <- sapply(targetsdf$filename, grep, x.df$filename_unmod, ignore.case = T) # redo grep sample name in file names
-    }
-    if(!identical(sort(unname(unlist(index))), 1:nrow(x.df))) {
-      stop("There seem to be ambiguous sample names in targets. Can't assign them uniquely to cutadapt logfile names")
-    }
+    targetsdf$filename <- gsub("(_S\\d{1,3}$)|(_S\\d{1,3}_L\\d{3}_R\\d_\\d{3}$)", "", targetsdf$filename)
     
-    x.df <- data.frame(x.df[unlist(t(index)),], targetsdf, check.names =F)
-    x.df <- x.df[order(rownames(x.df)),, drop=F]
-    if("sample" %in% colnames(x.df) && !any(duplicated(x.df$sample))) { # use sample column as identifier if present and unique
-      x.df$filename <- x.df$sample
-      row.names(x.df) <- x.df$sample} 
+    # now left_join by file name
+    x.df <- dplyr::left_join(x.df, targetsdf, by=dplyr::join_by(plotfile==filename))
     
-    if(any(!colorByFactor %in% colnames(x.df))) {
-      if(all(!colorByFactor %in% colnames(x.df))) {
-        cat("\nNone of the column names given in colorByFactor is available. Perhaps sample names are not part of fastq file names? Using filename instead.")
-        colorByFactor <- "filename"
-      } else { # one plot each element of colorByFactor
-        cat("\n", colorByFactor[!colorByFactor %in% colnames(x.df)], "not available. Using", colorByFactor[colorByFactor %in% colnames(x.df)], "instead.")
-        colorByFactor <- colorByFactor[colorByFactor %in% colnames(x.df)]
-      }
+    # use sample column as plotfile if no multiple sample names per plotfile present
+    # and sample names are shorter than file names (e.g. for ParseBio the sample column 
+    # may be longer if it consist of multiple concatenated sample names)
+    if("sample" %in% colnames(x.df) && all(!is.na(x.df$sample)) && 
+       identical(x.df[!duplicated(x.df$sample),], x.df[!duplicated(x.df$plotfile),]) && 
+       max(nchar(x.df$sample)) <= max(nchar(x.df$plotfile))) {
+      x.df$plotfile <- x.df$sample
     }
-  } else {
-    x.df$filename <- row.names(x.df)
+
+
+  } else { # no colorByFactor
     colorByFactor <- "filename"
   }
+  
+  # prune prefix from plotfile if present
+  if(!is.na(SHINYREPS_PREFIX)) {
+    x.df$plotfile <- gsub(paste0("^",SHINYREPS_PREFIX), "", x.df$plotfile)
+  } 
   
   # melt data frame for plotting
   vars2plot <- c(grep("adapter trimmed", colnames(x.df), value=T), 
@@ -2237,8 +1078,8 @@ DEhelper.cutadapt <- function(targetsdf=targets, colorByFactor="group", sampleCo
   x.melt <- reshape2::melt(x.df, measure.vars=vars2plot, variable.name="reads")
   # everything which is not a value should be a factor
   
-  # one plot for each element of colorByFactor
-  violin.list <- lapply(colorByFactor, plotfun, data=x.melt, labelOutliers=labelOutliers, outlierIQRfactor=outlierIQRfactor) # "colorByFactor" is submitted as color.value
+  # one plot for each element of colorByFactor (colorByFactor is submitted as color.value)
+  violin.list <- lapply(colorByFactor, plotfun, data=x.melt, labelOutliers=labelOutliers, outlierIQRfactor=outlierIQRfactor)
   
   for(i in 1:length(violin.list)){
     plot(violin.list[[i]])
@@ -2272,26 +1113,25 @@ DEhelper.cutadapt.plot <- function(data, color.value, labelOutliers=T, outlierIQ
     dplyr::group_by(reads) |>
     dplyr::mutate(outlier=is_outlier(value)) |>
     dplyr::ungroup() |>
-    dplyr::mutate(outlier=ifelse(outlier,filename,as.numeric(NA))) |>
+    dplyr::mutate(outlier=ifelse(outlier,plotfile,as.numeric(NA))) |>
     as.data.frame()
   
   ylab <- "% reads"
   
-  # prepare palette of appropriate length according to the different factors given in colorByFactor
+  # determine the number of colors needed for the processed colorByFactor
   colourCount = length(unique(data[,color.value]))
-  getPalette = colorRampPalette(brewer.pal(9, "Set1"))
 
   names(data)[names(data)==color.value] <- "color.value" 
  
   p <- ggplot(data, aes(x=reads,
                         y=value,
                         color=color.value ))+
-    geom_quasirandom(groupOnX=TRUE) +
+    ggbeeswarm::geom_quasirandom(groupOnX=TRUE) +
     geom_boxplot(color = "darkgrey", alpha = 0.2, outlier.shape = NA)  
 
-    if(labelOutliers) {p <- p + ggrepel::geom_text_repel(data=. |> filter(!is.na(outlier)), aes(label=filename), show.legend=F)}
-
-  p <- p + scale_color_manual(values=getPalette(colourCount)) + # creates as many colors as needed
+    if(labelOutliers) {p <- p + ggrepel::geom_text_repel(data = subset(data, !is.na(outlier)), aes(label=plotfile), show.legend=F)}
+  
+  p <- p + scale_color_manual(values=define.group.palette(colourCount)) + # creates as many colors as needed
            ylab(ylab) +
            xlab("") +
            theme(axis.text.x=element_text(angle=30, vjust=1, hjust=1)) +
@@ -2336,8 +1176,8 @@ DEhelper.umicount <- function(colorByFactor=NULL, targetsdf=targets, ...){
   
   # reduce size of file names 
   row.names(x.df) <- basename(colnames(x))
-  row.names(x.df)  <- gsub(lcSuffix(row.names(x.df) ), "", row.names(x.df) )
-  row.names(x.df)  <- gsub(lcPrefix(row.names(x.df) ), "", row.names(x.df) )
+  row.names(x.df)  <- gsub(Biobase::lcSuffix(row.names(x.df) ), "", row.names(x.df) )
+  row.names(x.df)  <- gsub(Biobase::lcPrefix(row.names(x.df) ), "", row.names(x.df) )
   #if(!is.na(SHINYREPS_PREFIX)) {row.names(x.df) <- gsub(SHINYREPS_PREFIX, "", row.names(x.df))}
   x.df$filename <- factor(row.names(x.df))
   
@@ -2346,9 +1186,9 @@ DEhelper.umicount <- function(colorByFactor=NULL, targetsdf=targets, ...){
   if(!is.null(colorByFactor) && nrow(x.df) == nrow(targetsdf)) { # if targets object fits in length, add information to x.df
     
     
-    targetsdf$samplemod <- gsub(lcSuffix(targetsdf$file ), "", targetsdf$file ) # shorten filename suffix
+    targetsdf$samplemod <- gsub(Biobase::lcSuffix(targetsdf$file ), "", targetsdf$file ) # shorten filename suffix
     #if(!is.na(SHINYREPS_PREFIX)) {targetsdf$samplemod  <- gsub(SHINYREPS_PREFIX, "", targetsdf$samplemod)}
-    targetsdf$samplemod <- gsub(lcPrefix(targetsdf$samplemod ), "", targetsdf$samplemod ) # shorten filename prefix
+    targetsdf$samplemod <- gsub(Biobase::lcPrefix(targetsdf$samplemod ), "", targetsdf$samplemod ) # shorten filename prefix
     
     
     index <- as.numeric(sapply(targetsdf$samplemod, function(x) grep(x, x.df$filename, ignore.case = T))) # grep for sample name in shortened file names
@@ -2418,107 +1258,28 @@ DEhelper.umicount <- function(colorByFactor=NULL, targetsdf=targets, ...){
 
 
 
-
-
-##
-## DEhelper.GO_Enrichment: get the GO enrichment results and display them
-##
-DEhelper.GO_Enrichment <- function(){
-
-    #csv file
-    if(!file.exists(SHINY_GO)){
-        return("GO enrichment statistics not available")
-    }
-}
-
-##
-## DEhelper.Subread: parse Subread summary stats and create a md table
-##
-DEhelper.Subread <- function() {
-  
-  FOLDER <- SHINYREPS_SUBREAD
-  SUFFIX <- paste0(SHINYREPS_SUBREAD_SUFFIX, '$')
-  
-  # check if folder exists
-  if(!file.exists(FOLDER)) {
-    return("Subread statistics not available")
-  }
-  
-  # create a matrix using feature names as rownames, sample names as colnames
-  x <- sapply(list.files(FOLDER, pattern=SUFFIX), function(f) {
-    
-    f <- file(paste0(FOLDER, '/', f))
-    l <- readLines(f)
-    close(f)
-    
-    ## get all interesting rows, extract count and category names
-    assigned.and.unassigned <- l[grep("Assigned|Unassigned",l)]
-    category.counts <- as.numeric(sapply(assigned.and.unassigned, function(i) {strsplit(i,"\t")[[1]][2]}))
-    names(category.counts) <- sapply(assigned.and.unassigned, function(i) {strsplit(i,"\t")[[1]][1]})
-    return(category.counts)
-  })
-  
-  # correct column names
-  colnames(x) <- gsub(paste0(SUFFIX, "$"), "", colnames(x))
-  
-  if(file.exists(SHINYREPS_TARGET)){
-    
-    # get target names
-    targets <- read.delim(SHINYREPS_TARGET)
-    targets$sample_ext <- gsub("\\..*$", "", targets$file )
-    
-    # replace files names with nicer sample names given in targets file
-    # if sample is missing in targets file, use reduced file name
-    colnames(x) <- sapply(colnames(x), function(i) { ifelse(sum(sapply(targets$sample_ext, grepl, i))==1,
-                                                            targets[sapply(targets$sample_ext, grepl, i),"sample"],
-                                                            gsub(paste0("^",SHINYREPS_PREFIX),"",i))})
-  } else {
-    
-    if(!is.na(SHINYREPS_PREFIX)) {
-      colnames(x) <- gsub(paste0("^",SHINYREPS_PREFIX), "", colnames(x))
-    }
-  }
-  
-  # create md table (omitting various values that are 0 for now)
-  # from x we remove the ones which are unmapped to calculate percentages
-  # only for the mapped ones
-  x <- x[rownames(x) != "Unassigned_Unmapped", ]
-  x <- rbind(total=x, colSums(x))
-  rownames(x)[nrow(x)] <- "total"
-  df <- data.frame(assigned=paste0(format(x["Assigned", ], big.mark=","), " (", format((x["Assigned", ]/x["total", ])*100, digits=2, nsmall=2, trim=T), "%)"), 
-                   unassigned_ambig=paste0(format(x["Unassigned_Ambiguity", ], big.mark=","), " (", format((x["Unassigned_Ambiguity", ]/x["total", ])*100, digits=2, nsmall=2, trim=T), "%)"), 
-                   unassigned_multimap=paste0(format(x["Unassigned_MultiMapping", ], big.mark=","), " (", format((x["Unassigned_MultiMapping", ]/x["total", ])*100, digits=2, nsmall=2, trim=T), "%)"), 
-                   unassigned_nofeat=paste0(format(x["Unassigned_NoFeatures", ], big.mark=","), " (", format((x["Unassigned_NoFeatures", ]/x["total", ])*100, digits=2, nsmall=2, trim=T), "%)"))
-  rownames(df) <- colnames(x)
-  
-  # sort alphabetically for plotting
-  df <- df[order(rownames(df)),]
-  kable(df, align=c("r", "r", "r", "r"), output=F, format="markdown")
-  
-}
-
-
 ##
 ## extract the intron/exon and intergenic regions from the qualimap report
 ##
-DEhelper.Qualimap <- function(targetsdf=targets, ...) {
+DEhelper.Qualimap <- function(targetsdf=SHINYREPS_TARGET, ...) {
   
   # logs folder
-  if(!file.exists(SHINYREPS_QUALIMAP_LOGS)) {
-    return("Read distribution statistics not available")
+  if(!file.exists(SHINYREPS_QUALIMAP_LOGS) || length(list.files(SHINYREPS_QUALIMAP_LOGS))==0) {
+    return("Qualimap reports not available")
   }  
   
   QC <- SHINYREPS_QUALIMAP_LOGS    
-  # construct the image url from the folder contents (skip current dir .)
-  samples <- list.files(QC, pattern="rnaseq_qc_results.txt$", recursive=T)
-  samples <- selectSampleSubset(samples, grepInBasename=F, ...)
-  if(length(samples) == 0) {
-    return("Qualimap report not available")
-  }
-  sample_names <- gsub("_counts_qualimap", "", dirname(samples))
   
-  samples <- paste0(QC, "/", samples)
-  samples <- sapply(samples, function(f){
+  # list files to plot
+  plotfiles <- list.files(QC, pattern="rnaseq_qc_results.txt$", recursive=T, full.names=T)
+  
+  # select subset of plotfiles in case there are too many separate files (select all by default)
+  plotfiles <- selectSampleSubset(plotfiles, grepInBasename=T, ...)
+  
+  names(plotfiles)  <- gsub("_counts_qualimap", "", basename(dirname(plotfiles)))
+  names(plotfiles)  <-  gsub("(_S\\d{1,3}$)|(_S\\d{1,3}_L\\d{3}_R\\d_\\d{3}$)", "", names(plotfiles))
+  
+  plotfiles <- sapply(plotfiles, function(f){
     l <- readLines(f)
     l <- l[grep("exonic|intronic|intergenic", l)] 
     l <- strsplit(gsub(" ", "", l), "=")
@@ -2527,45 +1288,55 @@ DEhelper.Qualimap <- function(targetsdf=targets, ...) {
       as.numeric(gsub("\\%\\)", "", strsplit(x[[2]], "\\(")[[1]][2]))    
     })
   })
-  colnames(samples) <- sample_names
+
   # qualimap outputs an additional category "overlapping_exon", which is part of intron or intergenic,
   # but since it is not specified, which of the two, we will not display this category here.
-  
-  #Todo fix the naming scheme, the levels and then put it in the barplot 
-  if(file.exists(SHINYREPS_TARGET)){
-    
-    # get target names
-    #targets <- read.delim(SHINYREPS_TARGET, comment.char = "#")
-    targets <- targetsdf
-    targets$sample_ext <- gsub("\\..*$", "",targets$file )
 
-    # replace files names with nicer sample names given in targets file
-    # if sample is missing in targets file, use reduced file name
-    colnames(samples) <- sapply(colnames(samples), function(i) { ifelse(sum(sapply(targets$sample_ext, grepl, i))==1 && !any(duplicated(targets$sample)),  
-                                                                        targets[sapply(targets$sample_ext, grepl, i),"sample"], 
-                                                                        gsub(paste0("^",SHINYREPS_PREFIX),"",i))})
-  } else {
-    if(!is.na(SHINYREPS_PREFIX)) {
-      colnames(samples) <- gsub(paste0("^",SHINYREPS_PREFIX), "", colnames(samples))
-    }
-  }
-  
   # sort according to the groups and samplenames in the targets or alphabetically
-  samples <- reshape2::melt(samples, value.name="perc")
-  colnames(samples) <- c("class", "sample", "perc")
+  df <- reshape2::melt(plotfiles, value.name="perc")
+  colnames(df) <- c("class", "plotfile", "perc")
   
-  # sort the samples either by the group order of the targets file or alphabetically
-  if(file.exists(SHINYREPS_TARGET) & SHINYREPS_SORT_ALPHA==FALSE){
-    sample_order   <- targets$sample[order(paste0(targets$group, targets$sample), decreasing=TRUE)]
-    samples$sample <- factor(samples$sample, levels = sample_order)
-  }else{
-    samples$sample <- factor(samples$sample, levels = sort(unique(samples$sample), decreasing=TRUE))  
-  }
+  if(class(targetsdf)=="data.frame" || file.exists(targetsdf)){
+    
+    # get targets
+    if(class(targetsdf)=="data.frame") {
+      targets <- targetsdf
+    } else {
+      targets <- read.delim(targetsdf, comment.char = "#")
+    }
+    
+    targets$file <- gsub("(_S\\d{1,3}$)|(_S\\d{1,3}_L\\d{3}_R\\d_\\d{3}$)", "", targets$file)
+    
+    # now left_join by file name
+    df <- dplyr::left_join(df, targets, by=dplyr::join_by(plotfile==file))
+    
+    # use sample column as plotfile if no multiple sample names per plotfile present
+    # and sample names are shorter than file names (e.g. for ParseBio the sample column 
+    # may be longer if it consist of multiple concatenated sample names)
+    if("sample" %in% colnames(df) && all(!is.na(df$sample)) && 
+       identical(df[!duplicated(df$sample),], df[!duplicated(df$plotfile),]) && 
+       max(nchar(df$sample)) <= max(nchar(df$plotfile))) {
+      df$plotfile <- df$sample
+    }
+  }   
   
-  samples$class <- factor(samples$class, levels=c("intergenic", "intronic", "exonic" )) 
-  
+  # prune prefix from plotfile if present
+  if(!is.na(SHINYREPS_PREFIX)) {
+    df$plotfile <- gsub(paste0("^",SHINYREPS_PREFIX), "", df$plotfile)
+  } 
+
+  # check if targets.txt info is merged properly, factorize and sort.
+  df$plotfile <- factor(df$plotfile, levels = rev(sort(unique(df$plotfile))))
+  df$class <- factor(df$class, levels=c("intergenic", "intronic", "exonic" )) 
+  if("group" %in% colnames(df) && all(!is.na(df$group)) && SHINYREPS_SORT_ALPHA==FALSE) {
+    df$group <- factor(df$group, levels = sort(unique(df$group)))
+    df <- df[order(df$group, df$plotfile),]
+  } else {
+    df <- df[order(df$plotfile),]
+    }
+ 
   # plot
-  p <- ggplot(samples, aes(x=sample,y=perc,fill=class)) +
+  p <- ggplot(df, aes(x=plotfile,y=perc,fill=class)) +
     geom_col(width = 0.8) +
     labs(x = "",
          y = "% of mapped reads") +
@@ -2579,151 +1350,6 @@ DEhelper.Qualimap <- function(targetsdf=targets, ...) {
 }
 
 
-
-##
-##DEhelper.insertsize: get the insertsize from the qc and display mean and sd 
-##
-DEhelper.insertsize <- function(){
-  
-  if (SHINYREPS_PAIRED == "yes") {
-    filelist <- list.files(path=SHINYREPS_INSERTSIZE,full.names=TRUE, pattern="insertsizemetrics.tsv$")
-    insertsizes <- lapply(filelist, read.table, sep="\t", header=TRUE, nrow=1)
-    insertsizes <- do.call(rbind, insertsizes)
-    samplenames <- basename(filelist)
-    
-    
-    
-    if(file.exists(SHINYREPS_TARGET)){
-      
-      # get target names
-      targets <- read.delim(SHINYREPS_TARGET)
-      targets$sample_ext <- gsub("\\..*$", "",targets$file)
-      
-      # replace files names with nicer sample names given in targets file
-      # if sample is missing in targets file, use reduced file name
-      samplenames <- sapply(samplenames, function(i) { ifelse(sum(sapply(targets$sample_ext, grepl, i))==1,  
-                                                              targets[sapply(targets$sample_ext, grepl, i),"sample"], 
-                                                              gsub(paste0("^",SHINYREPS_PREFIX),"",i))})
-    } else {
-      if(!is.na(SHINYREPS_PREFIX)) {
-        samplenames <- gsub(paste0("^",SHINYREPS_PREFIX), "", samplenames)
-        samplenames <- gsub("_insertsizemetrics.tsv","", samplenames)
-      }
-    }
-    
-    rownames(insertsizes) <- samplenames 
-    insertsizes <- insertsizes[,c("MEDIAN_INSERT_SIZE","MEAN_INSERT_SIZE", "STANDARD_DEVIATION")]
-    colnames(insertsizes) <- c("Median", "Mean", "SD")
-    kable(insertsizes, output=F, align=c("l"), format="markdown")
-  }
-}
-
-
-# Helper to plot the insertsize histogram equivalent to the one from picard
-# Input is the Picard generated metrics file
-DEhelper.insertsize.helper <- function(metricsFile){
-  #find the start of our metrics informatioun 
-  startFinder <- scan(metricsFile, what="character", sep="\n", quiet=TRUE, blank.lines.skip=FALSE)
-  
-  firstBlankLine=0
-  
-  for (i in 1:length(startFinder)) {
-    if (startFinder[i] == "") {
-      if (firstBlankLine == 0) {
-        firstBlankLine = i+1
-      } else {
-        secondBlankLine = i+1
-        break
-      }
-    }
-  }
-  
-  histogram <- read.table(metricsFile, header=TRUE, sep="\t", skip=secondBlankLine, comment.char="", quote='', check.names=FALSE)
-  
-  ## The histogram has a fr_count/rf_count/tandem_count for each metric "level"
-  ## This code parses out the distinct levels so we can output one graph per level
-  headers <- sapply(sub(".fr_count","",names(histogram),fixed=TRUE), "[[" ,1)
-  headers <- sapply(sub(".rf_count","",headers,fixed=TRUE), "[[" ,1)
-  headers <- sapply(sub(".tandem_count","",headers,fixed=TRUE), "[[" ,1)
-  
-  ## Duplicate header names could cause this to barf.  But it really shouldn't when we have "All_reads.fr_count" and 
-  ## "All_reads.rf_count" for example.  Not sure why this would fail, but I care.
-  if (any(duplicated(headers))) {
-    levels = unique(headers[2:length(headers)]);
-  } else {
-    levels <- c()
-    for (i in 2:length(headers)) {
-      if (!(headers[i] %in% levels)) {
-        levels[length(levels)+1] <- headers[i]
-      }
-    }
-  }
-  
-  title_info <- basename(metricsFile)  
-  
-  if(file.exists(SHINYREPS_TARGET)){
-    
-    # get target names
-    targets <- read.delim(SHINYREPS_TARGET)
-    targets$sample_ext <- gsub("\\..*$", "",targets$file )
-    
-    # replace files names with nicer sample names given in targets file
-    # if sample is missing in targets file, use reduced file name
-    title_info <- sapply(title_info, function(i) { ifelse(sum(sapply(targets$sample_ext, grepl, i))==1,   
-                                                          targets[sapply(targets$sample_ext, grepl, i),"sample"], 
-                                                          gsub(paste0("^",SHINYREPS_PREFIX),"",i))})
-  } else {
-    if(!is.na(SHINYREPS_PREFIX)) {
-      title_info <- gsub(paste0("^",SHINYREPS_PREFIX), "", title_info)
-    }
-    title_info <- gsub("_insertsizemetrics.tsv$","", title_info)
-  }
-  
-  #we get the histogram which has the names of the levels e.g. all_reads and readgroups/sample groups depending on
-  #accumulation level which was used.
-  #the colnames of histogram are something like all.read.fr_count, all.read.rf_count etc.
-  #to get the whole shebang into a wider format we have to add the information
-  hist_long <- reshape2::melt(histogram, id.var = "insert_size") |> 
-    extract(col=variable,
-            into=c("group", "counttype" ),
-            regex='([^\\.]+)\\.([^\\.]+)') |> 
-    dplyr::rename( amount = value)
-  #we also have to add the comulative sum per group to the whole shebang
-  hist_long <- hist_long |> group_by(group) |> 
-    arrange( desc(insert_size)) |> 
-    mutate( cumulative = (cumsum(amount)/sum(amount))*max(amount))
-  #1. Create one plot per group (all_reads etc)
-  #2. save the plots in a list
-  #3. use arrangeGrob to arrange
-  hist_long <- split(hist_long, hist_long$group)
-  hist_plots <- lapply(hist_long, function(hist_data){
-    p <- ggplot(hist_data, aes(x    = insert_size,
-                               y    = amount,
-                               fill = counttype)) +
-      geom_bar( stat = "identity", 
-                position = "identity",
-                alpha=0.7) +
-      scale_fill_hue( c=50, l=40) +
-      geom_line(aes(x = insert_size,
-                    y = cumulative),
-                linetype = "dashed",
-                color    = "grey") +
-      scale_y_continuous( name="# reads",
-                          sec.axis = sec_axis(~./max(hist_data$amount),
-                                              name = "Cumulative fraction of reads > insert size")) +
-      xlab("insert size in bp") +
-      theme_bw() +
-      theme(legend.justification=c(1,1), legend.position=c(1,1), 
-            legend.background = element_rect(colour = "transparent", fill = "transparent")) + 
-      facet_grid(~group)
-    return(p)
-  })
-  
-  hist_plot <- arrangeGrob(grobs = hist_plots,
-                           top = textGrob(title_info)) 
-  return(hist_plot)
-  
-}
 
 
 ## 
@@ -2746,32 +1372,6 @@ DEhelper.subchunkify <- function(g, fig_height=7, fig_width=5) {
   cat(knitr::knit(text = knitr::knit_expand(text = sub_chunk), quiet = TRUE))
 }
 
-
-##
-##DEhelper.insertsize.plot: get the insertsize histograms and display them 
-##
-DEhelper.insertsize.plot <- function(){
-  # logs folder
-  SHINYREPS_PLOTS_COLUMN <- tryCatch(as.integer(SHINYREPS_PLOTS_COLUMN),
-                                     error=function(e){3})
-  if(SHINYREPS_PLOTS_COLUMN < 2) {
-    SHINYREPS_PLOTS_COLUMN <- 3L    # default to 3 columns
-  }
-  if (SHINYREPS_PAIRED == "yes" &
-      length(list.files(path = SHINYREPS_INSERTSIZE,
-                        pattern = "insertsizemetrics.tsv$")) > 0) {
-    samples <- list.files(path = SHINYREPS_INSERTSIZE,
-                          full.names = TRUE,
-                          pattern = "insertsizemetrics.tsv$")
-    #we generate the plots
-    insert_plots <- lapply(samples, 
-                           DEhelper.insertsize.helper)
-    return(arrangeGrob(grobs = insert_plots,
-                       ncol = SHINYREPS_PLOTS_COLUMN))
-  }else{
-    return("No insertsize histograms available.")
-  }
-}
 
 
 ##
@@ -2806,75 +1406,6 @@ Toolhelper.ToolVersions <- function() {
 }
 
 
-##
-#' isoutlier function using median absolute deviation (MAD) as defined in scran
-#' 
-MAD <- function(x, n) {
-  constant <- 1.4826 # keep consistency with sd in normally distributed data (see ?stats::mad)
-  list(low =median(x) - n * constant * median(abs(x - median(x))),
-       high=median(x) + n * constant * median(abs(x - median(x))))
-}
-
-
-##
-#' plotPCAfromQCmetrics: plot PCA from qc metrics of sce object
-#'
-#' @param sce SingleCellExperiment object
-#' @param metrics character vector with QC metric to be used from colData(sce)
-#' @param anno character vector defining up to 2 cell grouping factors to be indicated in the PCA plot by color and shape
-#' @param qc.drop dataframe containing logicals for passing the applied qc criteria. May contain a summary column "pass".
-#' 
-plotPCAfromQCmetrics <- function(sce, metrics, anno=NULL, qc.drop=NULL){
-  
-  pca.sce <- scater::runColDataPCA(sce, variables = metrics, name = "PCA_coldata", ncomponents = 2)  
-  
-  if(!is.null(qc.drop)) { # use dataframe with QC failing data 
-    
-    if(! "pass" %in% colnames(qc.drop)) {qc.drop$pass <- !apply(qc.drop, 1, any)} # create "pass" column if not present
-    qcfiltercriteria <- colnames(qc.drop)[colnames(qc.drop) != "pass"]
-    
-    colData(pca.sce) <- cbind(colData(pca.sce), qc.drop[match(colnames(pca.sce), rownames(qc.drop)), ]) # add passing qc metrics to PCs
-    
-    for (i in qcfiltercriteria) { # create column with combined qc criteria output
-      colData(pca.sce)[,paste0(i,".word")] <- ifelse(colData(pca.sce)[,i]==TRUE,i,"")
-    }
-    pca.sce$QC_drop <- ifelse(pca.sce$pass, "kept", apply(colData(pca.sce)[,paste0(qcfiltercriteria,".word")], 1, paste, collapse="+"))
-    pca.sce$QC_drop <- sub("^\\+","",sub("\\+$","",gsub("\\++","\\+",pca.sce$QC_drop)))
-    
-    anno <- c("QC_drop", anno) # color by failed qc criteria
-    colourCount <- nrow(qc.drop[!duplicated(qc.drop),])
-  } else {
-    if(!is.null(anno)) {
-    colourCount <- length(unique(colData(pca.sce)[,anno[1]]))
-    } else {
-      colourCount <- 1
-    }
-  }
-  
-  if(length(anno)>=1) {
-    dotcol <- anno[1]
-    if(length(anno)>=2) { 
-      dotshape <- anno[2]} else {
-        dotshape <- NULL}
-  } else {
-    dotcol <- dotshape <- NULL
-  }
-  
-  # prepare palette of appropriate length according
-  getPalette = colorRampPalette(brewer.pal(9, "Set1"))
-  
-  p_allGroups <-  plotReducedDim(pca.sce, dimred="PCA_coldata", colour_by=dotcol, shape_by=dotshape, point_size=3) + 
-    scale_color_manual(values=getPalette(colourCount)) + labs(color = dotcol)
-    #scale_color_brewer(palette = "Dark2", name=dotcol) +
-    theme_bw()
-  
-  if("cells" %in% colnames(colData(pca.sce))) { # add labels for 0c and 10c controls
-    p_allGroups <- p_allGroups + geom_text_repel(aes(x=PC1, y=PC2, label=cells), 
-                                                 subset(data.frame(reducedDim(pca.sce, "PCA_coldata"), cells=pca.sce$cells), cells %in% c("0c", "10c"))) 
-  }
-  
-  plot(p_allGroups)
-}
 
 ##
 #' selectSampleSubset: select subset of samples for including in report (e.g. in case of multiple fastq files in scRNA-seq) 
@@ -2912,40 +1443,3 @@ selectSampleSubset <- function(samples, samplePattern=NULL, excludePattern=NULL,
 }
 
 
-#'
-#' Define a group color palette.
-#'
-#' @param num - number of groups
-#'
-#' @return a color vector
-#'
-#' @examples group.colors <- define.group.palette(length(levels(colData(dds)[,"group"])))
-#'           
-define.group.palette <- function(num) {
-  
-  if (num <=9) {
-    group.palette <- brewer.pal(9,"Set1")[1:num]
-  } else {
-    group.palette <- colorRampPalette(brewer.pal(9,"Set1"))(num)
-  }
-  return(group.palette)
-}
-
-#'
-#' Define a replicate color palette.
-#'
-#' @param num - number of replicates
-#'
-#' @return a color vector
-#'
-#' @examples replicate.colors <- define.replicate.palette(length(levels(colData(dds)[,"replicate"])))
-#'           
-define.replicate.palette <- function(num) {
-  
-  if (num <=9) {
-    replicate.palette <- brewer.pal(8,"Dark2")[1:num]
-  } else {
-    replicate.palette <- colorRampPalette(brewer.pal(8,"Dark2"))(num)
-  }
-  return(replicate.palette)
-}

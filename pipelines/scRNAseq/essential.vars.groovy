@@ -19,9 +19,8 @@ ESSENTIAL_USE_AGGR_DATA=true // if true (default) load aggregated sample data fo
 
 // Genome annotation
 ESSENTIAL_GENESGTF="/fsimb/common/genomes/homo_sapiens/10X/grch38_ensembl98/refdata-gex-GRCh38-2020-A/genes/genes.gtf"
-ESSENTIAL_GENESBED="/fsimb/common/genomes/homo_sapiens/10X/grch38_ensembl98/refdata-gex-GRCh38-2020-A/genes/genes.bed"
-ESSENTIAL_CHROMSIZES="/fsimb/common/genomes/homo_sapiens/10X/grch38_ensembl98/refdata-gex-GRCh38-2020-A/star/chrNameLength.txt"  // chromosome sizes file
-ESSENTIAL_FEATURETYPE="gene_type" //gencode (also 10X Genomics) uses gene_type; ensemble uses gene_biotype
+ESSENTIAL_CHROMSIZES="/fsimb/common/genomes/homo_sapiens/10X/grch38_ensembl98/refdata-gex-GRCh38-2020-A/star/chrNameLength.txt"  // chromosome sizes file for trackhub module
+ESSENTIAL_FEATURETYPE="gene_type" //gencode (also 10X Genomics) uses gene_type; ensemble (also ParseBio) uses gene_biotype
 ESSENTIAL_ORG="human"           // UCSC organism
 ESSENTIAL_DB="hg38"              // UCSC assembly version
 ESSENTIAL_MTGENES="MT-"  // text file with gene ids of mitochondrial genes or starting pattern of mito gene symbols. If empty, standard mito chr names used.
@@ -29,7 +28,6 @@ ESSENTIAL_MTGENES="MT-"  // text file with gene ids of mitochondrial genes or st
 // Optional for 10X pipelines: sample demultiplexing if sample pooling per GEM well was applied (specify one line per demultiplexed sample in targets.txt)
 // Either "demux_GT" for demultiplexing by genetic variance, "demux_GT_noAssignment" for demultiplexing by genetic variance without subsequent assignment of corresponding individuals across files, 
 // "demux_HTO" for cell hashing or empty string for no demultiplexing (default).
-// if "demux_HTO" provide "file_HTO" (fastq file with corresponding HTO sequences), "seq_HTO" (HTO sequence) and "name_HTO" (HTO name) in targets.txt 
 RUN_DEMUX=""  
 
 // Reference genomes for FastqScreen

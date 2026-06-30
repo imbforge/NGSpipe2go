@@ -26,7 +26,7 @@ count_breaks = {
 
             samtools view $samtools_view_FLAGS $input | \
               bedtools bamtobed -i - | \
-              awk 'BEGIN{OFS=","} {sub(/^.+_/,"",\$4); if(\$6 == "+") { print \$1,\$2-1,\$2,\$6,\$4 } else { print \$1,\$3,\$3+1,\$6,\$4 }}' | \
+              awk 'BEGIN{OFS=","} {sub(/^.+_/,"",\$4); if(\$6 == "+") { print \$1,\$2,\$2+1,\$6,\$4 } else { print \$1,\$3,\$3+1,\$6,\$4 }}' | \
               sort -t, --parallel=$count_breaks_vars.threads -k1,1 -k2,2g -k3,3g | \
               uniq -c | \
               awk 'BEGIN{OFS=","} { print \$2,\$1 }' > \$tmpfile &&

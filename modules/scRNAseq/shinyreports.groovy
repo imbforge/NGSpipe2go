@@ -83,11 +83,12 @@ shinyReports = {
             echo "SHINYREPS_DEMUX_OUT=${shinyReports_vars.demux_out}" >> $output &&
             echo "SHINYREPS_DEMUXCLUSTER_OUT=${shinyReports_vars.demuxCluster_out}" >> $output &&
             echo "SHINYREPS_CELLRANGERAGGR_ID=${shinyReports_vars.cellranger_aggr_id}"  >> $output &&
+            echo "SHINYREPS_CELLRANGERCOUNT_OUT=${shinyReports_vars.cellranger_count_out}"  >> $output &&
+            echo "SHINYREPS_CELLRANGERAGGR_OUT=${shinyReports_vars.cellranger_aggr_out}"  >> $output &&
             echo "SHINYREPS_SPLITPIPECOMB_OUT=${shinyReports_vars.splitpipeComb_out}"  >> $output &&
             echo "SHINYREPS_READAGGR_OUT=${shinyReports_vars.readAggr_out}" >> $output &&
             echo "SHINYREPS_UMICOUNT=${shinyReports_vars.umicount}"             >> $output &&
             echo "SHINYREPS_UMICOUNT_LOG=${shinyReports_vars.umicount_log}"     >> $output &&
-            echo "SHINYREPS_MAPPINGSTATS=${shinyReports_vars.mappingStats}" >> $output &&
             echo "SHINYREPS_QC_BIOC_OUT=${shinyReports_vars.qc_bioc_out}" >> $output &&
             echo "SHINYREPS_NORM_BIOC_OUT=${shinyReports_vars.norm_bioc_out}" >> $output &&
             echo "SHINYREPS_SPIKEIN_NORM=${shinyReports_vars.spikein_norm}" >> $output &&
@@ -109,6 +110,7 @@ shinyReports = {
             echo "SHINYREPS_FDRTHRESHOLD_DE=${shinyReports_vars.FDR_threshold_DE}"     >> $output &&
             echo "SHINYREPS_TOPDE4GO=${shinyReports_vars.top_DE_for_GO}" >> $output &&
             echo "SHINYREPS_DEGO_PTHRESHOLD=${shinyReports_vars.DEGO_p_threshold}" >> $output &&
+            echo "SHINYREPS_DEGO_UNIVERSE=${shinyReports_vars.DEGO_universe}" >> $output &&
 
             echo "SHINYREPS_DIFFEXPR_OUT=${shinyReports_vars.diffExpr_out}"     >> $output &&
             echo "SHINYREPS_DIFFPEAKS_OUT=${shinyReports_vars.diffPeaks_out}"     >> $output &&
@@ -125,9 +127,10 @@ shinyReports = {
             echo "SHINYREPS_CTANNOSEURAT_OUT=${shinyReports_vars.CTannoSeurat_out}"     >> $output &&
             echo "SHINYREPS_CTANNOMARKER_OUT=${shinyReports_vars.CTannoMarker_out}"     >> $output &&
             echo "SHINYREPS_CTANNOSELECTED=${shinyReports_vars.CTannoSelected}"     >> $output &&
-            echo "SHINYREPS_MTGENES=${shinyReports_vars.mtgenes}" >> $output
+            echo "SHINYREPS_MTGENES=${shinyReports_vars.mtgenes}" >> $output &&
+            
+            echo "SHINYREPS_EXTERNAL_RESULTDIR=${(ESSENTIAL_SEQTYPE == "ScaleBio" && binding.hasVariable("EXTERNAL_RESULTDIR") ? EXTERNAL_RESULTDIR : "")}" >> $output
 
         ""","shinyReports"
     }
 }
-

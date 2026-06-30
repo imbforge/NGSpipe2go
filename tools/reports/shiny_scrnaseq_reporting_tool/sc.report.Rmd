@@ -42,28 +42,31 @@ switch(SHINYREPS_SEQTYPE,
           all(sapply(unique(targets_pools$file), function(y) {length(unique(targets_pools[targets_pools$file==y, x]))==1}))
           })
       targets4plots <- targets_pools[!duplicated(targets_pools$file), c("file", names(collapsedColumns)[collapsedColumns])] 
-      if(!"sample" %in% colnames(targets4plots)) {targets4plots$sample <- targets4plots$file} # "sample" column is needed. Same as "file" if ambiguous.
+      if(!"sample" %in% colnames(targets4plots)) {# "sample" column is needed. Use pruned "file" column if ambiguous.
+        targets4plots$sample <- gsub("(_S\\d{1,3}$)|(_S\\d{1,3}_L\\d{3}_R\\d_\\d{3}$)", "", targets4plots$file)
+        } 
        },
       ScaleBio={      
         targets4plots <- targets_pools |> # summarize multiple rows per file for fastq-centered QC plots
-        group_by(file) |>
-        summarise(across(everything(), ~ paste(unique(.), collapse = ", "))) |>
+        dplyr::group_by(file) |>
+        dplyr::summarise(dplyr::across(dplyr::everything(), ~ paste(unique(.), collapse = ", "))) |>
         as.data.frame()
+        # include fastqc plots provided by manufacturer
+        SHINYREPS_FASTQC_OUT <- file.path(SHINYREPS_EXTERNAL_RESULTDIR, "fastq/fastqc")
 },
       ParseBio={
         targets4plots <- targets_pools |> # summarize multiple rows per file for fastq-centered QC plots
-        group_by(file) |>
-        summarise(across(everything(), ~ paste(unique(.), collapse = ", "))) |>
+        dplyr::group_by(file) |>
+        dplyr::summarise(dplyr::across(dplyr::everything(), ~ paste(unique(.), collapse = ", "))) |>
         as.data.frame()
 
       },
       SmartSeq={
-        targets4plots <- targets
+        targets4plots <- targets_pools
       }
 )
 
-
-# print targets pools
+# print targets
 DT::datatable(targets4plots, caption="targets file (sample sheet) used for analysis")
 
 ```
@@ -90,53 +93,57 @@ The color on the graph shows the Phred quality scores, which are logarithmically
 # If you set argument 'maxno', the maximum sample number will be restricted accordingly to the first 'maxno' plots. 
 ##### 
 
-if (SHINYREPS_FASTQC_SUMMARIZED) {
-    fastqc_summary_plot <- DEhelper.Fastqc.custom(web=F,summarizedPlots=T, targetsdf=targets4plots, samplePattern=SHINYREPS_SAMPLEPATTERN1, excludePattern=SHINYREPS_SAMPLEPATTERN2, maxno=SHINYREPS_MAXNO)
-    plot(fastqc_summary_plot$p.qual)
-    cat("\n", fill = T)
-} else {
-    fastqc_summary_plot <- DEhelper.Fastqc.custom(web=F,summarizedPlots=F, targetsdf=targets4plots, samplePattern=SHINYREPS_SAMPLEPATTERN1, excludePattern=SHINYREPS_SAMPLEPATTERN2, maxno=SHINYREPS_MAXNO)
-}
+if(file.exists(SHINYREPS_FASTQC_OUT)) {
 
+  if (SHINYREPS_FASTQC_SUMMARIZED) {
+      fastqc_summary_plot <- DEhelper.Fastqc.custom(web=F,summarizedPlots=T, targetsdf=targets4plots, samplePattern=SHINYREPS_SAMPLEPATTERN1, excludePattern=SHINYREPS_SAMPLEPATTERN2, maxno=SHINYREPS_MAXNO)
+      plot(fastqc_summary_plot$p.qual)
+      cat("\n", fill = T)
+  } else {
+      fastqc_summary_plot <- DEhelper.Fastqc.custom(web=F,summarizedPlots=F, targetsdf=targets4plots, samplePattern=SHINYREPS_SAMPLEPATTERN1, excludePattern=SHINYREPS_SAMPLEPATTERN2, maxno=SHINYREPS_MAXNO)
+  }
+  
+  numberFastqcPlots <- fastqc_summary_plot$no.of.samples
+
+} else {
+  cat("\nNo fastqc files found.\n")
+  numberFastqcPlots <- nrow(targets4plots)
+
+}
 ```
 
-```{r FastQC_qual, echo=F,results='asis',error=F,warning=F,message=F,fig.align='center',fig.height=min(170, round((3*fastqc_summary_plot$no.of.samples)/4)+1)}
+```{r FastQC_qual, echo=F,results='asis',error=F,warning=F,message=F,fig.align='center',fig.height=min(170, round((3*numberFastqcPlots)/4)+1), eval=file.exists(SHINYREPS_FASTQC_OUT)}
 # REMARK: the maximal figure height is limited to 170 and will throw an error if exceeded ("Failed to create Cairo backend!"). For the not summarized plots you should limit the number of plots to 200 by using the maxno parameter. Otherwise the plots will be squeezed.
-
 if (SHINYREPS_FASTQC_SUMMARIZED == FALSE) {
     plot(fastqc_summary_plot$p.qual)
     cat("\n", fill = T)
 }
-
 ```
 
 #### Sequence bias
 
 The "sequence bias" plot shows the proportion of each base (% G, A, T and C) at each position. In a random library there would be little difference between the positions of a sequence run, so the lines in this plot should run parallel with each other. But most RNA-seq libraries show sequence imbalance in the first 10-12 read positions due to RT priming biases, which should however look fairly similar in all samples. In case the nucleotide content is summarized in a heatmap for all samples, gray colored fields represent a balanced nucleotide content.
 
-```{r FastQC_nuc_content_summarized, echo=F,results='asis',error=F,warning=F,message=F,fig.align='center', fig.height=min(170, ceiling(0.12*fastqc_summary_plot$no.of.samples)+1)}
-
+```{r FastQC_nuc_content_summarized, echo=F,results='asis',error=F,warning=F,message=F,fig.align='center', fig.height=min(170, ceiling(0.12*numberFastqcPlots)+1), eval=file.exists(SHINYREPS_FASTQC_OUT)}
 if (SHINYREPS_FASTQC_SUMMARIZED) {
     plot(fastqc_summary_plot$p.content)
     cat("\n", fill = T)
 } 
-
 ```
 
-```{r FastQC_nuc_content, echo=F,results='asis',error=F,warning=F,message=F,fig.align='center',fig.height=min(170, round((3*fastqc_summary_plot$no.of.samples)/4)+1)}
-
+```{r FastQC_nuc_content, echo=F,results='asis',error=F,warning=F,message=F,fig.align='center',fig.height=min(170, round((3*numberFastqcPlots)/4)+1), eval=file.exists(SHINYREPS_FASTQC_OUT)}
 if (SHINYREPS_FASTQC_SUMMARIZED == F) {
     plot(fastqc_summary_plot$p.content)
     cat("\n", fill = T)
 }
+
 ```
 
 #### GC content
 
 The "GC content" plot shows the GC% distribution of all reads and all samples. Typically, the lines should tightly overlap and look essentially the same in all samples. An unusually shaped distribution could indicate a contaminated library.
 
-```{r FastQC_GC, echo=F,results='asis',error=F,warning=F,message=F,fig.align='center'}
-
+```{r FastQC_GC, echo=F,results='asis',error=F,warning=F,message=F,fig.align='center', eval=file.exists(SHINYREPS_FASTQC_OUT)}
 fastqc_summary_plot$p.gc
 cat("\n", fill = T)
 ```
@@ -144,25 +151,21 @@ cat("\n", fill = T)
 
 
 ```{r cutadapt, echo=F, results='asis', error=F, warning=F, message=F, eval=runCutadapt}
-##### parameters to set:
-# define subset of cutadapt log files if desired (samplePattern=NULL (default) includes all files).
-# define categories of targets.txt to be used for dot color in the plot (one plot per element of colorByFactor will be created). 
-# The function will try to map the data from targets$file to the cutadapt log file names (for this, the unique part of 
-# targets$file must be a substring of file name). If you have cutadapt log files from pooled fastq files but cell-wise 
-# information in targets.txt as in MARS-Seq, you may provide another customized targets object in 'targetsdf'. 
-# Otherwise pruned file names will be used by default.
-#####
 
 cat("## Adapter trimming with Cutadapt\n")
 
-cat("\nThe following plot shows the amount of reads trimmed for the selected adapter sequences including polyA/polyT sequences if specified. The column 'tooshort' gives the percentage of reads removed due to a length of less than 30 bases after trimming. Additionally to the column 'trimmed' which is for all adapters combined, there are columns for every single adapter giving the percentage of reads trimmed for this adapter.\n\n")
+cat("\nThe following plot shows the amount of reads trimmed for the selected adapter sequences including polyA/polyT sequences if specified. The column 'tooshort' gives the percentage of reads removed due to a length of less than the specified minimum after trimming. Additionally to the column 'trimmed', which is for all adapters combined, there are columns for every single adapter giving the percentage of reads trimmed for this adapter.\n\n")
 
-DEhelper.cutadapt(colorByFactor=colorByFactor, targetsdf=targets4plots)
+# define categories of targets file to be used for dot color in the plot (one plot per element of colorByFactor will be created). 
+DEhelper.cutadapt(colorByFactor=c("group"), targetsdf=targets4plots)
+
 ```
 
-```{r FastQC_qual_summarized_trimmed, echo=F,results='asis',error=F,warning=F,message=F,fig.align='center', eval=runCutadapt}
+```{r FastQC_qual_summarized_trimmed, echo=F,results='asis',error=F,warning=F,message=F,fig.align='center', eval=runCutadapt & file.exists(file.path(SHINYREPS_FASTQC_OUT, "trimmed"))}
+
 cat("### FastQC of trimmed reads QC\n\n")
 cat("#### Read quality\n\n")
+  
 if (SHINYREPS_FASTQC_SUMMARIZED) {
     fastqc_summary_plot <- DEhelper.Fastqc.custom(web=F,summarizedPlots=T, subdir="trimmed", targetsdf=targets4plots, samplePattern=SHINYREPS_SAMPLEPATTERN1, excludePattern=SHINYREPS_SAMPLEPATTERN2, maxno=SHINYREPS_MAXNO)
     plot(fastqc_summary_plot$p.qual)
@@ -170,9 +173,11 @@ if (SHINYREPS_FASTQC_SUMMARIZED) {
 } else {
     fastqc_summary_plot <- DEhelper.Fastqc.custom(web=F,summarizedPlots=F, subdir="trimmed", targetsdf=targets4plots, samplePattern=SHINYREPS_SAMPLEPATTERN1, excludePattern=SHINYREPS_SAMPLEPATTERN2, maxno=SHINYREPS_MAXNO)
 }
+
+
 ```
 
-```{r FastQC_qual_trimmed, echo=F,results='asis',error=F,warning=F,message=F,fig.align='center',fig.height=min(170, round((3*fastqc_summary_plot$no.of.samples)/4)+1), eval=runCutadapt}
+```{r FastQC_qual_trimmed, echo=F,results='asis',error=F,warning=F,message=F,fig.align='center',fig.height=min(170, round((3*numberFastqcPlots)/4)+1), eval=runCutadapt & file.exists(file.path(SHINYREPS_FASTQC_OUT, "trimmed"))}
 
 if (SHINYREPS_FASTQC_SUMMARIZED == FALSE) {
     plot(fastqc_summary_plot$p.qual)
@@ -180,7 +185,7 @@ if (SHINYREPS_FASTQC_SUMMARIZED == FALSE) {
 }
 ```
 
-```{r FastQC_nuc_content_summarized_trimmed, echo=F,results='asis',error=F,warning=F,message=F,fig.align='center', fig.height=min(170, ceiling(0.12*fastqc_summary_plot$no.of.samples)+1), eval=runCutadapt}
+```{r FastQC_nuc_content_summarized_trimmed, echo=F,results='asis',error=F,warning=F,message=F,fig.align='center', fig.height=min(170, ceiling(0.12*numberFastqcPlots)+1), eval=runCutadapt & file.exists(file.path(SHINYREPS_FASTQC_OUT, "trimmed"))}
 cat("#### Sequence bias of trimmed reads\n")
 
 if (SHINYREPS_FASTQC_SUMMARIZED) {
@@ -189,7 +194,7 @@ if (SHINYREPS_FASTQC_SUMMARIZED) {
 } 
 ```
 
-```{r FastQC_nuc_content_trimmed, echo=F,results='asis',error=F,warning=F,message=F,fig.align='center',fig.height=min(170, round((3*fastqc_summary_plot$no.of.samples)/4)+1), eval=runCutadapt}
+```{r FastQC_nuc_content_trimmed, echo=F,results='asis',error=F,warning=F,message=F,fig.align='center',fig.height=min(170, round((3*numberFastqcPlots)/4)+1), eval=runCutadapt & file.exists(file.path(SHINYREPS_FASTQC_OUT, "trimmed"))}
 
 if (SHINYREPS_FASTQC_SUMMARIZED == F) {
     plot(fastqc_summary_plot$p.content)
@@ -197,7 +202,7 @@ if (SHINYREPS_FASTQC_SUMMARIZED == F) {
 }
 ```
 
-```{r FastQC_GC_trimmed, echo=F,results='asis',error=F,warning=F,message=F,fig.align='center', eval=runCutadapt}
+```{r FastQC_GC_trimmed, echo=F,results='asis',error=F,warning=F,message=F,fig.align='center', eval=runCutadapt & file.exists(file.path(SHINYREPS_FASTQC_OUT, "trimmed"))}
 cat("#### GC content of trimmed reads\n")
 fastqc_summary_plot$p.gc
 cat("\n", fill = T)
@@ -209,25 +214,9 @@ cat("\n", fill = T)
 
 The plots below show meta-gene profiles of 5' to 3' read coverage and can reveal biases due to RNA degradation or specific library prep protocol; polyA-selection protocols are particularly prone of producing 3' coverage bias upon RNA degradation.
 
-```{r GeneBodyCoverage_paragraph, echo=F, error=F, warning=F, message=F, results='asis', fig.align="center"}
+```{r GeneBodyCoverage_paragraph, echo=F, error=F, warning=F, message=F}
 
 plot_list <- DEhelper.geneBodyCov2(web=F, targetsdf=targets4plots, samplePattern=SHINYREPS_SAMPLEPATTERN1, excludePattern=SHINYREPS_SAMPLEPATTERN2, maxno=SHINYREPS_MAXNO)
-
-cat("#### Gene body coverage per sample: plotly")
-cat("\n\n", fill=T)
-plot_list$plotly |>
-    plotly::highlight(dynamic=T, selectize=T, persistent=T, selected = plotly::attrs_selected(showlegend = FALSE)) 
-cat("\n\n")
-
-if("p_per_sample" %in% names(plot_list)){
-   cat("#### Gene body coverage per sample: \n", fill=T)
-   if("p_per_cells" %in% names(plot_list)) {
-     plot(plot_list$p_per_cells) # for plate-based approaches use plot colored by cell control type if available
-   } else {
-   plot(plot_list$p_per_sample)
-   }
-   cat("\n", fill=T)
-}
 
 if("num_groups" %in% names(plot_list)) {
    no.of.groups <- plot_list$num_groups
@@ -243,51 +232,32 @@ if("num_replicates" %in% names(plot_list)) {
 
 ```
 
+```{r GeneBodyCoverage_paragraph_plotly, echo=F, error=F, warning=F, message=F, results='asis', fig.align="center", eval="plotly" %in% names(plot_list)}
+
+cat("#### Gene body coverage per file: plotly")
+cat("\n\n", fill=T)
+plot_list$plotly |>
+    plotly::highlight(dynamic=T, selectize=T, persistent=T, selected = plotly::attrs_selected(showlegend = FALSE)) 
+cat("\n\n")
+
+```
+
 ```{r GeneBodyCoverage_splitByGroup, echo=F, error=F, warning=F, message=F, results='asis', fig.align="center", out.width="100%", fig.height=ceiling((no.of.groups)/2)*3+0.5+ifelse(no.of.groups<2,2,0)}
 
-if(("p_per_sample_splitByGroup" %in% names(plot_list)) && !("p_per_cells_splitByGroup" %in% names(plot_list))){
-   cat("#### Gene body coverage per sample split by group: \n", fill=T)
-   plot(plot_list$p_per_sample_splitByGroup)
-   cat("\n", fill=T)
-}
 if("p_per_replicate_splitByGroup" %in% names(plot_list)){
-  cat("#### Gene body coverage per sample split by group, colored by replicate: \n", fill=T)
+  cat("#### Gene body coverage split by group, colored by replicate: \n", fill=T)
   plot(plot_list$p_per_replicate_splitByGroup)
   cat("\n", fill=T)
 }
-if("p_per_cells_splitByGroup" %in% names(plot_list)){
-  cat("#### Gene body coverage per sample split by group, colored by cell control type: \n", fill=T)
-  plot(plot_list$p_per_cells_splitByGroup)
-  cat("\n", fill=T)
-}
-```
 
+```
 
 ```{r GeneBodyCoverage_splitByReplicate, echo=F, error=F, warning=F, message=F, results='asis', fig.align="center", out.width="100%", fig.height=ceiling((no.of.replicates)/2)*3+0.5+ifelse(no.of.replicates<2,2,0)}
 if("p_per_group_splitByReplicate" %in% names(plot_list)){
-  cat("#### Gene body coverage per sample split by replicate, colored by group: \n", fill=T)
+  cat("#### Gene body coverage split by replicate, colored by group: \n", fill=T)
   plot(plot_list$p_per_group_splitByReplicate)
   cat("\n", fill=T)
 }
-```
-
-
-```{r GeneBodyCoverage_splitByGroupReplicate, echo=F, error=F, warning=F, message=F, results='asis', fig.align="center", out.width="100%", fig.height=ceiling((no.of.replicates*no.of.groups)/2)*3+0.5+ifelse(no.of.replicates*no.of.groups<2,2,0)}
-if("p_per_cells_splitByGroupReplicate" %in% names(plot_list)){
-  cat("#### Gene body coverage per sample split by group and replicate, colored by cell control type: \n", fill=T)
-  plot(plot_list$p_per_cells_splitByGroupReplicate)
-  cat("\n", fill=T)
-}
-```
-
-
-
-```{r strandspecificity,  echo=F, results='asis', error=F, warning=F, message=F}
-cat("## Strand specificity\n")
-
-cat("\nThe table below shows the fraction of reads mapped in sense or antisense to gene exons - around 0.5 for non-stranded library prep protocols and close to 0 or 1 for strand-specific RNA-seq protocols. The strandedness is calculated as the percentage of unambiguous reads that are on the strand, which is expected by the library preparation protocol.\n\n")
-
-DEhelper.strandspecificity(samplePattern=SHINYREPS_SAMPLEPATTERN1, targetsdf=targets4plots, excludePattern=SHINYREPS_SAMPLEPATTERN2, maxno=SHINYREPS_MAXNO)
 ```
 
 
@@ -295,7 +265,7 @@ DEhelper.strandspecificity(samplePattern=SHINYREPS_SAMPLEPATTERN1, targetsdf=tar
 
 Illustrate genomic origin of reads
 
-```{r Qualimap, fig.height=min(170, ceiling(0.12*fastqc_summary_plot$no.of.samples)+1)}
+```{r Qualimap, fig.height=min(170, ceiling(0.12*nrow(targets4plots))+1)}
 DEhelper.Qualimap(targetsdf=targets4plots, samplePattern=SHINYREPS_SAMPLEPATTERN1, excludePattern=SHINYREPS_SAMPLEPATTERN2, maxno=SHINYREPS_MAXNO)
 ```
 
@@ -304,49 +274,72 @@ DEhelper.Qualimap(targetsdf=targets4plots, samplePattern=SHINYREPS_SAMPLEPATTERN
 
 The following plot shows the fraction of reads assigned to various RNA classes. These plots help in determining if the sample prep protocol worked well and may reveal issues with rRNA contamination. 
 
-```{r RNAtypes_paragraph, echo=F, results='asis', error=F, warning=F, message=F, fig.height=min(170, ceiling(0.12*fastqc_summary_plot$no.of.samples)+1)}
+```{r RNAtypes_paragraph, echo=F, results='asis', error=F, warning=F, message=F, fig.height=min(170, ceiling(0.12*nrow(targets4plots))+1)}
 DEhelper.RNAtypes(targetsdf=targets4plots, samplePattern=SHINYREPS_SAMPLEPATTERN1, excludePattern=SHINYREPS_SAMPLEPATTERN2, maxno=SHINYREPS_MAXNO)
 ```
 
 
 # Mapping Statistics
 
-```{r STAR_paragraph_violin, results='asis'}
-##### parameters to set:
-# You can define columns of targets.txt to be used for dot color in the summary plot (one plot per element of colorByFactor will be created). 
-# The function will try to map the data from targets$file to the STAR log file names (for this, the unique part of 
-# targets$file must be a substring of the file name). If you have STAR log files from pooled fastq files but cell-wise 
-# information in targets.txt as in MARS-Seq, you may provide another customized targets object in 'targetsdf'. 
-# Otherwise pruned file names will be used by default.
-#####
+```{r mapping_stats, results='asis'}
 
 switch(SHINYREPS_SEQTYPE,
        tenX={
-         # to be implemented
-         print("Mapping Statistics can be found in the respective web summary provided by manufacturer.")
+         
+         # collect all summary tables per file
+         pathMappingFiles <- list.files(file.path(SHINYREPS_CELLRANGERCOUNT_OUT), pattern = "metrics_summary.csv$", full.names = TRUE, recursive = TRUE)
+         
+         if(length(pathMappingFiles)>0) {
+           names(pathMappingFiles) <- gsub(paste(SHINYREPS_CELLRANGERCOUNT_OUT, "/outs/metrics_summary.csv", "/" , sep = "|"), "", pathMappingFiles)
+           
+           mappingStats <- readr::read_csv(pathMappingFiles)  
+           rownames(mappingStats) <- names(pathMappingFiles)
+           mappingStats <- t(mappingStats)
+           print(kableExtra::kbl(mappingStats, caption="Per sample mapping Statistics after processing with proprietary software from manufacturer", row.names=T, format="simple", align = "l") |> kableExtra::kable_styling())
+           
+           # check if stats from cellranger_aggr are available as well
+           pathMappingAggr <- file.path(SHINYREPS_CELLRANGERAGGR_OUT, SHINYREPS_CELLRANGERAGGR_ID, "outs", "count", "summary.json")
+           if(file.exists(pathMappingAggr)) {
+             
+             mappingStatsAggr <- jsonlite::fromJSON(pathMappingAggr, flatten=TRUE)
+             mappingStatsAggr[grepl("chemistry", names(mappingStatsAggr))] <- NULL
+             mappingStatsAggr[sapply(mappingStatsAggr, length)!=1] <- NULL
+             mappingStatsAggr <- tibble::enframe(unlist(mappingStatsAggr, use.names = TRUE), name = "category", value = "value") |>
+               dplyr::mutate(dplyr::across(where(is.numeric), ~ formatC(.x, format = "f", digits = 2)))
+             print(kableExtra::kbl(mappingStatsAggr, caption="Aggregated mapping Statistics after processing with proprietary software from manufacturer", row.names=F, format="simple", align = "l") |> kableExtra::kable_styling())
+           }
+         } else {
+           print("Mapping Statistics can be found in the respective web summary provided by manufacturer.")
+         }
        },
        ParseBio={
-         # to be implemented
-         print("Mapping Statistics can be found in the respective web summary provided by manufacturer.")
+         pathMappingStats <- file.path(SHINYREPS_SPLITPIPECOMB_OUT, "agg_samp_ana_summary.csv")
+         
+         if(file.exists(pathMappingStats)) {
+           mappingStats <- readr::read_csv(pathMappingStats) 
+           print(kableExtra::kbl(mappingStats, caption="Mapping Statistics after processing with proprietary software from manufacturer", row.names=F, format="simple", align = "l") |> kableExtra::kable_styling())
+          } else {
+            print("Mapping Statistics can be found in the respective web summary provided by manufacturer.")
+          }
        },
        ScaleBio={
-             pathMappingStats <- file.path(SHINYREPS_MAPPINGSTATS)
+             pathMappingStats <- file.path(SHINYREPS_EXTERNAL_RESULTDIR, "/reports/allSamples.reportStatistics.csv")
 
              if(file.exists(pathMappingStats)) {
                mappingStats <- readr::read_csv(pathMappingStats) |>
                  dplyr::filter(Category != "Extrapolated Complexity") |>
-                 dplyr::rename_with(stringr::str_remove("\\.ScaleRNA"))
+                 dplyr::rename_with(~stringr::str_remove(.x, "\\.ScaleRNA"))
                print(kableExtra::kbl(mappingStats, caption="Mapping Statistics after processing with proprietary software from manufacturer", row.names=F, format="simple", align = "l") |> kableExtra::kable_styling())
                  } else {
-                    print("Mapping Statistics can be found in the respective web summary provided by manufacturer.")
+                   print("Mapping Statistics can be found in the respective web summary provided by manufacturer.")
                  }
        },
        SmartSeq={
-           print("The mapping statistics below show the number input raw reads and percentages of uniquely mapped reads, multi-mapped reads aligning equally well to multiple (up to 10) positions in the genome and overall mapped reads. For the multimapped reads, one random alignment among the best mapping positions is retained.\n")
-           star_stats_violin <- DEhelper.STAR.violin(targetsdf=targets4plots)
-           cat("\n#### Mapping summary\n", fill=T)
+           cat("\nThe mapping statistics below show the number input raw reads and percentages of uniquely mapped reads, multi-mapped reads aligning equally well to multiple (up to 10) positions in the genome and overall mapped reads. For the multimapped reads, one random alignment among the best mapping positions is retained.\n")
+           star_stats_violin <- DEhelper.STAR.violin(colorByFactor=c("group"), targetsdf=targets4plots)
+           cat("\n#### Summary\n", fill=T)
              for(i in 1:length(star_stats_violin$p_mapped)){
-               grid.arrange(grobs=star_stats_violin$p_mapped[[i]], layout_matrix= matrix(c(1,2), nrow=1)) 
+               gridExtra::grid.arrange(grobs=star_stats_violin$p_mapped[[i]], layout_matrix= matrix(c(1,2), nrow=1)) 
              }
            cat("\n", fill = T)
            cat("\n#### Mapping statistics\n", fill=T)
@@ -354,27 +347,6 @@ switch(SHINYREPS_SEQTYPE,
        }
 )
 
-
-```
-
-
-
-```{r umicount, results='asis', eval= (SHINYREPS_SEQTYPE=="MARSseq")}
-##### parameters to set:
-# define subset of umicount log files if desired (samplePattern=NULL (default) includes all files).
-# define categories of targets.txt to be used for dot color in the plot (one plot per element will be created). 
-# The function will try to map the data from targets$file to the umicount log file names (for this, the unique part of 
-# targets$file must be a substring of the file name). If you have umi-tools log files from pooled fastq files but cell-wise 
-# information in targets.txt as in MARS-Seq, you may provide another customized targets object in 'targetsdf'. 
-# Otherwise pruned file names will be used by default.
-#####
-if(SHINYREPS_SEQTYPE=="MARSseq") {
-cat("## Read de-duplication and feature counting with UMI-tools
-
-UMI-tools counts the mapped reads per feature obtained after de-duplication. UMI-tools uses the uniquely mapped reads from STAR as well as as the multimapped reads (but not those which are mapped to too many loci) as input reads.")
-
-DEhelper.umicount(targetsdf=targets4plots)
-}
 ```
 
 
@@ -388,7 +360,7 @@ In the following plot only relevant contaminants are shown. A contaminant is con
 fastqscreen_plots <- DEhelper.fastqscreen(perc.to.plot=SHINYREPS_FASTQSCREEN_PERC, ncol=3, targetsdf=targets4plots, samplePattern=SHINYREPS_SAMPLEPATTERN1, excludePattern=SHINYREPS_SAMPLEPATTERN2, maxno=SHINYREPS_MAXNO)
 ```
 
-```{r fastqscreen_paragraph2, echo=F,results='asis',error=F,warning=F,message=F,fig.align='center', fig.height=min(170, (round((1.5*fastqscreen_plots$no.of.rows))+1)*fastqscreen_plots$no.of.samples/8+1)}
+```{r fastqscreen_paragraph2, echo=F,results='asis',error=F,warning=F,message=F,fig.align='center', fig.height=min(170, (round(1.5*fastqscreen_plots$no.of.rows)+1)*fastqscreen_plots$no.of.samples/8+1)}
   if(is.null(fastqscreen_plots$errortext)) {
     plot(fastqscreen_plots$p.category.wrap)
     } else {
@@ -513,6 +485,7 @@ if(file.exists(file.path(SHINYREPS_QC_BIOC_OUT, "highest.lib.size.txt"))) {
 ```{r total_counts_per_plate_position, results='asis', eval= (SHINYREPS_SEQTYPE %in% c("MARSseq", "SmartSeq"))}
 
 cat("\nOverview plate distribution\n")
+cat("\nQC parameter is indicated by symbol size and sample group by shape. '0C' controls are highligthed in blue, '10c' controls in red.")
 filenamePlot <- list.files(file.path(SHINYREPS_QC_BIOC_OUT), pattern="^plate_distribution_plot_by_.*\\.png$")
 if(length(filenamePlot)>0) {
   knitr::include_graphics(path=file.path(SHINYREPS_QC_BIOC_OUT, filenamePlot))
@@ -705,7 +678,7 @@ Uniform manifold approximation and projection (UMAP) is a nonlinear dimensionali
 ```{r find_cell_cycle, results='asis'}
 
 
-if(file.exists(file.path(SHINYREPS_NORM_BIOC_OUT, "cell_cycle_phase_assignments.txt"))) {
+if(file.exists(file.path(SHINYREPS_NORM_BIOC_OUT, "cell_cycle_phase_summary_table.txt"))) {
   
   cat("### Classification and normalization of cell cycle phase
 
@@ -737,10 +710,7 @@ We check whether there are experimental batch factors that contribute substantia
 
 ```{r explanatory_variables, results='asis'}
 
-if(file.exists(file.path(SHINYREPS_NORM_BIOC_OUT, "explanatory_variables_density_plot.png"))) {
-  knitr::include_graphics(path=file.path(SHINYREPS_NORM_BIOC_OUT, "explanatory_variables_density_plot.png"))
-} 
-
+# Remark: the explanatory_variables_density_plot.png is not shown due to redundancy
 filenamePlot <- list.files(file.path(SHINYREPS_NORM_BIOC_OUT), pattern="^explanatory_variables_scatter_plot.*\\.png$")
 if(length(filenamePlot)>0) {
   cat("\nPCA plots of top 500 genes colored by potential confounder variables\n\n")  
@@ -875,7 +845,7 @@ if(length(filenamePlot)>0) {
 
 # Doublet detection
 
-The methods applied here are complementary to doublets identified via cell hashes and SNPs in multiplexed samples: while hashing/genotypes can identify doublets formed by cells of the same type (homotypic doublets) from two samples loaded to the same GEM well, which are often nearly undistinguishable from real cells transcriptionally (and hence generally unidentifiable through the present package), it cannot identify doublets made by cells of the same sample, even if they are heterotypic (formed by different cell types). Instead, the methods presented here are primarily geared towards the identification of heterotypic doublets, which for most purposes are also the most critical ones.
+The methods applied here are complementary to doublets identified via cell hashes and SNPs in multiplexed samples (if applied): while hashing/genotypes can identify doublets formed by cells of the same type (homotypic doublets) from two samples loaded to the same GEM well, which are often nearly undistinguishable from real cells transcriptionally (and hence generally unidentifiable through the present package), it cannot identify doublets made by cells of the same sample, even if they are heterotypic (formed by different cell types). Instead, the methods presented here are primarily geared towards the identification of heterotypic doublets, which for most purposes are also the most critical ones.
 
 ```{r doublets, results='asis', echo=FALSE, warning=FALSE}
 doupletScorePlot <- list.files(file.path(SHINYREPS_NORM_BIOC_OUT), pattern="doublet_score_by_UMAP.*\\.png", full.names = TRUE) # independent of clustering
@@ -912,9 +882,9 @@ Clusters are then ranked by num.de where those with the few unique genes are mor
 
 # Detect marker genes for each cluster
 
-To interpret our clustering results, we identify the genes that drive separation between clusters. These marker genes allow us to assign biological meaning to each cluster based on their functional annotation. This approach involves testing for differential expression between clusters. If a gene is strongly DE between clusters, it is likely to have driven the separation of cells in the clustering algorithm. Our general strategy is using the the scoreMarkers function from scran package to compare each pair of clusters and compute scores quantifying the differences in the expression distributions between clusters. We deliberately use pairwise comparisons rather than comparing each cluster to the average of all other cells. The latter approach is sensitive to the population composition, which introduces an element of unpredictability to the marker sets due to variation in cell type abundances. (In the worst case, the presence of one subpopulation containing a majority of the cells will drive the selection of top markers for every other cluster, pushing out useful genes that can distinguish between the smaller sub-populations.) Moreover, pairwise comparisons naturally provide more information to interpret of the utility of a marker, e.g., by providing log-fold changes to indicate which clusters are distinguished by each gene.
+To interpret our clustering results, we identify the genes that drive separation between clusters. These marker genes allow us to assign biological meaning to each cluster based on their functional annotation. This approach involves testing for differential expression between clusters. If a gene is strongly DE between clusters, it is likely to have driven the separation of cells in the clustering algorithm. Our general strategy is using the the scoreMarkers function from scran package to compare each pair of clusters and compute scores quantifying the differences in the expression distributions between clusters. We deliberately use pairwise comparisons rather than comparing each cluster to the average of all other cells. The latter approach is sensitive to the population composition, which introduces an element of unpredictability to the marker sets due to variation in cell type abundances. In the worst case, the presence of one subpopulation containing a majority of the cells will drive the selection of top markers for every other cluster, pushing out useful genes that can distinguish between the smaller sub-populations. Moreover, pairwise comparisons naturally provide more information to interpret of the utility of a marker, e.g., by providing log-fold changes to indicate which clusters are distinguished by each gene.
 
-The results tables within the results files (not included in html report) show for each cluster the self.average (the mean log-expression for this cluster), other.average (the grand mean across all other clusters), self.detected (the proportion of cells with detected expression in this cluster), other.detected (the mean detected proportion across all other clusters) and a variety of effect size summaries (AUC, logFC.cohen, logFC.detected) generated from all pairwise comparisons involving this cluster. For each cluster, we can then rank candidate markers based on one of these effect size summaries. The heatmaps given below show the centered average log-expression values for the top potential marker genes of each cluster.
+The results tables within the diff expression sub-directory in the results folder (not included in html report) show for each cluster the self.average (the mean log-expression for this cluster), other.average (the grand mean across all other clusters), self.detected (the proportion of cells with detected expression in this cluster), other.detected (the mean detected proportion across all other clusters) and a variety of effect size summaries (AUC, logFC.cohen, logFC.detected) generated from all pairwise comparisons involving this cluster. For each cluster, we can then rank candidate markers based on one of these effect size summaries. The heatmaps given below show the centered average log-expression values for the top potential marker genes of each cluster.
 
 
 ```{r findmarkers_per_cluster, results='asis', echo=FALSE, warning=FALSE}
@@ -949,7 +919,7 @@ cl_avail <- basename(unique(dirname(GOTables)))
 if(length(cl_avail)>0) {
   cat("\n\n## GO enrichment of marker genes per cluster\n\n")
 
-  cat("\nWe perform a gene set enrichment analysis on the marker genes defining each cluster. This identifies the pathways and processes that are (relatively) active in each cluster based on upregulation of the associated genes compared to other clusters. We will use gene sets defined by the Gene Ontology (GO) project, which describe a comprehensive range of biological processes and functions. We use the top", SHINYREPS_TOPMARKER4GO, "marker genes and apply the goana function from the limma package. This performs a hypergeometric test to identify GO terms that are overrepresented in our marker subset. We keep only biological process terms that are not overly general (<=500 genes) and which are significantly enriched", paste0("(p<", SHINYREPS_MARKERGO_PTHRESHOLD,")."), "\n\n")
+  cat("\nWe perform a gene enrichment analysis (over-representation) on the marker genes defining each cluster. This identifies the processes that are (relatively) active in each cluster based on up-regulation of the associated genes compared to other clusters. We use gene sets defined by the Gene Ontology (GO) project, which describe a comprehensive range of biological processes and functions. We use the top", SHINYREPS_TOPMARKER4GO, "marker genes and apply the goana function from the limma package. This performs a hypergeometric test to identify GO terms that are overrepresented in our marker subset. We keep only biological process terms that are not overly general (<=500 genes) and which are significantly enriched", paste0("(p<", SHINYREPS_MARKERGO_PTHRESHOLD,")."), "\n\n")
   
   dbl <- purrr::map(cl_avail, function(cl) {
     cat("\n\n### ", cl, "\n\n")
@@ -1019,7 +989,7 @@ Here we test for changes in gene expression between conditions for cells of the 
 - Collapsing cells into samples reflects the fact that our biological replication occurs at the sample level (Lun and Marioni 2017). Each sample is represented no more than once for each condition, avoiding problems from unmodelled correlations between samples. Supplying the per-cell counts directly to a DE analysis pipeline would imply that each cell is an independent biological replicate, which is not true from an experimental perspective. 
 - Variance between cells within each sample is masked, provided it does not affect variance across (replicate) samples. This avoids penalizing DEGs that are not uniformly up- or down-regulated for all cells in all samples of one condition. Masking is generally desirable as DEGs - unlike marker genes - do not need to have low within-sample variance to be interesting, e.g., if the treatment effect is consistent across replicate populations but heterogeneous on a per-cell basis. 
     
-The DE analysis will be performed using quasi-likelihood (QL) methods from the edgeR package (Robinson, McCarthy, and Smyth 2010; Chen, Lun, and Smyth 2016). This uses a negative binomial generalized linear model (NB GLM) to handle overdispersed count data in experiments with limited replication. We test for differences in expression using glmQLFTest(). 
+The DE analysis will be performed using quasi-likelihood (QL) methods from the edgeR package (Robinson, McCarthy, and Smyth 2010; Chen, Lun, and Smyth 2016). This uses a negative binomial generalized linear model (NB GLM) to handle overdispersed count data in experiments with limited replication. We test for differences in expression using the glmQLFTest function. 
 
 ```{r diff_expression, results='asis'}
 
@@ -1043,27 +1013,32 @@ if(length(anno_avail)>0) {
     kableExtra::kable_styling() |> 
     print()
   
-  tab <- purrr::pmap(params, function(de, cn) {
+  tab <- purrr::pmap(params, function(cn, de) {
     
-    cat(paste("\n\n###", de, "for contrast:", cn, "\n")) 
-
-    overviewFile <- list.files(file.path(SHINYREPS_DE_OUT, de), pattern = paste0("^de_.*", cn, "_overview_sign_genes\\.txt$"), full.names = TRUE) |>
-      readr::read_tsv() |>
-      dplyr::arrange(dplyr::pick(1)) |>
-      kableExtra::kbl(caption=paste("Overview significant genes for", de, "contrast", cn), align = "l", format="simple") |> 
-      kableExtra::kable_styling() |>
-      print()
+    overviewFileName <- list.files(file.path(SHINYREPS_DE_OUT, de), pattern = paste0("^de_.*", cn, "_overview_sign_genes\\.txt$"), full.names = TRUE)
     
-    deFiles <- stringr::str_sort(list.files(file.path(SHINYREPS_DE_OUT, de), pattern = paste0("^de_.*", cn, "_cluster.*\\.txt$"), full.names = TRUE), numeric = TRUE)
-
-    tab_de <- purrr::map(deFiles, function(f) {
+    if(length(overviewFileName)==1 && file.exists(overviewFileName)) {
     
-      deFile <- readr::read_tsv(f) |>
-        dplyr::slice(1:10) |>
-        kableExtra::kbl(caption=paste("differential expressed genes for", cn, "cluster", gsub("^.*_cluster", "", gsub("\\.txt$", "", basename(f)))), align = "l", format="simple") |> 
+      cat(paste("\n\n###", de, "for contrast:", cn, "\n")) 
+  
+      overviewFile <- overviewFileName |>
+        readr::read_tsv() |>
+        dplyr::arrange(dplyr::pick(1)) |>
+        kableExtra::kbl(caption=paste("Overview significant genes for", de, "contrast", cn), align = "l", format="simple") |> 
         kableExtra::kable_styling() |>
         print()
-    })
+      
+      deFiles <- stringr::str_sort(list.files(file.path(SHINYREPS_DE_OUT, de), pattern = paste0("^de_.*", cn, "_cluster.*\\.txt$"), full.names = TRUE), numeric = TRUE)
+  
+      tab_de <- purrr::map(deFiles, function(f) {
+      
+        deFile <- readr::read_tsv(f) |>
+          dplyr::slice(1:10) |>
+          kableExtra::kbl(caption=paste("differential expressed genes for", cn, "cluster", gsub("^.*_cluster", "", gsub("\\.txt$", "", basename(f)))), align = "l", format="simple") |> 
+          kableExtra::kable_styling() |>
+          print()
+      })
+    }
   })
 }
 
@@ -1084,22 +1059,25 @@ params <- tidyr::expand_grid(
 if(length(de_avail)>0) {
   cat("\n\n## GO enrichment of DE genes per cluster\n\n")
 
-  cat("\nWe perform a gene set enrichment analysis on the DE genes defining each cluster. This identifies the pathways and processes that are (relatively) active in each cluster based on upregulation of the associated genes compared to other clusters. We will use gene sets defined by the Gene Ontology (GO) project, which describe a comprehensive range of biological processes and functions. We use the top", SHINYREPS_TOPDE4GO, "DE genes and apply the goana function from the limma package. This performs a hypergeometric test to identify GO terms that are overrepresented in our DE gene subset. We keep only biological process terms that are not overly general (<=500 genes) and which are significantly enriched", paste0("(p<", SHINYREPS_DEGO_PTHRESHOLD,")."), "\n\n")
+  cat("\nWe perform a gene set enrichment analysis on the DE genes defining each cluster. This identifies the pathways and processes that are (relatively) active in each cluster based on upregulation of the associated genes compared to other clusters. We will use gene sets defined by the Gene Ontology (GO) project, which describe a comprehensive range of biological processes and functions. We use the top", SHINYREPS_TOPDE4GO, "DE genes and apply the goana function from the limma package using", gsub("DE", "DE ", SHINYREPS_DEGO_UNIVERSE), "genes as background. This performs a hypergeometric test to identify GO terms that are overrepresented in our gene subset of significantly differentially expressed genes. We keep only biological process terms that are not overly general (<=500 genes) and which are significantly enriched", paste0("(p<", SHINYREPS_DEGO_PTHRESHOLD,")."), "\n\n")
   
   tab <- purrr::pmap(params, function(de, cn) {
-    
-    cat(paste("\n\n###", de, "for contrast:", cn, "\n")) 
-    
-    GOTables_de <- stringr::str_sort(list.files(file.path(SHINYREPS_DE_OUT, de), pattern = paste0("^GOenrichment_.*", cn, "_cluster.*\\.txt$"), full.names = TRUE), numeric = TRUE)
 
-    tab_go <- purrr::map(GOTables_de, function(f) {
-      GOTable_de <- readr::read_tsv(f)
-      if (nrow(GOTable_de) == 0) return(invisible(NULL)) # skip empties
-      GOTable_de <- dplyr::slice_head(GOTable_de, n = 10) |>
-        kableExtra::kbl(caption=paste("GO enrichment of DEGs for", cn, "cluster", gsub("^.*_cluster", "", gsub("\\.txt$", "", basename(f)))), align = "l", format="simple") |>
-        kableExtra::kable_styling() |>
-        print()
-    })
+    GOTables_de <- stringr::str_sort(list.files(file.path(SHINYREPS_DE_OUT, de), pattern = paste0("^GOenrichment_.*", cn, "_cluster.*\\.txt$"), full.names = TRUE), numeric = TRUE)
+    
+    if(length(GOTables_de)>0) {
+      
+      cat(paste("\n\n###", de, "for contrast:", cn, "\n")) 
+  
+      tab_go <- purrr::map(GOTables_de, function(f) {
+        GOTable_de <- readr::read_tsv(f)
+        if (nrow(GOTable_de) == 0) return(invisible(NULL)) # skip empties
+        GOTable_de <- dplyr::slice_head(GOTable_de, n = 10) |>
+          kableExtra::kbl(caption=paste("GO enrichment of DEGs for", cn, "cluster", gsub("^.*_cluster", "", gsub("\\.txt$", "", basename(f)))), align = "l", format="simple") |>
+          kableExtra::kable_styling() |>
+          print()
+      })
+    }
   })
 }
 

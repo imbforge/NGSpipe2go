@@ -73,7 +73,7 @@ print(paste("plot_pointalpha:", plot_pointalpha))
 sce <- readr::read_rds(file.path(resultsdir, "sce_raw.RDS"))
 
 # get mitochondrial genes
-print("get mitochondrial genes")
+cat("\nget mitochondrial genes")
 if(file.exists(file.path(mito.genes))) {
   # use predefined list with mitochondrial genes
   mito.genes <- readr::read_tsv(file=file.path(mito.genes), col_names =F) |> dplyr::pull(X1)
@@ -168,21 +168,19 @@ highest.lib.size <- qc.frame |>
 if(seqtype %in% c("SmartSeq")) {
   print("Plot count distribution per plate position")
   
-  sce$plate_position <- paste0(sce$row, sce$col) # column "plate_position" needed for plotPlatePosition
-  
   for (size in qc_metrics) {
     cat(paste("\nPlotting", size, "as spot size\n\n"))
     plates <- list()
-    for (p in as.character(sort(unique(sce$plate)))) {
-      plates[[p]] <- scater::plotPlatePosition(sce[, sce$plate==p], colour_by="cells",size_by=size, shape_by=annocat_plot,
+    for (p in sort(unique(sce$plate))) {
+      plates[[p]] <- scater::plotPlatePosition(sce[, sce$plate==p], plate_position=sce$wells, colour_by="cells", size_by=size, shape_by=annocat_plot,
                                                by_exprs_values = "counts", theme_size = 10,  point_alpha = 0.6, point_size = 3, add_legend = F) + 
         ggtitle(label=paste0("Plate ", p, ": ", size, " (range: ", paste(signif(range(SummarizedExperiment::colData(sce[, sce$plate==p])[,size]),2), collapse=" - "), ")")) +
         theme(plot.title = element_text(color="black", size=8))
     } # plotPlatePosition uses by_exprs_values = "logcounts" by default. But if not available, uses "counts" instead
   
-    p <- gridExtra::grid.arrange(grobs=plates, layout_matrix=matrix(c(1:ceiling(length(plates))), ncol=2, byrow=TRUE))
-    ggsave(plot=p, width=7, height=4*ceiling(lengh(plates[[p]])/2), filename= file.path(outdir, paste0("plate_distribution_plot_by_", size, ".png")), device="png", bg = "white")
-    ggsave(plot=p, width=7, height=4*ceiling(lengh(plates[[p]])/2), filename= file.path(outdir, paste0("plate_distribution_plot_by_", size, ".pdf")), device="pdf")
+    plots <- gridExtra::grid.arrange(grobs=plates, layout_matrix=matrix(c(1:ceiling(length(plates))), ncol=2, byrow=TRUE))
+    ggsave(plot=plots, width=7, height=4*ceiling(length(plates)/2), filename= file.path(outdir, paste0("plate_distribution_plot_by_", size, ".png")), device="png", bg = "white")
+    ggsave(plot=plots, width=7, height=4*ceiling(length(plates)/2), filename= file.path(outdir, paste0("plate_distribution_plot_by_", size, ".pdf")), device="pdf")
   }
 }
 

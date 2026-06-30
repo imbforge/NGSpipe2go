@@ -116,19 +116,18 @@ if(any(is.na(params))) { # skip entirely if cluster setting not specified
 
       name_markerlist <- paste0("marker_genes_", selclust, "_ranked_by_", es)
       name_markerlist_subdir <- paste0(selclust, "_ranked_by_", es)
-      
-      SingleCellExperiment::colLabels(sce) <- SummarizedExperiment::colData(sce)[,selclust]
-      
       print(paste("Processing", name_markerlist))
       
-      if(length(list.files(file.path(outdir, name_markerlist_subdir), pattern=name_markerlist)) > 0 | !selclust %in% colnames(SummarizedExperiment::colData(sce)) | nlevels(factor(SingleCellExperiment::colLabels(sce))) < 2) {
-        
-        print(paste0(name_markerlist, " output already exists or is missing in sce object or has got just one level. Marker gene detection for this setting is skipped"))
+      if(length(list.files(file.path(outdir, name_markerlist_subdir), pattern=name_markerlist)) > 0 || !selclust %in% colnames(SummarizedExperiment::colData(sce)) || nlevels(factor(SummarizedExperiment::colData(sce)[,selclust])) < 2) {
+
+        print(paste0(name_markerlist, " output already exists or ", selclust, " is missing in sce object or has got just one level. Marker gene detection for this setting is skipped"))
         markers_l <- NULL
         
       } else {
         
         if (!dir.exists(file.path(outdir, name_markerlist_subdir))) {dir.create(file.path(outdir, name_markerlist_subdir), recursive=T) }
+        
+        SingleCellExperiment::colLabels(sce) <- SummarizedExperiment::colData(sce)[,selclust]
         
           markers_l <- scran::scoreMarkers(sce, groups=SingleCellExperiment::colLabels(sce), 
                                            block = if(!is.na(block_var)) {SummarizedExperiment::colData(sce)[,block_var]} else {NULL},
@@ -194,7 +193,6 @@ if(any(is.na(params))) { # skip entirely if cluster setting not specified
             
             ## GO enrichment
             if(!is.na(org) && org %in% c("human", "mouse")) {
-              print(paste("GO enrichment analysis (BP) with top", top_genes_for_GO, "genes for", name_markerlist, "cluster", c)) 
                 
               switch(org,
                      human={
@@ -210,11 +208,15 @@ if(any(is.na(params))) { # skip entirely if cluster setting not specified
               
               markers_per_cluster$entrez_ids <- AnnotationDbi::mapIds(orgdb, keys=gsub("\\..*$", "", markers_per_cluster$feature_id), 
                                                                       column="ENTREZID", keytype="ENSEMBL")
+              
               markers_top <- markers_per_cluster[1:top_genes_for_GO,]
+              univGenes <- unique(na.omit(markers_per_cluster$entrez_ids))
+              
+              print(paste("GO enrichment analysis (BP) with top", top_genes_for_GO, "genes for", name_markerlist, "cluster", c, 
+                    "against", length(univGenes), "genes as background.")) 
               print(paste(sum(is.na(markers_top$entrez_ids)), "marker genes skipped because no Entrez IDs found:", paste(markers_top$feature_symbol[is.na(markers_top$entrez_ids)], collapse=", ")))
               
-              go_out <- limma::goana(unique(na.omit(markers_top$entrez_ids)), species=species,
-                              universe=unique(na.omit(markers_per_cluster$entrez_ids)))
+              go_out <- limma::goana(unique(na.omit(markers_top$entrez_ids)), species=species, universe=univGenes)
               
               go_out_filt <- go_out |> # Only keeping BP terms that are not overly general and which are significantly enriched.
                 dplyr::filter(Ont=="BP" & N<=500 & P.DE < p_threshold_GO) |> # p-value for over-representation of the GO term in the set.

@@ -60,7 +60,9 @@ minClusterSize      <- parseArgs(args,"minClusterSize=", convert="as.numeric")
 lfc_threshold_DE    <- parseArgs(args,"lfc_threshold_DE=", convert="as.numeric", default=0) 
 FDR_threshold_DE    <- parseArgs(args,"FDR_threshold_DE=", convert="as.numeric", default=1)
 org                 <- parseArgs(args,"org=")
-top_genes_for_GO    <- parseArgs(args,"top_genes_for_GO=", convert="as.numeric")
+top_genes_for_GO    <- parseArgs(args,"top_genes_for_GO=", convert="as.numeric", default=30)
+min_genes_for_GO    <- parseArgs(args,"min_genes_for_GO=", convert="as.numeric", default=2)
+universe_for_GO     <- parseArgs(args,"universe_for_GO=", default = "DEtested")
 p_threshold_GO      <- parseArgs(args,"p_threshold_GO=", convert="as.numeric")
 annocat_plot        <- parseArgs(args,"annocat_plot=", default = "group")
 annocat_plot2       <- parseArgs(args,"annocat_plot2=", default = "sample")
@@ -92,6 +94,8 @@ print(paste("lfc_threshold_DE:", lfc_threshold_DE))
 print(paste("FDR_threshold_DE:", FDR_threshold_DE))
 print(paste("org:", org))
 print(paste("top_genes_for_GO:", top_genes_for_GO))
+print(paste("min_genes_for_GO:", min_genes_for_GO))
+print(paste("universe_for_GO:", universe_for_GO))
 print(paste("p_threshold_GO:", p_threshold_GO))
 print(paste("annocat_plot:", annocat_plot))
 print(paste("annocat_plot2:", annocat_plot2))
@@ -119,24 +123,22 @@ print(params)
 
 
 if(any(is.na(params))) { # skip entirely if cluster setting not specified
-  print("Parameter missing! Marker detection skipped")
+  print("Parameter missing! DE analysis skipped")
   de <- list()
 } else {
   
   de <- purrr::pmap(params, function(selclust, cont_name) {
-    
-    name_de_results <- paste0("de_", selclust, "_contrast_", cont_name)
-    SingleCellExperiment::colLabels(sce) <- SummarizedExperiment::colData(sce)[,selclust]
 
+    name_de_results <- paste0("de_", selclust, "_contrast_", cont_name)
     print(paste("Processing", name_de_results))
     
-    if(length(list.files(file.path(outdir, selclust), pattern=name_de_results)) > 0 | !selclust %in% colnames(SummarizedExperiment::colData(sce)) | nlevels(factor(SingleCellExperiment::colLabels(sce))) < 2) {
-      
-      print(paste0(name_de_results, " output already exists or is missing in sce object or has got just one level. Differential gene expression analysis for this setting is skipped"))
+    if(length(list.files(file.path(outdir, selclust), pattern=name_de_results)) > 0 || !selclust %in% colnames(SummarizedExperiment::colData(sce))) {
+        
+      print(paste0(name_de_results, " output already exists or ", selclust, " is missing in sce object. Differential gene expression analysis for this setting is skipped"))
       de.results <- NULL
-      
+
     } else {
-      
+
     if (!dir.exists(file.path(outdir, selclust))) {dir.create(file.path(outdir, selclust), recursive=T) }
       
     cont <- conts[cont_name, "contrast"]
@@ -157,7 +159,10 @@ if(any(is.na(params))) { # skip entirely if cluster setting not specified
     summed.filt <- summed[,SummarizedExperiment::colData(summed)[,groupvar] %in% factors] # use only samples of current contrast
     if(!is.na(minClusterSize)) {
       summed.filt <- summed.filt[,summed.filt$ncells >= minClusterSize]
-      if((dim(summed.filt)[2]==0)) {stop("no samples left after filtering for minClusterSize")}
+      if((dim(summed.filt)[2]==0)) {
+        cat(paste("no samples left after filtering for minClusterSize:", minClusterSize, "\n"))
+        return(NA)
+        }
     }
     # store number of cells per sample-cluster combination
     write.table(SummarizedExperiment::colData(summed.filt)[,c("sample", groupvar, selclust, "ncells")], 
@@ -182,13 +187,14 @@ if(any(is.na(params))) { # skip entirely if cluster setting not specified
                                        assay.type = "counts"
     )
 
+    if(length(de.results)==0) {return(NULL)}
+    
     # information for log file
     print(paste(selclust, "cluster succeeded", paste0(names(de.results), collapse=", ")))
     failed_cluster <- S4Vectors::metadata(de.results)$failed
     if(length(failed_cluster)>0) {
       print(paste(selclust, "cluster failed:", paste0(failed_cluster, collapse=", ")))
     }
-    if(length(de.results)==0) {return(NULL)}
     
     # create summary table for contrast
     FDR_df <- sapply(de.results, function(res) res$FDR) |> # columns = cluster
@@ -216,7 +222,7 @@ if(any(is.na(params))) { # skip entirely if cluster setting not specified
 
     # process results per cluster
     purrr::map(names(de.results), function(c) {
-        
+
         # create biological coefficient of variation plot per cluster
         png(file=file.path(outdir, selclust, paste0(name_de_results, "_plotBCV_cluster", c, ".png")), width=7, height=4, units="in", res=300) 
           edgeR::plotBCV(S4Vectors::metadata(de.results[[c]])$y)
@@ -234,7 +240,6 @@ if(any(is.na(params))) { # skip entirely if cluster setting not specified
         
         ## GO enrichment
         if(!is.na(org) && org %in% c("human", "mouse")) {
-          print(paste("GO enrichment analysis (BP) with top", top_genes_for_GO, "genes for", name_de_results, "cluster", c)) 
           
           switch(org,
                  human={
@@ -249,23 +254,42 @@ if(any(is.na(params))) { # skip entirely if cluster setting not specified
                  })
           
           cur.results$entrez_ids <- AnnotationDbi::mapIds(orgdb, keys=gsub("\\..*$", "", cur.results$feature_id), 
-                                                                  column="ENTREZID", keytype="ENSEMBL")
+                                                          column="ENTREZID", keytype="ENSEMBL")
           de_top <- cur.results |> 
             dplyr::filter(FDR < FDR_threshold_DE) |>
             dplyr::slice(1:min(top_genes_for_GO, nrow(cur.results)))
-
-          if (nrow(de_top) > 0) {
+          
+          topGenes <- unique(na.omit(de_top$entrez_ids))
+          
+          if (length(topGenes) > min_genes_for_GO) {
+            
+            switch(universe_for_GO,
+                   "DEtested" = {
+                     univGenes <- unique(na.omit(cur.results$entrez_ids))
+                     },
+                   "all" = {
+                     de.results[[c]]$entrez_ids <- AnnotationDbi::mapIds(orgdb, keys=gsub("\\..*$", "", rownames(de.results[[c]])), 
+                                                                     column="ENTREZID", keytype="ENSEMBL")
+                     univGenes <- unique(na.omit(de.results[[c]]$entrez_ids))
+                     },
+                   stop(paste("Don't find universe_for_GO:", universe_for_GO))
+                   )
+            
+            print(paste("GO enrichment analysis (BP) with top", length(topGenes), "genes for", name_de_results, "cluster", c, 
+                        "against", universe_for_GO, length(univGenes), "genes as background.")) 
             print(paste(sum(is.na(de_top$entrez_ids)), "genes skipped because no Entrez IDs found:", paste(de_top$symbol[is.na(de_top$entrez_ids)], collapse=", ")))
             
-            go_out <- limma::goana(unique(na.omit(de_top$entrez_ids)), species=species,
-                                   universe=unique(na.omit(cur.results$entrez_ids)))
-            
+            go_out <- limma::goana(topGenes, species=species, universe=univGenes)
+
             go_out_filt <- go_out |> # Only keeping BP terms that are not overly general and which are significantly enriched.
               dplyr::filter(Ont=="BP" & N<=500 & P.DE < p_threshold_GO) |> # p-value for over-representation of the GO term in the set.
               tibble::rownames_to_column("GOID") |>
               dplyr::arrange(P.DE) |>
-              dplyr::mutate(P.DE = signif(P.DE, digits=4)) |>
-              readr::write_tsv(file.path(outdir, selclust, paste0("GOenrichment_top", top_genes_for_GO, "_", name_de_results, "_cluster", c, ".txt")))
+              dplyr::mutate(P.DE = signif(P.DE, digits=4)) 
+
+              if(nrow(go_out_filt)>0) {
+                readr::write_tsv(go_out_filt, file.path(outdir, selclust, paste0("GOenrichment_top", top_genes_for_GO, "_", name_de_results, "_cluster", c, ".txt")))
+              }
           } else {print(paste("GO enrichment skipped for", name_de_results, "cluster", c, "because no significantly diff expressed genes"))}
         }
       })

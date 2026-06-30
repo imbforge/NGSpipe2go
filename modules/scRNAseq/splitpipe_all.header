@@ -1,9 +1,9 @@
 splitpipe_all_vars=[
     outdir          : MAPPED,
     logdir          : LOGS + "/splitpipe_all",
-    targets         : "targets.txt",                 // targets file describing the samples
+    targets         : TARGETS,                 // targets file describing the samples
     genome          : ESSENTIAL_GENOME_REFERENCE, 
-    chemistry       : "v2",
+    chemistry       : "v3",
     expect_cells    : ESSENTIAL_EXPECTED_CELLS,
     threads         : "8",
     parfile         : "",  // specify text file with additional split-pipe parameter

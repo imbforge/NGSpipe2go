@@ -114,7 +114,12 @@ if(spikein_norm) {
   } else {
     # deconvolve size factors
     print("deconvolve size factors (must be >0)")
-    sce <- scran::computeSumFactors(sce,clusters=scran::quickCluster(sce))
+    if (ncol(sce) < 1000) { # default min.size of quickCluster is 100. Not needed for small cell counts.
+      print(paste("No quickCluster applied for computing size factors because low number of cells:", ncol(sce)))
+      sce <- scran::computeSumFactors(sce)
+      } else {
+        sce <- scran::computeSumFactors(sce,clusters=scran::quickCluster(sce))
+      }
     print(summary(SingleCellExperiment::sizeFactors(sce)))
   }
 
@@ -315,7 +320,7 @@ if(!is.na(org) && org %in% c("human", "mouse")) {
     ggsave(plot=ccp_plot, filename= file.path(outdir, "cell_cycle_phase_score_plot.png"), device="png", width=7, height=5, bg = "white")
     ggsave(plot=ccp_plot, filename= file.path(outdir, "cell_cycle_phase_score_plot.pdf"), device="pdf", width=7, height=5)
    
-  }
+  } else {SummarizedExperiment::colData(sce)$cc_phases <- NULL}
 }
 
 # inspect other potential confounder variables

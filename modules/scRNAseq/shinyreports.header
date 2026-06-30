@@ -29,7 +29,7 @@ shinyReports_vars=[
     dupradar_log    : (binding.variables.containsKey("dupRadar_vars") ? dupRadar_vars.outdir : ""),    //where dupRadar results lie
     rnatypes_log    : LOGS + "/RNAtypes",      //where the RNAtypes logs lie
     rnatypes        : (binding.variables.containsKey("subread2rnatypes_vars") ? subread2rnatypes_vars.outdir : ""), //where the RNAtypes count results lie
-    rnatypes_suffix : "counts.tsv",            //the extension of the subread results files
+    rnatypes_suffix : "_readcounts.tsv",            //the extension of the subread results files
     genebodycov_log : (binding.variables.containsKey("geneBodyCov2_vars") ? geneBodyCov2_vars.outdir : ""),
     bustard         : QC + "/DemultiplexedBustardSummary.xml",  //where the bustard xml file lies
     subread         : (binding.variables.containsKey("subread_count_vars") ? subread_count_vars.outdir : ""),     // location of the subread counts
@@ -51,11 +51,12 @@ shinyReports_vars=[
     demux_out       : (RUN_DEMUX=="demux_HTO" ? (binding.variables.containsKey("demux_hto_vars") ? demux_hto_vars.outdir : "") : (RUN_DEMUX=="demux_GT" ? (binding.variables.containsKey("demux_gt_vars") ? demux_gt_vars.outdir : "") : "") ),  //where the demux output lie
     demuxCluster_out : (binding.variables.containsKey("assignSouporcellCluster_vars") ? assignSouporcellCluster_vars.outdir : ""), //output assignSouporcellCluster
     cellranger_aggr_id: (binding.variables.containsKey("cellranger_aggr_vars") ? cellranger_aggr_vars.id : (binding.variables.containsKey("cellrangeratac_aggr_vars") ? cellrangeratac_aggr_vars.id : (binding.variables.containsKey("cellrangerarc_aggr_vars") ? cellrangerarc_aggr_vars.id : "aggr"))), // folder name for results from cellranger / cellranger-atac / cellranger-arc aggr
-    splitpipeComb_out : (binding.variables.containsKey("splitpipe_comb_vars") ? splitpipe_comb_vars.outdir : ""), //output split-pipe comb
+    cellranger_count_out : (binding.variables.containsKey("cellranger_count_vars") ? cellranger_count_vars.outdir : ""), 
+    cellranger_aggr_out  : (binding.variables.containsKey("cellranger_aggr_vars") ? cellranger_aggr_vars.outdir : ""), 
+    splitpipeComb_out    : (binding.variables.containsKey("splitpipe_comb_vars") ? splitpipe_comb_vars.outdir : ""), //output split-pipe comb
     readAggr_out    : (binding.variables.containsKey("readAggrData_bioc_vars") ? readAggrData_bioc_vars.outdir : ""), 
     umicount        : (ESSENTIAL_SEQTYPE == "MARSseq" ? umicount_vars.outdir : ""), //location of the umitools counts 
     umicount_log    : (ESSENTIAL_SEQTYPE == "MARSseq" ? umicount_vars.logdir : ""), //where the umicount/FeatureCounts logs lie
-    mappingStats    : (ESSENTIAL_SEQTYPE == "ScaleBio" ? EXTERNAL_RESULTDIR + "/reports/allSamples.reportStatistics.csv" : ""),
     qc_bioc_out     : (binding.variables.containsKey("qc_bioc_vars") ? qc_bioc_vars.outdir : ""),
     norm_bioc_out   : (binding.variables.containsKey("norm_bioc_vars") ? norm_bioc_vars.outdir : ""),
     spikein_norm    : (binding.variables.containsKey("norm_bioc_vars") ? norm_bioc_vars.spikein_norm : ""),
@@ -77,6 +78,7 @@ shinyReports_vars=[
     FDR_threshold_DE : (binding.variables.containsKey("de_bioc_vars") ? de_bioc_vars.FDR_threshold_DE : ""),  
     top_DE_for_GO    : (binding.variables.containsKey("de_bioc_vars") ? de_bioc_vars.top_genes_for_GO : ""),
     DEGO_p_threshold : (binding.variables.containsKey("de_bioc_vars") ? de_bioc_vars.p_threshold_GO : ""),
+    DEGO_universe    : (binding.variables.containsKey("de_bioc_vars") ? de_bioc_vars.universe_for_GO : ""),
 
     // scmultiome pipeline
     diffExpr_out    : (binding.variables.containsKey("diffExprSeurat_vars") ? diffExprSeurat_vars.outdir : ""),  
