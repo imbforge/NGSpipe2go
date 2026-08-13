@@ -665,7 +665,7 @@ if(length(filenamePlot)>0) {
     
   cat("## Identification of sub-populations with UMAP 
 
-Uniform manifold approximation and projection (UMAP) is a nonlinear dimensionality reduction technique to identify sub-populations in expression data. Here, UMAP dimensions are calculated with", paste(SHINYREPS_PERPLEXITY, collapse=", "), "nearest neighbors.\n")
+Uniform manifold approximation and projection (UMAP) is a nonlinear dimensionality reduction technique to identify sub-populations in expression data. Here, UMAP dimensions are calculated with", paste(SHINYREPS_N_NEIGHBORS, collapse=", "), "nearest neighbors.\n")
   
   knitr::include_graphics(path=file.path(SHINYREPS_NORM_BIOC_OUT, rev(filenamePlot)))
 } 
