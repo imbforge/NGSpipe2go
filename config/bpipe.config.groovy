@@ -226,7 +226,7 @@ config {
     DE_DESeq2 {
       walltime="01:00:00"
       procs="1"
-      memory="4"
+      memory="6"
     }
     DE_DESeq2_miRNAmature {
       walltime="01:00:00"
@@ -595,7 +595,7 @@ config {
     qualimap {
       walltime="04:00:00"
       procs="1"
-      memory="10"
+      memory="16"
     }
     readAggrData_bioc {
       walltime="04:00:00"
