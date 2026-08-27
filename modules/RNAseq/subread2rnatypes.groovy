@@ -2,8 +2,8 @@ subread2rnatypes = {
     doc title: "subread2rnatypes",
         desc:  "Counting gene biotypes in features with featureCounts of the subread package",
         constraints: "Default: strand specific counting.",
-        bpipe_version: "tested with bpipe 0.9.8.7",
-        author: "Oliver Drechsel"
+        bpipe_version: "tested with bpipe 0.9.9.8",
+        author: "Oliver Drechsel, Anke Busch"
 
     output.dir = subread2rnatypes_vars.outdir
 
@@ -27,10 +27,16 @@ subread2rnatypes = {
             ${PREAMBLE} &&
     
             base=`basename $input` &&
-            if [[ "${subread2rnatypes_vars.paired}" == "true" ]]; then            
+            if [[ "${subread2rnatypes_vars.paired}" == "true" ]]; 
+            then
+                ver_info=\$( featureCounts -v 2>&1 | tr -cd [:digit:] ) &&
+                if [[ "$ver_info" > 201 ]];
+                then
+                    SUBREAD_PAIRED=" --countReadPairs";
+                fi &&
                 echo "We are resorting and doing the repair\n" &&
                 repair -i $input -T ${subread2rnatypes_vars.threads} -o \${TMP}/\${base} &&
-                featureCounts $RNATYPES_FLAGS -o \${TMP}/\${base} \${TMP}/\${base} 2> ${output.prefix}_rnatypeslog.stderr;
+                featureCounts $RNATYPES_FLAGS \$SUBREAD_PAIRED -o \${TMP}/\${base} \${TMP}/\${base} 2> ${output.prefix}_rnatypeslog.stderr;
             else
                 featureCounts $RNATYPES_FLAGS -o \${TMP}/\${base} $input 2> ${output.prefix}_rnatypeslog.stderr;
             fi &&
