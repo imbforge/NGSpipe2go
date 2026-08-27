@@ -90,6 +90,9 @@ tools_envs = [
         ],
         "1.0.14": [
             lmod: "module load bamUtil/1.0.14"
+        ],
+        "1.0.15r0": [
+            lmod: "module load shpc; module load bamutil/1.0.15r0"
         ]
     ],
     bedtools: [
@@ -174,11 +177,17 @@ tools_envs = [
         ],
         "4.0": [
             lmod: "module load cutadapt/4.0"
+        ],
+        "4.9r0": [
+            lmod: "module load shpc; module load cutadapt/4.9r0"
         ]
     ],
     deeptools: [
         "3.5.1": [
             lmod: "module load deepTools/3.5.1_singularity"
+        ],
+        "3.5.6r0": [
+            lmod: "module load shpc; module load deeptools/3.5.6r0"
         ]
     ],
     fastqc: [
@@ -189,6 +198,9 @@ tools_envs = [
         ],
         "0.11.9": [
             lmod: "module load fastqc/0.11.9"
+        ],
+        "0.12.1r1": [
+            lmod: "module load shpc; module load fastqc/0.12.1r1"
         ]
     ],
     fastqscreen: [
@@ -201,6 +213,9 @@ tools_envs = [
         ],
         "0.15.2": [
             lmod: "module load fastq_screen/0.15.2"
+        ],
+        "0.15.3r1": [
+            lmod: "module load shpc; module load fastq-screen/0.15.3r1"
         ]
     ],
     fastx: [
@@ -235,6 +250,9 @@ tools_envs = [
         "1.8": [
             lmod: "module load jdk/1.8.0_332",
             singularity: "alias java=\"singularity run --app java ${singularity_tools}/openjdk/8u181r0/openjdk8.simg\""
+        ],
+        "25.0.3": [
+            lmod: "module load jdk/25.0.3+9"
         ]
     ],
     kentutils: [
@@ -246,6 +264,9 @@ tools_envs = [
         ],
         "v385": [
             lmod: "module load kentUtils/v385"
+        ],
+        "479r0": [
+            lmod: "module load shpc; module load kentutils/479r0"
         ]
     ],
     macs2: [
@@ -273,6 +294,9 @@ tools_envs = [
         ],
         "1.9": [
             lmod: "module load MultiQC/1.9"
+        ],
+        "1.25r0": [
+            lmod: "module load shpc; module load multiqc/1.25r0"
         ]
     ],
     pear: [
@@ -290,6 +314,12 @@ tools_envs = [
         ],
         "2.20": [
             lmod: "module load picard/2.20.3"
+        ],
+        "2.23.8r0": [
+            lmod: "module load shpc; module load picard/2.23.8r0"
+        ],
+        "3.4.0r0": [
+            lmod: "module load shpc; module load picard/3.4.0r0"
         ]
     ],
     pingpongpro: [
@@ -305,6 +335,9 @@ tools_envs = [
     qualimap: [
         "2.2.1": [
             lmod: "module load qualimap/2.2.1"
+        ],
+        "2.3r0": [
+            lmod: "module load shpc; module load qualimap/2.3r0"
         ]
     ],
     R: [
@@ -345,6 +378,9 @@ tools_envs = [
     rmats: [
         "4.1.2": [
             lmod: "module load rmats/4.1.2"
+        ],
+        "4.1.2r1": [
+            lmod: "module load shpc; module load rmats/4.1.2r1"
         ]
     ],
     rnaseqc: [
@@ -359,6 +395,9 @@ tools_envs = [
         ],
         "4.0.0": [
             lmod: "module load RSeQC/4.0.0"
+        ],
+        "5.0.1r0": [
+            lmod: "module load shpc; module load rseqc/5.0.1r0"
         ]
     ],
     samtools: [
@@ -369,6 +408,9 @@ tools_envs = [
         ],
         "1.10": [
             lmod: "module load samtools/1.10"
+        ],
+        "1.24r0": [
+            lmod: "module load shpc; module load samtools/1.24r0"
         ]
     ],
     seqtk: [
@@ -403,6 +445,9 @@ tools_envs = [
         ],
         "2.7.10": [
             lmod: "module load star/2.7.10a"
+        ],
+        "2.7.10br0": [
+            lmod: "module load shpc; module load star/2.7.10br0"
         ]
     ],
     starfusion: [
@@ -432,6 +477,9 @@ tools_envs = [
         ],
         "2.0.0": [
             lmod: "module load subread/2.0.0"
+        ],
+        "2.0.3r0": [
+            lmod: "module load shpc; module load subread/2.0.3r0"
         ]
     ],
     trimgalore: [
