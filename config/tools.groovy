@@ -130,6 +130,9 @@ tools_envs = [
         ],
         "0.7.17": [
             lmod: "module load bwa/0.7.17"
+        ],
+        "0.7.17r0": [
+            lmod: "module load shpc; module load bwa/0.7.17r0"
         ]
     ],
     cellranger: [
@@ -236,6 +239,9 @@ tools_envs = [
         ],
         "4.2.6.1": [
             lmod: "module load GATK/4.2.6.1_singularity"
+        ],
+        "4.6.1.0r0": [
+            lmod: "module load shpc; module load gatk4/4.6.1.0r0"
         ]
     ],
     htseq: [
@@ -422,6 +428,9 @@ tools_envs = [
     snpEff: [
         "5.0e": [
             lmod: "module load snpEff/5.0e"
+        ],
+        "5.1r0": [
+            lmod: "module load shpc; module load snpeff/5.1r0"
         ]
     ],
     souporcell: [
@@ -504,6 +513,9 @@ tools_envs = [
     vcftools: [
         "1.16": [
             lmod: "module load vcftools/1.16"
+        ],
+        "0.1.16r0": [
+            lmod: "module load shpc; module load vcftools/0.1.16r0"
         ]
     ]
 ]
