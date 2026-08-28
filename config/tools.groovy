@@ -45,7 +45,7 @@ tools_defaults = [
     fastx          : [ runenv: "lmod", version: "0.0.14"                          ],
     gatk           : [ runenv: "lmod", version: "4.2.6.1"                         ],
     htseq          : [ runenv: "lmod", version: "2.0.2"                           ],
-    java           : [ runenv: "lmod", version: "1.8"                             ],
+    java           : [ runenv: "lmod", version: "25.0.3"                          ],
     kentutils      : [ runenv: "lmod", version: "v385"                            ],
     macs2          : [ runenv: "lmod", version: "2.1.2"                           ],
     mirdeep2       : [ runenv: "lmod", version: "2.0.1.3"                         ],
