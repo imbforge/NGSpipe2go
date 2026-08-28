@@ -103,9 +103,6 @@ tools_envs = [
         ]
     ],
     bowtie: [
-        "1.1.2": [
-            lmod: "module load bowtie/1.1.2"
-        ],
         "1.2.2": [
             lmod: "module load bowtie/1.2.2",
             conda: "${conda_call} source activate ${conda_tools}/bowtie/1.2.2"
@@ -125,9 +122,6 @@ tools_envs = [
         ]
     ],
     bwa: [
-        "0.7.15": [
-            lmod: "module load bwa/0.7.15"
-        ],
         "0.7.17": [
             lmod: "module load bwa/0.7.17"
         ],
@@ -156,9 +150,6 @@ tools_envs = [
         ]
     ],
     conda: [
-        "4.8.3": [
-            lmod: "module load conda/4.8.3"
-        ],
         "4.9.2": [
             lmod: "module load conda/4.9.2_python3.8"
         ],
@@ -168,12 +159,8 @@ tools_envs = [
     ],
     cutadapt: [
         "1.18": [
-            lmod: "module load cutadapt/1.18",
             conda: "${conda_call} source activate ${conda_tools}/cutadapt/1.18",
             singularity: "alias cutadapt=\"singularity run --app cutadapt ${singularity_tools}/cutadapt/1.18r0/cutadapt.simg\""
-        ],
-        "2.4": [
-            lmod: "module load cutadapt/2.4"
         ],
         "3.4": [
             conda: "${conda_call} source activate ${conda_tools}/cutadapt/3.4"
@@ -195,7 +182,6 @@ tools_envs = [
     ],
     fastqc: [
         "0.11.8": [
-            lmod: "module load fastqc/0.11.8",
             conda: "${conda_call} source activate ${conda_tools}/fastqc/0.11.8",
             singularity: "alias fastqc=\"singularity run --app fastqc ${singularity_tools}/fastqc/0.11.8r0/fastqc.simg\""
         ],
@@ -231,12 +217,6 @@ tools_envs = [
         "3.4-46": [
             lmod: "module load GATK/3.4-46"
         ],
-        "4.2.0.0": [
-            lmod: "module load GATK/4.2.0.0"
-        ],
-        "4.2.5.0": [
-            lmod: "module load GATK/4.2.5.0"
-        ],
         "4.2.6.1": [
             lmod: "module load GATK/4.2.6.1_singularity"
         ],
@@ -245,9 +225,6 @@ tools_envs = [
         ]
     ],
     htseq: [
-        "0.6.1": [
-            lmod: "module load htseq/0.6.1"
-        ],
         "2.0.2": [
             lmod: "module load htseq/2.0.2"
         ]
@@ -262,12 +239,6 @@ tools_envs = [
         ]
     ],
     kentutils: [
-        "v302": [
-            lmod: "module load kentUtils/v302"
-        ],
-        "v365": [
-            lmod: "module load kentUtils/v365"
-        ],
         "v385": [
             lmod: "module load kentUtils/v385"
         ],
@@ -284,7 +255,6 @@ tools_envs = [
     ],
     mirdeep2: [
         "2.0.0.8": [
-            lmod: "module load mirdeep2/2.0.0.8",
             conda: "${conda_call} source activate ${conda_tools}/mirdeep2/2.0.0.8"
         ],
         "2.0.1.3": [
@@ -294,7 +264,6 @@ tools_envs = [
     ],
     multiqc: [
         "1.7": [
-            lmod: "module load MultiQC/1.7",
             conda: "${conda_call} source activate ${conda_tools}/MultiQC/1.7",
             singularity: "alias multiqc=\"singularity run --app multiqc ${singularity_tools}/MultiQC/1.7/multiqc.simg\""
         ],
@@ -311,9 +280,6 @@ tools_envs = [
         ]
     ],
     picard: [
-        "2.7": [
-            lmod: "module load picard/2.7.0"
-        ],
         "2.18": [
             conda: "${conda_call} source activate ${conda_tools}/picard/2.18.26",
             singularity: "alias picard=\"singularity run --app picard ${singularity_tools}/picard/2.18.17r0/picard.simg\""
@@ -348,7 +314,6 @@ tools_envs = [
     ],
     R: [
         "3.6.0": [
-            lmod: "module load R/3.6.0",
             singularity: "alias Rscript=\"singularity run --app Rscript ${singularity_tools}/R/3.6.0r0/R.simg\""
         ],
         "4.0.3": [
@@ -408,7 +373,6 @@ tools_envs = [
     ],
     samtools: [
         "1.9": [
-            lmod: "module load samtools/1.9",
             conda: "${conda_call} source activate ${conda_tools}/samtools/1.9",
             singularity: "alias samtools=\"singularity run --app samtools ${singularity_tools}/samtools/1.9r1/samtools.simg\""
         ],
@@ -460,14 +424,11 @@ tools_envs = [
         ]
     ],
     starfusion: [
-        "0.8.0": [
-            lmod: "module load STAR-Fusion/0.8.0"
+        "1.15.0": [
+            lmod: "module load starfusion/1.15.0"
         ]
     ],
     stringtie: [
-        "1.3.5": [
-            lmod: "module load stringtie/1.3.5"
-        ],
         "2.2.1": [
             lmod: "module load stringtie/2.2.1"
         ]
@@ -498,11 +459,9 @@ tools_envs = [
     ],
     umitools: [
         "0.5.5": [
-            lmod: "module load umitools/0.5.5",
             conda: "${conda_call} source activate ${conda_tools}/umitools/0.5.5"
         ],
         "1.0.0": [
-            lmod: "module load umitools/1.0.0",
             conda: "${conda_call} source activate ${conda_tools}/umitools/1.0.0"
         ],
         "1.1.2": [
