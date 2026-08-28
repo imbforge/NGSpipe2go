@@ -51,7 +51,7 @@ tools_defaults = [
     mirdeep2       : [ runenv: "lmod", version: "2.0.1.3"                         ],
     multiqc        : [ runenv: "lmod", version: "1.9"                             ],
     pear           : [ runenv: "lmod", version: "0.9.11"                          ],
-    picard         : [ runenv: "lmod", version: "2.20"                            ],
+    picard         : [ runenv: "lmod", version: "3.4.0r0"                         ],
     pingpongpro    : [ runenv: "lmod", version: "1.0"                             ],
     python         : [ runenv: "lmod", version: "3.10"                            ],
     qualimap       : [ runenv: "lmod", version: "2.2.1"                           ],

@@ -51,7 +51,7 @@ VariantScoreRecalibration = {
             gatk --java-options "${VariantScoreRecalibration_vars.java_flags}" ApplyVQSR -V $input --recal-file $output1 --tranches-file $output2 -O \${TMP}/\$(basename ${input}).indel.vqsr.vcf.gz $ApplyVQSR_INDEL_FLAGS &&
             gatk --java-options "${VariantScoreRecalibration_vars.java_flags}" VariantRecalibrator -V \${TMP}/\$(basename ${input}).indel.vqsr.vcf.gz -O $output4 --tranches-file $output5 --rscript-file $output6 $VariantRecalibrator_SNP_FLAGS &&
             gatk --java-options "${VariantScoreRecalibration_vars.java_flags}" ApplyVQSR -V \${TMP}/\$(basename ${input}).indel.vqsr.vcf.gz --recal-file $output4 --tranches-file $output5 -O \${TMP}/\$(basename ${input}).unsorted.vqsr.vcf.gz $ApplyVQSR_SNP_FLAGS &&
-            java ${VariantScoreRecalibration_vars.java_flags} -jar \${PICARD} SortVcf I=\${TMP}/\$(basename ${input}).unsorted.vqsr.vcf.gz O=$output7 &&
+            picard ${VariantScoreRecalibration_vars.java_flags} SortVcf -I \${TMP}/\$(basename ${input}).unsorted.vqsr.vcf.gz -O $output7 &&
             gatk --java-options "${VariantScoreRecalibration_vars.java_flags}" VariantsToTable -V $output7 -O $output8 $VariantsToTable_FLAGS
 
         ""","VariantScoreRecalibration"

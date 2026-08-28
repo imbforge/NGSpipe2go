@@ -56,9 +56,9 @@ VariantFiltration = {
             gatk --java-options "${VariantFiltration_vars.java_flags}" VariantFiltration -V \${TMP}/indel_\$(basename ${input}) -O \${TMP}/indel_filtered_\$(basename ${input}) $VariantFiltration_INDEL_FLAGS &&
             gatk --java-options "${VariantFiltration_vars.java_flags}" SelectVariants -V $input -select-type SNP -O \${TMP}/snp_\$(basename ${input}) &&
             gatk --java-options "${VariantFiltration_vars.java_flags}" VariantFiltration -V \${TMP}/snp_\$(basename ${input}) -O \${TMP}/snp_filtered_\$(basename ${input}) $VariantFiltration_SNP_FLAGS &&
-            java ${VariantFiltration_vars.java_flags} -jar \${PICARD} SortVcf I=\${TMP}/indel_filtered_\$(basename ${input}) O=\${TMP}/indel_filtered_sorted_\$(basename ${input}) &&
-            java ${VariantFiltration_vars.java_flags} -jar \${PICARD} SortVcf I=\${TMP}/snp_filtered_\$(basename ${input}) O=\${TMP}/snp_filtered_sorted_\$(basename ${input}) &&
-            java ${VariantFiltration_vars.java_flags} -jar \${PICARD} MergeVcfs I=\${TMP}/indel_filtered_sorted_\$(basename ${input}) I=\${TMP}/snp_filtered_sorted_\$(basename ${input}) O=$output1 &&
+            picard ${VariantFiltration_vars.java_flags} SortVcf -I \${TMP}/indel_filtered_\$(basename ${input}) -O \${TMP}/indel_filtered_sorted_\$(basename ${input}) &&
+            picard ${VariantFiltration_vars.java_flags} SortVcf -I \${TMP}/snp_filtered_\$(basename ${input}) -O \${TMP}/snp_filtered_sorted_\$(basename ${input}) &&
+            picard ${VariantFiltration_vars.java_flags} MergeVcfs -I \${TMP}/indel_filtered_sorted_\$(basename ${input}) -I \${TMP}/snp_filtered_sorted_\$(basename ${input}) -O $output1 &&
             gatk --java-options "${VariantFiltration_vars.java_flags}" VariantsToTable -V $output1 -O $output2 $VariantsToTable_FLAGS
             
         ""","VariantFiltration"

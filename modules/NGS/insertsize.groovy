@@ -2,8 +2,8 @@ InsertSize = {
     doc title: "InsertSize",
         desc:  "Call picard tools create insert size values",
         constraints: "",
-        bpipe_version: "tested with bpipe 0.9.8.7",
-        author: "Nastasja Kreim"
+        bpipe_version: "tested with bpipe 0.9.9.8.slurm",
+        author: "Nastasja Kreim, Anke Busch"
 
     var subdir : ""
     output.dir = InsertSize_vars.outdir + "/$subdir"
@@ -21,7 +21,7 @@ InsertSize = {
             ${TOOL_ENV} &&
             ${PREAMBLE} &&
 
-            java ${InsertSize_vars.java_flags} -jar \${PICARD} CollectInsertSizeMetrics $INSERTSIZE_FLAGS INPUT=$input OUTPUT=$output HISTOGRAM_FILE=${output.prefix}_hist.pdf
+            picard ${InsertSize_vars.java_flags} CollectInsertSizeMetrics $INSERTSIZE_FLAGS --INPUT $input --OUTPUT $output --Histogram_FILE ${output.prefix}_hist.pdf
         ""","InsertSize"
     }
 }
