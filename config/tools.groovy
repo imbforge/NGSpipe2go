@@ -82,6 +82,9 @@ tools_envs = [
     bamqc: [
         "0.1.25_devel": [
             lmod: "module load BamQC/0.1.25_devel"
+        ],
+        "0.1r0": [
+            lmod: "module load shpc; module load bamqc/0.1r0"
         ]
     ],
     bamutil: [
@@ -119,6 +122,9 @@ tools_envs = [
         ],
         "2.4.5": [
             lmod: "module load bowtie2/2.4.5"
+        ],
+        "2.5.4r0": [
+            lmod: "module load shpc; module load bowtie2/2.5.4r0"
         ]
     ],
     bwa: [
@@ -251,6 +257,9 @@ tools_envs = [
             lmod: "module load macs2/2.1.2",
             conda: "${conda_call} source activate ${conda_tools}/macs2/2.1.2",
             singularity: "alias macs2=\"singularity run --app macs2 ${singularity_tools}/macs2/2.1.2.1r0/macs.simg\""
+        ],
+        "2.2.7.1r0": [
+            lmod: "module load shpc; module load macs2/2.2.7.1r0"
         ]
     ],
     mirdeep2: [
