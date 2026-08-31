@@ -37,25 +37,20 @@ tools_defaults = [
     cellrangeratac : [ runenv: "lmod", version: "2.0.0"                           ],
     cite_seq_count : [ runenv: "conda", version: "1.4.5"                          ],
     bwa            : [ runenv: "lmod", version: "0.7.17"                          ],
-    conda          : [ runenv: "lmod", version: "4.9.2"                           ],
     cutadapt       : [ runenv: "lmod", version: "4.0"                             ],
     deeptools      : [ runenv: "lmod", version: "3.5.1"                           ],
     fastqc         : [ runenv: "lmod", version: "0.11.9"                          ],
     fastqscreen    : [ runenv: "lmod", version: "0.15.2"                          ],
     fastx          : [ runenv: "lmod", version: "0.0.14"                          ],
     gatk           : [ runenv: "lmod", version: "4.2.6.1"                         ],
-    htseq          : [ runenv: "lmod", version: "2.0.2"                           ],
     java           : [ runenv: "lmod", version: "25.0.3"                          ],
     kentutils      : [ runenv: "lmod", version: "v385"                            ],
     macs2          : [ runenv: "lmod", version: "2.1.2"                           ],
     mirdeep2       : [ runenv: "lmod", version: "2.0.1.3"                         ],
     multiqc        : [ runenv: "lmod", version: "1.9"                             ],
-    pear           : [ runenv: "lmod", version: "0.9.11"                          ],
     picard         : [ runenv: "lmod", version: "3.4.0r0"                         ],
-    pingpongpro    : [ runenv: "lmod", version: "1.0"                             ],
     python         : [ runenv: "lmod", version: "3.10"                            ],
     qualimap       : [ runenv: "lmod", version: "2.2.1"                           ],
-    repenrich      : [ runenv: "lmod", version: "1.2"                             ],
     rmats          : [ runenv: "lmod", version: "4.1.2"                           ],
     rnaseqc        : [ runenv: "lmod", version: "2.4.2"                           ],
     rseqc          : [ runenv: "lmod", version: "4.0.0"                           ],
@@ -68,7 +63,6 @@ tools_defaults = [
     star           : [ runenv: "lmod", version: "2.7"                             ],
     stringtie      : [ runenv: "lmod", version: "2.2.1"                           ],
     subread        : [ runenv: "lmod", version: "2.0.0"                           ],
-    trimgalore     : [ runenv: "lmod", version: "0.5.0"                           ],
     umitools       : [ runenv: "lmod", version: "1.1.2"                           ],
     vcftools       : [ runenv: "lmod", version: "1.16"                            ]
 ]
@@ -155,14 +149,6 @@ tools_envs = [
             conda: "${conda_call} source activate ${conda_tools}/CITE-seq-Count/1.4.5"
         ]
     ],
-    conda: [
-        "4.9.2": [
-            lmod: "module load conda/4.9.2_python3.8"
-        ],
-        "24.3.0": [
-            lmod: "module load conda/24.3.0_python3.10.14"
-        ]
-    ],
     cutadapt: [
         "1.18": [
             conda: "${conda_call} source activate ${conda_tools}/cutadapt/1.18",
@@ -230,11 +216,6 @@ tools_envs = [
             lmod: "module load shpc; module load gatk4/4.6.1.0r0"
         ]
     ],
-    htseq: [
-        "2.0.2": [
-            lmod: "module load htseq/2.0.2"
-        ]
-    ],
     java: [
         "1.8": [
             lmod: "module load jdk/1.8.0_332",
@@ -283,11 +264,6 @@ tools_envs = [
             lmod: "module load shpc; module load multiqc/1.25r0"
         ]
     ],
-    pear: [
-        "0.9.11": [
-            lmod: "module load pear/0.9.11"
-        ]
-    ],
     picard: [
         "2.18": [
             conda: "${conda_call} source activate ${conda_tools}/picard/2.18.26",
@@ -301,11 +277,6 @@ tools_envs = [
         ],
         "3.4.0r0": [
             lmod: "module load shpc; module load picard/3.4.0r0"
-        ]
-    ],
-    pingpongpro: [
-        "1.0": [
-            lmod: "module load pingpongpro/1.0"
         ]
     ],
     python: [
@@ -348,11 +319,6 @@ tools_envs = [
         ],
         "bioconductor/3.18": [
             shpc: "${shpc_call} module load bioconductor/3.18"
-        ]
-    ],
-    repenrich: [
-        "1.2": [
-            conda: "${conda_call} source activate ${conda_tools}/repenrich/1.2"
         ]
     ],
     rmats: [
@@ -459,11 +425,6 @@ tools_envs = [
         ],
         "2.0.3r0": [
             lmod: "module load shpc; module load subread/2.0.3r0"
-        ]
-    ],
-    trimgalore: [
-        "0.5.0": [
-            singularity: "alias trim_galore=\"singularity run --app trim_galore ${singularity_tools}/trimgalore/0.5.0r0/trimgalore.simg\""
         ]
     ],
     umitools: [
