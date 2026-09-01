@@ -52,7 +52,7 @@ if(!all(peakcount > 0)) {
 }
 
 peaks <- lapply(peakFiles, readPeakFile) # read all the xls files using 'readPeakFile' function
-if(packageVersion('ChIPseeker')>0) { # bug in ChIPseeker: MACS xls files (1-based) are read as 0-based. Modify condition if fixed in future version.
+if(packageVersion('ChIPseeker')>"0.09.0") { # bug in ChIPseeker: MACS xls files (1-based) are read as 0-based. Modify condition if fixed in future version.
         peaks <- lapply(peaks, function(x) {
           BiocGenerics::start(x) <- BiocGenerics::start(x)-1
           return(x)})
