@@ -131,7 +131,7 @@ ChIPhelper.init <- function(task, subdir="", peaks_as="data.frame") {
       } else { # read in as GRanges
         x <- tryCatch({
           x <- ChIPseeker::readPeakFile(x, as = "GRanges")
-          if(packageVersion('ChIPseeker')>0) {BiocGenerics::start(x) <- BiocGenerics::start(x)-1} # bug in ChIPseeker: MACS xls files (1-based) are read as 0-based. Modify condition if fixed in future version.
+          if(packageVersion('ChIPseeker')>'0.0.0') {BiocGenerics::start(x) <- BiocGenerics::start(x)-1} # bug in ChIPseeker: MACS xls files (1-based) are read as 0-based. Modify condition if fixed in future version (last checked 01.09.26).
           x
         })
       }
