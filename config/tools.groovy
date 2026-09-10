@@ -56,7 +56,7 @@ tools_defaults = [
     rseqc          : [ runenv: "lmod", version: "5.0.1r0"                         ],
     samtools       : [ runenv: "lmod", version: "1.24r0"                          ],
     seqtk          : [ runenv: "lmod", version: "1.3"                             ],
-    snpEff         : [ runenv: "lmod", version: "5.0e"                            ],
+    snpEff         : [ runenv: "lmod", version: "5.4.0cr0"                        ],
     souporcell     : [ runenv: "lmod", version: "2.0_singularity"                 ],
     split_pipe     : [ runenv: "shpc", version: "1.3.1r0"                         ],
     starfusion     : [ runenv: "lmod", version: "0.8.0"                           ],
