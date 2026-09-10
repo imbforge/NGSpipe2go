@@ -36,13 +36,13 @@ tools_defaults = [
     cellrangerarc  : [ runenv: "lmod", version: "2.0.0"                           ],
     cellrangeratac : [ runenv: "lmod", version: "2.0.0"                           ],
     cite_seq_count : [ runenv: "conda", version: "1.4.5"                          ],
-    bwa            : [ runenv: "lmod", version: "0.7.17"                          ],
+    bwa            : [ runenv: "lmod", version: "0.7.17r0"                        ],
     cutadapt       : [ runenv: "lmod", version: "4.9r0"                           ],
     deeptools      : [ runenv: "lmod", version: "3.5.6r0"                         ],
     fastqc         : [ runenv: "lmod", version: "0.12.1r1"                        ],
     fastqscreen    : [ runenv: "lmod", version: "0.15.3r1"                        ],
     fastx          : [ runenv: "lmod", version: "0.0.14"                          ],
-    gatk           : [ runenv: "lmod", version: "4.2.6.1"                         ],
+    gatk           : [ runenv: "lmod", version: "4.6.2.0r1"                       ],
     java           : [ runenv: "lmod", version: "25.0.3"                          ],
     kentutils      : [ runenv: "lmod", version: "479r0"                           ],
     macs2          : [ runenv: "lmod", version: "2.2.7.1r0"                       ],
@@ -64,7 +64,7 @@ tools_defaults = [
     stringtie      : [ runenv: "lmod", version: "2.2.1"                           ],
     subread        : [ runenv: "lmod", version: "2.0.3r0"                         ],
     umitools       : [ runenv: "lmod", version: "1.1.2"                           ],
-    vcftools       : [ runenv: "lmod", version: "1.16"                            ]
+    vcftools       : [ runenv: "lmod", version: "0.1.16r0"                        ]
 ]
 
 // This map defines how to prepare the environment in order to have in PATH all
@@ -212,8 +212,8 @@ tools_envs = [
         "4.2.6.1": [
             lmod: "module load GATK/4.2.6.1_singularity"
         ],
-        "4.6.1.0r0": [
-            lmod: "module load shpc; module load gatk4/4.6.1.0r0"
+        "4.6.2.0r1": [
+            lmod: "module load shpc; module load gatk4/4.6.2.0r1"
         ]
     ],
     java: [
