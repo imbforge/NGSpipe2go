@@ -368,8 +368,8 @@ tools_envs = [
         "5.0e": [
             lmod: "module load snpEff/5.0e"
         ],
-        "5.1r0": [
-            lmod: "module load shpc; module load snpeff/5.1r0"
+        "5.4.0cr0": [
+            lmod: "module load shpc; module load snpeff/5.4.0cr0"
         ]
     ],
     souporcell: [
