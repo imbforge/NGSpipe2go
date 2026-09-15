@@ -19,7 +19,7 @@ extend = {
             ${PREAMBLE} &&
 
             CHRSIZES="\${TMP}/\$(basename ${input.prefix}).extend.chrsizes"  &&
-            samtools idxstats ${input} | cut -f1-2 > "\${CHRSIZES}" &&
+            samtools idxstats ${input} | cut -f1-2 | grep -v "*" > "\${CHRSIZES}" &&
             bedtools bamtobed -split -i $input | bedtools slop -g "\${CHRSIZES}" -l 0 -r ${extend_vars.fraglen} -s | bedtools bedtobam -ubam -g "\${CHRSIZES}" | samtools sort $SAMTOOLS_SORT_FLAGS -T \${TMP}/\$(basename $output.prefix) - > $output &&
             samtools index $output
         ""","extend"

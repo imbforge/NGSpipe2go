@@ -29,7 +29,7 @@ tools_defaults = [
     R              : [ runenv: "lmod", version: "R/Bioconductor_3.18_singularity" ],
     bamqc          : [ runenv: "lmod", version: "0.1r0"                           ],
     bamutil        : [ runenv: "lmod", version: "1.0.15r0"                        ],
-    bedtools       : [ runenv: "lmod", version: "2.27"                            ],
+    bedtools       : [ runenv: "lmod", version: "2.31.1r0"                        ],
     bowtie         : [ runenv: "lmod", version: "1.3.1r0"                         ],
     bowtie2        : [ runenv: "lmod", version: "2.5.4r0"                         ],
     cellranger     : [ runenv: "lmod", version: "6.0.0"                           ],
@@ -97,6 +97,9 @@ tools_envs = [
             lmod: "module load bedtools/2.27.1",
             conda: "${conda_call} source activate ${conda_tools}/bedtools/2.27.1",
             singularity: "alias bedtools=\"singularity run --app bedtools ${singularity_tools}/bedtools/2.27.1r0/bedtools.simg\""
+        ],
+        "2.31.1r0": [
+            lmod: "module load shpc; module load bedtools/2.31.1r0"
         ]
     ],
     bowtie: [
