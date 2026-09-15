@@ -22,7 +22,9 @@ ESSENTIAL_HAPMAP_VARIANTS="/fsimb/common/genomes/homo_sapiens/gatk_bundle_hg38_v
 ESSENTIAL_OMNI_VARIANTS="/fsimb/common/genomes/homo_sapiens/gatk_bundle_hg38_v0/1000G_omni2.5.hg38.vcf.gz" // varirants provided by the GATK bundle. Essential for Variant Score Recalibration
 ESSENTIAL_MILLS_VARIANTS="/fsimb/common/genomes/homo_sapiens/gatk_bundle_hg38_v0/Mills_and_1000G_gold_standard.indels.hg38.vcf.gz" // varirants provided by the GATK bundle. Essential for Variant Score Recalibration
 ESSENTIAL_THOUSAND_GENOMES_VARIANTS="/fsimb/common/genomes/homo_sapiens/gatk_bundle_hg38_v0/1000G_phase1.snps.high_confidence.hg38.vcf.gz" // varirants provided by the GATK bundle. Essential for Variant Score Recalibration
-ESSENTIAL_SNPEFF_GENOME="GRCh38.p13.RefSeq" // snpEff resource to be used for functional variant annotation
+ESSENTIAL_SNPEFF_DATADIR="" // dir where ESSENTIAL_SNPEFF_GENOME is stored or should be downloaded to. 
+                            // if left empty, snpEff's results output dir will be used
+ESSENTIAL_SNPEFF_GENOME="GRCh38.p13" // snpEff resource to be used for functional variant annotation
 
 // FASTQ-Screen parameters (optional)
 ESSENTIAL_FASTQSCREEN_PERC=1    // contaminant filter, if a contaminant is consuming at least this percentage of reads in at least one sample, contaminant will be shown in report

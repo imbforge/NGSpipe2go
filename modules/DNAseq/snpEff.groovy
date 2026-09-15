@@ -11,7 +11,7 @@ snpEff = {
         (snpEff_vars.config        ? " -c "      + snpEff_vars.config        : "" ) +
         (snpEff_vars.output_format ? " -o "      + snpEff_vars.output_format : "" ) +
         (snpEff_vars.extra         ? " "         + snpEff_vars.extra         : "" ) + 
-        " -dataDir /snpeff-data " + snpEff_vars.genome_version
+        " -dataDir " + snpEff_vars.genome_datadir + " " + snpEff_vars.genome_version
 
     def vcftools_FLAGS =
         (snpEff_vars.output_format=="gatk" ? "--get-INFO EFF " : "--get-INFO ANN " )
@@ -30,7 +30,7 @@ snpEff = {
             ${PREAMBLE} &&
 
             gatk --java-options "${GenomicsDBImport_vars.java_flags}" SelectVariants --exclude-filtered -V $input -O \${TMP}/excludeFiltered\$(basename ${input}) &&
-            SINGULARITY_BINDPATH="${snpEff_vars.genome_datadir}:/snpeff-data" snpEff "${snpEff_vars.java_flags}" $snpEff_FLAGS \${TMP}/excludeFiltered\$(basename ${input}) -csvStats $output1 -s $output2  > $output3 &&
+            snpEff "${snpEff_vars.java_flags}" $snpEff_FLAGS \${TMP}/excludeFiltered\$(basename ${input}) -csvStats $output1 -s $output2  > $output3 &&
             vcftools --vcf $output3 --stdout $vcftools_FLAGS > $output4
 
         ""","snpEff"
