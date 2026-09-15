@@ -489,17 +489,7 @@ config {
     miRDeep2Mapper {
       walltime="04:00:00"
       procs="8"
-      memory="2"
-    }
-    MirDeep2 {
-      walltime="04:00:00"
-      procs="2"
       memory="4"
-    }
-    MirDeep2Mapper {
-      walltime="04:00:00"
-      procs="4"
-      memory="8"
     }
     motifActivity {
       queue=long_queue

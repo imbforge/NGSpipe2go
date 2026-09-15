@@ -30,7 +30,7 @@ tools_defaults = [
     bamqc          : [ runenv: "lmod", version: "0.1r0"                           ],
     bamutil        : [ runenv: "lmod", version: "1.0.15r0"                        ],
     bedtools       : [ runenv: "lmod", version: "2.27"                            ],
-    bowtie         : [ runenv: "lmod", version: "1.3.1"                           ],
+    bowtie         : [ runenv: "lmod", version: "1.3.1r0"                         ],
     bowtie2        : [ runenv: "lmod", version: "2.5.4r0"                         ],
     cellranger     : [ runenv: "lmod", version: "6.0.0"                           ],
     cellrangerarc  : [ runenv: "lmod", version: "2.0.0"                           ],
@@ -41,12 +41,12 @@ tools_defaults = [
     deeptools      : [ runenv: "lmod", version: "3.5.6r0"                         ],
     fastqc         : [ runenv: "lmod", version: "0.12.1r1"                        ],
     fastqscreen    : [ runenv: "lmod", version: "0.15.3r1"                        ],
-    fastx          : [ runenv: "lmod", version: "0.0.14"                          ],
+    fastx          : [ runenv: "lmod", version: "0.0.14r0"                        ],
     gatk           : [ runenv: "lmod", version: "4.6.2.0r1"                       ],
     java           : [ runenv: "lmod", version: "25.0.3"                          ],
     kentutils      : [ runenv: "lmod", version: "479r0"                           ],
     macs2          : [ runenv: "lmod", version: "2.2.7.1r0"                       ],
-    mirdeep2       : [ runenv: "lmod", version: "2.0.1.3"                         ],
+    mirdeep2       : [ runenv: "lmod", version: "2.0.1.3r0"                       ],
     multiqc        : [ runenv: "lmod", version: "1.25r0"                          ],
     picard         : [ runenv: "lmod", version: "3.4.0r0"                         ],
     python         : [ runenv: "lmod", version: "3.10"                            ],
@@ -55,7 +55,7 @@ tools_defaults = [
     rnaseqc        : [ runenv: "lmod", version: "2.4.2"                           ],
     rseqc          : [ runenv: "lmod", version: "5.0.1r0"                         ],
     samtools       : [ runenv: "lmod", version: "1.24r0"                          ],
-    seqtk          : [ runenv: "lmod", version: "1.3"                             ],
+    seqtk          : [ runenv: "lmod", version: "1.4r0"                           ],
     snpEff         : [ runenv: "lmod", version: "5.4.0cr0"                        ],
     souporcell     : [ runenv: "lmod", version: "2.0_singularity"                 ],
     split_pipe     : [ runenv: "shpc", version: "1.3.1r0"                         ],
@@ -106,6 +106,9 @@ tools_envs = [
         ],
         "1.3.1": [
             lmod: "module load bowtie/1.3.1"
+        ],
+        "1.3.1r0": [
+            lmod: "module load shpc; module load bowtie/1.3.1r0"
         ]
     ],
     bowtie2: [
@@ -203,6 +206,9 @@ tools_envs = [
         "0.0.14": [
             lmod: "module load fastx_toolkit/0.0.14",
             conda: "${conda_call} source activate ${conda_tools}/fastx_toolkit/0.0.14"
+        ],
+        "0.0.14r0": [
+            lmod: "module load shpc; module load fastx_toolkit/0.0.14r0"
         ]
     ],
     gatk: [
@@ -250,6 +256,9 @@ tools_envs = [
         "2.0.1.3": [
             lmod: "module load mirdeep2/2.0.1.3",
             conda: "${conda_call} source activate ${conda_tools}/mirdeep2/2.0.1.3"
+        ],
+        "2.0.1.3r0": [
+            lmod: "module load shpc; module load mirdeep2/2.0.1.3r0"
         ]
     ],
     multiqc: [
@@ -362,6 +371,9 @@ tools_envs = [
         "1.3": [
             lmod: "module load seqtk/1.3",
             conda: "${conda_call} source activate ${conda_tools}/seqtk/1.3"
+        ],
+        "1.4r0": [
+            lmod: "module load shpc; module load seqtk/1.4r0"
         ]
     ],
     snpEff: [
