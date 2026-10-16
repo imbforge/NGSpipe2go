@@ -12,12 +12,7 @@
 // Tips:
 //   * Indentation is important in this file. Please, use 4 spaces for indent. *NO TABS*.
 load PIPELINE_ROOT + "/config/tools.groovy" // tools_defaults are specified here
-tools_custom = [ 
-    bowtie     : [ runenv: "lmod", version: "1.3.1"        ],
-    cutadapt   : [ runenv: "lmod", version: "4.0"          ],
-    kentutils  : [ runenv: "lmod", version: "v385"         ],
-    subread    : [ runenv: "lmod", version: "2.0.0"        ]
-] 
+tools_custom = [ ] 
 
 tools = new LinkedHashMap(tools_defaults)   // create new tools map based on defaults
 tools.putAll(tools_custom)                  // override with users custom versions/runenvs
